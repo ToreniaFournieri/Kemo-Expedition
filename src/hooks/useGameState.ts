@@ -5194,8 +5194,19 @@ export function useGameState() {
       };
     }, [authority]),
 
-    // SpecRef: 9.1.3 | Experimental AI API | Evaluation transactions
+    // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | Trusted in-process persistence and publication
     getApiReadiness: () => isSaveBlockedByLoadFailure ? 'save_error' as const : 'ready' as const,
+    persistApiState: useCallback(async (nextState: GameState) => {
+      const coordinator = persistenceCoordinatorRef.current;
+      if (!coordinator) throw new Error('persistence_unavailable');
+      coordinator.commitAtomic(nextState);
+    }, []),
+
+    publishApiState: useCallback(async (nextState: GameState) => {
+      latestGameStateRef.current = nextState;
+      dispatch({ type: 'COMMIT_API_STATE', state: nextState });
+    }, []),
+
     commitApiState: useCallback(async (nextState: GameState) => {
       const coordinator = persistenceCoordinatorRef.current;
       if (!coordinator) throw new Error('persistence_unavailable');

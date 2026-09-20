@@ -26,7 +26,9 @@ export interface ApplicationApiPorts {
     applyAutoEquipment: ApiV1CommitAuthorityDependencies['applyAutoEquipment'];
     /** Private, non-persisted forecast simulation; must not touch the live game state or RNG. */
     simulate: (state: GameState, partyIndex: number, count: number) => Promise<unknown>;
-    /** Publishes a durably committed state to the running renderer. */
+    /** Durably persists a trusted in-process player's state before it is published. */
+    persistPlayer: (state: GameState) => Promise<void>;
+    /** Publishes an already-durable committed state to the running renderer. */
     publish: (state: GameState) => Promise<void>;
     yieldBetweenChunks: () => Promise<void>;
     createOpaqueId: () => string;
@@ -42,7 +44,7 @@ export interface ApplicationApiPorts {
 /** The trusted in-process adapter API: it supplies revision and idempotency metadata on the caller's behalf. */
 export interface InProcessApiAdapter {
   read: (operation: string, input?: { pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown> }) => Promise<ApiV1ApplicationResponse>;
-  commit: (operation: string, input?: { pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown> }) => Promise<ApiV1ApplicationResponse>;
+  commit: (operation: string, input?: { pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown>; confirmed?: boolean }) => Promise<ApiV1ApplicationResponse>;
 }
 
 export interface ApplicationApi {
@@ -87,7 +89,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
 
   const activeSession = () => activeIdentity ? { identity: activeIdentity, ...authority.getSnapshot() } : null;
 
-  async function handleUnserialized(templateOperation: string, raw: unknown): Promise<ApiV1ApplicationResponse> {
+  async function handleUnserialized(templateOperation: string, raw: unknown, trustedInProcess = false): Promise<ApiV1ApplicationResponse> {
     const request = asRecord(raw);
     const operation = resolveOperation(templateOperation, asRecord(request.pathParameters));
 
@@ -100,7 +102,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
     if (operation === 'help/endpoints') {
       return { data: { requirements: ports.help.requirements, detail: ports.help.detail, schemaVersion: 1 } };
     }
-    if (!ports.desktopAvailable()) return failure(503, 'runtime_unavailable', 'Desktop API services are unavailable.');
+    if (!trustedInProcess && !ports.desktopAvailable()) return failure(503, 'runtime_unavailable', 'Desktop API services are unavailable.');
 
     if (operation === 'fundamental/signUp') {
       const created = await signUpApiAccount(request, ports.session);
@@ -129,7 +131,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       return { revision: logout.finalRevision, data: { finalPersistedRevision: logout.finalRevision } };
     }
 
-    if (!activeIdentity) return failure(401, 'login_required', 'A logged-in API account is required.');
+    if (!activeIdentity && !trustedInProcess) return failure(401, 'login_required', 'A logged-in API account is required.');
     const parameters = asRecord(request.parameters);
 
     if (operation === 'read/observation/popupEventStream') {
@@ -184,7 +186,8 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       createRandomSeed: ports.runtime.createRandomSeed,
       now: ports.runtime.now,
       persist: async (snapshot, control) => {
-        await ports.session.accounts.commit(identity, encodePersistedState(JSON.stringify(serializeGameState(snapshot))), control as DesktopApiControlMetadata);
+        if (identity) await ports.session.accounts.commit(identity, encodePersistedState(JSON.stringify(serializeGameState(snapshot))), control as DesktopApiControlMetadata);
+        else await ports.runtime.persistPlayer(snapshot);
       },
       publish: ports.runtime.publish,
       onPublicationFailure: ports.runtime.onPublicationFailure,
@@ -204,14 +207,25 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
   }
 
   function createInProcessAdapter(): InProcessApiAdapter {
-    const call = (operation: string, input: { pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown> } | undefined, mutating: boolean) => handle(operation, {
-      pathParameters: input?.pathParameters ?? {},
-      parameters: input?.parameters ?? {},
-      uploadedFiles: {},
-      transport: { requestId: ports.runtime.createOpaqueId() },
-      ...(mutating ? { expectedRevision: authority.getSnapshot().control.revisionHighWater, idempotencyKey: ports.runtime.createOpaqueId() } : {}),
-    });
-    return { read: (operation, input) => call(operation, input, false), commit: (operation, input) => call(operation, input, true) };
+    const read = (operation: string, input: { pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown> } | undefined) => handleUnserialized(operation, {
+      pathParameters: input?.pathParameters ?? {}, parameters: input?.parameters ?? {}, uploadedFiles: {}, transport: { requestId: ports.runtime.createOpaqueId() },
+    }, true);
+    const commit: InProcessApiAdapter['commit'] = async (operation, input) => {
+      const request = {
+        pathParameters: input?.pathParameters ?? {}, parameters: input?.parameters ?? {}, uploadedFiles: {},
+        transport: { requestId: ports.runtime.createOpaqueId() },
+        expectedRevision: authority.getSnapshot().control.revisionHighWater,
+        idempotencyKey: ports.runtime.createOpaqueId(),
+      };
+      const first = await handleUnserialized(operation, request, true);
+      const error = asRecord(first.error);
+      const details = asRecord(error.details);
+      if (input?.confirmed === true && error.code === 'confirmation_required' && typeof details.confirmationToken === 'string') {
+        return handleUnserialized(operation, { ...request, confirmationToken: details.confirmationToken }, true);
+      }
+      return first;
+    };
+    return { read, commit };
   }
 
   return {

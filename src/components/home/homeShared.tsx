@@ -185,6 +185,8 @@ export interface HomeScreenProps {
   bags: GameBags;
   actions: {
     getApiReadiness: () => 'ready' | 'save_error';
+    persistApiState: (state: GameState) => Promise<void>;
+    publishApiState: (state: GameState) => Promise<void>;
     commitApiState: (state: GameState) => Promise<void>;
     selectParty: (partyIndex: number) => void;
     selectDungeon: (partyIndex: number, dungeonId: number) => void;

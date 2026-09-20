@@ -24,7 +24,7 @@ import {
 isDungeonEntryUnlocked
 } from '../game/clearGate';
 import { DebugSettings,getDebugSettings,getTimeSpeedScale,isUnlimitedTimeSpeed,saveDebugSettings } from '../game/debugSettings';
-import { getDeityDepositMultiplier,getDeityStateDurationMultiplier,isNoFaithDeity,normalizeDeityName } from '../game/deity';
+import { getDeityDepositMultiplier,getDeityId,getDeityStateDurationMultiplier,isNoFaithDeity,normalizeDeityName } from '../game/deity';
 import { getDesktopNotificationRewardItems } from '../game/desktopNotificationRewards';
 import { getDesktopPreferences,getProcessedDiaryIds,saveProcessedDiaryIds } from '../game/desktopNotifications';
 import {
@@ -96,7 +96,7 @@ import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
 import { DEFAULT_ORCA_ENEMY_LEVEL_OFFSET, isRuntimeGameMode, normalizeOrcaEnemyLevelOffset, type RuntimeGameMode } from '../game/runtimeGameMode';
 import { setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
-import { createApplicationApi, type ApplicationApi } from '../api/v1/applicationApi';
+import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
 import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
 import {
@@ -561,7 +561,8 @@ export function HomeScreen({
         cycleDurationScale: () => apiCycleDurationScaleRef.current,
         applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
         simulate: async (snapshot, partyIndex, count) => simulateExpeditionRuns(snapshot, partyIndex, gameModeRef.current, count, undefined, apiRuntimeRef.current.enemyLevelOffset),
-        publish: async (snapshot) => { await apiActionsRef.current.commitApiState(snapshot); },
+        persistPlayer: async (snapshot) => { await apiActionsRef.current.persistApiState(snapshot); },
+        publish: async (snapshot) => { await apiActionsRef.current.publishApiState(snapshot); },
         yieldBetweenChunks: () => new Promise<void>((resolve) => window.setTimeout(resolve, 0)),
         createOpaqueId: () => crypto.randomUUID(),
         createRandomSeed: () => crypto.getRandomValues(new Uint32Array(1))[0],
@@ -573,6 +574,8 @@ export function HomeScreen({
     }, state);
   }
   applicationApiRef.current.syncIdleState(state);
+  const inProcessApiRef = useRef<InProcessApiAdapter | null>(null);
+  if (inProcessApiRef.current === null) inProcessApiRef.current = applicationApiRef.current.createInProcessAdapter();
 
   useEffect(() => {
     const desktop = window.bokemoDesktop;
@@ -4815,13 +4818,31 @@ export function HomeScreen({
           editingCharacter={editingCharacter}
           setEditingCharacter={setEditingCharacter}
           onUpdateCharacter={actions.updateCharacter}
-          onReorderPartyCharacter={actions.reorderPartyCharacter}
+          onReorderPartyCharacter={(fromIndex, toIndex) => {
+            const order = currentParty.characters.map((character) => character.id);
+            const [moved] = order.splice(fromIndex, 1);
+            if (moved === undefined) return;
+            order.splice(toIndex, 0, moved);
+            void inProcessApiRef.current!.commit('commit/build/party/{p}', {
+              pathParameters: { p: currentParty.id }, parameters: { order },
+            }).then((response) => {
+              if (response.error) console.error('[api-v1] Party order change failed', response.error);
+            });
+          }}
           onEquipItem={actions.equipItem}
           onToggleEquipmentLock={actions.toggleEquipmentLock}
           onAttachJewel={actions.attachJewel}
           onAddStatNotifications={actions.addStatNotifications}
           onSelectParty={actions.selectParty}
-          onUpdatePartyDeity={actions.updatePartyDeity}
+          onUpdatePartyDeity={(partyIndex, deityName) => {
+            const target = state.parties[partyIndex];
+            if (!target) return;
+            void inProcessApiRef.current!.commit('commit/build/party/{p}', {
+              pathParameters: { p: target.id }, parameters: { deityId: getDeityId(deityName) },
+            }).then((response) => {
+              if (response.error) console.error('[api-v1] Party deity change failed', response.error);
+            });
+          }}
           onRunAutoEquipmentForCharacter={(characterId) => runAutoEquipment([safeSelectedPartyIndex], [characterId], { forceFull: true })}
           onRemoveAllEquipment={actions.removeAllEquipment}
           onSaveEquipmentSet={actions.saveEquipmentSet}

@@ -87,7 +87,7 @@ const commitParameters = {
   'commit/progress/progressReport': empty,
   'commit/expedition/{p}/changeExpedition': strict({ destination: optional(integerId), destinationMode: optional(literals('auto', 'fixed')), depthLimit: optional(Type.String({ pattern: '^(?:[1-9][0-9]*f-[1-9][0-9]*|beforeBoss|all)$' })), difficultyOffset: optional(Type.Integer({ minimum: 0, maximum: 68, multipleOf: 2 })) }),
   'commit/expedition/{p}/sortie': empty, 'commit/expedition/{p}/godsBattle': empty,
-  'commit/build/party/{p}': strict({ deityId: optional(stableKey), order: optional(nonEmptyArray(integerId, { uniqueItems: true, maxItems: 6 })) }),
+  'commit/build/party/{p}': strict({ deityId: optional(stableKey), order: optional(nonEmptyArray(integerId, { minItems: 6, maxItems: 6, uniqueItems: true })) }),
   'commit/build/character/{characterId}/changeBuild': strict({ name: optional(Type.String({ minLength: 1, maxLength: 100 })), racesAndGender: optional(stableKey), mainClassId: optional(stableKey), subClassId: optional(stableKey), lineage: optional(stableKey), predisposition: optional(stableKey) }),
   'commit/build/character/{characterId}/removeAllEquipment': empty,
   'commit/build/character/{characterId}/removeEquipment': strict({ targetEquipment: equipmentTarget }),

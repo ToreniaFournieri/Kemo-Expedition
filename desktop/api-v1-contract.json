@@ -13298,9 +13298,9 @@
                 "type": "string"
               },
               "order": {
-                "minItems": 1,
-                "uniqueItems": true,
+                "minItems": 6,
                 "maxItems": 6,
+                "uniqueItems": true,
                 "type": "array",
                 "items": {
                   "minimum": 1,

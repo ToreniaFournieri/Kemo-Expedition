@@ -1,6 +1,6 @@
 import type { ApiV1DeliveryRecord } from './deliveries';
 import { DEVELOPER_NEWS_ITEMS } from '../../data/developerNews';
-import { getDeityNameFromId, normalizeDeityName } from '../../game/deity';
+import { getDeityId, getDeityNameFromId, isNoFaithDeity, normalizeDeityName } from '../../game/deity';
 import { isDebugModeEnabled } from '../../game/environment';
 import { canCharacterEquipCategory, createEquipmentSetSnapshot, evaluateEquipmentSet, getSavedEquipmentSlot } from '../../game/equipmentSets';
 import { recordEquipmentState, redoEquipmentState, undoEquipmentState } from '../../game/equipmentHistory';
@@ -118,16 +118,27 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const partyNumber = Number(operation.split('/').at(-1));
     const partyIndex = next.parties.findIndex((entry) => entry.id === partyNumber);
     if (partyIndex < 0) throw new Error('not_found');
-    if (parameters.deityId !== undefined) { const deityName = getDeityNameFromId(String(parameters.deityId)); if (!deityName) throw new Error('invalid_deity'); reduce({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName }); }
+    if (parameters.deityId !== undefined) {
+      const deityName = getDeityNameFromId(String(parameters.deityId));
+      if (!deityName) throw new Error('invalid_deity');
+      const normalized = normalizeDeityName(deityName);
+      const current = normalizeDeityName(next.parties[partyIndex].deity.name);
+      const unlocked = next.global.unlockedDeities.map(normalizeDeityName).includes(normalized);
+      const usedElsewhere = !isNoFaithDeity(normalized) && next.parties.some((party, index) => index !== partyIndex && normalizeDeityName(party.deity.name) === normalized);
+      if ((!isNoFaithDeity(normalized) && normalized !== current && !unlocked) || usedElsewhere) throw new Error('illegal_action');
+      reduce({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
+    }
     if (Array.isArray(parameters.order)) {
       const target = parameters.order.map(Number);
+      const currentIds = next.parties[partyIndex].characters.map((entry) => entry.id);
+      if (target.length !== currentIds.length || new Set(target).size !== target.length || target.some((id) => !currentIds.includes(id))) throw new Error('invalid_order');
       for (let destination = 0; destination < target.length; destination += 1) {
         const source = next.parties[partyIndex].characters.findIndex((entry) => entry.id === target[destination]);
         if (source < 0) throw new Error('invalid_order');
         if (source !== destination) reduce({ type: 'REORDER_PARTY_CHARACTER', partyIndex, fromIndex: source, toIndex: destination });
       }
     }
-    data = { current: { deityId: parameters.deityId ?? normalizeDeityName(next.parties[partyIndex].deity.name), order: next.parties[partyIndex].characters.map((entry) => entry.id) } };
+    data = { current: { deityId: getDeityId(next.parties[partyIndex].deity.name), order: next.parties[partyIndex].characters.map((entry) => entry.id) } };
   } else if (characterMatch) {
     const characterId = Number(characterMatch[1]);
     const partyIndex = next.parties.findIndex((party) => party.characters.some((entry) => entry.id === characterId));

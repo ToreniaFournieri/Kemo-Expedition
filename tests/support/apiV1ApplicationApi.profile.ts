@@ -15,7 +15,9 @@ const identity: DesktopApiAccountIdentity = { userId: 'Taro', environment: 'desk
 interface Harness {
   api: ApplicationApi;
   persisted: Array<{ state: GameState; control: DesktopApiControlMetadata }>;
+  persistedPlayers: GameState[];
   published: GameState[];
+  playerCommitEvents: string[];
   sessionEvents: boolean[];
   idleState: GameState;
 }
@@ -25,6 +27,8 @@ function harness(): Harness {
   const accountState = createFreshGameState('ja', t0);
   const persisted: Harness['persisted'] = [];
   const published: GameState[] = [];
+  const persistedPlayers: GameState[] = [];
+  const playerCommitEvents: string[] = [];
   const sessionEvents: boolean[] = [];
   let counter = 0;
   let returnPayload: string | null = null;
@@ -60,7 +64,8 @@ function harness(): Harness {
       cycleDurationScale: () => 1,
       applyAutoEquipment: (state) => state,
       simulate: async () => ({ total: 100, Clear: 40, Turned_Back: 10, Draw_Retreat: 10, Wounded_Retreat: 10, Defeat: 30 }),
-      publish: async (state) => { published.push(state); },
+      persistPlayer: async (state) => { playerCommitEvents.push('persist'); persistedPlayers.push(state); },
+      publish: async (state) => { playerCommitEvents.push('publish'); published.push(state); },
       yieldBetweenChunks: async () => undefined,
       createOpaqueId: () => `opaque-id-${String(++counter).padStart(16, '0')}`,
       createRandomSeed: () => 12345,
@@ -69,7 +74,7 @@ function harness(): Harness {
     help: { requirements: 'REQUIREMENTS', detail: 'DETAIL' },
     onSessionActive: (active) => { sessionEvents.push(active); },
   };
-  return { api: createApplicationApi(ports, idleState), persisted, published, sessionEvents, idleState };
+  return { api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, idleState };
 }
 
 type Step = { operation: string; pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown>; mutating: boolean };
@@ -141,6 +146,36 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
   const deniedCommit = await h.api.handle('commit/base/changeJewelPriorityParty', { parameters: { partyNumber: 'none' }, expectedRevision: 0, idempotencyKey: 'unauthenticated-key-001' }) as { error: { code: string } };
   assert.equal(deniedCommit.error.code, 'login_required');
   assert.equal(h.api.isSessionActive(), false);
+}
+
+// 1a. The trusted in-process adapter operates on the idle player snapshot in browser or desktop builds, persists
+// before publication, and can carry a UI-confirmed command through the shared confirmation policy.
+{
+  const h = harness();
+  const local = h.api.createInProcessAdapter();
+  const before = await local.read('read/build/party/{p}', { pathParameters: { p: 1 } }) as { data: { current: { order: number[] } } };
+  assert.equal(before.data.current.order.length, 6);
+  const reordered = [...before.data.current.order];
+  [reordered[0], reordered[1]] = [reordered[1], reordered[0]];
+  const committed = await local.commit('commit/build/party/{p}', { pathParameters: { p: 1 }, parameters: { order: reordered } }) as { revision: number; error?: unknown };
+  assert.equal(committed.error, undefined);
+  assert.equal(committed.revision, 1);
+  assert.equal(h.persistedPlayers.length, 1);
+  assert.equal(h.published.length, 1);
+  assert.deepEqual(h.playerCommitEvents, ['persist', 'publish']);
+  assert.equal(h.api.isSessionActive(), false);
+}
+
+// 1b. A UI-confirmed trusted command still traverses the shared challenge/token policy with one idempotency key.
+{
+  const h = harness();
+  const local = h.api.createInProcessAdapter();
+  const confirmed = await local.commit('commit/build/character/{characterId}/changeBuild', {
+    pathParameters: { characterId: 2 }, parameters: { mainClassId: 'guardian', subClassId: 'guardian' }, confirmed: true,
+  }) as { revision: number; error?: unknown };
+  assert.equal(confirmed.error, undefined);
+  assert.equal(confirmed.revision, 1);
+  assert.deepEqual(h.playerCommitEvents, ['persist', 'persist', 'publish'], 'challenge reservation precedes durable commit and publication');
 }
 
 // 2. The session lifecycle is serialized through the handler: a second login is refused; logout restores the idle state.

@@ -191,7 +191,11 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   if (partyBuild) {
     const selected = partyByNumber(state, partyBuild[1]);
     if (!selected) throw new Error('not_found');
-    return { current: { deityId: getDeityId(selected.party.deity.name), order: selected.party.characters.map((entry) => entry.id) }, validOptions: { deityId: state.global.unlockedDeities.map(getDeityId), order: selected.party.characters.map((entry) => entry.id) } };
+    const currentDeityId = getDeityId(selected.party.deity.name);
+    const usedByOtherParties = new Set(state.parties.filter((party) => party.id !== selected.party.id).map((party) => getDeityId(party.deity.name)));
+    const deityId = Array.from(new Set(['none', currentDeityId, ...state.global.unlockedDeities.map(getDeityId)]))
+      .filter((id) => id === 'none' || id === currentDeityId || !usedByOtherParties.has(id));
+    return { current: { deityId: currentDeityId, order: selected.party.characters.map((entry) => entry.id) }, validOptions: { deityId, order: selected.party.characters.map((entry) => entry.id) } };
   }
   const characterRead = operationId.match(/^read\/build\/character\/(\d+)\/(status|equipment|equipmentSet)$/);
   if (characterRead) {
