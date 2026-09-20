@@ -23024,7 +23024,11 @@
           "type": "object",
           "required": [
             "deliveryId",
-            "status"
+            "status",
+            "createdAt",
+            "updatedAt",
+            "failureReason",
+            "rewardApplied"
           ],
           "properties": {
             "deliveryId": {
@@ -23080,12 +23084,7 @@
             },
             "rewardApplied": {
               "type": "boolean"
-            },
-            "operation": {
-              "type": "string"
-            },
-            "parameters": {},
-            "files": {}
+            }
           }
         },
         "envelope": {
@@ -23125,7 +23124,11 @@
               "type": "object",
               "required": [
                 "deliveryId",
-                "status"
+                "status",
+                "createdAt",
+                "updatedAt",
+                "failureReason",
+                "rewardApplied"
               ],
               "properties": {
                 "deliveryId": {
@@ -23181,12 +23184,7 @@
                 },
                 "rewardApplied": {
                   "type": "boolean"
-                },
-                "operation": {
-                  "type": "string"
-                },
-                "parameters": {},
-                "files": {}
+                }
               }
             }
           }
@@ -23223,7 +23221,11 @@
         "response": {
           "data": {
             "deliveryId": "xxxxxxx",
-            "status": "queued"
+            "status": "queued",
+            "createdAt": "1970-01-01T00:00:00.000Z",
+            "updatedAt": "1970-01-01T00:00:00.000Z",
+            "failureReason": "xxxxxxx",
+            "rewardApplied": true
           }
         }
       }

@@ -40,7 +40,8 @@ function createApiAccountStore({ userDataPath, beforeManifestWrite = null }) {
       fs.renameSync(temporaryPath, filePath);
       fs.chmodSync(filePath, mode);
     } finally {
-      try { fs.unlinkSync(temporaryPath); } catch (error) { if (error?.code !== 'ENOENT') throw error; }
+      // Best-effort cleanup: a failure here must never mask the write/rename outcome above.
+      try { fs.unlinkSync(temporaryPath); } catch { /* the temporary file is already gone or unremovable */ }
     }
   }
 

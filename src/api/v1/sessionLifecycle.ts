@@ -5,6 +5,7 @@ import { createApiRandom, withGameplayRandomSource } from '../../game/gameplayRa
 import { createFreshGameState } from '../../hooks/useGameState';
 import { decodeApiSavePayload } from './commitOperations';
 import { stageApiV1ElapsedProgression } from './elapsedProgression';
+import { recoverInterruptedDeliveries } from './deliveries';
 
 // SpecRef: 9.1.3.2 | API requirement fundamental | signUp / logIn / logOut
 // SpecRef: 9.1.4.16 | Admitted work, disconnection, and shutdown | Durable hand-back before releasing authority
@@ -97,6 +98,8 @@ export async function logInApiAccount(request: Record<string, unknown>, activeSe
     let accountState = decodeApiSavePayload(account.savePayload);
     const control = structuredClone(account.control);
     const realNow = ports.now();
+    // SpecRef: 9.1.4.15 | A process restart while sending cannot know the remote outcome: those jobs become `unknown`.
+    if (control.deliveries?.some((record) => record.status === 'sending')) control.deliveries = recoverInterruptedDeliveries(control.deliveries, realNow);
     const previousInGameTime = Number.isFinite(control.inGameTime) ? Number(control.inGameTime) : realNow;
     const catchUpMs = Math.min(ports.catchUp.maximumElapsedMs, Math.max(0, realNow - previousInGameTime));
     if (catchUpMs >= 60_000) {
