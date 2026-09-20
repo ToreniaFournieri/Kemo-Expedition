@@ -6,7 +6,7 @@
   - Steps are processed **globally**, meaning all parties update their progress simultaneously at each Step. 
   - Base duration: **15 seconds per Step**.
   - Duration modifier: **round up** after all multipliers are applied.
-  - **Debug Scaling** (applies multiplicatively to Step duration):
+  - **Debug Scaling:`Speed of time`** (applies multiplicatively to Step duration):
     - `x5 boost` → Step × **0.2** (3 seconds)
     - `x20 boost` → Step × **0.05** (0.75 seconds)
     - `x100 boost` → Step × **0.01** (0.15 seconds)
@@ -92,7 +92,7 @@ PT1 transaction begins
     - Ending Sound Sleep does not trigger auto-equipment logic.
     - A partial Chunk (<30 Cycles) **does trigger auto-equipment logic**.
 
-**f.afk-emulation-efficiency**
+**`f.afk-emulation-efficiency`**
 
 | Elapsed AFK Time | Emulation Speed | Effective Time |
 | ---------------: | --------------: | -------------: |

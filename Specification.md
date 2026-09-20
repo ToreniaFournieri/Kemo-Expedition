@@ -107,6 +107,13 @@
     - Debug mode: OFF
     - Game mode: `mode.normal` (fixed)
     - Speed of time: x1
+  - `/desktop/`: Desktop local environment
+    - Debug mode: OFF
+    - Speed of time: x1
+    - Game mode: `mode.normal` (changeable)
+    - Note: Not associated with a Git branch. The user launches the game locally from the terminal.
+
+
 **Save Data Isolation:** Save data must be namespaced per environment (example: `/dev/`, `/beta/`, and `/`) and never shared between them.
 - **Desktop launch mapping:** `npm run desktop:dev` must load `/dev/`, `npm run desktop:beta` must load `/beta/`, and `npm run desktop:prod` plus packaged desktop releases must load `/`. The desktop custom protocol must serve the same built assets beneath each environment path without sharing their persisted save data.
 

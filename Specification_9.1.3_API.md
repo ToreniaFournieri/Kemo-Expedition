@@ -299,12 +299,15 @@ Path Parameters
 
 **2-1-1. `compact`**
 
-* An API for AI.
-* Every request intentionally performs a fresh private 100-run simulation for
-  each unlocked party, using the same snapshot as the returned current facts.
-  This is an on-demand decision aid, not a real-time monitoring projection.
-  The result is not cached between requests and is not saved. Other observation
-  projections do not trigger these simulations.
+* Provides a compact observation designed primarily for AI decision-making.
+* Do not call this endpoint frequently.
+
+* Behavior:
+  * Each request performs a fresh, private 100-run simulation for every unlocked party.
+  * The simulations use the same game-state snapshot as the current facts returned by this request.
+  * The simulation results are intended as an on-demand decision aid, not as a real-time monitoring or prediction mechanism.
+  * Simulation results are not cached between requests and are not persisted.
+  * Other observation endpoints do not trigger these simulations.
 
 * Parameters: none.
 
@@ -1025,22 +1028,29 @@ Path Parameters
 
 * Parameters:
   * `calculateToRealTime`
+    * Optional.
     * Boolean.
-    * If `true`, advances the in-game time up to the current real-world time. 
+    * If `true`, advances the in-game time up to the current real-world time.
     * If the in-game time is already later than the current real-world time, no action is performed.
   * `elapsedSeconds`
+    * Optional.
+    * If specified, this parameter takes precedence over `calculateToRealTime`.
     * Unit: seconds.
     * Minimum: `60` seconds.
     * Maximum: `43200` seconds (12 hours).
 
 * Behavior:
-  * Processes the specified elapsed time using the same logic as AFK reactivation.
+  * Processes the elapsed time using `Time-Based Progress Handling` defined in `5.1.1 Party State Machine`.
+  * Applies the following progression rules and modifiers:
+    * `f.afk-emulation-efficiency`
+    * `Speed of time`
 
 * Return:
   * `elapsedSeconds`
+    * Actual elapsed time processed.
     * Unit: seconds.
   * `inGameTime`
-
+    * In-game time after processing.
 
 **3-1-2. `progressReport`**
 

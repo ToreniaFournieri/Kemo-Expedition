@@ -474,7 +474,7 @@ HP: 312                 タイプ: 神魔
  
 - Clairvoyance: OFF/ON
   - if OFF, disable `Clairvoyance (未来視)` as default.
-- Speed of time: Real time / x1.2 bonus / x5 boost / x20 hyper / x100 Ultra / x∞ Unlimited
+- `Speed of time`: Real time / x1.2 bonus / x5 boost / x20 hyper / x100 Ultra / x∞ Unlimited
   - Default: Real time
   - affects side quest duration.
   - Unlimited: Immediately processes side quests using AFK emulation, without waiting for real time to pass.
