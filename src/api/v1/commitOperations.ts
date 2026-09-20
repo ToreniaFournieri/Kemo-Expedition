@@ -5,9 +5,10 @@ import { isDebugModeEnabled } from '../../game/environment';
 import { computePartyStats } from '../../game/partyComputation';
 import { hydrateGameState, serializeGameState } from '../../game/saveCodec';
 import { buildShopLineup } from '../../game/shop';
+import { isEquipmentSlotAction, planEquipmentSlotOperation } from './equipmentSlots';
 import { decodePersistedState, encodePersistedState } from '../../game/storageCompression';
 import { createFreshGameState, gameReducer } from '../../hooks/useGameState';
-import type { Character, GameState, Item, JewelKey, Party, SavedEquipmentSet } from '../../types';
+import type { Character, GameState, Item, Party, SavedEquipmentSet } from '../../types';
 import { getVariantKey } from '../../types';
 
 // SpecRef: 9.1 | Desktop distribution | Application API
@@ -136,9 +137,10 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (recordsEquipmentHistory) { characterHistory.undo.push(snapshotEquipment()); characterHistory.redo = []; }
     if (action === 'changeBuild') reduce({ type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: { ...(parameters.name === undefined ? {} : { name: String(parameters.name) }), ...(parameters.mainClassId === undefined ? {} : { mainClassId: String(parameters.mainClassId) as Character['mainClassId'] }), ...(parameters.subClassId === undefined ? {} : { subClassId: String(parameters.subClassId) as Character['subClassId'] }), ...(parameters.lineage === undefined ? {} : { lineageId: String(parameters.lineage) as Character['lineageId'] }), ...(parameters.predisposition === undefined ? {} : { predispositionId: String(parameters.predisposition) as Character['predispositionId'] }) } });
     else if (action === 'removeAllEquipment') reduce({ type: 'REMOVE_ALL_EQUIPMENT', partyIndex, characterId });
-    else if (['removeEquipment', 'jewelRemove'].includes(action)) for (const slotIndex of (Array.isArray(parameters.targetEquipment) ? parameters.targetEquipment : [parameters.targetEquipment]).map(Number)) reduce(action === 'removeEquipment' ? { type: 'EQUIP_ITEM', partyIndex, characterId, slotIndex, itemKey: null } : { type: 'ATTACH_JEWEL', partyIndex, characterId, slotIndex, jewelKey: 'might', rank: 0 });
-    else if (['lockEquipment', 'unlockEquipment'].includes(action)) for (const slotIndex of (Array.isArray(parameters.targetEquipment) ? parameters.targetEquipment : [parameters.targetEquipment]).map(Number)) { const item = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)?.equipment[slotIndex]; if (item && item.isLocked !== (action === 'lockEquipment')) reduce({ type: 'TOGGLE_EQUIPMENT_LOCK', partyIndex, characterId, slotIndex }); }
-    else if (action === 'jewelAttach') { const [key, rank] = String(parameters.jewelToSet).split(':'); reduce({ type: 'ATTACH_JEWEL', partyIndex, characterId, slotIndex: Number(parameters.targetEquipment), jewelKey: key as JewelKey, rank: Number(rank) }); }
+    else if (isEquipmentSlotAction(action)) {
+      const character = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
+      for (const step of planEquipmentSlotOperation(action, character, next.global.jewels, parameters)) reduce({ ...step, partyIndex, characterId });
+    }
     else if (action === 'saveEquipmentSet') { const equipmentSet = parameters.equipmentSet as { name?: string } | undefined; reduce({ type: 'SAVE_EQUIPMENT_SET', partyIndex, characterId, name: equipmentSet?.name ?? `Set ${next.global.savedEquipmentSets.length + 1}`, createdAt: context.simulatedAt }); data = { equipmentSetId: next.global.savedEquipmentSets.at(-1)?.slot }; }
     else if (action === 'loadEquipmentSet') reduce({ type: 'LOAD_EQUIPMENT_SET', partyIndex, characterId, slot: Number(parameters.equipmentSetId), mode: parameters.loadMode === 'equipSimilar' ? 'similar' : 'exact' });
     else if (action === 'deleteEquipmentSet') reduce({ type: 'DELETE_EQUIPMENT_SET', slot: Number(parameters.equipmentSetId) });
