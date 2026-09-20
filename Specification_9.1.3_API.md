@@ -249,9 +249,9 @@ Path Parameters
 
 * Return:
   * `userId`
+  * `environment`
   * `gameMode`
   * `levelOffsetForOrca`
-  * `environment`
 
 * Save data path:
   * Normal:
@@ -265,8 +265,12 @@ Path Parameters
 
 * Parameters:
   * `userId`
+  * `environment`
   * `gameMode`
   * `levelOffsetForOrca`
+    * Optional.
+    * Used to identify the target account when multiple accounts exist with the same combination of `userId`, `environment`, and `gameMode`.
+    * If multiple matching accounts exist and `levelOffsetForOrca` is not specified, the login request is rejected.
 
 * Behavior:
   * Starts a game instance or acquires API control of the existing instance.
@@ -1040,6 +1044,7 @@ Path Parameters
     * Maximum: `43200` seconds (12 hours).
 
 * Behavior:
+  * If neither parameter is specified, no action is performed.
   * Processes the elapsed time using `Time-Based Progress Handling` defined in `5.1.1 Party State Machine`.
   * Applies the following progression rules and modifiers:
     * `f.afk-emulation-efficiency`

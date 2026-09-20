@@ -203,6 +203,46 @@ All JSON Commit requests use this transport envelope:
   persistence failure returns `save_failed`, publishes no popup event, and
   leaves the previous state and revision authoritative.
 
+**Atomic progression across multiple Chunks**
+
+* A `commit/progress/elapsed` request is one external transaction even when it
+  processes many logical Chunks. After revision validation, capture the committed
+  snapshot and resolve the request's target time once. Run the shared section 5.1
+  progression logic against a private staged state, including game clocks, RNG
+  and bags, inventory, currencies, equipment, pending backlog, and retained logs.
+* Preserve section 5.1's worker-arrival FIFO ordering, per-party barriers,
+  automatic-equipment timing, distinct coordinator snapshots, and completion
+  acknowledgements inside that staged transaction. Each internal Chunk version
+  is separate from the public API `revision`; completing a Chunk does not publish
+  a new API revision. Subsequent workers and Chunks use the latest staged snapshot.
+* Hold exclusive mutation authority for the save until commit or rollback.
+  Other writes, including delivery-completion transactions, wait their turn and
+  revalidate against the then-current committed state. Scheduler yields remain
+  bounded and responsive; they do not release mutation authority. Reads and
+  read-only UI continue to use the last committed snapshot and cannot see staged
+  outcomes, rewards, logs, or clock advances.
+* A Chunk checkpoint or scheduler yield preserves only private working progress
+  for this request. It must not replace the active save, publish a pending AFK
+  cursor, or trigger ordinary autosave. Any temporary storage is uncommitted
+  staging and is never loaded as authoritative recovery state. Ordinary AFK
+  recovery outside this API transaction retains its section 5.1 checkpoint rules.
+* After all requested processing finishes, atomically persist the complete final
+  state, retained-record references, idempotency receipt, and buffered popup
+  events using the existing manifest-last durability protocol. Only after that
+  durable commit may the authority publish the final snapshot and release effects.
+  Increment the public revision exactly once for a mutation, or leave it unchanged
+  for a no-op. Notifications follow the existing AFK grouping rules.
+* Failure or safe cancellation before the durable commit discards every staged
+  Chunk and effect, fences outstanding worker results, and leaves the pre-request
+  state, RNG, clocks, backlog, and revision unchanged. Restart does not resume a
+  partially staged request. If the durable commit succeeded before a crash or lost
+  response, reload its complete state and receipt; retry returns that receipt
+  without repeating any Chunk. Never report rollback after a durable success.
+* Login's catch-up uses this same staging/publication boundary before returning
+  a successful session; its Fundamental envelope and authentication rules remain
+  unchanged. This boundary does not change elapsed-time selection, caps,
+  efficiency, or speed modifiers defined by 9.1.3 and section 5.1.
+
 ##### 9.1.4.5 Confirmation protocol
 
 An operation requiring confirmation first returns HTTP `409`:
@@ -412,7 +452,8 @@ definitions in 9.1.3.
   party rewards, and side-quest progress were reset.
 * `commit/progress/elapsed` reports requested, accepted, and capped elapsed
   seconds plus resulting progression effects. Existing AFK caps and FIFO rules
-  remain authoritative.
+  remain authoritative. All Chunks form one staged transaction under 9.1.4.4;
+  intermediate coordinator versions are not externally committed API revisions.
 * `commit/progress/progressReport` performs the existing progress-report action.
   Feedback and any external delivery use 9.1.4.15. Local receipt persistence does
   not by itself prove that an external recipient received a message.
@@ -626,6 +667,14 @@ use the same operation without HTTP authentication headers.
   shutdown, renderer loss, and reset during a private read. Compact observation
   tests count exactly 100 runs per unlocked party on every successful request,
   verify a single snapshot, and prove no game-state or live-RNG mutation.
+* Multi-Chunk progression tests inject failure after an intermediate Chunk and
+  before final persistence: state, RNG, clocks, backlog, public revision, and
+  emitted events must remain unchanged. Concurrent reads must see only the
+  pre-request or complete post-request state. Verify one public revision on
+  success, no intermediate autosave publication, stale worker rejection after
+  rollback, and receipt replay after a crash following durable commit. Compare
+  staged results with shared section 5.1 logic using the same recorded FIFO order,
+  not a single whole-recovery hash across independent worker schedules.
 * A saved fixture executed through each adapter must produce the same revision,
   persisted game state, effects, and changed-resource list.
 
@@ -850,9 +899,10 @@ Feedback `metadata`, accompanied by one verified image part named `attachment0`:
 * Import/reset invalidates snapshots still computing and closes their streams.
   An affected read returns `stale_revision` rather than publishing a pre-reset
   result. It never cancels a previously committed operation or deletes its receipt.
-* Wall-clock/API-time reconciliation and internal AFK Chunk checkpoint boundaries
-  remain governed by the progression specifications; transport lease renewal
-  itself never advances game time.
+* Wall-clock/API-time reconciliation and logical Chunk boundaries remain governed
+  by the progression specifications. Within an atomic API progression request,
+  checkpoints and publication follow 9.1.4.4; ordinary AFK checkpoints outside
+  that request remain unchanged. Transport lease renewal never advances game time.
 
 ##### 9.1.4.17 UI state ownership
 
