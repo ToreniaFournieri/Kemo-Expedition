@@ -2,10 +2,12 @@ import type { ApiV1DeliveryRecord } from './deliveries';
 import { DEVELOPER_NEWS_ITEMS } from '../../data/developerNews';
 import { getDeityNameFromId, normalizeDeityName } from '../../game/deity';
 import { isDebugModeEnabled } from '../../game/environment';
+import { canCharacterEquipCategory, evaluateEquipmentSet } from '../../game/equipmentSets';
+import { computeCharacterStats } from '../../game/characterComputation';
 import { computePartyStats } from '../../game/partyComputation';
 import { hydrateGameState, serializeGameState } from '../../game/saveCodec';
 import { buildShopLineup } from '../../game/shop';
-import { isEquipmentSlotAction, planEquipmentSlotOperation } from './equipmentSlots';
+import { isEquipmentSlotAction, planEquipOperation, planEquipmentSlotOperation } from './equipmentSlots';
 import { decodePersistedState, encodePersistedState } from '../../game/storageCompression';
 import { createFreshGameState, gameReducer } from '../../hooks/useGameState';
 import type { Character, GameState, Item, Party, SavedEquipmentSet } from '../../types';
@@ -130,6 +132,9 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (partyIndex < 0) throw new Error('not_found');
     const action = characterMatch[2];
     const characterBefore = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
+    // SpecRef: 8.2.4 | Equipment management | three-state toggle(手動/補助/一任)
+    // A manual equipment change made while FULL demotes the character to SEMI, exactly as the UI path does.
+    const demoteFullAutoEquipment = () => { if (characterBefore.autoEquipmentMode === 2) reduce({ type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: { autoEquipmentMode: 1 } }); };
     const history = context.equipmentHistory;
     const characterHistory = history[String(characterId)] ??= { undo: [], redo: [] };
     const snapshotEquipment = (): SavedEquipmentSet => ({ slot: 0, name: 'API history', createdAt: simulatedAt, equipment: characterBefore.equipment.filter((item): item is Item => item !== null).map((item) => ({ item: structuredClone(item), isLocked: item.isLocked === true })) });
@@ -140,24 +145,31 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     else if (isEquipmentSlotAction(action)) {
       const character = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
       for (const step of planEquipmentSlotOperation(action, character, next.global.jewels, parameters)) reduce({ ...step, partyIndex, characterId });
+      if (action === 'removeEquipment') demoteFullAutoEquipment();
     }
     else if (action === 'saveEquipmentSet') { const equipmentSet = parameters.equipmentSet as { name?: string } | undefined; reduce({ type: 'SAVE_EQUIPMENT_SET', partyIndex, characterId, name: equipmentSet?.name ?? `Set ${next.global.savedEquipmentSets.length + 1}`, createdAt: context.simulatedAt }); data = { equipmentSetId: next.global.savedEquipmentSets.at(-1)?.slot }; }
-    else if (action === 'loadEquipmentSet') reduce({ type: 'LOAD_EQUIPMENT_SET', partyIndex, characterId, slot: Number(parameters.equipmentSetId), mode: parameters.loadMode === 'equipSimilar' ? 'similar' : 'exact' });
+    else if (action === 'loadEquipmentSet') {
+      const set = next.global.savedEquipmentSets.find((entry) => entry.slot === Number(parameters.equipmentSetId));
+      if (!set) throw new Error('not_found');
+      const loadMode = String(parameters.loadMode ?? 'equipSet');
+      const maxSlots = computeCharacterStats(characterBefore, next.parties[partyIndex].level).maxEquipSlots;
+      // `equipSet` promises every stored item; a partial set must be loaded through an explicit confirmed choice.
+      if (loadMode === 'equipSet' && !evaluateEquipmentSet(set, characterBefore, next.global.inventory, maxSlots).allAvailable) throw new Error('illegal_action:partial_load_requires_choice');
+      reduce({ type: 'LOAD_EQUIPMENT_SET', partyIndex, characterId, slot: set.slot, mode: loadMode === 'equipSimilar' ? 'similar' : 'exact' });
+      const loaded = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
+      data = { loadReport: { loadMode, entries: set.equipment.map((entry, slotIndex) => {
+        const result = slotIndex < maxSlots ? loaded.equipment[slotIndex] : null;
+        const exact = result !== null && result.id === entry.item.id && result.enhancement === entry.item.enhancement && result.superRare === entry.item.superRare;
+        const reason = result ? null : slotIndex >= maxSlots ? 'slot_unavailable' : !canCharacterEquipCategory(loaded, entry.item.category) ? 'not_equippable' : 'unavailable';
+        return { slotIndex, saved: `${entry.isLocked ? 1 : 0}/${entry.item.id}/${entry.item.enhancement}/${entry.item.superRare}`, result: exact ? 'equipped' : result ? 'substituted' : 'skipped', reason };
+      }) } };
+    }
     else if (action === 'deleteEquipmentSet') reduce({ type: 'DELETE_EQUIPMENT_SET', slot: Number(parameters.equipmentSetId) });
     else if (action === 'renameEquipmentSet') reduce({ type: 'RENAME_EQUIPMENT_SET', slot: Number(parameters.equipmentSetId), name: String(parameters.name) });
     else if (action === 'autoEquipment') { const mode = String(parameters.mode); reduce({ type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: { autoEquipmentMode: mode === 'FULL' ? 2 : mode === 'SEMI' ? 1 : 0 } }); if (parameters.immediateAutoEquipment === true) next = context.applyAutoEquipment(next, partyIndex, characterId, true); }
     else if (action === 'equip') {
-      const requested = (Array.isArray(parameters.targetEquipment) ? parameters.targetEquipment : [parameters.targetEquipment]).map(String);
-      if (requested.length === 0 || new Set(requested).size !== requested.length) throw new Error('invalid_items');
-      for (const format of requested) {
-        const parts = format.split('/').map(Number);
-        const [lock, itemId, enhancement, superRare] = parts;
-        const key = Object.keys(next.global.inventory).find((variantKey) => { const candidate = next.global.inventory[variantKey]; return candidate.count > 0 && candidate.status === 'owned' && candidate.item.id === itemId && candidate.item.enhancement === enhancement && candidate.item.superRare === superRare && Number(candidate.item.isLocked === true) === lock; });
-        const character = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
-        const slotIndex = character.equipment.findIndex((item) => item === null);
-        if (!key || slotIndex < 0) throw new Error('illegal_action');
-        reduce({ type: 'EQUIP_ITEM', partyIndex, characterId, slotIndex, itemKey: key });
-      }
+      for (const step of planEquipOperation(characterBefore, next.global.inventory, parameters.targetEquipment)) reduce({ type: 'EQUIP_ITEM', partyIndex, characterId, slotIndex: step.slotIndex, itemKey: step.itemKey });
+      demoteFullAutoEquipment();
     } else if (action === 'undoEquipment' || action === 'redoEquipment') {
       const source = action === 'undoEquipment' ? characterHistory.undo : characterHistory.redo;
       const target = action === 'undoEquipment' ? characterHistory.redo : characterHistory.undo;
@@ -167,7 +179,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       target.push({ slot: 0, name: 'API history', createdAt: simulatedAt, equipment: current.equipment.filter((item): item is Item => item !== null).map((item) => ({ item: structuredClone(item), isLocked: item.isLocked === true })) });
       reduce({ type: 'RESTORE_EQUIPMENT_STATE', partyIndex, characterId, set: restore });
     }
-    data = data.equipmentSetId ? data : { current: { equipment: next.parties[partyIndex].characters.find((entry) => entry.id === characterId)?.equipment.map((item, slot) => item ? `${slot}/${item.isLocked ? 1 : 0}/${item.id}/${item.enhancement}/${item.superRare}` : 0) ?? [] } };
+    data = data.equipmentSetId ? data : { ...data, current: { equipment: next.parties[partyIndex].characters.find((entry) => entry.id === characterId)?.equipment.map((item, slot) => item ? `${slot}/${item.isLocked ? 1 : 0}/${item.id}/${item.enhancement}/${item.superRare}` : 0) ?? [] } };
   } else if (operation === 'commit/base/changeJewelPriorityParty') {
     reduce({ type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY', partyId: parameters.partyNumber === 'none' ? null : Number(parameters.partyNumber) });
     data = { current: { partyNumber: next.global.jewelAutoEquipPriorityPartyId ?? 'none' } };

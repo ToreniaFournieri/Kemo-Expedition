@@ -220,7 +220,18 @@ const responseDataSchemas = {
   'commit/build/character/{characterId}/jewelAttach': strict({ current: strict({ equipment: equipmentEntryList }) }),
   'commit/build/character/{characterId}/jewelRemove': strict({ current: strict({ equipment: equipmentEntryList }) }),
   'commit/build/character/{characterId}/saveEquipmentSet': strict({ equipmentSetId: integerId }),
-  'commit/build/character/{characterId}/loadEquipmentSet': strict({ current: strict({ equipment: equipmentEntryList }) }),
+  'commit/build/character/{characterId}/loadEquipmentSet': strict({
+    current: strict({ equipment: equipmentEntryList }),
+    loadReport: strict({
+      loadMode: literals('equipSet', 'equipSimilar', 'equipExactMatchesOnly'),
+      entries: Type.Array(strict({
+        slotIndex: Type.Integer({ minimum: 0 }),
+        saved: Type.String(),
+        result: literals('equipped', 'substituted', 'skipped'),
+        reason: Type.Union([literals('slot_unavailable', 'not_equippable', 'unavailable'), Type.Null()]),
+      })),
+    }),
+  }),
   'commit/build/character/{characterId}/deleteEquipmentSet': strict({ current: strict({ equipment: equipmentEntryList }) }),
   'commit/build/character/{characterId}/renameEquipmentSet': strict({ current: strict({ equipment: equipmentEntryList }) }),
   'commit/build/character/{characterId}/undoEquipment': strict({ current: strict({ equipment: equipmentEntryList }) }),

@@ -3,6 +3,7 @@ import { serializeGameState } from '../../game/saveCodec';
 import { createApiRandom, withGameplayRandomSource } from '../../game/gameplayRandom';
 import { applyApiV1Commit, type ApiV1CommitContext } from './commitOperations';
 import { stageApiV1ElapsedProgression } from './elapsedProgression';
+import { resolveConfirmationPolicy } from './confirmationPolicy';
 import { prepareSaveReplacement, type ApiV1DeliveryRecord } from './deliveries';
 import type { FeedbackRewardState } from '../../game/feedbackRewards';
 
@@ -155,16 +156,21 @@ export async function executeApiV1CommitTransaction(
   if (input.expectedRevision !== input.control.revisionHighWater) return failure('stale_revision', 'The supplied revision is stale.', { currentRevision: input.control.revisionHighWater });
 
   const stagedControl = structuredClone(input.control);
-  const confirmationRequired = input.operation === 'commit/setting/backup/reset' || input.operation === 'commit/setting/backup/import';
-  if (confirmationRequired) {
+  const policy = resolveConfirmationPolicy(input.operation, input.state, input.parameters);
+  const confirmationRequired = policy !== null;
+  if (policy) {
+    // A challenge reserves the base parameters (without the caller's choice) so the confirmed retry may add exactly
+    // the declared choice; the successful receipt below records the complete parameters including that choice.
+    const baseParameters = policy.choiceField ? Object.fromEntries(Object.entries(input.parameters).filter(([name]) => name !== policy.choiceField)) : input.parameters;
+    const baseCanonical = canonicalizeApiV1Request(input.operation, baseParameters, input.uploadedFiles);
     const now = dependencies.now();
     stagedControl.confirmations = (stagedControl.confirmations ?? []).filter((entry) => entry.expiresAt > now);
     const reserved = stagedControl.confirmations.find((entry) => entry.key === input.idempotencyKey);
     if (!input.confirmationToken) {
-      if (reserved && (reserved.operation !== input.operation || reserved.canonical !== canonical)) return failure('idempotency_conflict', 'The idempotency key is reserved for different parameters.');
+      if (reserved && (reserved.operation !== input.operation || reserved.canonical !== baseCanonical)) return failure('idempotency_conflict', 'The idempotency key is reserved for different parameters.');
       const challenge = reserved ?? {
         token: dependencies.createOpaqueId(), key: input.idempotencyKey, operation: input.operation,
-        canonical, revision: input.expectedRevision, expiresAt: now + 300_000,
+        canonical: baseCanonical, revision: input.expectedRevision, expiresAt: now + 300_000,
       };
       if (!reserved) stagedControl.confirmations.push(challenge);
       try {
@@ -177,12 +183,19 @@ export async function executeApiV1CommitTransaction(
         durableControl: stagedControl,
         error: {
           code: 'confirmation_required', message: 'Confirmation is required.',
-          details: { confirmationToken: challenge.token, warningKey: input.operation.endsWith('/reset') ? 'api.warning.backupReset' : 'api.warning.backupImport', warningArgs: {}, expiresAt: new Date(challenge.expiresAt).toISOString(), allowedChoices: [] },
+          details: {
+            confirmationToken: challenge.token, warningKey: policy.warningKey, warningArgs: policy.warningArgs,
+            expiresAt: new Date(challenge.expiresAt).toISOString(), allowedChoices: policy.allowedChoices,
+            ...(policy.choiceField ? { choiceField: policy.choiceField } : {}),
+          },
         },
       };
     }
-    if (!reserved || reserved.token !== input.confirmationToken || reserved.operation !== input.operation || reserved.canonical !== canonical || reserved.revision !== input.expectedRevision || reserved.expiresAt <= now) {
+    if (!reserved || reserved.token !== input.confirmationToken || reserved.operation !== input.operation || reserved.canonical !== baseCanonical || reserved.revision !== input.expectedRevision || reserved.expiresAt <= now) {
       return failure('confirmation_invalid', 'The confirmation token is invalid.');
+    }
+    if (policy.choiceField && !policy.allowedChoices.includes(String(input.parameters[policy.choiceField]))) {
+      return failure('confirmation_invalid', 'The confirmation requires one of the offered choices.', { choiceField: policy.choiceField, allowedChoices: policy.allowedChoices });
     }
   }
 

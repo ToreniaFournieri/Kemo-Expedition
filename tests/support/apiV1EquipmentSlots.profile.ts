@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
 import { createFreshGameState, gameReducer } from '../../src/hooks/useGameState';
-import type { GameState } from '../../src/types';
+import { canCharacterEquipCategory } from '../../src/game/equipmentSets';
+import { getVariantKey, type GameState } from '../../src/types';
 
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | Party build and equipment
 // Slot-addressed equipment commands must validate the whole request against one snapshot and report real effects.
@@ -96,5 +97,53 @@ const unlocked = applyApiV1Commit(path('unlockEquipment'), locked.state, { targe
 assert.equal(character(unlocked.state).equipment[armor]!.isLocked === true, false);
 if (emptySlot >= 0) fails(full, 'lockEquipment', { targetEquipment: [armor, emptySlot] }, 'illegal_action');
 seeded = full;
+
+// removeEquipment is a manual change: a FULL character is demoted to SEMI, matching the UI path (Spec 8.2.4).
+assert.equal(character(base).autoEquipmentMode, 2, 'fixture starts in FULL mode');
+assert.equal(character(unequipped.state).autoEquipmentMode, 1, 'removeEquipment demotes FULL to SEMI');
+
+// equip: atomic, owned-count, aptitude, and free-slot validation.
+const bare = applyApiV1Commit(path('removeAllEquipment'), base, {}, context()).state;
+const slotsTotal = character(bare).equipment.length;
+const formatOf = (item: { id: number; enhancement: number; superRare: number }) => `0/${item.id}/${item.enhancement}/${item.superRare}`;
+const original = character(base).equipment.filter((item): item is NonNullable<typeof item> => item !== null);
+const first = original[0];
+assert.ok(bare.global.inventory[getVariantKey(first)]?.count >= 1, 'removed equipment returns to inventory');
+
+fails(bare, 'equip', { targetEquipment: 'nonsense' }, 'invalid_request');
+fails(bare, 'equip', { targetEquipment: '0/1/9/0' }, 'invalid_request');
+fails(bare, 'equip', { targetEquipment: [] }, 'invalid_request');
+fails(bare, 'equip', { targetEquipment: '0/999999/0/0' }, 'illegal_action');
+
+const equippedOne = applyApiV1Commit(path('equip'), bare, { targetEquipment: formatOf(first) }, context());
+assert.equal(character(equippedOne.state).equipment.filter(Boolean).length, 1);
+assert.equal(character(equippedOne.state).equipment[0]!.id, first.id, 'items fill the first empty slot');
+assert.equal(character(equippedOne.state).autoEquipmentMode, 1, 'equip demotes FULL to SEMI');
+assert.equal(bare.global.inventory[getVariantKey(first)].count - 1, equippedOne.state.global.inventory[getVariantKey(first)]?.count ?? 0);
+
+// Repeating one variant requests several copies; asking for more than owned rejects the whole request.
+const owned = bare.global.inventory[getVariantKey(first)].count;
+fails(bare, 'equip', { targetEquipment: Array(owned + 1).fill(formatOf(first)) }, 'illegal_action');
+if (owned >= 2 && slotsTotal >= 2) {
+  const twice = applyApiV1Commit(path('equip'), bare, { targetEquipment: [formatOf(first), formatOf(first)] }, context());
+  assert.equal(character(twice.state).equipment.filter(Boolean).length, 2);
+}
+
+// Aptitude: a category the character cannot use is illegal, and nothing is applied.
+const blocked = (['sword', 'arrow', 'wand'] as const).find((category) => !canCharacterEquipCategory(character(bare), category));
+if (blocked) {
+  const alien = { ...first, id: 990001, category: blocked, jewel: null };
+  const withAlien: GameState = { ...bare, global: { ...bare.global, inventory: { ...bare.global.inventory, [getVariantKey(alien)]: { item: alien, count: 1, status: 'owned' as const, isNew: false } } } };
+  fails(withAlien, 'equip', { targetEquipment: [formatOf(first), formatOf(alien)] }, 'illegal_action');
+}
+
+// No free slot: requesting more items than there are empty slots rejects the whole request.
+const plenty: GameState = { ...base, global: { ...base.global, inventory: { ...base.global.inventory, [getVariantKey(first)]: { item: first, count: 99, status: 'owned' as const, isNew: false } } } };
+const emptyCount = character(plenty).equipment.filter((item) => item === null).length;
+fails(plenty, 'equip', { targetEquipment: Array(emptyCount + 1).fill(formatOf(first)) }, 'illegal_action');
+if (emptyCount > 0) {
+  const filledExactly = applyApiV1Commit(path('equip'), plenty, { targetEquipment: Array(emptyCount).fill(formatOf(first)) }, context());
+  assert.equal(character(filledExactly.state).equipment.every((item) => item !== null), true);
+}
 
 console.log('apiV1EquipmentSlots profile ok');
