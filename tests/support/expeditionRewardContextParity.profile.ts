@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { getGodsBattleProgress, getGodsBattleRequired } from '../../src/game/clearGate.ts';
-import { buildExperimentalObservation } from '../../src/game/experimentalApi.ts';
+import { buildApiV1PartyObservationForTesting } from '../../src/api/v1/readModels.ts';
 import { getApproxAfkCycleDurationMs } from '../../src/game/afkScheduler.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
@@ -101,11 +101,11 @@ for (const [languageIndex, language] of languages.entries()) {
   ));
   const observationState = loadState();
   observationState.global.language = language;
-  const observationBefore = buildExperimentalObservation(observationState, 1, false, {}, simulatedAt);
+  const observationBefore = buildApiV1PartyObservationForTesting(observationState);
   const observationBatch = deterministic(0x4b060006 + seedOffset, () => (
     simulateApiSortieBatchForTesting(observationState, lastPartyIndex, 1, 'm.kemo', simulatedAt)
   ));
-  const observationAfter = buildExperimentalObservation(observationBatch.state, 2, false, {}, simulatedAt);
+  const observationAfter = buildApiV1PartyObservationForTesting(observationBatch.state);
 
   output[language] = {
     online,

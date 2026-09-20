@@ -49,6 +49,16 @@ export const DEITY_OPTIONS = [
   createDeityOption('Goddess of Discord', 'deity.name.GoddessOfDiscord'),
 ] as const;
 
+export function getDeityId(name: string): string {
+  const key = getDeityKey(name) ?? name;
+  if (key === 'None') return 'none';
+  return key.toLowerCase().replace(/^(god|goddess) of /, '').replace(/\s+/g, '_');
+}
+
+export function getDeityNameFromId(id: string): DeityKey | null {
+  return DEITY_OPTIONS.find((option) => getDeityId(option.key) === id)?.key ?? null;
+}
+
 const NO_FAITH_DEITY_ALIASES = new Set(['None', 'none']);
 
 export type DeityKey = typeof DEITY_OPTIONS[number]['key'];

@@ -1,5 +1,5 @@
-import { decodeCompactBattleEvents, DIARY_EVENT_CODES, getDiaryEventCategory, type CompactBattleLog } from './compactBattleLog.ts';
-import type { DiaryLog, ExpeditionLog, Item, ItemRarity, Party } from '../types/index.ts';
+import { decodeCompactBattleEvents, DIARY_EVENT_CODES, getDiaryEventCategory, type CompactBattleLog } from '../../game/compactBattleLog.ts';
+import type { DiaryLog, ExpeditionLog, Item, ItemRarity, Party } from '../../types/index.ts';
 
 function retainedLogRarity(item: Item): ItemRarity {
   const code = item.id % 1000;
@@ -86,7 +86,7 @@ function compactApiBattle(log: CompactBattleLog) {
 }
 
 // SpecRef: 9.1.3 | Experimental AI API | Retained battle-log read model
-export function buildExperimentalBattleLog(
+export function buildApiV1BattleLog(
   revision: number,
   partyId: number,
   log: ExpeditionLog,
@@ -148,7 +148,7 @@ export function buildExperimentalBattleLog(
 }
 
 // SpecRef: 9.1.3 | Experimental AI API | GET diary entries
-export function buildExperimentalDiaryEntries(
+export function buildApiV1DiaryEntries(
   parties: Party[],
   revision: number,
   getTitleText: (party: Party, diaryLog: DiaryLog) => string = (party, diaryLog) => `[${party.name}] ${diaryLog.triggers.join(', ')}`,

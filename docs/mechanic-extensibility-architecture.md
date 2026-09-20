@@ -96,7 +96,7 @@ Each runtime migration slice must:
 2. Preserve combat protocol, ABI, RNG version, semantic-event order, and golden fixtures unless the slice explicitly performs a versioned kernel change.
 3. Preserve gameplay RNG draw presence, count, and order.
 4. Preserve AFK individual-Chunk determinism and recorded-FIFO coordinator replay behavior.
-5. Retain the same authoritative implementation across online play, AFK workers, simulations where permitted, and Experimental API sorties.
+5. Retain the same authoritative implementation across online play, AFK workers, simulations where permitted, and Application API sorties.
 6. Add focused contract, differential, and failure-path tests before removing the old code path.
 7. Update `build_number.txt` and `Specification_11.1_CHANGELOG.md` when the slice changes runtime behavior or runtime structure, following the repository workflow.
 
@@ -113,7 +113,7 @@ Further work proceeds in this order:
 3. Extract deterministic single-room resolution while retaining the native battle call, enemy-selection bags, reward order, unconditional draws, and deferred AFK narration behavior.
 4. Move the complete `RUN_EXPEDITION` transaction behind one domain service, leaving the reducer to validate, invoke, and install the result.
 5. Extract expedition finalization, side-quest lifecycle, and Cycle economics as separate deterministic transitions.
-6. Introduce one application command boundary shared by UI, AFK, simulation, and the Experimental API without creating a parallel state authority.
+6. Introduce one application command boundary shared by UI, AFK, simulation, and the Application API without creating a parallel state authority.
 7. Reduce `useGameState.ts` to React publication, persistence scheduling, worker coordination, time dispatch, and application wiring.
 8. Reassess metadata derivation only after runtime extraction stabilizes. Compile-time ID unions and `native/battle_protocol.def` remain authoritative.
 
@@ -209,7 +209,7 @@ The next slice should consolidate completed-expedition presentation and conditio
 
 Build 44 completes that completion coordinator. `completeExpeditionPresentation` calls the existing localized log/trigger planner and then, only when the unchanged trigger-or-unlock retention decision requires complete narration and deferred descriptors exist, invokes the existing seeded replay adapter. It returns only the completed log and ordered Diary triggers. `RUN_EXPEDITION` completes the inventory checkpoint immediately before this call and retains forecast selection, forecast registration, terminal forecast draw, retained Diary timestamp/token allocation, committed projection, and final publication immediately afterward. Seed/version validation, replay parity checks, entry identity, and Diary trigger precedence remain in their existing focused modules.
 
-The next step should be a consolidation checkpoint rather than another one-call wrapper. Audit the remaining `RUN_EXPEDITION` shell, record which responsibilities must remain reducer-owned, and define the minimum explicit application-command input/result contract that can be shared by online, AFK, forecast simulation, and Experimental API execution. The contract must keep diagnostic recording, gameplay RNG and time acquisition, forecast-registry mutation, and final reducer publication explicit, and it must not create a parallel state authority. Implementation should proceed only after focused source tests demonstrate the intended dependency direction and ordering boundaries.
+The next step should be a consolidation checkpoint rather than another one-call wrapper. Audit the remaining `RUN_EXPEDITION` shell, record which responsibilities must remain reducer-owned, and define the minimum explicit application-command input/result contract that can be shared by online, AFK, forecast simulation, and Application API execution. The contract must keep diagnostic recording, gameplay RNG and time acquisition, forecast-registry mutation, and final reducer publication explicit, and it must not create a parallel state authority. Implementation should proceed only after focused source tests demonstrate the intended dependency direction and ordering boundaries.
 
 Build 45 completes that checkpoint. `expeditionApplicationContract.ts` defines one stable command shape for the Party index, simulated timestamp, Gods Battle request, AFK and authoritative status inputs, battle-output settings, and full/forecast mode. Randomness and committed-time acquisition are explicit authority ports rather than imported globals. The result is discriminated as unavailable, HP-ineligible, forecast, or committed: status-authority information travels outward for diagnostic recording; forecast results carry the private state and detached diagnostic projection for caller registration; committed results carry only the Party/global projection for caller publication. The pure log-to-forecast projection moved out of the hook, while the reducer still owns every `WeakMap` mutation and final state return.
 

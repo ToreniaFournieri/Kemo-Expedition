@@ -1,0 +1,771 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "method": "GET",
+      "path": "/api/v1/fundamental/status",
+      "access": "public",
+      "purpose": "API/runtime status.",
+      "operationId": "fundamental/status"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/fundamental/signUp",
+      "access": "bootstrap",
+      "purpose": "Create API user and save.",
+      "operationId": "fundamental/signUp"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/fundamental/logIn",
+      "access": "bootstrap",
+      "purpose": "Log in and acquire control.",
+      "operationId": "fundamental/logIn"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/fundamental/logOut",
+      "access": "session",
+      "purpose": "Persist and release control.",
+      "operationId": "fundamental/logOut"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/observation",
+      "access": "session",
+      "purpose": "Alias of the compact observation.",
+      "operationId": "read/observation"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/observation/compact",
+      "access": "session",
+      "purpose": "Compact AI observation.",
+      "operationId": "read/observation/compact"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/observation/overview",
+      "access": "session",
+      "purpose": "Header/global projection.",
+      "operationId": "read/observation/overview"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/observation/expedition",
+      "access": "session",
+      "purpose": "Expedition UI projection.",
+      "operationId": "read/observation/expedition"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/observation/party",
+      "access": "session",
+      "purpose": "Party UI projection.",
+      "operationId": "read/observation/party"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/observation/base",
+      "access": "session",
+      "purpose": "Base UI projection.",
+      "operationId": "read/observation/base"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/observation/diary",
+      "access": "session",
+      "purpose": "Diary UI projection.",
+      "operationId": "read/observation/diary"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/observation/setting",
+      "access": "session",
+      "purpose": "Setting UI projection.",
+      "operationId": "read/observation/setting"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/observation/popupEventStream",
+      "access": "session",
+      "purpose": "Popup SSE stream.",
+      "operationId": "read/observation/popupEventStream"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/expedition/{p}/setting",
+      "access": "session",
+      "purpose": "Expedition settings/options.",
+      "operationId": "read/expedition/{p}/setting"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/expedition/{p}/latestBattleLog",
+      "access": "session",
+      "purpose": "Latest retained battle log.",
+      "operationId": "read/expedition/{p}/latestBattleLog"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/read/expedition/{p}/simulationRun",
+      "access": "session",
+      "purpose": "Private 1,000-run forecast.",
+      "operationId": "read/expedition/{p}/simulationRun"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/expedition/{p}/chargeStock",
+      "access": "session",
+      "purpose": "Charge stock/status.",
+      "operationId": "read/expedition/{p}/chargeStock"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/build/party/{p}",
+      "access": "session",
+      "purpose": "Party build/options.",
+      "operationId": "read/build/party/{p}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/build/character/{characterId}/status",
+      "access": "session",
+      "purpose": "Character build/options.",
+      "operationId": "read/build/character/{characterId}/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/build/character/{characterId}/equipment",
+      "access": "session",
+      "purpose": "Equipment/mode.",
+      "operationId": "read/build/character/{characterId}/equipment"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/build/character/{characterId}/equipmentSet",
+      "access": "session",
+      "purpose": "Saved equipment sets.",
+      "operationId": "read/build/character/{characterId}/equipmentSet"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/base/searchItems",
+      "access": "session",
+      "purpose": "Search known items.",
+      "operationId": "read/base/searchItems"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/base/jewelPriorityParty",
+      "access": "session",
+      "purpose": "Jewel priority.",
+      "operationId": "read/base/jewelPriorityParty"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/base/shopInfo",
+      "access": "session",
+      "purpose": "Shop status/information.",
+      "operationId": "read/base/shopInfo"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/base/shopItemsList",
+      "access": "session",
+      "purpose": "Shop lineup.",
+      "operationId": "read/base/shopItemsList"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/base/altarInfo",
+      "access": "session",
+      "purpose": "Altar information.",
+      "operationId": "read/base/altarInfo"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/base/enemyFormList",
+      "access": "session",
+      "purpose": "Enemy-form list/options.",
+      "operationId": "read/base/enemyFormList"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/diary/{p}/diarySetting",
+      "access": "session",
+      "purpose": "Diary settings/options.",
+      "operationId": "read/diary/{p}/diarySetting"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/diary/diaryEntry/{diaryEntryId}",
+      "access": "session",
+      "purpose": "Retained Diary entry.",
+      "operationId": "read/diary/diaryEntry/{diaryEntryId}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/setting/enemyEditPane",
+      "access": "session",
+      "purpose": "Enemy editor/options.",
+      "operationId": "read/setting/enemyEditPane"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/setting/modeSelect",
+      "access": "session",
+      "purpose": "Mode/settings options.",
+      "operationId": "read/setting/modeSelect"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/setting/debug",
+      "access": "session",
+      "purpose": "Debug settings/options.",
+      "operationId": "read/setting/debug"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/progress/elapsed",
+      "access": "session",
+      "purpose": "Advance controlled progression.",
+      "operationId": "commit/progress/elapsed"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/progress/progressReport",
+      "access": "session",
+      "purpose": "Perform progress-report action.",
+      "operationId": "commit/progress/progressReport"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/expedition/{p}/changeExpedition",
+      "access": "session",
+      "purpose": "Change expedition.",
+      "operationId": "commit/expedition/{p}/changeExpedition"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/expedition/{p}/sortie",
+      "access": "session",
+      "purpose": "Resolve one sortie.",
+      "operationId": "commit/expedition/{p}/sortie"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/expedition/{p}/godsBattle",
+      "access": "session",
+      "purpose": "Resolve one Gods Battle.",
+      "operationId": "commit/expedition/{p}/godsBattle"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/party/{p}",
+      "access": "session",
+      "purpose": "Change party build.",
+      "operationId": "commit/build/party/{p}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/changeBuild",
+      "access": "session",
+      "purpose": "Change character build.",
+      "operationId": "commit/build/character/{characterId}/changeBuild"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/removeAllEquipment",
+      "access": "session",
+      "purpose": "Remove all equipment.",
+      "operationId": "commit/build/character/{characterId}/removeAllEquipment"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/removeEquipment",
+      "access": "session",
+      "purpose": "Remove selected slots.",
+      "operationId": "commit/build/character/{characterId}/removeEquipment"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/equip",
+      "access": "session",
+      "purpose": "Equip owned items.",
+      "operationId": "commit/build/character/{characterId}/equip"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/lockEquipment",
+      "access": "session",
+      "purpose": "Lock selected slots.",
+      "operationId": "commit/build/character/{characterId}/lockEquipment"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/unlockEquipment",
+      "access": "session",
+      "purpose": "Unlock selected slots.",
+      "operationId": "commit/build/character/{characterId}/unlockEquipment"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/autoEquipment",
+      "access": "session",
+      "purpose": "Set/run Auto Equipment.",
+      "operationId": "commit/build/character/{characterId}/autoEquipment"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/jewelAttach",
+      "access": "session",
+      "purpose": "Attach an owned Jewel.",
+      "operationId": "commit/build/character/{characterId}/jewelAttach"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/jewelRemove",
+      "access": "session",
+      "purpose": "Remove an attached Jewel.",
+      "operationId": "commit/build/character/{characterId}/jewelRemove"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/saveEquipmentSet",
+      "access": "session",
+      "purpose": "Save current equipment set.",
+      "operationId": "commit/build/character/{characterId}/saveEquipmentSet"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/loadEquipmentSet",
+      "access": "session",
+      "purpose": "Load a saved equipment set.",
+      "operationId": "commit/build/character/{characterId}/loadEquipmentSet"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/deleteEquipmentSet",
+      "access": "session",
+      "purpose": "Delete a saved equipment set.",
+      "operationId": "commit/build/character/{characterId}/deleteEquipmentSet"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/renameEquipmentSet",
+      "access": "session",
+      "purpose": "Rename a saved equipment set.",
+      "operationId": "commit/build/character/{characterId}/renameEquipmentSet"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/undoEquipment",
+      "access": "session",
+      "purpose": "Undo equipment change.",
+      "operationId": "commit/build/character/{characterId}/undoEquipment"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/build/character/{characterId}/redoEquipment",
+      "access": "session",
+      "purpose": "Redo equipment change.",
+      "operationId": "commit/build/character/{characterId}/redoEquipment"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/base/changeJewelPriorityParty",
+      "access": "session",
+      "purpose": "Change Jewel priority.",
+      "operationId": "commit/base/changeJewelPriorityParty"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/base/sellInventoryItems",
+      "access": "session",
+      "purpose": "Sell inventory items.",
+      "operationId": "commit/base/sellInventoryItems"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/base/purchaseShopItems",
+      "access": "session",
+      "purpose": "Purchase shop entries.",
+      "operationId": "commit/base/purchaseShopItems"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/base/paidShopRefresh",
+      "access": "session",
+      "purpose": "Perform paid shop refresh.",
+      "operationId": "commit/base/paidShopRefresh"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/base/unlockSoldItems",
+      "access": "session",
+      "purpose": "Clear auto-sell status without restoring items.",
+      "operationId": "commit/base/unlockSoldItems"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/base/unlockForm",
+      "access": "session",
+      "purpose": "Unlock an enemy form.",
+      "operationId": "commit/base/unlockForm"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/diary/{p}/diarySetting",
+      "access": "session",
+      "purpose": "Change Diary settings.",
+      "operationId": "commit/diary/{p}/diarySetting"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/diary/diaryEntry/markAsRead",
+      "access": "session",
+      "purpose": "Mark Diary entries read.",
+      "operationId": "commit/diary/diaryEntry/markAsRead"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/setting/clairvoyanceReset",
+      "access": "session",
+      "purpose": "Reset selected Clairvoyance state.",
+      "operationId": "commit/setting/clairvoyanceReset"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/setting/modeSelect",
+      "access": "session",
+      "purpose": "Change mode/settings.",
+      "operationId": "commit/setting/modeSelect"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/setting/enemyEditPane",
+      "access": "session",
+      "purpose": "Change enemy editor.",
+      "operationId": "commit/setting/enemyEditPane"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/setting/feedback",
+      "access": "session",
+      "purpose": "Submit feedback.",
+      "operationId": "commit/setting/feedback"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/setting/backup/export",
+      "access": "session",
+      "purpose": "Export active save.",
+      "operationId": "commit/setting/backup/export"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/setting/backup/import",
+      "access": "session",
+      "purpose": "Import backup.",
+      "operationId": "commit/setting/backup/import"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/setting/backup/reset",
+      "access": "session",
+      "purpose": "Request/confirm reset.",
+      "operationId": "commit/setting/backup/reset"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/setting/debug",
+      "access": "session",
+      "purpose": "Change debug settings.",
+      "operationId": "commit/setting/debug"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/setting/markNewsAsRead",
+      "access": "session",
+      "purpose": "Mark developer news read.",
+      "operationId": "commit/setting/markNewsAsRead"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/setting/uiPreferences",
+      "access": "session",
+      "purpose": "Update explicitly persisted UI preferences.",
+      "operationId": "commit/setting/uiPreferences"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/commit/base/markItemsAsSeen",
+      "access": "session",
+      "purpose": "Acknowledge displayed newly acquired item variants.",
+      "operationId": "commit/base/markItemsAsSeen"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/read/setting/delivery/{deliveryId}",
+      "access": "session",
+      "purpose": "Read external delivery status.",
+      "operationId": "read/setting/delivery/{deliveryId}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/help/overview",
+      "access": "public",
+      "purpose": "API overview and index.",
+      "operationId": "help/overview"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/help/endpoints",
+      "access": "public",
+      "purpose": "Versioned API contract.",
+      "operationId": "help/endpoints"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/resources/developerNewsNotification",
+      "access": "session",
+      "purpose": "Developer news.",
+      "operationId": "resources/developerNewsNotification"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/resources/donationBox",
+      "access": "session",
+      "purpose": "Donation status.",
+      "operationId": "resources/donationBox"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/resources/clairvoyance/{p}",
+      "access": "session",
+      "purpose": "Clairvoyance data.",
+      "operationId": "resources/clairvoyance/{p}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/resources/glossary",
+      "access": "session",
+      "purpose": "Glossary query.",
+      "operationId": "resources/glossary"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/resources/itemCompendium",
+      "access": "session",
+      "purpose": "Compendium query.",
+      "operationId": "resources/itemCompendium"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/resources/characterRoster",
+      "access": "session",
+      "purpose": "Race roster query.",
+      "operationId": "resources/characterRoster"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/resources/bestiary",
+      "access": "session",
+      "purpose": "Bestiary query.",
+      "operationId": "resources/bestiary"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/resources/superRareList",
+      "access": "session",
+      "purpose": "Super Rare list.",
+      "operationId": "resources/superRareList"
+    }
+  ],
+  "requestSchemas": {
+    "signUp": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "userId",
+        "environment",
+        "gameMode"
+      ],
+      "properties": {
+        "userId": {
+          "pattern": "^[A-Za-z0-9_-]{1,16}$",
+          "type": "string"
+        },
+        "environment": {
+          "anyOf": [
+            {
+              "const": "dev",
+              "type": "string"
+            },
+            {
+              "const": "beta",
+              "type": "string"
+            },
+            {
+              "const": "orca",
+              "type": "string"
+            },
+            {
+              "const": "prod",
+              "type": "string"
+            },
+            {
+              "const": "desktop",
+              "type": "string"
+            }
+          ]
+        },
+        "gameMode": {
+          "anyOf": [
+            {
+              "const": "normal",
+              "type": "string"
+            },
+            {
+              "const": "orca",
+              "type": "string"
+            }
+          ]
+        },
+        "levelOffsetForOrca": {
+          "minimum": 0,
+          "maximum": 20,
+          "type": "integer"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "const": "ja",
+              "type": "string"
+            },
+            {
+              "const": "en",
+              "type": "string"
+            },
+            {
+              "const": "zh-CN",
+              "type": "string"
+            },
+            {
+              "const": "zh-TW",
+              "type": "string"
+            },
+            {
+              "const": "ko",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    "logIn": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "userId",
+        "environment",
+        "gameMode"
+      ],
+      "properties": {
+        "userId": {
+          "pattern": "^[A-Za-z0-9_-]{1,16}$",
+          "type": "string"
+        },
+        "environment": {
+          "anyOf": [
+            {
+              "const": "dev",
+              "type": "string"
+            },
+            {
+              "const": "beta",
+              "type": "string"
+            },
+            {
+              "const": "orca",
+              "type": "string"
+            },
+            {
+              "const": "prod",
+              "type": "string"
+            },
+            {
+              "const": "desktop",
+              "type": "string"
+            }
+          ]
+        },
+        "gameMode": {
+          "anyOf": [
+            {
+              "const": "normal",
+              "type": "string"
+            },
+            {
+              "const": "orca",
+              "type": "string"
+            }
+          ]
+        },
+        "levelOffsetForOrca": {
+          "minimum": 0,
+          "maximum": 20,
+          "type": "integer"
+        }
+      }
+    },
+    "logOut": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {}
+    },
+    "commit": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "expectedRevision",
+        "idempotencyKey",
+        "parameters"
+      ],
+      "properties": {
+        "expectedRevision": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "idempotencyKey": {
+          "minLength": 16,
+          "maxLength": 128,
+          "pattern": "^[\\x20-\\x7e]+$",
+          "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": true,
+          "type": "object",
+          "properties": {}
+        },
+        "confirmationToken": {
+          "minLength": 1,
+          "maxLength": 512,
+          "type": "string"
+        }
+      }
+    },
+    "simulationRun": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "expectedRevision": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import { mapCompactExpedition, mapCompactDiary } from '../../src/game/compactDiaryStorage.ts';
 import { renderDiaryMetadata, renderExpeditionMetadata, renderDiaryBattle } from '../../src/game/compactDiary.ts';
-import { buildExperimentalBattleLog } from '../../src/game/experimentalApiLogs.ts';
+import { buildApiV1BattleLog } from '../../src/api/v1/battleLogs.ts';
 import type { ExpeditionLog } from '../../src/types/index.ts';
 import { renderCompactBattle } from '../../src/game/battleCandidate.ts';
 import { encodePersistedState } from '../../src/game/storageCompression.ts';
@@ -611,7 +611,7 @@ test('compact Diary metadata, pooled storage, legacy mixing, and AI facts round 
   assert.equal(JSON.stringify(log), before);
   const legacy = { ...diary, semantic: undefined, expeditionLog: { ...log, compactVersion: undefined, entries: [{ ...room, compactBattle: undefined, details: [{ phase: 'combat' as const, actor: 'enemy' as const, action: 'Original language' }] }] } };
   assert.equal(mapCompactDiary(legacy).expeditionLog, legacy.expeditionLog);
-  const api = buildExperimentalBattleLog(1, 1, restored, { kind: 'latest', diaryEntryId: null });
+  const api = buildApiV1BattleLog(1, 1, restored, { kind: 'latest', diaryEntryId: null });
   assert.equal(api.battleLog.rooms[0].eventFormat, 'compact-v1');
   assert.ok(api.battleLog.rooms[0].events.length);
   assert.equal(JSON.stringify(api).includes('actionText'), false);

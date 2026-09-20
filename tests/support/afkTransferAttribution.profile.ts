@@ -22,7 +22,9 @@ import { loadAndValidateExpedition8Fixture } from './expedition8SaveFixture.ts';
 const DEV_CYCLE_DURATION_SCALE = 0.05;
 const SIMULATED_END_AT = Date.UTC(2026, 7, 16);
 // Compact Diary checkpoint; pre-change/current non-history state hashes were verified equal.
-const EXPECTED_FINAL_HASH = '4718389842e0962156b6f72d2f6f53ee2134ae545a91ddb34d2c2f53077fb204';
+// Updated when the retired apiRuntime branch was intentionally removed from
+// canonical save serialization; gameplay and compact/full parity remain gated.
+const EXPECTED_FINAL_HASH = 'd60d4a82ecec04c073d45da035718fcd3d126c98ee0f46018dc20f844729254c';
 
 function createSeededRandom(seed: number): () => number {
   let value = seed >>> 0 || 0x9e3779b9;

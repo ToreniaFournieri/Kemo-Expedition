@@ -330,7 +330,7 @@ test('reports deterministic end-to-end AFK migration metrics', () => {
   if (!RETROSPECTIVE_COMPARISON) assert.equal(report.decodedEventObjectAllocations + report.decodedBagEntryObjectAllocations, 0);
 });
 
-test('reports Experimental API sortie counts 1 and 100 through the production battle entry point', () => {
+test('reports Application API sortie counts 1 and 100 through the production battle entry point', () => {
   const reports: Array<Record<string, number | string>> = [];
   for (const count of [1, 100]) {
     resetProductionBattleTelemetryForTesting();

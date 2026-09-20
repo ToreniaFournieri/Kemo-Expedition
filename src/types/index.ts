@@ -810,7 +810,6 @@ export interface ExpeditionSimulationRetreatHpBuckets {
 type GameScene = 'home';
 
 export interface GameState {
-  apiRuntime?: import('../game/experimentalApiSession').ApiRuntime;
   scene: GameScene;
   global: GlobalState;
   parties: Party[];

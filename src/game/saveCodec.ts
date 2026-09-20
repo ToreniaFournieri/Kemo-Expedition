@@ -168,6 +168,7 @@ function normalizePartyClearGates(party: Party): Party {
 // SpecRef: 9 | Environment | serializeGameState
 export function serializeGameState(state: GameState): GameState {
   state = mapCompactHistories(state);
+  const { apiRuntime: _obsoleteApiRuntime, ...canonicalState } = state as GameState & { apiRuntime?: unknown };
   const compactInventory = Object.entries(state.global.inventory).reduce<InventoryRecord>((acc, [key, variant]) => {
     acc[key] = {
       ...variant,
@@ -177,7 +178,7 @@ export function serializeGameState(state: GameState): GameState {
   }, {});
 
   return {
-    ...state,
+    ...canonicalState,
     bags: compactBagCollection(state.bags),
     global: {
       ...state.global,
@@ -202,6 +203,7 @@ export function serializeGameState(state: GameState): GameState {
 // SpecRef: 9 | Environment | hydrateGameState
 export function hydrateGameState(state: GameState): GameState {
   state = mapCompactHistories(state, true);
+  const { apiRuntime: _obsoleteApiRuntime, ...canonicalState } = state as GameState & { apiRuntime?: unknown };
   const hydratedInventory = Object.entries(state.global.inventory).reduce<InventoryRecord>((acc, [key, variant]) => {
     const resolvedVariant: InventoryVariant = {
       ...variant,
@@ -212,7 +214,7 @@ export function hydrateGameState(state: GameState): GameState {
   }, {});
 
   return {
-    ...state,
+    ...canonicalState,
     bags: hydrateBagCollection(state.bags),
     global: {
       ...state.global,

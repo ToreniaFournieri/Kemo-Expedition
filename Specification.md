@@ -201,13 +201,11 @@
 - @Specification_11.1_CHANGELOG.md
 
 
-## 12. AI Play
+## 12. Retired AI Play evaluation
 
-### 12.1 AI play reguration
-
-- **Old reguration, need to update**
-
-- @Specification_12.1_AI_PLAY_REGURATION.md
-- @Specification_12.2_AI_PLAY_OPERATOR_GUIDE.md
+The scored AI Play evaluation, its special control protocol, launcher, client,
+ledger, and report generation are retired. Gameplay automation uses the complete
+Application API defined by sections 9.1.3 and 9.1.4. Historical reports remain
+inert user files and do not define current runtime behavior.
 
 **END OF SPECIFICATION**

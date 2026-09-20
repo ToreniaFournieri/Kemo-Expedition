@@ -44,7 +44,7 @@ import { Language,SUPPORTED_LANGUAGES,t } from '../../../i18n';
 import { AbilityId,Character,Dungeon,EnemyDef,ExpeditionLogEntry,GameState,Item,NotificationCategory,NotificationStyle,Party,RaceId,TerrainEffectKey,type BattleLogEntry } from '../../../types';
 import { GAME_MODES, THEME_DEFINITIONS } from '../../../theme/theme';
 import { DesktopNotificationSettings } from '../../DesktopNotificationSettings';
-import { ExperimentalApiSettings } from '../../ExperimentalApiSettings';
+import { ApiV1Settings } from '../../ApiV1Settings';
 
 
 import {
@@ -2787,7 +2787,7 @@ export default function SettingTab({
           </div>
 
           <DesktopNotificationSettings />
-          <ExperimentalApiSettings />
+          <ApiV1Settings />
         </div>}
       </div>
 

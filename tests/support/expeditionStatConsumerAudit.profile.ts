@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { Session } from 'node:inspector';
 import { resolve } from 'node:path';
 import { getGodsBattleProgress, getGodsBattleRequired } from '../../src/game/clearGate.ts';
-import { buildExperimentalObservation } from '../../src/game/experimentalApi.ts';
+import { buildApiV1PartyObservationForTesting } from '../../src/api/v1/readModels.ts';
 import { getApproxAfkCycleDurationMs } from '../../src/game/afkScheduler.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
@@ -130,11 +130,11 @@ async function execute(state: GameState): Promise<Record<string, unknown>> {
       state, lastPartyIndex, count, 'm.kemo', simulatedAt,
     ));
   } else if (workload === 'observation-before-after') {
-    const before = buildExperimentalObservation(state, 1, false, {}, simulatedAt);
+    const before = buildApiV1PartyObservationForTesting(state);
     const batch = deterministic(0x3a060006, () => simulateApiSortieBatchForTesting(
       state, lastPartyIndex, 1, 'm.kemo', simulatedAt,
     ));
-    const after = buildExperimentalObservation(batch.state, 2, false, {}, simulatedAt);
+    const after = buildApiV1PartyObservationForTesting(batch.state);
     assert.equal(before.parties.length, state.parties.length);
     assert.equal(after.parties.length, state.parties.length);
   } else {
@@ -146,7 +146,7 @@ async function execute(state: GameState): Promise<Record<string, unknown>> {
 setLanguage('ja');
 const state = loadState();
 // Warm stat code without warming the measured transaction or mutating its state.
-buildExperimentalObservation(state, 0, false, {}, Date.UTC(2026, 7, 24));
+buildApiV1PartyObservationForTesting(state);
 calls.clear();
 
 let report: Record<string, unknown>;

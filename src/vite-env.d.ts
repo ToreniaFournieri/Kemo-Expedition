@@ -103,7 +103,6 @@ interface Window {
     sample: () => Promise<import('./game/memoryMonitoring').MemoryDiagnosticExport>;
   };
   bokemoDesktop?: {
-    aiPlay?: { evaluationId: string; concept: string; version: string; build: number; mode: "normal" | "orca"; regulationVersion: number; rulesId: string; resume: boolean } | null;
     getStatus: () => Promise<{ isMacDesktop: boolean; notificationSupported: boolean }>;
     getWindowVisibility: () => Promise<boolean>;
     getMemoryMetrics: () => Promise<DesktopProcessMemoryMetrics>;
@@ -111,9 +110,12 @@ interface Window {
     setLaunchAtLogin: (enabled: boolean) => Promise<boolean>;
     showNotification: (payload: DesktopNotificationPayload) => Promise<boolean>;
     updatePartyProgressPane: (snapshot: DesktopPartyProgressSnapshot) => Promise<boolean>;
-    getExperimentalApiSettings: () => Promise<DesktopExperimentalApiSettings>;
-    setExperimentalApiEnabled: (enabled: boolean) => Promise<DesktopExperimentalApiSettings>;
-    onExperimentalApiRequest: (callback: (operation: string, payload: unknown) => unknown | Promise<unknown>) => () => void;
+    getApiV1Settings: () => Promise<DesktopApiV1Settings>;
+    setApiV1Enabled: (enabled: boolean) => Promise<DesktopApiV1Settings>;
+    createApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string) => Promise<DesktopApiAccountIdentity>;
+    loadApiAccount: (identity: DesktopApiAccountIdentity) => Promise<DesktopApiAccountRecord | null>;
+    commitApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string, control: DesktopApiControlMetadata) => Promise<boolean>;
+    onApiV1Request: (callback: (operation: string, payload: unknown) => unknown | Promise<unknown>) => () => void;
     onNotificationActivated: (callback: (payload: DesktopNotificationPayload) => void) => () => void;
     onPartyProgressPartyActivated: (callback: (partyId: number) => void) => () => void;
   };
@@ -137,11 +139,36 @@ interface DesktopProcessMemoryMetrics {
   }>;
 }
 
-interface DesktopExperimentalApiSettings {
+interface DesktopApiV1Settings {
   supported: boolean;
   enabled: boolean;
   host: string;
   port: number | null;
-  token: string | null;
-  apiVersion: 'experimental/v1';
+  connectionFile: string | null;
+  apiVersion: 'v1';
+}
+
+interface DesktopApiAccountIdentity {
+  userId: string;
+  environment: 'dev' | 'beta' | 'orca' | 'prod' | 'desktop';
+  gameMode: 'normal' | 'orca';
+  levelOffsetForOrca?: number | null;
+}
+
+interface DesktopApiControlMetadata {
+  revisionHighWater: number;
+  inGameTime?: number;
+  receipts: unknown[];
+  tombstones: string[];
+  popupEvents?: unknown[];
+  deliveries?: unknown[];
+  equipmentHistory?: Record<string, { undo: import('./types').SavedEquipmentSet[]; redo: import('./types').SavedEquipmentSet[] }>;
+  confirmations?: Array<{ token: string; key: string; operation: string; canonical: string; revision: number; expiresAt: number }>;
+  settings?: Record<string, unknown>;
+}
+
+interface DesktopApiAccountRecord {
+  identity: DesktopApiAccountIdentity;
+  savePayload: string;
+  control: DesktopApiControlMetadata;
 }

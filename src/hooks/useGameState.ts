@@ -1,4 +1,3 @@
-import { AI_PLAY_API_CALL_LIMIT, createApiRuntime, createEvaluation } from '../game/experimentalApiSession';
 import { hasNewAvailability } from '../game/inventoryAvailability';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import type { RuntimeGameMode } from '../game/runtimeGameMode';
@@ -169,6 +168,7 @@ const BUILD_NUMBER = __BUILD_NUMBER__;
 const AFK_LIVE_PROFILE_BUILD_ENABLED = typeof __AFK_LIVE_PROFILE_ENABLED__ !== 'undefined'
   && __AFK_LIVE_PROFILE_ENABLED__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
+const API_PLAYER_RETURN_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.api-player-return');
 const AFK_MAX_SIMULATION_MS = AFK_MAX_EFFECTIVE_ELAPSED_MS;
 const STATE_SAVE_THROTTLE_MS = 5000;
 const DEBUG_CYCLE_DURATION_SCALE = 0.05;
@@ -965,9 +965,6 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
       console.warn(`Recovered segmented save without ${missingDiaryRecords.length} missing Diary record(s): ${missingDiaryRecords.join(', ')}`);
     }
     const parsed = segmentedState ?? JSON.parse(decodePersistedState(saved));
-    if (typeof window !== 'undefined' && window.bokemoDesktop?.aiPlay && parsed?.apiRuntime?.evaluation) {
-      return { state: hydrateGameState(parsed), errorLog: null };
-    }
     // Validate it has required properties and migrate legacy saves.
     const hasParties = Array.isArray(parsed?.parties);
     const hasBags = parsed?.bags && typeof parsed.bags === 'object';
@@ -1744,23 +1741,63 @@ type InitialStateResult = {
   loadErrorLog: string | null;
 };
 
-// SpecRef: 12.1.1 | AI Play Regulation | Starting conditions
+// SpecRef: 9.1.3 | API | fundamental/signUp
+// New API accounts and ordinary resets must start from the same authoritative
+// game factory; transports must never synthesize their own initial save.
+export function createFreshGameState(language: Language, now: number = Date.now()): GameState {
+  return {
+    scene: 'home',
+    global: {
+      gold: 200,
+      prana: 0,
+      unlockedMimorianEnemyIds: [],
+      inventory: createStarterInventory(),
+      userId: generateUserId(),
+      jewels: createStarterJewelInventory(),
+      savedEquipmentSets: [],
+      jewelAutoEquipPriorityPartyId: 1,
+      equipmentInventoryRevision: 0,
+      jewelInventoryRevision: 0,
+      deityDonations: {},
+      unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+      challengedGodNames: [],
+      revealedItemCompendiumItemIds: [],
+      revealedGlossaryAbilityIds: [],
+      revealedGlossaryTerrainKeys: [],
+      shopPurchases: {},
+      jewelShopPurchases: {},
+      shopRefreshCounts: {},
+      shopIntimacy: 0,
+      shopIntimacyLastDecayAt: now,
+      enemyBattleStats: {},
+      altarVictoriesByEnemyType: {},
+      readDeveloperNewsItemIds: [],
+      language,
+    },
+    parties: [createInitialParty()],
+    selectedPartyIndex: 0,
+    bags: {
+      commonRewardBag: createCommonRewardBag(),
+      commonEnhancementBag: createCommonEnhancementBag(),
+      uncommonRewardBag: createUncommonRewardBag(),
+      eliteRareRewardBag: createEliteRareRewardBag(),
+      bossRareRewardBag: createBossRareRewardBag(),
+      mythicRareRewardBag: createMythicRareRewardBag(),
+      enhancementBag: createEnhancementBag(),
+      superRareBag: createSuperRareBag(),
+      commonSuperRareBag: createCommonSuperRareBag(),
+      rareSuperRareBag: createRareSuperRareBag(),
+      physicalThreatBag: createPhysicalThreatBag(),
+      magicalThreatBag: createMagicalThreatBag(),
+      sideQuestBag: createSideQuestBag(),
+    },
+    buildNumber: BUILD_NUMBER,
+  };
+}
+
+// SpecRef: 9.1.4.4 | Application API | New-save starting conditions
 function createInitialState(): InitialStateResult {
-  const result = createInitialStateBase();
-  const config = typeof window !== 'undefined' ? window.bokemoDesktop?.aiPlay : null;
-  if (!config) return result;
-  const existing = result.state.apiRuntime?.evaluation;
-  if (existing) {
-    if (existing.evaluationId !== config.evaluationId || existing.version !== config.version || existing.build !== config.build || existing.mode !== config.mode || existing.regulationVersion !== config.regulationVersion || existing.rulesId !== config.rulesId)
-      return { ...result, loadErrorLog: 'AI Play identity or build mismatch.' };
-    // A crash after the final call reservation still exhausts the call budget.
-    if (existing.status === 'active' && existing.countedApiCalls >= AI_PLAY_API_CALL_LIMIT) existing.status = 'failed';
-    return result;
-  }
-  if (config.resume || localStorage.getItem(STORAGE_KEY) || getEnvironmentId() !== (config.mode === 'normal' ? 'prod' : 'orca'))
-    return { ...result, loadErrorLog: 'AI Play requires a fresh organizer-created matching profile or its matching checkpoint.' };
-  result.state.apiRuntime = { ...createApiRuntime(), evaluation: createEvaluation(config.evaluationId, config.concept, config.version, config.build, config.mode) };
-  return result;
+  return createInitialStateBase();
 }
 
 export function createInitialStateBase(): InitialStateResult {
@@ -1768,6 +1805,13 @@ export function createInitialStateBase(): InitialStateResult {
   const initialLanguage = resolveInitialLanguage();
   persistLanguage(initialLanguage);
   setActiveLanguage(initialLanguage);
+  // A process loss during external API control must return to the player's
+  // previously durable save; API leases never survive restart.
+  const playerReturnPayload = localStorage.getItem(API_PLAYER_RETURN_STORAGE_KEY);
+  if (playerReturnPayload) {
+    localStorage.setItem(STORAGE_KEY, playerReturnPayload);
+    localStorage.removeItem(API_PLAYER_RETURN_STORAGE_KEY);
+  }
   // Try to load saved state first
   const savedStateResult = loadSavedState();
   if (savedStateResult.state) {
@@ -1801,57 +1845,7 @@ export function createInitialStateBase(): InitialStateResult {
     };
   }
 
-  return {
-    loadErrorLog: savedStateResult.errorLog,
-    state: {
-    scene: 'home',
-    global: {
-      gold: 200,
-      prana: 0,
-      unlockedMimorianEnemyIds: [],
-      inventory: createStarterInventory(),
-      userId: generateUserId(),
-      jewels: createStarterJewelInventory(),
-      savedEquipmentSets: [],
-      jewelAutoEquipPriorityPartyId: 1,
-      equipmentInventoryRevision: 0,
-      jewelInventoryRevision: 0,
-      deityDonations: {},
-      unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
-      challengedGodNames: [],
-      revealedItemCompendiumItemIds: [],
-      revealedGlossaryAbilityIds: [],
-      revealedGlossaryTerrainKeys: [],
-      shopPurchases: {},
-      jewelShopPurchases: {},
-      shopRefreshCounts: {},
-      shopIntimacy: 0,
-      shopIntimacyLastDecayAt: Date.now(),
-      enemyBattleStats: {},
-      altarVictoriesByEnemyType: {},
-      readDeveloperNewsItemIds: [],
-      language: initialLanguage,
-    },
-    parties: [createInitialParty()],
-    selectedPartyIndex: 0,
-    bags: {
-      commonRewardBag: createCommonRewardBag(),
-      commonEnhancementBag: createCommonEnhancementBag(),
-      uncommonRewardBag: createUncommonRewardBag(),
-      eliteRareRewardBag: createEliteRareRewardBag(),
-      bossRareRewardBag: createBossRareRewardBag(),
-      mythicRareRewardBag: createMythicRareRewardBag(),
-      enhancementBag: createEnhancementBag(),
-      superRareBag: createSuperRareBag(),
-      commonSuperRareBag: createCommonSuperRareBag(),
-      rareSuperRareBag: createRareSuperRareBag(),
-      physicalThreatBag: createPhysicalThreatBag(),
-      magicalThreatBag: createMagicalThreatBag(),
-      sideQuestBag: createSideQuestBag(),
-    },
-    buildNumber: BUILD_NUMBER,
-    },
-  };
+  return { loadErrorLog: savedStateResult.errorLog, state: createFreshGameState(initialLanguage) };
 }
 
 
@@ -4040,54 +4034,7 @@ function reduceGameState(
         console.error('Failed to clear saved state:', e);
       }
       // Return fresh state (not from localStorage)
-      return {
-        scene: 'home' as const,
-        global: {
-          gold: 200,
-          prana: 0,
-          unlockedMimorianEnemyIds: [],
-          inventory: createStarterInventory(),
-          userId: generateUserId(),
-          jewels: createStarterJewelInventory(),
-          savedEquipmentSets: [],
-          jewelAutoEquipPriorityPartyId: 1,
-          equipmentInventoryRevision: 0,
-          jewelInventoryRevision: 0,
-          deityDonations: {},
-          unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
-          challengedGodNames: [],
-          revealedItemCompendiumItemIds: [],
-          revealedGlossaryAbilityIds: [],
-          revealedGlossaryTerrainKeys: [],
-          shopPurchases: {},
-          jewelShopPurchases: {},
-          shopRefreshCounts: {},
-          shopIntimacy: 0,
-          shopIntimacyLastDecayAt: Date.now(),
-          enemyBattleStats: {},
-          altarVictoriesByEnemyType: {},
-          readDeveloperNewsItemIds: [],
-          language: state.global.language,
-        },
-        parties: [createInitialParty()],
-        selectedPartyIndex: 0,
-        bags: {
-          commonRewardBag: createCommonRewardBag(),
-          commonEnhancementBag: createCommonEnhancementBag(),
-          uncommonRewardBag: createUncommonRewardBag(),
-          eliteRareRewardBag: createEliteRareRewardBag(),
-          bossRareRewardBag: createBossRareRewardBag(),
-          mythicRareRewardBag: createMythicRareRewardBag(),
-          enhancementBag: createEnhancementBag(),
-          superRareBag: createSuperRareBag(),
-          commonSuperRareBag: createCommonSuperRareBag(),
-          rareSuperRareBag: createRareSuperRareBag(),
-          physicalThreatBag: createPhysicalThreatBag(),
-          magicalThreatBag: createMagicalThreatBag(),
-          sideQuestBag: createSideQuestBag(),
-        },
-        buildNumber: BUILD_NUMBER,
-      };
+      return createFreshGameState(state.global.language);
     }
 
     case 'IMPORT_GAME_STATE': {
@@ -4544,7 +4491,7 @@ export function simulateAfkPartyChunkForWorker(
   return workingState;
 }
 
-/** Pure authoritative batch used by the serialized Experimental API adapter and stabilization tests. */
+/** Pure authoritative batch used by the serialized Application API adapter and stabilization tests. */
 export function simulateApiSortieBatchForTesting(
   state: GameState,
   partyIndex: number,
