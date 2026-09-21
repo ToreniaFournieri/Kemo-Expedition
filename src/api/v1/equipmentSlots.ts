@@ -91,14 +91,30 @@ const ITEM_FORMAT = /^([01])\/(\d+)\/([0-6])\/(\d+)$/;
 
 /**
  * Plans an `equip` request atomically. Repeating one Item Format requests several owned copies. Every entry must be
- * an owned, equippable variant, and the character must have enough empty slots; items fill empty slots in order.
+ * an owned, equippable variant. Without `targetSlot`, items fill the character's empty slots in order and the request
+ * must fit them. With `targetSlot`, exactly one item is equipped to that slot, replacing whatever it holds (the
+ * displaced item and its Jewel return to the inventory through the shared reducer).
+ * `maxEquipSlots` is the character's real slot count: the equipment array itself may be shorter than that.
  */
-export function planEquipOperation(character: Character, inventory: InventoryRecord, targetEquipment: unknown): EquipPlanStep[] {
+export function planEquipOperation(
+  character: Character,
+  inventory: InventoryRecord,
+  targetEquipment: unknown,
+  maxEquipSlots: number,
+  targetSlot?: unknown,
+): EquipPlanStep[] {
   const requested = Array.isArray(targetEquipment) ? targetEquipment : [targetEquipment];
   if (requested.length === 0) throw invalid('targetEquipment');
+  let explicitSlot: number | null = null;
+  if (targetSlot !== undefined) {
+    if (typeof targetSlot !== 'number' || !Number.isSafeInteger(targetSlot) || targetSlot < 0) throw invalid('targetSlot');
+    if (requested.length !== 1) throw invalid('targetSlot.single_item');
+    if (targetSlot >= maxEquipSlots) throw illegal('slot_unavailable');
+    explicitSlot = targetSlot;
+  }
   const remaining = new Map<string, number>();
   const steps: EquipPlanStep[] = [];
-  const freeSlots = character.equipment.flatMap((item, slot) => item === null ? [slot] : []);
+  const freeSlots = Array.from({ length: maxEquipSlots }, (_, slot) => slot).filter((slot) => !character.equipment[slot]);
   for (const entry of requested) {
     const match = typeof entry === 'string' ? entry.match(ITEM_FORMAT) : null;
     if (!match) throw invalid('targetEquipment.format');
@@ -113,7 +129,7 @@ export function planEquipOperation(character: Character, inventory: InventoryRec
     if (left < 0) throw illegal('item_not_owned');
     remaining.set(key, left);
     if (!canCharacterEquipCategory(character, inventory[key].item.category)) throw illegal('item_not_equippable');
-    const slotIndex = freeSlots[steps.length];
+    const slotIndex = explicitSlot ?? freeSlots[steps.length];
     if (slotIndex === undefined) throw illegal('no_free_slot');
     steps.push({ slotIndex, itemKey: key });
   }

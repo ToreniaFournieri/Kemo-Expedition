@@ -214,7 +214,11 @@ assert.equal(undoHistory[String(characterId)].redo.length, 0);
   const freeSlot = character(removed).equipment.findIndex((item) => item === null);
   assert.deepEqual(commandNames(removed, { kind: 'equip', slotIndex: freeSlot, itemKey: spareKey }), ['equip']);
   const occupied = character(removed).equipment.findIndex((item) => item !== null);
-  assert.deepEqual(commandNames(removed, { kind: 'equip', slotIndex: occupied, itemKey: spareKey }), ['removeEquipment', 'equip']);
+  assert.deepEqual(commandNames(removed, { kind: 'equip', slotIndex: occupied, itemKey: spareKey }), ['equip'], 'a replacement is one atomic command');
+  assert.equal((planEquipmentIntent(removed, characterId, { kind: 'equip', slotIndex: occupied, itemKey: spareKey })[0].parameters as { targetSlot: number }).targetSlot, occupied);
+  const replaced = run(removed, { kind: 'equip', slotIndex: occupied, itemKey: spareKey });
+  assert.equal(getVariantKey(character(replaced).equipment[occupied]!), getVariantKey(spareVariant.item), 'the item lands in the tapped slot');
+  assert.ok(Object.values(replaced.global.inventory).some((variant) => variant.item.id === character(removed).equipment[occupied]!.id && variant.count > 0), 'the displaced item returns to the inventory');
   const equipped = run(removed, { kind: 'equip', slotIndex: freeSlot, itemKey: spareKey });
   assert.ok(character(equipped).equipment.some((item) => item && getVariantKey(item) === getVariantKey(spareVariant.item)));
   assert.throws(() => planEquipmentIntent(base, characterId, { kind: 'equip', slotIndex: 0, itemKey: 'missing-key' }), /not_found/);
@@ -234,7 +238,33 @@ assert.equal(undoHistory[String(characterId)].redo.length, 0);
   assert.deepEqual(planEquipmentIntent(base, characterId, { kind: 'setMode', mode: 1 }), [{ action: 'autoEquipment', parameters: { mode: 'SEMI', immediateAutoEquipment: false } }]);
   assert.deepEqual(planEquipmentIntent(base, characterId, { kind: 'runAuto' }), [{ action: 'autoEquipment', parameters: { mode: 'FULL', immediateAutoEquipment: true } }]);
   assert.deepEqual(commandNames(base, { kind: 'removeAll' }), ['removeAllEquipment']);
+  assert.deepEqual(commandNames(base, { kind: 'undo' }), ['undoEquipment']);
+  assert.deepEqual(commandNames(base, { kind: 'redo' }), ['redoEquipment']);
   assert.throws(() => planEquipmentIntent(base, 999999, { kind: 'removeAll' }), /not_found/);
+}
+
+// `equip` with `targetSlot`: exactly one item, into a real slot, replacing the occupant atomically.
+{
+  const freeArmorFormat = (state: GameState) => {
+    const entry = Object.values(state.global.inventory).find((variant) => variant.status === 'owned' && variant.count > 0 && canCharacterEquipCategory(character(state), variant.item.category))!;
+    return `${entry.item.isLocked ? 1 : 0}/${entry.item.id}/${entry.item.enhancement}/${entry.item.superRare}`;
+  };
+  const freed = applyApiV1Commit(path('removeEquipment'), base, { targetEquipment: armor }, context()).state;
+  const format = freeArmorFormat(freed);
+  const placed = applyApiV1Commit(path('equip'), freed, { targetEquipment: format, targetSlot: armor }, context()).state;
+  assert.ok(character(placed).equipment[armor], 'the requested slot is filled');
+  fails(freed, 'equip', { targetEquipment: [format, format], targetSlot: armor }, 'invalid_request');
+  fails(freed, 'equip', { targetEquipment: format, targetSlot: -1 }, 'invalid_request');
+  fails(freed, 'equip', { targetEquipment: format, targetSlot: '1' }, 'invalid_request');
+  fails(freed, 'equip', { targetEquipment: format, targetSlot: 99 }, 'illegal_action');
+  fails(freed, 'equip', { targetEquipment: '0/999999/0/0', targetSlot: armor }, 'illegal_action');
+
+  // A character whose equipment array is shorter than its slot count still has free slots to fill.
+  const shortArray: GameState = { ...freed, parties: freed.parties.map((party, index) => index === 0 ? { ...party, characters: party.characters.map((entry) => entry.id === characterId ? { ...entry, equipment: [] } : entry) } : party) };
+  const filled = applyApiV1Commit(path('equip'), shortArray, { targetEquipment: format }, context()).state;
+  assert.ok(character(filled).equipment.some((item) => item !== null && item !== undefined), 'equip works when the array is shorter than the slot count');
+  const toSlot = applyApiV1Commit(path('equip'), shortArray, { targetEquipment: format, targetSlot: 2 }, context()).state;
+  assert.ok(character(toSlot).equipment[2], 'an explicit slot beyond the array length is honored');
 }
 
 console.log('apiV1EquipmentSlots profile ok');

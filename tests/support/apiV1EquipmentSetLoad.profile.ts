@@ -3,6 +3,7 @@ import { executeApiV1CommitTransaction, type ApiV1CommitAuthorityDependencies, t
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
 import { createFreshGameState } from '../../src/hooks/useGameState';
 import { getVariantKey, type GameState } from '../../src/types';
+import { planEquipmentIntent } from '../../src/api/v1/equipmentIntents';
 
 // SpecRef: 9.1.4.5 | Confirmation protocol | Partial equipment-set load choices
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | loadEquipmentSet
@@ -138,6 +139,49 @@ let durable: ApiV1ControlMetadata;
     result: 'skipped',
     reason: 'unavailable',
   });
+}
+
+// The Party set controls map to one command each; the load choice the player made is answered on their behalf.
+{
+  const modeOf = (state: GameState, mode: 'exact' | 'similar') => {
+    const [command] = planEquipmentIntent(state, characterId, { kind: 'loadSet', slot: setId, mode });
+    return { action: command.action, loadMode: command.parameters.loadMode, confirmed: command.confirmed };
+  };
+  assert.deepEqual(modeOf(full, 'exact'), { action: 'loadEquipmentSet', loadMode: 'equipSet', confirmed: true }, 'a fully available set equips exactly');
+  assert.equal(modeOf(partial, 'exact').loadMode, 'equipExactMatchesOnly', 'a partial set with the exact-only choice');
+  assert.equal(modeOf(partial, 'similar').loadMode, 'equipSimilar');
+  assert.equal(modeOf(full, 'similar').loadMode, 'equipSimilar');
+  assert.throws(() => planEquipmentIntent(full, characterId, { kind: 'loadSet', slot: 99, mode: 'exact' }), /not_found/);
+
+  // Rename: blank and unchanged names are not commits; a real change is one command.
+  assert.deepEqual(planEquipmentIntent(saved.state, characterId, { kind: 'renameSet', slot: setId, name: '   ' }), []);
+  assert.deepEqual(planEquipmentIntent(saved.state, characterId, { kind: 'renameSet', slot: setId, name: 'Set A' }), []);
+  assert.deepEqual(planEquipmentIntent(saved.state, characterId, { kind: 'renameSet', slot: setId, name: 'Boss build ' }), [{ action: 'renameEquipmentSet', parameters: { equipmentSetId: setId, name: 'Boss build' } }]);
+  assert.deepEqual(planEquipmentIntent(saved.state, characterId, { kind: 'renameSet', slot: 99, name: 'x' }), []);
+  assert.equal(planEquipmentIntent(base, characterId, { kind: 'saveSet', name: 'N' })[0].action, 'saveEquipmentSet');
+  assert.equal(planEquipmentIntent(base, characterId, { kind: 'deleteSet', slot: 1 })[0].action, 'deleteEquipmentSet');
+}
+
+// Handler fixes: the created id is the new slot even when it fills a gap; failures are explicit, not silent no-ops.
+{
+  let state = base;
+  const ids: number[] = [];
+  for (const name of ['One', 'Two', 'Three']) {
+    const outcome = applyApiV1Commit(path('saveEquipmentSet'), state, { equipmentSet: { name } }, context());
+    ids.push(outcome.data.equipmentSetId as number);
+    state = outcome.state;
+  }
+  assert.deepEqual(ids, [1, 2, 3]);
+  state = applyApiV1Commit(path('deleteEquipmentSet'), state, { equipmentSetId: 2 }, context()).state;
+  const gap = applyApiV1Commit(path('saveEquipmentSet'), state, { equipmentSet: { name: 'Gap' } }, context());
+  assert.equal(gap.data.equipmentSetId, 2, 'the new set fills the gap; the id is not the last array element');
+  const failure = (operation: string, target: GameState, parameters: Record<string, unknown>) => { try { applyApiV1Commit(path(operation), target, parameters, context()); return ''; } catch (error) { return String(error); } };
+  assert.ok(failure('deleteEquipmentSet', state, { equipmentSetId: 99 }).includes('not_found'));
+  assert.ok(failure('renameEquipmentSet', state, { equipmentSetId: 99, name: 'x' }).includes('not_found'));
+  assert.ok(failure('renameEquipmentSet', state, { equipmentSetId: 1, name: '   ' }).includes('invalid_request'));
+  assert.ok(failure('saveEquipmentSet', state, { equipmentSet: { name: '' } }).includes('invalid_request'));
+  const fullList: GameState = { ...state, global: { ...state.global, savedEquipmentSets: Array.from({ length: 99 }, (_, index) => ({ slot: index + 1, name: `S${index + 1}`, createdAt: 0, equipment: [] })) } };
+  assert.ok(failure('saveEquipmentSet', fullList, { equipmentSet: { name: 'over' } }).includes('illegal_action'), 'a full list rejects instead of silently doing nothing');
 }
 
 console.log('apiV1EquipmentSetLoad profile ok');

@@ -40,7 +40,6 @@ import { isEnemyTypeCBonusType } from '../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId } from '../../game/environment';
 import type { AfkPartyChunkResult } from '../../game/afkChunkCoordinator';
 import type { AutoEquipmentProfileAction } from '../../game/autoEquipmentAttribution';
-import type { EquipmentSetLoadMode } from '../../game/equipmentSets';
 import {
 AFK_MAX_EFFECTIVE_ELAPSED_MS,
 AFK_MAX_REAL_ELAPSED_MS,
@@ -59,7 +58,7 @@ REST_HEAL_MIN_HP,
 } from '../../game/restHealing';
 import { Language,t } from '../../i18n';
 import type { AfkPartyTransactionAttribution,AfkPartyTransactionPlanner } from '../../hooks/useGameState';
-import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,ExpeditionSimulationResult,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,SavedEquipmentSet,type Ability,type BattleLogEntry } from '../../types';
+import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,ExpeditionSimulationResult,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type Ability,type BattleLogEntry } from '../../types';
 
 export function resolvePublicAssetPath(path?: string): string | null {
   if (!path) return null;
@@ -210,11 +209,6 @@ export interface HomeScreenProps {
     cancelSideQuest: (partyIndex: number) => void;
     advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
-    saveEquipmentSet: (characterId: number, name: string, createdAt: number, partyIndex?: number) => void;
-    renameEquipmentSet: (slot: number, name: string) => void;
-    deleteEquipmentSet: (slot: number) => void;
-    loadEquipmentSet: (characterId: number, slot: number, mode: EquipmentSetLoadMode, partyIndex?: number) => void;
-    restoreEquipmentState: (characterId: number, set: SavedEquipmentSet, partyIndex?: number) => void;
     applyAutoEquipmentActions: (actions: AutoEquipmentProfileAction[]) => void;
     reorderPartyCharacter: (fromIndex: number, toIndex: number, partyIndex?: number) => void;
     sellStack: (variantKey: string) => void;

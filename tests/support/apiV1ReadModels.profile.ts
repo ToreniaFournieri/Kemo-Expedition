@@ -23,6 +23,28 @@ calls.length = 0;
 const full = await buildApiV1ReadData('read/expedition/1/simulationRun', state, {}, context);
 assert.deepEqual(calls, [{ partyIndex: 0, count: 1_000 }]);
 assert.equal(full.simulatedRevision, 7);
+// Undo/Redo availability is part of the equipment projection and follows the shared history facts.
+{
+  const { snapshotCharacterEquipment } = await import('../../src/api/v1/equipmentHistoryFacts.ts');
+  const target = state.parties[0].characters[0];
+  const readEquipment = async (history?: Record<string, { undo: never[]; redo: never[] }>) => (await buildApiV1ReadData(`read/build/character/${target.id}/equipment`, state, {}, { ...context, control: { equipmentHistory: history } }) as {
+    validOptions: { numberOfEmptyEquipmentSlots: number; undoEquipment: { available: boolean; unavailableReason: string | null }; redoEquipment: { available: boolean; unavailableReason: string | null } };
+  }).validOptions;
+  assert.deepEqual((await readEquipment()).undoEquipment, { available: false, unavailableReason: 'noHistory' });
+  assert.deepEqual((await readEquipment()).redoEquipment, { available: false, unavailableReason: 'noHistory' });
+
+  const empty = snapshotCharacterEquipment([], 0);
+  assert.deepEqual((await readEquipment({ [String(target.id)]: { undo: [empty] as never[], redo: [] } })).undoEquipment, { available: true, unavailableReason: null }, 'restoring a bare state is available');
+  const same = snapshotCharacterEquipment(target.equipment, 0);
+  assert.equal((await readEquipment({ [String(target.id)]: { undo: [same] as never[], redo: [] } })).undoEquipment.unavailableReason, 'noChange');
+  const unavailable = { ...same, equipment: same.equipment.map((entry, index) => index === 0 ? { ...entry, item: { ...entry.item, id: 999999 } } : entry) };
+  assert.equal((await readEquipment({ [String(target.id)]: { undo: [], redo: [unavailable] as never[] } })).redoEquipment.unavailableReason, 'itemsUnavailable');
+  const slots = (await readEquipment()).numberOfEmptyEquipmentSlots;
+  assert.ok(slots >= 0);
+  const shortArray = { ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, characters: party.characters.map((entry) => entry.id === target.id ? { ...entry, equipment: [] } : entry) } : party) };
+  const bare = await buildApiV1ReadData(`read/build/character/${target.id}/equipment`, shortArray, {}, context) as { validOptions: { numberOfEmptyEquipmentSlots: number } };
+  assert.ok(bare.validOptions.numberOfEmptyEquipmentSlots > 0, 'empty slots are counted against the real slot count, not the array length');
+}
 assert.deepEqual(state, before);
 
 // calculatedStatus is the public fact model (9.1.4.14), not the internal computed-stats object.

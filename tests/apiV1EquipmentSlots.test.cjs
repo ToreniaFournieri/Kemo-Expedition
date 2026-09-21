@@ -43,3 +43,14 @@ test('Party equipment controls commit through the Application API, not direct re
   }
   assert.match(home, /dispatchEquipmentIntent\(characterId, \{ kind: 'equip', slotIndex, itemKey \}\)/);
 });
+
+test('Party Undo and Redo use the API history and availability, not a Party-local history', () => {
+  const partyTab = fs.readFileSync(path.resolve('src/components/home/tabs/PartyTab.tsx'), 'utf8');
+  for (const removed of ['recordEquipmentChange', 'equipmentHistory', 'EquipmentStateHistory', 'onRestoreEquipmentState', 'undoEquipmentState', 'redoEquipmentState']) {
+    assert.equal(partyTab.includes(removed), false, `${removed} must not remain in PartyTab`);
+  }
+  assert.match(partyTab, /onUndoEquipment\(char\.id\)/);
+  const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
+  assert.equal(home.includes('actions.restoreEquipmentState'), false);
+  assert.match(home, /'read\/build\/character\/\{characterId\}\/equipment'/);
+});

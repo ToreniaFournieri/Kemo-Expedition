@@ -13,6 +13,7 @@ import { getInstantExpeditionChargeState } from '../../game/instantExpedition.ts
 import { getSavedEquipmentSlot } from '../../game/equipmentSets.ts';
 import { computePartyStats } from '../../game/partyComputation.ts';
 import { buildCalculatedStatus } from './calculatedStatus.ts';
+import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { buildShopLineup, getShopRefreshPrice } from '../../game/shop.ts';
 import type { GameState, Item, Party } from '../../types/index.ts';
@@ -26,7 +27,7 @@ export interface ApiV1ReadContext {
   readonly enemyLevelOffset: number;
   readonly inGameTime: number;
   readonly simulation?: (partyIndex: number, count: number) => Promise<unknown>;
-  readonly control?: { settings?: Record<string, unknown>; deliveries?: unknown[] };
+  readonly control?: { settings?: Record<string, unknown>; deliveries?: unknown[]; equipmentHistory?: Record<string, EquipmentHistoryBag> };
 }
 
 function itemFormat(item: Item): string {
@@ -230,7 +231,15 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
         },
       };
     }
-    if (characterRead[2] === 'equipment') return { current: { mode: character.autoEquipmentMode === 2 ? 'FULL' : character.autoEquipmentMode === 1 ? 'SEMI' : 'OFF', equipment: character.equipment.map(equipmentEntry) }, validOptions: { mode: ['FULL', 'SEMI', 'OFF'], numberOfEmptyEquipmentSlots: character.equipment.filter((entry) => !entry).length } };
+    if (characterRead[2] === 'equipment') {
+      // Empty slots are counted against the character's real slot count: the equipment array may be shorter.
+      const maxSlots = computePartyStats(party).characterStats[characterIndex].maxEquipSlots;
+      const emptySlots = Array.from({ length: maxSlots }, (_, slot) => slot).filter((slot) => !character.equipment[slot]).length;
+      return {
+        current: { mode: character.autoEquipmentMode === 2 ? 'FULL' : character.autoEquipmentMode === 1 ? 'SEMI' : 'OFF', equipment: character.equipment.map(equipmentEntry) },
+        validOptions: { mode: ['FULL', 'SEMI', 'OFF'], numberOfEmptyEquipmentSlots: emptySlots, ...describeEquipmentHistory(state, character.id, context.control?.equipmentHistory) },
+      };
+    }
     const ids = Array.isArray(parameters.equipmentSetId) ? parameters.equipmentSetId.map(Number) : parameters.equipmentSetId ? [Number(parameters.equipmentSetId)] : null;
     return { equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => ({ equipmentSetId: set.slot, equipmentSet: { equipmentSetId: set.slot, name: set.name, createdAt: new Date(set.createdAt).toISOString(), ...(parameters.isEquipmentSetDetail === 'true' ? { equipment: set.equipment.map((entry, index) => equipmentEntry(entry.item, getSavedEquipmentSlot(entry, index))) } : {}) } })) };
   }

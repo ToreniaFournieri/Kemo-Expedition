@@ -32,3 +32,16 @@ test('partial equipment-set loads require a confirmed choice and report per-slot
   const result = spawnSync(process.execPath, [output], { encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
+
+test('Party equipment-set controls commit through the Application API', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const partyTab = fs.readFileSync(path.resolve('src/components/home/tabs/PartyTab.tsx'), 'utf8');
+  assert.match(partyTab, /onRenameEquipmentSet\(char\.id, set\.slot,/);
+  assert.match(partyTab, /onDeleteEquipmentSet\(char\.id, set\.slot\)/);
+  const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
+  for (const removed of ['actions.saveEquipmentSet', 'actions.renameEquipmentSet', 'actions.deleteEquipmentSet', 'actions.loadEquipmentSet']) {
+    assert.equal(home.includes(removed), false, `${removed} must not be reachable from HomeScreen`);
+  }
+  assert.match(home, /kind: 'loadSet', slot, mode/);
+});

@@ -98,6 +98,7 @@ import { setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
 import { characterEditToChangeBuildParameters } from '../api/v1/characterBuildParameters';
 import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIntents';
+import { useApiRead } from './home/useApiRead';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
 import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
@@ -1841,7 +1842,7 @@ export function HomeScreen({
   }, [actions, planAutoEquipment, state]);
 
   // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | Party equipment controls use the Application API
-  // Equipment intents are serialized so a multi-command intent (replace = remove + equip) is never interleaved.
+  // Equipment intents are serialized in tap order; each is planned against the newest authoritative snapshot.
   const equipmentIntentQueueRef = useRef<Promise<void>>(Promise.resolve());
   const dispatchEquipmentIntent = useCallback((characterId: number, intent: EquipmentIntent) => {
     equipmentIntentQueueRef.current = equipmentIntentQueueRef.current.then(async () => {
@@ -1862,7 +1863,7 @@ export function HomeScreen({
         : [];
       for (const command of commands) {
         const response = await adapter.commit(`commit/build/character/{characterId}/${command.action}`, {
-          pathParameters: { characterId }, parameters: command.parameters,
+          pathParameters: { characterId }, parameters: command.parameters, confirmed: command.confirmed,
         });
         if (response.error) {
           console.error('[api-v1] Equipment command failed', command.action, response.error);
@@ -1875,6 +1876,15 @@ export function HomeScreen({
       }
     });
   }, [actions, planAutoEquipment]);
+
+  // SpecRef: 8.2.4 | Equipment management | Undo and Redo availability comes from the equipment projection
+  const historyCharacter = currentParty.characters[selectedCharacter] ?? currentParty.characters[0];
+  const equipmentProjection = useApiRead<{ validOptions: { undoEquipment: { available: boolean }; redoEquipment: { available: boolean } } }>(
+    inProcessApiRef.current,
+    'read/build/character/{characterId}/equipment',
+    historyCharacter ? { pathParameters: { characterId: historyCharacter.id } } : null,
+    [historyCharacter?.id, historyCharacter?.equipment, state.global.inventory, state.global.jewels, currentParty.level],
+  );
 
   useEffect(() => {
     if (!__AUTO_EQUIPMENT_PROFILE_ENABLED__) return;
@@ -4897,11 +4907,14 @@ export function HomeScreen({
           }}
           onRunAutoEquipmentForCharacter={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'runAuto' })}
           onRemoveAllEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'removeAll' })}
-          onSaveEquipmentSet={actions.saveEquipmentSet}
-          onRenameEquipmentSet={actions.renameEquipmentSet}
-          onDeleteEquipmentSet={actions.deleteEquipmentSet}
-          onLoadEquipmentSet={actions.loadEquipmentSet}
-          onRestoreEquipmentState={actions.restoreEquipmentState}
+          onSaveEquipmentSet={(characterId, name) => dispatchEquipmentIntent(characterId, { kind: 'saveSet', name })}
+          onRenameEquipmentSet={(characterId, slot, name) => dispatchEquipmentIntent(characterId, { kind: 'renameSet', slot, name })}
+          onDeleteEquipmentSet={(characterId, slot) => dispatchEquipmentIntent(characterId, { kind: 'deleteSet', slot })}
+          onLoadEquipmentSet={(characterId, slot, mode) => dispatchEquipmentIntent(characterId, { kind: 'loadSet', slot, mode })}
+          canUndoEquipment={equipmentProjection?.validOptions.undoEquipment.available === true}
+          canRedoEquipment={equipmentProjection?.validOptions.redoEquipment.available === true}
+          onUndoEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'undo' })}
+          onRedoEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'redo' })}
           savedEquipmentSets={state.global.savedEquipmentSets}
           inventory={state.global.inventory}
           jewels={state.global.jewels}

@@ -14,14 +14,7 @@ import { gameplayRandom } from '../../../game/gameplayRandom';
 import { computeCharacterStats,getUnlockedRaceAbilitiesFromBonuses } from '../../../game/characterComputation';
 import { DEITY_OPTIONS,getDeityDisplayName,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity } from '../../../game/deity';
 import { replaceCharacterEquipment } from '../../../game/equipment';
-import {
-  EMPTY_EQUIPMENT_STATE_HISTORY,
-  recordEquipmentState,
-  redoEquipmentState,
-  undoEquipmentState,
-  type EquipmentStateHistory,
-} from '../../../game/equipmentHistory';
-import { createEquipmentSetSnapshot,evaluateEquipmentSet,MAX_SAVED_EQUIPMENT_SETS,type EquipmentSetLoadMode } from '../../../game/equipmentSets';
+import { evaluateEquipmentSet,MAX_SAVED_EQUIPMENT_SETS,type EquipmentSetLoadMode } from '../../../game/equipmentSets';
 import { replaceFlatItemStat } from '../../../game/equipmentDisplay';
 import { getItemDisplayName } from '../../../game/gameState';
 import { getJewelDisplayName,getJewelOwnedCount,JEWELS_BY_ITEM_CATEGORY } from '../../../game/jewel';
@@ -111,7 +104,10 @@ export default function PartyTab({
   onRenameEquipmentSet,
   onDeleteEquipmentSet,
   onLoadEquipmentSet,
-  onRestoreEquipmentState,
+  canUndoEquipment,
+  canRedoEquipment,
+  onUndoEquipment,
+  onRedoEquipment,
   savedEquipmentSets,
   inventory,
   jewels,
@@ -140,11 +136,14 @@ export default function PartyTab({
   onUpdatePartyDeity: (partyIndex: number, deityName: string) => void;
   onRunAutoEquipmentForCharacter: (characterId: number) => void;
   onRemoveAllEquipment: (characterId: number) => void;
-  onSaveEquipmentSet: (characterId: number, name: string, createdAt: number) => void;
-  onRenameEquipmentSet: (slot: number, name: string) => void;
-  onDeleteEquipmentSet: (slot: number) => void;
+  onSaveEquipmentSet: (characterId: number, name: string) => void;
+  onRenameEquipmentSet: (characterId: number, slot: number, name: string) => void;
+  onDeleteEquipmentSet: (characterId: number, slot: number) => void;
   onLoadEquipmentSet: (characterId: number, slot: number, mode: EquipmentSetLoadMode) => void;
-  onRestoreEquipmentState: (characterId: number, set: SavedEquipmentSet) => void;
+  canUndoEquipment: boolean;
+  canRedoEquipment: boolean;
+  onUndoEquipment: (characterId: number) => void;
+  onRedoEquipment: (characterId: number) => void;
   savedEquipmentSets: SavedEquipmentSet[];
   inventory: InventoryRecord;
   jewels: Record<string, number>;
@@ -525,7 +524,7 @@ export default function PartyTab({
     // Check for double-tap on same slot with item
     if (item && lastSlotTap && lastSlotTap.slot === slotIndex && now - lastSlotTap.time < 400) {
       // Double-tap: remove item
-      recordEquipmentChange(() => onEquipItem(char.id, slotIndex, null));
+      onEquipItem(char.id, slotIndex, null);
       setLastSlotTap(null);
       setSelectingSlot(null);
       return;
@@ -551,7 +550,7 @@ export default function PartyTab({
     const targetSlotIndex = getEquipTargetSlotIndex();
     if (targetSlotIndex === null) return;
 
-    recordEquipmentChange(() => onEquipItem(char.id, targetSlotIndex, itemKey));
+    onEquipItem(char.id, targetSlotIndex, itemKey);
     if (selectingSlot !== null) {
       setSelectingSlot(null);
     }
@@ -608,36 +607,6 @@ export default function PartyTab({
 
   const char = selectedChar;
   const stats = characterStats[selectedCharacter];
-  const [equipmentHistory, setEquipmentHistory] = useState<Record<string, EquipmentStateHistory>>({});
-  const equipmentHistoryKey = `${party.id}:${char.id}`;
-  const currentEquipmentState = () => createEquipmentSetSnapshot(char.equipment.slice(0, stats.maxEquipSlots));
-  const history = equipmentHistory[equipmentHistoryKey] ?? EMPTY_EQUIPMENT_STATE_HISTORY;
-  const undoTarget = history.undo.at(-1);
-  const redoTarget = history.redo.at(-1);
-  const undoAvailability = undoTarget ? evaluateEquipmentSet(undoTarget, char, inventory, stats.maxEquipSlots, jewels) : null;
-  const redoAvailability = redoTarget ? evaluateEquipmentSet(redoTarget, char, inventory, stats.maxEquipSlots, jewels) : null;
-  const recordEquipmentChange = (change: () => void) => {
-    const previousState = currentEquipmentState();
-    setEquipmentHistory((previous) => ({
-      ...previous,
-      [equipmentHistoryKey]: recordEquipmentState(previous[equipmentHistoryKey] ?? EMPTY_EQUIPMENT_STATE_HISTORY, previousState),
-    }));
-    change();
-  };
-  const handleUndoEquipment = () => {
-    if (!undoAvailability?.allAvailable) return;
-    const transition = undoEquipmentState(history, currentEquipmentState());
-    if (!transition) return;
-    onRestoreEquipmentState(char.id, transition.target);
-    setEquipmentHistory((previous) => ({ ...previous, [equipmentHistoryKey]: transition.history }));
-  };
-  const handleRedoEquipment = () => {
-    if (!redoAvailability?.allAvailable) return;
-    const transition = redoEquipmentState(history, currentEquipmentState());
-    if (!transition) return;
-    onRestoreEquipmentState(char.id, transition.target);
-    setEquipmentHistory((previous) => ({ ...previous, [equipmentHistoryKey]: transition.history }));
-  };
   const hpDisplayMultiplier = ((stats.baseStats.vitality + stats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(char);
   const race = RACES.find(r => r.id === char.raceId) ?? RACES[0];
   const mainClass = CLASSES.find(c => c.id === char.mainClassId) ?? CLASSES[0];
@@ -756,7 +725,7 @@ export default function PartyTab({
   const handleAutoEquipmentButtonClick = () => {
     // SpecRef: 8.2.4 | Equipment management | Auto equipment button(自動装備)
     if (autoEquipmentMode !== 2) return;
-    recordEquipmentChange(() => onRunAutoEquipmentForCharacter(char.id));
+    onRunAutoEquipmentForCharacter(char.id);
   };
 
   const createDefaultEquipmentSetName = (createdAt: number): string => {
@@ -773,7 +742,7 @@ export default function PartyTab({
   const handleSaveEquipmentSet = () => {
     if (savedEquipmentSets.length >= MAX_SAVED_EQUIPMENT_SETS) return;
     const createdAt = Date.now();
-    onSaveEquipmentSet(char.id, createDefaultEquipmentSetName(createdAt), createdAt);
+    onSaveEquipmentSet(char.id, createDefaultEquipmentSetName(createdAt));
     setShowSavedEquipmentSets(true);
   };
 
@@ -2677,9 +2646,9 @@ export default function PartyTab({
         </div>
         )}
         <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-sub">
-          <button type="button" onClick={handleUndoEquipment} disabled={!undoAvailability?.allAvailable} className="disabled:cursor-not-allowed disabled:opacity-40" aria-label="Undo equipment change">↩</button>
-          <button type="button" onClick={handleRedoEquipment} disabled={!redoAvailability?.allAvailable} className="disabled:cursor-not-allowed disabled:opacity-40" aria-label="Redo equipment change">↪</button>
-          <button type="button" onClick={() => recordEquipmentChange(() => onRemoveAllEquipment(char.id))}>
+          <button type="button" onClick={() => onUndoEquipment(char.id)} disabled={!canUndoEquipment} className="disabled:cursor-not-allowed disabled:opacity-40" aria-label="Undo equipment change">↩</button>
+          <button type="button" onClick={() => onRedoEquipment(char.id)} disabled={!canRedoEquipment} className="disabled:cursor-not-allowed disabled:opacity-40" aria-label="Redo equipment change">↪</button>
+          <button type="button" onClick={() => onRemoveAllEquipment(char.id)}>
             {t('party.equipment.removeAll')}
           </button>
           <button
@@ -2719,27 +2688,27 @@ export default function PartyTab({
                         defaultValue={set.name}
                         maxLength={80}
                         aria-label={t('party.equipment.setNameAria')}
-                        onBlur={(event) => onRenameEquipmentSet(set.slot, event.currentTarget.value)}
+                        onBlur={(event) => onRenameEquipmentSet(char.id, set.slot, event.currentTarget.value)}
                         className="w-full rounded border border-gray-200 bg-white px-2 py-1 text-gray-900"
                       />
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                         {availability.allAvailable ? (
-                          <button type="button" className="font-semibold text-sub" onClick={() => recordEquipmentChange(() => onLoadEquipmentSet(char.id, set.slot, 'exact'))}>
+                          <button type="button" className="font-semibold text-sub" onClick={() => onLoadEquipmentSet(char.id, set.slot, 'exact')}>
                             {t('party.equipment.equipSet')}
                           </button>
                         ) : (
                           <>
                             <span className="text-warning">{t('party.equipment.someUnavailable')}</span>
-                            <button type="button" className="font-semibold text-sub" onClick={() => recordEquipmentChange(() => onLoadEquipmentSet(char.id, set.slot, 'similar'))}>
+                            <button type="button" className="font-semibold text-sub" onClick={() => onLoadEquipmentSet(char.id, set.slot, 'similar')}>
                               {t('party.equipment.equipSimilar')}
                             </button>
-                            <button type="button" className="font-semibold text-sub" onClick={() => recordEquipmentChange(() => onLoadEquipmentSet(char.id, set.slot, 'exact'))}>
+                            <button type="button" className="font-semibold text-sub" onClick={() => onLoadEquipmentSet(char.id, set.slot, 'exact')}>
                               {t('party.equipment.equipExactOnly')}
                             </button>
                           </>
                         )}
                         <button type="button" className="font-semibold text-danger" onClick={() => {
-                          onDeleteEquipmentSet(set.slot);
+                          onDeleteEquipmentSet(char.id, set.slot);
                           setExpandedSavedEquipmentSlot(null);
                         }}>
                           {t('party.equipment.deleteSet')}
@@ -2799,7 +2768,7 @@ export default function PartyTab({
                       onClick={(event) => {
                         event.stopPropagation();
                         // SpecRef: 8.2.4 | Equipment management | Lock and Unlock Item
-                        recordEquipmentChange(() => onToggleEquipmentLock(char.id, slotIndex));
+                        onToggleEquipmentLock(char.id, slotIndex);
                       }}
                       className="text-base leading-none"
                       aria-label={isLocked ? t('home.equipment.unlockAria') : t('home.equipment.lockAria')}
@@ -2838,7 +2807,7 @@ export default function PartyTab({
                           return (
                             <button
                               key={rank}
-                              onClick={() => recordEquipmentChange(() => onAttachJewel(char.id, slotIndex, jewelKey, rank))}
+                              onClick={() => onAttachJewel(char.id, slotIndex, jewelKey, rank)}
                               disabled={isDisabled}
                               className={`inline-flex w-6 justify-start px-0.5 text-base leading-none tabular-nums ${owned > 0 ? 'text-black' : 'text-gray-400'} ${isCurrent ? 'font-bold text-sub' : ''}`}
                             >
@@ -2915,7 +2884,7 @@ export default function PartyTab({
           if (displayItem.isEquipped && displayItem.slotIndex !== undefined) {
             // Unequip: single tap on equipped item
             const slotIndex = displayItem.slotIndex;
-            recordEquipmentChange(() => onEquipItem(char.id, slotIndex, null));
+            onEquipItem(char.id, slotIndex, null);
           } else {
             // Equip: use existing logic
             handleInventoryItemTap(displayItem.key);
@@ -2991,7 +2960,7 @@ export default function PartyTab({
                   <div className="flex gap-2">
                     {char.equipment[selectingSlot] && (
                       <button
-                      onClick={() => { recordEquipmentChange(() => onEquipItem(char.id, selectingSlot, null)); setSelectingSlot(null); }}
+                      onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
                         className="text-xs text-accent px-2 py-1 border border-accent/40 rounded bg-white"
                       >
                         {t('party.equipment.remove')}

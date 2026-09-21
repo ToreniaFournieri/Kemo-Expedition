@@ -7454,7 +7454,9 @@
               "type": "object",
               "required": [
                 "mode",
-                "numberOfEmptyEquipmentSlots"
+                "numberOfEmptyEquipmentSlots",
+                "undoEquipment",
+                "redoEquipment"
               ],
               "properties": {
                 "mode": {
@@ -7479,6 +7481,52 @@
                 "numberOfEmptyEquipmentSlots": {
                   "minimum": 0,
                   "type": "integer"
+                },
+                "undoEquipment": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "available",
+                    "unavailableReason"
+                  ],
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    },
+                    "unavailableReason": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "redoEquipment": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "available",
+                    "unavailableReason"
+                  ],
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    },
+                    "unavailableReason": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             }
@@ -7562,7 +7610,9 @@
                   "type": "object",
                   "required": [
                     "mode",
-                    "numberOfEmptyEquipmentSlots"
+                    "numberOfEmptyEquipmentSlots",
+                    "undoEquipment",
+                    "redoEquipment"
                   ],
                   "properties": {
                     "mode": {
@@ -7587,6 +7637,52 @@
                     "numberOfEmptyEquipmentSlots": {
                       "minimum": 0,
                       "type": "integer"
+                    },
+                    "undoEquipment": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "available",
+                        "unavailableReason"
+                      ],
+                      "properties": {
+                        "available": {
+                          "type": "boolean"
+                        },
+                        "unavailableReason": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "redoEquipment": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "available",
+                        "unavailableReason"
+                      ],
+                      "properties": {
+                        "available": {
+                          "type": "boolean"
+                        },
+                        "unavailableReason": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
                     }
                   }
                 }
@@ -7635,7 +7731,15 @@
               "mode": [
                 "FULL"
               ],
-              "numberOfEmptyEquipmentSlots": 0
+              "numberOfEmptyEquipmentSlots": 0,
+              "undoEquipment": {
+                "available": true,
+                "unavailableReason": "xxxxxxx"
+              },
+              "redoEquipment": {
+                "available": true,
+                "unavailableReason": "xxxxxxx"
+              }
             }
           }
         }
@@ -14528,6 +14632,10 @@
                     }
                   }
                 ]
+              },
+              "targetSlot": {
+                "minimum": 0,
+                "type": "integer"
               }
             }
           },

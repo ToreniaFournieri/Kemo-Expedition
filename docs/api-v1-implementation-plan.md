@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 40. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 43. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -27,7 +27,7 @@ This document supersedes the earlier "Build 23" plan. Stages are numbered once, 
 - The serialized authority provides revisions, receipts, tombstones, admitted-duplicate handling, durable confirmation reservations, rollback, isolated RNG, and atomic multi-Chunk elapsed progression.
 - API-account storage is manifest-last; login stages catch-up privately and logout restores the flushed player save.
 - The delivery state machine (queued / sending / delivered / failed / unknown / cancelled) and reward completion transaction exist. No network sender is wired.
-- Party deity, member ordering, character editing (Build 38), and the equipment controls (Build 40: equip, replace, lock, Jewels, Remove All, Auto Equipment) go through the trusted in-process adapter.
+- Party deity, member ordering, character editing (Build 38), and the equipment controls (Builds 40–41: equip, atomic replace via `targetSlot`, lock, Jewels, Remove All, Auto Equipment) go through the trusted in-process adapter.
 - `calculatedStatus` and the sell/purchase results now use the public payload shapes (Build 39).
 - Equipment commands are atomic: slot commands, `equip`, exact and confirmed partial set load, Undo/Redo validation, build-change validation and confirmation, and Auto Equipment reports.
 
@@ -49,12 +49,12 @@ Gate: every operation has concrete request, success, and error schemas; no fallb
 
 ## Stage 5 — Party, character, equipment (current)
 
-Done: deity, ordering, character build editing, and equipment controls.
+Done: deity, ordering, character build editing, equipment controls, equipment sets, and Undo/Redo.
 
 Next, in order:
 1. (Done, Build 40) Equipment controls.
-2. **Equipment sets.** Save, load (with the confirmation choice dialog), rename, delete.
-3. **Undo/Redo.** Remove the Party-local duplicate `equipmentHistory` state in `PartyTab.tsx` and use the API's per-character history and availability flags.
+2. (Done, Build 42) Equipment sets: save, load with the confirmation choice, rename, delete.
+3. (Done, Build 43) Undo/Redo use the API's per-character history and the equipment projection's availability.
 4. **Party reads.** Render the Party tab from `read/observation/party` and `read/build/*` instead of props built from the complete game state. Retained selections and filters go through `uiPreferences`.
 
 Gate: no `actions.*` reducer call remains in `PartyTab.tsx` for these controls; the Party tab renders only from its projections.

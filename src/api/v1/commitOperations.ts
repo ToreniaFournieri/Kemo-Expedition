@@ -2,12 +2,13 @@ import type { ApiV1DeliveryRecord } from './deliveries';
 import { DEVELOPER_NEWS_ITEMS } from '../../data/developerNews';
 import { getDeityId, getDeityNameFromId, isNoFaithDeity, normalizeDeityName } from '../../game/deity';
 import { isDebugModeEnabled } from '../../game/environment';
-import { canCharacterEquipCategory, createEquipmentSetSnapshot, evaluateEquipmentSet, getSavedEquipmentSlot } from '../../game/equipmentSets';
+import { canCharacterEquipCategory, createEquipmentSetSnapshot, evaluateEquipmentSet, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
 import { recordEquipmentState, redoEquipmentState, undoEquipmentState } from '../../game/equipmentHistory';
 import { computeCharacterStats } from '../../game/characterComputation';
 import { computePartyStats } from '../../game/partyComputation';
 import { hydrateGameState, serializeGameState } from '../../game/saveCodec';
 import { buildShopLineup } from '../../game/shop';
+import { describeEquipmentHistory } from './equipmentHistoryFacts';
 import { isEquipmentSlotAction, planEquipOperation, planEquipmentSlotOperation } from './equipmentSlots';
 import { planCharacterBuildChange } from './buildChange';
 import { decodePersistedState, encodePersistedState } from '../../game/storageCompression';
@@ -169,7 +170,19 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       for (const step of planEquipmentSlotOperation(action, character, next.global.jewels, parameters)) reduce({ ...step, partyIndex, characterId });
       if (action === 'removeEquipment') demoteFullAutoEquipment();
     }
-    else if (action === 'saveEquipmentSet') { const equipmentSet = parameters.equipmentSet as { name?: string } | undefined; reduce({ type: 'SAVE_EQUIPMENT_SET', partyIndex, characterId, name: equipmentSet?.name ?? `Set ${next.global.savedEquipmentSets.length + 1}`, createdAt: context.simulatedAt }); data = { equipmentSetId: next.global.savedEquipmentSets.at(-1)?.slot }; }
+    else if (action === 'saveEquipmentSet') {
+      // The set is captured from the character's current equipment into the lowest empty saved slot.
+      const equipmentSet = parameters.equipmentSet as { name?: unknown } | undefined;
+      const requestedName = equipmentSet?.name;
+      if (requestedName !== undefined && (typeof requestedName !== 'string' || requestedName.trim().length === 0 || requestedName.length > 100)) throw new Error('invalid_request:name');
+      if (next.global.savedEquipmentSets.length >= MAX_SAVED_EQUIPMENT_SETS) throw new Error('illegal_action:saved_sets_full');
+      const occupied = new Set(next.global.savedEquipmentSets.map((entry) => entry.slot));
+      reduce({ type: 'SAVE_EQUIPMENT_SET', partyIndex, characterId, name: requestedName ?? `Set ${next.global.savedEquipmentSets.length + 1}`, createdAt: context.simulatedAt });
+      // Sets are ordered by slot, so the new set is the one that was not there before, not the last element.
+      const created = next.global.savedEquipmentSets.find((entry) => !occupied.has(entry.slot));
+      if (!created) throw new Error('illegal_action:saved_sets_full');
+      data = { equipmentSetId: created.slot };
+    }
     else if (action === 'loadEquipmentSet') {
       const set = next.global.savedEquipmentSets.find((entry) => entry.slot === Number(parameters.equipmentSetId));
       if (!set) throw new Error('not_found');
@@ -190,8 +203,14 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
         return { slotIndex, saved: `${entry.isLocked ? 1 : 0}/${entry.item.id}/${entry.item.enhancement}/${entry.item.superRare}`, result: exact ? 'equipped' : result ? 'substituted' : 'skipped', reason };
       }) } };
     }
-    else if (action === 'deleteEquipmentSet') reduce({ type: 'DELETE_EQUIPMENT_SET', slot: Number(parameters.equipmentSetId) });
-    else if (action === 'renameEquipmentSet') reduce({ type: 'RENAME_EQUIPMENT_SET', slot: Number(parameters.equipmentSetId), name: String(parameters.name) });
+    else if (action === 'deleteEquipmentSet') {
+      if (!next.global.savedEquipmentSets.some((entry) => entry.slot === Number(parameters.equipmentSetId))) throw new Error('not_found');
+      reduce({ type: 'DELETE_EQUIPMENT_SET', slot: Number(parameters.equipmentSetId) });
+    } else if (action === 'renameEquipmentSet') {
+      if (!next.global.savedEquipmentSets.some((entry) => entry.slot === Number(parameters.equipmentSetId))) throw new Error('not_found');
+      if (typeof parameters.name !== 'string' || parameters.name.trim().length === 0 || parameters.name.length > 100) throw new Error('invalid_request:name');
+      reduce({ type: 'RENAME_EQUIPMENT_SET', slot: Number(parameters.equipmentSetId), name: parameters.name });
+    }
     else if (action === 'autoEquipment') {
       const mode = String(parameters.mode);
       if (!['FULL', 'SEMI', 'OFF'].includes(mode)) throw new Error('invalid_request:mode');
@@ -213,7 +232,8 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       };
     }
     else if (action === 'equip') {
-      for (const step of planEquipOperation(characterBefore, next.global.inventory, parameters.targetEquipment)) reduce({ type: 'EQUIP_ITEM', partyIndex, characterId, slotIndex: step.slotIndex, itemKey: step.itemKey });
+      const maxSlots = computeCharacterStats(characterBefore, next.parties[partyIndex].level).maxEquipSlots;
+      for (const step of planEquipOperation(characterBefore, next.global.inventory, parameters.targetEquipment, maxSlots, parameters.targetSlot)) reduce({ type: 'EQUIP_ITEM', partyIndex, characterId, slotIndex: step.slotIndex, itemKey: step.itemKey });
       demoteFullAutoEquipment();
     } else if (action === 'undoEquipment' || action === 'redoEquipment') {
       const current = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
@@ -235,19 +255,14 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     }
     if (!data.equipmentSetId) {
       const currentCharacter = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
-      const currentSnapshot = snapshotEquipment(currentCharacter);
-      const currentHistory = history[historyKey] ?? characterHistory;
-      const maxSlots = computeCharacterStats(currentCharacter, next.parties[partyIndex].level).maxEquipSlots;
-      const historyTargetAvailable = (target: SavedEquipmentSet | undefined) => Boolean(target
-        && !sameEquipment(target, currentSnapshot)
-        && evaluateEquipmentSet(target, currentCharacter, next.global.inventory, maxSlots, next.global.jewels).allAvailable);
+      const historyFacts = describeEquipmentHistory(next, characterId, history);
       data = {
         ...data,
         current: {
           mode: currentCharacter.autoEquipmentMode === 2 ? 'FULL' : currentCharacter.autoEquipmentMode === 1 ? 'SEMI' : 'OFF',
           equipment: currentCharacter.equipment.map((item, slot) => item ? `${slot}/${item.isLocked ? 1 : 0}/${item.id}/${item.enhancement}/${item.superRare}${item.jewel ? `/${item.jewel.key}:${item.jewel.rank}` : ''}` : 0),
-          undoAvailable: historyTargetAvailable(currentHistory.undo.at(-1)),
-          redoAvailable: historyTargetAvailable(currentHistory.redo.at(-1)),
+          undoAvailable: historyFacts.undoEquipment.available,
+          redoAvailable: historyFacts.redoEquipment.available,
         },
       };
     }

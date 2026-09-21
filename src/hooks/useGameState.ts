@@ -5051,26 +5051,6 @@ export function useGameState() {
       dispatch({ type: 'SET_SIDE_QUEST_PROGRESS', partyIndex, progress });
     }, []),
 
-    saveEquipmentSet: useCallback((characterId: number, name: string, createdAt: number, partyIndex?: number) => {
-      dispatch({ type: 'SAVE_EQUIPMENT_SET', characterId, name, createdAt, partyIndex });
-    }, []),
-
-    renameEquipmentSet: useCallback((slot: number, name: string) => {
-      dispatch({ type: 'RENAME_EQUIPMENT_SET', slot, name });
-    }, []),
-
-    deleteEquipmentSet: useCallback((slot: number) => {
-      dispatch({ type: 'DELETE_EQUIPMENT_SET', slot });
-    }, []),
-
-    loadEquipmentSet: useCallback((characterId: number, slot: number, mode: EquipmentSetLoadMode, partyIndex?: number) => {
-      dispatch({ type: 'LOAD_EQUIPMENT_SET', characterId, slot, mode, partyIndex });
-    }, []),
-
-    restoreEquipmentState: useCallback((characterId: number, set: SavedEquipmentSet, partyIndex?: number) => {
-      dispatch({ type: 'RESTORE_EQUIPMENT_STATE', characterId, set, partyIndex });
-    }, []),
-
     applyAutoEquipmentActions: useCallback((actions: AutoEquipmentProfileAction[]) => {
       dispatch({ type: 'APPLY_AUTO_EQUIPMENT_ACTIONS', actions });
     }, []),
