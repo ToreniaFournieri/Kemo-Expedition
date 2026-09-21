@@ -680,7 +680,7 @@ Path Parameters
       * `all`
     * Default: `owned`.
   * `category`
-    * **Choose one.**
+    * Optional.
     * `Item category` filter.
   * `rarity`
     * Optional.
