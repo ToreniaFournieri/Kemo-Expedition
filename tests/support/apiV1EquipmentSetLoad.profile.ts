@@ -28,7 +28,7 @@ delete inventory[lostKey];
 const partial: GameState = { ...bare, global: { ...bare.global, inventory } };
 const full: GameState = bare;
 
-// Exact availability includes the stored Jewel, not only the item variant.
+// Jewels are assigned independently every time, so a stored Jewel (even one that no longer exists) never affects availability.
 const jeweledEntryIndex = saved.state.global.savedEquipmentSets[0].equipment.findIndex((entry) => entry.item.category === 'armor');
 assert.ok(jeweledEntryIndex >= 0, 'fixture set has an armor entry');
 const jeweledSet = structuredClone(saved.state.global.savedEquipmentSets[0]);
@@ -119,26 +119,14 @@ let durable: ApiV1ControlMetadata;
   assert.ok(missing.includes('not_found'), missing);
 }
 
-// 7. A missing exact saved Jewel is partial: it requires confirmation, and exact-only skips the whole entry.
+// 7. A missing saved Jewel never makes a set partial: no confirmation, the item is equipped, and Jewels are assigned afresh.
 {
-  const challenged = await executeApiV1CommitTransaction(request(missingExactJewel, { equipmentSetId: setId }, { idempotencyKey: 'load-set-jewel-001' }), deps());
-  assert.equal(challenged.ok, false);
-  if (challenged.ok) throw new Error('expected a Jewel availability challenge');
-  assert.equal(challenged.error.code, 'confirmation_required');
-  const jewelToken = String(challenged.error.details?.confirmationToken);
-  const confirmed = await executeApiV1CommitTransaction(request(missingExactJewel, { equipmentSetId: setId, loadMode: 'equipExactMatchesOnly' }, {
-    idempotencyKey: 'load-set-jewel-001', control: challenged.durableControl!, confirmationToken: jewelToken,
-  }), deps());
-  assert.equal(confirmed.ok, true);
-  if (!confirmed.ok) throw new Error(confirmed.error.code);
-  const report = (confirmed.response.data as { loadReport: { entries: Array<{ slotIndex: number; result: string; reason: string | null }> } }).loadReport;
+  const loaded = await executeApiV1CommitTransaction(request(missingExactJewel, { equipmentSetId: setId }, { idempotencyKey: 'load-set-jewel-001' }), deps());
+  assert.equal(loaded.ok, true, 'no confirmation challenge for a missing saved Jewel');
+  if (!loaded.ok) throw new Error(loaded.error.code);
+  const report = (loaded.response.data as { loadReport: { entries: Array<{ slotIndex: number; result: string }> } }).loadReport;
   const jeweledSlot = jeweledSet.equipment[jeweledEntryIndex].slotIndex ?? jeweledEntryIndex;
-  assert.deepEqual(report.entries.find((entry) => entry.slotIndex === jeweledSlot), {
-    slotIndex: jeweledSlot,
-    saved: report.entries.find((entry) => entry.slotIndex === jeweledSlot)!.saved,
-    result: 'skipped',
-    reason: 'unavailable',
-  });
+  assert.equal(report.entries.find((entry) => entry.slotIndex === jeweledSlot)?.result, 'equipped');
 }
 
 // The Party set controls map to one command each; the load choice the player made is answered on their behalf.

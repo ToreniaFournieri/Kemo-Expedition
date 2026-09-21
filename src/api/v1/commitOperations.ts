@@ -204,16 +204,13 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       const loadMode = String(parameters.loadMode ?? 'equipSet');
       const maxSlots = computeCharacterStats(characterBefore, next.parties[partyIndex].level).maxEquipSlots;
       // `equipSet` promises every stored item; a partial set must be loaded through an explicit confirmed choice.
-      if (loadMode === 'equipSet' && !evaluateEquipmentSet(set, characterBefore, next.global.inventory, maxSlots, next.global.jewels).allAvailable) throw new Error('illegal_action:partial_load_requires_choice');
+      if (loadMode === 'equipSet' && !evaluateEquipmentSet(set, characterBefore, next.global.inventory, maxSlots).allAvailable) throw new Error('illegal_action:partial_load_requires_choice');
       reduce({ type: 'LOAD_EQUIPMENT_SET', partyIndex, characterId, slot: set.slot, mode: loadMode === 'equipSimilar' ? 'similar' : 'exact' });
       const loaded = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
       data = { loadReport: { loadMode, entries: set.equipment.map((entry, index) => {
         const slotIndex = getSavedEquipmentSlot(entry, index);
         const result = slotIndex < maxSlots ? loaded.equipment[slotIndex] : null;
-        const exactJewel = entry.item.jewel
-          ? result?.jewel?.key === entry.item.jewel.key && result.jewel.rank === entry.item.jewel.rank
-          : true;
-        const exact = result !== null && result.id === entry.item.id && result.enhancement === entry.item.enhancement && result.superRare === entry.item.superRare && exactJewel;
+        const exact = result !== null && result.id === entry.item.id && result.enhancement === entry.item.enhancement && result.superRare === entry.item.superRare;
         const reason = result ? null : slotIndex >= maxSlots ? 'slot_unavailable' : !canCharacterEquipCategory(loaded, entry.item.category) ? 'not_equippable' : 'unavailable';
         return { slotIndex, saved: `${entry.isLocked ? 1 : 0}/${entry.item.id}/${entry.item.enhancement}/${entry.item.superRare}`, result: exact ? 'equipped' : result ? 'substituted' : 'skipped', reason };
       }) } };
@@ -258,7 +255,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
         : redoEquipmentState(characterHistory, currentSnapshot);
       if (!transition || sameEquipment(transition.target, currentSnapshot)) throw new Error('illegal_action');
       const maxSlots = computeCharacterStats(current, next.parties[partyIndex].level).maxEquipSlots;
-      if (!evaluateEquipmentSet(transition.target, current, next.global.inventory, maxSlots, next.global.jewels).allAvailable) throw new Error('illegal_action');
+      if (!evaluateEquipmentSet(transition.target, current, next.global.inventory, maxSlots).allAvailable) throw new Error('illegal_action');
       reduce({ type: 'RESTORE_EQUIPMENT_STATE', partyIndex, characterId, set: transition.target });
       history[historyKey] = transition.history;
     }

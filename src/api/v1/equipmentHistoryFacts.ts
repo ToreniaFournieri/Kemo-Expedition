@@ -11,13 +11,13 @@ export interface ActionAvailability { available: boolean; unavailableReason: str
 /** Up to 30 restorable states, most recent first (the order repeated Undo or Redo restores them). */
 export interface EquipmentHistoryAction extends ActionAvailability { equipmentStates: string[][] }
 
-/** One state as Equipment Entry strings (`slot/lock/itemId/enhancement/superRare[/jewel:rank]`) for its equipped slots. */
+/** One state as Equipment Entry strings (`slot/lock/itemId/enhancement/superRare`) for its equipped slots; states carry no Jewels. */
 function formatEquipmentState(state: SavedEquipmentSet): string[] {
   return state.equipment.map((entry, index) =>
-    `${getSavedEquipmentSlot(entry, index)}/${entry.isLocked ? 1 : 0}/${entry.item.id}/${entry.item.enhancement}/${entry.item.superRare}${entry.item.jewel ? `/${entry.item.jewel.key}:${entry.item.jewel.rank}` : ''}`);
+    `${getSavedEquipmentSlot(entry, index)}/${entry.isLocked ? 1 : 0}/${entry.item.id}/${entry.item.enhancement}/${entry.item.superRare}`);
 }
 
-/** The comparable snapshot of one character's equipment (exact items, slots, Jewels, and locks). */
+/** The comparable snapshot of one character's equipment (exact items, slots, and locks; never Jewels). */
 export function snapshotCharacterEquipment(equipment: Parameters<typeof createEquipmentSetSnapshot>[0], createdAt: number): SavedEquipmentSet {
   return { ...createEquipmentSetSnapshot(equipment), name: 'API history', createdAt };
 }
@@ -43,7 +43,7 @@ export function describeEquipmentHistory(
     const next = states.at(-1);
     if (!next) return { equipmentStates, available: false, unavailableReason: `No ${label} history.` };
     if (sameEquipmentSnapshot(next, current)) return { equipmentStates, available: false, unavailableReason: `The ${label} target matches the current equipment.` };
-    if (!evaluateEquipmentSet(next, character, state.global.inventory, maxSlots, state.global.jewels).allAvailable) {
+    if (!evaluateEquipmentSet(next, character, state.global.inventory, maxSlots).allAvailable) {
       return { equipmentStates, available: false, unavailableReason: `The ${label} target contains unavailable items.` };
     }
     return { equipmentStates, available: true, unavailableReason: null };

@@ -76,7 +76,7 @@ assert.equal(full.simulatedRevision, 7);
     assert.equal(parsed.item.superRare, item.superRare);
     assert.deepEqual(parsed.item.jewel, { key: 'fort', rank: 3 });
   }
-  assert.equal(parseEquipmentEntry(0), null);
+  assert.equal(parseEquipmentEntry('0'), null);
   assert.equal(parseEquipmentEntry('3/1/999999/0/0'), null, 'an unknown item id does not parse');
   assert.equal(parseEquipmentEntry('3/2/1101/0/0'), null, 'a bad lock flag does not parse');
   assert.equal(parseEquipmentEntry('3/0/1101/0/0/notajewel:2'), null);
@@ -86,11 +86,11 @@ assert.equal(full.simulatedRevision, 7);
   const withSet = { ...state, global: { ...state.global, savedEquipmentSets: [{ slot: 4, name: 'Boss', createdAt: Date.UTC(2026, 8, 20), equipment: [{ slotIndex: first.slot, item: { ...first.item, isLocked: false, jewel: { key: 'ward' as const, rank: 2 } }, isLocked: true }] }] } };
   for (const detail of [true, 'true']) {
     const read = await buildApiV1ReadData(`read/build/character/${target.id}/equipmentSet`, withSet, { isEquipmentSetDetail: detail }, context) as { equipmentSets: { equipmentSetId: number; equipmentSet: { name: string; createdAt: string; equipment?: string[] } }[] };
-    assert.equal(read.equipmentSets[0].equipmentSet.equipment?.[0], `${first.slot}/1/${first.item.id}/${first.item.enhancement}/${first.item.superRare}/ward:2`);
+    assert.equal(read.equipmentSets[0].equipmentSet.equipment?.[0], `${first.slot}/1/${first.item.id}/${first.item.enhancement}/${first.item.superRare}`, 'saved sets carry no Jewel');
     const rebuilt = parseSavedEquipmentSet(read.equipmentSets[0]);
     assert.equal(rebuilt.slot, 4);
     assert.equal(rebuilt.equipment[0].isLocked, true);
-    assert.equal(rebuilt.equipment[0].item.jewel?.key, 'ward');
+    assert.equal(rebuilt.equipment[0].item.jewel, null);
     assert.equal(rebuilt.createdAt, Date.UTC(2026, 8, 20));
   }
   const summary = await buildApiV1ReadData(`read/build/character/${target.id}/equipmentSet`, withSet, {}, context) as { equipmentSets: { equipmentSet: { equipment?: string[] } }[] };

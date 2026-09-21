@@ -445,18 +445,26 @@ definitions in 9.1.3.
   Duplicate indices are invalid.
 * `jewelAttach.jewelToSet` uses `Jewel Format`. The exact owned Jewel instance is
   reserved during validation and consumed only by the successful transaction.
-* Saving an equipment set records slot assignment, exact `Item Format`, exact
-  attached Jewel `key:rank`, and lock state. The snapshot does not reserve items.
+* Items and Jewels are stored separately (Spec 8.2.4). Saving an equipment set
+  records slot assignment, exact `Item Format`, and lock state, and never a
+  Jewel; the snapshot does not reserve items. Removing equipment returns its
+  Jewel to the inventory, so every action that sets equipment (set load, Undo,
+  Redo) starts with no Jewel and assigns Jewels independently, with the same
+  validity checks as Auto Equipment, each time. A Jewel is never a requirement:
+  it cannot make an entry unavailable or a restore fail, and a stored Jewel found
+  in an older save is discarded when it is loaded.
 * `loadEquipmentSet.loadMode` is required in the confirmed execution:
-  `equipSet` restores every stored exact item, slot, Jewel `key:rank`, and lock
-  when all are available; `equipExactMatchesOnly` equips only exact available
-  stored matches; `equipSimilar` may use the normal generic similar-item and
-  auto-Jewel selection logic. The response lists each equipped, substituted,
-  skipped, and unavailable entry with a stable reason.
-* `equipSet` is absent from `allowedChoices` when any exact requirement is
+  `equipSet` restores every stored exact item, slot, and lock when all are
+  available; `equipExactMatchesOnly` equips only exact available stored matches;
+  `equipSimilar` may also use the normal generic similar-item selection. The
+  response lists each equipped, substituted, skipped, and unavailable entry with
+  a stable reason.
+* `equipSet` is absent from `allowedChoices` when any exact item requirement is
   unavailable. A partial load requires the confirmation flow in 9.1.4.5.
-* Equipment Undo/Redo restores the complete equipment state, including exact
-  Jewels and locks, and reports whether another Undo/Redo remains available.
+* Equipment Undo/Redo restores the complete item and lock state, then assigns
+  Jewels as above, and reports whether another Undo/Redo remains available. Each
+  restore is validated against current item availability. A change that only
+  moves Jewels adds no Undo entry.
 
 **Base**
 

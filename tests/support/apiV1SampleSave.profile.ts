@@ -9,6 +9,7 @@ import { buildCombatTotals, buildPartyStatsView } from '../../src/api/v1/statusV
 import { buildPartySummaries, buildPartyView, type PartyProjection } from '../../src/api/v1/partyView.ts';
 import { parseInventoryStacks, parseJewelStacks } from '../../src/api/v1/itemFormat.ts';
 import { getItemById } from '../../src/data/items.ts';
+import { isJewelAllowedForCategory } from '../../src/game/jewel.ts';
 import { deriveStatusFacts } from '../../src/game/statusFacts.ts';
 import { computePartyStats } from '../../src/game/partyComputation.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
@@ -158,8 +159,9 @@ const target = targetParty.characters.find((character) => character.equipment.so
   ?? targetParty.characters.find((character) => character.equipment.some((item) => item?.jewel))!;
 assert.ok(target, 'a character with Jewels');
 const equipmentOf = (source: GameState) => source.parties.flatMap((party) => party.characters).find((character) => character.id === target.id)!.equipment;
-// Restores are exact for items, locks, and every Jewel that was attached. The equipment-set restore then runs the
-// generic Jewel allocator, so a slot that had no Jewel may receive a spare one; that is allowed here (see the report).
+// Restores are exact for items and locks. Jewels are never restored: every action that sets equipment starts with no
+// Jewel and assigns them independently, so each Jewel present afterwards must be valid for its item's category
+// (Spec 8.2.4); conservation of the total Jewel count is asserted separately.
 const assertRestored = (restored: GameState, message: string) => {
   const original = equipmentOf(state);
   const now = equipmentOf(restored);
@@ -169,7 +171,7 @@ const assertRestored = (restored: GameState, message: string) => {
     if (!item) return assert.equal(back, null, `${message}: slot ${slot} stays empty`);
     assert.ok(back, `${message}: slot ${slot} restored`);
     assert.deepEqual([back.id, back.enhancement, back.superRare, back.isLocked === true], [item.id, item.enhancement, item.superRare, item.isLocked === true], `${message}: slot ${slot} item`);
-    if (item.jewel) assert.deepEqual(back.jewel, item.jewel, `${message}: slot ${slot} Jewel`);
+    if (back.jewel) assert.ok(isJewelAllowedForCategory(back.category, back.jewel.key), `${message}: slot ${slot} Jewel ${back.jewel.key} is valid for ${back.category}`);
   });
 };
 const before = { items: itemConservation(state), jewels: jewelConservation(state) };
@@ -180,7 +182,7 @@ const before = { items: itemConservation(state), jewels: jewelConservation(state
   assert.equal(removed.state.parties.flatMap((party) => party.characters).find((character) => character.id === target.id)!.equipment.filter(Boolean).length, 0);
 
   const undone = applyApiV1Commit(`commit/build/character/${target.id}/undoEquipment`, removed.state, {}, context());
-  assertRestored(undone.state, 'Undo restores every item, lock, and attached Jewel');
+  assertRestored(undone.state, 'Undo restores every item and lock, then assigns valid Jewels');
   assert.equal(itemConservation(undone.state), before.items);
   assert.equal(jewelConservation(undone.state), before.jewels);
 
@@ -189,7 +191,7 @@ const before = { items: itemConservation(state), jewels: jewelConservation(state
   const setId = (saved.data as { equipmentSetId: number }).equipmentSetId;
   const cleared = applyApiV1Commit(`commit/build/character/${target.id}/removeAllEquipment`, saved.state, {}, context());
   const loaded = applyApiV1Commit(`commit/build/character/${target.id}/loadEquipmentSet`, cleared.state, { equipmentSetId: setId, loadMode: 'equipSet' }, context());
-  assertRestored(loaded.state, 'an exact set load restores every item, lock, and attached Jewel');
+  assertRestored(loaded.state, 'an exact set load restores every item and lock, then assigns valid Jewels');
   assert.equal(itemConservation(loaded.state), before.items);
   assert.equal(jewelConservation(loaded.state), before.jewels);
 }

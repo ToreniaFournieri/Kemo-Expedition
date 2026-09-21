@@ -2505,7 +2505,7 @@ export default function PartyTab({
             {Array.from({ length: MAX_SAVED_EQUIPMENT_SETS }, (_, index) => index + 1).map((slot) => {
               const set = savedEquipmentSets.find((candidate) => candidate.slot === slot);
               const isExpanded = expandedSavedEquipmentSlot === slot;
-              const availability = set ? evaluateEquipmentSet(set, char, inventory, stats.maxEquipSlots, jewels) : null;
+              const availability = set ? evaluateEquipmentSet(set, char, inventory, stats.maxEquipSlots) : null;
               return (
                 <div key={slot} className="text-xs">
                   <button

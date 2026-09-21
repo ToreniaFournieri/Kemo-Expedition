@@ -34,7 +34,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `lockStatus`: `0` = unlocked, `1` = locked.
   * `itemId`: See `Specification_3.2_ITEM_MASTER_DATA.md`.
   * `enhancement`: `0–6`. See `enhancement title` in `Specification_1.2_CONSTANTS_GLOBAL.md`.
-  * `superRare`: `0` = none; `1–80` represents the corresponding `superRare title` in `Specification_1.2_CONSTANTS_GLOBAL.md`.
+  * `superRare`: `0` = none; `1–N` : Represents the corresponding `superRare` title defined in `Specification_1.2_CONSTANTS_GLOBAL.md`.
+    * N represents the highest currently defined superRare ID and may increase in future versions.
 * Example:
   * `0/1101/2/0`
   * `1/1211/0/14`
@@ -701,7 +702,8 @@ Path Parameters
     * Optional.
     * Filters by a specific Super Rare title.
     * `0`: none.
-    * `1–80`: corresponding `superRare title` in `Specification_1.2_CONSTANTS_GLOBAL.md`.
+    * `1–N`: corresponding `superRare title` in `Specification_1.2_CONSTANTS_GLOBAL.md`.
+      * `N` represents the highest currently defined superRare ID and may increase in future versions.
     * Example: `12`.
   * `itemId`
     * Optional.

@@ -337,7 +337,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       };
     }
     const ids = Array.isArray(parameters.equipmentSetId) ? parameters.equipmentSetId.map(Number) : parameters.equipmentSetId ? [Number(parameters.equipmentSetId)] : null;
-    return { equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => ({ equipmentSetId: set.slot, equipmentSet: { equipmentSetId: set.slot, name: set.name, createdAt: new Date(set.createdAt).toISOString(), ...(parameters.isEquipmentSetDetail === true || parameters.isEquipmentSetDetail === 'true' ? { equipment: set.equipment.map((entry, index) => formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, entry.item.jewel)) } : {}) } })) };
+    return { equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => ({ equipmentSetId: set.slot, equipmentSet: { equipmentSetId: set.slot, name: set.name, createdAt: new Date(set.createdAt).toISOString(), ...(parameters.isEquipmentSetDetail === true || parameters.isEquipmentSetDetail === 'true' ? { equipment: set.equipment.map((entry, index) => formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, null)) } : {}) } })) };
   }
 
   if (operationId === 'read/base/searchItems') return searchItems(state, parameters);

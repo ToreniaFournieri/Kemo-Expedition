@@ -3128,7 +3128,7 @@ function reduceGameState(
       // Undo/Redo must use precisely the saved-set availability contract. This
       // check is kept in the reducer as well as the UI to reject stale clicks.
       if (action.type === 'RESTORE_EQUIPMENT_STATE'
-        && !evaluateEquipmentSet(set, character, state.global.inventory, maxSlots, state.global.jewels).allAvailable) return state;
+        && !evaluateEquipmentSet(set, character, state.global.inventory, maxSlots).allAvailable) return state;
       const result = applyEquipmentSet(
         set,
         character,

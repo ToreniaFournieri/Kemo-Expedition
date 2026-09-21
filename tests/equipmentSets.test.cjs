@@ -56,41 +56,64 @@ test('equipment history snapshots use the saved-set availability contract', asyn
   assert.equal(evaluateEquipmentSet(snapshot, character([]), {}, 2).allAvailable, false);
 });
 
-test('exact load restores locks and the saved Jewel before auto-assigning other slots', async () => {
+test('exact load restores locks and assigns Jewels independently, strongest first', async () => {
   const { applyEquipmentSet } = await modulePromise;
   const armor = item(10, 2, 0, 'armor');
+  // A stored Jewel is ignored: Jewels are assigned afresh, from the inventory, every time equipment is set.
   const saved = setOf({ ...armor, jewel: { key: 'fort', rank: 2 } });
   const result = applyEquipmentSet(saved, character([]), inventoryOf(armor), { 'fort:2': 1, 'fort:8': 1 }, 0, 2, 'exact');
   assert.equal(result.character.equipment[0]?.id, armor.id);
   assert.equal(result.character.equipment[0]?.isLocked, true);
-  assert.deepEqual(result.character.equipment[0]?.jewel, { key: 'fort', rank: 2 });
-  assert.equal(result.jewels['fort:2'] ?? 0, 0);
-  assert.equal(result.jewels['fort:8'], 1);
+  assert.deepEqual(result.character.equipment[0]?.jewel, { key: 'fort', rank: 8 });
+  assert.equal(result.jewels['fort:8'] ?? 0, 0);
+  assert.equal(result.jewels['fort:2'], 1, 'the weaker Jewel stays in the inventory');
 });
 
-test('exact loads skip an entry when its saved Jewel is unavailable', async () => {
-  const { applyEquipmentSet } = await modulePromise;
+test('a stored Jewel never makes an entry unavailable or skipped', async () => {
+  const { applyEquipmentSet, evaluateEquipmentSet } = await modulePromise;
   const armor = item(10, 2, 0, 'armor');
   const saved = setOf({ ...armor, jewel: { key: 'fort', rank: 2 } });
-  const result = applyEquipmentSet(saved, character([]), inventoryOf(armor), { 'fort:8': 1 }, 0, 2, 'exact');
-  assert.equal(result.character.equipment[0], null);
-  assert.equal(result.jewels['fort:8'], 1);
+  assert.equal(evaluateEquipmentSet(saved, character([]), inventoryOf(armor), 2).allAvailable, true, 'no Jewel is needed for availability');
+  const result = applyEquipmentSet(saved, character([]), inventoryOf(armor), {}, 0, 2, 'exact');
+  assert.equal(result.character.equipment[0]?.id, armor.id, 'the item is equipped even with no Jewel to assign');
+  assert.equal(result.character.equipment[0]?.jewel, null);
 });
 
-test('exact availability reserves repeated saved Jewels and includes currently attached copies', async () => {
+test('availability counts items only, including copies already worn', async () => {
   const { evaluateEquipmentSet } = await modulePromise;
   const armor = item(10, 2, 0, 'armor');
-  const saved = setOf(
-    { ...armor, jewel: { key: 'fort', rank: 2 } },
-    { ...armor, jewel: { key: 'fort', rank: 2 } },
-  );
-  const twoArmors = inventoryOf(armor, armor);
-  assert.deepEqual(
-    evaluateEquipmentSet(saved, character([]), twoArmors, 2, { 'fort:2': 1 }).entries.map((entry) => entry.available),
-    [true, false],
-  );
-  const equipped = { ...armor, jewel: { key: 'fort', rank: 2 } };
-  assert.equal(evaluateEquipmentSet(setOf(equipped), character([equipped]), {}, 2, {}).allAvailable, true);
+  const saved = setOf({ ...armor, jewel: { key: 'fort', rank: 2 } }, { ...armor, jewel: { key: 'fort', rank: 2 } });
+  assert.deepEqual(evaluateEquipmentSet(saved, character([]), inventoryOf(armor, armor), 2).entries.map((entry) => entry.available), [true, true]);
+  assert.deepEqual(evaluateEquipmentSet(saved, character([]), inventoryOf(armor), 2).entries.map((entry) => entry.available), [true, false], 'a second copy is still needed');
+  const worn = { ...armor, jewel: { key: 'fort', rank: 2 } };
+  assert.equal(evaluateEquipmentSet(setOf(armor), character([worn]), {}, 2).allAvailable, true);
+});
+
+test('a Jewel worn before a restore returns to the inventory and is assigned again on validity', async () => {
+  const { applyEquipmentSet } = await modulePromise;
+  const armor = item(10, 2, 0, 'armor');
+  const worn = { ...armor, jewel: { key: 'ward', rank: 3 } };
+  const result = applyEquipmentSet(setOf(armor), character([worn]), {}, { 'fort:1': 1 }, 0, 2, 'exact');
+  // The worn Jewel is detached first; auto-assignment follows the Jewel Category Mapping (armor takes `fort`).
+  assert.deepEqual(result.character.equipment[0]?.jewel, { key: 'fort', rank: 1 });
+  assert.equal(result.jewels['ward:3'], 1, 'the detached Jewel is back in the inventory');
+});
+
+test('a Jewel the item category does not accept is never assigned', async () => {
+  const { applyEquipmentSet } = await modulePromise;
+  const armor = item(10, 2, 0, 'armor');
+  // Armor accepts fort, ward, and shade only.
+  const result = applyEquipmentSet(setOf(armor), character([]), inventoryOf(armor), { 'might:8': 1, 'arcana:8': 1 }, 0, 2, 'exact');
+  assert.equal(result.character.equipment[0]?.jewel, null);
+  assert.equal(result.jewels['might:8'], 1);
+});
+
+test('saved snapshots and saved sets carry no Jewels', async () => {
+  const { createEquipmentSetSnapshot, normalizeSavedEquipmentSets } = await modulePromise;
+  const armor = { ...item(10, 2, 0, 'armor'), jewel: { key: 'fort', rank: 2 } };
+  assert.equal(createEquipmentSetSnapshot([armor]).equipment[0].item.jewel, null);
+  const migrated = normalizeSavedEquipmentSets([setOf(armor)]);
+  assert.equal(migrated[0].equipment[0].item.jewel, null, 'an older save that stored a Jewel is normalized');
 });
 
 test('saved snapshots and exact loads preserve sparse equipment slots', async () => {
@@ -103,7 +126,7 @@ test('saved snapshots and exact loads preserve sparse equipment slots', async ()
   assert.equal(result.character.equipment[1]?.id, armor.id);
 });
 
-test('similar loads do not reserve the saved Jewel', async () => {
+test('similar loads assign Jewels the same way as exact loads', async () => {
   const { applyEquipmentSet } = await modulePromise;
   const armor = item(10, 2, 0, 'armor');
   const saved = setOf({ ...armor, jewel: { key: 'fort', rank: 2 } });

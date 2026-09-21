@@ -32,7 +32,7 @@ export function resolveConfirmationPolicy(operation: string, state: GameState, p
   // Unknown character or set: no challenge; the commit itself reports `not_found`.
   if (!party || !character || !set) return null;
   const maxSlots = computeCharacterStats(character, party.level).maxEquipSlots;
-  const availability = evaluateEquipmentSet(set, character, state.global.inventory, maxSlots, state.global.jewels);
+  const availability = evaluateEquipmentSet(set, character, state.global.inventory, maxSlots);
   if (availability.allAvailable) return null;
   return {
     warningKey: 'api.warning.equipmentSetPartial',

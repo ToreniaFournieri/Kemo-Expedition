@@ -75,7 +75,7 @@ export function planEquipmentIntent(state: GameState, characterId: number, inten
       if (!set) throw new Error('not_found');
       const party = findParty(state, characterId);
       const maxSlots = computeCharacterStats(character, party.level).maxEquipSlots;
-      const allAvailable = evaluateEquipmentSet(set, character, state.global.inventory, maxSlots, state.global.jewels).allAvailable;
+      const allAvailable = evaluateEquipmentSet(set, character, state.global.inventory, maxSlots).allAvailable;
       // `equipSet` promises every stored item; a partial set needs one of the explicit choices the player already made.
       const loadMode = intent.mode === 'similar' ? 'equipSimilar' : allAvailable ? 'equipSet' : 'equipExactMatchesOnly';
       return [{ action: 'loadEquipmentSet', parameters: { equipmentSetId: intent.slot, loadMode }, confirmed: true }];
