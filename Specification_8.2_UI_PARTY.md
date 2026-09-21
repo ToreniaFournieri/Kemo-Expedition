@@ -310,6 +310,7 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
   - `commit/build/character/{characterId}/removeAllEquipment`
   - `commit/build/character/{characterId}/removeEquipment`
   - `commit/build/character/{characterId}/equip`
+  - `commit/build/character/{characterId}/equipmentEvaluation`
   - `commit/build/character/{characterId}/lockEquipment`
   - `commit/build/character/{characterId}/unlockEquipment`
   - `commit/build/character/{characterId}/autoEquipment`
