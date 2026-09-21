@@ -2300,6 +2300,8 @@
                       "stateStartedAt",
                       "stateDurationMs",
                       "stateExpectedEndAt",
+                      "progress",
+                      "exploration",
                       "currentHp",
                       "maximumHp",
                       "disclosedFloor",
@@ -2309,7 +2311,10 @@
                       "depthLimit",
                       "difficultyOffset",
                       "chargeStock",
-                      "chargeDuration"
+                      "chargeDuration",
+                      "clearGates",
+                      "sideQuest",
+                      "controls"
                     ],
                     "properties": {
                       "partyNumber": {
@@ -2359,13 +2364,225 @@
                           }
                         ]
                       },
+                      "progress": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "kind",
+                              "mainPercent",
+                              "totalSteps",
+                              "completedSteps",
+                              "subProgress",
+                              "nextChangeAt"
+                            ],
+                            "properties": {
+                              "kind": {
+                                "anyOf": [
+                                  {
+                                    "const": "none",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "continuous",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "stepBased",
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              "mainPercent": {
+                                "minimum": 0,
+                                "maximum": 100,
+                                "type": "number"
+                              },
+                              "totalSteps": {
+                                "anyOf": [
+                                  {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "completedSteps": {
+                                "anyOf": [
+                                  {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "subProgress": {
+                                "anyOf": [
+                                  {
+                                    "additionalProperties": false,
+                                    "type": "object",
+                                    "required": [
+                                      "startedAt",
+                                      "endsAt"
+                                    ],
+                                    "properties": {
+                                      "startedAt": {
+                                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                                        "type": "string"
+                                      },
+                                      "endsAt": {
+                                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "nextChangeAt": {
+                                "anyOf": [
+                                  {
+                                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "exploration": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "revealedRoomCount",
+                              "nextRevealAt",
+                              "rooms"
+                            ],
+                            "properties": {
+                              "revealedRoomCount": {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "nextRevealAt": {
+                                "anyOf": [
+                                  {
+                                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "rooms": {
+                                "maxItems": 24,
+                                "type": "array",
+                                "items": {
+                                  "additionalProperties": false,
+                                  "type": "object",
+                                  "required": [
+                                    "room",
+                                    "floor",
+                                    "roomInFloor",
+                                    "roomType",
+                                    "enemyId",
+                                    "outcome",
+                                    "remainingPartyHp",
+                                    "maximumPartyHp"
+                                  ],
+                                  "properties": {
+                                    "room": {
+                                      "minimum": 1,
+                                      "type": "integer"
+                                    },
+                                    "floor": {
+                                      "anyOf": [
+                                        {
+                                          "minimum": 1,
+                                          "type": "integer"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "roomInFloor": {
+                                      "anyOf": [
+                                        {
+                                          "minimum": 1,
+                                          "type": "integer"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "roomType": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "enemyId": {
+                                      "anyOf": [
+                                        {
+                                          "minimum": 0,
+                                          "type": "integer"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "outcome": {
+                                      "minLength": 1,
+                                      "type": "string"
+                                    },
+                                    "remainingPartyHp": {
+                                      "minimum": 0,
+                                      "type": "number"
+                                    },
+                                    "maximumPartyHp": {
+                                      "minimum": 0,
+                                      "type": "number"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "currentHp": {
                         "minimum": 0,
-                        "type": "integer"
+                        "type": "number"
                       },
                       "maximumHp": {
                         "minimum": 0,
-                        "type": "integer"
+                        "type": "number"
                       },
                       "disclosedFloor": {
                         "anyOf": [
@@ -2446,6 +2663,219 @@
                       "chargeDuration": {
                         "minimum": 0,
                         "type": "integer"
+                      },
+                      "clearGates": {
+                        "maxItems": 4,
+                        "type": "array",
+                        "items": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "kind",
+                            "dungeonId",
+                            "floor",
+                            "current",
+                            "required"
+                          ],
+                          "properties": {
+                            "kind": {
+                              "anyOf": [
+                                {
+                                  "const": "eliteGate",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "bossGate",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "entryGate",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "godGate",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "godEntry",
+                                  "type": "string"
+                                }
+                              ]
+                            },
+                            "dungeonId": {
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "floor": {
+                              "anyOf": [
+                                {
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "current": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "required": {
+                              "minimum": 1,
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      },
+                      "sideQuest": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "type",
+                              "target",
+                              "progress",
+                              "percent",
+                              "hasDeadline",
+                              "remainingMs"
+                            ],
+                            "properties": {
+                              "id": {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "type": {
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              "target": {
+                                "minimum": 1,
+                                "type": "number"
+                              },
+                              "progress": {
+                                "minimum": 0,
+                                "type": "number"
+                              },
+                              "percent": {
+                                "minimum": 0,
+                                "maximum": 100,
+                                "type": "number"
+                              },
+                              "hasDeadline": {
+                                "type": "boolean"
+                              },
+                              "remainingMs": {
+                                "minimum": 0,
+                                "type": "number"
+                              }
+                            }
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "controls": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "sortie",
+                          "godsBattle"
+                        ],
+                        "properties": {
+                          "sortie": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "available",
+                              "unavailableReason"
+                            ],
+                            "properties": {
+                              "available": {
+                                "type": "boolean"
+                              },
+                              "unavailableReason": {
+                                "anyOf": [
+                                  {
+                                    "anyOf": [
+                                      {
+                                        "const": "gods_battle_unavailable",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "entry_gate_locked",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "party_exhausted",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "already_moving_to_gods_battle",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "charge_insufficient",
+                                        "type": "string"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          "godsBattle": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "available",
+                              "unavailableReason"
+                            ],
+                            "properties": {
+                              "available": {
+                                "type": "boolean"
+                              },
+                              "unavailableReason": {
+                                "anyOf": [
+                                  {
+                                    "anyOf": [
+                                      {
+                                        "const": "gods_battle_unavailable",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "entry_gate_locked",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "party_exhausted",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "already_moving_to_gods_battle",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "charge_insufficient",
+                                        "type": "string"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -2512,6 +2942,8 @@
                           "stateStartedAt",
                           "stateDurationMs",
                           "stateExpectedEndAt",
+                          "progress",
+                          "exploration",
                           "currentHp",
                           "maximumHp",
                           "disclosedFloor",
@@ -2521,7 +2953,10 @@
                           "depthLimit",
                           "difficultyOffset",
                           "chargeStock",
-                          "chargeDuration"
+                          "chargeDuration",
+                          "clearGates",
+                          "sideQuest",
+                          "controls"
                         ],
                         "properties": {
                           "partyNumber": {
@@ -2571,13 +3006,225 @@
                               }
                             ]
                           },
+                          "progress": {
+                            "anyOf": [
+                              {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "kind",
+                                  "mainPercent",
+                                  "totalSteps",
+                                  "completedSteps",
+                                  "subProgress",
+                                  "nextChangeAt"
+                                ],
+                                "properties": {
+                                  "kind": {
+                                    "anyOf": [
+                                      {
+                                        "const": "none",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "continuous",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "stepBased",
+                                        "type": "string"
+                                      }
+                                    ]
+                                  },
+                                  "mainPercent": {
+                                    "minimum": 0,
+                                    "maximum": 100,
+                                    "type": "number"
+                                  },
+                                  "totalSteps": {
+                                    "anyOf": [
+                                      {
+                                        "minimum": 1,
+                                        "type": "integer"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "completedSteps": {
+                                    "anyOf": [
+                                      {
+                                        "minimum": 0,
+                                        "type": "integer"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "subProgress": {
+                                    "anyOf": [
+                                      {
+                                        "additionalProperties": false,
+                                        "type": "object",
+                                        "required": [
+                                          "startedAt",
+                                          "endsAt"
+                                        ],
+                                        "properties": {
+                                          "startedAt": {
+                                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                                            "type": "string"
+                                          },
+                                          "endsAt": {
+                                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                                            "type": "string"
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "nextChangeAt": {
+                                    "anyOf": [
+                                      {
+                                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "exploration": {
+                            "anyOf": [
+                              {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "revealedRoomCount",
+                                  "nextRevealAt",
+                                  "rooms"
+                                ],
+                                "properties": {
+                                  "revealedRoomCount": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "nextRevealAt": {
+                                    "anyOf": [
+                                      {
+                                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "rooms": {
+                                    "maxItems": 24,
+                                    "type": "array",
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "type": "object",
+                                      "required": [
+                                        "room",
+                                        "floor",
+                                        "roomInFloor",
+                                        "roomType",
+                                        "enemyId",
+                                        "outcome",
+                                        "remainingPartyHp",
+                                        "maximumPartyHp"
+                                      ],
+                                      "properties": {
+                                        "room": {
+                                          "minimum": 1,
+                                          "type": "integer"
+                                        },
+                                        "floor": {
+                                          "anyOf": [
+                                            {
+                                              "minimum": 1,
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "roomInFloor": {
+                                          "anyOf": [
+                                            {
+                                              "minimum": 1,
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "roomType": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "enemyId": {
+                                          "anyOf": [
+                                            {
+                                              "minimum": 0,
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "outcome": {
+                                          "minLength": 1,
+                                          "type": "string"
+                                        },
+                                        "remainingPartyHp": {
+                                          "minimum": 0,
+                                          "type": "number"
+                                        },
+                                        "maximumPartyHp": {
+                                          "minimum": 0,
+                                          "type": "number"
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
                           "currentHp": {
                             "minimum": 0,
-                            "type": "integer"
+                            "type": "number"
                           },
                           "maximumHp": {
                             "minimum": 0,
-                            "type": "integer"
+                            "type": "number"
                           },
                           "disclosedFloor": {
                             "anyOf": [
@@ -2658,6 +3305,219 @@
                           "chargeDuration": {
                             "minimum": 0,
                             "type": "integer"
+                          },
+                          "clearGates": {
+                            "maxItems": 4,
+                            "type": "array",
+                            "items": {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "kind",
+                                "dungeonId",
+                                "floor",
+                                "current",
+                                "required"
+                              ],
+                              "properties": {
+                                "kind": {
+                                  "anyOf": [
+                                    {
+                                      "const": "eliteGate",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "bossGate",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "entryGate",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "godGate",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "godEntry",
+                                      "type": "string"
+                                    }
+                                  ]
+                                },
+                                "dungeonId": {
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "floor": {
+                                  "anyOf": [
+                                    {
+                                      "minimum": 1,
+                                      "type": "integer"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "current": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "required": {
+                                  "minimum": 1,
+                                  "type": "integer"
+                                }
+                              }
+                            }
+                          },
+                          "sideQuest": {
+                            "anyOf": [
+                              {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "id",
+                                  "type",
+                                  "target",
+                                  "progress",
+                                  "percent",
+                                  "hasDeadline",
+                                  "remainingMs"
+                                ],
+                                "properties": {
+                                  "id": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "type": {
+                                    "minLength": 1,
+                                    "maxLength": 200,
+                                    "type": "string"
+                                  },
+                                  "target": {
+                                    "minimum": 1,
+                                    "type": "number"
+                                  },
+                                  "progress": {
+                                    "minimum": 0,
+                                    "type": "number"
+                                  },
+                                  "percent": {
+                                    "minimum": 0,
+                                    "maximum": 100,
+                                    "type": "number"
+                                  },
+                                  "hasDeadline": {
+                                    "type": "boolean"
+                                  },
+                                  "remainingMs": {
+                                    "minimum": 0,
+                                    "type": "number"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "controls": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "sortie",
+                              "godsBattle"
+                            ],
+                            "properties": {
+                              "sortie": {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "available",
+                                  "unavailableReason"
+                                ],
+                                "properties": {
+                                  "available": {
+                                    "type": "boolean"
+                                  },
+                                  "unavailableReason": {
+                                    "anyOf": [
+                                      {
+                                        "anyOf": [
+                                          {
+                                            "const": "gods_battle_unavailable",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "entry_gate_locked",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "party_exhausted",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "already_moving_to_gods_battle",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "charge_insufficient",
+                                            "type": "string"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              "godsBattle": {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "available",
+                                  "unavailableReason"
+                                ],
+                                "properties": {
+                                  "available": {
+                                    "type": "boolean"
+                                  },
+                                  "unavailableReason": {
+                                    "anyOf": [
+                                      {
+                                        "anyOf": [
+                                          {
+                                            "const": "gods_battle_unavailable",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "entry_gate_locked",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "party_exhausted",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "already_moving_to_gods_battle",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "charge_insufficient",
+                                            "type": "string"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
                           }
                         }
                       }
@@ -2705,6 +3565,33 @@
                   "stateStartedAt": "1970-01-01T00:00:00.000Z",
                   "stateDurationMs": 0,
                   "stateExpectedEndAt": "1970-01-01T00:00:00.000Z",
+                  "progress": {
+                    "kind": "none",
+                    "mainPercent": 0,
+                    "totalSteps": 1,
+                    "completedSteps": 0,
+                    "subProgress": {
+                      "startedAt": "1970-01-01T00:00:00.000Z",
+                      "endsAt": "1970-01-01T00:00:00.000Z"
+                    },
+                    "nextChangeAt": "1970-01-01T00:00:00.000Z"
+                  },
+                  "exploration": {
+                    "revealedRoomCount": 0,
+                    "nextRevealAt": "1970-01-01T00:00:00.000Z",
+                    "rooms": [
+                      {
+                        "room": 1,
+                        "floor": 1,
+                        "roomInFloor": 1,
+                        "roomType": "xxxxxxx",
+                        "enemyId": 0,
+                        "outcome": "xxxxxxx",
+                        "remainingPartyHp": 0,
+                        "maximumPartyHp": 0
+                      }
+                    ]
+                  },
                   "currentHp": 0,
                   "maximumHp": 0,
                   "disclosedFloor": 1,
@@ -2714,7 +3601,35 @@
                   "depthLimit": "xxxxxxx",
                   "difficultyOffset": 0,
                   "chargeStock": 0,
-                  "chargeDuration": 0
+                  "chargeDuration": 0,
+                  "clearGates": [
+                    {
+                      "kind": "eliteGate",
+                      "dungeonId": 1,
+                      "floor": 1,
+                      "current": 0,
+                      "required": 1
+                    }
+                  ],
+                  "sideQuest": {
+                    "id": 0,
+                    "type": "xxxxxxx",
+                    "target": 1,
+                    "progress": 0,
+                    "percent": 0,
+                    "hasDeadline": true,
+                    "remainingMs": 0
+                  },
+                  "controls": {
+                    "sortie": {
+                      "available": true,
+                      "unavailableReason": "gods_battle_unavailable"
+                    },
+                    "godsBattle": {
+                      "available": true,
+                      "unavailableReason": "gods_battle_unavailable"
+                    }
+                  }
                 }
               ]
             }

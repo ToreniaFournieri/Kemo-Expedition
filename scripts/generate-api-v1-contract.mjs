@@ -250,7 +250,33 @@ const compactObservationSchema = strict({
   })),
   attention: strict({ latestSimulationResult: Type.Array(Type.String()), emptyEquipmentSlot: Type.Array(Type.String()), notification: Type.Array(strict({ partyNumber, unreadDiary: Type.Integer({ minimum: 0 }), unreadDiaryTitle: Type.Array(Type.String()) })) }),
 });
-const expeditionProjectionSchema = strict({ parties: Type.Array(strict({ partyNumber, name: Type.String({ minLength: 1 }), state: stableKey, stateStartedAt: Type.Union([isoTimestamp, Type.Null()]), stateDurationMs: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]), stateExpectedEndAt: Type.Union([isoTimestamp, Type.Null()]), currentHp: Type.Integer({ minimum: 0 }), maximumHp: Type.Integer({ minimum: 0 }), disclosedFloor: Type.Union([Type.Integer(), Type.Null()]), disclosedOutcome: Type.Union([expeditionOutcome, Type.Null()]), destination: Type.Union([integerId, Type.Null()]), destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0 }), chargeStock: Type.Integer({ minimum: 0, maximum: 6 }), chargeDuration: Type.Integer({ minimum: 0 }) })) });
+// Spec 8.3 / 9.1.4.7: the Expedition pane's facts. While a party explores, `exploration` carries only the rooms revealed as
+// of the read, with `nextRevealAt` naming when the next one appears; HP, floor, and outcome never run ahead of the clock.
+const stepProgress = strict({
+  kind: literals('none', 'continuous', 'stepBased'),
+  mainPercent: percentage,
+  totalSteps: Type.Union([Type.Integer({ minimum: 1 }), Type.Null()]),
+  completedSteps: Type.Union([count, Type.Null()]),
+  subProgress: Type.Union([strict({ startedAt: isoTimestamp, endsAt: isoTimestamp }), Type.Null()]),
+  nextChangeAt: Type.Union([isoTimestamp, Type.Null()]),
+});
+const revealedRoom = strict({ room: Type.Integer({ minimum: 1 }), floor: Type.Union([Type.Integer({ minimum: 1 }), Type.Null()]), roomInFloor: Type.Union([Type.Integer({ minimum: 1 }), Type.Null()]), roomType: Type.Union([Type.String(), Type.Null()]), enemyId: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]), outcome: Type.String({ minLength: 1 }), remainingPartyHp: Type.Number({ minimum: 0 }), maximumPartyHp: Type.Number({ minimum: 0 }) });
+const clearGateFact = strict({ kind: literals('eliteGate', 'bossGate', 'entryGate', 'godGate', 'godEntry'), dungeonId: integerId, floor: Type.Union([Type.Integer({ minimum: 1 }), Type.Null()]), current: count, required: Type.Integer({ minimum: 1 }) });
+const sideQuestFact = strict({ id: Type.Integer({ minimum: 0 }), type: stableKey, target: Type.Number({ minimum: 1 }), progress: Type.Number({ minimum: 0 }), percent: percentage, hasDeadline: Type.Boolean(), remainingMs: Type.Number({ minimum: 0 }) });
+const sortieControl = strict({ available: Type.Boolean(), unavailableReason: Type.Union([literals('gods_battle_unavailable', 'entry_gate_locked', 'party_exhausted', 'already_moving_to_gods_battle', 'charge_insufficient'), Type.Null()]) });
+const expeditionProjectionSchema = strict({ parties: Type.Array(strict({
+  partyNumber, name: Type.String({ minLength: 1 }), state: stableKey,
+  stateStartedAt: Type.Union([isoTimestamp, Type.Null()]), stateDurationMs: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]), stateExpectedEndAt: Type.Union([isoTimestamp, Type.Null()]),
+  progress: Type.Union([stepProgress, Type.Null()]),
+  exploration: Type.Union([strict({ revealedRoomCount: count, nextRevealAt: Type.Union([isoTimestamp, Type.Null()]), rooms: Type.Array(revealedRoom, { maxItems: 24 }) }), Type.Null()]),
+  currentHp: Type.Number({ minimum: 0 }), maximumHp: Type.Number({ minimum: 0 }),
+  disclosedFloor: Type.Union([Type.Integer(), Type.Null()]), disclosedOutcome: Type.Union([expeditionOutcome, Type.Null()]),
+  destination: Type.Union([integerId, Type.Null()]), destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0 }),
+  chargeStock: Type.Integer({ minimum: 0, maximum: 6 }), chargeDuration: Type.Integer({ minimum: 0 }),
+  clearGates: Type.Array(clearGateFact, { maxItems: 4 }),
+  sideQuest: Type.Union([sideQuestFact, Type.Null()]),
+  controls: strict({ sortie: sortieControl, godsBattle: sortieControl }),
+})) });
 const characterSummary = strict({ characterId: integerId, name: Type.String({ minLength: 1 }), raceId: stableKey, gender: literals('male', 'female'), mainClassId: stableKey, subClassId: stableKey, lineageId: Type.Union([stableKey, Type.Null()]), predispositionId: Type.Union([stableKey, Type.Null()]), isUnique: Type.Boolean(), mimorianEnemyId: Type.Union([integerId, Type.Null()]), calculatedStatus, equipment: equipmentEntryList, autoEquipmentMode: Type.Integer({ minimum: 0, maximum: 2 }) });
 const partyProjectionSchema = strict({ effectiveSelection: strict({ partyNumber, characterId: Type.Union([integerId, Type.Null()]) }), party: strict({ partyNumber, name: Type.String({ minLength: 1 }), level: Type.Integer({ minimum: 1, maximum: 69 }), experience: Type.Integer({ minimum: 0 }), experienceToNext: Type.Integer({ minimum: 0 }), maxHp: Type.Integer({ minimum: 0 }), deityId: stableKey, deityRank: Type.Integer({ minimum: 0 }), condition: Type.Integer({ minimum: -400, maximum: 400 }), order: Type.Array(integerId), characters: Type.Array(characterSummary) }) });
 const baseProjectionSchema = strict({ currencies: strict({ gold: Type.Integer({ minimum: 0 }), prana: Type.Integer({ minimum: 0 }) }), inventory: Type.Array(strict({ variantKey: stableKey, item: itemFormat, quantity: Type.Integer({ minimum: 0 }), status: literals('owned', 'sold', 'notown'), isNew: Type.Boolean() })), jewelPriorityParty: Type.Union([partyNumber, Type.Literal('none')]), shop: strict({ intimacy: Type.Integer({ minimum: 0, maximum: 99 }), paidRefreshPrice: Type.Integer({ minimum: 0 }) }) });

@@ -424,10 +424,39 @@ definitions in 9.1.3.
   progress; once the party leaves `state.explore` the newest log is disclosed. A
   Diary-retained log requested by `logId` is unaffected. The instant charge
   `chargeStock` and `chargeDuration` use the current Speed of Time.
+* The Expedition projection carries the rest of a party's pane, from the same shared
+  game functions the UI uses:
+  * `progress` (`null` without a live cycle or for `state.idle` and
+    `state.reactivate`): `kind` is `stepBased` (`state.rest`, `state.sell`,
+    `state.explore`) or `continuous`; `mainPercent` is the main bar, and for step-based
+    states `completedSteps` of `totalSteps` (24 for `state.explore`, the initial heal
+    Steps for `state.rest`, one per auto-sell item for `state.sell`), the current
+    Step's `subProgress` window (`startedAt`, `endsAt`), and `nextChangeAt`, the next
+    instant the bar changes on its own.
+  * `exploration` (only while the party is in `state.explore`): the exploration is
+    server-gated. `rooms` holds only the rooms revealed as of this read
+    (`revealedRoomCount`, at most 24), each with its room coordinates, enemy,
+    outcome, and remaining party HP; a room, HP value, or outcome from the future is
+    never sent, and `nextRevealAt` says when to read again (`null` once every room is
+    revealed). `currentHp` is the last revealed room's HP (the estimated starting HP
+    before the first room), not the final HP of the running exploration.
+  * `clearGates`: the goals of the selected destination (`eliteGate`, `bossGate`,
+    `entryGate`, `godGate`, `godEntry`) with `dungeonId`, `floor` where it applies, and
+    `current` of `required`. `sideQuest` is the active side quest (`type`, `target`,
+    `progress`, `percent`, `hasDeadline`, and `remainingMs` at the current Speed of
+    Time) or `null`.
+  * `controls.sortie` and `controls.godsBattle` are `{available, unavailableReason}`.
+    The reason is the first failing check of the commit, in this order:
+    `gods_battle_unavailable` (Gods Battle only), `entry_gate_locked`,
+    `party_exhausted`, `already_moving_to_gods_battle` (Gods Battle only),
+    `charge_insufficient`; the Colosseum is exempt from the gate, HP, and charge
+    checks. While a party explores, the HP check uses the revealed HP, like the
+    button; the commit itself uses the party's current HP, like `triggerSortie`.
 * `sortie` and `godsBattle` behave as pressing the Sortie or Gods Battle button
   (9.1.3, 3-2-2): the same refusals and the same reducer actions in the same
   order. They are `illegal_action` (details name the reason) when the party has no
-  Instant Expedition charge (`charge_insufficient`), is exhausted at 0 HP outside
+  Instant Expedition charge (`charge_insufficient`), has not unlocked the selected
+  destination (`entry_gate_locked`, except in the Colosseum), is exhausted at 0 HP outside
   the Colosseum (`party_exhausted`), when `godsBattle` is requested without an
   available Gods Battle (`gods_battle_unavailable`), or when the party is already
   moving to a Gods Battle (`already_moving_to_gods_battle`). Otherwise the request

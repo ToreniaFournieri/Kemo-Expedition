@@ -25,8 +25,6 @@ import { computeCharacterStats,getAbilityDescription } from '../../game/characte
 import {
 ENTRY_GATE_REQUIRED,
 getBossGateKey,
-getClearGateProgress,
-getClearGateRequired,
 getEliteGateKey,
 getGodsBattleProgress,
 getGodsBattleRequired,
@@ -34,7 +32,11 @@ hasDefeatedDungeonBoss,
 isClearGateUnlocked,
 isDungeonEntryUnlocked,
 } from '../../game/clearGate';
+import { getExpeditionGoals, getSideQuestFacts, shouldDelayNextSpecialGoal, TIME_BASED_SIDE_QUEST_TYPES } from '../../game/expeditionGoals';
 import { formatEnemyDefName,getEnemyTypeShortName } from '../../game/enemyDisplay';
+export { shouldDelayNextSpecialGoal, TIME_BASED_SIDE_QUEST_TYPES };
+import { EXPLORING_PROGRESS_TOTAL_STEPS, getAutoSellStepCount, getExplorationVisibleRoomCount, STEP_BASED_STATES } from '../../game/partyStateProgress';
+export { EXPLORING_PROGRESS_TOTAL_STEPS, getAutoSellStepCount, getExplorationVisibleRoomCount, STEP_BASED_STATES };
 import { isEnemyTypeCBonusType } from '../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId } from '../../game/environment';
 import { getItemRarityById } from '../../game/itemRarity';
@@ -615,13 +617,10 @@ export function getNextPartyCycleCheckpointDelay(
 }
 export { BASE_STEP_DURATION_MS };
 export const EXPLORING_PROGRESS_STEP_MS = BASE_STEP_DURATION_MS;
-export const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
 export const SOUND_SLEEP_STEP_COUNT = 16;
 export const PRAY_STEP_COUNT = 4;
-export const STEP_BASED_STATES: ReadonlySet<PartyCycleState> = new Set(['rest', 'sell', 'explore']);
 export const APPROX_CYCLE_STEP_COUNT = 30;
 export const CHUNK_CYCLE_COUNT = 30;
-export const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
 export const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 export const AFK_MAX_ELAPSED_MS = AFK_MAX_REAL_ELAPSED_MS;
 export const REDUCER_CATCHUP_THRESHOLD_MS = BASE_STEP_DURATION_MS;
@@ -707,14 +706,6 @@ export function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { 
     gainedSeconds: Math.floor(totalMs / 1000),
     remainderMs: totalMs % 1000,
   };
-}
-
-// SpecRef: 5.1.1 | Party State Machine | state.sell
-export function getAutoSellStepCount(party: Party): number {
-  const autoSellItemCount = party.lastExpeditionLog?.autoSellItems?.length
-    || party.lastExpeditionLog?.autoSellCount
-    || 1;
-  return Math.max(1, autoSellItemCount);
 }
 
 // SpecRef: 8.1 | UI_FOUNDATIONS | Navigation: Minimal scene transitions, tab-centered
@@ -808,14 +799,6 @@ export function preloadRaceIcons(): void {
 export function getExplorationDurationMs(entryCount?: number, durationMultiplier: number = 1, durationScale: number = 1): number {
   const exploredSteps = Math.max(1, Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, entryCount ?? EXPLORING_PROGRESS_TOTAL_STEPS));
   return Math.max(100, Math.ceil(exploredSteps * EXPLORING_PROGRESS_STEP_MS * durationMultiplier * durationScale));
-}
-
-export function getExplorationVisibleRoomCount(elapsedMs: number, durationMs: number, totalEntries: number): number {
-  if (totalEntries <= 0) return 0;
-  return Math.min(
-    totalEntries,
-    Math.max(0, Math.ceil((elapsedMs / Math.max(1, durationMs)) * totalEntries)),
-  );
 }
 
 export function getExpeditionOutcomeLabel(outcome: 'Clear' | 'Return' | 'Defeat' | 'Retreat' | string): string {
@@ -1712,14 +1695,6 @@ export function getDungeonEntryGateState(
   };
 }
 
-export function shouldDelayNextSpecialGoal(party: Party, cycleState?: PartyCycleState): boolean {
-  if (cycleState !== 'explore') return false;
-  const log = party.lastExpeditionLog;
-  if (!log || log.finalOutcome !== 'Clear') return false;
-  const lastEntry = log.entries[log.entries.length - 1];
-  return lastEntry?.roomType === 'battle_Boss' && (lastEntry.godsBattle || lastEntry.enemyName.includes(t('home.godsBattle.parenthetical')));
-}
-
 export function getGodBattleLabel(dungeon: Dungeon): string {
   // SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
   const godProfile = getGodProfileForDungeon(dungeon.id, dungeon.name);
@@ -1846,11 +1821,7 @@ export function getSideQuestDisplay(party: Party, cycleDurationScale: number, em
     current: `${formatNumber(displayProgress)}/${formatNumber(displayTarget)}`,
   };
 
-  const safeScale = Math.max(0.001, cycleDurationScale);
-  const simulatedElapsedMs = Math.max(0, emulatedNowMs - party.sideQuest.assignedAt) / safeScale;
-  const simulatedNow = party.sideQuest.assignedAt + simulatedElapsedMs;
-  const remainingMs = Math.max(0, party.sideQuest.expiresAt - simulatedNow);
-  const hasDeadline = party.sideQuest.expiresAt < Number.MAX_SAFE_INTEGER;
+  const { remainingMs, hasDeadline } = getSideQuestFacts(party, cycleDurationScale, emulatedNowMs)!;
   const remainingLabel = !hasDeadline
     ? null
     : remainingMs >= (60 * 60 * 1000)
@@ -1869,103 +1840,58 @@ export function getSideQuestDisplay(party: Party, cycleDurationScale: number, em
 }
 
 export function getCompactProgressItems(party: Party, cycleDurationScale: number, emulatedNowMs: number, cycleState?: PartyCycleState): ProgressItemDisplay[] {
-  const currentDungeon = DUNGEONS.find((d) => d.id === party.selectedDungeonId);
-  if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return [];
-
   // SpecRef: 8.3 | UI_EXPEDITION | Progress Visual Update
-  // Clear-Gate outcomes become visible only after the party has completed its return. Keep
-  // the compact indicator aligned with the gate text in the active expedition log.
-  const displayedParty = party.expeditionRewardsPending && party.pendingClearGateSnapshot
-    ? {
-        ...party,
-        clearGateProgress: party.pendingClearGateSnapshot.progress,
-        clearGateStatus: party.pendingClearGateSnapshot.status,
-        defeatedBossExpeditions: party.pendingClearGateSnapshot.defeatedBossExpeditions,
-      }
-    : party;
+  // The goals are selected by the shared game function (also published by the Application API); this only formats them.
+  const currentDungeon = DUNGEONS.find((d) => d.id === party.selectedDungeonId);
   const items: ProgressItemDisplay[] = [];
   const pushUniqueProgressItem = (item: ProgressItemDisplay) => {
     if (items.some((existingItem) => existingItem.compactText === item.compactText)) return;
     items.push(item);
   };
 
-  for (const floor of currentDungeon.floors) {
-    const hasEliteGate = floor.floorNumber < 6;
-    if (!hasEliteGate) continue;
-    const gateKey = getEliteGateKey(currentDungeon.id, floor.floorNumber);
-    const required = getClearGateRequired(gateKey);
-    const current = getClearGateProgress(displayedParty, gateKey);
-    const unlocked = isClearGateUnlocked(displayedParty, gateKey);
-    if (!unlocked) {
-      const safeRequired = Math.max(1, required);
-      const normalizedCurrent = Math.max(0, Math.min(current, safeRequired));
+  for (const goal of getExpeditionGoals(party, cycleState)) {
+    if (goal.kind === 'eliteGate') {
+      const safeRequired = Math.max(1, goal.required);
       pushUniqueProgressItem({
-        key: `elite-gate:${currentDungeon.id}:${floor.floorNumber}`,
-        compactText: t('home.progress.eliteCompact', { current: formatNumber(current), required: formatNumber(required), floor: floor.floorNumber }),
-        bubbleText: t('home.progress.eliteBubble', { current: formatNumber(current), required: formatNumber(required), floor: floor.floorNumber }),
-        progressRatio: normalizedCurrent / safeRequired,
+        key: `elite-gate:${goal.dungeonId}:${goal.floor}`,
+        compactText: t('home.progress.eliteCompact', { current: formatNumber(goal.current), required: formatNumber(goal.required), floor: goal.floor }),
+        bubbleText: t('home.progress.eliteBubble', { current: formatNumber(goal.current), required: formatNumber(goal.required), floor: goal.floor }),
+        progressRatio: Math.max(0, Math.min(goal.current, safeRequired)) / safeRequired,
       });
-      break;
-    }
-  }
-
-  if (items.length === 0) {
-    const bossGateKey = getBossGateKey(currentDungeon.id);
-    if (!isClearGateUnlocked(displayedParty, bossGateKey)) {
-      const required = getClearGateRequired(bossGateKey);
-      const current = getClearGateProgress(displayedParty, bossGateKey);
-      const normalizedCurrent = Math.max(0, Math.min(current, required));
+    } else if (goal.kind === 'bossGate') {
       pushUniqueProgressItem({
-        key: `boss-gate:${currentDungeon.id}`,
-        compactText: t('home.progress.bossClearCompact', { current: formatNumber(current), required: formatNumber(required) }),
-        bubbleText: t('home.progress.bossClearBubble', { current: formatNumber(current), required: formatNumber(required) }),
-        progressRatio: normalizedCurrent / required,
+        key: `boss-gate:${goal.dungeonId}`,
+        compactText: t('home.progress.bossClearCompact', { current: formatNumber(goal.current), required: formatNumber(goal.required) }),
+        bubbleText: t('home.progress.bossClearBubble', { current: formatNumber(goal.current), required: formatNumber(goal.required) }),
+        progressRatio: Math.max(0, Math.min(goal.current, goal.required)) / goal.required,
       });
-    }
-  }
-
-  if (items.length === 0) {
-    const nextDungeon = DUNGEONS.find((d) => d.id === currentDungeon.id + 1);
-    if (nextDungeon) {
-      const entryUnlocked = isDungeonEntryUnlocked(displayedParty, nextDungeon.id);
-      if (!entryUnlocked) {
-        pushUniqueProgressItem({
-          key: `entry-gate:${nextDungeon.id}`,
-          compactText: t('home.progress.defeatBossCompact'),
-          bubbleText: t('home.progress.bossUnlockDungeon', { dungeon: nextDungeon.name }),
-          progressRatio: null,
-        });
-      }
-    }
-
-    const godsRequired = getGodsBattleRequired();
-    const bossRareCollected = getGodsBattleProgress(displayedParty, currentDungeon.id);
-    const hasBossDefeat = hasDefeatedDungeonBoss(displayedParty, currentDungeon.id);
-    const godsUnlocked = bossRareCollected >= godsRequired && hasBossDefeat;
-    if (!godsUnlocked && !shouldDelayNextSpecialGoal(party, cycleState)) {
-      if (hasBossDefeat) {
-        const safeGodsRequired = Math.max(1, godsRequired);
-        const normalizedBossRareCollected = Math.max(0, Math.min(bossRareCollected, safeGodsRequired));
-        pushUniqueProgressItem({
-          key: `god-gate:${currentDungeon.id}`,
-          compactText: t('home.progress.godCompact', { collected: formatNumber(bossRareCollected), required: formatNumber(godsRequired) }),
-          bubbleText: t('home.progress.godBubble', { collected: formatNumber(bossRareCollected), required: formatNumber(godsRequired), label: getGodBattleLabel(currentDungeon) }),
-          progressRatio: normalizedBossRareCollected / safeGodsRequired,
-        });
-      } else {
-        pushUniqueProgressItem({
-          key: `god-entry:${currentDungeon.id}`,
-          compactText: t('home.progress.defeatBossCompact'),
-          bubbleText: t('home.progress.bossUnlockGod', { label: getGodBattleLabel(currentDungeon) }),
-          progressRatio: null,
-        });
-      }
+    } else if (goal.kind === 'entryGate') {
+      pushUniqueProgressItem({
+        key: `entry-gate:${goal.nextDungeonId}`,
+        compactText: t('home.progress.defeatBossCompact'),
+        bubbleText: t('home.progress.bossUnlockDungeon', { dungeon: DUNGEONS.find((d) => d.id === goal.nextDungeonId)?.name ?? '' }),
+        progressRatio: null,
+      });
+    } else if (goal.kind === 'godGate' && currentDungeon) {
+      const safeGodsRequired = Math.max(1, goal.required);
+      pushUniqueProgressItem({
+        key: `god-gate:${goal.dungeonId}`,
+        compactText: t('home.progress.godCompact', { collected: formatNumber(goal.collected), required: formatNumber(goal.required) }),
+        bubbleText: t('home.progress.godBubble', { collected: formatNumber(goal.collected), required: formatNumber(goal.required), label: getGodBattleLabel(currentDungeon) }),
+        progressRatio: Math.max(0, Math.min(goal.collected, safeGodsRequired)) / safeGodsRequired,
+      });
+    } else if (goal.kind === 'godEntry' && currentDungeon) {
+      pushUniqueProgressItem({
+        key: `god-entry:${goal.dungeonId}`,
+        compactText: t('home.progress.defeatBossCompact'),
+        bubbleText: t('home.progress.bossUnlockGod', { label: getGodBattleLabel(currentDungeon) }),
+        progressRatio: null,
+      });
     }
   }
 
   const sideQuestItem = getSideQuestDisplay(party, cycleDurationScale, emulatedNowMs);
-  if (sideQuestItem) pushUniqueProgressItem(sideQuestItem);
-
+  if (sideQuestItem && currentDungeon && currentDungeon.floors && currentDungeon.id !== 99) pushUniqueProgressItem(sideQuestItem);
   return items;
 }
 

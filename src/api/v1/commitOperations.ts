@@ -5,7 +5,7 @@ import { isDebugModeEnabled } from '../../game/environment';
 import { canCharacterEquipCategory, createEquipmentSetSnapshot, evaluateEquipmentSet, evaluateEquipmentState, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
 import { recordEquipmentState, redoEquipmentState, undoEquipmentState } from '../../game/equipmentHistory';
 import { computeCharacterStats } from '../../game/characterComputation';
-import { isGodsBattleAvailable } from '../../game/clearGate';
+import { getSortieUnavailableReason } from './sortieAvailability';
 import { getInstantExpeditionChargeState } from '../../game/instantExpedition';
 import { computePartyStats } from '../../game/partyComputation';
 import { hydrateGameState, serializeGameState } from '../../game/saveCodec';
@@ -63,6 +63,8 @@ export interface ApiV1PartyCycleView {
   readonly stateStartedAt?: number;
   readonly durationMs?: number;
   readonly isCurrentExpeditionGodsBattle?: boolean;
+  /** Steps of the current `state.rest` when it began, for its progress. */
+  readonly restInitialTotalSteps?: number;
 }
 
 /** A change to the live party cycle that must be applied only after the commit is durable. */
@@ -147,10 +149,15 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       const maximumHp = computePartyStats(party).partyStats.hp;
       const chargeScale = context.chargeDurationScale ?? 1;
       const previousDiaryIds = new Set(party.diaryLogs.map((entry) => entry.id));
-      if (godsBattle && !isGodsBattleAvailable(party, party.selectedDungeonId)) throw new Error('illegal_action:gods_battle_unavailable');
-      if (!isColosseum && (party.currentHp <= 0 || maximumHp <= 0)) throw new Error('illegal_action:party_exhausted');
-      if (godsBattle && cycle?.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true) throw new Error('illegal_action:already_moving_to_gods_battle');
-      if (!isColosseum && getInstantExpeditionChargeState(party, context.simulatedAt, chargeScale).stock <= 0) throw new Error('illegal_action:charge_insufficient');
+      const unavailable = getSortieUnavailableReason({
+        party,
+        godsBattle,
+        hp: party.currentHp,
+        maximumHp,
+        chargeStock: getInstantExpeditionChargeState(party, context.simulatedAt, chargeScale).stock,
+        cycle,
+      });
+      if (unavailable) throw new Error(`illegal_action:${unavailable}`);
       if (godsBattle && party.sideQuest) reduce({ type: 'CANCEL_SIDE_QUEST', partyIndex });
       if (!isColosseum) reduce({ type: 'CONSUME_INSTANT_EXPEDITION_STOCK', partyIndex, now: context.simulatedAt, chargeDurationScale: chargeScale });
       if (cycle?.state === 'explore') reduce({ type: 'FINALIZE_DIARY_LOG', partyIndex, simulatedAt: context.simulatedAt });

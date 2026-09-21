@@ -63,6 +63,7 @@ RewardItemBubble,
 STEP_BASED_STATES,
 UiIconKey
 } from '../homeShared';
+import { getEstimatedStartHp } from '../../../game/partyStateProgress';
 
 interface ExpeditionTabProps {
   state: GameState;
@@ -180,15 +181,6 @@ function ExpeditionTab({
     left: number;
     maxWidth: number;
   } | null>(null);
-
-  const getEstimatedStartHp = (entry: ExpeditionLogEntry) => {
-    if (typeof entry.startPartyHP === 'number') {
-      return Math.min(entry.maxPartyHP, Math.max(0, entry.startPartyHP));
-    }
-    const healAmount = Math.max(0, entry.healAmount ?? 0);
-    const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
-    return Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + entry.damageTaken + attritionAmount - healAmount));
-  };
 
   const handleEnemyBestiaryBubbleToggle = (
     bubbleKey: string,

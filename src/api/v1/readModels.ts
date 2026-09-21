@@ -25,6 +25,9 @@ import { buildBattleLogData } from './battleLogs.ts';
 import { buildSimulationRunData } from './simulationView.ts';
 import { EQUIPMENT_EVALUATION_LIMIT } from './requestLimits.ts';
 import { describeUiPreferenceCatalog, listUiPreferences } from './uiPreferenceCatalog.ts';
+import { getExpeditionGoals, getSideQuestFacts } from '../../game/expeditionGoals.ts';
+import { getEstimatedStartHp, getPartyStateProgress } from '../../game/partyStateProgress.ts';
+import { getSortieUnavailableReason } from './sortieAvailability.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { buildShopLineup, getShopRefreshPrice } from '../../game/shop.ts';
 import type { ApiV1PartyCycleView } from './commitOperations.ts';
@@ -121,24 +124,74 @@ function partyStateKey(party: Party, maximumHp: number, cycle: ApiV1PartyCycleVi
   return party.currentHp < maximumHp ? 'state.rest' : 'state.idle';
 }
 
+// SpecRef: 8.3 | UI_EXPEDITION | Progress Visual Update
+// SpecRef: 9.1.4.7 | Observation projections | expedition
+// Everything the Expedition pane draws for a party, from the party and its live cycle. While a party is exploring, the
+// rooms of the running log are revealed only as the exploration clock reaches them (server-gated): a client never receives a
+// room, an HP value, or an outcome from the future, and `nextRevealAt` says when to read again.
 function expeditionProjection(state: GameState, context: ApiV1ReadContext) {
+  const nowMs = Date.now();
+  const chargeScale = context.chargeDurationScale ?? 1;
   return {
     parties: state.parties.map((party, partyIndex) => {
       const computed = computePartyStats(party);
-      const charge = getInstantExpeditionChargeState(party, Date.now(), context.chargeDurationScale ?? 1);
+      const maximumHp = computed.partyStats.hp;
+      const charge = getInstantExpeditionChargeState(party, nowMs, chargeScale);
       const cycle = context.partyCycle?.(partyIndex);
       const timed = cycle && typeof cycle.stateStartedAt === 'number' && typeof cycle.durationMs === 'number' && cycle.state !== 'idle' && cycle.state !== 'reactivate';
       const log = disclosedLogOf(state, context, partyIndex);
+      const runningLog = cycle?.state === 'explore' ? party.lastExpeditionLog : null;
+      const progress = timed
+        ? getPartyStateProgress({
+          clock: { state: cycle.state, stateStartedAt: cycle.stateStartedAt!, durationMs: cycle.durationMs!, restInitialTotalSteps: cycle.restInitialTotalSteps },
+          party,
+          maximumHp,
+          nowMs,
+          log: runningLog,
+        })
+        : null;
+      const revealed = runningLog && progress?.revealedRoomCount != null ? runningLog.entries.slice(0, progress.revealedRoomCount) : [];
+      const displayedHp = runningLog && runningLog.entries.length > 0
+        ? (revealed.length === 0 ? getEstimatedStartHp(runningLog.entries[0]) : revealed[revealed.length - 1].remainingPartyHP)
+        : party.currentHp;
+      const sortieReason = (godsBattle: boolean) => getSortieUnavailableReason({ party, godsBattle, hp: displayedHp, maximumHp, chargeStock: charge.stock, cycle });
+      const control = (godsBattle: boolean) => {
+        const reason = sortieReason(godsBattle);
+        return { available: reason === null, unavailableReason: reason };
+      };
+      const sideQuest = getSideQuestFacts(party, chargeScale, nowMs);
       return {
         partyNumber: party.id,
         name: party.name,
-        state: partyStateKey(party, computed.partyStats.hp, cycle),
+        state: partyStateKey(party, maximumHp, cycle),
         // The state's own clock (the runtime's wall-clock time): clients interpolate progress between the two instants.
         stateStartedAt: timed ? new Date(cycle.stateStartedAt!).toISOString() : null,
         stateDurationMs: timed ? cycle.durationMs! : null,
         stateExpectedEndAt: timed ? new Date(cycle.stateStartedAt! + cycle.durationMs!).toISOString() : null,
-        currentHp: party.currentHp,
-        maximumHp: computed.partyStats.hp,
+        progress: progress && {
+          kind: progress.kind,
+          mainPercent: progress.mainPercent,
+          totalSteps: progress.totalSteps,
+          completedSteps: progress.completedSteps,
+          subProgress: progress.subProgress && { startedAt: new Date(progress.subProgress.startedAt).toISOString(), endsAt: new Date(progress.subProgress.endsAt).toISOString() },
+          nextChangeAt: progress.nextChangeAt === null ? null : new Date(progress.nextChangeAt).toISOString(),
+        },
+        exploration: runningLog && progress ? {
+          revealedRoomCount: revealed.length,
+          nextRevealAt: progress.nextChangeAt === null ? null : new Date(progress.nextChangeAt).toISOString(),
+          rooms: revealed.map((entry) => ({
+            room: entry.room,
+            floor: entry.floor ?? null,
+            roomInFloor: entry.roomInFloor ?? null,
+            roomType: entry.roomType ?? null,
+            enemyId: entry.enemyId ?? null,
+            outcome: entry.outcome,
+            remainingPartyHp: entry.remainingPartyHP,
+            maximumPartyHp: entry.maxPartyHP,
+          })),
+        } : null,
+        currentHp: displayedHp,
+        maximumHp,
         disclosedFloor: log?.entries.at(-1)?.floor ?? null,
         disclosedOutcome: apiExpeditionOutcomeOrNull(log),
         destination: party.selectedDungeonId,
@@ -147,6 +200,15 @@ function expeditionProjection(state: GameState, context: ApiV1ReadContext) {
         difficultyOffset: party.expeditionDifficultyOffset,
         chargeStock: charge.stock,
         chargeDuration: charge.remainingMs <= 0 ? 0 : Math.ceil(charge.remainingMs / 1000),
+        clearGates: getExpeditionGoals(party, cycle?.state).map((goal) => {
+          if (goal.kind === 'eliteGate') return { kind: goal.kind, dungeonId: goal.dungeonId, floor: goal.floor, current: goal.current, required: goal.required };
+          if (goal.kind === 'bossGate') return { kind: goal.kind, dungeonId: goal.dungeonId, floor: null, current: goal.current, required: goal.required };
+          if (goal.kind === 'godGate') return { kind: goal.kind, dungeonId: goal.dungeonId, floor: null, current: goal.collected, required: goal.required };
+          if (goal.kind === 'entryGate') return { kind: goal.kind, dungeonId: goal.nextDungeonId, floor: null, current: 0, required: 1 };
+          return { kind: goal.kind, dungeonId: goal.dungeonId, floor: null, current: 0, required: 1 };
+        }),
+        sideQuest,
+        controls: { sortie: control(false), godsBattle: control(true) },
       };
     }),
   };

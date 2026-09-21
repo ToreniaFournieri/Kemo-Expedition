@@ -410,6 +410,76 @@ calls.length = 0;
   const resumed = await buildApiV1ReadData('read/observation/expedition', hurt, {}, context) as unknown as { expeditionInfo: { parties: { state: string }[] } };
   assert.equal(resumed.expeditionInfo.parties[0].state, 'state.rest', 'below maximum HP an account party rests');
 }
+// Server-gated exploration, step progress, goals, and controls of the Expedition projection (Spec 8.3, 9.1.4.7).
+{
+  const { computePartyStats } = await import('../../src/game/partyComputation.ts');
+  const { default: Ajv } = await import('ajv');
+  const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
+  const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'read/observation/expedition')!.response.data);
+  type Info = { expeditionInfo: { parties: Record<string, any>[] } };
+  const read = async (source: typeof state, cycle: Record<string, unknown> | undefined, extra: Record<string, unknown> = {}) => {
+    const result = await buildApiV1ReadData('read/observation/expedition', source, {}, { ...context, ...(cycle ? { partyCycle: () => cycle } : {}), chargeDurationScale: 1, ...extra } as never) as unknown as Info;
+    assert.equal(validate(result), true, JSON.stringify(validate.errors));
+    return result.expeditionInfo.parties[0];
+  };
+  const withParty = (changes: Record<string, unknown>) => ({ ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, ...changes } : party) }) as typeof state;
+  const maximumHp = computePartyStats(state.parties[0]).partyStats.hp;
+  const entry = (room: number, outcome: string, remainingPartyHP: number) => ({ room, floor: 1, roomInFloor: room, roomType: 'battle_Normal', enemyId: 100 + room, outcome, enemyName: 'x', enemyHP: 1, enemyAttackValues: '', damageDealt: 0, damageTaken: 0, startPartyHP: room === 1 ? maximumHp : undefined, remainingPartyHP, maxPartyHP: maximumHp, details: [] });
+  const log = { finalOutcome: 'Defeat', entries: [entry(1, 'victory', maximumHp * 0.9), entry(2, 'victory', maximumHp * 0.8), entry(3, 'victory', maximumHp * 0.5), entry(4, 'defeat', 0)], dungeonId: 1, dungeonName: '', difficultyOffset: 0, totalExperience: 0, totalRooms: 24, completedRooms: 4, rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: 0, maxPartyHP: maximumHp } as never;
+  const charged = withParty({ lastExpeditionLog: log, currentHp: 0, instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null });
+  const now = Date.now();
+
+  // Two of four rooms are revealed after 1.5 of 4 seconds: the projection carries those rooms and their HP, never a later one.
+  const midway = await read(charged, { state: 'explore', stateStartedAt: now - 1500, durationMs: 4000 });
+  assert.equal(midway.exploration.revealedRoomCount, 2);
+  assert.deepEqual(midway.exploration.rooms.map((room: { room: number }) => room.room), [1, 2]);
+  assert.equal(midway.currentHp, maximumHp * 0.8, 'the displayed HP is the last revealed room, not the final HP');
+  assert.equal(midway.progress.kind, 'stepBased');
+  assert.deepEqual([midway.progress.completedSteps, midway.progress.totalSteps], [2, 24]);
+  assert.ok(Date.parse(midway.exploration.nextRevealAt) > now && Date.parse(midway.exploration.nextRevealAt) <= now + 600, 'the next room appears within its own step');
+  assert.equal(JSON.stringify(midway).includes('defeat'), false, 'the defeat in room 4 is not disclosed');
+  assert.equal(midway.controls.sortie.available, true, 'available while the revealed HP is above zero');
+  const start = await read(charged, { state: 'explore', stateStartedAt: now + 60_000, durationMs: 4000 });
+  assert.equal(start.exploration.revealedRoomCount, 0);
+  assert.equal(start.currentHp, maximumHp, 'before the first room the HP is the estimated starting HP');
+  // Once the last room is revealed the party is exhausted and the button says so; a stopped exploration has no more reveals.
+  const finished = await read(charged, { state: 'explore', stateStartedAt: now - 4000, durationMs: 4000 });
+  assert.deepEqual([finished.exploration.revealedRoomCount, finished.currentHp, finished.exploration.nextRevealAt], [4, 0, null]);
+  assert.equal(finished.controls.sortie.unavailableReason, 'party_exhausted');
+  // A party without a live cycle (an API account) has no clock, progress, or running exploration.
+  const account = await read(charged, undefined);
+  assert.deepEqual([account.progress, account.exploration], [null, null]);
+
+  // Rest counts whole heal Steps; sell counts items; continuous states have only a percentage.
+  const healPerStep = Math.max(200, Math.ceil(maximumHp * 0.02));
+  const resting = await read(withParty({ currentHp: maximumHp - healPerStep * 2 }), { state: 'rest', stateStartedAt: now - 500, durationMs: 1000, restInitialTotalSteps: 5 });
+  assert.deepEqual([resting.progress.kind, resting.progress.completedSteps, resting.progress.totalSteps], ['stepBased', 3, 5]);
+  assert.equal(Date.parse(resting.progress.subProgress.endsAt) - Date.parse(resting.progress.subProgress.startedAt), 1000);
+  const selling = await read(withParty({ lastExpeditionLog: { ...log, autoSellItems: [{}, {}, {}, {}] } }), { state: 'sell', stateStartedAt: now - 1500, durationMs: 4000 });
+  assert.deepEqual([selling.progress.completedSteps, selling.progress.totalSteps], [1, 4]);
+  const moving = await read(state, { state: 'move', stateStartedAt: now - 500, durationMs: 1000 });
+  assert.deepEqual([moving.progress.kind, moving.progress.totalSteps, moving.progress.subProgress], ['continuous', null, null]);
+  assert.equal(Math.round(moving.progress.mainPercent), 50);
+  const idle = await read(state, { state: 'idle', stateStartedAt: now, durationMs: 1000 });
+  assert.equal(idle.progress, null, 'idle has no bar');
+
+  // Goals: the first locked Elite gate of the selected destination, from the shared goal selection, and the side quest.
+  assert.deepEqual(idle.clearGates.map((gate: { kind: string }) => gate.kind), ['eliteGate']);
+  assert.equal(idle.clearGates[0].current, 0);
+  assert.equal(idle.sideQuest, null);
+  const quest = await read(withParty({ sideQuest: { id: 3, type: 'q.exercise', target: 10, progress: 4, assignedAt: now, expiresAt: now + 3_600_000 } }), undefined);
+  assert.deepEqual([quest.sideQuest.type, quest.sideQuest.percent, quest.sideQuest.hasDeadline], ['q.exercise', 40, true]);
+
+  // Controls carry the reason; the reasons follow the commit's own order.
+  const noCharge = await read(withParty({ instantExpeditionStock: 0, instantExpeditionChargeStartedAt: now }), undefined);
+  assert.equal(noCharge.controls.sortie.unavailableReason, 'charge_insufficient');
+  assert.equal(noCharge.controls.godsBattle.unavailableReason, 'gods_battle_unavailable', 'a Gods Battle without its gate reports the gate first');
+  const locked = await read(withParty({ selectedDungeonId: 2, instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null }), undefined);
+  assert.equal(locked.controls.sortie.unavailableReason, 'entry_gate_locked');
+  const colosseum = await read(withParty({ selectedDungeonId: 99, currentHp: 0, instantExpeditionStock: 0, instantExpeditionChargeStartedAt: now }), undefined);
+  assert.deepEqual(colosseum.controls.sortie, { available: true, unavailableReason: null }, 'the Colosseum needs no HP, charge, or gate');
+}
+
 assert.deepEqual(state, before);
 
 // calculatedStatus is the public fact model (9.1.4.14), not the internal computed-stats object.

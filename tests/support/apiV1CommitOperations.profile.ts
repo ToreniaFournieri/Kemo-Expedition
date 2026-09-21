@@ -258,6 +258,8 @@ const seed: GameState = createFreshGameState('ja', Date.parse('2026-01-01T00:00:
   // The consumption follows the current Speed of Time: a 20x speed-up charges a slower clock the same way the UI passes its scale.
   const scaled = sortie(charged, context({ chargeDurationScale: 0.05 }));
   assert.equal(scaled.state.parties[0].instantExpeditionStock, 2);
+  // A destination whose entry gate is locked refuses (the button is disabled), except for the Colosseum.
+  refuses(withParty(charged, { selectedDungeonId: 2 }), 'entry_gate_locked');
   // An exhausted party refuses; the Colosseum needs neither HP nor charge.
   refuses(withParty(charged, { currentHp: 0 }), 'party_exhausted');
   const colosseum = sortie(withParty(seed, { selectedDungeonId: 99, currentHp: 0, instantExpeditionStock: 0, instantExpeditionChargeStartedAt: at }));
