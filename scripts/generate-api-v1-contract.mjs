@@ -13,7 +13,7 @@ const operations = [...specification.matchAll(rowPattern)].map((match) => ({
   method: match[1], path: match[2], access: match[3].toLowerCase(), purpose: match[4].trim(),
   operationId: match[2].slice('/api/v1/'.length),
 }));
-if (operations.length !== 83) throw new Error(`Expected 83 /api/v1 operations, found ${operations.length}.`);
+if (operations.length !== 84) throw new Error(`Expected 84 /api/v1 operations, found ${operations.length}.`);
 if (new Set(operations.map(({ method, path }) => `${method} ${path}`)).size !== operations.length) throw new Error('Duplicate /api/v1 method/path pair in the endpoint index.');
 if (operations.some(({ path }) => !path.startsWith('/api/v1/'))) throw new Error('Non-v1 route found in the v1 endpoint index.');
 
@@ -26,10 +26,12 @@ const integerId = Type.Integer({ minimum: 1 });
 const partyNumber = Type.Integer({ minimum: 1, maximum: 6 });
 const stableKey = Type.String({ minLength: 1, maxLength: 200 });
 const itemFormat = Type.String({ pattern: '^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))$' });
+const presentItemFormat = Type.String({ pattern: '^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$' });
 // ajv-formats is not a project dependency, so ISO instants are validated by pattern rather than the `format` keyword.
 const isoTimestamp = Type.String({ pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$' });
 // Concrete example values for schema objects whose pattern is too specific for the generic string heuristics in sample().
 const sampleOverrides = new WeakMap();
+sampleOverrides.set(presentItemFormat, '0/1101/2/0');
 const equipmentTarget = Type.Union([Type.Integer({ minimum: 0 }), nonEmptyArray(Type.Integer({ minimum: 0 }), { uniqueItems: true })]);
 const language = literals('ja', 'en', 'zh-CN', 'zh-TW', 'ko');
 const environment = literals('dev', 'beta', 'orca', 'prod', 'desktop');
@@ -92,6 +94,7 @@ const commitParameters = {
   'commit/build/character/{characterId}/removeAllEquipment': empty,
   'commit/build/character/{characterId}/removeEquipment': strict({ targetEquipment: equipmentTarget }),
   'commit/build/character/{characterId}/equip': strict({ targetEquipment: Type.Union([itemFormat, nonEmptyArray(itemFormat)]), targetSlot: optional(Type.Integer({ minimum: 0 })) }),
+  'commit/build/character/{characterId}/equipmentEvaluation': strict({ targetItems: Type.Union([presentItemFormat, nonEmptyArray(presentItemFormat, { uniqueItems: true })]) }),
   'commit/build/character/{characterId}/lockEquipment': strict({ targetEquipment: equipmentTarget }),
   'commit/build/character/{characterId}/unlockEquipment': strict({ targetEquipment: equipmentTarget }),
   'commit/build/character/{characterId}/autoEquipment': strict({ mode: literals('FULL', 'SEMI', 'OFF'), immediateAutoEquipment: optional(Type.Boolean(), false) }),
@@ -224,6 +227,14 @@ const responseDataSchemas = {
   'commit/build/character/{characterId}/removeAllEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/removeEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/equip': strict({ current: equipmentCommitCurrent }),
+  'commit/build/character/{characterId}/equipmentEvaluation': strict({
+    calculatedItemStatus: Type.Array(strict({
+      item: presentItemFormat,
+      equippable: Type.Boolean(),
+      stats: Type.Array(strict({ key: stableKey, value: Type.Number(), unit: literals('number', 'ratio') })),
+      abilities: Type.Array(stableKey),
+    })),
+  }),
   'commit/build/character/{characterId}/lockEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/unlockEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/autoEquipment': strict({

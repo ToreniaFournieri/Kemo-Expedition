@@ -223,6 +223,28 @@ const before = { items: itemConservation(state), jewels: jewelConservation(state
   assert.equal(jewelConservation(committed.state), jewelConservation(state));
 }
 
+// 5b. equipmentEvaluation on the real save: every owned variant, for characters of different builds, never changes the state.
+{
+  const validateEvaluation = validator('commit/build/character/{characterId}/equipmentEvaluation');
+  const owned = Object.values(state.global.inventory).filter((variant) => variant.count > 0).map((variant) => `0/${variant.item.id}/${variant.item.enhancement}/${variant.item.superRare}`);
+  assert.ok(owned.length > 1000, 'the real save owns many variants');
+  const characters = state.parties.flatMap((party) => party.characters).filter((_, index) => index % 6 === 0);
+  let evaluated = 0;
+  for (const someone of characters) {
+    for (let start = 0; start < owned.length; start += 500) {
+      const batch = owned.slice(start, start + 500);
+      const outcome = applyApiV1Commit(`commit/build/character/${someone.id}/equipmentEvaluation`, state, { targetItems: batch }, context());
+      assert.equal(outcome.state, state, 'an evaluation never changes the state');
+      assert.equal(validateEvaluation(outcome.data), true, JSON.stringify(validateEvaluation.errors?.slice(0, 2)));
+      const entries = (outcome.data as { calculatedItemStatus: { item: string; stats: { value: number }[] }[] }).calculatedItemStatus;
+      assert.deepEqual(entries.map((entry) => entry.item), batch);
+      for (const entry of entries) for (const fact of entry.stats) assert.equal(Number.isFinite(fact.value), true, `${entry.item} has a finite value`);
+      evaluated += entries.length;
+    }
+  }
+  assert.ok(evaluated > 5000, `${evaluated} evaluations validated`);
+}
+
 // 6. The heavy projections stay fast: the whole check above runs well within a generous budget.
 const elapsed = performance.now() - startedAt;
 assert.ok(elapsed < 20_000, `the real-save checks took ${Math.round(elapsed)} ms`);

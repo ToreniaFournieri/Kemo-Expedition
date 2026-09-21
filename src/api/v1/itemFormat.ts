@@ -44,6 +44,15 @@ export function parseEquipmentEntry(entry: string): ParsedEquipmentEntry | null 
   };
 }
 
+/** Rebuilds a display item from `Item Format` (`<lockStatus>/<itemId>/<enhancement>/<superRare>`, no Jewel); `null` for `0` or a bad entry. */
+export function parseItemFormat(value: string): Item | null {
+  const match = /^([01])\/(\d+)\/([0-6])\/(\d+)$/.exec(value);
+  if (!match) return null;
+  const definition = getItemById(Number(match[2]));
+  if (!definition) return null;
+  return { ...definition, enhancement: Number(match[3]), superRare: Number(match[4]), isLocked: match[1] === '1', jewel: null };
+}
+
 /** Rebuilds a saved equipment set from its projection (`equipmentSet` read with detail). */
 export function parseSavedEquipmentSet(projection: { equipmentSetId: number; equipmentSet: { name: string; createdAt: string; equipment?: string[] } }): SavedEquipmentSet {
   const entries: SavedEquipmentEntry[] = (projection.equipmentSet.equipment ?? []).flatMap((entry) => {

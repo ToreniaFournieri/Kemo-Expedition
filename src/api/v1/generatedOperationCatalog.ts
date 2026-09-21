@@ -42,6 +42,7 @@ export const API_V1_OPERATIONS = [
   {"method":"POST","path":"/api/v1/commit/build/character/{characterId}/removeAllEquipment","access":"session","purpose":"Remove all equipment.","operationId":"commit/build/character/{characterId}/removeAllEquipment"},
   {"method":"POST","path":"/api/v1/commit/build/character/{characterId}/removeEquipment","access":"session","purpose":"Remove selected slots.","operationId":"commit/build/character/{characterId}/removeEquipment"},
   {"method":"POST","path":"/api/v1/commit/build/character/{characterId}/equip","access":"session","purpose":"Equip owned items.","operationId":"commit/build/character/{characterId}/equip"},
+  {"method":"POST","path":"/api/v1/commit/build/character/{characterId}/equipmentEvaluation","access":"session","purpose":"Evaluate items for the character.","operationId":"commit/build/character/{characterId}/equipmentEvaluation"},
   {"method":"POST","path":"/api/v1/commit/build/character/{characterId}/lockEquipment","access":"session","purpose":"Lock selected slots.","operationId":"commit/build/character/{characterId}/lockEquipment"},
   {"method":"POST","path":"/api/v1/commit/build/character/{characterId}/unlockEquipment","access":"session","purpose":"Unlock selected slots.","operationId":"commit/build/character/{characterId}/unlockEquipment"},
   {"method":"POST","path":"/api/v1/commit/build/character/{characterId}/autoEquipment","access":"session","purpose":"Set/run Auto Equipment.","operationId":"commit/build/character/{characterId}/autoEquipment"},

@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 60. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 61. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -22,7 +22,7 @@ This document supersedes the earlier "Build 23" plan. Stages are numbered once, 
 
 ## Done so far
 
-- All 83 routes are cataloged, generated (`npm run api:v1:check`), and validated with TypeBox/Ajv, including response envelopes, stable errors, and per-operation error lists.
+- All 84 routes are cataloged, generated (`npm run api:v1:check`), and validated with TypeBox/Ajv, including response envelopes, stable errors, and per-operation error lists.
 - The Application API (`src/api/v1/applicationApi.ts`) is transport-neutral. `HomeScreen.tsx` supplies runtime ports only.
 - The serialized authority provides revisions, receipts, tombstones, admitted-duplicate handling, durable confirmation reservations, rollback, isolated RNG, and atomic multi-Chunk elapsed progression.
 - API-account storage is manifest-last; login stages catch-up privately and logout restores the flushed player save.
@@ -66,7 +66,7 @@ Next, in order:
    - Open question for the spec: the defense preview when hovering or tapping an item recomputes one hypothetical equipment change locally. If it should be API-owned, `equip` would need a `simulation` parameter like `changeBuild`.
    - 4d. (Done, Build 49) The equipment slot list renders from the party projection's equipment entries; mode and Undo/Redo come from the `equipment` projection.
    - 4e. (Done, Build 59) The inventory category is a per-character `uiPreferences` entry (`party.equipCategory.<characterId>`), stored per save and published with the closed catalog in `settingInfo`. `selectedPartyIndex` stays in the shared game state (decided). The selected character and the rarity and Super Rare filters remain local view context; add catalog entries if 8.2 requires retaining them.
-   - 4f. (Done, Build 60) The tab receives only projected views (`PartyView`, `PartySummary`, projected inventory and Jewel counts, `CalculatedStatus`) and no raw game state. `tests/migratedTabs.test.cjs` is the mechanical check (reviewed imports, no reducer or `GameState`, no `state.` props, only `addStatNotifications` and `selectParty` actions). Reviewed exceptions still to remove, each tracked in that test: the random default name on a race change (Spec 8.2.3 draft; could become a `validOptions.defaultNames` fact), the item defense preview (`computeCharacterStats` and `replaceCharacterEquipment`; needs an `equip` `simulation` parameter, an open spec question), and per-entry saved-set availability (`evaluateEquipmentSet`; publish it on the equipment-set read). Apply the same check to each tab as it migrates.
+   - 4f. (Done, Build 60) The tab receives only projected views (`PartyView`, `PartySummary`, projected inventory and Jewel counts, `CalculatedStatus`) and no raw game state. `tests/migratedTabs.test.cjs` is the mechanical check (reviewed imports, no reducer or `GameState`, no `state.` props, only `addStatNotifications` and `selectParty` actions). Reviewed exceptions still to remove, each tracked in that test: the random default name on a race change (Spec 8.2.3 draft; could become a `validOptions.defaultNames` fact), the item defense preview (`computeCharacterStats` and `replaceCharacterEquipment`; `equipmentEvaluation`, Build 61, gives per-item character-scaled stats but not the change in the character's own defense when an item replaces another, which needs a slot-aware evaluation, an open spec question), and per-entry saved-set availability (`evaluateEquipmentSet`; publish it on the equipment-set read). Apply the same check to each tab as it migrates.
    - Open design question: the projections must carry enough display facts (per-entry availability of a saved set, bonus and ability facts). Prefer additive members under 9.1.4.1 and update Spec 9.1.3 to match.
 
 Gate: no `actions.*` reducer call remains in `PartyTab.tsx` for these controls; the Party tab renders only from its projections.

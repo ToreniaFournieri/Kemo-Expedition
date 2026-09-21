@@ -46,7 +46,7 @@ function formatCBonusValue(value: number): string {
   return (Math.round(value * 1000000) / 1000000).toString();
 }
 
-function getCharacterMultiplier(
+export function getCharacterMultiplier(
   character: { raceId: string; mainClassId: string; subClassId: string; predispositionId: string; lineageId: string; equipment: (Item | null)[] },
   category: ItemCategory
 ): number {
@@ -86,7 +86,7 @@ function getCharacterMultiplier(
   return multipliers.reduce((prod, v) => prod * v, 1);
 }
 
-function getCharacterGrowthMultiplier(
+export function getCharacterGrowthMultiplier(
   character: { raceId: string; mainClassId: string; subClassId: string; predispositionId: string; lineageId: string; equipment: (Item | null)[] }
 ): number {
   const race = getRaceById(character.raceId);

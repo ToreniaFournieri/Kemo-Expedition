@@ -9,6 +9,9 @@ import { computePartyStats } from '../../game/partyComputation';
 import { hydrateGameState, serializeGameState } from '../../game/saveCodec';
 import { buildShopLineup } from '../../game/shop';
 import { describeEquipmentHistory } from './equipmentHistoryFacts';
+import { evaluateItemForCharacter } from '../../game/itemEvaluation';
+import { describeItem } from './itemDetails';
+import { parseItemFormat } from './itemFormat';
 import { listUiPreferences, validateUiPreference, type UiPreferenceValue } from './uiPreferenceCatalog';
 import { isEquipmentSlotAction, planEquipOperation, planEquipmentSlotOperation } from './equipmentSlots';
 import { planCharacterBuildChange } from './buildChange';
@@ -180,6 +183,20 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       }
       data = { confirmationRequired: plan.requiresConfirmation, warnings: plan.warnings, applied };
     }
+    else if (action === 'equipmentEvaluation') {
+      // SpecRef: 9.1.3 | Commit | 3-3-6 character/{characterId}/equipmentEvaluation
+      // Reads only: the state is never changed, so this is a valid no-op (no revision change) that still records a receipt.
+      const requested = Array.isArray(parameters.targetItems) ? parameters.targetItems : [parameters.targetItems];
+      if (requested.length === 0 || new Set(requested).size !== requested.length) throw new Error('invalid_request:targetItems');
+      const level = next.parties[partyIndex].level;
+      data = {
+        calculatedItemStatus: requested.map((entry) => {
+          const item = typeof entry === 'string' ? parseItemFormat(entry) : null;
+          if (!item) throw new Error('invalid_request:targetItems');
+          return { item: entry as string, ...evaluateItemForCharacter(characterBefore, item, level), abilities: describeItem(item).ability };
+        }),
+      };
+    }
     else if (action === 'removeAllEquipment') reduce({ type: 'REMOVE_ALL_EQUIPMENT', partyIndex, characterId });
     else if (isEquipmentSlotAction(action)) {
       const character = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
@@ -266,7 +283,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
         history[historyKey] = recordEquipmentState(characterHistory, equipmentBefore);
       }
     }
-    if (!data.equipmentSetId) {
+    if (!data.equipmentSetId && action !== 'equipmentEvaluation') {
       const currentCharacter = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
       const historyFacts = describeEquipmentHistory(next, characterId, history);
       data = {

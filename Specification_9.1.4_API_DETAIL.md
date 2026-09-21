@@ -440,6 +440,15 @@ definitions in 9.1.3.
     the revision returned by the simulation as `expectedRevision`, so a change made
     in between is rejected as `stale_revision`. The trusted in-process adapter
     supplies the current revision on the caller's behalf.
+* `equipmentEvaluation` (9.1.3, 3-3-6) is a Commit operation that never changes
+  game state: it is a valid no-op (no revision change, no equipment-history entry)
+  that still records its idempotency receipt, like a `changeBuild` simulation.
+  `targetItems` is one `Item Format` value or a nonempty array of unique values
+  (`0` is not an item; the lock digit is ignored). An unknown item or an
+  out-of-range enhancement is `invalid_request`, an unknown character is
+  `not_found`, and the whole request is rejected on any invalid entry.
+  Results keep the request order. An item is evaluated without a Jewel and
+  need not be owned, so any item can be compared before it is equipped.
 * For `removeEquipment`, `lockEquipment`, `unlockEquipment`, `jewelAttach`, and
   `jewelRemove`, `targetEquipment` is one slot index or an array of slot indices.
   Duplicate indices are invalid.
@@ -633,6 +642,7 @@ use the same operation without HTTP authentication headers.
 | POST | `/api/v1/commit/build/character/{characterId}/removeAllEquipment` | Session | Remove all equipment. |
 | POST | `/api/v1/commit/build/character/{characterId}/removeEquipment` | Session | Remove selected slots. |
 | POST | `/api/v1/commit/build/character/{characterId}/equip` | Session | Equip owned items. |
+| POST | `/api/v1/commit/build/character/{characterId}/equipmentEvaluation` | Session | Evaluate items for the character. |
 | POST | `/api/v1/commit/build/character/{characterId}/lockEquipment` | Session | Lock selected slots. |
 | POST | `/api/v1/commit/build/character/{characterId}/unlockEquipment` | Session | Unlock selected slots. |
 | POST | `/api/v1/commit/build/character/{characterId}/autoEquipment` | Session | Set/run Auto Equipment. |
@@ -800,6 +810,24 @@ type DiaryEntry = {
 };
 ```
 
+* `equipmentEvaluation` returns `{calculatedItemStatus: {item: string, equippable:
+  boolean, stats: {key: string, value: number, unit: "number"|"ratio"}[],
+  abilities: string[]}[]}`. `item` echoes the requested `Item Format`. `stats`
+  holds only the facts that apply to the item, in this order: `d.melee_attack`,
+  `d.ranged_attack`, `d.magical_attack`, `d.melee_NoA`, `d.ranged_NoA`,
+  `d.magical_NoA`, `d.physical_defense`, `d.magical_defense`, `d.HP`,
+  `c.melee_NoA`, `c.ranged_NoA`, `c.magical_NoA`, `c.accuracy`, `c.evasion`,
+  `c.penet`, `b.vitality`, `b.strength`, `b.intelligence`, `b.mind`,
+  `e.<element>`, then always `f.category_multiplier` (the character's
+  `c.<category>_x1.x` product for the item's category) and `f.item_multiplier`
+  (enhancement, Super Rare title, the item's own multipliers, and the category
+  multiplier). Attack, defense, and HP values are whole numbers scaled by
+  `f.item_multiplier`; `d.HP` also carries the character's growth and
+  vitality/mind scale; a positive attack-count value scales and keeps two
+  decimals while a penalty stays fixed. These are the values the Party pane
+  prints for the item. `equippable` is whether the character has the equipment
+  aptitude for the item's category; an item that cannot be equipped is still
+  evaluated. `abilities` lists the item's ability IDs.
 * `calculatedStatus` uses `CalculatedStatus`. `stats`, `bonuses`, and attack
   `facts` contain every value required by the 8.2 status pane, with stable
   glossary keys and raw numbers; no formula is recomputed in the adapter.
