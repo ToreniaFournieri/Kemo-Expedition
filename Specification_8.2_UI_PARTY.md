@@ -305,12 +305,12 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
   - `guiCharacterEdit`
 - **API Read:**
   - `read/build/character/{characterId}/equipmentSet`
+  - `read/build/character/{characterId}/equipmentEvaluation`
   - `read/base/searchItems`
 - **API Commit:**
   - `commit/build/character/{characterId}/removeAllEquipment`
   - `commit/build/character/{characterId}/removeEquipment`
   - `commit/build/character/{characterId}/equip`
-  - `commit/build/character/{characterId}/equipmentEvaluation`
   - `commit/build/character/{characterId}/lockEquipment`
   - `commit/build/character/{characterId}/unlockEquipment`
   - `commit/build/character/{characterId}/autoEquipment`
