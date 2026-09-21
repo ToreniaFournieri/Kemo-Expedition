@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 64. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 67. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -10,10 +10,10 @@ This document supersedes the earlier "Build 23" plan. Stages are numbered once, 
 
 | Stage | Area | State |
 |---|---|---|
-| 1 | Contract catalog | Mostly done |
+| 1 | Contract catalog | Mostly done; 11 `Type.Unknown` and placeholder payloads remain (see Stage 1) |
 | 2 | Standalone Application API and authority | Done (foundation) |
 | 3 | HTTP transport and sessions | Implemented, test-only |
-| 4 | Expedition and shell | Runtime present, UI not migrated |
+| 4 | Expedition and shell | Blocked on extracting the party cycle from `HomeScreen`; UI not migrated |
 | 5 | Party, character, equipment | Done (UI projection complete) |
 | 6 | Base, inventory, shop, Altar | Runtime early, UI not migrated |
 | 7 | Diary and popup streaming | Foundation only |
@@ -32,21 +32,44 @@ This document supersedes the earlier "Build 23" plan. Stages are numbered once, 
 - Saved sets carry items and locks only and load with independently assigned Jewels (Build 57); Undo/Redo states record the Jewel assignment and restore exactly or not at all (Build 58).
 - Equipment commands are atomic: slot commands, `equip`, exact and confirmed partial set load, Undo/Redo validation, build-change validation and confirmation, and Auto Equipment reports.
 
-## Stage 1 — Close the contract catalog
+## Review of Builds 62–64 (Codex)
 
-Remaining:
-- (Done, Build 39) `calculatedStatus` and the sell/purchase results.
-- Sweep the remaining projections for foundation-level or placeholder payloads and give each a concrete schema.
+Verified at Build 64: `tsc`, lint, `api:v1:check` (84 operations), `npm test` (549 tests including subtests; 427 top-level), desktop smoke. Saved-set availability, the Jewel-aware `equipmentEvaluation`, and the slot-aware `equipmentChanges` preview are correct and remove the three Party-tab exceptions (the random default name stays at the presentation boundary by decision). Points to close:
 
-Do this **before** migrating the Party and Base UI. Those screens consume these payloads, so migrating first means reworking them.
+All three closed in Build 65: `targetItems` and `equipmentChanges` are bounded at 100 per request with chunked, debounced reads in the tab (`useApiReadMany`); each preview computes only the target character (about 3× faster on the real save); and an in-process versus HTTP-shaped parity step covers the read. The POST-read alternative was not needed.
 
-Gate: every operation has concrete request, success, and error schemas; no fallback `{}` payloads; `api:v1:check` reproducible.
+## Stage 1 — Close the contract catalog (next)
 
-## Stage 4 — Expedition and shell
+`scripts/generate-api-v1-contract.mjs` still has 11 `Type.Unknown` and several implementations are placeholders. Inventory (each needs a concrete schema, an example, an implementation, and a parity-fixture case):
 
-- Complete the compact, overview, and Expedition projections, including no-spoiler timing (latest floor and outcome update only at the end of `state.explore`).
-- Complete structured 1,000-run simulation output and sortie / Gods Battle effects, rewards, return reasons, and log references.
-- Migrate the header and the Expedition tab (destination, depth limit, difficulty offset, sortie, Gods Battle, simulation run) to the in-process adapter.
+| Operation | Gap |
+|---|---|
+| `read/expedition/{p}/latestBattleLog` | Done in Build 67 (public log shape, `logId`, bottleneck enemies with `EnemyStatus`). Still to do with 4b: no-spoiler timing (the log must not be readable before the end of `state.explore`). |
+| `read/expedition/{p}/simulationRun` | Done in Build 66 (compact strings, percentages, structured rooms with HP buckets). |
+| `read/observation/expedition` and `compact` | `state` is faked (`state.rest` or `state.idle` from HP); no step progress, timing, Clear-Gate, side-quest, or Diary references; `disclosedFloor` and `disclosedOutcome` read `lastExpeditionLog` directly (no-spoiler timing not enforced). |
+| `read/observation/diary`, `diaryEntry/{id}` | `metadata` is `Unknown`; semantic and legacy content and battle-log references are incomplete. |
+| `read/base/shopInfo` | Default dialogue key and `paidRefreshCountdown: 0` are placeholders (intimacy dialogue tiers and the refresh countdown exist in the game). |
+| `read/base/altarInfo`, `enemyFormList` | Donations and victories are dumped raw; `unlockCost` is 0, `enemyBonus` is `[]`, `unlockCondition` is null; Alter level and Prana cost rules (8.4.5) are not projected. |
+| `resources/clairvoyance/{p}` | Returns empty objects although the bag state exists. |
+| `resources/glossary` | `entries` is always `[]`. |
+| `resources/itemCompendium` | `ability` and `otherBonus` are `[]`; `cBonus` is a raw bonus object. Reuse `describeItem`. |
+| `resources/characterRoster`, `resources/bestiary` | Raw master-data objects (`race.stats`, `ENEMIES`), not a public shape. Bestiary should reuse `EnemyStatus` (Build 67); add the encounter and defeat counts and the reveal rules of 8.6. |
+| `read/setting/enemyEditPane` | `terrainEffect` is `['none']` and `enemyType` is `[]`. |
+
+Gate: no `Type.Unknown`, no `{}` or `[]` stand-in for real data, no raw master-data or save object in a response; `api:v1:check` reproducible; every operation has one in-process and one HTTP parity fixture.
+
+## Stage 4 — Expedition and shell (largest remaining piece)
+
+**Finding that reshapes this stage.** The party state machine (`state.rest`, `state.move`, `state.explore`, and so on, with `stateStartedAt`, `durationMs`, sortie source state, and Gods Battle flag) lives only in `HomeScreen.tsx` as `partyCycles` (19 references in a 5,390-line component) and in the separate persisted runtime snapshot. The Application API cannot see it: the API `sortie` is a shorter reimplementation (consume stock, clear profit, heal, resolve) that skips the runtime rules in Spec 5.1.1 (finish the current state and gain items first, the emergency-embezzlement notification, refusal at 0 HP, ending at the start of `state.rest`), so an API sortie and a UI sortie can differ. Migrating the Expedition tab before fixing this would either freeze the fake `state` into the contract or force the tab to keep reading `partyCycles`.
+
+Order:
+1. **4a. Extract the party cycle into a React-free module** (`src/game/partyCycle*.ts`): transitions, duration modifiers, profit usage, sortie, Gods Battle trigger, condition update. `HomeScreen` calls it; behavior must not change (characterization tests over recorded transitions, and the AFK equivalence gate).
+2. **4b. Put the cycle snapshot behind the authority**: `partyCycles` and the emulated clock become part of the committed snapshot (or a port it reads), so reads project the real state and every mutation, including `elapsed` and `sortie`, goes through the module from 4a. Decide how the persisted runtime snapshot and the API-account store hold it.
+3. **4c. Rewrite `sortie` and `godsBattle`** on that module (one shared implementation), returning outcome, return reason, rewards, Diary reference, and retained-log reference.
+4. **4d. Complete the projections**: `expedition`, `compact`, `overview` (header, progress report), `{p}/setting`, `chargeStock`, `latestBattleLog` (public battle-log shape, no-spoiler timing), and `simulationRun` (exact 100/1,000 isolated runs, structured room table).
+5. **4e. Migrate the header and the Expedition tab** (destination, depth limit, difficulty, sortie, Gods Battle, simulation graph, charge, side quest, log expansion) to projections and commands; add the guard to `migratedTabs.test.cjs`. Continuous progress bars interpolate from the projected start and expected end times on the client.
+
+Risk: 4a touches the most delicate runtime code. Gate: no gameplay difference in the AFK regression suites and the online transition tests before any API change.
 
 ## Stage 5 — Party, character, equipment (complete)
 
@@ -125,10 +148,10 @@ Add a mechanical check so this does not rely on review: a test that fails if a m
 
 ## Recommended order
 
-1. Stage 1 fixes for `calculatedStatus` and the sell/purchase results.
-2. Stage 5 items 1–4 (equipment controls through Party reads).
-3. Stage 4 UI migration (header and Expedition).
-4. Stage 6 (Base).
-5. Stage 7 (Diary and streaming).
-6. Stage 8 (Settings, files, delivery sender, Help, Resources).
+1. Close the Builds 62–64 review points (batch bound, per-change cost, parity case).
+2. Stage 1 contract-fidelity closure (the table above), starting with the operations Stage 4 consumes (`latestBattleLog`, `simulationRun`, `expedition`, `compact`, `overview`).
+3. Stage 4a–4e (extract the party cycle, then project and migrate Expedition and the header).
+4. Stage 6 (Base), including its Stage 1 rows (shop, Altar, enemy form).
+5. Stage 7 (Diary and streaming), including `diary` and battle-log rows.
+6. Stage 8 (Settings, files, delivery sender, Help, Resources), including the resource rows.
 7. Stage 9 (conformance matrix, ownership audit, cutover).

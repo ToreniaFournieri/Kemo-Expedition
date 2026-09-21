@@ -62,6 +62,13 @@ const C_FIELDS: ReadonlyArray<[keyof Item, string, 'count' | 'ratio']> = [
   ['accuracyBonus', 'c.accuracy', 'ratio'], ['evasionBonus', 'c.evasion', 'ratio'], ['penetBonus', 'c.penet', 'ratio'],
 ];
 
+/** The `c.`, `d.`, `e.`, `r.`, `b.`, and ability IDs of a bonus list (an enemy's or an item's unique bonuses). */
+export function describeBonuses(bonuses: readonly Bonus[]): ItemDetails {
+  const details: ItemDetails = { ability: [], cBonus: [], otherBonus: [] };
+  for (const bonus of bonuses) classifyBonus(bonus, details);
+  return details;
+}
+
 export function describeItem(item: Item): ItemDetails {
   const details: ItemDetails = { ability: [], cBonus: [], otherBonus: [] };
   for (const [field, id] of D_FIELDS) {

@@ -457,6 +457,10 @@ definitions in 9.1.3.
   `equippable`, `physicalDefenseDelta`, and `magicalDefenseDelta`. An out-of-range
   slot, malformed item/Jewel, incompatible Jewel, duplicate change, or request
   containing neither `targetItems` nor `equipmentChanges` is `invalid_request`.
+  Each of the two parameters carries at most 100 entries per request (more is
+  `invalid_request`), which keeps a GET query within HTTP header limits; a caller
+  with more entries sends several requests, and the results of the same snapshot
+  revision are equal to one combined evaluation.
 * For `removeEquipment`, `lockEquipment`, `unlockEquipment`, `jewelAttach`, and
   `jewelRemove`, `targetEquipment` is one slot index or an array of slot indices.
   Duplicate indices are invalid.
@@ -840,6 +844,31 @@ type DiaryEntry = {
   prints for the item. `equippable` is whether the character has the equipment
   aptitude for the item's category; an item that cannot be equipped is still
   evaluated. `abilities` lists the item's ability IDs.
+* `latestBattleLog` returns `{battleLog: BattleLog | null, bottleneckEnemies}`.
+  `BattleLog` is `{logId, partyNumber, dungeonId, difficultyOffset, finalOutcome
+  ("Clear"|"Escape"|"Retreat"|"Defeat"), totalExperience, completedRooms,
+  totalRooms, remainingPartyHp, maximumPartyHp, rewards[], autoSell {count, gold},
+  rooms[]}`. A reward is `{item (Item Format), itemId, category, tier, rarity,
+  enhancement, superRare}`. Each room carries its outcome (`victory`, `defeat`,
+  `draw`), damage, party HP, heal and attrition amounts, `endEvents`, and its
+  battle in one of two formats: `compact-v1` (terrain, an actor table, modifier
+  rows, and event rows `[category, timing, actorId, opcode, targetId, element, hits,
+  attempts, value, facts]`) or `legacy-facts` (the original recorded facts, marked
+  `legacyIncomplete`, never inferred into compact events). The log never contains
+  rendered narration, flavor rows, or replay metadata (seeds, protocol and draw
+  counts). `logId` is `latest` for the party's newest log or `diary:<diaryEntryId>`
+  for the log retained by that Diary entry; an unknown `logId` is `not_found`, and a
+  party with no log yet returns `{battleLog: null, bottleneckEnemies: []}`.
+  A bottleneck is a room where the party took at least 35% of its maximum HP in
+  damage (`reasons` includes `damage`) or that ended in a draw or a defeat
+  (`outcome`); it reports `room`, `outcome`, `damageTakenPercent`, and `enemy`, the
+  Bestiary `EnemyStatus` of the enemy as it was scaled for that battle (`null` for
+  a record without a snapshot). `EnemyStatus` is `{enemyId, name, nameKey, level,
+  enemyType, tier ("normal"|"elite"|"boss"|"divine"), mainClass, subClass, hp,
+  magicStyle, stats[], abilities[], ability[], cBonus[], otherBonus[],
+  dropItemIds[]}`; `level` is the effective enemy level of the room (dungeon level,
+  floor, room type, and difficulty offset) and `stats` are raw numeric facts
+  (`d.`, `f.`, `c.`, `e.`, `r.`, and `d.experience`), never localized text.
 * `calculatedStatus` uses `CalculatedStatus`. `stats`, `bonuses`, and attack
   `facts` contain every value required by the 8.2 status pane, with stable
   glossary keys and raw numbers; no formula is recomputed in the adapter.

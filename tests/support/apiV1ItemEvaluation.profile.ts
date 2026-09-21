@@ -151,4 +151,30 @@ const sword = ITEMS.find((item) => item.category === 'sword')!;
   await assert.rejects(() => evaluateChanges(character.id, 'bad'), /invalid_request:equipmentChanges/);
   await assert.rejects(() => evaluate(9_999_999, format(sword, 0, 0)), /not_found/);
 }
+
+// 5. One request carries at most 100 entries (a GET query must stay within header limits); larger batches are chunked by the caller.
+{
+  const { EQUIPMENT_EVALUATION_LIMIT } = await import('../../src/api/v1/requestLimits.ts');
+  assert.equal(EQUIPMENT_EVALUATION_LIMIT, 100);
+  const changes = Array.from({ length: 101 }, (_, index) => `0=0/${sword.id}/${index % 7}/${index}/0:0`);
+  await assert.rejects(() => evaluateChanges(character.id, changes), /invalid_request:equipmentChanges/, '101 changes are rejected');
+  const items = Array.from({ length: 101 }, (_, index) => `0/${sword.id}/${index % 7}/${index}/might:1`);
+  await assert.rejects(() => evaluate(character.id, items), /invalid_request:targetItems/, '101 items are rejected');
+  const accepted = await evaluateChanges(character.id, changes.slice(0, 100)) as { calculatedEquipmentChange: unknown[] };
+  assert.equal(accepted.calculatedEquipmentChange.length, 100, '100 changes are accepted');
+  const requestSchema = (catalog.operations.find((entry) => entry.operationId === operationId) as unknown as { query: { properties: Record<string, { anyOf: Array<{ maxItems?: number }> }> } }).query.properties;
+  assert.equal(requestSchema.targetItems.anyOf.some((branch) => branch.maxItems === 100), true, 'the published schema bounds targetItems');
+  assert.equal(requestSchema.equipmentChanges.anyOf.some((branch) => branch.maxItems === 100), true, 'the published schema bounds equipmentChanges');
+}
+
+// 6. Computing only the target character equals computing the whole party, for every member and every deity.
+{
+  const { computeCharacterStatsInParty, computePartyStats } = await import('../../src/game/partyComputation.ts');
+  const deities = ['Goddess of Restoration', 'God of Attrition', 'God of Cunning', 'God of Fortification', 'Goddess of Fertility', 'God of Resonance', 'Goddess of Precision', 'God of Fate', 'God of Dusk', 'Goddess of Mirage'];
+  for (const deity of deities) {
+    const party = { ...state.parties[0], deity: { ...state.parties[0].deity, name: deity as never } };
+    const whole = computePartyStats(party).characterStats;
+    party.characters.forEach((_, index) => assert.deepEqual(computeCharacterStatsInParty(party, index), whole[index], `${deity} member ${index}`));
+  }
+}
 console.log('apiV1ItemEvaluation profile ok');

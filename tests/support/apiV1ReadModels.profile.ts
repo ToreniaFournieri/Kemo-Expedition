@@ -2,6 +2,20 @@ import assert from 'node:assert/strict';
 import { buildApiV1ReadData } from '../../src/api/v1/readModels.ts';
 import { createFreshGameState } from '../../src/hooks/useGameState.ts';
 
+import { createExpeditionSimulationRoomResults } from '../../src/game/expeditionSimulation.ts';
+
+// A hand-built forecast: room 1 is reached by every run, room 2 by 900, and later rooms by nobody.
+function fakeSimulation(total: number) {
+  const rooms = createExpeditionSimulationRoomResults(total);
+  const first = Math.round(total * 0.9); const draw = Math.round(total * 0.04); const retreat = Math.round(total * 0.02); const defeat = total - first - draw - retreat;
+  Object.assign(rooms[0], { Victory: first, Draw: draw, Retreat: retreat, Defeat: defeat, reached: total, NotReached: 0 });
+  rooms[0].successfulHp.Full = first;
+  rooms[0].retreatHp.From30 = retreat;
+  Object.assign(rooms[1], { Clear: first, reached: first, NotReached: total - first });
+  for (let index = 2; index < rooms.length; index += 1) rooms[index].NotReached = total;
+  return { Clear: first, Turned_Back: 0, Draw_Retreat: draw, Wounded_Retreat: retreat, Defeat: defeat, total, rooms };
+}
+
 const state = createFreshGameState('en', Date.UTC(2026, 8, 20));
 const before = structuredClone(state);
 const calls: Array<{ partyIndex: number; count: number }> = [];
@@ -13,7 +27,7 @@ const context = {
   inGameTime: Date.UTC(2026, 8, 20),
   simulation: async (partyIndex: number, count: number) => {
     calls.push({ partyIndex, count });
-    return { total: count, Clear: count };
+    return { ...fakeSimulation(count) };
   },
 };
 
@@ -23,6 +37,31 @@ calls.length = 0;
 const full = await buildApiV1ReadData('read/expedition/1/simulationRun', state, {}, context);
 assert.deepEqual(calls, [{ partyIndex: 0, count: 1_000 }]);
 assert.equal(full.simulatedRevision, 7);
+{
+  // The two compact strings of 9.1.3 and the structured numbers behind them, validated against the published schema.
+  const Ajv = (await import('ajv')).default;
+  const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
+  const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'read/expedition/{p}/simulationRun')!.response.data);
+  assert.equal(validate(full), true, JSON.stringify(validate.errors?.slice(0, 2)));
+  const data = full as unknown as { runs: number; overview: string; detail: string[]; overviewPercent: Record<string, number>; rooms: { room: number; floorRoom: string; reached: number; notReached: number; victory: number; clear: number; defeat: number }[]; seedDomain: string };
+  assert.equal(data.runs, 1_000);
+  assert.equal(data.overview, 'Success 90.0% / Draw 4.0% / Retreat 2.0% / Defeat 4.0%');
+  assert.deepEqual(data.overviewPercent, { success: 90, clear: 90, return: 0, draw: 4, retreat: 2, defeat: 4 });
+  assert.equal(data.detail.length, 24);
+  assert.equal(data.detail[0], '1f-1/Success 90.0% / Draw 4.0% / Retreat 2.0% / Defeat 4.0% / Not reached 0.0%');
+  assert.equal(data.detail[1], '1f-2/Success 90.0% / Draw 0.0% / Retreat 0.0% / Defeat 0.0% / Not reached 10.0%');
+  assert.equal(data.detail[23], '6f-4/Success 0.0% / Draw 0.0% / Retreat 0.0% / Defeat 0.0% / Not reached 100.0%');
+  assert.deepEqual(data.rooms.slice(0, 5).map((room) => room.floorRoom), ['1f-1', '1f-2', '1f-3', '1f-4', '2f-1']);
+  // Every run is counted exactly once in every room.
+  for (const room of data.rooms as unknown as Array<Record<string, number>>) {
+    assert.equal(room.reached + room.notReached, 1_000, `room ${room.room} totals`);
+    assert.equal(room.victory + room.clear + room.return + room.draw + room.retreat + room.defeat, room.reached, `room ${room.room} outcomes`);
+  }
+  assert.match(data.seedDomain, /^[0-9a-f-]{36}$/);
+  const second = await buildApiV1ReadData('read/expedition/1/simulationRun', state, {}, context) as unknown as { seedDomain: string };
+  assert.notEqual(second.seedDomain, data.seedDomain, 'each forecast has its own seed domain');
+}
+calls.length = 0;
 // Undo/Redo are part of the equipment projection: up to 30 states, most recent first, plus next-step availability.
 {
   const { snapshotCharacterEquipment } = await import('../../src/api/v1/equipmentHistoryFacts.ts');

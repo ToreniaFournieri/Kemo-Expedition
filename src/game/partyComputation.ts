@@ -299,6 +299,14 @@ let rendererPartyStatsMemoTelemetry: RendererPartyStatsMemoTelemetry = {
 };
 
 // SpecRef: 2.1.2 | Party | computePartyStats
+/**
+ * The final stats of one party member (base computation plus the party deity's modifiers) without computing the other
+ * members. Every party-level modifier is applied per member, so the values equal `computePartyStats(party).characterStats[index]`.
+ */
+export function computeCharacterStatsInParty(party: Party, characterIndex: number, character: Party['characters'][number] = party.characters[characterIndex]): ComputedCharacterStats {
+  return applyDeityCharacterModifiers(party, [computeCharacterStats(character, party.level, characterIndex + 1)])[0];
+}
+
 export function computePartyStats(party: Party): ComputedPartyStatus {
   const baseCharacterStats: ComputedCharacterStats[] = party.characters.map((c, index) =>
     computeCharacterStats(c, party.level, index + 1) // Row is 1-6

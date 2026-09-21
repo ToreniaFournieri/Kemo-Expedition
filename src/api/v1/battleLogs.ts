@@ -1,5 +1,8 @@
 import { decodeCompactBattleEvents, DIARY_EVENT_CODES, getDiaryEventCategory, type CompactBattleLog } from '../../game/compactBattleLog.ts';
-import type { DiaryLog, ExpeditionLog, Item, ItemRarity, Party } from '../../types/index.ts';
+import { getDungeonById, getEffectiveEnemyLevel } from '../../data/dungeons.ts';
+import type { ExpeditionLog, Item, ItemRarity } from '../../types/index.ts';
+import { buildEnemyStatus, type EnemyStatus } from './enemyStatus.ts';
+import { formatItem } from './itemFormat.ts';
 
 function retainedLogRarity(item: Item): ItemRarity {
   const code = item.id % 1000;
@@ -85,19 +88,29 @@ function compactApiBattle(log: CompactBattleLog) {
   };
 }
 
-// SpecRef: 9.1.3 | Experimental AI API | Retained battle-log read model
-export function buildApiV1BattleLog(
-  revision: number,
-  partyId: number,
-  log: ExpeditionLog,
-  source: { kind: 'latest'; diaryEntryId: null } | { kind: 'diary'; diaryEntryId: string },
-  getDisplayName: (item: Item) => string = (item) => item.name,
-) {
+/** The room's Bestiary status is derived from the enemy as it was scaled for the battle (`enemySnapshot`). */
+function roomEnemyStatus(log: ExpeditionLog, entry: ExpeditionLog['entries'][number]): EnemyStatus | null {
+  if (!entry.enemySnapshot) return null;
+  const dungeon = getDungeonById(log.dungeonId);
+  const level = dungeon && entry.floor && entry.roomType
+    ? getEffectiveEnemyLevel(dungeon.expLevel, entry.floor, entry.roomType, false, log.difficultyOffset ?? 0)
+    : null;
+  return buildEnemyStatus(entry.enemySnapshot, level);
+}
+
+const BOTTLENECK_DAMAGE_PERCENT = 35;
+
+// SpecRef: 9.1.3 | Read | 2-2-2 {p}/latestBattleLog
+// The retained battle log of one expedition in its public, language-neutral shape (compact semantic events or the
+// original legacy facts, never rendered narration), plus the enemies that were bottlenecks: a room where the party took
+// at least 35% of its maximum HP in damage, or that ended in a draw or a defeat. Replay seeds are not published.
+export function buildBattleLogData(log: ExpeditionLog | null, partyNumber: number, logId: string) {
+  if (!log) return { battleLog: null, bottleneckEnemies: [] as never[] };
+  const rooms = log.entries;
   return {
-    revision,
-    source,
     battleLog: {
-      partyId,
+      logId,
+      partyNumber,
       dungeonId: log.dungeonId,
       difficultyOffset: log.difficultyOffset,
       finalOutcome: log.finalOutcome,
@@ -107,16 +120,16 @@ export function buildApiV1BattleLog(
       remainingPartyHp: log.remainingPartyHP,
       maximumPartyHp: log.maxPartyHP,
       rewards: log.rewards.map((item) => ({
+        item: formatItem(item, false),
         itemId: item.id,
         category: item.category,
         tier: Math.max(1, Math.floor(item.id / 1000)),
         rarity: retainedLogRarity(item),
         enhancement: item.enhancement,
         superRare: item.superRare,
-        displayName: getDisplayName(item),
       })),
       autoSell: { count: log.autoSellCount, gold: log.autoSellProfit },
-      rooms: log.entries.map((entry) => ({
+      rooms: rooms.map((entry) => ({
         room: entry.room,
         floor: entry.floor ?? null,
         roomInFloor: entry.roomInFloor ?? null,
@@ -131,60 +144,24 @@ export function buildApiV1BattleLog(
         maximumPartyHp: entry.maxPartyHP,
         healAmount: entry.healAmount ?? null,
         attritionAmount: entry.attritionAmount ?? null,
-        ...(entry.replayMetadata ? { replayMetadata: { ...entry.replayMetadata } } : {}),
         ...(entry.compactBattle ? compactApiBattle(entry.compactBattle) : {
           eventFormat: 'legacy-facts' as const,
           legacyIncomplete: true,
           events: entry.details.map(serializeRetainedBattleEvent),
         }),
-        endEvents: (entry.endEvents ?? []).map(event => {
+        endEvents: (entry.endEvents ?? []).map((event) => {
           if (event[0] === 0) { const { flavorIndex: _flavor, ...facts } = event[1] as typeof event[1] & { flavorIndex?: number }; return [0, facts]; }
           if (event[0] === 1) { const { flavorIndex: _flavor, ...facts } = event[1]; return [1, facts]; }
           return event;
         }),
       })),
     },
-  };
-}
-
-// SpecRef: 9.1.3 | Experimental AI API | GET diary entries
-export function buildApiV1DiaryEntries(
-  parties: Party[],
-  revision: number,
-  getTitleText: (party: Party, diaryLog: DiaryLog) => string = (party, diaryLog) => `[${party.name}] ${diaryLog.triggers.join(', ')}`,
-) {
-  return {
-    revision,
-    entries: parties
-      .flatMap((party, partyOrder) => (party.diaryLogs ?? []).map((diaryLog, entryOrder) => ({
-        party,
-        diaryLog,
-        partyOrder,
-        entryOrder,
-      })))
-      .sort((left, right) => (
-        right.diaryLog.createdAt - left.diaryLog.createdAt
-        || left.party.id - right.party.id
-        || left.partyOrder - right.partyOrder
-        || left.entryOrder - right.entryOrder
-      ))
-      .slice(0, 24)
-      .map(({ party, diaryLog }) => ({
-        id: diaryLog.id,
-        partyId: party.id,
-        partyDisplayName: party.name,
-        createdAt: diaryLog.createdAt,
-        isRead: diaryLog.isRead,
-        triggers: [...diaryLog.triggers],
-        titleText: getTitleText(party, diaryLog),
-        ...(diaryLog.semantic ? { facts: diaryLog.semantic } : { legacyIncomplete: true }),
-        expedition: {
-          dungeonId: diaryLog.expeditionLog.dungeonId,
-          difficultyOffset: diaryLog.expeditionLog.difficultyOffset,
-          finalOutcome: diaryLog.expeditionLog.finalOutcome,
-          completedRooms: diaryLog.expeditionLog.completedRooms,
-          totalRooms: diaryLog.expeditionLog.totalRooms,
-        },
-      })),
+    bottleneckEnemies: rooms.flatMap((entry) => {
+      const damageTakenPercent = entry.maxPartyHP > 0 ? Math.round((entry.damageTaken / entry.maxPartyHP) * 1000) / 10 : 0;
+      const byDamage = damageTakenPercent >= BOTTLENECK_DAMAGE_PERCENT;
+      const byOutcome = entry.outcome === 'draw' || entry.outcome === 'defeat';
+      if (!byDamage && !byOutcome) return [];
+      return [{ room: entry.room, outcome: entry.outcome, damageTakenPercent, reasons: [...(byDamage ? ['damage' as const] : []), ...(byOutcome ? ['outcome' as const] : [])], enemy: roomEnemyStatus(log, entry) }];
+    }),
   };
 }

@@ -46,6 +46,54 @@ const rarity = literals('common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRa
 const detail = literals('none', 'ability', 'cBonus', 'otherBonus', 'abilityAndCBonus', 'all');
 const identity = { userId: Type.String({ pattern: '^[A-Za-z0-9_-]{1,16}$' }), environment, gameMode, levelOffsetForOrca: optional(Type.Integer({ minimum: 0, maximum: 20 }), 5) };
 const empty = strict({});
+// SpecRef: 9.1.3 | Read | 2-2-2 {p}/latestBattleLog
+const scalar = Type.Union([Type.String(), Type.Number(), Type.Boolean(), Type.Null()]);
+const factMap = Type.Record(Type.String(), scalar);
+const enemyStatus = strict({
+  enemyId: integerId, name: Type.String(), nameKey: Type.Union([Type.String(), Type.Null()]), level: Type.Union([Type.Integer({ minimum: 1 }), Type.Null()]),
+  enemyType: stableKey, tier: literals('normal', 'elite', 'boss', 'divine'), mainClass: stableKey, subClass: Type.Union([stableKey, Type.Null()]),
+  hp: Type.Integer({ minimum: 0 }), magicStyle: Type.Union([Type.String(), Type.Null()]),
+  stats: Type.Array(strict({ key: stableKey, value: Type.Number(), unit: literals('number', 'ratio') })),
+  abilities: Type.Array(strict({ abilityId: stableKey, level: Type.Integer({ minimum: 1 }) })),
+  ability: Type.Array(Type.String()), cBonus: Type.Array(Type.String()), otherBonus: Type.Array(Type.String()), dropItemIds: Type.Array(integerId),
+});
+const bottleneckEnemy = strict({
+  room: Type.Integer({ minimum: 1 }), outcome: literals('victory', 'defeat', 'draw'), damageTakenPercent: Type.Number({ minimum: 0 }),
+  reasons: Type.Array(literals('damage', 'outcome')), enemy: Type.Union([enemyStatus, Type.Null()]),
+});
+// A compact event row: [category, timing, actorId, opcode, targetId, element, hits, attempts, value, facts].
+const compactEvent = Type.Tuple([Type.Integer(), Type.Integer(), Type.Integer(), Type.Integer(), Type.Integer(), Type.String(), Type.Integer(), Type.Integer(), Type.Number(), factMap]);
+const legacyEvent = Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), Type.Boolean(), Type.Record(Type.String(), Type.Union([Type.Number(), Type.Boolean()]))]));
+const endEvent = Type.Union([Type.Tuple([Type.Literal(0), factMap]), Type.Tuple([Type.Literal(1), factMap]), Type.Tuple([Type.Literal(2), strict({ id: integerId, enhancement: Type.Integer({ minimum: 0, maximum: 6 }), superRare: Type.Integer({ minimum: 0 }), jewel: Type.Optional(Type.Union([strict({ key: stableKey, rank: Type.Integer({ minimum: 1, maximum: 8 }) }), Type.Null()])) }), Type.Optional(Type.Number())]), Type.Tuple([Type.Literal(3)]), Type.Tuple([Type.Literal(4)])]);
+sampleOverrides.set(endEvent, [3]);
+sampleOverrides.set(compactEvent, [2, 49, 1, 1, 2147483649, 'none', 1, 1, 10, {}]);
+const nullableInteger = Type.Union([Type.Integer(), Type.Null()]);
+const battleRoomBase = {
+  room: Type.Integer({ minimum: 1 }), floor: nullableInteger, roomInFloor: nullableInteger, roomType: Type.Union([Type.String(), Type.Null()]), enemyId: nullableInteger,
+  enemyMaximumHp: Type.Number({ minimum: 0 }), outcome: literals('victory', 'defeat', 'draw'), damageDealt: Type.Number(), damageTaken: Type.Number(),
+  startingPartyHp: Type.Union([Type.Number(), Type.Null()]), remainingPartyHp: Type.Number(), maximumPartyHp: Type.Number(),
+  healAmount: Type.Union([Type.Number(), Type.Null()]), attritionAmount: Type.Union([Type.Number(), Type.Null()]), endEvents: Type.Array(endEvent),
+};
+const battleRoom = Type.Union([
+  strict({
+    ...battleRoomBase, eventFormat: Type.Literal('compact-v1'), terrain: Type.Union([Type.String(), Type.Null()]),
+    actors: Type.Array(strict({ id: Type.Integer(), kind: literals('character', 'enemy'), enemyId: Type.Optional(Type.Integer()), characterId: Type.Optional(Type.Integer()), name: Type.Optional(Type.String()) })),
+    modifiers: Type.Array(Type.Array(scalar)), events: Type.Array(compactEvent),
+  }),
+  strict({ ...battleRoomBase, eventFormat: Type.Literal('legacy-facts'), legacyIncomplete: Type.Literal(true), events: Type.Array(legacyEvent) }),
+]);
+const battleLogSchema = strict({
+  logId: stableKey, partyNumber, dungeonId: integerId, difficultyOffset: Type.Integer({ minimum: 0 }), finalOutcome: literals('Clear', 'Escape', 'Retreat', 'Defeat'),
+  totalExperience: Type.Number({ minimum: 0 }), completedRooms: Type.Integer({ minimum: 0 }), totalRooms: Type.Integer({ minimum: 0 }),
+  remainingPartyHp: Type.Number(), maximumPartyHp: Type.Number(),
+  rewards: Type.Array(strict({ item: presentItemFormat, itemId: integerId, category: stableKey, tier: Type.Integer({ minimum: 1 }), rarity: stableKey, enhancement: Type.Integer({ minimum: 0, maximum: 6 }), superRare: Type.Integer({ minimum: 0 }) })),
+  autoSell: strict({ count: Type.Integer({ minimum: 0 }), gold: Type.Number({ minimum: 0 }) }),
+  rooms: Type.Array(battleRoom),
+});
+const percentage = Type.Number({ minimum: 0, maximum: 100 });
+const floorRoomKey = Type.String({ pattern: '^[1-6]f-[1-4]$' });
+sampleOverrides.set(floorRoomKey, '1f-1');
+const count = Type.Integer({ minimum: 0 });
 const pathSchemas = {
   p: strict({ p: partyNumber }), characterId: strict({ characterId: integerId }), diaryEntryId: strict({ diaryEntryId: integerId }),
   deliveryId: strict({ deliveryId: Type.String({ minLength: 1, maxLength: 200 }) }),
@@ -59,8 +107,8 @@ const querySchemas = {
   'read/expedition/{p}/latestBattleLog': strict({ logId: optional(Type.String({ minLength: 1, maxLength: 200 })) }),
   'read/build/character/{characterId}/equipmentSet': strict({ equipmentSetId: optional(Type.Union([integerId, nonEmptyArray(integerId, { uniqueItems: true })])), isEquipmentSetDetail: optional(Type.Boolean(), false) }),
   'read/build/character/{characterId}/equipmentEvaluation': strict({
-    targetItems: optional(Type.Union([evaluatedItemFormat, nonEmptyArray(evaluatedItemFormat, { uniqueItems: true })])),
-    equipmentChanges: optional(Type.Union([equipmentChangeFormat, nonEmptyArray(equipmentChangeFormat, { uniqueItems: true })])),
+    targetItems: optional(Type.Union([evaluatedItemFormat, nonEmptyArray(evaluatedItemFormat, { uniqueItems: true, maxItems: 100 })])),
+    equipmentChanges: optional(Type.Union([equipmentChangeFormat, nonEmptyArray(equipmentChangeFormat, { uniqueItems: true, maxItems: 100 })])),
   }),
   'read/base/searchItems': strict({ state: optional(literals('owned', 'equipped', 'sold', 'all'), 'owned'), category: optional(itemCategory), rarity: optional(rarity, 'all'), superRare: optional(Type.Boolean()), superRareId: optional(Type.Integer({ minimum: 0 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), limit: optional(Type.Integer({ minimum: 1, maximum: 5000 }), 10) }),
   'read/base/enemyFormList': strict({ enemyType: optional(stableKey), enemyId: optional(integerId) }),
@@ -225,8 +273,18 @@ const responseDataSchemas = {
   'read/observation/setting': strict({ settingInfo: settingProjectionSchema }),
   'read/observation/popupEventStream': popupStreamSchema,
   'read/expedition/{p}/setting': strict({ current: strict({ destination: integerId, destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0, maximum: 68, multipleOf: 2 }) }), validOptions: strict({ destination: Type.Array(integerId), depthLimit: Type.Array(Type.String()), difficultyOffset: range }) }),
-  'read/expedition/{p}/latestBattleLog': strict({ battleLog: Type.Union([Type.Unknown(), Type.Null()]), bottleneckEnemies: Type.Array(Type.Unknown()) }),
-  'read/expedition/{p}/simulationRun': strict({ simulatedRevision: Type.Integer({ minimum: 0 }), seedDomain: stableKey, result: Type.Unknown() }),
+  'read/expedition/{p}/latestBattleLog': strict({ battleLog: Type.Union([battleLogSchema, Type.Null()]), bottleneckEnemies: Type.Array(bottleneckEnemy) }),
+  'read/expedition/{p}/simulationRun': strict({
+    simulatedRevision: Type.Integer({ minimum: 0 }), seedDomain: stableKey, runs: Type.Integer({ minimum: 1 }),
+    overview: Type.String(), overviewPercent: strict({ success: percentage, clear: percentage, return: percentage, draw: percentage, retreat: percentage, defeat: percentage }),
+    detail: Type.Array(Type.String()),
+    rooms: Type.Array(strict({
+      room: Type.Integer({ minimum: 1, maximum: 24 }), floorRoom: floorRoomKey,
+      reached: count, notReached: count, victory: count, clear: count, return: count, draw: count, retreat: count, defeat: count,
+      successfulHp: strict({ full: count, from90: count, from80: count, from70: count, from60: count, from50: count, from40: count, below40: count }),
+      retreatHp: strict({ from30: count, from20: count, from10: count, below10: count }),
+    })),
+  }),
   'read/expedition/{p}/chargeStock': strict({ chargeStock: Type.Integer({ minimum: 0, maximum: 6 }), chargeDuration: Type.Integer({ minimum: 0 }) }),
   'read/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }), validOptions: strict({ deityId: Type.Array(stableKey), order: Type.Array(integerId) }) }),
   'read/build/character/{characterId}/status': strict({ calculatedStatus, current: strict({ unique: Type.Boolean(), name: Type.String({ minLength: 1 }), racesAndGender: stableKey, mainClassId: stableKey, subClassId: stableKey, lineage: Type.Union([stableKey, Type.Null()]), predisposition: Type.Union([stableKey, Type.Null()]) }), editableFields: strict({ name: Type.Boolean(), unique: Type.Boolean() }), validOptions: strict({ racesAndGender: Type.Array(stableKey), mainClassId: Type.Array(stableKey), subClassId: Type.Array(stableKey), lineage: Type.Array(stableKey), predisposition: Type.Array(stableKey) }) }),

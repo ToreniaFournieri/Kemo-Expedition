@@ -75,7 +75,8 @@ renderUiIcon,
 UiIconKey,
 UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE
 } from '../homeShared';
-import { useApiRead } from '../useApiRead';
+import { EQUIPMENT_EVALUATION_LIMIT } from '../../../api/v1/requestLimits';
+import { useApiReadMany } from '../useApiRead';
 
 export default function PartyTab({
   apiAdapter,
@@ -810,17 +811,24 @@ export default function PartyTab({
     }
     return [...new Set(changes)];
   }, [char.equipment, equipCategory, inventory, previewTargetSlot]);
-  const equipmentChangeProjection = useApiRead<{
+  // One request carries at most EQUIPMENT_EVALUATION_LIMIT changes, so a large category is read in chunks, after a short
+  // pause so that a burst of inventory changes issues one set of requests.
+  const equipmentChangeInputs = useMemo(() => Array.from(
+    { length: Math.ceil(equipmentChanges.length / EQUIPMENT_EVALUATION_LIMIT) },
+    (_, chunk) => ({ pathParameters: { characterId: char.id }, parameters: { equipmentChanges: equipmentChanges.slice(chunk * EQUIPMENT_EVALUATION_LIMIT, (chunk + 1) * EQUIPMENT_EVALUATION_LIMIT) } }),
+  ), [char.id, equipmentChanges]);
+  const equipmentChangeProjections = useApiReadMany<{
     calculatedEquipmentChange: Array<{ change: string; equippable: boolean; physicalDefenseDelta: number; magicalDefenseDelta: number }>;
   }>(
     apiAdapter,
     'read/build/character/{characterId}/equipmentEvaluation',
-    equipmentChanges.length > 0 ? { pathParameters: { characterId: char.id }, parameters: { equipmentChanges } } : null,
+    equipmentChangeInputs,
     [char.id, equipmentChanges.join('|')],
+    120,
   );
   const equipmentChangeByTarget = useMemo(
-    () => new Map((equipmentChangeProjection?.calculatedEquipmentChange ?? []).map((entry) => [entry.change, entry])),
-    [equipmentChangeProjection],
+    () => new Map((equipmentChangeProjections ?? []).flatMap((projection) => projection.calculatedEquipmentChange).map((entry) => [entry.change, entry])),
+    [equipmentChangeProjections],
   );
 
   useEffect(() => {

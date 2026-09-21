@@ -87,6 +87,7 @@ const steps: Step[] = [
   { operation: 'read/observation/setting', mutating: false },
   { operation: 'read/observation/compact', mutating: false },
   { operation: 'read/expedition/{p}/setting', pathParameters: { p: 1 }, mutating: false },
+  { operation: 'read/build/character/{characterId}/equipmentEvaluation', pathParameters: { characterId: createFreshGameState('ja', 0).parties[0].characters[0].id }, parameters: { equipmentChanges: ['0=0', '1=0'], targetItems: ['0/1101/2/0/0:0'.replace('/0:0', '') + '/fort:1'] }, mutating: false },
   { operation: 'read/expedition/{p}/setting', pathParameters: { p: 9 }, mutating: false },
   { operation: 'commit/base/changeJewelPriorityParty', parameters: { partyNumber: 'none' }, mutating: true },
   { operation: 'commit/base/changeJewelPriorityParty', parameters: { partyNumber: 'none' }, mutating: true },

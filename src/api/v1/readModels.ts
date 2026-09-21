@@ -11,7 +11,7 @@ import { renderDiaryMetadata } from '../../game/compactDiary.ts';
 import { getDeityId, getDeityRank, getNextRankDonationRequirement, isNoFaithDeity, normalizeDeityName } from '../../game/deity.ts';
 import { getInstantExpeditionChargeState } from '../../game/instantExpedition.ts';
 import { evaluateEquipmentSet, getSavedEquipmentSlot } from '../../game/equipmentSets.ts';
-import { computePartyStats } from '../../game/partyComputation.ts';
+import { computeCharacterStatsInParty, computePartyStats } from '../../game/partyComputation.ts';
 import { buildCalculatedStatus } from './calculatedStatus.ts';
 import { getItemBasePower } from '../../game/itemPower.ts';
 import { evaluateItemForCharacter } from '../../game/itemEvaluation.ts';
@@ -20,10 +20,13 @@ import { describeItem, describeJewel, formatItemDetails, type ItemDetails, type 
 import { formatEquipmentEntry, formatItem, parseEquipmentChange, parseEvaluatedItemFormat } from './itemFormat.ts';
 import { isJewelAllowedForCategory, JEWEL_DEFS } from '../../game/jewel.ts';
 import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
+import { buildBattleLogData } from './battleLogs.ts';
+import { buildSimulationRunData } from './simulationView.ts';
+import { EQUIPMENT_EVALUATION_LIMIT } from './requestLimits.ts';
 import { describeUiPreferenceCatalog, listUiPreferences } from './uiPreferenceCatalog.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { buildShopLineup, getShopRefreshPrice } from '../../game/shop.ts';
-import { MAX_LEVEL, type GameState, type Item, type JewelKey, type Party } from '../../types/index.ts';
+import { MAX_LEVEL, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
 
@@ -282,8 +285,18 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     if (!selected) throw new Error('not_found');
     const { party, index } = selected;
     if (expedition[2] === 'setting') return { current: { destination: party.selectedDungeonId, destinationMode: party.expeditionDestinationMode, depthLimit: party.expeditionDepthLimit, difficultyOffset: party.expeditionDifficultyOffset }, validOptions: { destination: DUNGEONS.map((entry) => entry.id), depthLimit: ['1f-3', '1f-4', '2f-3', '2f-4', '3f-3', '3f-4', '4f-3', '4f-4', '5f-3', '5f-4', 'beforeBoss', 'all'], difficultyOffset: { min: 0, max: 68, step: 2 } } };
-    if (expedition[2] === 'latestBattleLog') return { battleLog: party.lastExpeditionLog, bottleneckEnemies: [] };
-    if (expedition[2] === 'simulationRun') return { simulatedRevision: context.revision, seedDomain: crypto.randomUUID(), result: await context.simulation?.(index, 1_000) };
+    if (expedition[2] === 'latestBattleLog') {
+      // Omitted `logId` selects the party's latest retained log; `diary:<id>` selects the log of one retained Diary entry.
+      if (parameters.logId === undefined) return buildBattleLogData(party.lastExpeditionLog, party.id, 'latest');
+      const diaryId = /^diary:(.+)$/.exec(String(parameters.logId))?.[1];
+      const diary = diaryId === undefined ? undefined : party.diaryLogs.find((entry) => String(entry.id) === diaryId);
+      if (!diary) throw new Error('not_found');
+      return buildBattleLogData(diary.expeditionLog, party.id, String(parameters.logId));
+    }
+    if (expedition[2] === 'simulationRun') {
+      if (!context.simulation) throw new Error('runtime_unavailable');
+      return buildSimulationRunData(await context.simulation(index, 1_000) as ExpeditionSimulationResult, context.revision, crypto.randomUUID());
+    }
     const charge = getInstantExpeditionChargeState(party);
     return { chargeStock: charge.stock, chargeDuration: charge.remainingMs <= 0 ? 0 : Math.ceil(charge.remainingMs / 1000) };
   }
@@ -346,7 +359,9 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       if (requested.length === 0 && requestedChanges.length === 0) throw new Error('invalid_request:targetItems');
       if (new Set(requested).size !== requested.length) throw new Error('invalid_request:targetItems');
       if (new Set(requestedChanges).size !== requestedChanges.length) throw new Error('invalid_request:equipmentChanges');
-      const currentStats = computePartyStats(party).characterStats[characterIndex];
+      if (requested.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:targetItems');
+      if (requestedChanges.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:equipmentChanges');
+      const currentStats = computeCharacterStatsInParty(party, characterIndex);
       return {
         calculatedItemStatus: requested.map((entry) => {
           const item = typeof entry === 'string' ? parseEvaluatedItemFormat(entry) : null;
@@ -361,8 +376,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
           }
           const equipment = [...character.equipment];
           equipment[change.slotIndex] = change.item;
-          const nextCharacter = { ...character, equipment };
-          const nextStats = computePartyStats({ ...party, characters: party.characters.map((candidate, index) => index === characterIndex ? nextCharacter : candidate) }).characterStats[characterIndex];
+          const nextStats = computeCharacterStatsInParty(party, characterIndex, { ...character, equipment });
           return {
             change: entry as string,
             equippable: change.item === null || evaluateItemForCharacter(character, change.item, party.level).equippable,

@@ -232,8 +232,8 @@ const before = { items: itemConservation(state), jewels: jewelConservation(state
   const characters = state.parties.flatMap((party) => party.characters).filter((_, index) => index % 6 === 0);
   let evaluated = 0;
   for (const someone of characters) {
-    for (let start = 0; start < owned.length; start += 500) {
-      const batch = owned.slice(start, start + 500);
+    for (let start = 0; start < owned.length; start += 100) {
+      const batch = owned.slice(start, start + 100);
       const before = JSON.stringify(state);
       const data = await read(`read/build/character/${someone.id}/equipmentEvaluation`, { targetItems: batch });
       assert.equal(JSON.stringify(state), before, 'an evaluation never changes the state');
@@ -245,6 +245,41 @@ const before = { items: itemConservation(state), jewels: jewelConservation(state
     }
   }
   assert.ok(evaluated > 5000, `${evaluated} evaluations validated`);
+}
+
+// 5c. latestBattleLog on the real save: every party's latest retained log and every Diary-retained log validates against the
+// published schema, has no undisclosed replay data or rendered narration, and derives its bottleneck enemies from the rooms.
+{
+  const validateLog = validator('read/expedition/{p}/latestBattleLog');
+  let logs = 0; let bottlenecks = 0;
+  for (const party of state.parties) {
+    const latest = await read(`read/expedition/${party.id}/latestBattleLog`) as { battleLog: { rooms: { enemyId: number | null; damageTaken: number; maximumPartyHp: number; outcome: string }[] } | null; bottleneckEnemies: { room: number; enemy: { enemyId: number; level: number | null } | null }[] };
+    assert.equal(validateLog(latest), true, `party ${party.id} latest: ${JSON.stringify(validateLog.errors?.slice(0, 2))}`);
+    for (const diary of party.diaryLogs) {
+      const retained = await read(`read/expedition/${party.id}/latestBattleLog`, { logId: `diary:${diary.id}` }) as { battleLog: { logId: string } | null; bottleneckEnemies: unknown[] };
+      assert.equal(validateLog(retained), true, `party ${party.id} diary ${diary.id}: ${JSON.stringify(validateLog.errors?.slice(0, 2))}`);
+      assert.equal(retained.battleLog?.logId, `diary:${diary.id}`);
+      logs += 1;
+    }
+    if (latest.battleLog) {
+      logs += 1;
+      const text = JSON.stringify(latest);
+      for (const banned of ['seedHex', 'replayMetadata', 'actionText', 'random_flavor']) assert.equal(text.includes(banned), false, `${banned} is not published`);
+      const expected = party.lastExpeditionLog!.entries.filter((entry) => entry.outcome !== 'victory' || (entry.maxPartyHP > 0 && (entry.damageTaken / entry.maxPartyHP) * 100 >= 35)).length;
+      assert.equal(latest.bottleneckEnemies.length, expected, 'bottlenecks are the rooms with 35% damage, a draw, or a defeat');
+      bottlenecks += latest.bottleneckEnemies.length;
+      for (const bottleneck of latest.bottleneckEnemies as unknown as { room: number; enemy: { level: number | null; stats: { value: number }[]; hp: number; dropItemIds: number[] } | null }[]) {
+        assert.ok(bottleneck.enemy, `room ${bottleneck.room} keeps its enemy snapshot`);
+        assert.ok(bottleneck.enemy!.level !== null && bottleneck.enemy!.level >= 1, 'the effective enemy level is derived from the dungeon, floor, room type, and difficulty');
+        for (const fact of bottleneck.enemy!.stats) assert.equal(Number.isFinite(fact.value), true);
+        assert.ok(bottleneck.enemy!.hp > 0);
+      }
+    } else assert.deepEqual(latest, { battleLog: null, bottleneckEnemies: [] });
+  }
+  assert.ok(logs > 0, 'the real save retains battle logs');
+  await assert.rejects(() => read('read/expedition/1/latestBattleLog', { logId: 'diary:does-not-exist' }), /not_found/);
+  await assert.rejects(() => read('read/expedition/1/latestBattleLog', { logId: 'latest' }), /not_found/);
+  console.log(`latestBattleLog: ${logs} retained logs, ${bottlenecks} bottleneck rooms validated`);
 }
 
 // 6. The heavy projections stay fast: the whole check above runs well within a generous budget.

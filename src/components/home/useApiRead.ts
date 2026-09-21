@@ -36,3 +36,40 @@ export function useApiRead<T>(
   }, [adapter, operation, enabled, committed, ...dependencies]);
   return data;
 }
+
+type ReadInput = { pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown> };
+
+/**
+ * Reads several projections of one operation together (for example a batch split under the operation's request limit)
+ * and returns their results in order once all have arrived. The read waits `debounceMs` after the last dependency change,
+ * so a burst of changes issues one set of requests, and it re-reads after every fully installed commit like `useApiRead`.
+ */
+export function useApiReadMany<T>(
+  adapter: InProcessApiAdapter | null,
+  operation: string,
+  inputs: readonly ReadInput[] | null,
+  dependencies: readonly unknown[],
+  debounceMs = 0,
+): T[] | null {
+  const [data, setData] = useState<T[] | null>(null);
+  const [committed, setCommitted] = useState(0);
+  useEffect(() => {
+    if (!adapter) return;
+    return adapter.subscribe(() => setCommitted((count) => count + 1));
+  }, [adapter]);
+  useEffect(() => {
+    if (!adapter || !inputs || inputs.length === 0) { setData(null); return; }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      void Promise.all(inputs.map((input) => adapter.read(operation, input))).then((responses) => {
+        if (cancelled) return;
+        const failed = responses.find((response) => response.error);
+        if (failed) { console.error('[api-v1] Projection read failed', operation, failed.error); setData(null); return; }
+        setData(responses.map((response) => response.data as T));
+      });
+    }, debounceMs);
+    return () => { cancelled = true; clearTimeout(timer); };
+    // The caller owns the dependency list: the projections are re-read when any listed fact changes.
+  }, [adapter, operation, committed, ...dependencies]);
+  return data;
+}

@@ -1,6 +1,6 @@
 import { mapCompactExpedition, mapCompactDiary } from '../../src/game/compactDiaryStorage.ts';
 import { renderDiaryMetadata, renderExpeditionMetadata, renderDiaryBattle } from '../../src/game/compactDiary.ts';
-import { buildApiV1BattleLog } from '../../src/api/v1/battleLogs.ts';
+import { buildBattleLogData } from '../../src/api/v1/battleLogs.ts';
 import type { ExpeditionLog } from '../../src/types/index.ts';
 import { renderCompactBattle } from '../../src/game/battleCandidate.ts';
 import { encodePersistedState } from '../../src/game/storageCompression.ts';
@@ -10,6 +10,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
+import Ajv from 'ajv';
 import { ENEMIES } from '../../src/data/enemies.ts';
 import { getDungeonById } from '../../src/data/dungeons.ts';
 import { executeBattle, executeBattleWithSeed } from '../../src/game/battle.ts';
@@ -611,9 +612,19 @@ test('compact Diary metadata, pooled storage, legacy mixing, and AI facts round 
   assert.equal(JSON.stringify(log), before);
   const legacy = { ...diary, semantic: undefined, expeditionLog: { ...log, compactVersion: undefined, entries: [{ ...room, compactBattle: undefined, details: [{ phase: 'combat' as const, actor: 'enemy' as const, action: 'Original language' }] }] } };
   assert.equal(mapCompactDiary(legacy).expeditionLog, legacy.expeditionLog);
-  const api = buildApiV1BattleLog(1, 1, restored, { kind: 'latest', diaryEntryId: null });
-  assert.equal(api.battleLog.rooms[0].eventFormat, 'compact-v1');
-  assert.ok(api.battleLog.rooms[0].events.length);
+  const api = buildBattleLogData(restored, 1, 'latest');
+  assert.equal(api.battleLog!.rooms[0].eventFormat, 'compact-v1');
+  assert.ok(api.battleLog!.rooms[0].events.length);
+  {
+    // The compact and legacy shapes both satisfy the published latestBattleLog schema.
+    const catalog = JSON.parse(readFileSync(resolve('desktop/api-v1-contract.json'), 'utf8')) as { operations: { operationId: string; response: { data: object } }[] };
+    const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'read/expedition/{p}/latestBattleLog')!.response.data);
+    assert.equal(validate(api), true, JSON.stringify(validate.errors?.slice(0, 3)));
+    const legacyApi = buildBattleLogData(legacy.expeditionLog as never, 1, 'latest');
+    assert.equal(legacyApi.battleLog!.rooms[0].eventFormat, 'legacy-facts');
+    assert.equal(validate(legacyApi), true, JSON.stringify(validate.errors?.slice(0, 3)));
+    assert.equal(JSON.stringify(api).includes('replayMetadata'), false, 'replay seeds are not published');
+  }
   assert.equal(JSON.stringify(api).includes('actionText'), false);
   assert.equal(JSON.stringify(api).includes('random_flavor'), false);
   assert.throws(() => mapCompactExpedition({ ...stored, actorTable: [] }, true));
