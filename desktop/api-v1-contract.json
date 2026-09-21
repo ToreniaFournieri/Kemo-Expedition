@@ -2091,7 +2091,14 @@
               "type": "object",
               "required": [
                 "gameMode",
-                "inGameTime"
+                "inGameTime",
+                "gold",
+                "prana",
+                "environment",
+                "unreadDiary",
+                "speedOfTime",
+                "autoRepeat",
+                "progressReportInfo"
               ],
               "properties": {
                 "gameMode": {
@@ -2119,13 +2126,104 @@
                   "type": "integer"
                 },
                 "environment": {
+                  "minLength": 1,
                   "type": "string"
                 },
                 "unreadDiary": {
                   "minimum": 0,
                   "type": "integer"
                 },
-                "progressReportInfo": {}
+                "speedOfTime": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "base",
+                        "scale",
+                        "bonusActive",
+                        "bonusUntil"
+                      ],
+                      "properties": {
+                        "base": {
+                          "anyOf": [
+                            {
+                              "const": "real",
+                              "type": "string"
+                            },
+                            {
+                              "const": "x1.2",
+                              "type": "string"
+                            },
+                            {
+                              "const": "x5",
+                              "type": "string"
+                            },
+                            {
+                              "const": "x20",
+                              "type": "string"
+                            },
+                            {
+                              "const": "x100",
+                              "type": "string"
+                            },
+                            {
+                              "const": "unlimited",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "scale": {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        "bonusActive": {
+                          "type": "boolean"
+                        },
+                        "bonusUntil": {
+                          "anyOf": [
+                            {
+                              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "autoRepeat": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "progressReportInfo": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "available",
+                    "bonusActive"
+                  ],
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    },
+                    "bonusActive": {
+                      "type": "boolean"
+                    }
+                  }
+                }
               }
             }
           }
@@ -2174,7 +2272,14 @@
                   "type": "object",
                   "required": [
                     "gameMode",
-                    "inGameTime"
+                    "inGameTime",
+                    "gold",
+                    "prana",
+                    "environment",
+                    "unreadDiary",
+                    "speedOfTime",
+                    "autoRepeat",
+                    "progressReportInfo"
                   ],
                   "properties": {
                     "gameMode": {
@@ -2202,13 +2307,104 @@
                       "type": "integer"
                     },
                     "environment": {
+                      "minLength": 1,
                       "type": "string"
                     },
                     "unreadDiary": {
                       "minimum": 0,
                       "type": "integer"
                     },
-                    "progressReportInfo": {}
+                    "speedOfTime": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "base",
+                            "scale",
+                            "bonusActive",
+                            "bonusUntil"
+                          ],
+                          "properties": {
+                            "base": {
+                              "anyOf": [
+                                {
+                                  "const": "real",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "x1.2",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "x5",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "x20",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "x100",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "unlimited",
+                                  "type": "string"
+                                }
+                              ]
+                            },
+                            "scale": {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "bonusActive": {
+                              "type": "boolean"
+                            },
+                            "bonusUntil": {
+                              "anyOf": [
+                                {
+                                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "autoRepeat": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "progressReportInfo": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "available",
+                        "bonusActive"
+                      ],
+                      "properties": {
+                        "available": {
+                          "type": "boolean"
+                        },
+                        "bonusActive": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -2245,7 +2441,22 @@
           "data": {
             "headerInfo": {
               "gameMode": "mode.normal",
-              "inGameTime": "1970-01-01T00:00:00.000Z"
+              "inGameTime": "1970-01-01T00:00:00.000Z",
+              "gold": 0,
+              "prana": 0,
+              "environment": "xxxxxxx",
+              "unreadDiary": 0,
+              "speedOfTime": {
+                "base": "real",
+                "scale": 0,
+                "bonusActive": true,
+                "bonusUntil": "1970-01-01T00:00:00.000Z"
+              },
+              "autoRepeat": true,
+              "progressReportInfo": {
+                "available": true,
+                "bonusActive": true
+              }
             }
           }
         }

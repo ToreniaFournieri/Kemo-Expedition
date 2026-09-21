@@ -336,7 +336,7 @@ and `validOptions`; localization occurs at the presentation boundary.
 | Projection | Minimum complete facts |
 | --- | --- |
 | `compact` | Exactly the compact AI projection defined in 9.1.3, including attention and unread summaries. |
-| `overview` | Header mode, in-game time, Gold, Prana, progress-report availability/status, current environment, unread count, and navigation availability. |
+| `overview` | Header mode, in-game time, Gold, Prana, current environment, unread Diary count, `speedOfTime` (`base` of `real`, `x1.2`, `x5`, `x20`, `x100`, `unlimited`; the effective `scale`; and the progress-report bonus's `bonusActive` and `bonusUntil`), `autoRepeat`, and `progressReportInfo` (`available` when a report destination is configured, and `bonusActive`). `speedOfTime` and `autoRepeat` belong to the ordinary player's runtime and are `null` for an API account. All five primary tabs are always available, so no navigation list is published. |
 | `expedition` | Every unlocked party's identity, state, progress timing/steps, HP, disclosed floor/outcome, destination summary, charge state, Clear-Gate/side-quest facts, controls and their unavailable reasons, plus active result/log references required by 8.3. |
 | `party` | Selected party, member order, deity/rank/condition, character display/calculated build facts, equipment entries and locks/Jewels, equipment mode/set summaries, inventory choices, and action availability required by 8.2. |
 | `base` | Selected Base pane, currencies, item/inventory summaries, shop lineup/status, Altar facts, Jewel priority, enemy-form facts, filters, actions, and unavailable reasons required by 8.4. |

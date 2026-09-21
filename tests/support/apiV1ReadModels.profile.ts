@@ -480,6 +480,28 @@ calls.length = 0;
   assert.deepEqual(colosseum.controls.sortie, { available: true, unavailableReason: null }, 'the Colosseum needs no HP, charge, or gate');
 }
 
+// Header facts of `overview`: save-owned values always, runtime-owned Speed of Time and auto-repeat only for the player's runtime.
+{
+  const { default: Ajv } = await import('ajv');
+  const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
+  const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'read/observation/overview')!.response.data);
+  const read = async (extra: Record<string, unknown>) => {
+    const result = await buildApiV1ReadData('read/observation/overview', state, {}, { ...context, ...extra } as never) as any;
+    assert.equal(validate(result), true, JSON.stringify(validate.errors));
+    return result.headerInfo;
+  };
+  const account = await read({});
+  assert.deepEqual([account.speedOfTime, account.autoRepeat, account.progressReportInfo], [null, null, { available: false, bonusActive: false }], 'an API account has no runtime-owned header facts');
+  assert.deepEqual([account.gold, account.prana, account.environment, account.gameMode], [state.global.gold, state.global.prana, 'desktop', 'mode.normal']);
+  const soon = Date.now() + 3 * 3_600_000;
+  const player = await read({ headerRuntime: () => ({ timeSpeed: 'x5', bonusUntilMs: soon, autoRepeat: false, progressReportConfigured: true }), chargeDurationScale: 0.2 / 1.2 });
+  assert.deepEqual([player.speedOfTime.base, player.speedOfTime.bonusActive, player.speedOfTime.bonusUntil, player.autoRepeat], ['x5', true, new Date(soon).toISOString(), false]);
+  assert.equal(player.speedOfTime.scale, 0.2 / 1.2);
+  assert.deepEqual(player.progressReportInfo, { available: true, bonusActive: true });
+  const expired = await read({ headerRuntime: () => ({ timeSpeed: 'x1_2', bonusUntilMs: Date.now() - 1, autoRepeat: true, progressReportConfigured: true }) });
+  assert.deepEqual([expired.speedOfTime.base, expired.speedOfTime.bonusActive, expired.speedOfTime.bonusUntil], ['x1.2', false, null], 'an expired bonus is not reported');
+}
+
 assert.deepEqual(state, before);
 
 // calculatedStatus is the public fact model (9.1.4.14), not the internal computed-stats object.

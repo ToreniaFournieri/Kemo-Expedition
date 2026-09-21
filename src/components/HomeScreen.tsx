@@ -485,6 +485,7 @@ export function HomeScreen({
   const apiActionsRef = useRef(actions);
   const apiAutoEquipmentRunnerRef = useRef<AutoEquipmentRunner | null>(null);
   const apiCycleDurationScaleRef = useRef(1);
+  const headerRuntimeRef = useRef<{ timeSpeed: string; bonusUntilMs: number | null; autoRepeat: boolean; progressReportConfigured: boolean }>({ timeSpeed: 'realtime', bonusUntilMs: null, autoRepeat: true, progressReportConfigured: false });
   // SpecRef: 8.3 | UI_EXPEDITION | Update Timing: the log disclosed per party (the previous one while a party explores).
   const disclosedExpeditionLogsRef = useRef<Array<Party['lastExpeditionLog'] | null>>([]);
   const restDurationMsRef = useRef<(party: Party) => number>(() => 1000);
@@ -587,6 +588,7 @@ export function HomeScreen({
         restDurationMs: (party) => restDurationMsRef.current(party),
         applyPartyCycleWrites: (writes) => sortieCycleWritesRef.current(writes),
         disclosedExpeditionLog: (partyIndex) => disclosedExpeditionLogsRef.current[partyIndex],
+        headerRuntime: () => headerRuntimeRef.current,
       },
       help: { requirements: apiRequirementsDocument, detail: apiDetailDocument },
       onSessionActive: (active) => { apiControlActiveRef.current = active; setApiControlActive(active); },
@@ -772,6 +774,12 @@ export function HomeScreen({
   const [timeSpeedNowMs, setTimeSpeedNowMs] = useState(() => Date.now());
   const hasActiveTimeSpeedBonus = timeSpeedBonusUntilMs !== null && timeSpeedNowMs < timeSpeedBonusUntilMs;
   apiCycleDurationScaleRef.current = Math.max(0.001, getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus));
+  headerRuntimeRef.current = {
+    timeSpeed: effectiveDebugSettings.timeSpeed,
+    bonusUntilMs: timeSpeedBonusUntilMs,
+    autoRepeat: isAutoRepeatEnabled,
+    progressReportConfigured: Boolean({ dev: DEV_DISCORD_WEBHOOK_URL, beta: BETA_DISCORD_WEBHOOK_URL, orca: ORCA_DISCORD_WEBHOOK_URL }[getEnvironmentId() as string] ?? PROD_DISCORD_WEBHOOK_URL),
+  };
 
   useEffect(() => {
     try {

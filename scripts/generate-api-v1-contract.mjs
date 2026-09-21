@@ -292,7 +292,13 @@ const responseDataSchemas = {
   'fundamental/logOut': strict({ finalPersistedRevision: Type.Integer({ minimum: 0 }) }),
   'read/observation': compactObservationSchema,
   'read/observation/compact': compactObservationSchema,
-  'read/observation/overview': strict({ headerInfo: strict({ gameMode: modeKey, inGameTime: isoTimestamp, gold: optional(Type.Integer({ minimum: 0 })), prana: optional(Type.Integer({ minimum: 0 })), environment: optional(Type.String()), unreadDiary: optional(Type.Integer({ minimum: 0 })), progressReportInfo: optional(Type.Unknown()) }) }),
+  // Spec 8.1.2 / 9.1.4.7: the header's facts. `speedOfTime`, `autoRepeat` are runtime-owned and `null` for an API account.
+  'read/observation/overview': strict({ headerInfo: strict({
+    gameMode: modeKey, inGameTime: isoTimestamp, gold: Type.Integer({ minimum: 0 }), prana: Type.Integer({ minimum: 0 }), environment: Type.String({ minLength: 1 }), unreadDiary: Type.Integer({ minimum: 0 }),
+    speedOfTime: Type.Union([strict({ base: literals('real', 'x1.2', 'x5', 'x20', 'x100', 'unlimited'), scale: Type.Number({ minimum: 0 }), bonusActive: Type.Boolean(), bonusUntil: Type.Union([isoTimestamp, Type.Null()]) }), Type.Null()]),
+    autoRepeat: Type.Union([Type.Boolean(), Type.Null()]),
+    progressReportInfo: strict({ available: Type.Boolean(), bonusActive: Type.Boolean() }),
+  }) }),
   'read/observation/expedition': strict({ expeditionInfo: expeditionProjectionSchema }),
   'read/observation/party': strict({ partyInfo: strict({ ...partyProjectionSchema.properties, unlockedMimorianEnemyIds: Type.Array(integerId), parties: Type.Array(strict({ partyNumber, deityId: stableKey, characters: Type.Array(strict({ characterId: integerId, name: Type.String({ minLength: 1 }), raceId: stableKey, mimorianEnemyId: Type.Union([integerId, Type.Null()]) })) })) }) }),
   'read/observation/base': strict({ baseInfo: baseProjectionSchema }),

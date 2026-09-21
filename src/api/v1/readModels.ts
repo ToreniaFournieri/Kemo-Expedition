@@ -35,6 +35,16 @@ import { MAX_LEVEL, type ExpeditionLog, type ExpeditionSimulationResult, type Ga
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
 
+export interface ApiV1HeaderRuntime {
+  /** The Debug-pane time speed: `realtime`, `x1_2`, `x5`, `x20`, `x100`, or `unlimited`. */
+  readonly timeSpeed: string;
+  /** Wall-clock expiry of the progress-report Speed of Time bonus, or `null` when none is active. */
+  readonly bonusUntilMs: number | null;
+  readonly autoRepeat: boolean;
+  /** Whether a progress-report destination is configured for this environment. */
+  readonly progressReportConfigured: boolean;
+}
+
 export interface ApiV1ReadContext {
   readonly revision: number;
   readonly environment: string;
@@ -50,9 +60,39 @@ export interface ApiV1ReadContext {
    * memory, and the newest log is used.
    */
   readonly disclosedLog?: (partyIndex: number) => ExpeditionLog | null | undefined;
+  /**
+   * The header facts the ordinary player's runtime owns outside the save: the Debug-pane base Speed of Time, the
+   * progress-report bonus expiry, and the auto-repeat switch. Absent for an API account, which has none of them.
+   */
+  readonly headerRuntime?: () => ApiV1HeaderRuntime;
   /** The Instant Expedition charge clock scale (the current Speed of Time); 1 when omitted. */
   readonly chargeDurationScale?: number;
   readonly control?: { settings?: Record<string, unknown>; deliveries?: unknown[]; equipmentHistory?: Record<string, EquipmentHistoryBag> };
+}
+
+const SPEED_OF_TIME_KEYS: Record<string, string> = { realtime: 'real', x1_2: 'x1.2', x5: 'x5', x20: 'x20', x100: 'x100', unlimited: 'unlimited' };
+
+// SpecRef: 8.1.2 | Header | Speed of Time
+// SpecRef: 9.1.4.7 | Observation projections | overview
+function overviewProjection(state: GameState, context: ApiV1ReadContext) {
+  const runtime = context.headerRuntime?.();
+  const bonusActive = runtime?.bonusUntilMs != null && runtime.bonusUntilMs > Date.now();
+  return {
+    gameMode: context.gameMode,
+    inGameTime: new Date(context.inGameTime).toISOString(),
+    gold: state.global.gold,
+    prana: state.global.prana,
+    environment: context.environment,
+    unreadDiary: state.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0),
+    speedOfTime: runtime ? {
+      base: SPEED_OF_TIME_KEYS[runtime.timeSpeed] ?? 'real',
+      scale: context.chargeDurationScale ?? 1,
+      bonusActive,
+      bonusUntil: bonusActive ? new Date(runtime.bonusUntilMs!).toISOString() : null,
+    } : null,
+    autoRepeat: runtime ? runtime.autoRepeat : null,
+    progressReportInfo: { available: runtime?.progressReportConfigured ?? false, bonusActive },
+  };
 }
 
 function itemFormat(item: Item): string {
@@ -359,7 +399,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     }
     return compactObservation(state, context, simulations);
   }
-  if (operationId === 'read/observation/overview') return { headerInfo: { gameMode: context.gameMode, inGameTime: new Date(context.inGameTime).toISOString(), gold: state.global.gold, prana: state.global.prana, environment: context.environment, unreadDiary: state.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0) } };
+  if (operationId === 'read/observation/overview') return { headerInfo: overviewProjection(state, context) };
   if (operationId === 'read/observation/expedition') return { expeditionInfo: expeditionProjection(state, context) };
   if (operationId === 'read/observation/party') {
     // `parties` lists every unlocked party's deity and members so the party selector and the deity and Mimorian

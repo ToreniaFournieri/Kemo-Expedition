@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 72. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 73. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -69,7 +69,7 @@ What the API still cannot see is the live party cycle (`partyCycles`: `state`, `
 3. **Projections and simulation:** complete `{p}/setting`, `chargeStock`, `overview` (progress report), and `compact`; the exact 100/1,000-run counts are already tested.
 4. **Migrate the header and the Expedition tab** to projections and commands, with the migration guard. Continuous progress bars interpolate from the projected start and expected end times.
 
-The runtime port now serves the projections too (Build 71): real `state`, its clock, and the no-spoiler rule are done for `expedition`, `compact`, and the default `latestBattleLog`. Build 72 added step counts and sub-progress, server-gated exploration (`exploration.rooms`, `nextRevealAt`), Clear-Gate and side-quest facts from shared `src/game/expeditionGoals.ts`, and the sortie and Gods Battle controls with unavailable reasons (`src/api/v1/sortieAvailability.ts`, shared with the commit, which now also refuses `entry_gate_locked`). Still to do: `overview`, then the header and Expedition tab migration (the tab re-reads at `nextRevealAt`).
+The runtime port now serves the projections too (Build 71): real `state`, its clock, and the no-spoiler rule are done for `expedition`, `compact`, and the default `latestBattleLog`. Build 72 added step counts and sub-progress, server-gated exploration (`exploration.rooms`, `nextRevealAt`), Clear-Gate and side-quest facts from shared `src/game/expeditionGoals.ts`, and the sortie and Gods Battle controls with unavailable reasons (`src/api/v1/sortieAvailability.ts`, shared with the commit, which now also refuses `entry_gate_locked`). Build 73 added the `overview` header facts (Speed of Time, auto-repeat, progress-report state) through a runtime `headerRuntime` port. Still to do: the header and Expedition tab migration (the tab re-reads at `nextRevealAt`).
 
 ## Stage 5 — Party, character, equipment (complete)
 

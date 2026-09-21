@@ -1,5 +1,5 @@
 import type { ExpeditionLog, GameState } from '../../types';
-import { buildApiV1ReadData } from './readModels';
+import { buildApiV1ReadData, type ApiV1ReadContext } from './readModels';
 import { SerializedApplicationApiAuthority, type ApiV1CommitAuthorityDependencies, type ApiV1ControlMetadata } from './authority';
 import { serializeGameState } from '../../game/saveCodec';
 import { encodePersistedState } from '../../game/storageCompression';
@@ -39,6 +39,8 @@ export interface ApplicationApiPorts {
     partyCycle?: ApiV1CommitAuthorityDependencies['partyCycle'];
     /** The expedition log the UI has disclosed for a party (hidden while exploring); see `ApiV1ReadContext.disclosedLog`. */
     disclosedExpeditionLog?: (partyIndex: number) => ExpeditionLog | null | undefined;
+    /** Header facts the runtime owns outside the save (Speed of Time, auto-repeat); see `ApiV1ReadContext.headerRuntime`. */
+    headerRuntime?: ApiV1ReadContext['headerRuntime'];
     /** Duration of `state.rest` for a party, as the UI computes it. */
     restDurationMs?: ApiV1CommitAuthorityDependencies['restDurationMs'];
     /** Applies a sortie's party-cycle reset to the running runtime (called after the commit is durable). */
@@ -176,6 +178,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
           ...(activeIdentity ? {} : {
             partyCycle: ports.runtime.partyCycle,
             disclosedLog: ports.runtime.disclosedExpeditionLog,
+            headerRuntime: ports.runtime.headerRuntime,
             chargeDurationScale: ports.runtime.cycleDurationScale(),
           }),
         });
