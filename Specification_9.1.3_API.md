@@ -146,6 +146,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
      character/{characterId}/removeAllEquipment
      character/{characterId}/removeEquipment
      character/{characterId}/equip
+     character/{characterId}/equipmentEvaluation
      character/{characterId}/lockEquipment
      character/{characterId}/unlockEquipment
      character/{characterId}/autoEquipment
@@ -1254,19 +1255,30 @@ Path Parameters
     * Format: `slotIndex`.
     * If specified, equips the target item to the specified slot, replacing the currently equipped item in that slot.
 
+**3-3-6. `character/{characterId}/equipmentEvaluation`**
 
-**3-3-6. `character/{characterId}/lockEquipment`**
+* Parameters:
+  * `targetItem`
+    * Uses `Item Format`.
+
+* Return:
+  * `calculatedItemStatus`
+    * Calculated item status after applying bonuses and modifiers specific to the target character.
+    * Includes character-specific equipment bonuses that are not included in the item's standalone `calculatedBasePower`.
+
+
+**3-3-7. `character/{characterId}/lockEquipment`**
 
 * Parameters:
   * `targetEquipment`
 
-**3-3-7. `character/{characterId}/unlockEquipment`**
+**3-3-8. `character/{characterId}/unlockEquipment`**
 
 * Parameters:
   * `targetEquipment`
 
 
-**3-3-8. `character/{characterId}/autoEquipment`**
+**3-3-9. `character/{characterId}/autoEquipment`**
 
 * Parameters:
   * `mode`
@@ -1276,7 +1288,7 @@ Path Parameters
     * If `true`, immediately runs Auto Equipment using the specified `mode`.
     * Boolean: `true` / `false`.
 
-**3-3-9. `character/{characterId}/jewelAttach`**
+**3-3-10. `character/{characterId}/jewelAttach`**
 
 * Parameters:
   * `targetEquipment`
@@ -1287,12 +1299,12 @@ Path Parameters
     * Only one jewel may be attached to each target equipment.
     * Must satisfy the compatibility rules defined in `3.1.7 Jewel (結晶)`, under `Item Type → Available Jewel`.
 
-**3-3-10. `character/{characterId}/jewelRemove`**
+**3-3-11. `character/{characterId}/jewelRemove`**
 
 * Parameters:
   * `targetEquipment`
 
-**3-3-11. `character/{characterId}/saveEquipmentSet`**
+**3-3-12. `character/{characterId}/saveEquipmentSet`**
 
 * Parameters:
   * `equipmentSet`
@@ -1303,7 +1315,7 @@ Path Parameters
 * Return:
   * `equipmentSetId`
 
-**3-3-12. `character/{characterId}/loadEquipmentSet`**
+**3-3-13. `character/{characterId}/loadEquipmentSet`**
 
 * Parameters:
   * `equipmentSetId`
@@ -1330,23 +1342,23 @@ Path Parameters
   * `equipmentSet`
 
 
-**3-3-13. `character/{characterId}/deleteEquipmentSet`**
+**3-3-14. `character/{characterId}/deleteEquipmentSet`**
 
 * Parameters:
   * `equipmentSetId`
 
-**3-3-14. `character/{characterId}/renameEquipmentSet`**
+**3-3-15. `character/{characterId}/renameEquipmentSet`**
 
 * Parameters:
   * `equipmentSetId`
   * `name`
 
-**3-3-15. `character/{characterId}/undoEquipment`**
+**3-3-16. `character/{characterId}/undoEquipment`**
 
 * Parameters: none.
 
 
-**3-3-16. `character/{characterId}/redoEquipment`**
+**3-3-17. `character/{characterId}/redoEquipment`**
 
 * Parameters: none.
 
