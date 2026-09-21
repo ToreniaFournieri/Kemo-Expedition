@@ -725,30 +725,48 @@ Path Parameters
     * Default: `abilityAndCBonus`.
 
 * Return:
-  * `items`
-    * Matching items, stacked by item variant.
-    * Format:
-      * `<Item Format>/<quantity>`
-    * Example:
-      `["0/1101/2/0/3", "0/1104/0/12/1"]`
-  * `equippedItems`
-    * Returned when equipped items match the search.
-    * Format:
-      * `<partyNumber>/<characterId>/<Item Format>`
-    * Example:
-      `["1/101/1/1102/1/0"]`
-  * `details`
-    * Additional item information according to the requested `details` value.
-    * Key format:
-      * `<itemId>/<superRare>`
-    * Values may include:
-      * `ability`
-      * `cBonus`
-      * `otherBonus`
-    * `otherBonus` may contain multiple bonus IDs and values.
-    * Example:
-      `1104/12: ability=[a.pursuit], cBonus=[c.magical-defense-x2/3], otherBonus=[d.melee_attack:12, d.HP:20, e.ice+0.020]`
-
+  * For non-character-owned items:
+    * `items`
+      * Matching items, stacked by item variant.
+      * Base format:
+        * `<Item Format>/<quantity>`
+      * Example:
+        * `["0/1101/2/0/3", "0/1104/0/12/1"]`
+      * Additional fields are appended according to the selected `details` value.
+      * Detail fields are appended in the following fixed order:
+        * `<ability>`
+        * `<cBonus>`
+        * `<otherBonus>`
+      * Format when `details=all`:
+        * `<Item Format>/<quantity>/<ability>/<cBonus>/<otherBonus>`
+      * Example:
+        * `0/1104/0/12/1/ability=[a.pursuit]/cBonus=[c.magical-defense-x2/3]/otherBonus=[d.melee_attack:12, d.HP:20, e.ice+0.020]`
+  * For character-owned items:
+    * `items`
+      * Base format:
+        * `<Item Format>/<characterId>/<jewelType>:<jewelRank>`
+      * `<jewelType>:<jewelRank>` is `0:0` if no jewel is attached.
+      * Additional fields are appended according to the selected `details` value.
+      * Detail fields are appended in the following fixed order:
+        * `<ability>`
+        * `<cBonus>`
+        * `<otherBonus>`
+      * Format when `details=all`:
+        * `<Item Format>/<characterId>/<jewelType>:<jewelRank>/<ability>/<cBonus>/<otherBonus>`
+  * For the `jewel` category:
+    * `items`
+      * Base format for unassigned jewels:
+        * `<jewelType>:<jewelRank>/<quantity>`
+      * Base format for assigned jewels:
+        * `<Item Format>/<characterId>/<jewelType>:<jewelRank>`
+        * Uses the same base format as character-owned items.
+      * Additional fields are appended according to the selected `details` value.
+      * Detail fields are appended in the following fixed order:
+        * `<ability>`
+        * `<cBonus>`
+        * `<otherBonus>`
+      * Format for assigned jewels when `details=all`:
+        * `<Item Format>/<characterId>/<jewelType>:<jewelRank>/<ability>/<cBonus>/<otherBonus>`
 
 
 **2-4-2. `jewelPriorityParty`**
