@@ -1210,6 +1210,11 @@ Path Parameters
 
 * Parameters: none.
 
+* Behavior:
+  * Consumes 1 stock and immediately processes one full party cycle.
+  * If the party is currently in `state.explore`, the current exploration cycle is completed first, then one additional full cycle is processed.
+  * Processing always ends at the beginning of `state.rest`.
+
 **3-2-3. `{p}/godsBattle`**
 
 * Parameters: none.

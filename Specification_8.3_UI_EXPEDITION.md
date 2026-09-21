@@ -255,7 +255,7 @@ HP 2350 / 4680
 		- Example: ▰▰▰▰▱▱102.
 		- If fully charged, display ▰▰▰▰▰▰MAX.
 		- If no stock is available, display ▱▱▱▱▱▱12.
-	- Pressing `出撃` or `神魔戦` button consumes 1 stock and immediately processes one full cycle:
+	- Pressing `出撃` (`sortie`) or `神魔戦` button consumes 1 stock and immediately processes one full cycle:
       - If the party is currently in `state.explore`, the current exploration is completed immediately first, then one additional full cycle is processed. (note: always end at the beginning of `state.rest` )
       - State:  `state.explore` → `state.return` → `state.rest` → `state.free_action` → `state.sound_sleep` (optical) → `state.move` → `state.explore` → `state.return` 
       - The process ends after the final `state.return` is completed.
