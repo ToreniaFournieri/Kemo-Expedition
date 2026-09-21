@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 73. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 74. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -155,3 +155,12 @@ Add a mechanical check so this does not rely on review: a test that fails if a m
 5. Stage 7 (Diary and streaming), including `diary` and battle-log rows.
 6. Stage 8 (Settings, files, delivery sender, Help, Resources), including the resource rows.
 7. Stage 9 (conformance matrix, ownership audit, cutover).
+
+## Expedition tab migration (in progress)
+
+Slices, in order:
+- **E1 (done, Build 74): commands.** Destination, mode, depth limit, and difficulty offset changes are `changeExpedition` commits, now validated against the same shared choices that `read/expedition/{p}/setting` publishes (`src/game/expeditionSettings.ts`). The Sortie and Gods Battle buttons commit through the API (`triggerSortie` keeps only its popups).
+- **E2: pane rows from the projection.** State, progress, HP, charge, floor and outcome, gates, side quest, and controls from `read/observation/expedition`, re-reading at `nextChangeAt`; the tab stops taking `partyCycles`.
+- **E3: logs.** The quick summary, room list, and battle logs need a projection the tab can render with narration (the public `latestBattleLog` shape is language-neutral wire data, so the tab needs an adapter like the Party tab's `PartyView`).
+- **E4: simulation and statistics.** `simulationRun` for the forecast (one-shot, without the running progress). **Gap:** the statistics Reset button (`リセット`, Spec 8.3) mutates the save but has no API operation, so it stays a reducer action until Specification 9.1.3 defines one (the migration guard lists it as the reviewed remainder).
+

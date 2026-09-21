@@ -1,7 +1,6 @@
 import { CLASSES } from '../../data/classes.ts';
 import { projectDelivery, type ApiV1DeliveryRecord } from './deliveries.ts';
 import { DEVELOPER_NEWS_ITEMS } from '../../data/developerNews.ts';
-import { DUNGEONS } from '../../data/dungeons.ts';
 import { ENEMIES } from '../../data/enemies.ts';
 import { ITEMS, SUPER_RARE_TITLES } from '../../data/items.ts';
 import { LINEAGES } from '../../data/lineages.ts';
@@ -27,6 +26,7 @@ import { EQUIPMENT_EVALUATION_LIMIT } from './requestLimits.ts';
 import { describeUiPreferenceCatalog, listUiPreferences } from './uiPreferenceCatalog.ts';
 import { getExpeditionGoals, getSideQuestFacts } from '../../game/expeditionGoals.ts';
 import { getEstimatedStartHp, getPartyStateProgress } from '../../game/partyStateProgress.ts';
+import { DIFFICULTY_OFFSET_STEP, EXPEDITION_DEPTH_LIMITS, getSelectableDestinationIds, getSelectableDifficultyOffsetMax } from '../../game/expeditionSettings.ts';
 import { getSortieUnavailableReason } from './sortieAvailability.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { buildShopLineup, getShopRefreshPrice } from '../../game/shop.ts';
@@ -64,6 +64,8 @@ export interface ApiV1ReadContext {
    * The header facts the ordinary player's runtime owns outside the save: the Debug-pane base Speed of Time, the
    * progress-report bonus expiry, and the auto-repeat switch. Absent for an API account, which has none of them.
    */
+  /** The Colosseum Debug setting of the ordinary player's runtime; absent for an API account. */
+  readonly colosseumEnabled?: boolean;
   readonly headerRuntime?: () => ApiV1HeaderRuntime;
   /** The Instant Expedition charge clock scale (the current Speed of Time); 1 when omitted. */
   readonly chargeDurationScale?: number;
@@ -420,7 +422,20 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     const selected = partyByNumber(state, expedition[1]);
     if (!selected) throw new Error('not_found');
     const { party, index } = selected;
-    if (expedition[2] === 'setting') return { current: { destination: party.selectedDungeonId, destinationMode: party.expeditionDestinationMode, depthLimit: party.expeditionDepthLimit, difficultyOffset: party.expeditionDifficultyOffset }, validOptions: { destination: DUNGEONS.map((entry) => entry.id), depthLimit: ['1f-3', '1f-4', '2f-3', '2f-4', '3f-3', '3f-4', '4f-3', '4f-4', '5f-3', '5f-4', 'beforeBoss', 'all'], difficultyOffset: { min: 0, max: 68, step: 2 } } };
+    if (expedition[2] === 'setting') {
+      // SpecRef: 9.1.3 | Read | 2-2-1 {p}/setting
+      // The choices are the same shared rules the commit validates against: unlocked destinations (the Colosseum only when
+      // enabled), the fixed depth limits, and a difficulty range that stays at 0 until the destination's boss was defeated.
+      const maximumOffset = getSelectableDifficultyOffsetMax(party, party.selectedDungeonId);
+      return {
+        current: { destination: party.selectedDungeonId, destinationMode: party.expeditionDestinationMode, depthLimit: party.expeditionDepthLimit, difficultyOffset: party.expeditionDifficultyOffset },
+        validOptions: {
+          destination: getSelectableDestinationIds(party, context.colosseumEnabled ?? (context.control?.settings?.debug as { colosseumMode?: unknown } | undefined)?.colosseumMode === true),
+          depthLimit: [...EXPEDITION_DEPTH_LIMITS],
+          difficultyOffset: { min: 0, max: maximumOffset, step: DIFFICULTY_OFFSET_STEP },
+        },
+      };
+    }
     if (expedition[2] === 'latestBattleLog') {
       // Omitted `logId` selects the party's latest retained log; `diary:<id>` selects the log of one retained Diary entry.
       if (parameters.logId === undefined) return buildBattleLogData(disclosedLogOf(state, context, index), party.id, 'latest');

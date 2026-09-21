@@ -299,4 +299,49 @@ const seed: GameState = createFreshGameState('ja', Date.parse('2026-01-01T00:00:
   assert.equal(account.state.parties[0].instantExpeditionStock, 2);
 }
 
+// changeExpedition validates the whole request against the shared choices (Spec 9.1.3, 3-2-1) and applies nothing on rejection.
+{
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
+  const change = (state: GameState, parameters: Record<string, unknown>, context = baseContext()) => applyApiV1Commit('commit/expedition/1/changeExpedition', state, parameters, context);
+  const rejects = (state: GameState, parameters: Record<string, unknown>, marker: string, context = baseContext()) => assert.throws(() => change(state, parameters, context), new RegExp(marker), JSON.stringify(parameters));
+  const defeated = { ...seed, parties: seed.parties.map((party, index) => index === 0 ? { ...party, defeatedBossExpeditions: { 1: true } } : party) } as GameState;
+
+  // Only the first destination is unlocked in a fresh game; the second opens once the first boss was defeated.
+  rejects(seed, { destination: 2 }, 'illegal_action:destination_locked');
+  rejects(seed, { destination: 999 }, 'invalid_destination');
+  rejects(seed, { destination: 99 }, 'illegal_action:destination_locked');
+  assert.equal(change(defeated, { destination: 2 }).state.parties[0].selectedDungeonId, 2);
+  // The Colosseum needs its Debug setting: the runtime's for the player, the API debug settings for an account.
+  assert.equal(change(seed, { destination: 99 }, baseContext({ colosseumEnabled: true })).state.parties[0].selectedDungeonId, 99);
+  assert.equal(change(seed, { destination: 99 }, baseContext({ settings: { debug: { colosseumMode: true } } })).state.parties[0].selectedDungeonId, 99);
+  rejects(seed, { destination: 99 }, 'illegal_action:destination_locked', baseContext({ colosseumEnabled: false, settings: { debug: { colosseumMode: true } } }));
+
+  // Depth limits are the fixed list; the difficulty offset is an even step, and only after the destination's boss was defeated.
+  rejects(seed, { depthLimit: '7f-1' }, 'invalid_depth_limit');
+  assert.equal(change(seed, { depthLimit: '3f-4' }).state.parties[0].expeditionDepthLimit, '3f-4');
+  rejects(seed, { difficultyOffset: 3 }, 'invalid_difficulty_offset');
+  rejects(seed, { difficultyOffset: -2 }, 'invalid_difficulty_offset');
+  rejects(seed, { difficultyOffset: 2 }, 'illegal_action:difficulty_offset_unavailable');
+  assert.equal(change(defeated, { difficultyOffset: 6 }).state.parties[0].expeditionDifficultyOffset, 6);
+  rejects(defeated, { difficultyOffset: 998 }, 'illegal_action:difficulty_offset_unavailable');
+  // A destination and its offset are one request: the offset is checked against the destination the change leaves the party at.
+  rejects(defeated, { destination: 2, difficultyOffset: 2 }, 'illegal_action:difficulty_offset_unavailable');
+  // Atomic: one invalid member rejects the valid ones too.
+  rejects(defeated, { depthLimit: '3f-4', difficultyOffset: 1 }, 'invalid_difficulty_offset');
+  assert.equal(defeated.parties[0].expeditionDepthLimit, seed.parties[0].expeditionDepthLimit, 'nothing was applied');
+
+  // The setting projection offers exactly what the commit accepts.
+  const read = async (state: GameState, extra: Record<string, unknown> = {}) => (await buildApiV1ReadData('read/expedition/1/setting', state, {}, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, revision: 1, inGameTime: 0, ...extra } as never) as { validOptions: { destination: number[]; depthLimit: string[]; difficultyOffset: { min: number; max: number; step: number } } }).validOptions;
+  const fresh = await read(seed);
+  assert.deepEqual(fresh.destination, [1]);
+  assert.deepEqual(fresh.difficultyOffset, { min: 0, max: 0, step: 2 }, 'no difficulty until the boss is defeated');
+  const opened = await read(defeated);
+  assert.deepEqual(opened.destination, [1, 2]);
+  assert.ok(opened.difficultyOffset.max > 0 && opened.difficultyOffset.max % 2 === 0);
+  assert.ok((await read(seed, { colosseumEnabled: true })).destination.includes(99));
+  for (const destination of opened.destination) assert.doesNotThrow(() => change(defeated, { destination }), `offered destination ${destination} is accepted`);
+  for (const depthLimit of opened.depthLimit) assert.doesNotThrow(() => change(defeated, { depthLimit }), depthLimit);
+  assert.doesNotThrow(() => change(defeated, { difficultyOffset: opened.difficultyOffset.max }), 'the offered maximum is accepted');
+}
+
 console.log('apiV1CommitOperations profile ok');

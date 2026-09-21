@@ -403,6 +403,19 @@ definitions in 9.1.3.
   `destinationMode`, `depthLimit`, and `difficultyOffset` together.
 * `changeExpedition` is a partial update; omitted members retain their values.
   Its response returns the complete new `current` object.
+  The whole request is validated first and rejects atomically. An unknown
+  destination or depth limit, or a difficulty offset that is not a non-negative even
+  step, is `invalid_request`. A destination the party has not unlocked (or the
+  Colosseum while it is disabled), or a difficulty offset above the destination's
+  selectable maximum, is `illegal_action` (`destination_locked`,
+  `difficulty_offset_unavailable`). The difficulty offset is checked against the
+  destination the request leaves the party at, and it is limited to 0 until that
+  destination's boss has been defeated. `read/expedition/{p}/setting` publishes
+  exactly the choices this validation accepts: `validOptions.destination` (unlocked
+  destinations; the Colosseum only when it is enabled), `depthLimit` (the twelve
+  fixed values), and `difficultyOffset` as `{min: 0, max, step: 2}` with `max` 0
+  before the boss is defeated. The Colosseum is enabled by the runtime's Debug
+  setting for the ordinary player and by the API debug settings for an account.
 * `simulationRun` accepts an optional `expectedRevision`. The result states the
   simulated revision and seed-domain identifier and returns both the compact
   strings required by 9.1.3 and structured numeric outcome percentages for the

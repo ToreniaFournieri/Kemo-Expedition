@@ -78,6 +78,8 @@ export interface ApiV1CommitAuthorityDependencies {
   publish: (state: GameState) => Promise<void>;
   /** The Instant Expedition charge clock scale (the current Speed of Time). */
   chargeDurationScale?: number;
+  /** The runtime's Colosseum Debug setting (the ordinary player only). */
+  colosseumEnabled?: () => boolean;
   /** Live party-cycle access for the ordinary player's runtime; omitted for an API account, which has no live cycle. */
   partyCycle?: ApiV1CommitContext['partyCycle'];
   restDurationMs?: ApiV1CommitContext['restDurationMs'];
@@ -250,6 +252,7 @@ export async function executeApiV1CommitTransaction(
         createDeliveryId: dependencies.createOpaqueId,
         now: dependencies.now,
         chargeDurationScale: dependencies.chargeDurationScale,
+        colosseumEnabled: dependencies.colosseumEnabled?.(),
         partyCycle: dependencies.partyCycle,
         restDurationMs: dependencies.restDurationMs,
       }));

@@ -485,6 +485,7 @@ export function HomeScreen({
   const apiActionsRef = useRef(actions);
   const apiAutoEquipmentRunnerRef = useRef<AutoEquipmentRunner | null>(null);
   const apiCycleDurationScaleRef = useRef(1);
+  const colosseumEnabledRef = useRef(false);
   const headerRuntimeRef = useRef<{ timeSpeed: string; bonusUntilMs: number | null; autoRepeat: boolean; progressReportConfigured: boolean }>({ timeSpeed: 'realtime', bonusUntilMs: null, autoRepeat: true, progressReportConfigured: false });
   // SpecRef: 8.3 | UI_EXPEDITION | Update Timing: the log disclosed per party (the previous one while a party explores).
   const disclosedExpeditionLogsRef = useRef<Array<Party['lastExpeditionLog'] | null>>([]);
@@ -589,6 +590,7 @@ export function HomeScreen({
         applyPartyCycleWrites: (writes) => sortieCycleWritesRef.current(writes),
         disclosedExpeditionLog: (partyIndex) => disclosedExpeditionLogsRef.current[partyIndex],
         headerRuntime: () => headerRuntimeRef.current,
+        colosseumEnabled: () => colosseumEnabledRef.current,
       },
       help: { requirements: apiRequirementsDocument, detail: apiDetailDocument },
       onSessionActive: (active) => { apiControlActiveRef.current = active; setApiControlActive(active); },
@@ -774,6 +776,7 @@ export function HomeScreen({
   const [timeSpeedNowMs, setTimeSpeedNowMs] = useState(() => Date.now());
   const hasActiveTimeSpeedBonus = timeSpeedBonusUntilMs !== null && timeSpeedNowMs < timeSpeedBonusUntilMs;
   apiCycleDurationScaleRef.current = Math.max(0.001, getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus));
+  colosseumEnabledRef.current = effectiveDebugSettings.colosseumEnabled === true;
   headerRuntimeRef.current = {
     timeSpeed: effectiveDebugSettings.timeSpeed,
     bonusUntilMs: timeSpeedBonusUntilMs,
@@ -1900,6 +1903,20 @@ export function HomeScreen({
       }
     });
   }, [actions, planAutoEquipment]);
+
+  // SpecRef: 9.1.3 | Commit | 3-2-1 {p}/changeExpedition
+  // Destination, mode, depth limit, and difficulty offset changes are Application API commits, serialized in the order they
+  // are made (a slider drag issues one change per step).
+  const expeditionCommandQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const commitExpeditionChange = useCallback((partyIndex: number, parameters: Record<string, unknown>) => {
+    expeditionCommandQueueRef.current = expeditionCommandQueueRef.current.then(async () => {
+      const adapter = inProcessApiRef.current;
+      const partyNumber = applicationApiRef.current?.authority.getSnapshot().state.parties[partyIndex]?.id;
+      if (!adapter || partyNumber === undefined) return;
+      const response = await adapter.commit('commit/expedition/{p}/changeExpedition', { pathParameters: { p: partyNumber }, parameters });
+      if (response.error) console.error('[api-v1] Expedition change failed', parameters, response.error);
+    });
+  }, []);
 
   // SpecRef: 8.2.4 | Equipment management | Undo and Redo availability comes from the equipment projection
   const historyCharacter = currentParty.characters[selectedCharacter] ?? currentParty.characters[0];
@@ -4799,42 +4816,22 @@ export function HomeScreen({
 
     notifyExpeditionRewardsIfNeeded(party, partyIndex);
 
-    if (triggerGodsBattle && party.sideQuest) {
-      actions.cancelSideQuest(partyIndex);
-      if (party.diarySettings.notifySideQuestPopup) actions.addNotification(t('home.notification.sideQuestCancelledByGodBattle', { party: party.name }));
+    if (triggerGodsBattle && party.sideQuest && party.diarySettings.notifySideQuestPopup) {
+      actions.addNotification(t('home.notification.sideQuestCancelledByGodBattle', { party: party.name }));
     }
 
-    pendingGodsBattleByPartyRef.current[partyIndex] = false;
-    if (!isColosseumSortie) {
-      actions.consumeInstantExpeditionStock(
-        partyIndex,
-        now,
-        getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
-      );
-    }
-    if (cycle?.state === 'explore') {
-      actions.finalizeDiaryLog(partyIndex);
-    }
-    actions.clearPendingProfit(partyIndex);
-    actions.healPartyHp(partyIndex, partyStats.hp);
     // SpecRef: 5.1.1 | Party State Machine | Immediate 出撃 / 神魔戦
-    instantSortieRewardNotificationPendingRef.current[partyIndex] = true;
-    actions.resolveInstantExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now, effectiveOrcaEnemyLevelOffset);
-    actions.rollPartySleepiness(partyIndex);
-    // SpecRef: 5.1.1 | Party State Machine | Instant full-cycle sortie
-    // Manual expeditions and Gods Battles resolve the expedition and its return tail immediately,
-    // leaving the runtime at the beginning of rest so normal rest healing still occurs.
-    const finalRestDurationMs = getStateDurationMs(party, 'rest');
-    setPartyCycles((prev) => ({
-      ...prev,
-      [partyIndex]: {
-        state: 'rest',
-        stateStartedAt: now,
-        durationMs: finalRestDurationMs,
-        restInitialTotalSteps: 1,
-        isCurrentExpeditionGodsBattle: false,
-      },
-    }));
+    // SpecRef: 9.1.3 | Commit | 3-2-2 {p}/sortie
+    // The expedition itself is the Application API's sortie: the same reducer sequence, and the reset of the live party
+    // cycle to the beginning of rest applied through `sortieCycleWritesRef` once the commit is durable. Only the popups
+    // above (refusals, start, stolen profit, pending rewards) remain here, because they are presentation.
+    const adapter = inProcessApiRef.current;
+    if (!adapter) return;
+    void adapter.commit(triggerGodsBattle ? 'commit/expedition/{p}/godsBattle' : 'commit/expedition/{p}/sortie', {
+      pathParameters: { p: party.id }, parameters: {},
+    }).then((response) => {
+      if (response.error) console.error('[api-v1] Sortie failed', response.error);
+    });
   };
   const triggerSortieRef = useRef(triggerSortie);
   triggerSortieRef.current = triggerSortie;
@@ -5059,10 +5056,10 @@ export function HomeScreen({
           state={state}
           debugSettings={effectiveDebugSettings}
           emulatedNowMs={emulatedNowMs}
-          onSelectDungeon={actions.selectDungeon}
-          onToggleExpeditionDestinationMode={actions.setExpeditionDestinationMode}
-          onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
-          onSetExpeditionDifficultyOffset={actions.setExpeditionDifficultyOffset}
+          onSelectDungeon={(partyIndex, dungeonId) => commitExpeditionChange(partyIndex, { destination: dungeonId })}
+          onToggleExpeditionDestinationMode={(partyIndex, mode) => commitExpeditionChange(partyIndex, { destinationMode: mode })}
+          onSetExpeditionDepthLimit={(partyIndex, depthLimit) => commitExpeditionChange(partyIndex, { depthLimit })}
+          onSetExpeditionDifficultyOffset={(partyIndex, difficultyOffset) => commitExpeditionChange(partyIndex, { difficultyOffset })}
           onResetExpeditionStats={actions.resetExpeditionStats}
           onSimulateExpedition={handleSimulateExpedition}
           isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}

@@ -427,7 +427,10 @@ calls.length = 0;
   const entry = (room: number, outcome: string, remainingPartyHP: number) => ({ room, floor: 1, roomInFloor: room, roomType: 'battle_Normal', enemyId: 100 + room, outcome, enemyName: 'x', enemyHP: 1, enemyAttackValues: '', damageDealt: 0, damageTaken: 0, startPartyHP: room === 1 ? maximumHp : undefined, remainingPartyHP, maxPartyHP: maximumHp, details: [] });
   const log = { finalOutcome: 'Defeat', entries: [entry(1, 'victory', maximumHp * 0.9), entry(2, 'victory', maximumHp * 0.8), entry(3, 'victory', maximumHp * 0.5), entry(4, 'defeat', 0)], dungeonId: 1, dungeonName: '', difficultyOffset: 0, totalExperience: 0, totalRooms: 24, completedRooms: 4, rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: 0, maxPartyHP: maximumHp } as never;
   const charged = withParty({ lastExpeditionLog: log, currentHp: 0, instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null });
+  // A frozen clock: the projection reads Date.now(), and a loaded machine must not move a reveal boundary.
   const now = Date.now();
+  const realNow = Date.now;
+  Date.now = () => now;
 
   // Two of four rooms are revealed after 1.5 of 4 seconds: the projection carries those rooms and their HP, never a later one.
   const midway = await read(charged, { state: 'explore', stateStartedAt: now - 1500, durationMs: 4000 });
@@ -478,6 +481,7 @@ calls.length = 0;
   assert.equal(locked.controls.sortie.unavailableReason, 'entry_gate_locked');
   const colosseum = await read(withParty({ selectedDungeonId: 99, currentHp: 0, instantExpeditionStock: 0, instantExpeditionChargeStartedAt: now }), undefined);
   assert.deepEqual(colosseum.controls.sortie, { available: true, unavailableReason: null }, 'the Colosseum needs no HP, charge, or gate');
+  Date.now = realNow;
 }
 
 // Header facts of `overview`: save-owned values always, runtime-owned Speed of Time and auto-repeat only for the player's runtime.

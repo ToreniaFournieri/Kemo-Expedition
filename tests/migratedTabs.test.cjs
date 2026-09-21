@@ -79,3 +79,17 @@ test('the Party tab takes no character-stat, inventory, or party game objects ot
   assert.match(source, /stats\.hpBaseIncrease/, 'the HP breakdown is a projected fact');
   assert.match(source, /stats\.raceUnlockActive/, 'the race unlock state is a projected fact');
 });
+
+test('Expedition controls are Application API commits, not reducer actions (migration in progress)', () => {
+  const home = read('src/components/HomeScreen.tsx');
+  const start = home.indexOf('<ExpeditionTab');
+  const jsx = home.slice(start, home.indexOf('\n        />', start));
+  const actions = [...jsx.matchAll(/actions\.([A-Za-z]+)/g)].map((match) => match[1]);
+  // Reviewed remainder: the statistics reset has no API operation yet (recorded in the plan).
+  assert.deepEqual([...new Set(actions)].sort(), ['resetExpeditionStats'], 'only the reviewed reducer actions may be passed to the Expedition tab');
+  for (const command of ['changeExpedition']) assert.match(home, new RegExp(`commit/expedition/\\{p\\}/${command}`));
+  // The button's expedition is the API sortie: `triggerSortie` keeps only its popups and no longer runs the reducer sequence.
+  const trigger = home.slice(home.indexOf('const triggerSortie = ('), home.indexOf('const triggerSortieRef'));
+  assert.match(trigger, /commit\/expedition\/\{p\}\/godsBattle/);
+  assert.doesNotMatch(trigger, /actions\.(resolveInstantExpedition|consumeInstantExpeditionStock|healPartyHp|rollPartySleepiness|finalizeDiaryLog|clearPendingProfit|cancelSideQuest)/);
+});

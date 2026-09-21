@@ -6,6 +6,7 @@ import { canCharacterEquipCategory, createEquipmentSetSnapshot, evaluateEquipmen
 import { recordEquipmentState, redoEquipmentState, undoEquipmentState } from '../../game/equipmentHistory';
 import { computeCharacterStats } from '../../game/characterComputation';
 import { getSortieUnavailableReason } from './sortieAvailability';
+import { getExpeditionChangeRejection } from '../../game/expeditionSettings';
 import { getInstantExpeditionChargeState } from '../../game/instantExpedition';
 import { computePartyStats } from '../../game/partyComputation';
 import { hydrateGameState, serializeGameState } from '../../game/saveCodec';
@@ -32,7 +33,15 @@ export function decodeApiSavePayload(payload: string): GameState {
   return hydrateGameState(JSON.parse(decodePersistedState(payload)) as GameState);
 }
 
+/** Whether the Colosseum is enabled: the runtime's Debug setting for the ordinary player, the API debug settings otherwise. */
+export function isColosseumEnabled(context: { colosseumEnabled?: boolean; settings?: Record<string, unknown> }): boolean {
+  if (context.colosseumEnabled !== undefined) return context.colosseumEnabled;
+  return (context.settings?.debug as { colosseumMode?: unknown } | undefined)?.colosseumMode === true;
+}
+
 export interface ApiV1CommitContext {
+  /** The Colosseum Debug setting of the ordinary player's runtime; absent for an API account (see `isColosseumEnabled`). */
+  readonly colosseumEnabled?: boolean;
   /** In-game clock at the start of this transaction (epoch ms); `commit/progress/elapsed` may advance a local copy. */
   readonly simulatedAt: number;
   readonly gameMode: 'mode.normal' | 'mode.orca';
@@ -130,6 +139,15 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const partyIndex = next.parties.findIndex((entry) => entry.id === partyNumber);
     if (partyIndex < 0) throw new Error('not_found');
     if (partyMatch[2] === 'changeExpedition') {
+      // SpecRef: 9.1.3 | Commit | 3-2-1 {p}/changeExpedition
+      // The whole request is validated first (atomic): an unknown or locked destination, an unknown depth limit, or a
+      // difficulty offset that is not a valid step within the destination's range rejects everything.
+      const rejection = getExpeditionChangeRejection(next.parties[partyIndex], {
+        destination: parameters.destination === undefined ? undefined : Number(parameters.destination),
+        depthLimit: parameters.depthLimit === undefined ? undefined : String(parameters.depthLimit),
+        difficultyOffset: parameters.difficultyOffset === undefined ? undefined : Number(parameters.difficultyOffset),
+      }, isColosseumEnabled(context));
+      if (rejection) throw new Error(rejection.code === 'illegal_action' ? `illegal_action:${rejection.reason}` : rejection.reason);
       if (parameters.destination !== undefined) reduce({ type: 'SELECT_DUNGEON', partyIndex, dungeonId: Number(parameters.destination), selectionMode: parameters.destinationMode === 'auto' ? 'auto' : 'manual' });
       if (parameters.destinationMode !== undefined) reduce({ type: 'SET_EXPEDITION_DESTINATION_MODE', partyIndex, mode: String(parameters.destinationMode) as Party['expeditionDestinationMode'] });
       if (parameters.depthLimit !== undefined) reduce({ type: 'SET_EXPEDITION_DEPTH_LIMIT', partyIndex, depthLimit: String(parameters.depthLimit) as Party['expeditionDepthLimit'] });

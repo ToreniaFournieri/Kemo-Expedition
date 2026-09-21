@@ -39,6 +39,8 @@ export interface ApplicationApiPorts {
     partyCycle?: ApiV1CommitAuthorityDependencies['partyCycle'];
     /** The expedition log the UI has disclosed for a party (hidden while exploring); see `ApiV1ReadContext.disclosedLog`. */
     disclosedExpeditionLog?: (partyIndex: number) => ExpeditionLog | null | undefined;
+    /** The runtime's Colosseum Debug setting (the ordinary player only). */
+    colosseumEnabled?: () => boolean;
     /** Header facts the runtime owns outside the save (Speed of Time, auto-repeat); see `ApiV1ReadContext.headerRuntime`. */
     headerRuntime?: ApiV1ReadContext['headerRuntime'];
     /** Duration of `state.rest` for a party, as the UI computes it. */
@@ -179,6 +181,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
             partyCycle: ports.runtime.partyCycle,
             disclosedLog: ports.runtime.disclosedExpeditionLog,
             headerRuntime: ports.runtime.headerRuntime,
+            colosseumEnabled: ports.runtime.colosseumEnabled?.(),
             chargeDurationScale: ports.runtime.cycleDurationScale(),
           }),
         });
@@ -217,6 +220,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       // neither reads nor writes one.
       ...(identity ? {} : {
         chargeDurationScale: ports.runtime.cycleDurationScale(),
+        colosseumEnabled: ports.runtime.colosseumEnabled,
         partyCycle: ports.runtime.partyCycle,
         restDurationMs: ports.runtime.restDurationMs,
         applyPartyCycleWrites: ports.runtime.applyPartyCycleWrites,
