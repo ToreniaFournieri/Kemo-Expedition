@@ -626,22 +626,22 @@ Path Parameters
     * `numberOfEmptyEquipmentSlots`
       * Number of currently empty equipment slots.
       * Example: `1`.
-* `undoEquipment`
-  * Up to 30 equipment states available for Undo.
-  * Format:
-    * `{equipmentStates, available, unavailableReason}`
-  * If no Undo state is available:
-    * `equipmentStates`: `[]`
-    * `available`: `false`
-    * `unavailableReason`: `No undo history.`
-* `redoEquipment`
-  * Up to 30 equipment states available for Redo.
-  * Format:
-    * `{equipmentStates, available, unavailableReason}`
-  * If no Redo state is available:
-    * `equipmentStates`: `[]`
-    * `available`: `false`
-    * `unavailableReason`: `No redo history.`
+    * `undoEquipment`
+      * Up to 30 equipment states available for Undo.
+      * Format:
+        * `{equipmentStates, available, unavailableReason}`
+      * If no Undo state is available:
+        * `equipmentStates`: `[]`
+        * `available`: `false`
+        * `unavailableReason`: `No undo history.`
+    * `redoEquipment`
+      * Up to 30 equipment states available for Redo.
+      * Format:
+        * `{equipmentStates, available, unavailableReason}`
+      * If no Redo state is available:
+        * `equipmentStates`: `[]`
+        * `available`: `false`
+        * `unavailableReason`: `No redo history.`
 
 
 **2-3-4. `character/{characterId}/equipmentSet`**
