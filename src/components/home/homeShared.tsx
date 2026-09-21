@@ -1,5 +1,4 @@
 import { renderDiaryMetadata } from '../../game/compactDiary.ts';
-import { abilityLevelValue } from '../../game/abilityLevelScales';
 import { Fragment,useEffect,useState,type CSSProperties,type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ABILITY_BASE_NAMES } from '../../data/abilityNames';
@@ -19,7 +18,6 @@ import { SUPER_RARE_TITLES,getSuperRareBonuses } from '../../data/items';
 import { LINEAGES } from '../../data/lineages';
 import { PREDISPOSITIONS } from '../../data/predispositions';
 import { RACES } from '../../data/races';
-import { getBaseMultiplier } from '../../game/baseMultiplier';
 import { isStandaloneBattleLogName } from '../../game/battleLogNameMatch';
 import { buildAggregatedLifeDrainAction } from '../../game/battleNarration';
 import { computeCharacterStats,getAbilityDescription } from '../../game/characterComputation';
@@ -40,6 +38,7 @@ import { isEnemyTypeCBonusType } from '../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId } from '../../game/environment';
 import { getItemRarityById } from '../../game/itemRarity';
 import { getItemDisplayMultiplier } from '../../game/itemPower';
+import { getArcMagicAbilityLevel, getArcMagicOffenseAmplifier, getBaseDefenseScale, getBaseOffenseScale, getCharacterDisplayedMagicalAttackAmplifier, getEffectiveAccuracyBonus, getOffenseMultiplierSum } from '../../game/statusFacts';
 import type { AfkPartyChunkResult } from '../../game/afkChunkCoordinator';
 import type { AutoEquipmentProfileAction } from '../../game/autoEquipmentAttribution';
 import {
@@ -60,7 +59,7 @@ REST_HEAL_MIN_HP,
 } from '../../game/restHealing';
 import { Language,t } from '../../i18n';
 import type { AfkPartyTransactionAttribution,AfkPartyTransactionPlanner } from '../../hooks/useGameState';
-import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,ExpeditionSimulationResult,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type Ability,type BattleLogEntry } from '../../types';
+import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,ExpeditionSimulationResult,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type BattleLogEntry } from '../../types';
 
 export function resolvePublicAssetPath(path?: string): string | null {
   if (!path) return null;
@@ -858,12 +857,6 @@ export function getExperimentalDiaryTitle(party: Party, diaryLog: DiaryLog): str
   return t('diary.headline.title', { party: party.name, title: t(titleKey) });
 }
 
-export function getEffectiveAccuracyBonus(accuracyBonus: number, abilities: ComputedCharacterStats['abilities']): number {
-  const focusLevel = abilities.find(a => a.id === 'focus')?.level ?? 0;
-  if (focusLevel <= 0) return accuracyBonus;
-  const focusMultiplier = abilityLevelValue('focus', focusLevel);
-  return Math.ceil((accuracyBonus * focusMultiplier + Number.EPSILON) * 1000) / 1000;
-}
 
 export function renderEnemyNameWithMutedClass(enemyName: string) {
   const classSuffixMatch = enemyName.match(/^(.*?)(\([^()]+\))(.*)$/);
@@ -1615,6 +1608,7 @@ export function formatAutoSellSummary(autoSellProfit: number, autoSellMultiplier
 }
 
 export { getItemRarityById };
+export { getArcMagicAbilityLevel, getArcMagicOffenseAmplifier, getBaseDefenseScale, getBaseOffenseScale, getCharacterDisplayedMagicalAttackAmplifier, getEffectiveAccuracyBonus, getOffenseMultiplierSum };
 
 export const MYTHIC_TIER_BY_NAME = new Map(GOD_MYTHIC_DROPS.map((drop) => [drop.name, drop.tier]));
 
@@ -2279,57 +2273,16 @@ export function getJewelInventoryStatusText(jewelKey: JewelKey, rank: number): s
   return formatJewelStatusText(jewelKey, rank);
 }
 
-export function getOffenseMultiplierSum(
-  items: Item[],
-  kind: 'melee' | 'ranged' | 'magical',
-  initialAppliedBonusNames?: Iterable<string>
-): number {
-  const appliedBonusNames = new Set<string>(initialAppliedBonusNames ?? []);
-  const relevant = items.filter(item => {
-    if (kind === 'melee') return item.meleeAttack || item.meleeNoA || item.meleeNoABonus;
-    if (kind === 'ranged') return item.rangedAttack || item.rangedNoA || item.rangedNoABonus;
-    return item.magicalAttack || item.magicalNoA || item.magicalNoABonus;
-  });
-
-  const bonusSum = relevant.reduce((sum, item) => {
-    const baseMultiplier = item.baseMultiplier ?? 1;
-    if (baseMultiplier === 1) return sum;
-
-    const percent = Math.round((baseMultiplier - 1) * 1000) / 10;
-    const bonusName = `c.${kind}_attack+${percent}`;
-    if (appliedBonusNames.has(bonusName)) return sum;
-    appliedBonusNames.add(bonusName);
-    return sum + (baseMultiplier - 1);
-  }, 0);
-
-  return bonusSum;
-}
 
 export function hasEnemyArcMagicAbility(enemy: EnemyDef): boolean {
   return enemy.abilities.some((ability) => ability.id === 'arc_magic' && ability.level > 0);
 }
 
-export function getArcMagicAbilityLevel(abilities: Ability[]): number {
-  return abilities
-    .filter((ability) => ability.id === 'arc_magic')
-    .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0);
-}
 
 export function getEnemyArcMagicAbilityLevel(enemy: EnemyDef): number {
   return enemy.abilities
     .filter((ability) => ability.id === 'arc_magic')
     .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0);
-}
-
-export function getArcMagicOffenseAmplifier(level: number): number {
-  return abilityLevelValue('arc_magic', level);
-}
-
-// SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
-// a.arc-magic: magical offense amplifier xN (Lv1:3.0, Lv2:3.6, Lv3:4.2).
-export function getCharacterDisplayedMagicalAttackAmplifier(baseAmplifier: number, abilities: Ability[]): number {
-  const heavyStrikeAmplifier = abilities.some((ability) => ability.id === 'heavy_strike' && ability.level > 0) ? 1.4 : 1.0;
-  return baseAmplifier * heavyStrikeAmplifier * getArcMagicOffenseAmplifier(getArcMagicAbilityLevel(abilities));
 }
 
 // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
@@ -2359,13 +2312,7 @@ export function getEnemyBestiarySpellName(enemy: EnemyDef): string {
   return magicProfile.spellName;
 }
 
-export function getBaseOffenseScale(value: number): number {
-  return getBaseMultiplier(value, 'attack');
-}
 
-export function getBaseDefenseScale(value: number): number {
-  return getBaseMultiplier(value, 'defense');
-}
 
 export function getElementalOffenseHelpLines(character: Character, stats: ComputedCharacterStats): string[] {
   const elementalSums: Record<ElementalOffense, number> = {

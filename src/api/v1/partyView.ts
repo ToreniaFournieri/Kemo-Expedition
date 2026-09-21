@@ -1,5 +1,6 @@
 import { getDeityNameFromId } from '../../game/deity';
 import type { Character, CharacterGender, ClassId, LineageId, PredispositionId, RaceId } from '../../types';
+import type { CalculatedStatus } from './contracts';
 import { parseEquipmentEntry } from './itemFormat';
 
 // SpecRef: 8.2 | UI_PARTY | Party pane, member list, and deity pane
@@ -12,7 +13,7 @@ export interface PartyProjection {
     partyNumber: number; name: string; level: number; experience: number; maxHp: number; deityId: string; deityRank: number; condition: number; order: number[];
     characters: {
       characterId: number; name: string; raceId: string; gender: string; mainClassId: string; subClassId: string; lineageId: string | null; predispositionId: string | null;
-      isUnique: boolean; mimorianEnemyId: number | null; equipment: (string | 0)[]; autoEquipmentMode: number;
+      isUnique: boolean; mimorianEnemyId: number | null; equipment: (string | 0)[]; autoEquipmentMode: number; calculatedStatus: CalculatedStatus;
     }[];
   };
   parties: { partyNumber: number; deityId: string; characters: { characterId: number; name: string; raceId: string; mimorianEnemyId: number | null }[] }[];
@@ -26,6 +27,8 @@ export interface PartyView {
   maxHp: number;
   deity: { name: string };
   characters: Character[];
+  /** The calculated status of each member, aligned with `characters`. */
+  characterStatus: CalculatedStatus[];
 }
 
 /** The other parties as the selector, the deity assignment rule, and the naming and Mimorian rules see them. */
@@ -44,6 +47,7 @@ export function buildPartyView(projection: PartyProjection): PartyView {
     experience: party.experience,
     maxHp: party.maxHp,
     deity: { name: getDeityNameFromId(party.deityId) ?? 'None' },
+    characterStatus: party.characters.map((character) => character.calculatedStatus),
     characters: party.characters.map((character): Character => ({
       id: character.characterId,
       name: character.name,

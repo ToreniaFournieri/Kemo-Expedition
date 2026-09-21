@@ -4920,6 +4920,7 @@ export function HomeScreen({
           selectedPartyIndex={safeSelectedPartyIndex}
           party={partyView}
           partyStats={{ hp: partyView.maxHp }}
+          characterStatus={partyView.characterStatus}
           characterStats={characterStats}
           selectedCharacter={selectedCharacter}
           setSelectedCharacter={setSelectedCharacter}

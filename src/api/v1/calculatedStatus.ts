@@ -1,5 +1,6 @@
 import { getAttackRollProfile } from '../../game/attackProfile.ts';
-import type { AttackType, ComputedCharacterStats } from '../../types/index.ts';
+import { deriveStatusFacts, type StatusFacts } from '../../game/statusFacts.ts';
+import type { AttackType, Character, ComputedCharacterStats } from '../../types/index.ts';
 import type { AbilityFact, BonusFact, CalculatedStatus, NumericFact } from './contracts.ts';
 
 // SpecRef: 8.2.2 | Party member details | Status pane
@@ -15,8 +16,9 @@ const ATTACKS: { attackType: AttackType; api: 'melee' | 'ranged' | 'magical'; at
   { attackType: 'magical', api: 'magical', attack: 'magicalAttack', noa: 'magicalNoA', originalNoa: 'originalMagicalNoA', cBonus: 'magicalAttackCBonus' },
 ];
 
-export function buildCalculatedStatus(stats: ComputedCharacterStats): CalculatedStatus {
+export function buildCalculatedStatus(character: Character, stats: ComputedCharacterStats): CalculatedStatus {
   const numeric = (key: keyof ComputedCharacterStats) => stats[key] as number;
+  const derived = deriveStatusFacts(character, stats);
 
   const statFacts: NumericFact[] = [
     fact('b.vitality', stats.baseStats.vitality),
@@ -25,8 +27,14 @@ export function buildCalculatedStatus(stats: ComputedCharacterStats): Calculated
     fact('b.mind', stats.baseStats.mind),
     fact('d.physical_defense', stats.physicalDefense),
     fact('d.magical_defense', stats.magicalDefense),
-    fact('f.defense_amplifier.physical', stats.physicalDefenseAmplifier, 'ratio'),
-    fact('f.defense_amplifier.magical', stats.magicalDefenseAmplifier, 'ratio'),
+    fact('f.defense_amplifier.physical', derived.defenseAmplifier.physical, 'ratio'),
+    fact('f.defense_amplifier.magical', derived.defenseAmplifier.magical, 'ratio'),
+    fact('f.offense_amplifier.melee', derived.offenseAmplifier.melee, 'ratio'),
+    fact('f.offense_amplifier.ranged', derived.offenseAmplifier.ranged, 'ratio'),
+    fact('f.offense_amplifier.magical', derived.offenseAmplifier.magical, 'ratio'),
+    fact('f.c_accuracy', derived.effectiveAccuracyBonus, 'ratio'),
+    fact('f.accuracy_decay', derived.accuracyDecay, 'ratio'),
+    fact('f.penetration', derived.penetration, 'ratio'),
     fact('d.accuracy_potency', stats.accuracyPotency, 'ratio'),
     fact('c.accuracy', stats.accuracyBonus, 'ratio'),
     fact('c.evasion', stats.evasionBonus, 'ratio'),
@@ -76,4 +84,23 @@ export function buildCalculatedStatus(stats: ComputedCharacterStats): Calculated
   });
 
   return { stats: statFacts, abilities, bonuses, attacks };
+}
+
+/**
+ * The exact inverse of the derived facts above: reads the status-pane values back out of a `CalculatedStatus`, so the
+ * Party pane renders from the projection and cannot disagree with the game function that produced it.
+ */
+export function readStatusFacts(status: CalculatedStatus): StatusFacts {
+  const value = (key: string): number => {
+    const found = status.stats.find((entry) => entry.key === key);
+    if (!found) throw new Error(`Missing calculated status fact ${key}`);
+    return found.value;
+  };
+  return {
+    offenseAmplifier: { melee: value('f.offense_amplifier.melee'), ranged: value('f.offense_amplifier.ranged'), magical: value('f.offense_amplifier.magical') },
+    defenseAmplifier: { physical: value('f.defense_amplifier.physical'), magical: value('f.defense_amplifier.magical') },
+    effectiveAccuracyBonus: value('f.c_accuracy'),
+    accuracyDecay: value('f.accuracy_decay'),
+    penetration: value('f.penetration'),
+  };
 }

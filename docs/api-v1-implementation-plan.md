@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 50. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 51. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -60,7 +60,8 @@ Next, in order:
    - 4b. (Done, Build 46) Owned inventory for equipping and the Jewel counts, from `searchItems` (`category: jewel` lists Jewel stacks). `searchItems` follows the refined 2-4-1 contract (Builds 47–48: optional category, character-assigned items, details, ability/bonus search, calculated base power, sort order, `limit`).
    - 4c. Character and member list.
      - 4c-1. (Done, Build 49) Party pane, party selector, member list, and deity rules render from `read/observation/party` through `PartyView` and `PartySummary`.
-     - 4c-2. The status pane still reads `ComputedCharacterStats` for the selected party from the game state (`characterStats`), and derives display values itself: offense amplifiers, defense resistances, and accuracy decay. Move those derivations into one shared game function, publish the results as `calculatedStatus` facts (the missing keys are the deity offense and defense amplifier bonuses, the offense `c.` bonus names, and the attack amplifiers), and have the tab read them. Prove it with a lossless round-trip test against `computePartyStats`.
+     - 4c-2. (Done, Build 51) Offense and defense amplifiers, effective accuracy and decay, and total penetration come from one shared game function (`src/game/statusFacts.ts`), are published as `calculatedStatus` facts, and the tab reads them for its offense and defense lines and for the status-change notifications. Lossless round-trip test against the old formulas.
+     - 4c-3. The tab still reads `ComputedCharacterStats` (`characterStats`) for the ability list and sources, bonus list, HP breakdown, elemental help lines, spell name, equipment slot count, and per-item display. Publish the remaining facts (ability sources, aggregated bonuses with their display names, HP base and item contributions) and drop the `characterStats` prop.
    - 4d. Equipment slots list from the `equipment` projection (entries parse to items through the shared format).
    - 4e. Retained selections (selected party and character, filters) through `uiPreferences`. Selected party is currently persisted in the save (`selectedPartyIndex`), so moving it changes what is persisted; decide first.
    - 4f. Remove the `Party`, `Character`, `ComputedCharacterStats`, and inventory props, and add the mechanical check described in Stage 9.

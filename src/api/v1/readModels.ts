@@ -141,7 +141,7 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>) 
         predispositionId: character.predispositionId,
         isUnique: character.isUnique === true,
         mimorianEnemyId: character.mimorianEnemyId ?? null,
-        calculatedStatus: buildCalculatedStatus(computed[index]),
+        calculatedStatus: buildCalculatedStatus(character, computed[index]),
         equipment: character.equipment.map(equipmentEntry),
         autoEquipmentMode: character.autoEquipmentMode,
       })),
@@ -315,7 +315,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
         .filter((enemyId) => ENEMIES.some((enemy) => enemy.id === enemyId) && !assignedMimorianForms.has(enemyId))
         .map((enemyId) => `mimorian/female/${enemyId}`);
       return {
-        calculatedStatus: buildCalculatedStatus(computePartyStats(party).characterStats[characterIndex]),
+        calculatedStatus: buildCalculatedStatus(party.characters[characterIndex], computePartyStats(party).characterStats[characterIndex]),
         current: { unique: character.isUnique === true, name: character.name, racesAndGender, mainClassId: character.mainClassId, subClassId: character.subClassId, lineage: character.lineageId, predisposition: character.predispositionId },
         editableFields: { name: character.isUnique !== true, unique: character.isUnique === true },
         validOptions: {

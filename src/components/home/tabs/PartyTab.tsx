@@ -9,6 +9,9 @@ import { getSuperRareBonuses } from '../../../data/items';
 import { LINEAGES } from '../../../data/lineages';
 import { PREDISPOSITIONS } from '../../../data/predispositions';
 import { RACES } from '../../../data/races';
+import { buildCombatTotals } from '../../../api/v1/statusView';
+import { readStatusFacts } from '../../../api/v1/calculatedStatus';
+import type { CalculatedStatus } from '../../../api/v1/contracts';
 import { formatAttackSpeedHelp } from '../../../game/attackProfile';
 import { gameplayRandom } from '../../../game/gameplayRandom';
 import { computeCharacterStats,getUnlockedRaceAbilitiesFromBonuses } from '../../../game/characterComputation';
@@ -47,15 +50,12 @@ getBaseOffenseScale,
 getBonusHelpDescription,
 getCharacterCategoryMultiplier,
 getCharacterCombatBonusLevels,
-getCharacterDisplayedMagicalAttackAmplifier,
 getCharacterGrowthMultiplier,
-getEffectiveAccuracyBonus,
 getElementalOffenseHelpLines,
 getInventoryOwnerCharacterImageSrc,
 getItemNameFontWeightClass,
 getItemStats,
 getJewelSlotStatusText,
-getOffenseMultiplierSum,
 getPotentialDefaultNamesByPt,
 getRaceBonusesForSelection,
 getRarityFilterNote,
@@ -86,6 +86,7 @@ export default function PartyTab({
   party,
   partyStats,
   characterStats,
+  characterStatus,
   selectedCharacter,
   setSelectedCharacter,
   editingCharacter,
@@ -122,6 +123,8 @@ export default function PartyTab({
   party: PartyView;
   partyStats: { hp: number };
   characterStats: ReturnType<typeof computePartyStats>['characterStats'];
+  /** The projected calculated status of each member, aligned with `party.characters`. */
+  characterStatus: CalculatedStatus[];
   selectedCharacter: number;
   setSelectedCharacter: Dispatch<SetStateAction<number>>;
   editingCharacter: number | null;
@@ -165,69 +168,22 @@ export default function PartyTab({
   const equippedItems = selectedChar.equipment.filter((item): item is Item => item != null);
   const unlockedRaceAbilities = getUnlockedRaceAbilitiesFromBonuses(equippedItems.flatMap((item) => item.bonuses ?? []));
 
-  // Calculate current stats for notification: HP is party-wide, others are per selected character
-  const selectedStats = characterStats[selectedCharacter];
+  // Calculate current stats for notification: HP is party-wide, others are per selected character.
+  // SpecRef: 8.1.1 | Popup Notification Logic & Display | Status Changes
+  // The totals come only from the projected calculated status, so consecutive notifications compare like with like.
   const selectedRace = RACES.find((race) => race.id === selectedChar.raceId);
   const isSelectedRaceUnlockConditionActive = unlockedRaceAbilities.has(selectedChar.raceId);
-  const selectedIaigiriLevel = selectedStats.abilities.find(a => a.id === 'iaigiri')?.level ?? 0;
-  const selectedIaigiriMultiplier = selectedIaigiriLevel >= 3 ? 3.0 : selectedIaigiriLevel >= 2 ? 2.5 : selectedIaigiriLevel >= 1 ? 2.0 : 1.0;
-  const selectedEffectiveAccuracyBonus = getEffectiveAccuracyBonus(selectedStats.accuracyBonus, selectedStats.abilities);
-  const selectedAbilityLevels = selectedStats.abilities.reduce<Record<string, number>>((acc, ability) => {
-    acc[ability.id] = Math.max(acc[ability.id] ?? 0, ability.level);
-    return acc;
-  }, {});
-  const selectedAbilityLevelSignature = Object.entries(selectedAbilityLevels)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([id, level]) => `${id}:${level}`)
-    .join('|');
-  const selectedPhysicalDefenseResist = Math.max(0.01, selectedStats.physicalDefenseAmplifier * selectedStats.deityDefenseAmplifierBonus.physical);
-  const selectedMagicalDefenseResist = Math.max(0.01, selectedStats.magicalDefenseAmplifier * selectedStats.deityDefenseAmplifierBonus.magical);
-  const selectedMeleeAttackAmp = ((selectedIaigiriLevel > 0
-    ? selectedIaigiriMultiplier * (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames)) * selectedStats.physicalOffenseMultiplier
-    : (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames) + selectedStats.physicalAttackCBonus) * selectedStats.physicalOffenseMultiplier
-  ) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength);
-  const selectedRangedAttackAmp = ((selectedIaigiriLevel > 0
-    ? selectedIaigiriMultiplier * (1 + selectedStats.rangedAttackCBonus + getOffenseMultiplierSum(equippedItems, 'ranged', selectedStats.offenseCBonusNames)) * selectedStats.physicalOffenseMultiplier
-    : (1 + selectedStats.rangedAttackCBonus + getOffenseMultiplierSum(equippedItems, 'ranged', selectedStats.offenseCBonusNames) + selectedStats.physicalAttackCBonus) * selectedStats.physicalOffenseMultiplier
-  ) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength);
-  const selectedMagicalAttackAmp = getCharacterDisplayedMagicalAttackAmplifier(
-    (((1 + selectedStats.magicalAttackCBonus + getOffenseMultiplierSum(equippedItems, 'magical', selectedStats.offenseCBonusNames)) * selectedStats.magicalOffenseMultiplier) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.intelligence),
-    selectedStats.abilities,
-  );
+  const selectedStatusFacts = readStatusFacts(characterStatus[selectedCharacter]);
   const combatTotals = {
-    vitality: selectedStats.baseStats.vitality,
-    strength: selectedStats.baseStats.strength,
-    intelligence: selectedStats.baseStats.intelligence,
-    mind: selectedStats.baseStats.mind,
-    // Keep offense notifications aligned with the values shown in the status panel.
-    meleeAtk: Math.round(selectedStats.meleeAttack),
-    rangedAtk: Math.round(selectedStats.rangedAttack),
-    magicalAtk: Math.round(selectedStats.magicalAttack),
-    meleeNoA: selectedStats.meleeNoA,
-    rangedNoA: selectedStats.rangedNoA,
-    magicalNoA: selectedStats.magicalNoA,
-    // Keep defense notifications aligned with the values shown in the status panel.
-    physDef: Math.round(selectedStats.physicalDefense),
-    magDef: Math.round(selectedStats.magicalDefense),
-    physicalDefenseResistPercent: Math.round(selectedPhysicalDefenseResist * 100),
-    magicalDefenseResistPercent: Math.round(selectedMagicalDefenseResist * 100),
-    fireDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.elementalDefenseMultipliers.fire) * 100),
-    iceDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.elementalDefenseMultipliers.ice) * 100),
-    thunderDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.elementalDefenseMultipliers.thunder) * 100),
-    meleeAttackAmp: selectedMeleeAttackAmp,
-    rangedAttackAmp: selectedRangedAttackAmp,
-    magicalAttackAmp: selectedMagicalAttackAmp,
-    accuracy: Math.round(selectedEffectiveAccuracyBonus * 1000),
-    evasion: Math.round(selectedStats.evasionBonus * 1000),
-    penet: Math.round(selectedStats.penetMultiplier * 100),
-    hp: Math.floor(partyStats.hp),
-    elementalOffense: selectedStats.elementalOffense,
-    elementalOffensePercent: Math.round((selectedStats.elementalOffenseValue - 1) * 100),
+    ...buildCombatTotals(characterStatus[selectedCharacter], partyStats.hp),
     unlockRaceName: selectedRace?.name ?? '',
     unlockAbilityName: selectedRace?.unlockAbility?.name ?? '',
     unlockConditionActive: isSelectedRaceUnlockConditionActive,
-    abilityLevels: selectedAbilityLevels,
   };
+  const selectedAbilityLevelSignature = Object.entries(combatTotals.abilityLevels)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([id, level]) => `${id}:${level}`)
+    .join('|');
 
   const prevStatsRef = useRef<typeof combatTotals | null>(null);
   const prevSelectedCharRef = useRef(selectedCharacter);
@@ -1990,34 +1946,11 @@ export default function PartyTab({
             </div>
             <div className="border-t border-gray-200 mt-2 pt-2 text-sm">
               {(() => {
-                // Calculate offense amplifiers per phase
-                const iaigiri = stats.abilities.find(a => a.id === 'iaigiri');
-                const heavyStrike = stats.abilities.find(a => a.id === 'heavy_strike');
-                const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 3 ? 3.0 : iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
-                const heavyStrikeMultiplier = heavyStrike ? 1.4 : 1.0;
-                const strengthScale = getBaseOffenseScale(stats.baseStats.strength);
-                const intelligenceScale = getBaseOffenseScale(stats.baseStats.intelligence);
+                // The amplifiers, accuracy decay, and penetration come from the projected status (shared game function).
                 const combatBonusLevels = getCharacterCombatBonusLevels(char);
                 const hasRanged = combatBonusLevels.ranged;
                 const hasMagical = combatBonusLevels.magic;
                 const hasMelee = combatBonusLevels.melee;
-                const equippedItems = char.equipment.filter((item): item is Item => item != null);
-                const baseAppliedOffenseBonusNames = stats.offenseCBonusNames;
-                const baseMultMelee = stats.meleeAttackCBonus + getOffenseMultiplierSum(
-                  equippedItems,
-                  'melee',
-                  baseAppliedOffenseBonusNames
-                );
-                const baseMultRanged = stats.rangedAttackCBonus + getOffenseMultiplierSum(
-                  equippedItems,
-                  'ranged',
-                  baseAppliedOffenseBonusNames
-                );
-                const baseMultMagical = stats.magicalAttackCBonus + getOffenseMultiplierSum(
-                  equippedItems,
-                  'magical',
-                  baseAppliedOffenseBonusNames
-                );
 
                 type StatusLine = {
                   key: string;
@@ -2030,10 +1963,7 @@ export default function PartyTab({
                 // Build offense lines
                 const offenseLines: StatusLine[] = [];
                 if (hasRanged) {
-                  const amp = ((iaigiri
-                    ? iaigiriMultiplier * (1.0 + baseMultRanged) * stats.physicalOffenseMultiplier
-                    : (1.0 + baseMultRanged + stats.physicalAttackCBonus) * stats.physicalOffenseMultiplier
-                  ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
+                  const amp = selectedStatusFacts.offenseAmplifier.ranged;
                   offenseLines.push({
                     key: 'ranged-attack',
                     text: `${t('combat.rangedAttack')}:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}${t('combat.times')}(x${formatDecimal(amp, 2)})`,
@@ -2047,10 +1977,7 @@ export default function PartyTab({
                   });
                 }
                 if (hasMagical) {
-                  const amp = getCharacterDisplayedMagicalAttackAmplifier(
-                    ((1.0 + baseMultMagical) * stats.magicalOffenseMultiplier + stats.deityOffenseAmplifierBonus) * intelligenceScale,
-                    stats.abilities,
-                  );
+                  const amp = selectedStatusFacts.offenseAmplifier.magical;
                   offenseLines.push({
                     key: 'magical-attack',
                     text: `${t('combat.magicalAttack')}:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}${t('combat.times')}(x${formatDecimal(amp, 2)})`,
@@ -2064,10 +1991,7 @@ export default function PartyTab({
                   });
                 }
                 if (hasMelee) {
-                  const amp = ((iaigiri
-                    ? iaigiriMultiplier * (1.0 + baseMultMelee) * stats.physicalOffenseMultiplier
-                    : (1.0 + baseMultMelee + stats.physicalAttackCBonus) * stats.physicalOffenseMultiplier
-                  ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
+                  const amp = selectedStatusFacts.offenseAmplifier.melee;
                   offenseLines.push({
                     key: 'melee-attack',
                     text: `${t('combat.meleeAttack')}:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}${t('combat.times')}(x${formatDecimal(amp, 2)})`,
@@ -2081,7 +2005,7 @@ export default function PartyTab({
                   });
                 }
 
-                const baseDecay = 0.90 + getEffectiveAccuracyBonus(stats.accuracyBonus, stats.abilities);
+                const baseDecay = selectedStatusFacts.accuracyDecay;
                 const decayText = `${formatDecimal(baseDecay * 100, 1)}%`;
                 const hasPhysicalAttacks = hasRanged || hasMelee;
                 if (hasPhysicalAttacks) {
@@ -2130,14 +2054,7 @@ export default function PartyTab({
                     ],
                   });
                 }
-                const heavyStrikePenetAbility = stats.abilities.find((ability) => ability.id === 'heavy_strike' && ability.level > 0);
-                const heavyStrikePenetPerNoA = heavyStrikePenetAbility
-                  ? (heavyStrikePenetAbility.level >= 2 ? 0.015 : 0.01)
-                  : 0;
-                const heavyStrikePenetBonus = heavyStrikePenetAbility
-                  ? (Math.max(stats.rangedNoA, stats.magicalNoA, stats.meleeNoA) * heavyStrikePenetPerNoA)
-                  : 0;
-                const penetrationPercent = Math.round((stats.penetMultiplier + heavyStrikePenetBonus) * 100);
+                const penetrationPercent = Math.round(selectedStatusFacts.penetration * 100);
                 if (penetrationPercent !== 0) {
                   offenseLines.push({
                     key: 'penetration',
@@ -2151,8 +2068,8 @@ export default function PartyTab({
                 }
 
                 // Defense lines
-                const defenseAmpPhysical = Math.max(0.01, stats.physicalDefenseAmplifier * stats.deityDefenseAmplifierBonus.physical);
-                const defenseAmpMagical = Math.max(0.01, stats.magicalDefenseAmplifier * stats.deityDefenseAmplifierBonus.magical);
+                const defenseAmpPhysical = selectedStatusFacts.defenseAmplifier.physical;
+                const defenseAmpMagical = selectedStatusFacts.defenseAmplifier.magical;
                 const elementIcon: UiIconKey | null = stats.elementalOffense === 'fire' ? 'fire' :
                   stats.elementalOffense === 'thunder' ? 'thunder' :
                   stats.elementalOffense === 'ice' ? 'ice' : null;

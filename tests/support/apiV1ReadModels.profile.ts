@@ -295,3 +295,104 @@ assert.deepEqual(state, before);
   assert.equal('rangedNoA' in (status.calculatedStatus as object), false, 'no internal computed-stats members leak');
 }
 assert.deepEqual(state, before);
+
+// The status-pane values are derived once (deriveStatusFacts), published as calculatedStatus facts, and read back
+// losslessly. The oracle is a frozen copy of the formulas the Party tab used to hold inline (the pane version).
+{
+  const { computePartyStats } = await import('../../src/game/partyComputation.ts');
+  const { deriveStatusFacts, getBaseOffenseScale, getCharacterDisplayedMagicalAttackAmplifier, getEffectiveAccuracyBonus, getOffenseMultiplierSum } = await import('../../src/game/statusFacts.ts');
+  const { buildCalculatedStatus, readStatusFacts } = await import('../../src/api/v1/calculatedStatus.ts');
+  const { buildCombatTotals } = await import('../../src/api/v1/statusView.ts');
+  type Stats = ReturnType<typeof computePartyStats>['characterStats'][number];
+  type Char = (typeof state.parties)[number]['characters'][number];
+
+  const oracle = (character: Char, stats: Stats) => {
+    const items = character.equipment.filter((item): item is NonNullable<typeof item> => item != null);
+    const iaigiri = stats.abilities.find((ability) => ability.id === 'iaigiri');
+    const heavyStrike = stats.abilities.find((ability) => ability.id === 'heavy_strike');
+    const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 3 ? 3.0 : iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
+    const heavyStrikeMultiplier = heavyStrike ? 1.4 : 1.0;
+    const strength = getBaseOffenseScale(stats.baseStats.strength);
+    const intelligence = getBaseOffenseScale(stats.baseStats.intelligence);
+    const mult = (kind: 'melee' | 'ranged' | 'magical', bonus: number) => bonus + getOffenseMultiplierSum(items, kind, stats.offenseCBonusNames);
+    const physical = (base: number) => (((iaigiri ? iaigiriMultiplier * (1.0 + base) * stats.physicalOffenseMultiplier : (1.0 + base + stats.physicalAttackCBonus) * stats.physicalOffenseMultiplier) + stats.deityOffenseAmplifierBonus) * strength * heavyStrikeMultiplier);
+    const heavyStrikeAbility = stats.abilities.find((ability) => ability.id === 'heavy_strike' && ability.level > 0);
+    const perNoA = heavyStrikeAbility ? (heavyStrikeAbility.level >= 2 ? 0.015 : 0.01) : 0;
+    const penetBonus = heavyStrikeAbility ? Math.max(stats.rangedNoA, stats.magicalNoA, stats.meleeNoA) * perNoA : 0;
+    const effective = getEffectiveAccuracyBonus(stats.accuracyBonus, stats.abilities);
+    return {
+      melee: physical(mult('melee', stats.meleeAttackCBonus)),
+      ranged: physical(mult('ranged', stats.rangedAttackCBonus)),
+      magical: getCharacterDisplayedMagicalAttackAmplifier(((1.0 + mult('magical', stats.magicalAttackCBonus)) * stats.magicalOffenseMultiplier + stats.deityOffenseAmplifierBonus) * intelligence, stats.abilities),
+      physicalDefense: Math.max(0.01, stats.physicalDefenseAmplifier * stats.deityDefenseAmplifierBonus.physical),
+      magicalDefense: Math.max(0.01, stats.magicalDefenseAmplifier * stats.deityDefenseAmplifierBonus.magical),
+      effective,
+      decay: 0.90 + effective,
+      penetration: stats.penetMultiplier + penetBonus,
+    };
+  };
+
+  const classes = ['guardian', 'samurai', 'striker', 'sage', 'wizard', 'ranger', 'sword-saint', 'alchemist'] as const;
+  const deities = ['Goddess of Restoration', 'God of Attrition', 'God of Cunning', 'God of Fortification', 'Goddess of Fertility', 'God of Resonance', 'Goddess of Precision', 'God of Fate', 'God of Dusk', 'Goddess of Mirage'];
+  const seen = { iaigiri: false, heavy: false, deityOffense: false, deityDefense: false };
+  let checked = 0;
+  for (const [index, main] of classes.entries()) {
+    for (const deity of deities) {
+      const sub = classes[(index + 3) % classes.length];
+      const variant = { ...state, parties: [{ ...state.parties[0], deity: { ...state.parties[0].deity, name: deity as never }, characters: state.parties[0].characters.map((character, slot) => ({ ...character, mainClassId: slot % 2 === 0 ? main : sub, subClassId: slot % 2 === 0 ? sub : main })) }] };
+      const party = variant.parties[0];
+      const computed = computePartyStats(party).characterStats;
+      party.characters.forEach((character, slot) => {
+        const stats = computed[slot];
+        const expected = oracle(character, stats);
+        const derived = deriveStatusFacts(character, stats);
+        assert.deepEqual([derived.offenseAmplifier.melee, derived.offenseAmplifier.ranged, derived.offenseAmplifier.magical], [expected.melee, expected.ranged, expected.magical], `${main}/${deity}/${slot} offense`);
+        assert.deepEqual([derived.defenseAmplifier.physical, derived.defenseAmplifier.magical], [expected.physicalDefense, expected.magicalDefense], 'defense');
+        assert.deepEqual([derived.effectiveAccuracyBonus, derived.accuracyDecay, derived.penetration], [expected.effective, expected.decay, expected.penetration], 'accuracy and penetration');
+
+        // Published and read back without loss, and never a non-finite number.
+        const status = buildCalculatedStatus(character, stats);
+        assert.deepEqual(readStatusFacts(status), derived, 'lossless round trip');
+        for (const entry of status.stats) assert.equal(Number.isFinite(entry.value), true, entry.key);
+
+        // The notification totals come from the projection and agree with the old rounding rules.
+        const totals = buildCombatTotals(status, 12345.9);
+        assert.equal(totals.hp, 12345);
+        assert.equal(totals.meleeAttackAmp, expected.melee);
+        assert.equal(totals.physicalDefenseResistPercent, Math.round(expected.physicalDefense * 100));
+        assert.equal(totals.magicalDefenseResistPercent, Math.round(expected.magicalDefense * 100));
+        assert.equal(totals.accuracy, Math.round(expected.effective * 1000));
+        assert.equal(totals.evasion, Math.round(stats.evasionBonus * 1000));
+        assert.equal(totals.penet, Math.round(expected.penetration * 100));
+        assert.equal(totals.physDef, Math.round(stats.physicalDefense));
+        assert.equal(totals.meleeAtk, Math.round(stats.meleeAttack));
+        assert.equal(totals.rangedNoA, stats.rangedNoA);
+        assert.equal(totals.fireDefenseResistPercent, Math.round(Math.max(0.01, stats.elementalDefenseMultipliers.fire) * 100));
+        assert.equal(totals.elementalOffense, stats.elementalOffense);
+        assert.equal(totals.elementalOffensePercent, Math.round((stats.elementalOffenseValue - 1) * 100));
+        const levels: Record<string, number> = {};
+        for (const ability of stats.abilities) if (ability.level >= 1) levels[ability.id] = Math.max(levels[ability.id] ?? 0, ability.level);
+        assert.deepEqual(totals.abilityLevels, levels, 'ability ids survive the kebab-case round trip');
+
+        seen.iaigiri ||= stats.abilities.some((ability) => ability.id === 'iaigiri' && ability.level > 0);
+        seen.heavy ||= stats.abilities.some((ability) => ability.id === 'heavy_strike' && ability.level > 0);
+        seen.deityOffense ||= stats.deityOffenseAmplifierBonus !== 0;
+        seen.deityDefense ||= stats.deityDefenseAmplifierBonus.physical !== 1 || stats.deityDefenseAmplifierBonus.magical !== 1;
+        checked += 1;
+      });
+    }
+  }
+  assert.ok(checked >= 400, 'many real characters were compared');
+  assert.deepEqual(seen, { iaigiri: true, heavy: true, deityOffense: true, deityDefense: true }, 'the fixtures exercise Iaigiri, Heavy Strike, and deity amplifiers');
+
+  // A Heavy Strike character's amplifier and penetration include the Heavy Strike factors the old notification omitted.
+  const heavy = { ...state.parties[0], characters: state.parties[0].characters.map((character) => ({ ...character, mainClassId: 'striker' as const, subClassId: 'striker' as const })) };
+  const heavyComputed = computePartyStats(heavy).characterStats;
+  const withCount = heavyComputed.findIndex((stats) => Math.max(stats.rangedNoA, stats.magicalNoA, stats.meleeNoA) > 0);
+  assert.ok(withCount >= 0, 'a fixture member has attack count equipment');
+  const heavyStats = heavyComputed[withCount];
+  assert.ok(heavyStats.abilities.some((ability) => ability.id === 'heavy_strike' && ability.level > 0));
+  const heavyFacts = deriveStatusFacts(heavy.characters[withCount], heavyStats);
+  assert.ok(heavyFacts.penetration > heavyStats.penetMultiplier, 'Heavy Strike converts attack count into penetration');
+}
+assert.deepEqual(state, before);

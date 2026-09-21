@@ -85,3 +85,20 @@ test('Party pane, member list, and party selector render from the party projecti
   const partyTab = fs.readFileSync(path.resolve('src/components/home/tabs/PartyTab.tsx'), 'utf8');
   assert.doesNotMatch(partyTab, /\bParty\b[,\s]*(?:from|\})/, 'the tab no longer imports the Party domain type');
 });
+
+test('the status pane and its change notifications derive from the projected calculated status', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const partyTab = fs.readFileSync(path.resolve('src/components/home/tabs/PartyTab.tsx'), 'utf8');
+  const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
+  assert.match(home, /characterStatus=\{partyView\.characterStatus\}/);
+  assert.match(partyTab, /buildCombatTotals\(characterStatus\[selectedCharacter\]/);
+  assert.match(partyTab, /readStatusFacts\(characterStatus\[selectedCharacter\]\)/);
+  for (const inlined of ['getOffenseMultiplierSum', 'getEffectiveAccuracyBonus', 'getCharacterDisplayedMagicalAttackAmplifier', 'deityOffenseAmplifierBonus', 'deityDefenseAmplifierBonus', 'heavyStrikePenetPerNoA']) {
+    assert.equal(partyTab.includes(inlined), false, `${inlined} is derived by the shared game function, not inline in the tab`);
+  }
+  // One shared derivation: the read model, the tab, and the UI helpers all resolve to src/game/statusFacts.ts.
+  const shared = fs.readFileSync(path.resolve('src/components/home/homeShared.tsx'), 'utf8');
+  assert.match(shared, /from '\.\.\/\.\.\/game\/statusFacts'/);
+  assert.equal(/export function getOffenseMultiplierSum/.test(shared), false);
+});
