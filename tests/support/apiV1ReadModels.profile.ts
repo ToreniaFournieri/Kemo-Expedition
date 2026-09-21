@@ -23,24 +23,38 @@ calls.length = 0;
 const full = await buildApiV1ReadData('read/expedition/1/simulationRun', state, {}, context);
 assert.deepEqual(calls, [{ partyIndex: 0, count: 1_000 }]);
 assert.equal(full.simulatedRevision, 7);
-// Undo/Redo availability is part of the equipment projection and follows the shared history facts.
+// Undo/Redo are part of the equipment projection: up to 30 states, most recent first, plus next-step availability.
 {
   const { snapshotCharacterEquipment } = await import('../../src/api/v1/equipmentHistoryFacts.ts');
+  type Action = { equipmentStates: string[][]; available: boolean; unavailableReason: string | null };
   const target = state.parties[0].characters[0];
   const readEquipment = async (history?: Record<string, { undo: never[]; redo: never[] }>) => (await buildApiV1ReadData(`read/build/character/${target.id}/equipment`, state, {}, { ...context, control: { equipmentHistory: history } }) as {
-    validOptions: { numberOfEmptyEquipmentSlots: number; undoEquipment: { available: boolean; unavailableReason: string | null }; redoEquipment: { available: boolean; unavailableReason: string | null } };
+    validOptions: { numberOfEmptyEquipmentSlots: number; undoEquipment: Action; redoEquipment: Action };
   }).validOptions;
-  assert.deepEqual((await readEquipment()).undoEquipment, { available: false, unavailableReason: 'noHistory' });
-  assert.deepEqual((await readEquipment()).redoEquipment, { available: false, unavailableReason: 'noHistory' });
+  const options = await readEquipment();
+  assert.deepEqual(options.undoEquipment, { equipmentStates: [], available: false, unavailableReason: 'No undo history.' });
+  assert.deepEqual(options.redoEquipment, { equipmentStates: [], available: false, unavailableReason: 'No redo history.' });
 
   const empty = snapshotCharacterEquipment([], 0);
-  assert.deepEqual((await readEquipment({ [String(target.id)]: { undo: [empty] as never[], redo: [] } })).undoEquipment, { available: true, unavailableReason: null }, 'restoring a bare state is available');
   const same = snapshotCharacterEquipment(target.equipment, 0);
-  assert.equal((await readEquipment({ [String(target.id)]: { undo: [same] as never[], redo: [] } })).undoEquipment.unavailableReason, 'noChange');
+  const key = String(target.id);
+  const bareUndo = (await readEquipment({ [key]: { undo: [empty] as never[], redo: [] } })).undoEquipment;
+  assert.deepEqual(bareUndo, { equipmentStates: [[]], available: true, unavailableReason: null }, 'restoring a bare state is available');
+  assert.equal((await readEquipment({ [key]: { undo: [same] as never[], redo: [] } })).undoEquipment.unavailableReason, 'The undo target matches the current equipment.');
   const unavailable = { ...same, equipment: same.equipment.map((entry, index) => index === 0 ? { ...entry, item: { ...entry.item, id: 999999 } } : entry) };
-  assert.equal((await readEquipment({ [String(target.id)]: { undo: [], redo: [unavailable] as never[] } })).redoEquipment.unavailableReason, 'itemsUnavailable');
-  const slots = (await readEquipment()).numberOfEmptyEquipmentSlots;
-  assert.ok(slots >= 0);
+  const redo = (await readEquipment({ [key]: { undo: [], redo: [unavailable] as never[] } })).redoEquipment;
+  assert.equal(redo.available, false);
+  assert.equal(redo.unavailableReason, 'The redo target contains unavailable items.');
+  assert.equal(redo.equipmentStates.length, 1);
+  assert.match(redo.equipmentStates[0][0], /^\d+\/[01]\/999999\/\d\/\d+/);
+
+  // History keeps up to 30 states and lists them most recent first (the order repeated Undo restores them).
+  const thirty = Array.from({ length: 30 }, (_, index) => snapshotCharacterEquipment(index === 0 ? [] : target.equipment.slice(0, index % 2), 0));
+  const listed = (await readEquipment({ [key]: { undo: thirty as never[], redo: [] } })).undoEquipment;
+  assert.equal(listed.equipmentStates.length, 30);
+  assert.deepEqual(listed.equipmentStates[29], [], 'the oldest state is last');
+  assert.equal(listed.equipmentStates[0].length, thirty[29].equipment.length, 'the most recent state is first');
+
   const shortArray = { ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, characters: party.characters.map((entry) => entry.id === target.id ? { ...entry, equipment: [] } : entry) } : party) };
   const bare = await buildApiV1ReadData(`read/build/character/${target.id}/equipment`, shortArray, {}, context) as { validOptions: { numberOfEmptyEquipmentSlots: number } };
   assert.ok(bare.validOptions.numberOfEmptyEquipmentSlots > 0, 'empty slots are counted against the real slot count, not the array length');

@@ -7486,10 +7486,22 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
+                    "equipmentStates",
                     "available",
                     "unavailableReason"
                   ],
                   "properties": {
+                    "equipmentStates": {
+                      "maxItems": 30,
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
+                          "type": "string"
+                        }
+                      }
+                    },
                     "available": {
                       "type": "boolean"
                     },
@@ -7509,10 +7521,22 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
+                    "equipmentStates",
                     "available",
                     "unavailableReason"
                   ],
                   "properties": {
+                    "equipmentStates": {
+                      "maxItems": 30,
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
+                          "type": "string"
+                        }
+                      }
+                    },
                     "available": {
                       "type": "boolean"
                     },
@@ -7642,10 +7666,22 @@
                       "additionalProperties": false,
                       "type": "object",
                       "required": [
+                        "equipmentStates",
                         "available",
                         "unavailableReason"
                       ],
                       "properties": {
+                        "equipmentStates": {
+                          "maxItems": 30,
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
+                              "type": "string"
+                            }
+                          }
+                        },
                         "available": {
                           "type": "boolean"
                         },
@@ -7665,10 +7701,22 @@
                       "additionalProperties": false,
                       "type": "object",
                       "required": [
+                        "equipmentStates",
                         "available",
                         "unavailableReason"
                       ],
                       "properties": {
+                        "equipmentStates": {
+                          "maxItems": 30,
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
+                              "type": "string"
+                            }
+                          }
+                        },
                         "available": {
                           "type": "boolean"
                         },
@@ -7733,10 +7781,20 @@
               ],
               "numberOfEmptyEquipmentSlots": 0,
               "undoEquipment": {
+                "equipmentStates": [
+                  [
+                    "0"
+                  ]
+                ],
                 "available": true,
                 "unavailableReason": "xxxxxxx"
               },
               "redoEquipment": {
+                "equipmentStates": [
+                  [
+                    "0"
+                  ]
+                ],
                 "available": true,
                 "unavailableReason": "xxxxxxx"
               }

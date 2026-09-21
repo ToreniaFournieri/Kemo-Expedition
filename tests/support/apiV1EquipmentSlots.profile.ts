@@ -267,4 +267,17 @@ assert.equal(undoHistory[String(characterId)].redo.length, 0);
   assert.ok(character(toSlot).equipment[2], 'an explicit slot beyond the array length is honored');
 }
 
+// The commit history keeps at most 30 states per character, and a projection would list exactly those.
+{
+  const history: ApiV1CommitContext['equipmentHistory'] = {};
+  let state: GameState = base;
+  const format = (() => { const item = character(base).equipment[armor]!; return `${item.isLocked ? 1 : 0}/${item.id}/${item.enhancement}/${item.superRare}`; })();
+  for (let index = 0; index < 16; index += 1) {
+    state = applyApiV1Commit(path('removeEquipment'), state, { targetEquipment: armor }, context(history)).state;
+    state = applyApiV1Commit(path('equip'), state, { targetEquipment: format, targetSlot: armor }, context(history)).state;
+  }
+  assert.equal(history[String(characterId)].undo.length, 30, '32 equipment changes retain only the 30 most recent states');
+  assert.equal(history[String(characterId)].redo.length, 0);
+}
+
 console.log('apiV1EquipmentSlots profile ok');
