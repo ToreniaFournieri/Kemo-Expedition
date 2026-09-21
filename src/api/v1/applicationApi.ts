@@ -45,6 +45,12 @@ export interface ApplicationApiPorts {
 export interface InProcessApiAdapter {
   read: (operation: string, input?: { pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown> }) => Promise<ApiV1ApplicationResponse>;
   commit: (operation: string, input?: { pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown>; confirmed?: boolean }) => Promise<ApiV1ApplicationResponse>;
+  /**
+   * Calls the listener after each successful commit has been fully installed in the authority (state, control metadata
+   * such as the equipment history, and receipt). A projection re-read triggered by a game-state change alone can run
+   * before that, so a read that depends on control metadata must also re-read on this signal. Returns an unsubscribe.
+   */
+  subscribe: (listener: () => void) => () => void;
 }
 
 export interface ApplicationApi {
@@ -207,6 +213,11 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
   }
 
   function createInProcessAdapter(): InProcessApiAdapter {
+    const listeners = new Set<() => void>();
+    const notifyCommitted = (response: ApiV1ApplicationResponse) => {
+      if (response.error) return;
+      for (const listener of [...listeners]) listener();
+    };
     const read = (operation: string, input: { pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown> } | undefined) => handleUnserialized(operation, {
       pathParameters: input?.pathParameters ?? {}, parameters: input?.parameters ?? {}, uploadedFiles: {}, transport: { requestId: ports.runtime.createOpaqueId() },
     }, true);
@@ -221,11 +232,18 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       const error = asRecord(first.error);
       const details = asRecord(error.details);
       if (input?.confirmed === true && error.code === 'confirmation_required' && typeof details.confirmationToken === 'string') {
-        return handleUnserialized(operation, { ...request, confirmationToken: details.confirmationToken }, true);
+        const confirmed = await handleUnserialized(operation, { ...request, confirmationToken: details.confirmationToken }, true);
+        notifyCommitted(confirmed);
+        return confirmed;
       }
+      notifyCommitted(first);
       return first;
     };
-    return { read, commit };
+    const subscribe: InProcessApiAdapter['subscribe'] = (listener) => {
+      listeners.add(listener);
+      return () => { listeners.delete(listener); };
+    };
+    return { read, commit, subscribe };
   }
 
   return {

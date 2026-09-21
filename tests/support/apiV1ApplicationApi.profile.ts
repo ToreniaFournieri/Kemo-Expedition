@@ -178,6 +178,33 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
   assert.deepEqual(h.playerCommitEvents, ['persist', 'persist', 'publish'], 'challenge reservation precedes durable commit and publication');
 }
 
+// 1c. The adapter tells subscribers after a commit is fully installed, so a projection that depends on control
+// metadata (the equipment history) already sees it. A failed commit does not notify.
+{
+  const h = harness();
+  const local = h.api.createInProcessAdapter();
+  type Equipment = { data: { validOptions: { undoEquipment: { available: boolean }; redoEquipment: { available: boolean } } } };
+  const readEquipment = () => local.read('read/build/character/{characterId}/equipment', { pathParameters: { characterId: 1 } }) as Promise<Equipment>;
+  assert.equal((await readEquipment()).data.validOptions.undoEquipment.available, false);
+  const seen: Promise<Equipment>[] = [];
+  const unsubscribe = local.subscribe(() => { seen.push(readEquipment()); });
+  const removed = await local.commit('commit/build/character/{characterId}/removeAllEquipment', { pathParameters: { characterId: 1 } }) as { error?: unknown };
+  assert.equal(removed.error, undefined);
+  assert.equal(seen.length, 1, 'one notification per successful commit');
+  assert.equal((await seen[0]).data.validOptions.undoEquipment.available, true, 'the history is installed when subscribers are told');
+  const undone = await local.commit('commit/build/character/{characterId}/undoEquipment', { pathParameters: { characterId: 1 } }) as { error?: unknown };
+  assert.equal(undone.error, undefined);
+  const afterUndo = (await seen[1]).data.validOptions;
+  assert.equal(afterUndo.redoEquipment.available, true, 'Redo is available as soon as Undo is installed');
+  assert.equal(afterUndo.undoEquipment.available, false);
+  const rejected = await local.commit('commit/build/character/{characterId}/undoEquipment', { pathParameters: { characterId: 1 } }) as { error?: unknown };
+  assert.ok(rejected.error, 'no Undo history remains');
+  assert.equal(seen.length, 2, 'a rejected commit does not notify');
+  unsubscribe();
+  await local.commit('commit/build/character/{characterId}/redoEquipment', { pathParameters: { characterId: 1 } });
+  assert.equal(seen.length, 2, 'an unsubscribed listener is not called');
+}
+
 // 2. The session lifecycle is serialized through the handler: a second login is refused; logout restores the idle state.
 {
   const h = harness();

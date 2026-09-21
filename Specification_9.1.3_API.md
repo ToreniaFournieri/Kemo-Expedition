@@ -1188,8 +1188,31 @@ Path Parameters
     * Example: `class.ranger`
   * `lineage`
   * `predisposition`
-
+  * `simulation`
+    * Required.
+    * Boolean.
+    * If `true`, validates and simulates the requested changes without committing them.
+    * If `false`, applies and commits the requested changes.
 * Partial updates are allowed.
+  * Only specified parameters are changed.
+  * Unspecified parameters retain their current values.
+
+* Return:
+  * `confirmationRequired`
+    * Boolean.
+    * Indicates whether user confirmation is required before the requested changes can be committed.
+  * `warnings`
+    * Returned when the requested build change causes effects that require confirmation.
+    * May include effects such as equipment becoming invalid or being automatically unequipped.
+  * `confirmation`
+    * Required only when `confirmationRequired` is `true` and `simulation=false`.
+    * Allowed values:
+      * `yes`
+        * Applies the requested changes.
+      * `no`
+        * Cancels the requested changes without modifying the character.
+
+
 
 **3-3-3. `character/{characterId}/removeAllEquipment`**
 
