@@ -763,7 +763,7 @@ Path Parameters
       * Format when `details=all`:
         * `<Item Format>/<quantity>/<calculatedBasePower>/<ability>/<cBonus>/<otherBonus>`
       * Example:
-        * `0/1104/0/12/1/12/ability=[a.pursuit]/cBonus=[c.magical-defense-x2/3]/otherBonus=[d.melee_defense:6, d.HP:20, e.ice+0.020]`
+        * `0/1104/0/12/1/12/ability=[a.pursuit]/cBonus=[c.magical-defense-x2/3]/otherBonus=[d.physical_defense:6, d.HP:20, e.ice+0.020]`
 
   * For character-assigned items:
     * `items`
