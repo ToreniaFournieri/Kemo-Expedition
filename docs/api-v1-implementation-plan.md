@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 67. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 68. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -13,7 +13,7 @@ This document supersedes the earlier "Build 23" plan. Stages are numbered once, 
 | 1 | Contract catalog | Mostly done; 11 `Type.Unknown` and placeholder payloads remain (see Stage 1) |
 | 2 | Standalone Application API and authority | Done (foundation) |
 | 3 | HTTP transport and sessions | Implemented, test-only |
-| 4 | Expedition and shell | Blocked on extracting the party cycle from `HomeScreen`; UI not migrated |
+| 4 | Expedition and shell | Revised (no extraction): runtime port and sortie parity first; UI not migrated |
 | 5 | Party, character, equipment | Done (UI projection complete) |
 | 6 | Base, inventory, shop, Altar | Runtime early, UI not migrated |
 | 7 | Diary and popup streaming | Foundation only |
@@ -44,7 +44,7 @@ All three closed in Build 65: `targetItems` and `equipmentChanges` are bounded a
 
 | Operation | Gap |
 |---|---|
-| `read/expedition/{p}/latestBattleLog` | Done in Build 67 (public log shape, `logId`, bottleneck enemies with `EnemyStatus`). Still to do with 4b: no-spoiler timing (the log must not be readable before the end of `state.explore`). |
+| `read/expedition/{p}/latestBattleLog` | Done in Build 67 (public log shape, `logId`, bottleneck enemies with `EnemyStatus`). Still to do with the Stage 4 runtime port: no-spoiler timing (the log must not be readable before the end of `state.explore`). |
 | `read/expedition/{p}/simulationRun` | Done in Build 66 (compact strings, percentages, structured rooms with HP buckets). |
 | `read/observation/expedition` and `compact` | `state` is faked (`state.rest` or `state.idle` from HP); no step progress, timing, Clear-Gate, side-quest, or Diary references; `disclosedFloor` and `disclosedOutcome` read `lastExpeditionLog` directly (no-spoiler timing not enforced). |
 | `read/observation/diary`, `diaryEntry/{id}` | `metadata` is `Unknown`; semantic and legacy content and battle-log references are incomplete. |
@@ -58,18 +58,25 @@ All three closed in Build 65: `targetItems` and `equipmentChanges` are bounded a
 
 Gate: no `Type.Unknown`, no `{}` or `[]` stand-in for real data, no raw master-data or save object in a response; `api:v1:check` reproducible; every operation has one in-process and one HTTP parity fixture.
 
-## Stage 4 — Expedition and shell (largest remaining piece)
+## Stage 4 — Expedition and shell (revised: no extraction)
 
-**Finding that reshapes this stage.** The party state machine (`state.rest`, `state.move`, `state.explore`, and so on, with `stateStartedAt`, `durationMs`, sortie source state, and Gods Battle flag) lives only in `HomeScreen.tsx` as `partyCycles` (19 references in a 5,390-line component) and in the separate persisted runtime snapshot. The Application API cannot see it: the API `sortie` is a shorter reimplementation (consume stock, clear profit, heal, resolve) that skips the runtime rules in Spec 5.1.1 (finish the current state and gain items first, the emergency-embezzlement notification, refusal at 0 HP, ending at the start of `state.rest`), so an API sortie and a UI sortie can differ. Migrating the Expedition tab before fixing this would either freeze the fake `state` into the contract or force the tab to keep reading `partyCycles`.
+**Scope change (Specification 9.1.3, Core concepts).** The API must share the game's logic and must not duplicate it, but existing game logic is not to be refactored or extracted solely to support the API unless that is required to avoid duplication or inconsistent behavior. The earlier plan to extract the party cycle from `HomeScreen.tsx` (step 4a) is therefore dropped. `HomeScreen` and the reducer stay as they are.
 
-Order:
-1. **4a. Extract the party cycle into a React-free module** (`src/game/partyCycle*.ts`): transitions, duration modifiers, profit usage, sortie, Gods Battle trigger, condition update. `HomeScreen` calls it; behavior must not change (characterization tests over recorded transitions, and the AFK equivalence gate).
-2. **4b. Put the cycle snapshot behind the authority**: `partyCycles` and the emulated clock become part of the committed snapshot (or a port it reads), so reads project the real state and every mutation, including `elapsed` and `sortie`, goes through the module from 4a. Decide how the persisted runtime snapshot and the API-account store hold it.
-3. **4c. Rewrite `sortie` and `godsBattle`** on that module (one shared implementation), returning outcome, return reason, rewards, Diary reference, and retained-log reference.
-4. **4d. Complete the projections**: `expedition`, `compact`, `overview` (header, progress report), `{p}/setting`, `chargeStock`, `latestBattleLog` (public battle-log shape, no-spoiler timing), and `simulationRun` (exact 100/1,000 isolated runs, structured room table).
-5. **4e. Migrate the header and the Expedition tab** (destination, depth limit, difficulty, sortie, Gods Battle, simulation graph, charge, side quest, log expansion) to projections and commands; add the guard to `migratedTabs.test.cjs`. Continuous progress bars interpolate from the projected start and expected end times on the client.
+What the API still cannot see is the live party cycle (`partyCycles`: `state`, `stateStartedAt`, `durationMs`), which lives in the component. Two smaller, no-refactor steps replace the extraction:
 
-Risk: 4a touches the most delicate runtime code. Gate: no gameplay difference in the AFK regression suites and the online transition tests before any API change.
+1. **Read-only runtime port.** `HomeScreen` already keeps `partyCyclesRef`; expose a snapshot of it (plus the emulated time and the pending-AFK flag) to the read models through a port, as it already supplies the clock and the simulation runner. Nothing moves. The `expedition`, `compact`, and `overview` projections then report the real state, its progress timing, and the no-spoiler rule (latest floor, outcome, and log update only at the end of `state.explore`), instead of the current guess from HP.
+2. **Sortie parity by reusing the same reducer actions, not by extracting.** The UI sortie (`triggerSortie`, HomeScreen) is a sequence of existing reducer actions plus notifications and a cycle reset. The API sortie is a shorter sequence and is observably inconsistent today (each is a defect to fix, and each is required by "avoid inconsistent behavior"):
+   - No charge check: with 0 Instant Expedition stock an API sortie still runs (the UI refuses). The stock is also consumed with the default charge scale instead of the current Speed of Time.
+   - No 0-HP refusal (the UI refuses, except in the Colosseum).
+   - `godsBattle` does not check that a Gods Battle is available (Spec 9.1.3, 3-2-3 requires an error) and does not cancel the party's side quest.
+   - Missing `finalizeDiaryLog` when the party is exploring, and `rollPartySleepiness` after the sortie.
+   - The party cycle is not reset to the beginning of `state.rest` (this needs the runtime port to accept a write, or the cycle to be derived when the API is the only actor).
+   - `logId` is the Diary entry ID; it should be the `logId` of the retained log (`diary:<id>`, or `latest`).
+   Fix by calling the same reducer actions in the same order, add `illegal_action` for the refusals, and pin the two paths together with a differential test that applies the UI's action sequence and the API sortie to the same state and compares the results.
+3. **Projections and simulation:** complete `{p}/setting`, `chargeStock`, `overview` (progress report), and `compact`; the exact 100/1,000-run counts are already tested.
+4. **Migrate the header and the Expedition tab** to projections and commands, with the migration guard. Continuous progress bars interpolate from the projected start and expected end times.
+
+Open question for the spec owner: is a runtime-port write acceptable for the cycle reset (item 2), or should an API sortie leave the cycle untouched and let the next UI tick derive it? The first keeps the two actors identical.
 
 ## Stage 5 — Party, character, equipment (complete)
 
@@ -150,7 +157,7 @@ Add a mechanical check so this does not rely on review: a test that fails if a m
 
 1. Close the Builds 62–64 review points (batch bound, per-change cost, parity case).
 2. Stage 1 contract-fidelity closure (the table above), starting with the operations Stage 4 consumes (`latestBattleLog`, `simulationRun`, `expedition`, `compact`, `overview`).
-3. Stage 4a–4e (extract the party cycle, then project and migrate Expedition and the header).
+3. Stage 4 (revised): the read-only runtime port, sortie parity fixes, the remaining projections, then the header and Expedition tab. No extraction.
 4. Stage 6 (Base), including its Stage 1 rows (shop, Altar, enemy form).
 5. Stage 7 (Diary and streaming), including `diary` and battle-log rows.
 6. Stage 8 (Settings, files, delivery sender, Help, Resources), including the resource rows.

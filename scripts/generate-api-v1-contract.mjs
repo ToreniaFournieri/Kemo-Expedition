@@ -46,6 +46,7 @@ const rarity = literals('common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRa
 const detail = literals('none', 'ability', 'cBonus', 'otherBonus', 'abilityAndCBonus', 'all');
 const identity = { userId: Type.String({ pattern: '^[A-Za-z0-9_-]{1,16}$' }), environment, gameMode, levelOffsetForOrca: optional(Type.Integer({ minimum: 0, maximum: 20 }), 5) };
 const empty = strict({});
+const expeditionOutcome = literals('Clear', 'Return', 'Draw', 'Retreat', 'Defeat');
 // SpecRef: 9.1.3 | Read | 2-2-2 {p}/latestBattleLog
 const scalar = Type.Union([Type.String(), Type.Number(), Type.Boolean(), Type.Null()]);
 const factMap = Type.Record(Type.String(), scalar);
@@ -83,7 +84,7 @@ const battleRoom = Type.Union([
   strict({ ...battleRoomBase, eventFormat: Type.Literal('legacy-facts'), legacyIncomplete: Type.Literal(true), events: Type.Array(legacyEvent) }),
 ]);
 const battleLogSchema = strict({
-  logId: stableKey, partyNumber, dungeonId: integerId, difficultyOffset: Type.Integer({ minimum: 0 }), finalOutcome: literals('Clear', 'Escape', 'Retreat', 'Defeat'),
+  logId: stableKey, partyNumber, dungeonId: integerId, difficultyOffset: Type.Integer({ minimum: 0 }), finalOutcome: expeditionOutcome,
   totalExperience: Type.Number({ minimum: 0 }), completedRooms: Type.Integer({ minimum: 0 }), totalRooms: Type.Integer({ minimum: 0 }),
   remainingPartyHp: Type.Number(), maximumPartyHp: Type.Number(),
   rewards: Type.Array(strict({ item: presentItemFormat, itemId: integerId, category: stableKey, tier: Type.Integer({ minimum: 1 }), rarity: stableKey, enhancement: Type.Integer({ minimum: 0, maximum: 6 }), superRare: Type.Integer({ minimum: 0 }) })),
@@ -245,11 +246,11 @@ const compactObservationSchema = strict({
   globalInfo: strict({ gameMode: modeKey, inGameTime: isoTimestamp, gold: Type.Integer({ minimum: 0 }), prana: Type.Integer({ minimum: 0 }) }),
   partyInfo: Type.Array(strict({
     party: strict({ partyNumber, level: Type.Integer({ minimum: 1, maximum: 69 }), experiencePoint: Type.String(), deity: stableKey, deityRank: Type.Integer({ minimum: 0 }), condition: Type.Integer({ minimum: -400, maximum: 400 }) }),
-    state: stableKey, lastDestination: Type.Union([integerId, Type.Null()]), lastOutcome: Type.Union([Type.String(), Type.Null()]),
+    state: stableKey, lastDestination: Type.Union([integerId, Type.Null()]), lastOutcome: Type.Union([expeditionOutcome, Type.Null()]),
   })),
   attention: strict({ latestSimulationResult: Type.Array(Type.String()), emptyEquipmentSlot: Type.Array(Type.String()), notification: Type.Array(strict({ partyNumber, unreadDiary: Type.Integer({ minimum: 0 }), unreadDiaryTitle: Type.Array(Type.String()) })) }),
 });
-const expeditionProjectionSchema = strict({ parties: Type.Array(strict({ partyNumber, name: Type.String({ minLength: 1 }), state: stableKey, currentHp: Type.Integer({ minimum: 0 }), maximumHp: Type.Integer({ minimum: 0 }), disclosedFloor: Type.Union([Type.Integer(), Type.Null()]), disclosedOutcome: Type.Union([Type.String(), Type.Null()]), destination: Type.Union([integerId, Type.Null()]), destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0 }), chargeStock: Type.Integer({ minimum: 0, maximum: 6 }), chargeDuration: Type.Integer({ minimum: 0 }) })) });
+const expeditionProjectionSchema = strict({ parties: Type.Array(strict({ partyNumber, name: Type.String({ minLength: 1 }), state: stableKey, currentHp: Type.Integer({ minimum: 0 }), maximumHp: Type.Integer({ minimum: 0 }), disclosedFloor: Type.Union([Type.Integer(), Type.Null()]), disclosedOutcome: Type.Union([expeditionOutcome, Type.Null()]), destination: Type.Union([integerId, Type.Null()]), destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0 }), chargeStock: Type.Integer({ minimum: 0, maximum: 6 }), chargeDuration: Type.Integer({ minimum: 0 }) })) });
 const characterSummary = strict({ characterId: integerId, name: Type.String({ minLength: 1 }), raceId: stableKey, gender: literals('male', 'female'), mainClassId: stableKey, subClassId: stableKey, lineageId: Type.Union([stableKey, Type.Null()]), predispositionId: Type.Union([stableKey, Type.Null()]), isUnique: Type.Boolean(), mimorianEnemyId: Type.Union([integerId, Type.Null()]), calculatedStatus, equipment: equipmentEntryList, autoEquipmentMode: Type.Integer({ minimum: 0, maximum: 2 }) });
 const partyProjectionSchema = strict({ effectiveSelection: strict({ partyNumber, characterId: Type.Union([integerId, Type.Null()]) }), party: strict({ partyNumber, name: Type.String({ minLength: 1 }), level: Type.Integer({ minimum: 1, maximum: 69 }), experience: Type.Integer({ minimum: 0 }), experienceToNext: Type.Integer({ minimum: 0 }), maxHp: Type.Integer({ minimum: 0 }), deityId: stableKey, deityRank: Type.Integer({ minimum: 0 }), condition: Type.Integer({ minimum: -400, maximum: 400 }), order: Type.Array(integerId), characters: Type.Array(characterSummary) }) });
 const baseProjectionSchema = strict({ currencies: strict({ gold: Type.Integer({ minimum: 0 }), prana: Type.Integer({ minimum: 0 }) }), inventory: Type.Array(strict({ variantKey: stableKey, item: itemFormat, quantity: Type.Integer({ minimum: 0 }), status: literals('owned', 'sold', 'notown'), isNew: Type.Boolean() })), jewelPriorityParty: Type.Union([partyNumber, Type.Literal('none')]), shop: strict({ intimacy: Type.Integer({ minimum: 0, maximum: 99 }), paidRefreshPrice: Type.Integer({ minimum: 0 }) }) });
@@ -318,8 +319,8 @@ const responseDataSchemas = {
   'commit/progress/elapsed': strict({ requestedElapsedSeconds: Type.Integer({ minimum: 0 }), acceptedElapsedSeconds: Type.Integer({ minimum: 0 }), cappedElapsedSeconds: Type.Integer({ minimum: 0 }), elapsedSeconds: Type.Integer({ minimum: 0 }), inGameTime: isoTimestamp }),
   'commit/progress/progressReport': strict({ deliveryId: stableKey, status: Type.Literal('queued') }),
   'commit/expedition/{p}/changeExpedition': strict({ current: strict({ destination: integerId, destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0, maximum: 68, multipleOf: 2 }) }) }),
-  'commit/expedition/{p}/sortie': strict({ outcome: Type.Union([Type.String(), Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]) }),
-  'commit/expedition/{p}/godsBattle': strict({ outcome: Type.Union([Type.String(), Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]) }),
+  'commit/expedition/{p}/sortie': strict({ outcome: Type.Union([expeditionOutcome, Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]) }),
+  'commit/expedition/{p}/godsBattle': strict({ outcome: Type.Union([expeditionOutcome, Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]) }),
   'commit/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }) }),
   'commit/build/character/{characterId}/changeBuild': strict({ current: equipmentCommitCurrent, confirmationRequired: Type.Boolean(), warnings: Type.Array(semanticText), applied: Type.Boolean() }),
   'commit/build/character/{characterId}/removeAllEquipment': strict({ current: equipmentCommitCurrent }),

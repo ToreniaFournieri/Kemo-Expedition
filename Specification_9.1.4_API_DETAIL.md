@@ -844,9 +844,16 @@ type DiaryEntry = {
   prints for the item. `equippable` is whether the character has the equipment
   aptitude for the item's category; an item that cannot be equipped is still
   evaluated. `abilities` lists the item's ability IDs.
+* Every expedition outcome in a response (`finalOutcome`, the sortie and Gods Battle
+  `outcome`, the compact `lastOutcome`, and the Expedition `disclosedOutcome`) uses
+  the wording of the Simulation Run and `latestSimulationResult`: `Clear`, `Return`,
+  `Draw`, `Retreat`, or `Defeat` (Spec 6.1.5). The runtime's stored names (`Escape`)
+  and the canonical Clear-Gate names (`Turned_Back`, `Draw_Retreat`,
+  `Wounded_Retreat`) are never returned; a stored `Retreat` is a `Draw` when the last
+  room ended in a draw, as the game itself decides.
 * `latestBattleLog` returns `{battleLog: BattleLog | null, bottleneckEnemies}`.
   `BattleLog` is `{logId, partyNumber, dungeonId, difficultyOffset, finalOutcome
-  ("Clear"|"Escape"|"Retreat"|"Defeat"), totalExperience, completedRooms,
+  ("Clear"|"Return"|"Draw"|"Retreat"|"Defeat"), totalExperience, completedRooms,
   totalRooms, remainingPartyHp, maximumPartyHp, rewards[], autoSell {count, gold},
   rooms[]}`. A reward is `{item (Item Format), itemId, category, tier, rarity,
   enhancement, superRare}`. Each room carries its outcome (`victory`, `defeat`,

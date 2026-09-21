@@ -327,6 +327,30 @@ calls.length = 0;
   assert.equal(summaries[0].characters[0].mimorianEnemyId, undefined);
   assert.equal(summaries[0].deity.name, view.deity.name);
 }
+// The API speaks Clear, Return, Draw, Retreat, and Defeat (as the Simulation Run does); the runtime's stored and canonical
+// Clear-Gate names never appear in a response.
+{
+  const { apiExpeditionOutcome, apiExpeditionOutcomeOrNull } = await import('../../src/api/v1/expeditionOutcome.ts');
+  const room = (outcome: 'victory' | 'draw' | 'defeat') => ({ room: 1, outcome, enemyName: 'x', enemyHP: 1, enemyAttackValues: '', damageDealt: 0, damageTaken: 0, remainingPartyHP: 1, maxPartyHP: 1, details: [] }) as never;
+  const log = (finalOutcome: 'Clear' | 'Escape' | 'Retreat' | 'Defeat', last: 'victory' | 'draw' | 'defeat') => ({ finalOutcome, entries: [room('victory'), room(last)] });
+  assert.equal(apiExpeditionOutcome(log('Clear', 'victory')), 'Clear');
+  assert.equal(apiExpeditionOutcome(log('Escape', 'victory')), 'Return', 'a stored Escape is a Return');
+  assert.equal(apiExpeditionOutcome(log('Retreat', 'draw')), 'Draw', 'a retreat that ended in a draw is a Draw');
+  assert.equal(apiExpeditionOutcome(log('Retreat', 'victory')), 'Retreat', 'a retreat after a victory is a Retreat');
+  assert.equal(apiExpeditionOutcome(log('Defeat', 'defeat')), 'Defeat');
+  assert.equal(apiExpeditionOutcome({ finalOutcome: 'Retreat', entries: [] }), 'Retreat');
+  assert.equal(apiExpeditionOutcomeOrNull(null), null);
+  const withLog = (finalOutcome: 'Clear' | 'Escape' | 'Retreat' | 'Defeat', last: 'victory' | 'draw') => ({ ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, lastExpeditionLog: { ...log(finalOutcome, last), dungeonId: 1, dungeonName: '', difficultyOffset: 0, totalExperience: 0, totalRooms: 24, completedRooms: 2, rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: 1, maxPartyHP: 1 } as never } : party) });
+  for (const [stored, last, expected] of [['Clear', 'victory', 'Clear'], ['Escape', 'victory', 'Return'], ['Retreat', 'draw', 'Draw'], ['Retreat', 'victory', 'Retreat'], ['Defeat', 'victory', 'Defeat']] as const) {
+    const source = withLog(stored, last === 'victory' ? 'victory' : 'draw');
+    const compact = await buildApiV1ReadData('read/observation/compact', source, {}, context) as unknown as { partyInfo: { lastOutcome: string | null }[] };
+    assert.equal(compact.partyInfo[0].lastOutcome, expected, `compact ${stored}/${last}`);
+    const expedition = await buildApiV1ReadData('read/observation/expedition', source, {}, context) as unknown as { expeditionInfo: { parties: { disclosedOutcome: string | null }[] } };
+    assert.equal(expedition.expeditionInfo.parties[0].disclosedOutcome, expected, `expedition ${stored}/${last}`);
+    const battle = await buildApiV1ReadData('read/expedition/1/latestBattleLog', source, {}, context) as unknown as { battleLog: { finalOutcome: string } };
+    assert.equal(battle.battleLog.finalOutcome, expected, `battle log ${stored}/${last}`);
+  }
+}
 assert.deepEqual(state, before);
 
 // calculatedStatus is the public fact model (9.1.4.14), not the internal computed-stats object.

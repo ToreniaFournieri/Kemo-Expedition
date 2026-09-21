@@ -20,6 +20,7 @@ import { describeItem, describeJewel, formatItemDetails, type ItemDetails, type 
 import { formatEquipmentEntry, formatItem, parseEquipmentChange, parseEvaluatedItemFormat } from './itemFormat.ts';
 import { isJewelAllowedForCategory, JEWEL_DEFS } from '../../game/jewel.ts';
 import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
+import { apiExpeditionOutcomeOrNull } from './expeditionOutcome.ts';
 import { buildBattleLogData } from './battleLogs.ts';
 import { buildSimulationRunData } from './simulationView.ts';
 import { EQUIPMENT_EVALUATION_LIMIT } from './requestLimits.ts';
@@ -77,7 +78,7 @@ function compactObservation(state: GameState, context: ApiV1ReadContext, simulat
       },
       state: party.currentHp <= 0 ? 'state.rest' : 'state.idle',
       lastDestination: party.lastExpeditionLog?.dungeonId ?? party.selectedDungeonId,
-      lastOutcome: party.lastExpeditionLog?.finalOutcome ?? null,
+      lastOutcome: apiExpeditionOutcomeOrNull(party.lastExpeditionLog),
     })),
     attention: {
       latestSimulationResult: simulations,
@@ -106,7 +107,7 @@ function expeditionProjection(state: GameState) {
         currentHp: party.currentHp,
         maximumHp: computed.partyStats.hp,
         disclosedFloor: party.lastExpeditionLog?.entries.at(-1)?.floor ?? null,
-        disclosedOutcome: party.lastExpeditionLog?.finalOutcome ?? null,
+        disclosedOutcome: apiExpeditionOutcomeOrNull(party.lastExpeditionLog),
         destination: party.selectedDungeonId,
         destinationMode: party.expeditionDestinationMode,
         depthLimit: party.expeditionDepthLimit,

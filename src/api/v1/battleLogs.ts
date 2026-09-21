@@ -2,6 +2,7 @@ import { decodeCompactBattleEvents, DIARY_EVENT_CODES, getDiaryEventCategory, ty
 import { getDungeonById, getEffectiveEnemyLevel } from '../../data/dungeons.ts';
 import type { ExpeditionLog, Item, ItemRarity } from '../../types/index.ts';
 import { buildEnemyStatus, type EnemyStatus } from './enemyStatus.ts';
+import { apiExpeditionOutcome } from './expeditionOutcome.ts';
 import { formatItem } from './itemFormat.ts';
 
 function retainedLogRarity(item: Item): ItemRarity {
@@ -113,7 +114,7 @@ export function buildBattleLogData(log: ExpeditionLog | null, partyNumber: numbe
       partyNumber,
       dungeonId: log.dungeonId,
       difficultyOffset: log.difficultyOffset,
-      finalOutcome: log.finalOutcome,
+      finalOutcome: apiExpeditionOutcome(log),
       totalExperience: log.totalExperience,
       completedRooms: log.completedRooms,
       totalRooms: log.totalRooms,

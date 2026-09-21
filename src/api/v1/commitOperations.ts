@@ -9,6 +9,7 @@ import { computePartyStats } from '../../game/partyComputation';
 import { hydrateGameState, serializeGameState } from '../../game/saveCodec';
 import { buildShopLineup } from '../../game/shop';
 import { describeEquipmentHistory } from './equipmentHistoryFacts';
+import { apiExpeditionOutcomeOrNull } from './expeditionOutcome';
 import { listUiPreferences, validateUiPreference, type UiPreferenceValue } from './uiPreferenceCatalog';
 import { isEquipmentSlotAction, planEquipOperation, planEquipmentSlotOperation } from './equipmentSlots';
 import { planCharacterBuildChange } from './buildChange';
@@ -114,7 +115,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       reduce({ type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
       reduce({ type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, simulatedAt: context.simulatedAt, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, triggerGodsBattle: partyMatch[2] === 'godsBattle' });
       const resolved = next.parties[partyIndex];
-      data = { outcome: resolved.lastExpeditionLog?.finalOutcome ?? null, rewards: resolved.lastExpeditionLog?.rewards.map((item) => getVariantKey(item)) ?? [], diaryEntryId: resolved.diaryLogs[0]?.id ?? null, logId: resolved.diaryLogs[0]?.id ?? null };
+      data = { outcome: apiExpeditionOutcomeOrNull(resolved.lastExpeditionLog), rewards: resolved.lastExpeditionLog?.rewards.map((item) => getVariantKey(item)) ?? [], diaryEntryId: resolved.diaryLogs[0]?.id ?? null, logId: resolved.diaryLogs[0]?.id ?? null };
     }
   } else if (operation.match(/^commit\/build\/party\/(\d+)$/)) {
     const partyNumber = Number(operation.split('/').at(-1));
