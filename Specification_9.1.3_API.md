@@ -725,6 +725,13 @@ Path Parameters
       * `abilityAndCBonus`
       * `all`
     * Default: `abilityAndCBonus`.
+  * `limit`
+    * Optional.
+    * Maximum number of records to return.
+    * Default: `10`.
+    * Minimum: `1`.
+    * Maximum: `5000`.
+    * The limit is applied after filtering and sorting.
 
 * Return:
   * For unassigned items:
