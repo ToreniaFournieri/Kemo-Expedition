@@ -1715,6 +1715,24 @@ export type ProgressItemDisplay = {
   progressRatio: number | null;
 };
 
+export type ProjectedExpeditionGate = {
+  kind: 'eliteGate' | 'bossGate' | 'entryGate' | 'godGate' | 'godEntry';
+  dungeonId: number;
+  floor: number | null;
+  current: number;
+  required: number;
+};
+
+export type ProjectedSideQuest = {
+  id: number;
+  type: string;
+  target: number;
+  progress: number;
+  percent: number;
+  hasDeadline: boolean;
+  remainingMs: number;
+};
+
 
 export function formatSideQuestShortText(type: string, shortText: string, displayTarget: number): string {
   const valueByType: Partial<Record<string, string>> = {
@@ -1836,6 +1854,92 @@ export function getSideQuestDisplay(party: Party, cycleDurationScale: number, em
     bubbleText: `${display.text}（${progressParts.join(', ')}）`,
     progressRatio: clampedProgress / safeTarget,
   };
+}
+
+/** Formats the language-neutral gate and side-quest facts returned by the Expedition projection. */
+export function getProjectedCompactProgressItems(
+  destination: number | null,
+  goals: readonly ProjectedExpeditionGate[],
+  sideQuest: ProjectedSideQuest | null,
+): ProgressItemDisplay[] {
+  const currentDungeon = DUNGEONS.find((d) => d.id === destination);
+  const items: ProgressItemDisplay[] = [];
+  const pushUnique = (item: ProgressItemDisplay) => {
+    if (!items.some((existing) => existing.compactText === item.compactText)) items.push(item);
+  };
+  for (const goal of goals) {
+    const safeRequired = Math.max(1, goal.required);
+    if (goal.kind === 'eliteGate') pushUnique({
+      key: `elite-gate:${goal.dungeonId}:${goal.floor}`,
+      compactText: t('home.progress.eliteCompact', { current: formatNumber(goal.current), required: formatNumber(goal.required), floor: goal.floor ?? 0 }),
+      bubbleText: t('home.progress.eliteBubble', { current: formatNumber(goal.current), required: formatNumber(goal.required), floor: goal.floor ?? 0 }),
+      progressRatio: Math.max(0, Math.min(goal.current, safeRequired)) / safeRequired,
+    });
+    else if (goal.kind === 'bossGate') pushUnique({
+      key: `boss-gate:${goal.dungeonId}`,
+      compactText: t('home.progress.bossClearCompact', { current: formatNumber(goal.current), required: formatNumber(goal.required) }),
+      bubbleText: t('home.progress.bossClearBubble', { current: formatNumber(goal.current), required: formatNumber(goal.required) }),
+      progressRatio: Math.max(0, Math.min(goal.current, safeRequired)) / safeRequired,
+    });
+    else if (goal.kind === 'entryGate') pushUnique({
+      key: `entry-gate:${goal.dungeonId}`,
+      compactText: t('home.progress.defeatBossCompact'),
+      bubbleText: t('home.progress.bossUnlockDungeon', { dungeon: DUNGEONS.find((d) => d.id === goal.dungeonId)?.name ?? '' }),
+      progressRatio: null,
+    });
+    else if (goal.kind === 'godGate' && currentDungeon) pushUnique({
+      key: `god-gate:${goal.dungeonId}`,
+      compactText: t('home.progress.godCompact', { collected: formatNumber(goal.current), required: formatNumber(goal.required) }),
+      bubbleText: t('home.progress.godBubble', { collected: formatNumber(goal.current), required: formatNumber(goal.required), label: getGodBattleLabel(currentDungeon) }),
+      progressRatio: Math.max(0, Math.min(goal.current, safeRequired)) / safeRequired,
+    });
+    else if (goal.kind === 'godEntry' && currentDungeon) pushUnique({
+      key: `god-entry:${goal.dungeonId}`,
+      compactText: t('home.progress.defeatBossCompact'),
+      bubbleText: t('home.progress.bossUnlockGod', { label: getGodBattleLabel(currentDungeon) }),
+      progressRatio: null,
+    });
+  }
+  if (sideQuest && currentDungeon?.floors && currentDungeon.id !== 99) {
+    const isTimeQuest = TIME_BASED_SIDE_QUEST_TYPES.has(sideQuest.type);
+    const target = isTimeQuest ? Math.floor(sideQuest.target / 60) : sideQuest.target;
+    const progress = isTimeQuest ? Math.floor(sideQuest.progress / 60) : sideQuest.progress;
+    const textByType: Record<string, string> = {
+      'q.squander': t('home.sideQuest.squander', { gold: formatNumber(target) }),
+      'q.sleeping': t('home.sideQuest.sleeping', { count: formatNumber(target) }),
+      'q.exercise': t('home.sideQuest.exercise', { minutes: formatNumber(target) }),
+      'q.embezzlement': t('home.sideQuest.embezzlement', { gold: formatNumber(target) }),
+      'q.donation': t('home.sideQuest.donation', { gold: formatNumber(target) }),
+      'q.healing': t('home.sideQuest.healing', { minutes: formatNumber(target) }),
+      'q.AFK': t('home.sideQuest.afk', { minutes: formatNumber(target) }),
+      'q.treasure-super-rare': t('home.sideQuest.treasureSuperRare'),
+      'q.treasure-boss-rare': t('home.sideQuest.treasureBossRare', { count: formatNumber(target) }),
+      'q.poor-kid': t('home.sideQuest.poorKid', { count: formatNumber(target) }),
+      'q.consecutive-wins': t('home.sideQuest.consecutiveWins', { streak: formatNumber(target) }),
+      'q.losers': t('home.sideQuest.losers'),
+      'q.savings': t('home.sideQuest.savings', { gold: formatNumber(target) }),
+    };
+    const text = textByType[sideQuest.type] ?? sideQuest.type;
+    const currentByType: Record<string, string> = {
+      'q.squander': `${formatNumber(progress)}G`, 'q.embezzlement': `${formatNumber(progress)}G`,
+      'q.donation': `${formatNumber(progress)}G`, 'q.savings': `${formatNumber(progress)}G`,
+      'q.exercise': t('home.unit.minutes', { value: formatNumber(progress) }), 'q.healing': t('home.unit.minutes', { value: formatNumber(progress) }), 'q.AFK': t('home.unit.minutes', { value: formatNumber(progress) }),
+      'q.sleeping': t('home.unit.count', { value: formatNumber(progress) }), 'q.poor-kid': t('home.unit.count', { value: formatNumber(progress) }),
+      'q.treasure-boss-rare': t('home.unit.items', { value: formatNumber(progress) }), 'q.consecutive-wins': t('home.unit.streak', { value: formatNumber(progress) }),
+    };
+    const parts = [`${sideQuest.percent}%`];
+    if (currentByType[sideQuest.type]) parts.push(currentByType[sideQuest.type]);
+    if (sideQuest.hasDeadline) parts.push(sideQuest.remainingMs >= 3_600_000
+      ? t('home.remaining.hours', { count: formatNumber(Math.ceil(sideQuest.remainingMs / 3_600_000)) })
+      : t('home.remaining.minutes', { count: formatNumber(Math.ceil(sideQuest.remainingMs / 60_000)) }));
+    pushUnique({
+      key: `side-quest:${sideQuest.type}:${text}`,
+      compactText: `📜${text}${sideQuest.hasDeadline ? ` ${getRemainingClockEmoji(sideQuest.remainingMs)}` : ''}`,
+      bubbleText: `${text}（${parts.join(', ')}）`,
+      progressRatio: Math.max(0, Math.min(1, sideQuest.progress / Math.max(1, sideQuest.target))),
+    });
+  }
+  return items;
 }
 
 export function getCompactProgressItems(party: Party, cycleDurationScale: number, emulatedNowMs: number, cycleState?: PartyCycleState): ProgressItemDisplay[] {

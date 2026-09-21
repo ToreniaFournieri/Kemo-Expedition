@@ -237,13 +237,13 @@ test('coordinator authority is production-on with pre-promotion and authority pr
   assert.match(homeSource, /publishAfkAuthority\(\)[\s\S]{0,160}afkInteractionPauseStartedAtRef/);
 });
 
-test('renderer Party-status memoization is production-on and independently profileable', () => {
+test('renderer AFK publication throttling is production-on and independently profileable', () => {
   assert.match(
     liveProfileSource,
     /useAfkRendererPartyStatsMemo\(\): boolean \{\s*return !__AFK_LIVE_PROFILE_ENABLED__[\s\S]{0,160}runtime\?\.variant === 'renderer-memo'[\s\S]{0,80}runtime\?\.variant === 'candidate'[\s\S]{0,100}runtime\?\.variant === 'coordinator-authority'[\s\S]{0,100}runtime\?\.variant === 'authority-production'[\s\S]{0,100}runtime\?\.variant === 'coordinator-paced';/,
   );
-  assert.match(homeSource, /shouldOptimizeAfkRenderer = useAfkRendererPartyStatsMemo\(\)[\s\S]{0,160}computePresentationPartyStats = shouldOptimizeAfkRenderer[\s\S]{0,80}computeRendererPartyStats/);
-  assert.match(homeSource, /computePartyStatus=\{computePresentationPartyStats\}/);
+  assert.match(homeSource, /shouldOptimizeAfkRenderer = useAfkRendererPartyStatsMemo\(\)/);
+  assert.doesNotMatch(homeSource, /computePresentationPartyStats|computePartyStatus=\{/);
   assert.match(homeSource, /afkPresentationVersion=\{afkProgressPresentationVersion\}/);
   assert.match(homeSource, /throttleAfkPublications=\{shouldOptimizeAfkRenderer\}/);
 });

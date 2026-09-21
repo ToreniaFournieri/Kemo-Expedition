@@ -89,7 +89,7 @@ import { getItemCoreConceptValue,getItemDisplayName,getLocalizedItemName } from 
 import { memoryMonitor } from '../game/memoryMonitoring';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../game/instantExpedition';
 import { planAutoJewelAssignmentsForCharacter } from '../game/jewel';
-import { computePartyStats,computeRendererPartyStats } from '../game/partyComputation';
+import { computePartyStats } from '../game/partyComputation';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { getFreeActionStepCount } from '../game/partyStateDuration';
 import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
@@ -100,6 +100,7 @@ import { characterEditToChangeBuildParameters, type CharacterBuildOutcome } from
 import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIntents';
 import { parseInventoryStacks, parseJewelStacks, parseSavedEquipmentSet } from '../api/v1/itemFormat';
 import { buildPartySummaries, buildPartyView, type PartyProjection } from '../api/v1/partyView';
+import type { ExpeditionProjection } from '../api/v1/expeditionView';
 import { useApiRead } from './home/useApiRead';
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
 import { PARTY_EQUIP_CATEGORY_FAMILY, partyEquipCategoryKey } from '../api/v1/uiPreferenceCatalog';
@@ -249,9 +250,6 @@ export function HomeScreen({
   const renderStartedAt = performance.now();
   const shouldOptimizeAfkRenderer = useAfkRendererPartyStatsMemo();
   const shouldUseCoordinatorAuthority = useAfkCoordinatorAuthorityCandidate();
-  const computePresentationPartyStats = shouldOptimizeAfkRenderer
-    ? computeRendererPartyStats
-    : computePartyStats;
   const prefersDocumentScroll = false;
   const [activeTab, setActiveTab] = useState<Tab>('expedition');
   const [tabTransitionDirection, setTabTransitionDirection] = useState<'forward' | 'backward'>('forward');
@@ -1963,6 +1961,37 @@ export function HomeScreen({
     isPartyTabVisible,
   );
   const partyProjection = partyObservation?.partyInfo ?? null;
+
+  // SpecRef: 8.3 | UI_EXPEDITION | The pane reads its state, clocks, HP, goals, and controls from the projection.
+  // Step-based state changes are server-gated, so refresh at the earliest projected boundary rather than deriving a
+  // future room from the already-resolved log in the renderer.
+  const isExpeditionTabVisible = isPartyExpeditionSplitViewEnabled || activeTab === 'expedition';
+  const [expeditionProjectionRefresh, setExpeditionProjectionRefresh] = useState(0);
+  const expeditionObservation = useApiRead<{ expeditionInfo: ExpeditionProjection }>(
+    inProcessApiRef.current,
+    'read/observation/expedition',
+    {},
+    [state.parties, partyCycles, pendingAfkMs, effectiveDebugSettings.timeSpeed, expeditionProjectionRefresh],
+    isExpeditionTabVisible,
+  );
+  const expeditionProjection = expeditionObservation?.expeditionInfo ?? null;
+  useEffect(() => {
+    if (!isExpeditionTabVisible || !expeditionProjection) return;
+    const now = Date.now();
+    const nextInstants = expeditionProjection.parties.flatMap((party) => [
+      party.progress?.nextChangeAt,
+      party.exploration?.nextRevealAt,
+      party.chargeStock < 6 && party.chargeDuration > 0
+        ? new Date(now + party.chargeDuration * 1000).toISOString()
+        : null,
+    ]).filter((value): value is string => value !== null).map((value) => Date.parse(value)).filter(Number.isFinite);
+    if (nextInstants.length === 0) return;
+    const timer = window.setTimeout(
+      () => setExpeditionProjectionRefresh((value) => value + 1),
+      Math.max(25, Math.min(...nextInstants) - now + 5),
+    );
+    return () => window.clearTimeout(timer);
+  }, [expeditionProjection, isExpeditionTabVisible]);
   // SpecRef: 9.1.4.17 | UI state ownership | Retained selections come from `read/observation/setting` (uiPreferences)
   const settingObservation = useApiRead<{ settingInfo: { uiPreferences: Array<{ key: string; value: string | number | boolean }> } }>(
     inProcessApiRef.current, 'read/observation/setting', {}, [state.global.uiPreferences], isPartyTabVisible,
@@ -5080,7 +5109,7 @@ export function HomeScreen({
           onResetExpeditionStats={resetExpeditionStatistics}
           onSimulateExpedition={handleSimulateExpedition}
           isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
-          partyCycles={partyCycles}
+          expeditionProjection={expeditionProjection}
           afkRecoveryProgressPercent={afkRecoveryProgressPercent}
           afkRecoveryCompletedMs={afkRecoveryCompletedMs}
           afkRecoveryTotalMs={afkRecoveryTotalMs}
@@ -5090,7 +5119,6 @@ export function HomeScreen({
           expandedRoom={expeditionExpandedRoom}
           setExpandedRoom={setExpeditionExpandedRoom}
           isDarkModeEnabled={isDarkModeEnabled}
-          computePartyStatus={computePresentationPartyStats}
           afkPresentationVersion={afkProgressPresentationVersion}
           throttleAfkPublications={shouldOptimizeAfkRenderer}
         />

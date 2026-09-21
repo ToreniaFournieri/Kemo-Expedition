@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createFreshGameState } from '../../src/hooks/useGameState.ts';
-import { getCompactProgressItems, getSideQuestDisplay } from '../../src/components/home/homeShared.tsx';
+import { getCompactProgressItems, getProjectedCompactProgressItems, getSideQuestDisplay } from '../../src/components/home/homeShared.tsx';
 import { getBossGateKey, getEliteGateKey, getGodsBattleProgressKey } from '../../src/game/clearGateCore.ts';
+import { getExpeditionGoals, getSideQuestFacts } from '../../src/game/expeditionGoals.ts';
 import { setLanguage } from '../../src/i18n/index.ts';
 import type { Party } from '../../src/types/index.ts';
 
@@ -40,6 +41,21 @@ for (const [type, target, progress, expiresIn] of [['q.squander', 400, 100, 7_20
 }
 const results: Record<string, unknown> = {};
 for (const [name, party, cycleState] of scenarios) {
+  const projectedGoals = getExpeditionGoals(party, cycleState).map((goal) => ({
+    kind: goal.kind,
+    dungeonId: goal.kind === 'entryGate' ? goal.nextDungeonId : goal.dungeonId,
+    floor: goal.kind === 'eliteGate' ? goal.floor : null,
+    current: goal.kind === 'godGate' ? goal.collected : 'current' in goal ? goal.current : 0,
+    required: 'required' in goal ? goal.required : 1,
+  }));
+  const projectedQuest = getSideQuestFacts(party, 1, at);
+  if (party.sideQuest?.type !== 'q.unknown') {
+    assert.deepEqual(
+      getProjectedCompactProgressItems(party.selectedDungeonId, projectedGoals, projectedQuest),
+      getCompactProgressItems(party, 1, at, cycleState as never),
+      `${name}: projected facts preserve the pane's formatted goal and side-quest rows`,
+    );
+  }
   results[name] = {
     items: getCompactProgressItems(party, 1, at, cycleState as never),
     scaled: getCompactProgressItems(party, 0.05, at, cycleState as never),

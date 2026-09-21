@@ -8,37 +8,33 @@ getLocalizedExpeditionFloorConcept
 import {
 hasDefeatedDungeonBoss
 } from '../../../game/clearGate';
-import { DebugSettings,getTimeSpeedScale } from '../../../game/debugSettings';
+import { DebugSettings } from '../../../game/debugSettings';
 import { getDifficultyOffsetItemChanceTickets,getDifficultyOffsetMax,getDifficultyOffsetSuperRareChanceTickets,normalizeDifficultyOffset } from '../../../game/difficultyOffset';
 import { getItemDisplayName } from '../../../game/gameState';
 import { EXPEDITION_SIMULATION_RUN_COUNT,getExpeditionSimulationRoomCoordinate,getExpeditionSimulationXAxisLabel } from '../../../game/expeditionSimulation';
-import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../../../game/instantExpedition';
-import { computePartyStats,type ComputedPartyStatus } from '../../../game/partyComputation';
 import { t } from '../../../i18n';
-import { EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,Item,Party } from '../../../types';
+import { EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,Item } from '../../../types';
+import { expeditionStateName, type ExpeditionProjection } from '../../../api/v1/expeditionView';
 
 
 import {
 aggregateBattleLifeDrainLogs,
 battleLogActionIncludesEnemyName,
 EnemyBestiaryBubble,
-EXPLORING_PROGRESS_TOTAL_STEPS,
 FloatingBubblePortal,
 formatAutoSellSummary,
 formatBattleLogHitDisplay,
 formatDecimal,
 formatNumber,
-getAutoSellStepCount,
 getBattleLogPhaseLabel,
 getBestiaryEnemyFromLogEntry,
-getCompactProgressItems,
 getConditionLabel,
 getDisplayedExpeditionStats,
 getDungeonEntryGateState,
 getEnemyLogBackgroundImagePath,
 getExpeditionDepthOptions,
 getExpeditionOutcomeLabel,
-getExplorationVisibleRoomCount,
+getProjectedCompactProgressItems,
 getItemInventoryDetailText,
 getItemRarityById,
 getPartyCycleStateLabel,
@@ -48,8 +44,6 @@ getRewardItemBubblePosition,
 getSliderProgressStyle,
 IOS_GLASS_BUTTON_CLASS,
 IOS_GLASS_SLIDER_CLASS,
-isGodsBattleAvailable,
-PartyCycleRuntime,
 renderBattleLogNote,
 renderBattleLogTextWithInlineChibis,
 renderEnemyLogChibiBackground,
@@ -57,13 +51,9 @@ renderEnemyNameWithMutedClass,
 renderEntryReward,
 renderTextWithRaceIcons,
 renderUiIcon,
-REST_HEAL_MAX_HP_RATIO,
-REST_HEAL_MIN_HP,
 RewardItemBubble,
-STEP_BASED_STATES,
 UiIconKey
 } from '../homeShared';
-import { getEstimatedStartHp } from '../../../game/partyStateProgress';
 
 interface ExpeditionTabProps {
   state: GameState;
@@ -76,7 +66,7 @@ interface ExpeditionTabProps {
   onResetExpeditionStats: (partyIndex: number) => void;
   onSimulateExpedition: (partyIndex: number) => Promise<ExpeditionSimulationResult>;
   isExpeditionStatsDisplayEnabled: boolean;
-  partyCycles: Record<number, PartyCycleRuntime>;
+  expeditionProjection: ExpeditionProjection | null;
   afkRecoveryProgressPercent: number | null;
   afkRecoveryCompletedMs: number;
   afkRecoveryTotalMs: number;
@@ -86,7 +76,6 @@ interface ExpeditionTabProps {
   expandedRoom: { partyIndex: number; roomIndex: number; latestRoomToken: string } | null;
   setExpandedRoom: Dispatch<SetStateAction<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>>;
   isDarkModeEnabled: boolean;
-  computePartyStatus?: (party: Party) => ComputedPartyStatus;
   afkPresentationVersion: number;
   throttleAfkPublications: boolean;
 }
@@ -102,7 +91,7 @@ function ExpeditionTab({
   onResetExpeditionStats,
   onSimulateExpedition,
   isExpeditionStatsDisplayEnabled,
-  partyCycles,
+  expeditionProjection,
   afkRecoveryProgressPercent,
   afkRecoveryCompletedMs,
   afkRecoveryTotalMs,
@@ -112,7 +101,6 @@ function ExpeditionTab({
   expandedRoom,
   setExpandedRoom,
   isDarkModeEnabled,
-  computePartyStatus = computePartyStats,
 }: ExpeditionTabProps) {
   const [liveProgressNowMs, setLiveProgressNowMs] = useState(() => Date.now());
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
@@ -145,9 +133,8 @@ function ExpeditionTab({
     left: number;
     maxWidth: number;
   } | null>(null);
-  const [disclosedExpeditionLogs, setDisclosedExpeditionLogs] = useState<Array<Party['lastExpeditionLog'] | null>>(() =>
-    state.parties.map((party) => party.lastExpeditionLog)
-  );
+  const projectionReceivedAtRef = useRef(Date.now());
+  useEffect(() => { projectionReceivedAtRef.current = Date.now(); }, [expeditionProjection]);
 
   useEffect(() => {
     if (afkRecoveryProgressPercent !== null) return;
@@ -156,24 +143,10 @@ function ExpeditionTab({
   }, [afkRecoveryProgressPercent]);
 
   const progressNowMs = afkRecoveryProgressPercent === null ? liveProgressNowMs : emulatedNowMs;
+  const projectionElapsedMs = afkRecoveryProgressPercent === null
+    ? Math.max(0, liveProgressNowMs - projectionReceivedAtRef.current)
+    : 0;
 
-  useEffect(() => {
-    // SpecRef: 8.3 | UI_EXPEDITION | Update Timing
-    // The engine prepares the latest expedition log while state.explore is still
-    // animating. Keep the headline floor/outcome pinned to the last disclosed
-    // log until exploration finishes so the first row does not spoil the result.
-    setDisclosedExpeditionLogs((previousLogs) => {
-      let changed = previousLogs.length !== state.parties.length;
-      const nextLogs = state.parties.map((party, index) => {
-        const cycleState = partyCycles[index]?.state ?? 'idle';
-        if (cycleState === 'explore') return previousLogs[index] ?? null;
-        const nextLog = party.lastExpeditionLog ?? null;
-        if (previousLogs[index] !== nextLog) changed = true;
-        return nextLog;
-      });
-      return changed ? nextLogs : previousLogs;
-    });
-  }, [state.parties, partyCycles]);
   const [activeRingStatusBubble, setActiveRingStatusBubble] = useState<{
     key: string;
     text: string;
@@ -434,37 +407,30 @@ function ExpeditionTab({
           return <div key={partyIndex} className="bg-pane rounded-lg p-2"><div className="text-xs text-gray-400">PT{partyIndex + 1}: {lockedPartyText}</div></div>;
         }
 
-        const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
+        const projectedParty = expeditionProjection?.parties.find((projected) => projected.partyNumber === party.id);
+        if (!projectedParty) return null;
+        const cycleState = expeditionStateName(projectedParty.state) as Parameters<typeof getPartyCycleStateLabel>[0];
+        const selectedDungeon = DUNGEONS.find(d => d.id === projectedParty.destination);
         // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
         const isDifficultyOffsetUnlocked = hasDefeatedDungeonBoss(party, party.selectedDungeonId);
         const difficultyOffsetMax = getDifficultyOffsetMax(selectedDungeon?.expLevel ?? 88);
         const selectedDifficultyOffset = isDifficultyOffsetUnlocked
-          ? normalizeDifficultyOffset(party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId] ?? party.expeditionDifficultyOffset, difficultyOffsetMax)
+          ? normalizeDifficultyOffset(projectedParty.difficultyOffset, difficultyOffsetMax)
           : 0;
         const difficultyItemChanceTickets = getDifficultyOffsetItemChanceTickets(selectedDifficultyOffset);
         const difficultySuperRareChanceTickets = getDifficultyOffsetSuperRareChanceTickets(selectedDifficultyOffset);
         const getDifficultyOffsetBubbleText = (offset: number) => t('home.expedition.difficultyOffsetBubble', { enemyLevel: formatNumber(offset), itemChance: formatNumber(getDifficultyOffsetItemChanceTickets(offset)), superRareChance: formatNumber(getDifficultyOffsetSuperRareChanceTickets(offset)) });
-        const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
-        const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: progressNowMs, durationMs: 1000 };
-        const cycleElapsedMs = Math.max(0, progressNowMs - cycle.stateStartedAt);
-        const { partyStats } = computePartyStatus(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog ? renderExpeditionMetadata(party.lastExpeditionLog) : null;
-        const disclosedLog = cycle.state === 'explore'
-          ? disclosedExpeditionLogs[partyIndex] ?? null
-          : currentLog;
         const currentLogDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === currentLog?.dungeonId)?.expLevel;
         // SpecRef: 8.3 | UI_EXPEDITION | First row text / Update Timing
-        const headlineFloorName = (() => {
-          if (!disclosedLog) return selectedDungeon?.name ?? '-';
-          const latestEntry = disclosedLog.entries[disclosedLog.entries.length - 1];
-          if (!latestEntry?.floor) return disclosedLog.dungeonName;
-          return getLocalizedExpeditionFloorConcept(disclosedLog.dungeonId, latestEntry.floor)
-            ?? t('expedition.floor', { floor: formatNumber(latestEntry.floor) });
-        })();
-        const headlineState = disclosedLog
-          ? getExpeditionOutcomeLabel(disclosedLog.finalOutcome)
-          : getPartyCycleStateLabel(cycle.state);
+        const headlineFloorName = projectedParty.disclosedFloor === null
+          ? selectedDungeon?.name ?? '-'
+          : getLocalizedExpeditionFloorConcept(projectedParty.destination ?? 0, projectedParty.disclosedFloor)
+            ?? t('expedition.floor', { floor: formatNumber(projectedParty.disclosedFloor) });
+        const headlineState = projectedParty.disclosedOutcome
+          ? getExpeditionOutcomeLabel(projectedParty.disclosedOutcome)
+          : getPartyCycleStateLabel(cycleState);
         const conditionLabel = getConditionLabel(party.condition, true);
         const simulation = simulationByParty[partyIndex];
         // A locked Clear-Gate can turn a nominal "all" run back early, so use
@@ -472,7 +438,7 @@ function ExpeditionTab({
         // from the configured depth selector alone.
         const simulationUsesClearLabel = simulation?.result
           ? simulation.result.Return === 0
-          : party.expeditionDepthLimit === 'all';
+          : projectedParty.depthLimit === 'all';
         const simulationResultText = simulation?.status === 'complete' && simulation.result
           ? t(simulationUsesClearLabel
             ? 'party.expedition.simulationResult.clear'
@@ -513,60 +479,23 @@ function ExpeditionTab({
           })}`;
         };
 
-        const displayedEntries = (() => {
-          if (!currentLog) return [];
-          if (cycle.state !== 'explore') return currentLog.entries;
-          const visibleCount = getExplorationVisibleRoomCount(cycleElapsedMs, cycle.durationMs, currentLog.entries.length);
-          return currentLog.entries.slice(0, visibleCount);
-        })();
-
-        const displayedHp = (() => {
-          if (cycle.state !== 'explore' || !currentLog || currentLog.entries.length === 0) return party.currentHp;
-          if (displayedEntries.length === 0) return getEstimatedStartHp(currentLog.entries[0]);
-          return displayedEntries[displayedEntries.length - 1].remainingPartyHP;
-        })();
-        const hpPercent = Math.min(100, Math.round((displayedHp / Math.max(1, partyStats.hp)) * 100));
+        const displayedEntries = !currentLog ? [] : cycleState === 'explore'
+          ? currentLog.entries.slice(0, projectedParty.exploration?.revealedRoomCount ?? 0)
+          : currentLog.entries;
+        const displayedHp = projectedParty.currentHp;
+        const maximumHp = projectedParty.maximumHp;
+        const hpPercent = Math.min(100, Math.round((displayedHp / Math.max(1, maximumHp)) * 100));
         const normalizedCondition = Math.max(-400, Math.min(400, Math.floor(party.condition)));
         const conditionPercent = Math.min(100, Math.round((Math.abs(normalizedCondition) / 400) * 100));
         const isConditionPositive = normalizedCondition >= 0;
         const conditionRingStroke = isConditionPositive
           ? 'rgb(var(--color-sub) / 0.78)'
           : 'rgb(var(--color-accent) / 0.52)';
-        const sellProgressState = (() => {
-          if (cycle.state !== 'sell') return null;
-          const autoSellItems = currentLog?.autoSellItems ?? [];
-          const sellStepCount = getAutoSellStepCount(party);
-          const rawSellProgress = Math.min(1, cycleElapsedMs / Math.max(1, cycle.durationMs));
-          const completedSteps = Math.min(sellStepCount, Math.floor(rawSellProgress * sellStepCount));
-          const activeStep = Math.max(0, Math.min(sellStepCount - 1, completedSteps));
-          const activeItem = autoSellItems[Math.min(activeStep, Math.max(0, autoSellItems.length - 1))];
-          return {
-            percent: (completedSteps / sellStepCount) * 100,
-            completedSteps,
-            activeStep,
-            activeItem,
-          };
-        })();
-
         const progressPercent = afkRecoveryProgressPercent ?? (() => {
-          // SpecRef: 5.1 | PROGRESS | Step Progress behavior by state
-          if (cycle.state === 'idle') return 100;
-          if (cycle.state === 'reactivate') return 100;
-          if (cycle.state === 'explore') {
-            return (Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length) / EXPLORING_PROGRESS_TOTAL_STEPS) * 100;
-          }
-          if (cycle.state === 'rest') {
-            const totalSteps = Math.max(1, cycle.restInitialTotalSteps ?? 1);
-            const healPerStep = Math.max(REST_HEAL_MIN_HP, Math.ceil(partyStats.hp * REST_HEAL_MAX_HP_RATIO));
-            const missingHp = Math.max(0, partyStats.hp - party.currentHp);
-            const remainingSteps = missingHp <= 0 ? 0 : Math.ceil(missingHp / healPerStep);
-            const completedSteps = Math.max(0, Math.min(totalSteps, totalSteps - remainingSteps));
-            return (completedSteps / totalSteps) * 100;
-          }
-          if (sellProgressState !== null) {
-            return sellProgressState.percent;
-          }
-          return Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
+          const progress = projectedParty.progress;
+          if (!progress) return 100;
+          if (progress.kind !== 'continuous' || !projectedParty.stateStartedAt || !projectedParty.stateDurationMs) return progress.mainPercent;
+          return Math.min(100, Math.max(0, (progressNowMs - Date.parse(projectedParty.stateStartedAt)) / projectedParty.stateDurationMs * 100));
         })();
         const normalizedProgressPercent = Number.isFinite(progressPercent)
           ? Math.max(0, Math.min(100, progressPercent))
@@ -576,17 +505,11 @@ function ExpeditionTab({
           : normalizedProgressPercent;
         // SpecRef: 8.3 | UI_EXPEDITION | Sub progress bar
         const subProgressPercent = (() => {
-          if (!STEP_BASED_STATES.has(cycle.state)) return null;
-          const totalStepCount = cycle.state === 'rest'
-            ? Math.max(1, cycle.restInitialTotalSteps ?? 1)
-            : cycle.state === 'sell'
-            ? getAutoSellStepCount(party)
-            : Math.max(1, currentLog?.entries.length ?? 1);
-          const stepDurationMs = cycle.state === 'rest'
-            ? Math.max(1, cycle.durationMs)
-            : Math.max(1, cycle.durationMs / totalStepCount);
-          const elapsedWithinStepMs = cycleElapsedMs % stepDurationMs;
-          return Math.min(100, (elapsedWithinStepMs / stepDurationMs) * 100);
+          const window = projectedParty.progress?.subProgress;
+          if (!window) return null;
+          const startedAt = Date.parse(window.startedAt);
+          const endsAt = Date.parse(window.endsAt);
+          return Math.min(100, Math.max(0, (progressNowMs - startedAt) / Math.max(1, endsAt - startedAt) * 100));
         })();
         const progressLabel = (() => {
           if (afkRecoveryProgressPercent !== null) {
@@ -598,51 +521,38 @@ function ExpeditionTab({
             return `${getPartyCycleStateLabel('reactivate')} ${percentText} (${formatNumber(completedSeconds)}/${formatNumber(totalSeconds)})`;
           }
           // SpecRef: 8.3 | UI_EXPEDITION | Party state progress bar
-          return getPartyCycleStateLabel(cycle.state);
+          return getPartyCycleStateLabel(cycleState);
         })();
-        const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
         // SpecRef: 8.3 | UI_EXPEDITION | Charge
-        const instantChargeState = getInstantExpeditionChargeState(
-          party,
-          progressNowMs,
-          getTimeSpeedScale(debugSettings),
-        );
-        const instantChargeDisplay = formatInstantExpeditionChargeDisplay(instantChargeState);
-        const instantChargeLabel = instantChargeDisplay.label;
-        const isInstantExpeditionStockEmpty = instantChargeState.stock <= 0;
-        const isColosseumSelected = selectedDungeon?.id === 99;
+        const projectedChargeSeconds = Math.max(0, projectedParty.chargeDuration - Math.floor(projectionElapsedMs / 1000));
+        const instantChargeCells = Array.from({ length: 6 }, (_, index) => index < projectedParty.chargeStock ? '▰' : '▱').join('');
+        const instantChargeTimerText = projectedParty.chargeStock >= 6 ? 'MAX' : formatNumber(Math.ceil(projectedChargeSeconds / 60));
+        const instantChargeLabel = `${instantChargeCells}${instantChargeTimerText}`;
         // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
-        const isPendingGodsBattleMove = cycle.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true;
-        const isPartyHpDepletedForSortie = hpForSortieCheck <= 0 || partyStats.hp <= 0;
-        const isSortieDisabled = !isColosseumSelected && (
-          !!selectedDungeonGate?.locked
-          || (isPartyHpDepletedForSortie && isInstantExpeditionStockEmpty)
-          || (cycle.state === 'explore' && isInstantExpeditionStockEmpty)
-        );
-        const canTriggerGodsBattle = cycle.state === 'explore'
-          ? cycle.isCurrentExpeditionGodsBattle === true
-          : isGodsBattleAvailable(party, party.selectedDungeonId);
-        const isGodsBattleButtonDisabled = isSortieDisabled || isPendingGodsBattleMove;
+        const isSortieDisabled = !projectedParty.controls.sortie.available;
+        const canTriggerGodsBattle = projectedParty.controls.godsBattle.available
+          || projectedParty.controls.godsBattle.unavailableReason !== 'gods_battle_unavailable';
+        const isGodsBattleButtonDisabled = !projectedParty.controls.godsBattle.available;
         const expeditionControlGridClass = canTriggerGodsBattle
           ? 'grid grid-cols-[2.75rem_minmax(0,1fr)_auto_auto_auto] items-center gap-2 text-sm text-gray-700'
           : 'grid grid-cols-[2.75rem_minmax(0,1fr)_auto_auto] items-center gap-2 text-sm text-gray-700';
         // SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
         // SpecRef: 8.3 | UI_EXPEDITION | Party Pane Visual State
-        const isGodsBattleInProgress = (
-          cycle.state === 'move'
-          || cycle.state === 'explore'
-        ) && cycle.isCurrentExpeditionGodsBattle === true;
+        const isGodsBattleInProgress = projectedParty.controls.godsBattle.unavailableReason === 'already_moving_to_gods_battle'
+          || (cycleState === 'explore' && currentLog?.entries.some((entry) => entry.godsBattle) === true);
         // SpecRef: 8.3 | UI_EXPEDITION | Progress Visual Update
-        const compactProgressItems = getCompactProgressItems(
-          party,
-          getTimeSpeedScale(debugSettings),
-          progressNowMs,
-          cycle.state,
+        const compactProgressItems = getProjectedCompactProgressItems(
+          projectedParty.destination,
+          projectedParty.clearGates,
+          projectedParty.sideQuest && {
+            ...projectedParty.sideQuest,
+            remainingMs: Math.max(0, projectedParty.sideQuest.remainingMs - projectionElapsedMs),
+          },
         );
-        const displayedExpeditionStats = getDisplayedExpeditionStats(party, cycle.state);
-        const partyPaneExpeditionId = cycle.state === 'explore'
+        const displayedExpeditionStats = getDisplayedExpeditionStats(party, cycleState);
+        const partyPaneExpeditionId = cycleState === 'explore'
           ? currentLog?.dungeonId
-          : party.selectedDungeonId;
+          : projectedParty.destination;
         const expeditionPaneBackgroundImageById: Record<number, string> = {
           1: 'Caninian-Plains.png',
           2: 'Lupinian-Taiga.png',
@@ -719,12 +629,12 @@ function ExpeditionTab({
                     event.stopPropagation();
                     handleRingStatusBubbleToggle(
                       `${party.id}:ring-status`,
-                      `HP ${formatNumber(displayedHp)} / ${formatNumber(partyStats.hp)}\n${conditionLabel}`,
+                      `HP ${formatNumber(displayedHp)} / ${formatNumber(maximumHp)}\n${conditionLabel}`,
                       event.currentTarget,
                     );
                   }}
                   aria-label={`HP ${hpPercent}%, condition ${conditionPercent}%`}
-                  title={`HP ${formatNumber(displayedHp)} / ${formatNumber(partyStats.hp)} ${conditionLabel}`}
+                  title={`HP ${formatNumber(displayedHp)} / ${formatNumber(maximumHp)} ${conditionLabel}`}
                 >
                   <svg
                     viewBox="0 0 36 36"
@@ -777,7 +687,7 @@ function ExpeditionTab({
                 <span className="min-w-0 flex-1 space-y-0 text-left">
                   <span className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-start gap-1.5 text-sm">
                     <span className={`min-w-0 truncate ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
-                      <span className="font-bold shrink-0 mr-1">{party.name}</span>
+                      <span className="font-bold shrink-0 mr-1">{projectedParty.name}</span>
                       {headlineFloorName}
                     </span>
                     <span
@@ -785,7 +695,7 @@ function ExpeditionTab({
                       title="Instant Expedition Charge"
                       aria-label={`Instant Expedition Charge ${instantChargeLabel}`}
                     >
-                      <span>{instantChargeDisplay.cells}</span><i>{instantChargeDisplay.timerText}</i>
+                      <span>{instantChargeCells}</span><i>{instantChargeTimerText}</i>
                     </span>
                     <span className="shrink-0 flex items-center gap-1.5">
                       <span className="font-medium text-gray-700 shrink-0">{headlineState}</span>
@@ -835,7 +745,7 @@ function ExpeditionTab({
               </span>
               <span className={`mt-0.5 block relative h-5 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
                 <span
-                  className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
+                  className={`absolute inset-y-0 left-0 bg-sub/20 ${cycleState === 'explore' ? '' : 'transition-[width] duration-200'}`}
                   style={{ width: `${visualProgressPercent}%`, transition: 'width 100ms linear' }}
                 />
                 <span className={`relative z-10 flex h-full items-center justify-center px-1.5 text-center leading-tight ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
@@ -864,14 +774,14 @@ function ExpeditionTab({
                     type="button"
                     onClick={() => onToggleExpeditionDestinationMode(
                       partyIndex,
-                      party.expeditionDestinationMode === 'auto' ? 'fixed' : 'auto',
+                      projectedParty.destinationMode === 'auto' ? 'fixed' : 'auto',
                     )}
                     className="w-11 px-1 py-1 text-xs font-medium whitespace-nowrap text-center"
                   >
-                    {party.expeditionDestinationMode === 'auto' ? t('party.expedition.mode.auto') : t('party.expedition.mode.fixed')}
+                    {projectedParty.destinationMode === 'auto' ? t('party.expedition.mode.auto') : t('party.expedition.mode.fixed')}
                   </button>
                   <select
-                    value={party.selectedDungeonId}
+                    value={projectedParty.destination ?? ''}
                     onChange={(e) => {
                       clearPartySimulation(partyIndex);
                       onSelectDungeon(partyIndex, Number(e.target.value));
@@ -886,14 +796,14 @@ function ExpeditionTab({
                     })}
                   </select>
                   <select
-                    value={party.expeditionDepthLimit}
+                    value={projectedParty.depthLimit}
                     onChange={(e) => {
                       clearPartySimulation(partyIndex);
                       onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit);
                     }}
                     className="w-20 sm:w-24 border border-gray-300 rounded px-2 py-1 text-sm"
                   >
-                    {getExpeditionDepthOptions(party.selectedDungeonId).map((option) => (
+                    {getExpeditionDepthOptions(projectedParty.destination ?? 0).map((option) => (
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
@@ -1085,14 +995,14 @@ function ExpeditionTab({
             {currentLog && isLogExpanded && (
               <div className="mx-1 border-t border-gray-200 pt-3">
                 <div className="space-y-2">
-                  {cycle.state !== 'explore' && (currentLog.totalExperience > 0 || currentLog.autoSellProfit > 0) && (
+                  {cycleState !== 'explore' && (currentLog.totalExperience > 0 || currentLog.autoSellProfit > 0) && (
                     <div className="text-sm text-gray-500">
                       EXP: +{formatNumber(currentLog.totalExperience)}
                       {currentLog.autoSellProfit > 0 && <span> | {formatAutoSellSummary(currentLog.autoSellProfit, currentLog.autoSellMultiplier)}</span>}
                     </div>
                   )}
 
-                  {cycle.state !== 'explore' && currentLog.rewards.length > 0 && (
+                  {cycleState !== 'explore' && currentLog.rewards.length > 0 && (
                     <div className="text-sm">
                       <span className="text-gray-500">{t('home.battle.acquiredItemsLabel')} </span>
                       {currentLog.rewards.map((item, i) => {
@@ -1420,7 +1330,7 @@ function ExpeditionTab({
                         </div>
                       );
                     })}
-                    {cycle.state === 'explore' && displayedEntries.length === 0 && (
+                    {cycleState === 'explore' && displayedEntries.length === 0 && (
                       <div className="text-xs text-gray-500">{t('expedition.exploringLogUpdate')}</div>
                     )}
                   </div>

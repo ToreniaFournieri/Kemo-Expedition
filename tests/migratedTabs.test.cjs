@@ -95,3 +95,19 @@ test('Expedition controls are Application API commits, not reducer actions (migr
   assert.match(trigger, /commit\/expedition\/\{p\}\/godsBattle/);
   assert.doesNotMatch(trigger, /actions\.(resolveInstantExpedition|consumeInstantExpeditionStock|healPartyHp|rollPartySleepiness|finalizeDiaryLog|clearPendingProfit|cancelSideQuest)/);
 });
+
+test('Expedition pane rows use the observation projection and never receive live party cycles', () => {
+  const home = read('src/components/HomeScreen.tsx');
+  const tab = read('src/components/home/tabs/ExpeditionTab.tsx');
+  const start = home.indexOf('<ExpeditionTab');
+  const jsx = home.slice(start, home.indexOf('\n        />', start));
+  assert.match(home, /useApiRead<\{ expeditionInfo: ExpeditionProjection \}>\([\s\S]*?'read\/observation\/expedition'/);
+  assert.match(home, /party\.progress\?\.nextChangeAt/);
+  assert.match(jsx, /expeditionProjection=\{expeditionProjection\}/);
+  assert.doesNotMatch(jsx, /partyCycles=/);
+  assert.match(tab, /expeditionProjection: ExpeditionProjection \| null;/);
+  assert.doesNotMatch(tab, /partyCycles|PartyCycleRuntime|getExplorationVisibleRoomCount|getInstantExpeditionChargeState/);
+  for (const projectedFact of ['projectedParty.state', 'projectedParty.progress', 'projectedParty.currentHp', 'projectedParty.maximumHp', 'projectedParty.chargeStock', 'projectedParty.chargeDuration', 'projectedParty.disclosedFloor', 'projectedParty.disclosedOutcome', 'projectedParty.clearGates', 'projectedParty.sideQuest', 'projectedParty.controls.sortie', 'projectedParty.controls.godsBattle']) {
+    assert.match(tab, new RegExp(projectedFact.replaceAll('.', '\\.')));
+  }
+});
