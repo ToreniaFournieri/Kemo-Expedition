@@ -1,4 +1,6 @@
 import { getAttackRollProfile } from '../../game/attackProfile.ts';
+import { getUnlockedRaceAbilitiesFromBonuses } from '../../game/characterComputation.ts';
+import { computeCharacterHpContribution } from '../../game/partyComputation.ts';
 import { deriveStatusFacts, type StatusFacts } from '../../game/statusFacts.ts';
 import type { AttackType, Character, ComputedCharacterStats } from '../../types/index.ts';
 import type { AbilityFact, BonusFact, CalculatedStatus, NumericFact } from './contracts.ts';
@@ -16,9 +18,13 @@ const ATTACKS: { attackType: AttackType; api: 'melee' | 'ranged' | 'magical'; at
   { attackType: 'magical', api: 'magical', attack: 'magicalAttack', noa: 'magicalNoA', originalNoa: 'originalMagicalNoA', cBonus: 'magicalAttackCBonus' },
 ];
 
-export function buildCalculatedStatus(character: Character, stats: ComputedCharacterStats): CalculatedStatus {
+export function buildCalculatedStatus(character: Character, stats: ComputedCharacterStats, partyLevel: number): CalculatedStatus {
   const numeric = (key: keyof ComputedCharacterStats) => stats[key] as number;
   const derived = deriveStatusFacts(character, stats);
+  // SpecRef: 2.1.2 | Party | Party.d.HP contribution of one character (the Party pane's HP breakdown)
+  const hpContribution = computeCharacterHpContribution(character, partyLevel);
+  // SpecRef: 8.1.1 | Popup Notification Logic & Display | unlock ability (the character's own race unlock is active)
+  const raceUnlockActive = getUnlockedRaceAbilitiesFromBonuses(character.equipment.flatMap((item) => item?.bonuses ?? [])).has(character.raceId);
 
   const statFacts: NumericFact[] = [
     fact('b.vitality', stats.baseStats.vitality),
@@ -44,6 +50,9 @@ export function buildCalculatedStatus(character: Character, stats: ComputedChara
     fact('r.ice', stats.elementalDefenseMultipliers.ice, 'ratio'),
     fact('r.thunder', stats.elementalDefenseMultipliers.thunder, 'ratio'),
     fact('f.equipment_slots', stats.maxEquipSlots),
+    fact('f.hp_contribution.base', hpContribution.baseHpBonus),
+    fact('f.hp_contribution.item', hpContribution.itemHpBonus),
+    fact('f.race_unlock_active', raceUnlockActive ? 1 : 0),
   ];
 
   // Level-zero abilities are inert and are not part of the character's ability list.

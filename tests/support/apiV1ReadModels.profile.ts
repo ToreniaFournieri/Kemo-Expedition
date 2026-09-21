@@ -245,6 +245,8 @@ assert.equal(full.simulatedRevision, 7);
   assert.equal(view.id, party.id);
   assert.equal(view.level, party.level);
   assert.equal(view.experience, party.experience);
+  assert.equal(view.experienceToNext, party.level < 69 ? Math.ceil((await import('../../src/game/partyLevel.ts')).getXpToNextLevel(party.level)) : 0, 'experience to the next level is published');
+  assert.deepEqual(projection.unlockedMimorianEnemyIds, state.global.unlockedMimorianEnemyIds, 'the unlocked Mimorian forms are published');
   assert.equal(view.maxHp, projection.party.maxHp);
   assert.ok(view.maxHp > 0, 'the maximum party HP is projected');
   assert.equal(view.deity.name, getDeityNameFromId(projection.party.deityId) ?? 'None');
@@ -303,6 +305,8 @@ assert.deepEqual(state, before);
   const { deriveStatusFacts } = await import('../../src/game/statusFacts.ts');
   const { buildCalculatedStatus, readStatusFacts } = await import('../../src/api/v1/calculatedStatus.ts');
   const { buildCombatTotals, buildPartyStatsView } = await import('../../src/api/v1/statusView.ts');
+  const { computeCharacterHpContribution } = await import('../../src/game/partyComputation.ts');
+  const { getUnlockedRaceAbilitiesFromBonuses } = await import('../../src/game/characterComputation.ts');
 
   const { oracleStatusFacts: oracle } = await import('./statusFactsOracle.ts');
 
@@ -325,7 +329,7 @@ assert.deepEqual(state, before);
         assert.deepEqual([derived.effectiveAccuracyBonus, derived.accuracyDecay, derived.penetration], [expected.effective, expected.decay, expected.penetration], 'accuracy and penetration');
 
         // Published and read back without loss, and never a non-finite number.
-        const status = buildCalculatedStatus(character, stats);
+        const status = buildCalculatedStatus(character, stats, party.level);
         assert.deepEqual(readStatusFacts(status), derived, 'lossless round trip');
         for (const entry of status.stats) assert.equal(Number.isFinite(entry.value), true, entry.key);
 
@@ -338,6 +342,10 @@ assert.deepEqual(state, before);
         assert.deepEqual([view.elementalOffense, view.elementalOffenseValue], [stats.elementalOffense, stats.elementalOffenseValue]);
         assert.deepEqual(view.elementalDefenseMultipliers, stats.elementalDefenseMultipliers);
         assert.deepEqual(view.abilities, stats.abilities, 'abilities keep their order, level, localized name, and description');
+        // The HP breakdown and the race unlock state are published, not recomputed by the tab.
+        const hp = computeCharacterHpContribution(character, party.level);
+        assert.deepEqual([view.hpBaseIncrease, view.hpItemIncrease], [hp.baseHpBonus, hp.itemHpBonus], 'HP contribution');
+        assert.equal(view.raceUnlockActive, getUnlockedRaceAbilitiesFromBonuses(character.equipment.flatMap((item) => item?.bonuses ?? [])).has(character.raceId), 'race unlock state');
 
         // The notification totals come from the projection and agree with the old rounding rules.
         const totals = buildCombatTotals(status, 12345.9);

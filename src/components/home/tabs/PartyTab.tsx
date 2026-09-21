@@ -15,7 +15,7 @@ import type { CharacterBuildOutcome, CharacterBuildRequest } from '../../../api/
 import type { CalculatedStatus } from '../../../api/v1/contracts';
 import { formatAttackSpeedHelp } from '../../../game/attackProfile';
 import { gameplayRandom } from '../../../game/gameplayRandom';
-import { computeCharacterStats,getUnlockedRaceAbilitiesFromBonuses } from '../../../game/characterComputation';
+import { computeCharacterStats } from '../../../game/characterComputation';
 import { DEITY_OPTIONS,getDeityDisplayName,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity } from '../../../game/deity';
 import { replaceCharacterEquipment } from '../../../game/equipment';
 import { evaluateEquipmentSet,MAX_SAVED_EQUIPMENT_SETS,type EquipmentSetLoadMode } from '../../../game/equipmentSets';
@@ -23,8 +23,6 @@ import { replaceFlatItemStat } from '../../../game/equipmentDisplay';
 import { getItemDisplayName } from '../../../game/gameState';
 import { getJewelDisplayName,getJewelOwnedCount,JEWELS_BY_ITEM_CATEGORY } from '../../../game/jewel';
 import { resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../../game/magic';
-import { computeCharacterHpContribution } from '../../../game/partyComputation';
-import { getXpToNextLevel } from '../../../game/partyLevel';
 import { t } from '../../../i18n';
 import type { PartySummary, PartyView } from '../../../api/v1/partyView';
 import { AbilityId,Bonus,BonusType,Character,ElementalOffense,EnemyDef,InventoryRecord,Item,JewelKey,MAX_LEVEL,Race,RaceId,SavedEquipmentSet,getVariantKey,type EnemyAbility } from '../../../types';
@@ -165,20 +163,18 @@ export default function PartyTab({
   const [draggingCharacterIndex, setDraggingCharacterIndex] = useState<number | null>(null);
   const [isPartyPaneBackgroundAvailable, setIsPartyPaneBackgroundAvailable] = useState(false);
   const selectedChar = party.characters[selectedCharacter];
-  const equippedItems = selectedChar.equipment.filter((item): item is Item => item != null);
-  const unlockedRaceAbilities = getUnlockedRaceAbilitiesFromBonuses(equippedItems.flatMap((item) => item.bonuses ?? []));
+  const stats = buildPartyStatsView(characterStatus[selectedCharacter]);
 
   // Calculate current stats for notification: HP is party-wide, others are per selected character.
   // SpecRef: 8.1.1 | Popup Notification Logic & Display | Status Changes
   // The totals come only from the projected calculated status, so consecutive notifications compare like with like.
   const selectedRace = RACES.find((race) => race.id === selectedChar.raceId);
-  const isSelectedRaceUnlockConditionActive = unlockedRaceAbilities.has(selectedChar.raceId);
   const selectedStatusFacts = readStatusFacts(characterStatus[selectedCharacter]);
   const combatTotals = {
     ...buildCombatTotals(characterStatus[selectedCharacter], partyStats.hp),
     unlockRaceName: selectedRace?.name ?? '',
     unlockAbilityName: selectedRace?.unlockAbility?.name ?? '',
-    unlockConditionActive: isSelectedRaceUnlockConditionActive,
+    unlockConditionActive: stats.raceUnlockActive,
   };
   const selectedAbilityLevelSignature = Object.entries(combatTotals.abilityLevels)
     .sort(([a], [b]) => a.localeCompare(b))
@@ -564,7 +560,6 @@ export default function PartyTab({
   }, [party.deity.name, editingDeity]);
 
   const char = selectedChar;
-  const stats = buildPartyStatsView(characterStatus[selectedCharacter]);
   const hpDisplayMultiplier = ((stats.baseStats.vitality + stats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(char);
   const race = RACES.find(r => r.id === char.raceId) ?? RACES[0];
   const mainClass = CLASSES.find(c => c.id === char.mainClassId) ?? CLASSES[0];
@@ -782,9 +777,8 @@ export default function PartyTab({
     { label: t('common.stat.mind'), value: stats.baseStats.mind, note: t('home.party.magicalResistance'), ratio: getBaseDefenseScale(stats.baseStats.mind) },
   ];
 
-  const hpContribution = computeCharacterHpContribution(char, party.level);
-  const hpBaseIncrease = hpContribution.baseHpBonus;
-  const hpItemIncrease = hpContribution.itemHpBonus;
+  const hpBaseIncrease = stats.hpBaseIncrease;
+  const hpItemIncrease = stats.hpItemIncrease;
 
   const availableCategoryGroups = getAvailableCategoryGroups(char);
   const availableCategories = availableCategoryGroups.flatMap(group => group.categories);
@@ -806,7 +800,7 @@ export default function PartyTab({
     setInlineDetailHelpPosition(null);
   }, [selectedCharacter, editingCharacter]);
 
-  const xpToNextLevel = party.level < MAX_LEVEL ? Math.ceil(getXpToNextLevel(party.level)) : 0;
+  const xpToNextLevel = party.experienceToNext;
   const xpProgressPercent = xpToNextLevel > 0
     ? Math.min(100, Math.round((party.experience / xpToNextLevel) * 100))
     : 100;

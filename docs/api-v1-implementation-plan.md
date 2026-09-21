@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 59. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 60. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -66,7 +66,7 @@ Next, in order:
    - Open question for the spec: the defense preview when hovering or tapping an item recomputes one hypothetical equipment change locally. If it should be API-owned, `equip` would need a `simulation` parameter like `changeBuild`.
    - 4d. (Done, Build 49) The equipment slot list renders from the party projection's equipment entries; mode and Undo/Redo come from the `equipment` projection.
    - 4e. (Done, Build 59) The inventory category is a per-character `uiPreferences` entry (`party.equipCategory.<characterId>`), stored per save and published with the closed catalog in `settingInfo`. `selectedPartyIndex` stays in the shared game state (decided). The selected character and the rarity and Super Rare filters remain local view context; add catalog entries if 8.2 requires retaining them.
-   - 4f. Remove the `Party`, `Character`, `ComputedCharacterStats`, and inventory props, and add the mechanical check described in Stage 9.
+   - 4f. (Done, Build 60) The tab receives only projected views (`PartyView`, `PartySummary`, projected inventory and Jewel counts, `CalculatedStatus`) and no raw game state. `tests/migratedTabs.test.cjs` is the mechanical check (reviewed imports, no reducer or `GameState`, no `state.` props, only `addStatNotifications` and `selectParty` actions). Reviewed exceptions still to remove, each tracked in that test: the random default name on a race change (Spec 8.2.3 draft; could become a `validOptions.defaultNames` fact), the item defense preview (`computeCharacterStats` and `replaceCharacterEquipment`; needs an `equip` `simulation` parameter, an open spec question), and per-entry saved-set availability (`evaluateEquipmentSet`; publish it on the equipment-set read). Apply the same check to each tab as it migrates.
    - Open design question: the projections must carry enough display facts (per-entry availability of a saved set, bonus and ability facts). Prefer additive members under 9.1.4.1 and update Spec 9.1.3 to match.
 
 Gate: no `actions.*` reducer call remains in `PartyTab.tsx` for these controls; the Party tab renders only from its projections.

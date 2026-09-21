@@ -2567,6 +2567,7 @@
               "required": [
                 "effectiveSelection",
                 "party",
+                "unlockedMimorianEnemyIds",
                 "parties"
               ],
               "properties": {
@@ -2604,6 +2605,7 @@
                     "name",
                     "level",
                     "experience",
+                    "experienceToNext",
                     "maxHp",
                     "deityId",
                     "deityRank",
@@ -2627,6 +2629,10 @@
                       "type": "integer"
                     },
                     "experience": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "experienceToNext": {
                       "minimum": 0,
                       "type": "integer"
                     },
@@ -2963,6 +2969,13 @@
                     }
                   }
                 },
+                "unlockedMimorianEnemyIds": {
+                  "type": "array",
+                  "items": {
+                    "minimum": 1,
+                    "type": "integer"
+                  }
+                },
                 "parties": {
                   "type": "array",
                   "items": {
@@ -3075,6 +3088,7 @@
                   "required": [
                     "effectiveSelection",
                     "party",
+                    "unlockedMimorianEnemyIds",
                     "parties"
                   ],
                   "properties": {
@@ -3112,6 +3126,7 @@
                         "name",
                         "level",
                         "experience",
+                        "experienceToNext",
                         "maxHp",
                         "deityId",
                         "deityRank",
@@ -3135,6 +3150,10 @@
                           "type": "integer"
                         },
                         "experience": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "experienceToNext": {
                           "minimum": 0,
                           "type": "integer"
                         },
@@ -3471,6 +3490,13 @@
                         }
                       }
                     },
+                    "unlockedMimorianEnemyIds": {
+                      "type": "array",
+                      "items": {
+                        "minimum": 1,
+                        "type": "integer"
+                      }
+                    },
                     "parties": {
                       "type": "array",
                       "items": {
@@ -3578,6 +3604,7 @@
                 "name": "xxxxxxx",
                 "level": 1,
                 "experience": 0,
+                "experienceToNext": 0,
                 "maxHp": 0,
                 "deityId": "xxxxxxx",
                 "deityRank": 0,
@@ -3639,6 +3666,9 @@
                   }
                 ]
               },
+              "unlockedMimorianEnemyIds": [
+                1
+              ],
               "parties": [
                 {
                   "partyNumber": 1,

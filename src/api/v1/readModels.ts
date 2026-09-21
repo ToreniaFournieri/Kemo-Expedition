@@ -22,7 +22,7 @@ import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentH
 import { describeUiPreferenceCatalog, listUiPreferences } from './uiPreferenceCatalog.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { buildShopLineup, getShopRefreshPrice } from '../../game/shop.ts';
-import type { GameState, Item, JewelKey, Party } from '../../types/index.ts';
+import { MAX_LEVEL, type GameState, type Item, type JewelKey, type Party } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
 
@@ -126,6 +126,7 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>) 
       name: party.name,
       level: party.level,
       experience: party.experience,
+      experienceToNext: party.level < MAX_LEVEL ? Math.ceil(getXpToNextLevel(party.level)) : 0,
       maxHp: Math.floor(partyStatus.partyStats.hp),
       deityId: getDeityId(party.deity.name),
       deityRank: getDeityRank(state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0),
@@ -142,7 +143,7 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>) 
         predispositionId: character.predispositionId,
         isUnique: character.isUnique === true,
         mimorianEnemyId: character.mimorianEnemyId ?? null,
-        calculatedStatus: buildCalculatedStatus(character, computed[index]),
+        calculatedStatus: buildCalculatedStatus(character, computed[index], party.level),
         equipment: character.equipment.map(equipmentEntry),
         autoEquipmentMode: character.autoEquipmentMode,
       })),
@@ -268,7 +269,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       deityId: getDeityId(party.deity.name),
       characters: party.characters.map((character) => ({ characterId: character.id, name: character.name, raceId: character.raceId, mimorianEnemyId: character.mimorianEnemyId ?? null })),
     }));
-    return { partyInfo: { ...partyProjection(state, parameters), parties } };
+    return { partyInfo: { ...partyProjection(state, parameters), parties, unlockedMimorianEnemyIds: [...state.global.unlockedMimorianEnemyIds] } };
   }
   if (operationId === 'read/observation/base') return { baseInfo: baseProjection(state) };
   if (operationId === 'read/observation/diary') return { diaryInfo: diaryProjection(state) };
@@ -316,7 +317,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
         .filter((enemyId) => ENEMIES.some((enemy) => enemy.id === enemyId) && !assignedMimorianForms.has(enemyId))
         .map((enemyId) => `mimorian/female/${enemyId}`);
       return {
-        calculatedStatus: buildCalculatedStatus(party.characters[characterIndex], computePartyStats(party).characterStats[characterIndex]),
+        calculatedStatus: buildCalculatedStatus(party.characters[characterIndex], computePartyStats(party).characterStats[characterIndex], party.level),
         current: { unique: character.isUnique === true, name: character.name, racesAndGender, mainClassId: character.mainClassId, subClassId: character.subClassId, lineage: character.lineageId, predisposition: character.predispositionId },
         editableFields: { name: character.isUnique !== true, unique: character.isUnique === true },
         validOptions: {

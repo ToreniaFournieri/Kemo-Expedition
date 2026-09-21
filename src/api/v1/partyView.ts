@@ -10,12 +10,14 @@ import { parseEquipmentEntry } from './itemFormat';
 export interface PartyProjection {
   effectiveSelection: { partyNumber: number; characterId: number | null };
   party: {
-    partyNumber: number; name: string; level: number; experience: number; maxHp: number; deityId: string; deityRank: number; condition: number; order: number[];
+    partyNumber: number; name: string; level: number; experience: number; experienceToNext: number; maxHp: number; deityId: string; deityRank: number; condition: number; order: number[];
     characters: {
       characterId: number; name: string; raceId: string; gender: string; mainClassId: string; subClassId: string; lineageId: string | null; predispositionId: string | null;
       isUnique: boolean; mimorianEnemyId: number | null; equipment: string[]; autoEquipmentMode: number; calculatedStatus: CalculatedStatus;
     }[];
   };
+  /** The Mimorian enemy forms unlocked at the Altar (the character editor's form choices). */
+  unlockedMimorianEnemyIds: number[];
   parties: { partyNumber: number; deityId: string; characters: { characterId: number; name: string; raceId: string; mimorianEnemyId: number | null }[] }[];
 }
 
@@ -24,6 +26,8 @@ export interface PartyView {
   name: string;
   level: number;
   experience: number;
+  /** Experience needed for the next level; 0 at the maximum level. */
+  experienceToNext: number;
   maxHp: number;
   deity: { name: string };
   characters: Character[];
@@ -45,6 +49,7 @@ export function buildPartyView(projection: PartyProjection): PartyView {
     name: party.name,
     level: party.level,
     experience: party.experience,
+    experienceToNext: party.experienceToNext,
     maxHp: party.maxHp,
     deity: { name: getDeityNameFromId(party.deityId) ?? 'None' },
     characterStatus: party.characters.map((character) => character.calculatedStatus),

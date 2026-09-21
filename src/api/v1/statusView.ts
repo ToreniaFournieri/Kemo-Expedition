@@ -75,6 +75,10 @@ export interface PartyStatsView {
   meleeNoA: number; rangedNoA: number; magicalNoA: number;
   elementalOffense: ElementalOffense; elementalOffenseValue: number;
   elementalDefenseMultipliers: { fire: number; ice: number; thunder: number };
+  /** The character's HP contribution to the party, split as the Party pane's breakdown shows it. */
+  hpBaseIncrease: number; hpItemIncrease: number;
+  /** Whether the character's own race unlock ability is currently unlocked by equipment. */
+  raceUnlockActive: boolean;
   abilities: Ability[];
 }
 
@@ -96,6 +100,8 @@ export function buildPartyStatsView(status: CalculatedStatus): PartyStatsView {
     meleeNoA: attack('melee', 'NoA'), rangedNoA: attack('ranged', 'NoA'), magicalNoA: attack('magical', 'NoA'),
     elementalOffense: element, elementalOffenseValue: stat(`e.${element}`),
     elementalDefenseMultipliers: { fire: stat('r.fire'), ice: stat('r.ice'), thunder: stat('r.thunder') },
+    hpBaseIncrease: stat('f.hp_contribution.base'), hpItemIncrease: stat('f.hp_contribution.item'),
+    raceUnlockActive: stat('f.race_unlock_active') === 1,
     abilities: status.abilities.map((ability) => {
       const id = ability.abilityId.replace(/^a\./, '').replace(/-/g, '_') as AbilityId;
       return { id, level: ability.level, name: getAbilityName(id, ability.level), description: getAbilityDescription(id, ability.level) };

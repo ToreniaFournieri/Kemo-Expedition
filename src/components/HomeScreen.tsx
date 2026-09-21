@@ -1912,7 +1912,7 @@ export function HomeScreen({
   const partiesSignature = state.parties.map((party) => `${party.id}:${party.deity.name}:${party.characters.map((character) => `${character.id}/${character.name}/${character.raceId}/${character.mimorianEnemyId ?? ''}`).join(',')}`).join('|');
   const partyObservation = useApiRead<{ partyInfo: PartyProjection }>(
     inProcessApiRef.current, 'read/observation/party', { parameters: { partyNumber: currentParty.id } },
-    [currentParty.id, currentParty.characters, currentParty.level, currentParty.experience, currentParty.deity.name, partiesSignature],
+    [currentParty.id, currentParty.characters, currentParty.level, currentParty.experience, currentParty.deity.name, partiesSignature, state.global.unlockedMimorianEnemyIds],
     isPartyTabVisible,
   );
   const partyProjection = partyObservation?.partyInfo ?? null;
@@ -5001,7 +5001,7 @@ export function HomeScreen({
           jewels={ownedJewelsView}
           deityDonations={deityView.donations}
           unlockedDeities={deityView.unlocked}
-          unlockedMimorianEnemyIds={state.global.unlockedMimorianEnemyIds}
+          unlockedMimorianEnemyIds={partyProjection?.unlockedMimorianEnemyIds ?? []}
           isDarkModeEnabled={isDarkModeEnabled}
         />
       );
