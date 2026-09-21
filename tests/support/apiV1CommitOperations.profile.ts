@@ -181,26 +181,79 @@ const seed: GameState = createFreshGameState('ja', Date.parse('2026-01-01T00:00:
   assert.ok(again.includes('illegal_action'), 'a sold variant cannot be sold again');
 }
 
-// 4. Purchase results report the exact drawn variants and the net currency delta; the request is atomic.
+// 4. Purchase results report the exact drawn variants and the net currency delta; the request is atomic. A slot's ID is its
+// 1-based position in the lineup, and the transaction's own clock (not the wall clock) decides which lineup that is.
 {
+  const { getShopFacts, shopLineupInputOf } = await import('../../src/game/shopFacts');
   const richState: GameState = { ...seed, global: { ...seed.global, gold: 1_000_000 } };
   const simulatedAt = Date.parse('2026-01-01T00:00:00.000Z');
-  const lineup = buildShopLineup({ parties: richState.parties, gold: richState.global.gold, shopPurchases: richState.global.shopPurchases, shopRefreshCounts: richState.global.shopRefreshCounts, shopIntimacy: richState.global.shopIntimacy, shopIntimacyLastDecayAt: richState.global.shopIntimacyLastDecayAt }, new Date(simulatedAt));
-  const entry = lineup.entries.find((candidate) => !candidate.soldOut)!;
-  const bought = applyApiV1Commit('commit/base/purchaseShopItems', richState, { items: [{ shopItemId: entry.stockEntryId }] }, baseContext({ simulatedAt }));
+  const facts = getShopFacts(shopLineupInputOf(richState), new Date(simulatedAt));
+  assert.deepEqual(facts.entries.map((entry) => entry.shopItemId), [1, 2, 3, 4, 5], 'a slot is its 1-based position');
+  const entry = facts.entries[0];
+  const bought = applyApiV1Commit('commit/base/purchaseShopItems', richState, { items: [{ shopItemId: entry.shopItemId }] }, baseContext({ simulatedAt }));
   const data = bought.data as { items: { item: string; quantity: number }[]; goldDelta: number; pranaDelta: number };
   assert.equal(data.items.length, 1);
   assert.equal(data.items[0].quantity, 1);
   assert.match(data.items[0].item, new RegExp(`^0/${entry.itemId}/[0-6]/[0-9]+$`));
   assert.equal(data.goldDelta, bought.state.global.gold - richState.global.gold);
   assert.ok(data.goldDelta <= 0 && data.goldDelta >= -entry.price, 'the price is charged, minus any auto-sell proceeds');
+  // The slot is sold out afterwards, at the same transaction time.
+  const after = getShopFacts(shopLineupInputOf(bought.state), new Date(simulatedAt));
+  assert.equal(after.entries.find((candidate) => candidate.stockEntryId === entry.stockEntryId)?.soldOut, true);
 
-  let duplicate = '';
-  try { applyApiV1Commit('commit/base/purchaseShopItems', richState, { items: [{ shopItemId: entry.stockEntryId }, { shopItemId: entry.stockEntryId }] }, baseContext({ simulatedAt })); } catch (error) { duplicate = String(error); }
-  assert.ok(duplicate.includes('invalid_items'), duplicate);
-  let poor = '';
-  try { applyApiV1Commit('commit/base/purchaseShopItems', { ...richState, global: { ...richState.global, gold: 0 } }, { items: [{ shopItemId: entry.stockEntryId }] }, baseContext({ simulatedAt })); } catch (error) { poor = String(error); }
-  assert.ok(poor.includes('illegal_action'), poor);
+  const attempt = (state: GameState, items: unknown) => { try { applyApiV1Commit('commit/base/purchaseShopItems', state, { items }, baseContext({ simulatedAt })); return ''; } catch (error) { return String(error); } };
+  assert.ok(attempt(richState, [{ shopItemId: 1 }, { shopItemId: 1 }]).includes('invalid_request'), 'a duplicate slot is invalid');
+  assert.ok(attempt(richState, [{ shopItemId: 0 }]).includes('invalid_request'));
+  assert.ok(attempt(richState, []).includes('invalid_request'));
+  assert.ok(attempt(richState, [{ shopItemId: 1 }, { shopItemId: 99 }]).includes('not_found'), 'an unknown slot rejects the whole request');
+  assert.ok(attempt({ ...richState, global: { ...richState.global, gold: 0 } }, [{ shopItemId: 1 }]).includes('illegal_action:insufficient_gold'));
+  assert.ok(attempt(bought.state, [{ shopItemId: 1 }]).includes('illegal_action:sold_out'), 'a sold slot cannot be bought again');
+  // Atomic: the total must be affordable, and nothing is bought when it is not.
+  const twoPrices = facts.entries[0].price + facts.entries[1].price;
+  const short = { ...richState, global: { ...richState.global, gold: twoPrices - 1 } } as GameState;
+  assert.ok(attempt(short, [{ shopItemId: 1 }, { shopItemId: 2 }]).includes('insufficient_gold'));
+  const two = applyApiV1Commit('commit/base/purchaseShopItems', { ...richState, global: { ...richState.global, gold: twoPrices } } as GameState, { items: [{ shopItemId: 1 }, { shopItemId: 2 }] }, baseContext({ simulatedAt }));
+  assert.equal((two.data as { items: { quantity: number }[] }).items.reduce((sum, row) => sum + row.quantity, 0), 2);
+}
+
+// 4b. The paid refresh charges the displayed price at the transaction time and replaces the lineup; an unaffordable refresh
+// is refused instead of being silently ignored.
+{
+  const { getShopFacts, shopLineupInputOf } = await import('../../src/game/shopFacts');
+  const at = Date.parse('2026-01-01T03:00:00.000Z');
+  const rich: GameState = { ...seed, global: { ...seed.global, gold: 10_000 } };
+  const before = getShopFacts(shopLineupInputOf(rich), new Date(at));
+  const refreshed = applyApiV1Commit('commit/base/paidShopRefresh', rich, {}, baseContext({ simulatedAt: at }));
+  const data = refreshed.data as { lineupId: string; goldDelta: number; paidRefreshPrice: number };
+  assert.equal(data.goldDelta, -before.paidRefreshPrice, 'the displayed price is charged');
+  assert.notEqual(data.lineupId, before.lineupId, 'the lineup is replaced');
+  assert.equal(data.paidRefreshPrice, before.paidRefreshPrice * 2, 'the next refresh in the same period costs double');
+  assert.equal(refreshed.state.global.shopIntimacy, Math.min(99, before.intimacy + 2), 'a paid refresh raises intimacy by 2');
+  const poor = { ...seed, global: { ...seed.global, gold: before.paidRefreshPrice - 1 } } as GameState;
+  assert.throws(() => applyApiV1Commit('commit/base/paidShopRefresh', poor, {}, baseContext({ simulatedAt: at })), /illegal_action:insufficient_gold/);
+  // Two refreshes in a row, at one transaction time, go through the same period's count.
+  const twice = applyApiV1Commit('commit/base/paidShopRefresh', refreshed.state, {}, baseContext({ simulatedAt: at }));
+  assert.equal((twice.data as { goldDelta: number }).goldDelta, -before.paidRefreshPrice * 2);
+}
+
+// 4c. The shop reads describe the same shop: shared facts, spec compact strings, and a refresh price by refresh count.
+{
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
+  const at = Date.parse('2026-01-01T03:00:00.000Z');
+  const read = (operation: string, state: GameState = seed) => buildApiV1ReadData(operation, state, {}, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, revision: 1, inGameTime: at } as never) as Promise<any>;
+  const info = await read('read/base/shopInfo');
+  assert.equal(info.paidRefreshPrice, 200, 'the first refresh of the period costs 200G, not a price derived from intimacy');
+  assert.equal(info.dialogue.key, 'home.shop.dialogue.default');
+  assert.ok(info.paidRefreshCountdown >= 1 && info.paidRefreshCountdown <= 8 * 3600);
+  const list = await read('read/base/shopItemsList');
+  assert.equal(list.current.items.length, 5);
+  assert.match(list.current.items[0], /^1\/\d+\/\d+\/(true|false)$/);
+  assert.deepEqual(list.validOptions.items, list.current.entries.filter((entry: { available: boolean }) => entry.available).map((entry: { shopItemId: number }) => entry.shopItemId));
+  const base = await read('read/observation/base');
+  assert.deepEqual(base.baseInfo.shop.entries, list.current.entries);
+  assert.equal(base.baseInfo.shop.paidRefreshPrice, info.paidRefreshPrice);
+  const loved = await read('read/base/shopInfo', { ...seed, global: { ...seed.global, shopIntimacy: 90, shopIntimacyLastDecayAt: at } } as GameState);
+  assert.equal(loved.dialogue.key, 'home.shop.dialogue.intimacy80');
 }
 
 // 9. uiPreferences: a closed, typed catalog stored in the save; unknown or invalid changes reject the whole update.

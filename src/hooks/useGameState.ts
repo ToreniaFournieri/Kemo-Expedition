@@ -1914,9 +1914,9 @@ export type GameAction =
   | { type: 'GRANT_FEEDBACK_REWARD' }
   | { type: 'UNLOCK_MIMORIAN_ENEMY'; enemyId: number }
   // `onPurchased` lets a synchronous caller (the Application API) learn the hidden enhancement/Super Rare result.
-  | { type: 'BUY_SHOP_ITEM'; itemId: number; stockItemKey: string; partyIndex?: number; onPurchased?: (purchased: Item) => void }
+  | { type: 'BUY_SHOP_ITEM'; itemId: number; stockItemKey: string; partyIndex?: number; now?: number; onPurchased?: (purchased: Item) => void }
   | { type: 'BUY_DEBUG_STORE_ITEM'; itemId: number }
-  | { type: 'REFRESH_SHOP_LINEUP' }
+  | { type: 'REFRESH_SHOP_LINEUP'; now?: number }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
@@ -3556,7 +3556,7 @@ function reduceGameState(
     case 'BUY_SHOP_ITEM': {
       // SpecRef: 8.4.1 | Shop (お店) | Lineup
       // SpecRef: 8.4.1 | Shop (お店) | Mystery enhancement (same as item drop logic)
-      const now = new Date(Date.now());
+      const now = new Date(action.now ?? Date.now());
       const globalState = applyShopIntimacyDecay(state.global, now);
       const baseItem = getItemById(action.itemId);
       const shopPrice = getShopItemPrice(action.itemId);
@@ -3649,7 +3649,7 @@ function reduceGameState(
     }
 
     case 'REFRESH_SHOP_LINEUP': {
-      const now = new Date();
+      const now = new Date(action.now ?? Date.now());
       const globalState = applyShopIntimacyDecay(state.global, now);
       const hourKey = getShopHourKey(now);
       const currentRefreshCount = globalState.shopRefreshCounts[hourKey] ?? 0;

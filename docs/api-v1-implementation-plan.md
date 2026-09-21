@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 79. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 81. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -96,7 +96,8 @@ Gate passed: no `actions.*` reducer call remains in `PartyTab.tsx` for these con
 ## Stage 6 — Base
 
 - Item search: filtering, ordering, cursors, and pagination.
-- Shop lineup and exact purchase results; atomic sell / purchase / unlock validation; paid refresh (charge and lineup replacement idempotent).
+- **B1 (done, Build 81): Shop.** Shared shop facts (`src/game/shopFacts.ts`); `shopInfo`, `shopItemsList`, and the `base` projection publish the real dialogue tier, countdown, effective intimacy, and refresh price (the projection had used intimacy as the refresh count); slots are integer positions; purchase and paid refresh validate atomically at the transaction's clock (the reducers gained an explicit `now`, so an API account no longer buys from the wall-clock lineup).
+- Still to do: atomic sell / unlock validation review, Altar and enemy forms (B2), Inventory and Vault reads (B3), then migrate the panes (B4). The Vault (debug store) has no API operation (Spec 8.4.3: no API), so it stays a reducer action.
 - Altar and enemy-form facts.
 - Stable variant-key highlighting with `markItemsAsSeen`.
 - Then migrate the Base panes (Shop, Inventory, Vault, Altar).

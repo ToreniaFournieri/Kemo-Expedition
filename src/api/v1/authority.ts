@@ -80,6 +80,11 @@ export interface ApiV1CommitAuthorityDependencies {
   chargeDurationScale?: number;
   /** The runtime's Colosseum Debug setting (the ordinary player only). */
   colosseumEnabled?: () => boolean;
+  /**
+   * The wall clock, for the ordinary player only: the player's in-game time is the real time of each request, exactly as the UI
+   * uses it. An API account has its own in-game clock, which only its own progression advances.
+   */
+  playerClock?: () => number;
   /** Live party-cycle access for the ordinary player's runtime; omitted for an API account, which has no live cycle. */
   partyCycle?: ApiV1CommitContext['partyCycle'];
   restDurationMs?: ApiV1CommitContext['restDurationMs'];
@@ -373,7 +378,8 @@ export class SerializedApplicationApiAuthority {
     }
     this.admitted.set(input.idempotencyKey, canonical);
     const execution = this.runExclusive(async () => {
-      const result = await executeApiV1CommitTransaction({ ...input, ...this.snapshot }, dependencies);
+      const simulatedAt = dependencies.playerClock ? Math.max(this.snapshot.simulatedAt, dependencies.playerClock()) : this.snapshot.simulatedAt;
+      const result = await executeApiV1CommitTransaction({ ...input, ...this.snapshot, simulatedAt }, dependencies);
       if (result.ok) this.snapshot = { state: result.state, control: result.control, simulatedAt: result.simulatedAt };
       else if (result.durableControl) this.snapshot = { ...this.snapshot, control: result.durableControl };
       return result;

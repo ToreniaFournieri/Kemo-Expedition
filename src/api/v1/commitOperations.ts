@@ -10,7 +10,7 @@ import { getExpeditionChangeRejection } from '../../game/expeditionSettings';
 import { getInstantExpeditionChargeState } from '../../game/instantExpedition';
 import { computePartyStats } from '../../game/partyComputation';
 import { hydrateGameState, serializeGameState } from '../../game/saveCodec';
-import { buildShopLineup } from '../../game/shop';
+import { getShopFacts, shopLineupInputOf } from '../../game/shopFacts';
 import { describeEquipmentHistory } from './equipmentHistoryFacts';
 import { apiExpeditionOutcomeOrNull } from './expeditionOutcome';
 import { listUiPreferences, validateUiPreference, type UiPreferenceValue } from './uiPreferenceCatalog';
@@ -382,17 +382,25 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     for (const stack of stacks) reduce({ type: 'SELL_STACK', variantKey: stack.variantKey });
     data = { items: stacks.map((stack) => ({ item: stack.format, quantity: stack.quantity })), goldDelta: next.global.gold - before.gold, pranaDelta: next.global.prana - before.prana };
   } else if (operation === 'commit/base/purchaseShopItems') {
-    const items = parameters.items;
-    const requested = (Array.isArray(items) ? items : []).map((item) => String(item && typeof item === 'object' ? (item as Record<string, unknown>).shopItemId : ''));
-    if (requested.length === 0 || new Set(requested).size !== requested.length) throw new Error('invalid_items');
-    const lineup = buildShopLineup({ parties: next.parties, gold: next.global.gold, shopPurchases: next.global.shopPurchases, shopRefreshCounts: next.global.shopRefreshCounts, shopIntimacy: next.global.shopIntimacy, shopIntimacyLastDecayAt: next.global.shopIntimacyLastDecayAt }, new Date(simulatedAt));
-    const entries = requested.map((id) => lineup.entries.find((entry) => entry.stockEntryId === id));
-    if (entries.some((entry) => !entry || entry.soldOut) || entries.reduce((sum, entry) => sum + (entry?.price ?? 0), 0) > next.global.gold) throw new Error('illegal_action');
+    // SpecRef: 9.1.3 | Commit | 3-4-3 purchaseShopItems
+    // Every entry is checked against one snapshot of the lineup at the transaction time before anything is bought, so one bad
+    // entry buys nothing. A slot's ID is its 1-based position in the lineup.
+    const items = Array.isArray(parameters.items) ? parameters.items : [];
+    const requested = items.map((item) => Number(item && typeof item === 'object' ? (item as Record<string, unknown>).shopItemId : NaN));
+    if (requested.length === 0 || requested.some((id) => !Number.isSafeInteger(id) || id < 1) || new Set(requested).size !== requested.length) throw new Error('invalid_request:items');
+    const facts = getShopFacts(shopLineupInputOf(next), new Date(simulatedAt));
+    const entries = requested.map((id) => {
+      const entry = facts.entries.find((candidate) => candidate.shopItemId === id);
+      if (!entry) throw new Error('not_found');
+      if (entry.soldOut) throw new Error('illegal_action:sold_out');
+      return entry;
+    });
+    if (entries.reduce((sum, entry) => sum + entry.price, 0) > next.global.gold) throw new Error('illegal_action:insufficient_gold');
     const before = { gold: next.global.gold, prana: next.global.prana };
     const purchasedFormats: string[] = [];
     for (const entry of entries) {
       // The enhancement and Super Rare title are drawn inside the reducer; the callback reports the exact result.
-      reduce({ type: 'BUY_SHOP_ITEM', itemId: entry!.itemId, stockItemKey: entry!.stockEntryId, onPurchased: (purchased) => { purchasedFormats.push(`0/${purchased.id}/${purchased.enhancement}/${purchased.superRare}`); } });
+      reduce({ type: 'BUY_SHOP_ITEM', itemId: entry.itemId, stockItemKey: entry.stockEntryId, now: simulatedAt, onPurchased: (purchased) => { purchasedFormats.push(`0/${purchased.id}/${purchased.enhancement}/${purchased.superRare}`); } });
     }
     if (purchasedFormats.length !== entries.length) throw new Error('illegal_action:purchase_rejected');
     const quantities = new Map<string, number>();
@@ -404,9 +412,21 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (keys.length === 0 || keys.some((key) => !key) || new Set(keys).size !== keys.length) throw new Error('invalid_items');
     for (const variantKey of keys) reduce({ type: 'SET_VARIANT_STATUS', variantKey: variantKey!, status: 'notown' });
     data = { items };
-  } else if (operation === 'commit/base/paidShopRefresh') reduce({ type: 'REFRESH_SHOP_LINEUP' });
-  else if (operation === 'commit/base/unlockForm') reduce({ type: 'UNLOCK_MIMORIAN_ENEMY', enemyId: Number(parameters.enemyId) });
-  else if (operation === 'commit/base/markItemsAsSeen') {
+  } else if (operation === 'commit/base/paidShopRefresh') {
+    // SpecRef: 9.1.3 | Commit | 3-4-4 paidShopRefresh
+    // Charges the price shown for the current refresh count and replaces the lineup in the same transaction; the reducer
+    // would silently ignore a refresh the player cannot afford, so the shortfall is refused here.
+    const now = new Date(simulatedAt);
+    const before = getShopFacts(shopLineupInputOf(next), now);
+    if (!before.paidRefreshAvailable) throw new Error('illegal_action:insufficient_gold');
+    const goldBefore = next.global.gold;
+    reduce({ type: 'REFRESH_SHOP_LINEUP', now: simulatedAt });
+    const after = getShopFacts(shopLineupInputOf(next), now);
+    if (after.lineupId === before.lineupId) throw new Error('illegal_action:refresh_rejected');
+    data = { lineupId: after.lineupId, goldDelta: next.global.gold - goldBefore, paidRefreshPrice: after.paidRefreshPrice };
+  } else if (operation === 'commit/base/unlockForm') {
+    reduce({ type: 'UNLOCK_MIMORIAN_ENEMY', enemyId: Number(parameters.enemyId) });
+  } else if (operation === 'commit/base/markItemsAsSeen') {
     const keys = parameters.items as string[];
     if (!Array.isArray(keys) || keys.some((key) => !next.global.inventory[key])) throw new Error('invalid_items');
     next = { ...next, global: { ...next.global, inventory: Object.fromEntries(Object.entries(next.global.inventory).map(([key, variant]) => [key, keys.includes(key) ? { ...variant, isNew: false } : variant])) } };

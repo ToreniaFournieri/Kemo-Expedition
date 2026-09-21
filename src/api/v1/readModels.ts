@@ -29,7 +29,7 @@ import { getEstimatedStartHp, getPartyStateProgress } from '../../game/partyStat
 import { DIFFICULTY_OFFSET_STEP, EXPEDITION_DEPTH_LIMITS, getSelectableDestinationIds, getSelectableDifficultyOffsetMax } from '../../game/expeditionSettings.ts';
 import { getSortieUnavailableReason } from './sortieAvailability.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
-import { buildShopLineup, getShopRefreshPrice } from '../../game/shop.ts';
+import { getShopFacts, shopLineupInputOf } from '../../game/shopFacts.ts';
 import type { ApiV1PartyCycleView } from './commitOperations.ts';
 import { MAX_LEVEL, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party } from '../../types/index.ts';
 
@@ -370,12 +370,28 @@ export function buildApiV1PartyObservationForTesting(state: GameState) {
   return { parties: state.parties.map((party) => partyProjection(state, { partyNumber: party.id }).party) };
 }
 
-function baseProjection(state: GameState) {
+// SpecRef: 8.4.1 | Shop (お店) | Lineup, Dialogue by intimacy, Paid Refresh
+// The shop at one instant (the request's clock), from the same shared facts the Shop pane uses.
+function shopProjection(state: GameState, nowMs: number) {
+  const facts = getShopFacts(shopLineupInputOf(state), new Date(nowMs));
+  return {
+    lineupId: facts.lineupId,
+    intimacy: facts.intimacy,
+    dialogue: { key: facts.dialogueKey, args: {} },
+    paidRefreshCountdown: facts.refreshCountdownSeconds,
+    paidRefreshPrice: facts.paidRefreshPrice,
+    paidRefresh: { available: facts.paidRefreshAvailable, unavailableReason: facts.paidRefreshAvailable ? null : 'insufficient_gold' },
+    refreshesAt: new Date(facts.refreshesAt).toISOString(),
+    entries: facts.entries.map((entry) => ({ shopItemId: entry.shopItemId, itemId: entry.itemId, price: entry.price, rarity: entry.rarity, soldOut: entry.soldOut, available: entry.available, unavailableReason: entry.unavailableReason })),
+  };
+}
+
+function baseProjection(state: GameState, context: ApiV1ReadContext) {
   return {
     currencies: { gold: state.global.gold, prana: state.global.prana },
     inventory: Object.entries(state.global.inventory).map(([variantKey, variant]) => ({ variantKey, item: itemFormat(variant.item), quantity: variant.count, status: variant.status, isNew: variant.isNew === true })),
     jewelPriorityParty: state.global.jewelAutoEquipPriorityPartyId ?? 'none',
-    shop: { intimacy: state.global.shopIntimacy, paidRefreshPrice: getShopRefreshPrice(state.global.shopIntimacy) },
+    shop: shopProjection(state, context.inGameTime),
   };
 }
 
@@ -409,7 +425,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     }));
     return { partyInfo: { ...partyProjection(state, parameters), parties, unlockedMimorianEnemyIds: [...state.global.unlockedMimorianEnemyIds] } };
   }
-  if (operationId === 'read/observation/base') return { baseInfo: baseProjection(state) };
+  if (operationId === 'read/observation/base') return { baseInfo: baseProjection(state, context) };
   if (operationId === 'read/observation/diary') return { diaryInfo: diaryProjection(state) };
   if (operationId === 'read/observation/setting') return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), uiPreferences: listUiPreferences(state.global.uiPreferences), uiPreferenceCatalog: describeUiPreferenceCatalog() } };
 
@@ -564,11 +580,18 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
 
   if (operationId === 'read/base/searchItems') return searchItems(state, parameters);
   if (operationId === 'read/base/jewelPriorityParty') return { current: { partyNumber: state.global.jewelAutoEquipPriorityPartyId ?? 'none' }, validOptions: { partyNumber: [...state.parties.map((party) => party.id), 'none'] } };
-  if (operationId === 'read/base/shopInfo') return { intimacy: state.global.shopIntimacy, dialogue: { key: 'shop.dialogue.default', args: {} }, paidRefreshCountdown: 0, paidRefreshPrice: getShopRefreshPrice(state.global.shopIntimacy) };
+  if (operationId === 'read/base/shopInfo') {
+    const { lineupId: _lineupId, refreshesAt: _refreshesAt, entries: _entries, ...info } = shopProjection(state, context.inGameTime);
+    return info;
+  }
   if (operationId === 'read/base/shopItemsList') {
-    const lineup = buildShopLineup({ parties: state.parties, gold: state.global.gold, shopPurchases: state.global.shopPurchases, shopRefreshCounts: state.global.shopRefreshCounts, shopIntimacy: state.global.shopIntimacy, shopIntimacyLastDecayAt: state.global.shopIntimacyLastDecayAt }, new Date(context.inGameTime));
-    const items = lineup.entries.map((entry) => ({ shopItemId: entry.stockEntryId, itemId: entry.itemId, item: itemFormat(entry.item), price: entry.price, soldOut: entry.soldOut, available: entry.canPurchase, unavailableReason: entry.canPurchase ? null : entry.soldOut ? 'soldOut' : 'insufficientGold' }));
-    return { current: { lineupId: lineup.lineupId, refreshesAt: new Date(lineup.refreshesAt).toISOString(), items }, validOptions: { shopItemId: items.filter((entry) => entry.available).map((entry) => entry.shopItemId) } };
+    const shop = shopProjection(state, context.inGameTime);
+    // `items` are the compact `<shopItemId>/<itemId>/<price>/<availability>` strings of 9.1.3; `entries` carry the same facts
+    // structured, including why a slot cannot be bought.
+    return {
+      current: { lineupId: shop.lineupId, refreshesAt: shop.refreshesAt, items: shop.entries.map((entry) => `${entry.shopItemId}/${entry.itemId}/${entry.price}/${entry.available}`), entries: shop.entries },
+      validOptions: { items: shop.entries.filter((entry) => entry.available).map((entry) => entry.shopItemId) },
+    };
   }
   if (operationId === 'read/base/altarInfo') return { altarOverview: { donations: state.global.deityDonations, victories: state.global.altarVictoriesByEnemyType } };
   if (operationId === 'read/base/enemyFormList') return { current: { enemyFormList: ENEMIES.filter((enemy) => !parameters.enemyId || enemy.id === Number(parameters.enemyId)).map((enemy) => ({ enemyId: enemy.id, enemyName: enemy.name, enemyType: enemy.type, enemyAbility: enemy.abilities ?? [], enemyBonus: [], unlockCost: 0, unlockCondition: null })) }, validOptions: { enemyId: ENEMIES.map((enemy) => enemy.id) } };

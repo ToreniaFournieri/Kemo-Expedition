@@ -21,9 +21,12 @@ interface Harness {
   cycleWrites: unknown[];
   sessionEvents: boolean[];
   idleState: GameState;
+  /** Moves the runtime's wall clock (the ordinary player's in-game time). */
+  setNow: (value: number) => void;
 }
 
 function harness(): Harness {
+  let runtimeNow = t0;
   const idleState = createFreshGameState('ja', t0);
   const accountState = createFreshGameState('ja', t0);
   const persisted: Harness['persisted'] = [];
@@ -74,12 +77,12 @@ function harness(): Harness {
       yieldBetweenChunks: async () => undefined,
       createOpaqueId: () => `opaque-id-${String(++counter).padStart(16, '0')}`,
       createRandomSeed: () => 12345,
-      now: () => t0,
+      now: () => runtimeNow,
     },
     help: { requirements: 'REQUIREMENTS', detail: 'DETAIL' },
     onSessionActive: (active) => { sessionEvents.push(active); },
   };
-  return { cycleWrites, api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, idleState };
+  return { cycleWrites, api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, idleState, setNow: (value) => { runtimeNow = value; } };
 }
 
 type Step = { operation: string; pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown>; mutating: boolean };
@@ -186,6 +189,23 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
   assert.deepEqual(h.playerCommitEvents, ['persist', 'cycle', 'publish']);
   assert.deepEqual(h.cycleWrites, [{ partyIndex: 0, cycle: { state: 'rest', stateStartedAt: t0, durationMs: 9_999, restInitialTotalSteps: 1, isCurrentExpeditionGodsBattle: false } }]);
   assert.match(sortie.data.logId, /^(latest|diary:.+)$/);
+}
+
+// 1a-ter. The ordinary player's in-game time is the wall clock of each request, not the time the app started: a charge that
+// recharged since then can be spent, and reads report the current time.
+{
+  const h = harness();
+  const local = h.api.createInProcessAdapter();
+  const empty = { ...h.idleState, parties: h.idleState.parties.map((party, index) => index === 0 ? { ...party, instantExpeditionStock: 0, instantExpeditionChargeStartedAt: t0 } : party) } as typeof h.idleState;
+  h.api.syncIdleState(empty);
+  const refused = await local.commit('commit/expedition/{p}/sortie', { pathParameters: { p: 1 }, parameters: {} }) as { error?: { details?: { reason?: string } } };
+  assert.match(String(refused.error?.details?.reason), /charge_insufficient/, 'no charge has recharged at the start time');
+  const threeHours = t0 + 3 * 3_600_000;
+  h.setNow(threeHours);
+  const header = await local.read('read/observation/overview', {}) as { data: { headerInfo: { inGameTime: string } } };
+  assert.equal(header.data.headerInfo.inGameTime, new Date(threeHours).toISOString(), 'reads report the current time');
+  const spent = await local.commit('commit/expedition/{p}/sortie', { pathParameters: { p: 1 }, parameters: {} }) as { error?: unknown };
+  assert.equal(spent.error, undefined, 'the charge that recharged in three hours is available');
 }
 
 // 1b. A UI-confirmed trusted command still traverses the shared challenge/token policy with one idempotency key.

@@ -583,8 +583,32 @@ definitions in 9.1.3.
 * Multi-item sell, purchase, and unlock requests validate all entries and the
   total balance before mutation. Results return affected `Item Format` values,
   quantities, and Gold/Prana deltas.
-* `purchaseShopItems` identifies entries by `shopItemId`; the lineup is checked
-  again at the expected revision. Duplicate IDs are invalid.
+* `purchaseShopItems` identifies entries by `shopItemId`, the 1-based position of a
+  slot in the lineup (1 to 5), at the transaction's own time. The lineup rotates with
+  the clock (02:00, 10:00, and 18:00 local time) and with paid refreshes and purchases
+  (which raise intimacy and can change the rarity mix), none of which change the
+  revision, so a client reads `lineupId` from `shopItemsList` or the `base` projection
+  and buys promptly. The request is validated whole against one snapshot: a malformed,
+  non-positive, or duplicate ID is `invalid_request`; an ID that is not in the lineup is
+  `not_found`; a sold slot is `illegal_action:sold_out`; a total above the Gold held is
+  `illegal_action:insufficient_gold`. Nothing is bought unless every entry passes. The
+  enhancement and Super Rare title are drawn while buying, from the bags of the
+  currently selected party.
+* `paidShopRefresh` charges the price shown for the current refresh count, replaces the
+  lineup, and returns `{lineupId, goldDelta, paidRefreshPrice}` (`paidRefreshPrice` is
+  the next refresh's price in the same period, which doubles). A refresh the player
+  cannot afford is `illegal_action:insufficient_gold`.
+* Shop reads publish one shared set of facts (`src/game/shopFacts.ts`), at the request's
+  clock: `intimacy` is the effective value after the decay of every refresh time that
+  has passed, `dialogue` is the semantic key of its tier
+  (`home.shop.dialogue.default`, `.intimacy20`, `.intimacy40`, `.intimacy80`),
+  `paidRefreshCountdown` is whole seconds until the next scheduled refresh (at least 1),
+  and `paidRefreshPrice` follows the refresh count of the current period. `shopItemsList`
+  returns the compact `<shopItemId>/<itemId>/<price>/<availability>` strings of 9.1.3 in
+  `current.items` and the same facts structured in `current.entries` (adding `rarity`,
+  `soldOut`, and `unavailableReason`: `sold_out` or `insufficient_gold`);
+  `validOptions.items` lists the slots that can be bought now. The `base` projection's
+  `shop` carries the same facts plus `lineupId`, `refreshesAt`, and `entries`.
 * `paidShopRefresh` charges the displayed current price and replaces the lineup
   in the same transaction. Idempotent replay must neither charge twice nor
   generate a second lineup.

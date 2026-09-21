@@ -6628,18 +6628,171 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
+                    "lineupId",
                     "intimacy",
-                    "paidRefreshPrice"
+                    "dialogue",
+                    "paidRefreshCountdown",
+                    "paidRefreshPrice",
+                    "paidRefresh",
+                    "refreshesAt",
+                    "entries"
                   ],
                   "properties": {
+                    "lineupId": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
                     "intimacy": {
                       "minimum": 0,
                       "maximum": 99,
                       "type": "integer"
                     },
+                    "dialogue": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "key",
+                        "args"
+                      ],
+                      "properties": {
+                        "key": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "args": {
+                          "type": "object",
+                          "patternProperties": {
+                            "^(.*)$": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "boolean"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "paidRefreshCountdown": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
                     "paidRefreshPrice": {
                       "minimum": 0,
                       "type": "integer"
+                    },
+                    "paidRefresh": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "available",
+                        "unavailableReason"
+                      ],
+                      "properties": {
+                        "available": {
+                          "type": "boolean"
+                        },
+                        "unavailableReason": {
+                          "anyOf": [
+                            {
+                              "const": "insufficient_gold",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "refreshesAt": {
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                      "type": "string"
+                    },
+                    "entries": {
+                      "maxItems": 5,
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "shopItemId",
+                          "itemId",
+                          "price",
+                          "rarity",
+                          "soldOut",
+                          "available",
+                          "unavailableReason"
+                        ],
+                        "properties": {
+                          "shopItemId": {
+                            "minimum": 1,
+                            "maximum": 5,
+                            "type": "integer"
+                          },
+                          "itemId": {
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "price": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "rarity": {
+                            "anyOf": [
+                              {
+                                "const": "common",
+                                "type": "string"
+                              },
+                              {
+                                "const": "uncommon",
+                                "type": "string"
+                              },
+                              {
+                                "const": "eliteRare",
+                                "type": "string"
+                              },
+                              {
+                                "const": "bossRare",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "soldOut": {
+                            "type": "boolean"
+                          },
+                          "available": {
+                            "type": "boolean"
+                          },
+                          "unavailableReason": {
+                            "anyOf": [
+                              {
+                                "anyOf": [
+                                  {
+                                    "const": "sold_out",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "insufficient_gold",
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -6779,18 +6932,171 @@
                       "additionalProperties": false,
                       "type": "object",
                       "required": [
+                        "lineupId",
                         "intimacy",
-                        "paidRefreshPrice"
+                        "dialogue",
+                        "paidRefreshCountdown",
+                        "paidRefreshPrice",
+                        "paidRefresh",
+                        "refreshesAt",
+                        "entries"
                       ],
                       "properties": {
+                        "lineupId": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        },
                         "intimacy": {
                           "minimum": 0,
                           "maximum": 99,
                           "type": "integer"
                         },
+                        "dialogue": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "key",
+                            "args"
+                          ],
+                          "properties": {
+                            "key": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "args": {
+                              "type": "object",
+                              "patternProperties": {
+                                "^(.*)$": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "boolean"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "paidRefreshCountdown": {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
                         "paidRefreshPrice": {
                           "minimum": 0,
                           "type": "integer"
+                        },
+                        "paidRefresh": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "available",
+                            "unavailableReason"
+                          ],
+                          "properties": {
+                            "available": {
+                              "type": "boolean"
+                            },
+                            "unavailableReason": {
+                              "anyOf": [
+                                {
+                                  "const": "insufficient_gold",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "refreshesAt": {
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                          "type": "string"
+                        },
+                        "entries": {
+                          "maxItems": 5,
+                          "type": "array",
+                          "items": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "shopItemId",
+                              "itemId",
+                              "price",
+                              "rarity",
+                              "soldOut",
+                              "available",
+                              "unavailableReason"
+                            ],
+                            "properties": {
+                              "shopItemId": {
+                                "minimum": 1,
+                                "maximum": 5,
+                                "type": "integer"
+                              },
+                              "itemId": {
+                                "minimum": 1,
+                                "type": "integer"
+                              },
+                              "price": {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "rarity": {
+                                "anyOf": [
+                                  {
+                                    "const": "common",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "uncommon",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "eliteRare",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "bossRare",
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              "soldOut": {
+                                "type": "boolean"
+                              },
+                              "available": {
+                                "type": "boolean"
+                              },
+                              "unavailableReason": {
+                                "anyOf": [
+                                  {
+                                    "anyOf": [
+                                      {
+                                        "const": "sold_out",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "insufficient_gold",
+                                        "type": "string"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
+                          }
                         }
                       }
                     }
@@ -6844,8 +7150,30 @@
               ],
               "jewelPriorityParty": 1,
               "shop": {
+                "lineupId": "xxxxxxx",
                 "intimacy": 0,
-                "paidRefreshPrice": 0
+                "dialogue": {
+                  "key": "xxxxxxx",
+                  "args": {}
+                },
+                "paidRefreshCountdown": 1,
+                "paidRefreshPrice": 0,
+                "paidRefresh": {
+                  "available": true,
+                  "unavailableReason": "insufficient_gold"
+                },
+                "refreshesAt": "1970-01-01T00:00:00.000Z",
+                "entries": [
+                  {
+                    "shopItemId": 1,
+                    "itemId": 1,
+                    "price": 0,
+                    "rarity": "common",
+                    "soldOut": true,
+                    "available": true,
+                    "unavailableReason": "sold_out"
+                  }
+                ]
               }
             }
           }
@@ -15197,7 +15525,8 @@
             "intimacy",
             "dialogue",
             "paidRefreshCountdown",
-            "paidRefreshPrice"
+            "paidRefreshPrice",
+            "paidRefresh"
           ],
           "properties": {
             "intimacy": {
@@ -15239,12 +15568,36 @@
               }
             },
             "paidRefreshCountdown": {
-              "minimum": 0,
+              "minimum": 1,
               "type": "integer"
             },
             "paidRefreshPrice": {
               "minimum": 0,
               "type": "integer"
+            },
+            "paidRefresh": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "available",
+                "unavailableReason"
+              ],
+              "properties": {
+                "available": {
+                  "type": "boolean"
+                },
+                "unavailableReason": {
+                  "anyOf": [
+                    {
+                      "const": "insufficient_gold",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
             }
           }
         },
@@ -15287,7 +15640,8 @@
                 "intimacy",
                 "dialogue",
                 "paidRefreshCountdown",
-                "paidRefreshPrice"
+                "paidRefreshPrice",
+                "paidRefresh"
               ],
               "properties": {
                 "intimacy": {
@@ -15329,12 +15683,36 @@
                   }
                 },
                 "paidRefreshCountdown": {
-                  "minimum": 0,
+                  "minimum": 1,
                   "type": "integer"
                 },
                 "paidRefreshPrice": {
                   "minimum": 0,
                   "type": "integer"
+                },
+                "paidRefresh": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "available",
+                    "unavailableReason"
+                  ],
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    },
+                    "unavailableReason": {
+                      "anyOf": [
+                        {
+                          "const": "insufficient_gold",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             }
@@ -15373,8 +15751,12 @@
               "key": "xxxxxxx",
               "args": {}
             },
-            "paidRefreshCountdown": 0,
-            "paidRefreshPrice": 0
+            "paidRefreshCountdown": 1,
+            "paidRefreshPrice": 0,
+            "paidRefresh": {
+              "available": true,
+              "unavailableReason": "insufficient_gold"
+            }
           }
         }
       }
@@ -15416,7 +15798,8 @@
               "required": [
                 "lineupId",
                 "refreshesAt",
-                "items"
+                "items",
+                "entries"
               ],
               "properties": {
                 "lineupId": {
@@ -15429,6 +15812,15 @@
                   "type": "string"
                 },
                 "items": {
+                  "maxItems": 5,
+                  "type": "array",
+                  "items": {
+                    "pattern": "^[1-5]/[1-9][0-9]*/[0-9]+/(true|false)$",
+                    "type": "string"
+                  }
+                },
+                "entries": {
+                  "maxItems": 5,
                   "type": "array",
                   "items": {
                     "additionalProperties": false,
@@ -15436,29 +15828,45 @@
                     "required": [
                       "shopItemId",
                       "itemId",
-                      "item",
                       "price",
+                      "rarity",
                       "soldOut",
                       "available",
                       "unavailableReason"
                     ],
                     "properties": {
                       "shopItemId": {
-                        "minLength": 1,
-                        "maxLength": 200,
-                        "type": "string"
+                        "minimum": 1,
+                        "maximum": 5,
+                        "type": "integer"
                       },
                       "itemId": {
                         "minimum": 1,
                         "type": "integer"
                       },
-                      "item": {
-                        "pattern": "^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))$",
-                        "type": "string"
-                      },
                       "price": {
                         "minimum": 0,
                         "type": "integer"
+                      },
+                      "rarity": {
+                        "anyOf": [
+                          {
+                            "const": "common",
+                            "type": "string"
+                          },
+                          {
+                            "const": "uncommon",
+                            "type": "string"
+                          },
+                          {
+                            "const": "eliteRare",
+                            "type": "string"
+                          },
+                          {
+                            "const": "bossRare",
+                            "type": "string"
+                          }
+                        ]
                       },
                       "soldOut": {
                         "type": "boolean"
@@ -15469,7 +15877,16 @@
                       "unavailableReason": {
                         "anyOf": [
                           {
-                            "type": "string"
+                            "anyOf": [
+                              {
+                                "const": "sold_out",
+                                "type": "string"
+                              },
+                              {
+                                "const": "insufficient_gold",
+                                "type": "string"
+                              }
+                            ]
                           },
                           {
                             "type": "null"
@@ -15485,15 +15902,15 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "shopItemId"
+                "items"
               ],
               "properties": {
-                "shopItemId": {
+                "items": {
                   "type": "array",
                   "items": {
-                    "minLength": 1,
-                    "maxLength": 200,
-                    "type": "string"
+                    "minimum": 1,
+                    "maximum": 5,
+                    "type": "integer"
                   }
                 }
               }
@@ -15546,7 +15963,8 @@
                   "required": [
                     "lineupId",
                     "refreshesAt",
-                    "items"
+                    "items",
+                    "entries"
                   ],
                   "properties": {
                     "lineupId": {
@@ -15559,6 +15977,15 @@
                       "type": "string"
                     },
                     "items": {
+                      "maxItems": 5,
+                      "type": "array",
+                      "items": {
+                        "pattern": "^[1-5]/[1-9][0-9]*/[0-9]+/(true|false)$",
+                        "type": "string"
+                      }
+                    },
+                    "entries": {
+                      "maxItems": 5,
                       "type": "array",
                       "items": {
                         "additionalProperties": false,
@@ -15566,29 +15993,45 @@
                         "required": [
                           "shopItemId",
                           "itemId",
-                          "item",
                           "price",
+                          "rarity",
                           "soldOut",
                           "available",
                           "unavailableReason"
                         ],
                         "properties": {
                           "shopItemId": {
-                            "minLength": 1,
-                            "maxLength": 200,
-                            "type": "string"
+                            "minimum": 1,
+                            "maximum": 5,
+                            "type": "integer"
                           },
                           "itemId": {
                             "minimum": 1,
                             "type": "integer"
                           },
-                          "item": {
-                            "pattern": "^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))$",
-                            "type": "string"
-                          },
                           "price": {
                             "minimum": 0,
                             "type": "integer"
+                          },
+                          "rarity": {
+                            "anyOf": [
+                              {
+                                "const": "common",
+                                "type": "string"
+                              },
+                              {
+                                "const": "uncommon",
+                                "type": "string"
+                              },
+                              {
+                                "const": "eliteRare",
+                                "type": "string"
+                              },
+                              {
+                                "const": "bossRare",
+                                "type": "string"
+                              }
+                            ]
                           },
                           "soldOut": {
                             "type": "boolean"
@@ -15599,7 +16042,16 @@
                           "unavailableReason": {
                             "anyOf": [
                               {
-                                "type": "string"
+                                "anyOf": [
+                                  {
+                                    "const": "sold_out",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "insufficient_gold",
+                                    "type": "string"
+                                  }
+                                ]
                               },
                               {
                                 "type": "null"
@@ -15615,15 +16067,15 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "shopItemId"
+                    "items"
                   ],
                   "properties": {
-                    "shopItemId": {
+                    "items": {
                       "type": "array",
                       "items": {
-                        "minLength": 1,
-                        "maxLength": 200,
-                        "type": "string"
+                        "minimum": 1,
+                        "maximum": 5,
+                        "type": "integer"
                       }
                     }
                   }
@@ -15664,20 +16116,23 @@
               "lineupId": "xxxxxxx",
               "refreshesAt": "1970-01-01T00:00:00.000Z",
               "items": [
+                "1/1104/60/true"
+              ],
+              "entries": [
                 {
-                  "shopItemId": "xxxxxxx",
+                  "shopItemId": 1,
                   "itemId": 1,
-                  "item": "0",
                   "price": 0,
+                  "rarity": "common",
                   "soldOut": true,
                   "available": true,
-                  "unavailableReason": "xxxxxxx"
+                  "unavailableReason": "sold_out"
                 }
               ]
             },
             "validOptions": {
-              "shopItemId": [
-                "xxxxxxx"
+              "items": [
+                1
               ]
             }
           }
@@ -26380,6 +26835,7 @@
         "internal_error",
         "invalid_request",
         "login_required",
+        "not_found",
         "operation_in_progress",
         "runtime_unavailable",
         "save_failed",
@@ -26477,7 +26933,25 @@
         "data": {
           "additionalProperties": false,
           "type": "object",
-          "properties": {}
+          "required": [
+            "lineupId",
+            "goldDelta",
+            "paidRefreshPrice"
+          ],
+          "properties": {
+            "lineupId": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            },
+            "goldDelta": {
+              "type": "integer"
+            },
+            "paidRefreshPrice": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
         },
         "envelope": {
           "additionalProperties": false,
@@ -26522,7 +26996,25 @@
             "data": {
               "additionalProperties": false,
               "type": "object",
-              "properties": {}
+              "required": [
+                "lineupId",
+                "goldDelta",
+                "paidRefreshPrice"
+              ],
+              "properties": {
+                "lineupId": {
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                "goldDelta": {
+                  "type": "integer"
+                },
+                "paidRefreshPrice": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
             },
             "effects": {
               "type": "array",
@@ -26608,7 +27100,11 @@
           }
         },
         "response": {
-          "data": {}
+          "data": {
+            "lineupId": "xxxxxxx",
+            "goldDelta": 1,
+            "paidRefreshPrice": 0
+          }
         }
       }
     },

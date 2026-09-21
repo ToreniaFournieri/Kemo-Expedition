@@ -492,12 +492,17 @@ Path Parameters
 * Return:
   * `battleLog`
     * Latest battle log of the specified party.
+  * `resources`
+    * Supporting resources used to render the battle log, including:
+      * Enemy names and snapshots for Bestiary bubbles.
+      * Compact battle data used for narration.
+      * End-event information and related display data.
   * `bottleneckEnemies`
-    * Status of enemies identified as bottlenecks.
-    * Bottleneck definition:
-      * Damage taken: `>=35%`, or
-      * `draw` or `defeat` outcome.
-    * If no enemy meets the condition, return none.
+    * Status information for enemies identified as bottlenecks.
+    * An enemy is considered a bottleneck if either:
+      * Damage taken is `>= 35%`, or
+      * The battle outcome is `draw` or `defeat`.
+    * If no enemy meets these conditions, returns an empty list.
 
 **2-2-3. `{p}/simulationRun`**
 

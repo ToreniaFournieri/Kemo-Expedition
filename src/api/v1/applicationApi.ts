@@ -173,7 +173,8 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
           environment: ports.runtime.environment(),
           gameMode: ports.runtime.gameMode(),
           enemyLevelOffset: ports.runtime.enemyLevelOffset(),
-          inGameTime: snapshot.simulatedAt,
+          // The player's in-game time is the wall clock of the request; an API account's is its own clock.
+          inGameTime: activeIdentity ? snapshot.simulatedAt : ports.runtime.now(),
           simulation: (partyIndex, count) => ports.runtime.simulate(snapshot.state, partyIndex, count),
           control: snapshot.control,
           // The live cycle and the disclosed logs belong to the ordinary player's runtime; an API account has neither.
@@ -219,6 +220,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       // The live party cycle belongs to the ordinary player's runtime; an API account has none, so a sortie for it
       // neither reads nor writes one.
       ...(identity ? {} : {
+        playerClock: ports.runtime.now,
         chargeDurationScale: ports.runtime.cycleDurationScale(),
         colosseumEnabled: ports.runtime.colosseumEnabled,
         partyCycle: ports.runtime.partyCycle,

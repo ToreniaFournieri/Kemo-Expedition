@@ -278,7 +278,14 @@ const expeditionProjectionSchema = strict({ parties: Type.Array(strict({
 })) });
 const characterSummary = strict({ characterId: integerId, name: Type.String({ minLength: 1 }), raceId: stableKey, gender: literals('male', 'female'), mainClassId: stableKey, subClassId: stableKey, lineageId: Type.Union([stableKey, Type.Null()]), predispositionId: Type.Union([stableKey, Type.Null()]), isUnique: Type.Boolean(), mimorianEnemyId: Type.Union([integerId, Type.Null()]), calculatedStatus, equipment: equipmentEntryList, autoEquipmentMode: Type.Integer({ minimum: 0, maximum: 2 }) });
 const partyProjectionSchema = strict({ effectiveSelection: strict({ partyNumber, characterId: Type.Union([integerId, Type.Null()]) }), party: strict({ partyNumber, name: Type.String({ minLength: 1 }), level: Type.Integer({ minimum: 1, maximum: 69 }), experience: Type.Integer({ minimum: 0 }), experienceToNext: Type.Integer({ minimum: 0 }), maxHp: Type.Integer({ minimum: 0 }), deityId: stableKey, deityRank: Type.Integer({ minimum: 0 }), condition: Type.Integer({ minimum: -400, maximum: 400 }), order: Type.Array(integerId), characters: Type.Array(characterSummary) }) });
-const baseProjectionSchema = strict({ currencies: strict({ gold: Type.Integer({ minimum: 0 }), prana: Type.Integer({ minimum: 0 }) }), inventory: Type.Array(strict({ variantKey: stableKey, item: itemFormat, quantity: Type.Integer({ minimum: 0 }), status: literals('owned', 'sold', 'notown'), isNew: Type.Boolean() })), jewelPriorityParty: Type.Union([partyNumber, Type.Literal('none')]), shop: strict({ intimacy: Type.Integer({ minimum: 0, maximum: 99 }), paidRefreshPrice: Type.Integer({ minimum: 0 }) }) });
+// Spec 8.4.1: the shop at the request's clock. A slot's `shopItemId` is its 1-based lineup position.
+// `<shopItemId>/<itemId>/<price>/<availability>` (Spec 9.1.3, 2-4-4).
+const shopItemString = Type.String({ pattern: '^[1-5]/[1-9][0-9]*/[0-9]+/(true|false)$' });
+sampleOverrides.set(shopItemString, '1/1104/60/true');
+const shopRarity = literals('common', 'uncommon', 'eliteRare', 'bossRare');
+const shopEntry = strict({ shopItemId: Type.Integer({ minimum: 1, maximum: 5 }), itemId: integerId, price: Type.Integer({ minimum: 0 }), rarity: shopRarity, soldOut: Type.Boolean(), available: Type.Boolean(), unavailableReason: Type.Union([literals('sold_out', 'insufficient_gold'), Type.Null()]) });
+const shopInfoMembers = { intimacy: Type.Integer({ minimum: 0, maximum: 99 }), dialogue: semanticText, paidRefreshCountdown: Type.Integer({ minimum: 1 }), paidRefreshPrice: Type.Integer({ minimum: 0 }), paidRefresh: strict({ available: Type.Boolean(), unavailableReason: Type.Union([Type.Literal('insufficient_gold'), Type.Null()]) }) };
+const baseProjectionSchema = strict({ currencies: strict({ gold: Type.Integer({ minimum: 0 }), prana: Type.Integer({ minimum: 0 }) }), inventory: Type.Array(strict({ variantKey: stableKey, item: itemFormat, quantity: Type.Integer({ minimum: 0 }), status: literals('owned', 'sold', 'notown'), isNew: Type.Boolean() })), jewelPriorityParty: Type.Union([partyNumber, Type.Literal('none')]), shop: strict({ lineupId: stableKey, ...shopInfoMembers, refreshesAt: isoTimestamp, entries: Type.Array(shopEntry, { maxItems: 5 }) }) });
 const diaryProjectionSchema = strict({ unreadTotal: Type.Integer({ minimum: 0 }), parties: Type.Array(strict({ partyNumber, settings: strict(diarySetting), entries: Type.Array(diaryEntrySummary) })) });
 const settingProjectionSchema = strict({ language, environment: Type.String(), gameMode: modeKey, enemyLevelOffset: Type.Integer({ minimum: 0, maximum: 20 }), modeSelect: optional(strict(modeSelect)), debug: optional(strict(debug)), enemyEditPane: optional(strict(enemyEdit)), uiPreferences: Type.Array(strict({ key: stableKey, value: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), uiPreferenceCatalog: Type.Array(strict({ family: stableKey, subject: Type.Literal('characterId'), type: Type.Union([Type.Literal('string'), Type.Literal('number'), Type.Literal('boolean')]), options: Type.Array(Type.String()), defaultValue: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })) });
 const popupStreamSchema = strict({ events: Type.Array(popupEvent) });
@@ -338,8 +345,8 @@ const responseDataSchemas = {
   }),
   'read/base/searchItems': strict({ items: Type.Array(itemStackFormat) }),
   'read/base/jewelPriorityParty': strict({ current: strict({ partyNumber: Type.Union([partyNumber, Type.Literal('none')]) }), validOptions: strict({ partyNumber: Type.Array(Type.Union([partyNumber, Type.Literal('none')])) }) }),
-  'read/base/shopInfo': strict({ intimacy: Type.Integer({ minimum: 0, maximum: 99 }), dialogue: semanticText, paidRefreshCountdown: Type.Integer({ minimum: 0 }), paidRefreshPrice: Type.Integer({ minimum: 0 }) }),
-  'read/base/shopItemsList': strict({ current: strict({ lineupId: stableKey, refreshesAt: isoTimestamp, items: Type.Array(strict({ shopItemId: stableKey, itemId: integerId, item: itemFormat, price: Type.Integer({ minimum: 0 }), soldOut: Type.Boolean(), available: Type.Boolean(), unavailableReason: Type.Union([Type.String(), Type.Null()]) })) }), validOptions: strict({ shopItemId: Type.Array(stableKey) }) }),
+  'read/base/shopInfo': strict(shopInfoMembers),
+  'read/base/shopItemsList': strict({ current: strict({ lineupId: stableKey, refreshesAt: isoTimestamp, items: Type.Array(shopItemString, { maxItems: 5 }), entries: Type.Array(shopEntry, { maxItems: 5 }) }), validOptions: strict({ items: Type.Array(Type.Integer({ minimum: 1, maximum: 5 })) }) }),
   'read/base/altarInfo': strict({ altarOverview: strict({ donations: Type.Unknown(), victories: Type.Unknown() }) }),
   'read/base/enemyFormList': strict({ current: strict({ enemyFormList: Type.Array(strict({ enemyId: integerId, enemyName: Type.String(), enemyType: stableKey, enemyAbility: Type.Array(Type.Unknown()), enemyBonus: Type.Array(Type.Unknown()), unlockCost: Type.Integer({ minimum: 0 }), unlockCondition: Type.Union([Type.String(), Type.Null()]) })) }), validOptions: strict({ enemyId: Type.Array(integerId) }) }),
   'read/diary/{p}/diarySetting': strict({ current: strict(diarySetting), validOptions: strict({ superRareThreshold: Type.Array(Type.Union([Type.String(), Type.Integer()])), defeatNotificationMode: Type.Array(Type.String()) }) }),
@@ -393,7 +400,7 @@ const responseDataSchemas = {
   'commit/base/changeJewelPriorityParty': strict({ current: strict({ partyNumber: Type.Union([partyNumber, Type.Literal('none')]) }) }),
   'commit/base/sellInventoryItems': tradeResult,
   'commit/base/purchaseShopItems': tradeResult,
-  'commit/base/paidShopRefresh': empty,
+  'commit/base/paidShopRefresh': strict({ lineupId: stableKey, goldDelta: Type.Integer(), paidRefreshPrice: Type.Integer({ minimum: 0 }) }),
   'commit/base/unlockSoldItems': strict({ items: Type.Array(itemFormat) }),
   'commit/base/unlockForm': empty,
   'commit/diary/{p}/diarySetting': strict({ current: strict(diarySetting) }),
@@ -470,7 +477,7 @@ const DEBUG_GATED_OPERATIONS = new Set(['commit/setting/enemyEditPane', 'commit/
 // Confirmation-gated per 9.1.4.5: destructive/partial-load operations that may return `confirmation_required`.
 const CONFIRMATION_GATED_OPERATIONS = new Set(['commit/setting/backup/import', 'commit/setting/backup/reset', 'commit/build/character/{characterId}/loadEquipmentSet']);
 // Handlers observed to throw `not_found` for an unresolved item/variant lookup that isn't already covered by a `{...}` path template.
-const ADDITIONAL_NOT_FOUND_OPERATIONS = new Set(['commit/base/sellInventoryItems', 'commit/base/unlockSoldItems', 'commit/base/unlockForm']);
+const ADDITIONAL_NOT_FOUND_OPERATIONS = new Set(['commit/base/sellInventoryItems', 'commit/base/purchaseShopItems', 'commit/base/unlockSoldItems', 'commit/base/unlockForm']);
 
 function errorsFor(operation, query) {
   const codes = new Set(['invalid_request', 'runtime_unavailable', 'internal_error']);
