@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 63. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 64. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -14,7 +14,7 @@ This document supersedes the earlier "Build 23" plan. Stages are numbered once, 
 | 2 | Standalone Application API and authority | Done (foundation) |
 | 3 | HTTP transport and sessions | Implemented, test-only |
 | 4 | Expedition and shell | Runtime present, UI not migrated |
-| 5 | Party, character, equipment | **In progress** |
+| 5 | Party, character, equipment | Done (UI projection complete) |
 | 6 | Base, inventory, shop, Altar | Runtime early, UI not migrated |
 | 7 | Diary and popup streaming | Foundation only |
 | 8 | Settings, files, delivery, Help, Resources | Partial |
@@ -48,7 +48,7 @@ Gate: every operation has concrete request, success, and error schemas; no fallb
 - Complete structured 1,000-run simulation output and sortie / Gods Battle effects, rewards, return reasons, and log references.
 - Migrate the header and the Expedition tab (destination, depth limit, difficulty offset, sortie, Gods Battle, simulation run) to the in-process adapter.
 
-## Stage 5 — Party, character, equipment (current)
+## Stage 5 — Party, character, equipment (complete)
 
 Done: deity, ordering, character build editing, equipment controls, equipment sets, and Undo/Redo.
 
@@ -66,10 +66,9 @@ Next, in order:
    - Open question for the spec: the defense preview when hovering or tapping an item recomputes one hypothetical equipment change locally. If it should be API-owned, `equip` would need a `simulation` parameter like `changeBuild`.
    - 4d. (Done, Build 49) The equipment slot list renders from the party projection's equipment entries; mode and Undo/Redo come from the `equipment` projection.
    - 4e. (Done, Build 59) The inventory category is a per-character `uiPreferences` entry (`party.equipCategory.<characterId>`), stored per save and published with the closed catalog in `settingInfo`. `selectedPartyIndex` stays in the shared game state (decided). The selected character and the rarity and Super Rare filters remain local view context; add catalog entries if 8.2 requires retaining them.
-   - 4f. (Done, Build 60) The tab receives only projected views (`PartyView`, `PartySummary`, projected inventory and Jewel counts, `CalculatedStatus`) and no raw game state. `tests/migratedTabs.test.cjs` is the mechanical check (reviewed imports, no reducer or `GameState`, no `state.` props, only `addStatNotifications` and `selectParty` actions). Build 63 removed the saved-set availability exception: `equipmentSet` now publishes exact current availability and stable per-entry reasons. Two reviewed exceptions remain: the localized random default name on a race change (Spec 8.2.3 draft and therefore presentation-boundary behavior), and the item defense preview (`computeCharacterStats` and `replaceCharacterEquipment`; the read-only Jewel-aware `equipmentEvaluation`, corrected in Build 62, gives per-item character-scaled stats but not the change in the character's own defense when an item replaces another, which needs a slot-aware evaluation contract). Apply the same check to each tab as it migrates.
-   - Open design question for the next Party slice: specify the slot-aware defense-preview request and response without turning the read-only `equipmentEvaluation` operation back into a Commit or silently changing its item-only semantics.
+   - 4f. (Done, Builds 60, 63–64) The tab receives only projected views (`PartyView`, `PartySummary`, projected inventory and Jewel counts, `CalculatedStatus`) and no raw game state. `tests/migratedTabs.test.cjs` is the mechanical check (reviewed imports, no reducer or `GameState`, no `state.` props, only `addStatNotifications` and `selectParty` actions). Build 63 moved saved-set availability and stable per-entry reasons into `equipmentSet`. Build 64 added independent slot-aware replacement/removal previews to the read-only `equipmentEvaluation`; the tab now formats returned defense deltas instead of importing `computeCharacterStats` or `replaceCharacterEquipment`. The localized random default name on a race change remains intentionally at the presentation boundary as an unsaved Spec 8.2.3 draft behavior, not an Application API gameplay calculation. Apply the same check to each tab as it migrates.
 
-Gate: no `actions.*` reducer call remains in `PartyTab.tsx` for these controls; the Party tab renders only from its projections.
+Gate passed: no `actions.*` reducer call remains in `PartyTab.tsx` for these controls; the Party tab renders only from its projections. Its remaining game-module imports are presentation helpers, master-data lookup/types, constants, and localized draft-name randomness guarded by `tests/migratedTabs.test.cjs`.
 
 ## Stage 6 — Base
 

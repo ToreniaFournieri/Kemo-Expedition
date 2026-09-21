@@ -11,14 +11,13 @@ import { PREDISPOSITIONS } from '../../../data/predispositions';
 import { RACES } from '../../../data/races';
 import { buildCombatTotals, buildPartyStatsView } from '../../../api/v1/statusView';
 import { readStatusFacts } from '../../../api/v1/calculatedStatus';
+import type { InProcessApiAdapter } from '../../../api/v1/applicationApi';
 import type { CharacterBuildOutcome, CharacterBuildRequest } from '../../../api/v1/characterBuildParameters';
 import type { CalculatedStatus } from '../../../api/v1/contracts';
-import type { SavedEquipmentSetView } from '../../../api/v1/itemFormat';
+import { formatEquipmentChange, type SavedEquipmentSetView } from '../../../api/v1/itemFormat';
 import { formatAttackSpeedHelp } from '../../../game/attackProfile';
 import { gameplayRandom } from '../../../game/gameplayRandom';
-import { computeCharacterStats } from '../../../game/characterComputation';
 import { DEITY_OPTIONS,getDeityDisplayName,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity } from '../../../game/deity';
-import { replaceCharacterEquipment } from '../../../game/equipment';
 import { MAX_SAVED_EQUIPMENT_SETS,type EquipmentSetLoadMode } from '../../../game/equipmentSets';
 import { replaceFlatItemStat } from '../../../game/equipmentDisplay';
 import { getItemDisplayName } from '../../../game/gameState';
@@ -76,8 +75,10 @@ renderUiIcon,
 UiIconKey,
 UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE
 } from '../homeShared';
+import { useApiRead } from '../useApiRead';
 
 export default function PartyTab({
+  apiAdapter,
   parties,
   selectedPartyIndex,
   party,
@@ -116,6 +117,7 @@ export default function PartyTab({
   unlockedMimorianEnemyIds,
   isDarkModeEnabled,
 }: {
+  apiAdapter: InProcessApiAdapter | null;
   parties: PartySummary[];
   selectedPartyIndex: number;
   party: PartyView;
@@ -789,6 +791,37 @@ export default function PartyTab({
   const equipCategory = retainedEquipCategory && availableCategories.includes(retainedEquipCategory)
     ? retainedEquipCategory
     : availableCategories.includes('armor') ? 'armor' : availableCategories[0] ?? 'armor';
+
+  // SpecRef: 9.1.3 | Read | 2-3-5 character/{characterId}/equipmentEvaluation
+  // Every displayed defense preview is evaluated against one immutable Application API snapshot. The tab only formats
+  // the returned deltas; it does not simulate equipment or recalculate character status.
+  const previewTargetSlot = selectingSlot ?? Array.from({ length: stats.maxEquipSlots }).findIndex((_, index) => !char.equipment[index]);
+  const equipmentChanges = useMemo(() => {
+    const changes: string[] = [];
+    char.equipment.forEach((item, slotIndex) => {
+      if (item?.category === equipCategory) changes.push(formatEquipmentChange(slotIndex, null));
+    });
+    if (previewTargetSlot >= 0) {
+      Object.values(inventory).forEach((variant) => {
+        if (variant.status === 'owned' && variant.count > 0 && variant.item.category === equipCategory) {
+          changes.push(formatEquipmentChange(previewTargetSlot, variant.item));
+        }
+      });
+    }
+    return [...new Set(changes)];
+  }, [char.equipment, equipCategory, inventory, previewTargetSlot]);
+  const equipmentChangeProjection = useApiRead<{
+    calculatedEquipmentChange: Array<{ change: string; equippable: boolean; physicalDefenseDelta: number; magicalDefenseDelta: number }>;
+  }>(
+    apiAdapter,
+    'read/build/character/{characterId}/equipmentEvaluation',
+    equipmentChanges.length > 0 ? { pathParameters: { characterId: char.id }, parameters: { equipmentChanges } } : null,
+    [char.id, equipmentChanges.join('|')],
+  );
+  const equipmentChangeByTarget = useMemo(
+    () => new Map((equipmentChangeProjection?.calculatedEquipmentChange ?? []).map((entry) => [entry.change, entry])),
+    [equipmentChangeProjection],
+  );
 
   useEffect(() => {
     setShowBaseStatHelp(false);
@@ -2728,28 +2761,13 @@ export default function PartyTab({
         };
 
         const applyProjectedDefenseToStatsText = (displayItem: DisplayItem, statsText: string): string => {
-          const currentPhysicalDefense = Math.round(stats.physicalDefense);
-          const currentMagicalDefense = Math.round(stats.magicalDefense);
-
-          let targetSlotIndex: number | null = null;
-          let targetItem: Item | null = null;
-
-          if (displayItem.isEquipped && displayItem.slotIndex !== undefined) {
-            targetSlotIndex = displayItem.slotIndex;
-            targetItem = null;
-          } else {
-            targetSlotIndex = getEquipTargetSlotIndex();
-            targetItem = targetSlotIndex !== null ? displayItem.item : null;
-          }
-
-          if (targetSlotIndex === null) return statsText;
-
-          const nextCharacter = replaceCharacterEquipment(char, targetSlotIndex, targetItem);
-          const nextStats = computeCharacterStats(nextCharacter, party.level);
-          const nextPhysicalDefense = Math.round(nextStats.physicalDefense);
-          const nextMagicalDefense = Math.round(nextStats.magicalDefense);
-          const physicalDefenseDelta = nextPhysicalDefense - currentPhysicalDefense;
-          const magicalDefenseDelta = nextMagicalDefense - currentMagicalDefense;
+          const targetSlotIndex = displayItem.isEquipped ? displayItem.slotIndex : getEquipTargetSlotIndex();
+          if (targetSlotIndex === undefined || targetSlotIndex === null) return statsText;
+          const target = formatEquipmentChange(targetSlotIndex, displayItem.isEquipped ? null : displayItem.item);
+          const evaluation = equipmentChangeByTarget.get(target);
+          if (!evaluation) return statsText;
+          const physicalDefenseDelta = evaluation.physicalDefenseDelta;
+          const magicalDefenseDelta = evaluation.magicalDefenseDelta;
           const displaySignMultiplier = displayItem.isEquipped ? -1 : 1;
           const displayedPhysicalDefenseDelta = physicalDefenseDelta * displaySignMultiplier;
           const displayedMagicalDefenseDelta = magicalDefenseDelta * displaySignMultiplier;

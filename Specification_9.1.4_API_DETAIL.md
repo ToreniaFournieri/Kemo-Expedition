@@ -450,6 +450,13 @@ definitions in 9.1.3.
   keep the request order and include the specified Jewel's `d.` and `c.` effects.
   The item and Jewel need not be owned. Evaluation does not change state,
   revision, receipts, or equipment history.
+  `equipmentChanges` is an optional one-or-repeated query parameter for slot-aware
+  previews. A replacement is `<slotIndex>=<Item Format>/<jewelType>:<jewelRank>`
+  (`0:0` means no Jewel), and a removal is `<slotIndex>=0`. Each unique change is
+  evaluated independently against the same immutable snapshot and reports
+  `equippable`, `physicalDefenseDelta`, and `magicalDefenseDelta`. An out-of-range
+  slot, malformed item/Jewel, incompatible Jewel, duplicate change, or request
+  containing neither `targetItems` nor `equipmentChanges` is `invalid_request`.
 * For `removeEquipment`, `lockEquipment`, `unlockEquipment`, `jewelAttach`, and
   `jewelRemove`, `targetEquipment` is one slot index or an array of slot indices.
   Duplicate indices are invalid.
@@ -813,7 +820,8 @@ type DiaryEntry = {
 
 * `equipmentEvaluation` returns `{calculatedItemStatus: {item: string, equippable:
   boolean, stats: {key: string, value: number, unit: "number"|"ratio"}[],
-  abilities: string[]}[]}`. `item` echoes the requested
+  abilities: string[]}[], calculatedEquipmentChange: {change: string, equippable:
+  boolean, physicalDefenseDelta: number, magicalDefenseDelta: number}[]}`. `item` echoes the requested
   `<Item Format>/<jewelType>:<jewelRank>`. `stats`
   holds only the facts that apply to the item, in this order: `d.melee_attack`,
   `d.ranged_attack`, `d.magical_attack`, `d.melee_NoA`, `d.ranged_NoA`,

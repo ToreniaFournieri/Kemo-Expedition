@@ -4927,6 +4927,7 @@ export function HomeScreen({
       if (!partyView || partyView.id !== currentParty.id) return null;
       return (
         <PartyTab
+          apiAdapter={inProcessApiRef.current}
           parties={partySummaries}
           selectedPartyIndex={safeSelectedPartyIndex}
           party={partyView}

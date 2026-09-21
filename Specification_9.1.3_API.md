@@ -685,13 +685,30 @@ Path Parameters
 
 * Parameters:
   * `targetItems`
+    * Optional when `equipmentChanges` is supplied.
     * One item or an array of items.
     * Each item uses `<Item Format>/<jewelType>:<jewelRank>`.
+  * `equipmentChanges`
+    * Optional when `targetItems` is supplied.
+    * One hypothetical equipment change or an array of unique changes.
+    * Replacement format: `<slotIndex>=<Item Format>/<jewelType>:<jewelRank>`.
+    * Use `0:0` as the Jewel part when the replacement item has no Jewel.
+    * Removal format: `<slotIndex>=0`.
+    * Every slot is evaluated independently against the same immutable character
+      snapshot. The item does not need to be owned.
+  * At least one of `targetItems` or `equipmentChanges` is required.
 
 * Return:
   * `calculatedItemStatus`
     * Calculated item status for each target item after applying bonuses and modifiers specific to the target character.
     * Includes character-specific equipment bonuses that are not included in the item's standalone `calculatedBasePower`.
+  * `calculatedEquipmentChange`
+    * Ordered results for `equipmentChanges`; an empty array when none were requested.
+    * Each result includes the echoed `change`, `equippable`,
+      `physicalDefenseDelta`, and `magicalDefenseDelta`.
+    * Defense deltas compare the complete character status before and after the
+      hypothetical replacement or removal, including item and Jewel `d.` and `c.`
+      effects. Evaluation never changes equipment, history, RNG, or revision.
 
 
 

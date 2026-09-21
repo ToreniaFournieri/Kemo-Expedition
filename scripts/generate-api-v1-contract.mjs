@@ -28,12 +28,14 @@ const stableKey = Type.String({ minLength: 1, maxLength: 200 });
 const itemFormat = Type.String({ pattern: '^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))$' });
 const presentItemFormat = Type.String({ pattern: '^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$' });
 const evaluatedItemFormat = Type.String({ pattern: '^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:might|arcana|fort|ward|shade|focus):[1-8]$' });
+const equipmentChangeFormat = Type.String({ pattern: '^[0-9]+=(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0))$' });
 // ajv-formats is not a project dependency, so ISO instants are validated by pattern rather than the `format` keyword.
 const isoTimestamp = Type.String({ pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$' });
 // Concrete example values for schema objects whose pattern is too specific for the generic string heuristics in sample().
 const sampleOverrides = new WeakMap();
 sampleOverrides.set(presentItemFormat, '0/1101/2/0');
-sampleOverrides.set(evaluatedItemFormat, '0/1101/2/0/might:1');
+sampleOverrides.set(evaluatedItemFormat, '0/1101/2/0/fort:1');
+sampleOverrides.set(equipmentChangeFormat, '0=0/1101/2/0/0:0');
 const equipmentTarget = Type.Union([Type.Integer({ minimum: 0 }), nonEmptyArray(Type.Integer({ minimum: 0 }), { uniqueItems: true })]);
 const language = literals('ja', 'en', 'zh-CN', 'zh-TW', 'ko');
 const environment = literals('dev', 'beta', 'orca', 'prod', 'desktop');
@@ -56,7 +58,10 @@ const querySchemas = {
   'read/observation/diary': strict({ partyNumber: optional(partyNumber), diaryEntryId: optional(integerId) }),
   'read/expedition/{p}/latestBattleLog': strict({ logId: optional(Type.String({ minLength: 1, maxLength: 200 })) }),
   'read/build/character/{characterId}/equipmentSet': strict({ equipmentSetId: optional(Type.Union([integerId, nonEmptyArray(integerId, { uniqueItems: true })])), isEquipmentSetDetail: optional(Type.Boolean(), false) }),
-  'read/build/character/{characterId}/equipmentEvaluation': strict({ targetItems: Type.Union([evaluatedItemFormat, nonEmptyArray(evaluatedItemFormat, { uniqueItems: true })]) }),
+  'read/build/character/{characterId}/equipmentEvaluation': strict({
+    targetItems: optional(Type.Union([evaluatedItemFormat, nonEmptyArray(evaluatedItemFormat, { uniqueItems: true })])),
+    equipmentChanges: optional(Type.Union([equipmentChangeFormat, nonEmptyArray(equipmentChangeFormat, { uniqueItems: true })])),
+  }),
   'read/base/searchItems': strict({ state: optional(literals('owned', 'equipped', 'sold', 'all'), 'owned'), category: optional(itemCategory), rarity: optional(rarity, 'all'), superRare: optional(Type.Boolean()), superRareId: optional(Type.Integer({ minimum: 0 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), limit: optional(Type.Integer({ minimum: 1, maximum: 5000 }), 10) }),
   'read/base/enemyFormList': strict({ enemyType: optional(stableKey), enemyId: optional(integerId) }),
   'resources/glossary': strict({ category: literals('Ab.', 'Base.', 'Fixed.', 'Inc.', 'Mech.', 'Faith.', 'Magic.', 'Quest.', 'Terrain.'), glossaryId: optional(stableKey), ...page }),
@@ -233,6 +238,12 @@ const responseDataSchemas = {
       equippable: Type.Boolean(),
       stats: Type.Array(strict({ key: stableKey, value: Type.Number(), unit: literals('number', 'ratio') })),
       abilities: Type.Array(stableKey),
+    })),
+    calculatedEquipmentChange: Type.Array(strict({
+      change: equipmentChangeFormat,
+      equippable: Type.Boolean(),
+      physicalDefenseDelta: Type.Integer(),
+      magicalDefenseDelta: Type.Integer(),
     })),
   }),
   'read/base/searchItems': strict({ items: Type.Array(itemStackFormat) }),

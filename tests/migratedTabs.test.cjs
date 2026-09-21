@@ -26,9 +26,6 @@ const DISPLAY_IMPORTS = {
 const REVIEWED_EXCEPTIONS = {
   // Default name chosen when the race changes (Spec 8.2.3): an unsaved draft, chosen before any commit exists.
   gameplayRandom: ['gameplayRandom'],
-  // The item defense preview recomputes one hypothetical equipment change; API ownership needs an `equip` simulation (open spec question).
-  characterComputation: ['computeCharacterStats'],
-  equipment: ['replaceCharacterEquipment'],
   // Constants and transport-facing UI types; saved-set availability itself is projected by the Application API.
   equipmentSets: ['MAX_SAVED_EQUIPMENT_SETS', 'type EquipmentSetLoadMode'],
 };

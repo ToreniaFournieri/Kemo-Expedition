@@ -17,7 +17,7 @@ import { getItemBasePower } from '../../game/itemPower.ts';
 import { evaluateItemForCharacter } from '../../game/itemEvaluation.ts';
 import { getItemRarityById } from '../../game/itemRarity.ts';
 import { describeItem, describeJewel, formatItemDetails, type ItemDetails, type ItemDetailsMode } from './itemDetails.ts';
-import { formatEquipmentEntry, formatItem, parseEvaluatedItemFormat } from './itemFormat.ts';
+import { formatEquipmentEntry, formatItem, parseEquipmentChange, parseEvaluatedItemFormat } from './itemFormat.ts';
 import { isJewelAllowedForCategory, JEWEL_DEFS } from '../../game/jewel.ts';
 import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
 import { describeUiPreferenceCatalog, listUiPreferences } from './uiPreferenceCatalog.ts';
@@ -341,13 +341,34 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     }
     if (characterRead[2] === 'equipmentEvaluation') {
       // SpecRef: 9.1.3 | Read | 2-3-5 character/{characterId}/equipmentEvaluation
-      const requested = Array.isArray(parameters.targetItems) ? parameters.targetItems : [parameters.targetItems];
-      if (requested.length === 0 || new Set(requested).size !== requested.length) throw new Error('invalid_request:targetItems');
+      const requested = parameters.targetItems === undefined ? [] : Array.isArray(parameters.targetItems) ? parameters.targetItems : [parameters.targetItems];
+      const requestedChanges = parameters.equipmentChanges === undefined ? [] : Array.isArray(parameters.equipmentChanges) ? parameters.equipmentChanges : [parameters.equipmentChanges];
+      if (requested.length === 0 && requestedChanges.length === 0) throw new Error('invalid_request:targetItems');
+      if (new Set(requested).size !== requested.length) throw new Error('invalid_request:targetItems');
+      if (new Set(requestedChanges).size !== requestedChanges.length) throw new Error('invalid_request:equipmentChanges');
+      const currentStats = computePartyStats(party).characterStats[characterIndex];
       return {
         calculatedItemStatus: requested.map((entry) => {
           const item = typeof entry === 'string' ? parseEvaluatedItemFormat(entry) : null;
           if (!item || !item.jewel || !isJewelAllowedForCategory(item.category, item.jewel.key)) throw new Error('invalid_request:targetItems');
           return { item: entry as string, ...evaluateItemForCharacter(character, item, party.level), abilities: describeItem(item).ability };
+        }),
+        calculatedEquipmentChange: requestedChanges.map((entry) => {
+          const change = typeof entry === 'string' ? parseEquipmentChange(entry) : null;
+          if (!change || change.slotIndex >= currentStats.maxEquipSlots
+            || (change.item?.jewel && !isJewelAllowedForCategory(change.item.category, change.item.jewel.key))) {
+            throw new Error('invalid_request:equipmentChanges');
+          }
+          const equipment = [...character.equipment];
+          equipment[change.slotIndex] = change.item;
+          const nextCharacter = { ...character, equipment };
+          const nextStats = computePartyStats({ ...party, characters: party.characters.map((candidate, index) => index === characterIndex ? nextCharacter : candidate) }).characterStats[characterIndex];
+          return {
+            change: entry as string,
+            equippable: change.item === null || evaluateItemForCharacter(character, change.item, party.level).equippable,
+            physicalDefenseDelta: Math.round(nextStats.physicalDefense) - Math.round(currentStats.physicalDefense),
+            magicalDefenseDelta: Math.round(nextStats.magicalDefense) - Math.round(currentStats.magicalDefense),
+          };
         }),
       };
     }

@@ -23,6 +23,7 @@ assert.equal(operation.path, '/api/v1/read/build/character/{characterId}/equipme
 assert.equal(catalog.operations.some((entry) => entry.operationId === 'commit/build/character/{characterId}/equipmentEvaluation'), false, 'the obsolete Commit route is absent');
 const validate = new Ajv({ strict: false }).compile(operation.response.data);
 const evaluate = (characterId: number, targetItems: unknown, from = state) => buildApiV1ReadData(`read/build/character/${characterId}/equipmentEvaluation`, from, { targetItems }, context);
+const evaluateChanges = (characterId: number, equipmentChanges: unknown, from = state) => buildApiV1ReadData(`read/build/character/${characterId}/equipmentEvaluation`, from, { equipmentChanges }, context);
 
 type Entry = { item: string; equippable: boolean; stats: { key: string; value: number; unit: string }[]; abilities: string[] };
 const format = (item: { id: number }, enhancement: number, superRare: number, jewel?: string, locked = 0) => {
@@ -45,7 +46,36 @@ const sword = ITEMS.find((item) => item.category === 'sword')!;
   assert.deepEqual((many as { calculatedItemStatus: Entry[] }).calculatedItemStatus.map((entry) => entry.item), targets, 'results keep the request order');
 }
 
-// 2. Every value equals what the Party pane prints for that item and specified Jewel, over many items and characters.
+// 2. Slot-aware replacements and removals report the complete character-defense delta without mutating the snapshot.
+{
+  const before = JSON.stringify(state);
+  const slotIndex = 0;
+  const armor = getItemById(1101)!;
+  const replacement = `${slotIndex}=0/${armor.id}/0/0/0:0`;
+  const removal = `${slotIndex}=0`;
+  const result = await evaluateChanges(character.id, [replacement, removal]) as {
+    calculatedItemStatus: Entry[];
+    calculatedEquipmentChange: Array<{ change: string; equippable: boolean; physicalDefenseDelta: number; magicalDefenseDelta: number }>;
+  };
+  assert.equal(JSON.stringify(state), before);
+  assert.deepEqual(result.calculatedItemStatus, []);
+  assert.equal(validate(result), true, JSON.stringify(validate.errors));
+
+  const current = computeCharacterStats(character, state.parties[0].level);
+  const expectedDelta = (item: typeof character.equipment[number]) => {
+    const equipment = [...character.equipment];
+    equipment[slotIndex] = item;
+    const next = computeCharacterStats({ ...character, equipment }, state.parties[0].level);
+    return {
+      physicalDefenseDelta: Math.round(next.physicalDefense) - Math.round(current.physicalDefense),
+      magicalDefenseDelta: Math.round(next.magicalDefense) - Math.round(current.magicalDefense),
+    };
+  };
+  assert.deepEqual(result.calculatedEquipmentChange[0], { change: replacement, equippable: true, ...expectedDelta({ ...armor, enhancement: 0, superRare: 0, isLocked: false, jewel: null }) });
+  assert.deepEqual(result.calculatedEquipmentChange[1], { change: removal, equippable: true, ...expectedDelta(null) });
+}
+
+// 3. Every value equals what the Party pane prints for that item and specified Jewel, over many items and characters.
 {
   let compared = 0;
   for (const target of state.parties[0].characters) {
@@ -74,7 +104,7 @@ const sword = ITEMS.find((item) => item.category === 'sword')!;
         if (stat('d.physical_defense')) assert.ok(text.includes(t('home.itemStat.physicalDefenseFlat', { value: stat('d.physical_defense') })), text);
         if (stat('d.magical_defense')) assert.ok(text.includes(t('home.itemStat.magicalDefenseFlat', { value: stat('d.magical_defense') })), text);
         if (stat('d.HP')) assert.ok(text.includes(`HP+${stat('d.HP')}`), text);
-        assert.equal(validate({ calculatedItemStatus: [entry] }), true);
+        assert.equal(validate({ calculatedItemStatus: [entry], calculatedEquipmentChange: [] }), true);
         compared += 1;
       }
     }
@@ -82,7 +112,7 @@ const sword = ITEMS.find((item) => item.category === 'sword')!;
   assert.ok(compared > 300, `${compared} evaluations compared`);
 }
 
-// 3. Character-specific: a katana bonus scales only katana items, and equippability follows the character's aptitude.
+// 4. Character-specific: a katana bonus scales only katana items, and equippability follows the character's aptitude.
 {
   const katana = ITEMS.find((item) => item.category === 'katana')!;
   const variant = (mainClassId: 'samurai' | 'guardian') => ({ ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, characters: party.characters.map((entry) => entry.id === character.id ? { ...entry, mainClassId, subClassId: mainClassId } : entry) } : party) });
@@ -101,7 +131,7 @@ const sword = ITEMS.find((item) => item.category === 'sword')!;
   assert.equal((await first(caster, ITEMS.find((item) => item.category === 'armor')!)).equippable, true, 'defensive gear needs no aptitude');
 }
 
-// 4. Invalid queries are rejected without partial results.
+// 5. Invalid queries are rejected without partial results.
 {
   const fail = (targetItems: unknown, expected: RegExp) => assert.rejects(() => evaluate(character.id, targetItems), expected);
   await fail([], /invalid_request:targetItems/);
@@ -114,6 +144,11 @@ const sword = ITEMS.find((item) => item.category === 'sword')!;
   await fail(`0/${sword.id}/0/0`, /invalid_request:targetItems/);
   await fail([format(sword, 0, 0), format(sword, 0, 0)], /invalid_request:targetItems/);
   await fail([format(sword, 0, 0), 'nope'], /invalid_request:targetItems/);
+  await fail(undefined, /invalid_request:targetItems/);
+  await assert.rejects(() => evaluateChanges(character.id, ['0=0', '0=0']), /invalid_request:equipmentChanges/);
+  await assert.rejects(() => evaluateChanges(character.id, '999=0'), /invalid_request:equipmentChanges/);
+  await assert.rejects(() => evaluateChanges(character.id, `0=0/${sword.id}/0/0/arcana:1`), /invalid_request:equipmentChanges/);
+  await assert.rejects(() => evaluateChanges(character.id, 'bad'), /invalid_request:equipmentChanges/);
   await assert.rejects(() => evaluate(9_999_999, format(sword, 0, 0)), /not_found/);
 }
 console.log('apiV1ItemEvaluation profile ok');

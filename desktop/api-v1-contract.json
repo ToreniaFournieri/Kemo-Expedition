@@ -8560,9 +8560,6 @@
       "query": {
         "additionalProperties": false,
         "type": "object",
-        "required": [
-          "targetItems"
-        ],
         "properties": {
           "targetItems": {
             "anyOf": [
@@ -8580,6 +8577,23 @@
                 }
               }
             ]
+          },
+          "equipmentChanges": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]+=(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0))$",
+                "type": "string"
+              },
+              {
+                "minItems": 1,
+                "uniqueItems": true,
+                "type": "array",
+                "items": {
+                  "pattern": "^[0-9]+=(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0))$",
+                  "type": "string"
+                }
+              }
+            ]
           }
         }
       },
@@ -8593,7 +8607,8 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "calculatedItemStatus"
+            "calculatedItemStatus",
+            "calculatedEquipmentChange"
           ],
           "properties": {
             "calculatedItemStatus": {
@@ -8659,6 +8674,34 @@
                   }
                 }
               }
+            },
+            "calculatedEquipmentChange": {
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "change",
+                  "equippable",
+                  "physicalDefenseDelta",
+                  "magicalDefenseDelta"
+                ],
+                "properties": {
+                  "change": {
+                    "pattern": "^[0-9]+=(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0))$",
+                    "type": "string"
+                  },
+                  "equippable": {
+                    "type": "boolean"
+                  },
+                  "physicalDefenseDelta": {
+                    "type": "integer"
+                  },
+                  "magicalDefenseDelta": {
+                    "type": "integer"
+                  }
+                }
+              }
             }
           }
         },
@@ -8698,7 +8741,8 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "calculatedItemStatus"
+                "calculatedItemStatus",
+                "calculatedEquipmentChange"
               ],
               "properties": {
                 "calculatedItemStatus": {
@@ -8764,6 +8808,34 @@
                       }
                     }
                   }
+                },
+                "calculatedEquipmentChange": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "change",
+                      "equippable",
+                      "physicalDefenseDelta",
+                      "magicalDefenseDelta"
+                    ],
+                    "properties": {
+                      "change": {
+                        "pattern": "^[0-9]+=(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0))$",
+                        "type": "string"
+                      },
+                      "equippable": {
+                        "type": "boolean"
+                      },
+                      "physicalDefenseDelta": {
+                        "type": "integer"
+                      },
+                      "magicalDefenseDelta": {
+                        "type": "integer"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -8791,9 +8863,7 @@
           "pathParameters": {
             "characterId": 1
           },
-          "query": {
-            "targetItems": "0/1101/2/0/might:1"
-          }
+          "query": {}
         },
         "invalidRequest": {
           "query": {
@@ -8804,7 +8874,7 @@
           "data": {
             "calculatedItemStatus": [
               {
-                "item": "0/1101/2/0/might:1",
+                "item": "0/1101/2/0/fort:1",
                 "equippable": true,
                 "stats": [
                   {
@@ -8816,6 +8886,14 @@
                 "abilities": [
                   "xxxxxxx"
                 ]
+              }
+            ],
+            "calculatedEquipmentChange": [
+              {
+                "change": "0=0/1101/2/0/0:0",
+                "equippable": true,
+                "physicalDefenseDelta": 1,
+                "magicalDefenseDelta": 1
               }
             ]
           }

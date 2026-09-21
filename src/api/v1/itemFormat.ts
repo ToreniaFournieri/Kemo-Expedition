@@ -16,6 +16,11 @@ export function formatEquipmentEntry(slotIndex: number, item: ItemFacts, isLocke
   return `${slotIndex}/${formatItem(item, isLocked)}${jewel ? `/${jewel.key}:${jewel.rank}` : ''}`;
 }
 
+/** A read-only hypothetical equipment replacement (`<slotIndex>=<Item Format>/<Jewel Format>`), or removal (`<slotIndex>=0`). */
+export function formatEquipmentChange(slotIndex: number, item: Item | null): string {
+  return `${slotIndex}=${item ? `${formatItem(item, item.isLocked === true)}/${item.jewel ? `${item.jewel.key}:${item.jewel.rank}` : '0:0'}` : '0'}`;
+}
+
 const JEWEL_KEYS: readonly string[] = ['might', 'arcana', 'fort', 'ward', 'shade', 'focus'];
 const ENTRY = /^(\d+)\/([01])\/(\d+)\/([0-6])\/(\d+)(?:\/([a-z]+):([1-8]))?$/;
 
@@ -66,6 +71,18 @@ export function parseEvaluatedItemFormat(value: string): Item | null {
     isLocked: match[1] === '1',
     jewel: { key: match[5] as JewelKey, rank: Number(match[6]) },
   };
+}
+
+/** Parses a read-only hypothetical equipment change. `0:0` represents an item without an attached Jewel. */
+export function parseEquipmentChange(value: string): { slotIndex: number; item: Item | null } | null {
+  const match = /^(\d+)=(.+)$/.exec(value);
+  if (!match) return null;
+  const slotIndex = Number(match[1]);
+  if (!Number.isSafeInteger(slotIndex)) return null;
+  if (match[2] === '0') return { slotIndex, item: null };
+  const withoutJewel = /^(.*)\/0:0$/.exec(match[2]);
+  const item = withoutJewel ? parseItemFormat(withoutJewel[1]) : parseEvaluatedItemFormat(match[2]);
+  return item ? { slotIndex, item } : null;
 }
 
 /** Rebuilds a saved equipment set from its projection (`equipmentSet` read with detail). */

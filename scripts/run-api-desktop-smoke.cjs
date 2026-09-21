@@ -53,6 +53,11 @@ app.on('browser-window-created', (_event, window) => {
       const evaluation = await call(`/read/build/character/1/equipmentEvaluation?${evaluationQuery}`, { headers: session });
       assert.equal(evaluation.revision, overview.revision, 'equipment evaluation is a revision-neutral read');
       assert.deepEqual(evaluation.data.calculatedItemStatus.map((entry) => entry.item), evaluationTargets);
+      const equipmentChanges = ['0=0/1101/0/0/0:0', '0=0'];
+      const changeQuery = equipmentChanges.map((change) => `equipmentChanges=${encodeURIComponent(change)}`).join('&');
+      const changeEvaluation = await call(`/read/build/character/1/equipmentEvaluation?${changeQuery}`, { headers: session });
+      assert.equal(changeEvaluation.revision, overview.revision, 'equipment-change evaluation is a revision-neutral read');
+      assert.deepEqual(changeEvaluation.data.calculatedEquipmentChange.map((entry) => entry.change), equipmentChanges);
       const obsoleteEvaluation = await fetch(`${descriptor.endpoint}/commit/build/character/1/equipmentEvaluation`, {
         method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: '{}',
       });
