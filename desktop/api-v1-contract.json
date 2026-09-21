@@ -8410,6 +8410,291 @@
     },
     {
       "method": "GET",
+      "path": "/api/v1/read/build/character/{characterId}/equipmentEvaluation",
+      "access": "session",
+      "purpose": "Evaluate items and Jewels for the character.",
+      "operationId": "read/build/character/{characterId}/equipmentEvaluation",
+      "transport": "query",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "targetItems"
+        ],
+        "properties": {
+          "targetItems": {
+            "anyOf": [
+              {
+                "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:might|arcana|fort|ward|shade|focus):[1-8]$",
+                "type": "string"
+              },
+              {
+                "minItems": 1,
+                "uniqueItems": true,
+                "type": "array",
+                "items": {
+                  "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:might|arcana|fort|ward|shade|focus):[1-8]$",
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "response": {
+        "data": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "calculatedItemStatus"
+          ],
+          "properties": {
+            "calculatedItemStatus": {
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "item",
+                  "equippable",
+                  "stats",
+                  "abilities"
+                ],
+                "properties": {
+                  "item": {
+                    "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:might|arcana|fort|ward|shade|focus):[1-8]$",
+                    "type": "string"
+                  },
+                  "equippable": {
+                    "type": "boolean"
+                  },
+                  "stats": {
+                    "type": "array",
+                    "items": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "key",
+                        "value",
+                        "unit"
+                      ],
+                      "properties": {
+                        "key": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "number"
+                        },
+                        "unit": {
+                          "anyOf": [
+                            {
+                              "const": "number",
+                              "type": "string"
+                            },
+                            {
+                              "const": "ratio",
+                              "type": "string"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "abilities": {
+                    "type": "array",
+                    "items": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "envelope": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "apiVersion",
+            "schemaVersion",
+            "requestId",
+            "observedAt",
+            "data"
+          ],
+          "properties": {
+            "apiVersion": {
+              "const": "v1",
+              "type": "string"
+            },
+            "schemaVersion": {
+              "const": 1,
+              "type": "number"
+            },
+            "requestId": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            },
+            "revision": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "observedAt": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "calculatedItemStatus"
+              ],
+              "properties": {
+                "calculatedItemStatus": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "item",
+                      "equippable",
+                      "stats",
+                      "abilities"
+                    ],
+                    "properties": {
+                      "item": {
+                        "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:might|arcana|fort|ward|shade|focus):[1-8]$",
+                        "type": "string"
+                      },
+                      "equippable": {
+                        "type": "boolean"
+                      },
+                      "stats": {
+                        "type": "array",
+                        "items": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "key",
+                            "value",
+                            "unit"
+                          ],
+                          "properties": {
+                            "key": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "number"
+                            },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "const": "number",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "ratio",
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "abilities": {
+                        "type": "array",
+                        "items": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "errors": [
+        "authentication_failed",
+        "authentication_required",
+        "control_lease_expired",
+        "control_lease_invalid",
+        "internal_error",
+        "invalid_request",
+        "login_required",
+        "not_found",
+        "runtime_unavailable"
+      ],
+      "restrictions": {
+        "environments": "all",
+        "requiresDebugMode": false,
+        "requiresLogin": true
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "characterId": 1
+          },
+          "query": {
+            "targetItems": "0/1101/2/0/might:1"
+          }
+        },
+        "invalidRequest": {
+          "query": {
+            "unexpectedMember": true
+          }
+        },
+        "response": {
+          "data": {
+            "calculatedItemStatus": [
+              {
+                "item": "0/1101/2/0/might:1",
+                "equippable": true,
+                "stats": [
+                  {
+                    "key": "xxxxxxx",
+                    "value": 1,
+                    "unit": "number"
+                  }
+                ],
+                "abilities": [
+                  "xxxxxxx"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
       "path": "/api/v1/read/base/searchItems",
       "access": "session",
       "purpose": "Search known items.",
@@ -15362,380 +15647,6 @@
               "undoAvailable": true,
               "redoAvailable": true
             }
-          }
-        }
-      }
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/commit/build/character/{characterId}/equipmentEvaluation",
-      "access": "session",
-      "purpose": "Evaluate items for the character.",
-      "operationId": "commit/build/character/{characterId}/equipmentEvaluation",
-      "transport": "json",
-      "pathParameters": {
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "characterId"
-        ],
-        "properties": {
-          "characterId": {
-            "minimum": 1,
-            "type": "integer"
-          }
-        }
-      },
-      "query": {
-        "additionalProperties": false,
-        "type": "object",
-        "properties": {}
-      },
-      "body": {
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "expectedRevision",
-          "idempotencyKey",
-          "parameters"
-        ],
-        "properties": {
-          "expectedRevision": {
-            "minimum": 0,
-            "type": "integer"
-          },
-          "idempotencyKey": {
-            "minLength": 16,
-            "maxLength": 128,
-            "pattern": "^[\\x20-\\x7e]+$",
-            "type": "string"
-          },
-          "parameters": {
-            "additionalProperties": false,
-            "type": "object",
-            "required": [
-              "targetItems"
-            ],
-            "properties": {
-              "targetItems": {
-                "anyOf": [
-                  {
-                    "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$",
-                    "type": "string"
-                  },
-                  {
-                    "minItems": 1,
-                    "uniqueItems": true,
-                    "type": "array",
-                    "items": {
-                      "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$",
-                      "type": "string"
-                    }
-                  }
-                ]
-              }
-            }
-          },
-          "confirmationToken": {
-            "minLength": 1,
-            "maxLength": 512,
-            "type": "string"
-          }
-        }
-      },
-      "response": {
-        "data": {
-          "additionalProperties": false,
-          "type": "object",
-          "required": [
-            "calculatedItemStatus"
-          ],
-          "properties": {
-            "calculatedItemStatus": {
-              "type": "array",
-              "items": {
-                "additionalProperties": false,
-                "type": "object",
-                "required": [
-                  "item",
-                  "equippable",
-                  "stats",
-                  "abilities"
-                ],
-                "properties": {
-                  "item": {
-                    "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$",
-                    "type": "string"
-                  },
-                  "equippable": {
-                    "type": "boolean"
-                  },
-                  "stats": {
-                    "type": "array",
-                    "items": {
-                      "additionalProperties": false,
-                      "type": "object",
-                      "required": [
-                        "key",
-                        "value",
-                        "unit"
-                      ],
-                      "properties": {
-                        "key": {
-                          "minLength": 1,
-                          "maxLength": 200,
-                          "type": "string"
-                        },
-                        "value": {
-                          "type": "number"
-                        },
-                        "unit": {
-                          "anyOf": [
-                            {
-                              "const": "number",
-                              "type": "string"
-                            },
-                            {
-                              "const": "ratio",
-                              "type": "string"
-                            }
-                          ]
-                        }
-                      }
-                    }
-                  },
-                  "abilities": {
-                    "type": "array",
-                    "items": {
-                      "minLength": 1,
-                      "maxLength": 200,
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "envelope": {
-          "additionalProperties": false,
-          "type": "object",
-          "required": [
-            "apiVersion",
-            "schemaVersion",
-            "requestId",
-            "previousRevision",
-            "revision",
-            "committedAt",
-            "data",
-            "effects",
-            "changedResources"
-          ],
-          "properties": {
-            "apiVersion": {
-              "const": "v1",
-              "type": "string"
-            },
-            "schemaVersion": {
-              "const": 1,
-              "type": "number"
-            },
-            "requestId": {
-              "minLength": 1,
-              "maxLength": 200,
-              "type": "string"
-            },
-            "previousRevision": {
-              "minimum": 0,
-              "type": "integer"
-            },
-            "revision": {
-              "minimum": 0,
-              "type": "integer"
-            },
-            "committedAt": {
-              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
-              "type": "string"
-            },
-            "data": {
-              "additionalProperties": false,
-              "type": "object",
-              "required": [
-                "calculatedItemStatus"
-              ],
-              "properties": {
-                "calculatedItemStatus": {
-                  "type": "array",
-                  "items": {
-                    "additionalProperties": false,
-                    "type": "object",
-                    "required": [
-                      "item",
-                      "equippable",
-                      "stats",
-                      "abilities"
-                    ],
-                    "properties": {
-                      "item": {
-                        "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$",
-                        "type": "string"
-                      },
-                      "equippable": {
-                        "type": "boolean"
-                      },
-                      "stats": {
-                        "type": "array",
-                        "items": {
-                          "additionalProperties": false,
-                          "type": "object",
-                          "required": [
-                            "key",
-                            "value",
-                            "unit"
-                          ],
-                          "properties": {
-                            "key": {
-                              "minLength": 1,
-                              "maxLength": 200,
-                              "type": "string"
-                            },
-                            "value": {
-                              "type": "number"
-                            },
-                            "unit": {
-                              "anyOf": [
-                                {
-                                  "const": "number",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "ratio",
-                                  "type": "string"
-                                }
-                              ]
-                            }
-                          }
-                        }
-                      },
-                      "abilities": {
-                        "type": "array",
-                        "items": {
-                          "minLength": 1,
-                          "maxLength": 200,
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "effects": {
-              "type": "array",
-              "items": {
-                "additionalProperties": false,
-                "type": "object",
-                "required": [
-                  "key",
-                  "args"
-                ],
-                "properties": {
-                  "key": {
-                    "minLength": 1,
-                    "maxLength": 200,
-                    "type": "string"
-                  },
-                  "args": {
-                    "type": "object",
-                    "patternProperties": {
-                      "^(.*)$": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          },
-                          {
-                            "type": "boolean"
-                          }
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "changedResources": {
-              "type": "array",
-              "items": {
-                "minLength": 1,
-                "type": "string"
-              }
-            }
-          }
-        }
-      },
-      "errors": [
-        "authentication_failed",
-        "authentication_required",
-        "busy",
-        "control_lease_expired",
-        "control_lease_invalid",
-        "idempotency_conflict",
-        "idempotency_expired",
-        "illegal_action",
-        "internal_error",
-        "invalid_request",
-        "login_required",
-        "not_found",
-        "operation_in_progress",
-        "runtime_unavailable",
-        "save_failed",
-        "stale_revision"
-      ],
-      "restrictions": {
-        "environments": "all",
-        "requiresDebugMode": false,
-        "requiresLogin": true
-      },
-      "examples": {
-        "request": {
-          "pathParameters": {
-            "characterId": 1
-          },
-          "query": {},
-          "body": {
-            "expectedRevision": 0,
-            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
-            "parameters": {
-              "targetItems": "0/1101/2/0"
-            }
-          }
-        },
-        "invalidRequest": {
-          "body": {
-            "unexpectedMember": true
-          }
-        },
-        "response": {
-          "data": {
-            "calculatedItemStatus": [
-              {
-                "item": "0/1101/2/0",
-                "equippable": true,
-                "stats": [
-                  {
-                    "key": "xxxxxxx",
-                    "value": 1,
-                    "unit": "number"
-                  }
-                ],
-                "abilities": [
-                  "xxxxxxx"
-                ]
-              }
-            ]
           }
         }
       }

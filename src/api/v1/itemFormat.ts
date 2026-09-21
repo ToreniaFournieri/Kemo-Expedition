@@ -53,6 +53,21 @@ export function parseItemFormat(value: string): Item | null {
   return { ...definition, enhancement: Number(match[3]), superRare: Number(match[4]), isLocked: match[1] === '1', jewel: null };
 }
 
+/** Rebuilds an evaluation target from `<Item Format>/<jewelType>:<jewelRank>`; `null` for a malformed or unknown value. */
+export function parseEvaluatedItemFormat(value: string): Item | null {
+  const match = /^([01])\/(\d+)\/([0-6])\/(\d+)\/([a-z]+):([1-8])$/.exec(value);
+  if (!match || !JEWEL_KEYS.includes(match[5])) return null;
+  const definition = getItemById(Number(match[2]));
+  if (!definition) return null;
+  return {
+    ...definition,
+    enhancement: Number(match[3]),
+    superRare: Number(match[4]),
+    isLocked: match[1] === '1',
+    jewel: { key: match[5] as JewelKey, rank: Number(match[6]) },
+  };
+}
+
 /** Rebuilds a saved equipment set from its projection (`equipmentSet` read with detail). */
 export function parseSavedEquipmentSet(projection: { equipmentSetId: number; equipmentSet: { name: string; createdAt: string; equipment?: string[] } }): SavedEquipmentSet {
   const entries: SavedEquipmentEntry[] = (projection.equipmentSet.equipment ?? []).flatMap((entry) => {

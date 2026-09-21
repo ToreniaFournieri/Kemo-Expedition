@@ -440,15 +440,16 @@ definitions in 9.1.3.
     the revision returned by the simulation as `expectedRevision`, so a change made
     in between is rejected as `stale_revision`. The trusted in-process adapter
     supplies the current revision on the caller's behalf.
-* `equipmentEvaluation` (9.1.3, 3-3-6) is a Commit operation that never changes
-  game state: it is a valid no-op (no revision change, no equipment-history entry)
-  that still records its idempotency receipt, like a `changeBuild` simulation.
-  `targetItems` is one `Item Format` value or a nonempty array of unique values
-  (`0` is not an item; the lock digit is ignored). An unknown item or an
-  out-of-range enhancement is `invalid_request`, an unknown character is
-  `not_found`, and the whole request is rejected on any invalid entry.
-  Results keep the request order. An item is evaluated without a Jewel and
-  need not be owned, so any item can be compared before it is equipped.
+* `equipmentEvaluation` (9.1.3, 2-3-5) is a Read operation. `targetItems` is one
+  `<Item Format>/<jewelType>:<jewelRank>` value or a nonempty array of unique
+  values, encoded as one or repeated `targetItems` query parameters (`0` is not
+  an item; the lock digit is ignored). An unknown item, unknown Jewel type,
+  Jewel type that cannot be attached to the item's category, or out-of-range
+  enhancement or Jewel rank is `invalid_request`; an unknown character is
+  `not_found`; and the whole request is rejected on any invalid entry. Results
+  keep the request order and include the specified Jewel's `d.` and `c.` effects.
+  The item and Jewel need not be owned. Evaluation does not change state,
+  revision, receipts, or equipment history.
 * For `removeEquipment`, `lockEquipment`, `unlockEquipment`, `jewelAttach`, and
   `jewelRemove`, `targetEquipment` is one slot index or an array of slot indices.
   Duplicate indices are invalid.
@@ -621,6 +622,7 @@ use the same operation without HTTP authentication headers.
 | GET | `/api/v1/read/build/character/{characterId}/status` | Session | Character build/options. |
 | GET | `/api/v1/read/build/character/{characterId}/equipment` | Session | Equipment/mode. |
 | GET | `/api/v1/read/build/character/{characterId}/equipmentSet` | Session | Saved equipment sets. |
+| GET | `/api/v1/read/build/character/{characterId}/equipmentEvaluation` | Session | Evaluate items and Jewels for the character. |
 | GET | `/api/v1/read/base/searchItems` | Session | Search known items. |
 | GET | `/api/v1/read/base/jewelPriorityParty` | Session | Jewel priority. |
 | GET | `/api/v1/read/base/shopInfo` | Session | Shop status/information. |
@@ -642,7 +644,6 @@ use the same operation without HTTP authentication headers.
 | POST | `/api/v1/commit/build/character/{characterId}/removeAllEquipment` | Session | Remove all equipment. |
 | POST | `/api/v1/commit/build/character/{characterId}/removeEquipment` | Session | Remove selected slots. |
 | POST | `/api/v1/commit/build/character/{characterId}/equip` | Session | Equip owned items. |
-| POST | `/api/v1/commit/build/character/{characterId}/equipmentEvaluation` | Session | Evaluate items for the character. |
 | POST | `/api/v1/commit/build/character/{characterId}/lockEquipment` | Session | Lock selected slots. |
 | POST | `/api/v1/commit/build/character/{characterId}/unlockEquipment` | Session | Unlock selected slots. |
 | POST | `/api/v1/commit/build/character/{characterId}/autoEquipment` | Session | Set/run Auto Equipment. |
@@ -812,18 +813,21 @@ type DiaryEntry = {
 
 * `equipmentEvaluation` returns `{calculatedItemStatus: {item: string, equippable:
   boolean, stats: {key: string, value: number, unit: "number"|"ratio"}[],
-  abilities: string[]}[]}`. `item` echoes the requested `Item Format`. `stats`
+  abilities: string[]}[]}`. `item` echoes the requested
+  `<Item Format>/<jewelType>:<jewelRank>`. `stats`
   holds only the facts that apply to the item, in this order: `d.melee_attack`,
   `d.ranged_attack`, `d.magical_attack`, `d.melee_NoA`, `d.ranged_NoA`,
   `d.magical_NoA`, `d.physical_defense`, `d.magical_defense`, `d.HP`,
-  `c.melee_NoA`, `c.ranged_NoA`, `c.magical_NoA`, `c.accuracy`, `c.evasion`,
+  `c.melee_NoA`, `c.ranged_NoA`, `c.magical_NoA`, `c.physical_attack`,
+  `c.magical_attack`, `c.physical_defense`, `c.magical_defense`, `c.accuracy`, `c.evasion`,
   `c.penet`, `b.vitality`, `b.strength`, `b.intelligence`, `b.mind`,
   `e.<element>`, then always `f.category_multiplier` (the character's
   `c.<category>_x1.x` product for the item's category) and `f.item_multiplier`
   (enhancement, Super Rare title, the item's own multipliers, and the category
   multiplier). Attack, defense, and HP values are whole numbers scaled by
   `f.item_multiplier`; `d.HP` also carries the character's growth and
-  vitality/mind scale; a positive attack-count value scales and keeps two
+  vitality/mind scale; the specified Jewel contributes its scaled `d.` values
+  and its `c.` bonus; a positive attack-count value scales and keeps two
   decimals while a penalty stays fixed. These are the values the Party pane
   prints for the item. `equippable` is whether the character has the equipment
   aptitude for the item's category; an item that cannot be equipped is still

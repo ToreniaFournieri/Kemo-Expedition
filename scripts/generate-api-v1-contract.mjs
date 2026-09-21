@@ -27,11 +27,13 @@ const partyNumber = Type.Integer({ minimum: 1, maximum: 6 });
 const stableKey = Type.String({ minLength: 1, maxLength: 200 });
 const itemFormat = Type.String({ pattern: '^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))$' });
 const presentItemFormat = Type.String({ pattern: '^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$' });
+const evaluatedItemFormat = Type.String({ pattern: '^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:might|arcana|fort|ward|shade|focus):[1-8]$' });
 // ajv-formats is not a project dependency, so ISO instants are validated by pattern rather than the `format` keyword.
 const isoTimestamp = Type.String({ pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$' });
 // Concrete example values for schema objects whose pattern is too specific for the generic string heuristics in sample().
 const sampleOverrides = new WeakMap();
 sampleOverrides.set(presentItemFormat, '0/1101/2/0');
+sampleOverrides.set(evaluatedItemFormat, '0/1101/2/0/might:1');
 const equipmentTarget = Type.Union([Type.Integer({ minimum: 0 }), nonEmptyArray(Type.Integer({ minimum: 0 }), { uniqueItems: true })]);
 const language = literals('ja', 'en', 'zh-CN', 'zh-TW', 'ko');
 const environment = literals('dev', 'beta', 'orca', 'prod', 'desktop');
@@ -54,6 +56,7 @@ const querySchemas = {
   'read/observation/diary': strict({ partyNumber: optional(partyNumber), diaryEntryId: optional(integerId) }),
   'read/expedition/{p}/latestBattleLog': strict({ logId: optional(Type.String({ minLength: 1, maxLength: 200 })) }),
   'read/build/character/{characterId}/equipmentSet': strict({ equipmentSetId: optional(Type.Union([integerId, nonEmptyArray(integerId, { uniqueItems: true })])), isEquipmentSetDetail: optional(Type.Boolean(), false) }),
+  'read/build/character/{characterId}/equipmentEvaluation': strict({ targetItems: Type.Union([evaluatedItemFormat, nonEmptyArray(evaluatedItemFormat, { uniqueItems: true })]) }),
   'read/base/searchItems': strict({ state: optional(literals('owned', 'equipped', 'sold', 'all'), 'owned'), category: optional(itemCategory), rarity: optional(rarity, 'all'), superRare: optional(Type.Boolean()), superRareId: optional(Type.Integer({ minimum: 0 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), limit: optional(Type.Integer({ minimum: 1, maximum: 5000 }), 10) }),
   'read/base/enemyFormList': strict({ enemyType: optional(stableKey), enemyId: optional(integerId) }),
   'resources/glossary': strict({ category: literals('Ab.', 'Base.', 'Fixed.', 'Inc.', 'Mech.', 'Faith.', 'Magic.', 'Quest.', 'Terrain.'), glossaryId: optional(stableKey), ...page }),
@@ -94,7 +97,6 @@ const commitParameters = {
   'commit/build/character/{characterId}/removeAllEquipment': empty,
   'commit/build/character/{characterId}/removeEquipment': strict({ targetEquipment: equipmentTarget }),
   'commit/build/character/{characterId}/equip': strict({ targetEquipment: Type.Union([itemFormat, nonEmptyArray(itemFormat)]), targetSlot: optional(Type.Integer({ minimum: 0 })) }),
-  'commit/build/character/{characterId}/equipmentEvaluation': strict({ targetItems: Type.Union([presentItemFormat, nonEmptyArray(presentItemFormat, { uniqueItems: true })]) }),
   'commit/build/character/{characterId}/lockEquipment': strict({ targetEquipment: equipmentTarget }),
   'commit/build/character/{characterId}/unlockEquipment': strict({ targetEquipment: equipmentTarget }),
   'commit/build/character/{characterId}/autoEquipment': strict({ mode: literals('FULL', 'SEMI', 'OFF'), immediateAutoEquipment: optional(Type.Boolean(), false) }),
@@ -206,6 +208,14 @@ const responseDataSchemas = {
   'read/build/character/{characterId}/status': strict({ calculatedStatus, current: strict({ unique: Type.Boolean(), name: Type.String({ minLength: 1 }), racesAndGender: stableKey, mainClassId: stableKey, subClassId: stableKey, lineage: Type.Union([stableKey, Type.Null()]), predisposition: Type.Union([stableKey, Type.Null()]) }), editableFields: strict({ name: Type.Boolean(), unique: Type.Boolean() }), validOptions: strict({ racesAndGender: Type.Array(stableKey), mainClassId: Type.Array(stableKey), subClassId: Type.Array(stableKey), lineage: Type.Array(stableKey), predisposition: Type.Array(stableKey) }) }),
   'read/build/character/{characterId}/equipment': strict({ current: strict({ mode: literals('FULL', 'SEMI', 'OFF'), equipment: equipmentEntryList }), validOptions: strict({ mode: Type.Array(literals('FULL', 'SEMI', 'OFF')), numberOfEmptyEquipmentSlots: Type.Integer({ minimum: 0 }), undoEquipment: equipmentHistoryAction, redoEquipment: equipmentHistoryAction }) }),
   'read/build/character/{characterId}/equipmentSet': strict({ equipmentSets: Type.Array(strict({ equipmentSetId: integerId, equipmentSet })) }),
+  'read/build/character/{characterId}/equipmentEvaluation': strict({
+    calculatedItemStatus: Type.Array(strict({
+      item: evaluatedItemFormat,
+      equippable: Type.Boolean(),
+      stats: Type.Array(strict({ key: stableKey, value: Type.Number(), unit: literals('number', 'ratio') })),
+      abilities: Type.Array(stableKey),
+    })),
+  }),
   'read/base/searchItems': strict({ items: Type.Array(itemStackFormat) }),
   'read/base/jewelPriorityParty': strict({ current: strict({ partyNumber: Type.Union([partyNumber, Type.Literal('none')]) }), validOptions: strict({ partyNumber: Type.Array(Type.Union([partyNumber, Type.Literal('none')])) }) }),
   'read/base/shopInfo': strict({ intimacy: Type.Integer({ minimum: 0, maximum: 99 }), dialogue: semanticText, paidRefreshCountdown: Type.Integer({ minimum: 0 }), paidRefreshPrice: Type.Integer({ minimum: 0 }) }),
@@ -227,14 +237,6 @@ const responseDataSchemas = {
   'commit/build/character/{characterId}/removeAllEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/removeEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/equip': strict({ current: equipmentCommitCurrent }),
-  'commit/build/character/{characterId}/equipmentEvaluation': strict({
-    calculatedItemStatus: Type.Array(strict({
-      item: presentItemFormat,
-      equippable: Type.Boolean(),
-      stats: Type.Array(strict({ key: stableKey, value: Type.Number(), unit: literals('number', 'ratio') })),
-      abilities: Type.Array(stableKey),
-    })),
-  }),
   'commit/build/character/{characterId}/lockEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/unlockEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/autoEquipment': strict({

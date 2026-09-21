@@ -14,10 +14,11 @@ import { getSavedEquipmentSlot } from '../../game/equipmentSets.ts';
 import { computePartyStats } from '../../game/partyComputation.ts';
 import { buildCalculatedStatus } from './calculatedStatus.ts';
 import { getItemBasePower } from '../../game/itemPower.ts';
+import { evaluateItemForCharacter } from '../../game/itemEvaluation.ts';
 import { getItemRarityById } from '../../game/itemRarity.ts';
 import { describeItem, describeJewel, formatItemDetails, type ItemDetails, type ItemDetailsMode } from './itemDetails.ts';
-import { formatEquipmentEntry, formatItem } from './itemFormat.ts';
-import { JEWEL_DEFS } from '../../game/jewel.ts';
+import { formatEquipmentEntry, formatItem, parseEvaluatedItemFormat } from './itemFormat.ts';
+import { isJewelAllowedForCategory, JEWEL_DEFS } from '../../game/jewel.ts';
 import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
 import { describeUiPreferenceCatalog, listUiPreferences } from './uiPreferenceCatalog.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
@@ -297,7 +298,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       .filter((id) => id === 'none' || id === currentDeityId || !usedByOtherParties.has(id));
     return { current: { deityId: currentDeityId, order: selected.party.characters.map((entry) => entry.id) }, validOptions: { deityId, order: selected.party.characters.map((entry) => entry.id) } };
   }
-  const characterRead = operationId.match(/^read\/build\/character\/(\d+)\/(status|equipment|equipmentSet)$/);
+  const characterRead = operationId.match(/^read\/build\/character\/(\d+)\/(status|equipment|equipmentSet|equipmentEvaluation)$/);
   if (characterRead) {
     const found = findCharacter(state, characterRead[1]);
     if (!found) throw new Error('not_found');
@@ -336,6 +337,18 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       return {
         current: { mode: character.autoEquipmentMode === 2 ? 'FULL' : character.autoEquipmentMode === 1 ? 'SEMI' : 'OFF', equipment: character.equipment.map(equipmentEntry) },
         validOptions: { mode: ['FULL', 'SEMI', 'OFF'], numberOfEmptyEquipmentSlots: emptySlots, ...describeEquipmentHistory(state, character.id, context.control?.equipmentHistory) },
+      };
+    }
+    if (characterRead[2] === 'equipmentEvaluation') {
+      // SpecRef: 9.1.3 | Read | 2-3-5 character/{characterId}/equipmentEvaluation
+      const requested = Array.isArray(parameters.targetItems) ? parameters.targetItems : [parameters.targetItems];
+      if (requested.length === 0 || new Set(requested).size !== requested.length) throw new Error('invalid_request:targetItems');
+      return {
+        calculatedItemStatus: requested.map((entry) => {
+          const item = typeof entry === 'string' ? parseEvaluatedItemFormat(entry) : null;
+          if (!item || !item.jewel || !isJewelAllowedForCategory(item.category, item.jewel.key)) throw new Error('invalid_request:targetItems');
+          return { item: entry as string, ...evaluateItemForCharacter(character, item, party.level), abilities: describeItem(item).ability };
+        }),
       };
     }
     const ids = Array.isArray(parameters.equipmentSetId) ? parameters.equipmentSetId.map(Number) : parameters.equipmentSetId ? [Number(parameters.equipmentSetId)] : null;

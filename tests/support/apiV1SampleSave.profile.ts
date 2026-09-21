@@ -223,20 +223,22 @@ const before = { items: itemConservation(state), jewels: jewelConservation(state
   assert.equal(jewelConservation(committed.state), jewelConservation(state));
 }
 
-// 5b. equipmentEvaluation on the real save: every owned variant, for characters of different builds, never changes the state.
+// 5b. equipmentEvaluation on the real save: every owned variant with a Jewel, for characters of different builds, never changes the state.
 {
-  const validateEvaluation = validator('commit/build/character/{characterId}/equipmentEvaluation');
-  const owned = Object.values(state.global.inventory).filter((variant) => variant.count > 0).map((variant) => `0/${variant.item.id}/${variant.item.enhancement}/${variant.item.superRare}`);
+  const validateEvaluation = validator('read/build/character/{characterId}/equipmentEvaluation');
+  const { JEWELS_BY_ITEM_CATEGORY } = await import('../../src/game/jewel.ts');
+  const owned = Object.values(state.global.inventory).filter((variant) => variant.count > 0).map((variant) => `0/${variant.item.id}/${variant.item.enhancement}/${variant.item.superRare}/${JEWELS_BY_ITEM_CATEGORY[variant.item.category][0]}:1`);
   assert.ok(owned.length > 1000, 'the real save owns many variants');
   const characters = state.parties.flatMap((party) => party.characters).filter((_, index) => index % 6 === 0);
   let evaluated = 0;
   for (const someone of characters) {
     for (let start = 0; start < owned.length; start += 500) {
       const batch = owned.slice(start, start + 500);
-      const outcome = applyApiV1Commit(`commit/build/character/${someone.id}/equipmentEvaluation`, state, { targetItems: batch }, context());
-      assert.equal(outcome.state, state, 'an evaluation never changes the state');
-      assert.equal(validateEvaluation(outcome.data), true, JSON.stringify(validateEvaluation.errors?.slice(0, 2)));
-      const entries = (outcome.data as { calculatedItemStatus: { item: string; stats: { value: number }[] }[] }).calculatedItemStatus;
+      const before = JSON.stringify(state);
+      const data = await read(`read/build/character/${someone.id}/equipmentEvaluation`, { targetItems: batch });
+      assert.equal(JSON.stringify(state), before, 'an evaluation never changes the state');
+      assert.equal(validateEvaluation(data), true, JSON.stringify(validateEvaluation.errors?.slice(0, 2)));
+      const entries = (data as { calculatedItemStatus: { item: string; stats: { value: number }[] }[] }).calculatedItemStatus;
       assert.deepEqual(entries.map((entry) => entry.item), batch);
       for (const entry of entries) for (const fact of entry.stats) assert.equal(Number.isFinite(fact.value), true, `${entry.item} has a finite value`);
       evaluated += entries.length;
