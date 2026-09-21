@@ -1258,12 +1258,13 @@ Path Parameters
 **3-3-6. `character/{characterId}/equipmentEvaluation`**
 
 * Parameters:
-  * `targetItem`
-    * Uses `Item Format`.
+  * `targetItems`
+    * One item or an array of items.
+    * Each item uses `Item Format`.
 
 * Return:
   * `calculatedItemStatus`
-    * Calculated item status after applying bonuses and modifiers specific to the target character.
+    * Calculated item status for each target item after applying bonuses and modifiers specific to the target character.
     * Includes character-specific equipment bonuses that are not included in the item's standalone `calculatedBasePower`.
 
 
