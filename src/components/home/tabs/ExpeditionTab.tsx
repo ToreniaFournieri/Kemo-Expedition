@@ -74,7 +74,7 @@ interface ExpeditionTabProps {
   onSetExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
   onSetExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
   onResetExpeditionStats: (partyIndex: number) => void;
-  onSimulateExpedition: (partyIndex: number, onProgress?: (completed: number, total: number) => void) => Promise<ExpeditionSimulationResult>;
+  onSimulateExpedition: (partyIndex: number) => Promise<ExpeditionSimulationResult>;
   isExpeditionStatsDisplayEnabled: boolean;
   partyCycles: Record<number, PartyCycleRuntime>;
   afkRecoveryProgressPercent: number | null;
@@ -306,13 +306,7 @@ function ExpeditionTab({
     }));
 
     try {
-      const result = await onSimulateExpedition(partyIndex, (completed, total) => {
-        if (simulationRequestIdByParty.current[partyIndex] !== requestId) return;
-        setSimulationByParty((current) => ({
-          ...current,
-          [partyIndex]: { status: 'running', completed, total },
-        }));
-      });
+      const result = await onSimulateExpedition(partyIndex);
       if (simulationRequestIdByParty.current[partyIndex] !== requestId) return;
       setSimulationByParty((current) => ({
         ...current,
@@ -996,10 +990,7 @@ function ExpeditionTab({
                   </button>
                   <span className="min-w-0 text-right tabular-nums">
                     {simulation?.status === 'running'
-                      ? t('party.expedition.simulationRunning', {
-                        completed: formatNumber(simulation.completed),
-                        total: formatNumber(simulation.total),
-                      })
+                      ? t('party.expedition.simulationRunning')
                       : simulationResultText
                       ?? (simulation?.status === 'error'
                       ? t('party.expedition.simulationError')

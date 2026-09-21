@@ -26,6 +26,9 @@ export function buildSimulationRunData(result: ExpeditionSimulationResult, simul
     seedDomain,
     runs: total,
     overview: `Success ${label(success)}% / Draw ${label(draw)}% / Retreat ${label(retreat)}% / Defeat ${label(defeat)}%`,
+    // Exact terminal counts (Clear and Return are split here even though the compact strings are not), so a client can rebuild
+    // the whole forecast without rounding.
+    counts: { clear: result.Clear, return: result.Return, draw: result.Draw, retreat: result.Retreat, defeat: result.Defeat },
     overviewPercent: { success, clear: percent(result.Clear, total), return: percent(result.Return, total), draw, retreat, defeat },
     detail: result.rooms.map((room) => {
       const won = room.Victory + room.Clear + room.Return;
@@ -47,6 +50,39 @@ export function buildSimulationRunData(result: ExpeditionSimulationResult, simul
         from60: room.successfulHp.From60, from50: room.successfulHp.From50, from40: room.successfulHp.From40, below40: room.successfulHp.Below40,
       },
       retreatHp: { from30: room.retreatHp.From30, from20: room.retreatHp.From20, from10: room.retreatHp.From10, below10: room.retreatHp.Below10 },
+    })),
+  };
+}
+
+/** The wire shape of `buildSimulationRunData`, as far as the Expedition pane needs it back. */
+export type SimulationRunData = ReturnType<typeof buildSimulationRunData>;
+
+/** Rebuilds the forecast the Expedition pane draws from the projection; the exact inverse of `buildSimulationRunData`. */
+export function parseSimulationRunData(data: SimulationRunData): ExpeditionSimulationResult {
+  const total = data.runs;
+  return {
+    Clear: data.counts.clear,
+    Return: data.counts.return,
+    Draw: data.counts.draw,
+    Retreat: data.counts.retreat,
+    Defeat: data.counts.defeat,
+    total,
+    rooms: data.rooms.map((room) => ({
+      room: room.room,
+      Victory: room.victory,
+      Clear: room.clear,
+      Return: room.return,
+      Draw: room.draw,
+      Retreat: room.retreat,
+      Defeat: room.defeat,
+      NotReached: room.notReached,
+      reached: room.reached,
+      total,
+      successfulHp: {
+        Full: room.successfulHp.full, From90: room.successfulHp.from90, From80: room.successfulHp.from80, From70: room.successfulHp.from70,
+        From60: room.successfulHp.from60, From50: room.successfulHp.from50, From40: room.successfulHp.from40, Below40: room.successfulHp.below40,
+      },
+      retreatHp: { From30: room.retreatHp.from30, From20: room.retreatHp.from20, From10: room.retreatHp.from10, Below10: room.retreatHp.below10 },
     })),
   };
 }

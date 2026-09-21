@@ -87,6 +87,9 @@ test('Expedition controls are Application API commits, not reducer actions (migr
   const actions = [...jsx.matchAll(/actions\.([A-Za-z]+)/g)].map((match) => match[1]);
   assert.deepEqual([...new Set(actions)].sort(), [], 'no reducer action may be passed to the Expedition tab');
   for (const command of ['changeExpedition', 'resetStatistics']) assert.match(home, new RegExp(`commit/expedition/\\{p\\}/${command}`));
+  // The forecast is the API's `simulationRun`, not a direct call into the game engine.
+  assert.match(home, /adapter\.read\('read\/expedition\/\{p\}\/simulationRun'/);
+  assert.doesNotMatch(read('src/components/home/tabs/ExpeditionTab.tsx'), /onProgress/);
   // The button's expedition is the API sortie: `triggerSortie` keeps only its popups and no longer runs the reducer sequence.
   const trigger = home.slice(home.indexOf('const triggerSortie = ('), home.indexOf('const triggerSortieRef'));
   assert.match(trigger, /commit\/expedition\/\{p\}\/godsBattle/);

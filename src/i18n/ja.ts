@@ -454,7 +454,7 @@ const ja = {
   'party.expedition.stats': '踏破{clear}/帰還{returned}/引分{draw}/撤退{retreat}/敗北{defeat} 合計 {total}回',
   'party.expedition.reset': 'リセット',
   'party.expedition.simulationRun': '予測実行',
-  'party.expedition.simulationRunning': '計算中 {completed}/{total}',
+  'party.expedition.simulationRunning': '計算中',
   'party.expedition.simulationResult.clear': '踏破{success}% / 引分{draw}% / 撤退{retreat}% / 敗北{defeat}%',
   'party.expedition.simulationResult.return': '帰還{success}% / 引分{draw}% / 撤退{retreat}% / 敗北{defeat}%',
   'party.expedition.simulationError': '予測失敗',

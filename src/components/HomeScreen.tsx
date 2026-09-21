@@ -103,6 +103,7 @@ import { buildPartySummaries, buildPartyView, type PartyProjection } from '../ap
 import { useApiRead } from './home/useApiRead';
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
 import { PARTY_EQUIP_CATEGORY_FAMILY, partyEquipCategoryKey } from '../api/v1/uiPreferenceCatalog';
+import { parseSimulationRunData, type SimulationRunData } from '../api/v1/simulationView';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
 import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
@@ -111,7 +112,7 @@ applyAutoEquipmentProfileActions,
 applyAutoEquipmentProfileActionsSequentially,
 type AfkPartyTransactionAttribution,
 } from '../hooks/useGameState';
-import { Bonus,Character,ExpeditionLogEntry,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry } from '../types';
+import { Bonus,Character,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry } from '../types';
 import { NotificationToast } from './NotificationToast';
 import { getBrowserChromeColor, getDesktopTheme, getThemeClassName, isGameModeAvailable, THEME_CLASS_NAMES } from '../theme/theme';
 
@@ -4873,20 +4874,25 @@ export function HomeScreen({
   const handleTriggerSortie = useCallback((partyIndex: number, triggerGodsBattle: boolean = false) => {
     triggerSortieRef.current(partyIndex, triggerGodsBattle);
   }, []);
-  const handleSimulateExpedition = useCallback(async (
-    partyIndex: number,
-    onProgress?: (completed: number, total: number) => void,
-  ) => {
+  // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun
+  // The Expedition pane's forecast is the Application API's private 1,000-run forecast, read through the trusted in-process
+  // adapter; the read returns when every run has finished, so the pane shows no running count.
+  const handleSimulateExpedition = useCallback(async (partyIndex: number): Promise<ExpeditionSimulationResult> => {
+    const adapter = inProcessApiRef.current;
+    const partyNumber = applicationApiRef.current?.authority.getSnapshot().state.parties[partyIndex]?.id;
+    if (!adapter || partyNumber === undefined) throw new Error('simulation_unavailable');
     memoryMonitor.setRuntime('simulation', effectiveDebugSettings.timeSpeed);
     try {
-      return await apiActionsRef.current.simulateExpedition(partyIndex, gameModeRef.current, onProgress, effectiveOrcaEnemyLevelOffset);
+      const response = await adapter.read('read/expedition/{p}/simulationRun', { pathParameters: { p: partyNumber } });
+      if (response.error) throw new Error(String((response.error as { code?: unknown }).code));
+      return parseSimulationRunData(response.data as SimulationRunData);
     } finally {
       memoryMonitor.setRuntime(
         pendingAfkMsRef.current > 0 ? 'afk' : autoRepeatEnabledRef.current ? 'online' : 'idle',
         effectiveDebugSettings.timeSpeed,
       );
     }
-  }, [effectiveDebugSettings.timeSpeed, effectiveOrcaEnemyLevelOffset]);
+  }, [effectiveDebugSettings.timeSpeed]);
 
   const isDiaryTabVisible = isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'diary'

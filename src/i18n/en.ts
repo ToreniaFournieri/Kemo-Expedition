@@ -453,7 +453,7 @@ const en = {
   'party.expedition.stats': 'Clear {clear} / Return {returned} / Draw {draw} / Retreat {retreat} / Defeat {defeat} / Total {total}',
   'party.expedition.reset': 'Reset',
   'party.expedition.simulationRun': 'Run simulation',
-  'party.expedition.simulationRunning': 'Simulating {completed}/{total}',
+  'party.expedition.simulationRunning': 'Simulating',
   'party.expedition.simulationResult.clear': 'Clear {success}% / Draw {draw}% / Retreat {retreat}% / Defeat {defeat}%',
   'party.expedition.simulationResult.return': 'Return {success}% / Draw {draw}% / Retreat {retreat}% / Defeat {defeat}%',
   'party.expedition.simulationError': 'Simulation failed',

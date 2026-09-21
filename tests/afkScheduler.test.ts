@@ -232,7 +232,8 @@ test('coordinator authority is production-on with pre-promotion and authority pr
   assert.match(homeSource, /worker_slot_idle_before_dispatch/);
   assert.match(hookSource, /new GameStateAuthority\(initialStateRef\.current\.state, gameReducer\)/);
   assert.match(hookSource, /requestOrdinary\(latestGameStateRef\.current\)/);
-  assert.match(hookSource, /simulateExpeditionRuns\(latestGameStateRef\.current/);
+  // The forecast runs on the Application API authority's newest committed snapshot.
+  assert.match(homeSource, /simulate: async \(snapshot, partyIndex, count\) => simulateExpeditionRuns\(snapshot,/);
   assert.match(homeSource, /publishAfkAuthority\(\)[\s\S]{0,160}afkInteractionPauseStartedAtRef/);
 });
 

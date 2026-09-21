@@ -454,7 +454,7 @@ const zhCN = {
   'party.expedition.stats': '通关{clear}/归还{returned}/平局{draw}/撤退{retreat}/败北{defeat} 总计 {total}次',
   'party.expedition.reset': '重置',
   'party.expedition.simulationRun': '运行模拟',
-  'party.expedition.simulationRunning': '模拟中 {completed}/{total}',
+  'party.expedition.simulationRunning': '模拟中',
   'party.expedition.simulationResult.clear': '通关{success}% / 平局{draw}% / 撤退{retreat}% / 败北{defeat}%',
   'party.expedition.simulationResult.return': '归还{success}% / 平局{draw}% / 撤退{retreat}% / 败北{defeat}%',
   'party.expedition.simulationError': '模拟失败',

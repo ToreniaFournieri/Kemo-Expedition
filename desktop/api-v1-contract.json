@@ -10202,6 +10202,7 @@
             "seedDomain",
             "runs",
             "overview",
+            "counts",
             "overviewPercent",
             "detail",
             "rooms"
@@ -10222,6 +10223,39 @@
             },
             "overview": {
               "type": "string"
+            },
+            "counts": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "clear",
+                "return",
+                "draw",
+                "retreat",
+                "defeat"
+              ],
+              "properties": {
+                "clear": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "return": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "draw": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "retreat": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "defeat": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
             },
             "overviewPercent": {
               "additionalProperties": false,
@@ -10455,6 +10489,7 @@
                 "seedDomain",
                 "runs",
                 "overview",
+                "counts",
                 "overviewPercent",
                 "detail",
                 "rooms"
@@ -10475,6 +10510,39 @@
                 },
                 "overview": {
                   "type": "string"
+                },
+                "counts": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "clear",
+                    "return",
+                    "draw",
+                    "retreat",
+                    "defeat"
+                  ],
+                  "properties": {
+                    "clear": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "return": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "draw": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "retreat": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "defeat": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
                 },
                 "overviewPercent": {
                   "additionalProperties": false,
@@ -10707,6 +10775,13 @@
             "seedDomain": "xxxxxxx",
             "runs": 1,
             "overview": "xxxxxxx",
+            "counts": {
+              "clear": 0,
+              "return": 0,
+              "draw": 0,
+              "retreat": 0,
+              "defeat": 0
+            },
             "overviewPercent": {
               "success": 0,
               "clear": 0,

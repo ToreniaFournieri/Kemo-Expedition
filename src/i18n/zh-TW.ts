@@ -454,7 +454,7 @@ const zhTW = {
   'party.expedition.stats': '通關{clear}/歸還{returned}/平局{draw}/撤退{retreat}/敗北{defeat} 總計 {total}次',
   'party.expedition.reset': '重置',
   'party.expedition.simulationRun': '執行模擬',
-  'party.expedition.simulationRunning': '模擬中 {completed}/{total}',
+  'party.expedition.simulationRunning': '模擬中',
   'party.expedition.simulationResult.clear': '通關{success}% / 平局{draw}% / 撤退{retreat}% / 敗北{defeat}%',
   'party.expedition.simulationResult.return': '歸還{success}% / 平局{draw}% / 撤退{retreat}% / 敗北{defeat}%',
   'party.expedition.simulationError': '模擬失敗',

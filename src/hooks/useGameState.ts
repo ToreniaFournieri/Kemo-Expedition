@@ -5009,10 +5009,6 @@ export function useGameState() {
       dispatch({ type: 'RESET_EXPEDITION_STATS', partyIndex });
     }, []),
 
-    simulateExpedition: useCallback((partyIndex: number, gameMode: RuntimeGameMode = 'mode.normal', onProgress?: (completed: number, total: number) => void, enemyLevelOffset?: number) => (
-      simulateExpeditionRuns(latestGameStateRef.current, partyIndex, gameMode, EXPEDITION_SIMULATION_RUN_COUNT, onProgress, enemyLevelOffset)
-    ), []),
-
     updatePartyDeity: useCallback((partyIndex: number, deityName: string) => {
       dispatch({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
     }, []),

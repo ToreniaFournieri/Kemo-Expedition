@@ -309,7 +309,7 @@ const responseDataSchemas = {
   'read/expedition/{p}/latestBattleLog': strict({ battleLog: Type.Union([battleLogSchema, Type.Null()]), bottleneckEnemies: Type.Array(bottleneckEnemy) }),
   'read/expedition/{p}/simulationRun': strict({
     simulatedRevision: Type.Integer({ minimum: 0 }), seedDomain: stableKey, runs: Type.Integer({ minimum: 1 }),
-    overview: Type.String(), overviewPercent: strict({ success: percentage, clear: percentage, return: percentage, draw: percentage, retreat: percentage, defeat: percentage }),
+    overview: Type.String(), counts: strict({ clear: count, return: count, draw: count, retreat: count, defeat: count }), overviewPercent: strict({ success: percentage, clear: percentage, return: percentage, draw: percentage, retreat: percentage, defeat: percentage }),
     detail: Type.Array(Type.String()),
     rooms: Type.Array(strict({
       room: Type.Integer({ minimum: 1, maximum: 24 }), floorRoom: floorRoomKey,

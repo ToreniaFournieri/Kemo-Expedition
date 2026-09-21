@@ -420,6 +420,11 @@ definitions in 9.1.3.
   simulated revision and seed-domain identifier and returns both the compact
   strings required by 9.1.3 and structured numeric outcome percentages for the
   overview and each room. It never exposes or advances the live random stream.
+  The structured part is lossless: `counts` holds the exact terminal `clear`, `return`,
+  `draw`, `retreat`, and `defeat` counts, and each room holds every outcome, reached and
+  not-reached count and HP bucket, so a client rebuilds the whole forecast (the graph and
+  its tooltips) without rounding. The read returns when all runs have finished; it
+  reports no partial progress.
 * The Expedition and compact projections report each party's real state:
   `state` is `state.<name>` of the live party cycle for the ordinary player's runtime
   (`state.rest`, `state.sell`, `state.free_action`, `state.sound_sleep`,

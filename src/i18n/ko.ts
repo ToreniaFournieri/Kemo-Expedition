@@ -454,7 +454,7 @@ const ko = {
   'party.expedition.stats': '완주 {clear}/귀환 {returned}/무승부 {draw}/후퇴 {retreat}/패배 {defeat} 합계 {total}회',
   'party.expedition.reset': '초기화',
   'party.expedition.simulationRun': '예측 실행',
-  'party.expedition.simulationRunning': '계산 중 {completed}/{total}',
+  'party.expedition.simulationRunning': '계산 중',
   'party.expedition.simulationResult.clear': '완주 {success}% / 무승부 {draw}% / 후퇴 {retreat}% / 패배 {defeat}%',
   'party.expedition.simulationResult.return': '귀환 {success}% / 무승부 {draw}% / 후퇴 {retreat}% / 패배 {defeat}%',
   'party.expedition.simulationError': '예측 실패',

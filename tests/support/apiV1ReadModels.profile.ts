@@ -506,6 +506,22 @@ calls.length = 0;
   assert.deepEqual([expired.speedOfTime.base, expired.speedOfTime.bonusActive, expired.speedOfTime.bonusUntil], ['x1.2', false, null], 'an expired bonus is not reported');
 }
 
+// The forecast the Expedition pane draws is rebuilt exactly from `simulationRun` (no rounding, nothing dropped).
+{
+  const { buildSimulationRunData, parseSimulationRunData } = await import('../../src/api/v1/simulationView.ts');
+  const result = fakeSimulation(1000);
+  // Give every counter a distinct value so a swapped or dropped field cannot round-trip by accident.
+  result.Clear = 411; result.Return = 37; result.Draw = 29; result.Retreat = 173; result.Defeat = 350;
+  result.rooms.forEach((room, index) => {
+    Object.assign(room, { Victory: index + 1, Clear: index % 3, Return: index % 5, Draw: index % 7, Retreat: index % 11, Defeat: index % 13, NotReached: 1000 - index, reached: index * 7 });
+    Object.assign(room.successfulHp, { Full: index, From90: index + 1, From80: index + 2, From70: index + 3, From60: index + 4, From50: index + 5, From40: index + 6, Below40: index + 7 });
+    Object.assign(room.retreatHp, { From30: index + 8, From20: index + 9, From10: index + 10, Below10: index + 11 });
+  });
+  const data = buildSimulationRunData(result as never, 3, 'seed-domain');
+  assert.deepEqual(parseSimulationRunData(data), result, 'the forecast round-trips through the public projection');
+  assert.deepEqual(data.counts, { clear: 411, return: 37, draw: 29, retreat: 173, defeat: 350 });
+}
+
 assert.deepEqual(state, before);
 
 // calculatedStatus is the public fact model (9.1.4.14), not the internal computed-stats object.
