@@ -481,6 +481,41 @@ calls.length = 0;
   assert.equal(locked.controls.sortie.unavailableReason, 'entry_gate_locked');
   const colosseum = await read(withParty({ selectedDungeonId: 99, currentHp: 0, instantExpeditionStock: 0, instantExpeditionChargeStartedAt: now }), undefined);
   assert.deepEqual(colosseum.controls.sortie, { available: true, unavailableReason: null }, 'the Colosseum needs no HP, charge, or gate');
+
+  // The pane's view of an exploring party is its running exploration, never the disclosed previous log (Build 78 regression:
+  // the tab showed the previous expedition's rooms while a new one ran).
+  {
+    const { buildPartyExpeditionLogView } = await import('../../src/api/v1/expeditionLogView.ts');
+    const previousEntry = (room: number) => ({ ...entry(room, 'victory', maximumHp * 0.7), enemyId: 200 + room, enemyName: 'previous', floor: 2 });
+    const previous = { ...(log as object), dungeonId: 2, finalOutcome: 'Return', completedRooms: 2, entries: [previousEntry(1), previousEntry(2)] } as never;
+    const retainedRunning = { ...(log as object), entries: (log as { entries: { enemyName: string }[] }).entries.map((row) => ({ ...row, enemyName: 'running' })) } as never;
+    const exploringState = withParty({ lastExpeditionLog: retainedRunning, currentHp: 0, instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null });
+    const cycle = { state: 'explore', stateStartedAt: now - 1500, durationMs: 4000 };
+    const context2 = { ...context, partyCycle: () => cycle, disclosedLog: () => previous, chargeDurationScale: 1 } as never;
+    const exp = (await buildApiV1ReadData('read/observation/expedition', exploringState, {}, context2) as unknown as Info).expeditionInfo.parties[0];
+    const api = await buildApiV1ReadData('read/expedition/1/latestBattleLog', exploringState, {}, context2) as never;
+    const shown = buildPartyExpeditionLogView({ exploration: exp.exploration as never, latestBattleLog: api, retained: retainedRunning })!;
+    assert.deepEqual(shown.entries.map((row) => row.enemyId), [101, 102], 'the revealed rooms of the running exploration');
+    assert.deepEqual(shown.entries.map((row) => row.enemyName), ['running', 'running'], 'their narration is the running log\'s');
+    assert.equal(shown.dungeonId, 1);
+    assert.equal(shown.finalOutcome, null, 'the result is not disclosed while exploring');
+    assert.deepEqual([shown.totalExperience, shown.rewards.length, shown.autoSellProfit], [0, 0, 0]);
+    // Not exploring: the newest disclosed log, from `latestBattleLog`.
+    const idleContext = { ...context, partyCycle: () => ({ state: 'return', stateStartedAt: now, durationMs: 1000 }), disclosedLog: () => retainedRunning, chargeDurationScale: 1 } as never;
+    const doneExp = (await buildApiV1ReadData('read/observation/expedition', exploringState, {}, idleContext) as unknown as Info).expeditionInfo.parties[0];
+    assert.equal(doneExp.exploration, null);
+    const doneApi = await buildApiV1ReadData('read/expedition/1/latestBattleLog', exploringState, {}, idleContext) as never;
+    const done = buildPartyExpeditionLogView({ exploration: doneExp.exploration as never, latestBattleLog: doneApi, retained: retainedRunning })!;
+    assert.deepEqual(done.entries.map((row) => row.enemyId), [101, 102, 103, 104]);
+    assert.equal(done.finalOutcome, 'Defeat');
+    // A retained log that is not the one the projection describes lends no narration (they are read at different moments).
+    const stale = buildPartyExpeditionLogView({ exploration: undefined, latestBattleLog: doneApi, retained: previous })!;
+    assert.deepEqual(stale.entries.map((row) => row.enemyId), [101, 102, 103, 104], 'the facts stay the projection\'s');
+    assert.equal(stale.entries.some((row) => row.enemyName === 'previous'), false, 'no narration from another log');
+    const shifted = { ...(retainedRunning as object), entries: (retainedRunning as { entries: object[] }).entries.map((row) => ({ ...row, damageTaken: 12345 })) } as never;
+    const mismatched = buildPartyExpeditionLogView({ exploration: undefined, latestBattleLog: doneApi, retained: shifted })!;
+    assert.equal(mismatched.entries.some((row) => row.enemyName === 'running'), false, 'a room that differs in any shared fact is not narrated from the retained log');
+  }
   Date.now = realNow;
 }
 

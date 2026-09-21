@@ -118,7 +118,8 @@ test('Expedition logs use the latestBattleLog projection and keep retained narra
   const start = home.indexOf('<ExpeditionTab');
   const jsx = home.slice(start, home.indexOf('\n        />', start));
   assert.match(home, /useApiReadMany<LatestBattleLogProjection>\([\s\S]*?'read\/expedition\/\{p\}\/latestBattleLog'/);
-  assert.match(home, /buildExpeditionLogView\(projection, retainedByParty\.get\(partyNumber\)\)/);
+  // An exploring party's rooms come from the Expedition projection's `exploration` (server-gated), never from the disclosed log.
+  assert.match(home, /buildPartyExpeditionLogView\(\{[\s\S]*?exploration,[\s\S]*?retained: party\.lastExpeditionLog/);
   assert.match(jsx, /expeditionLogViews=\{expeditionLogViews\}/);
   assert.doesNotMatch(tab, /party\.lastExpeditionLog/);
   assert.doesNotMatch(tab, /renderExpeditionMetadata/);

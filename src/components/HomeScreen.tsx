@@ -101,7 +101,7 @@ import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIn
 import { parseInventoryStacks, parseJewelStacks, parseSavedEquipmentSet } from '../api/v1/itemFormat';
 import { buildPartySummaries, buildPartyView, type PartyProjection } from '../api/v1/partyView';
 import type { ExpeditionProjection } from '../api/v1/expeditionView';
-import { buildExpeditionLogView, type ExpeditionLogView, type LatestBattleLogProjection } from '../api/v1/expeditionLogView';
+import { buildPartyExpeditionLogView, type ExpeditionLogView, type LatestBattleLogProjection } from '../api/v1/expeditionLogView';
 import { useApiRead, useApiReadMany } from './home/useApiRead';
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
 import { PARTY_EQUIP_CATEGORY_FAMILY, partyEquipCategoryKey } from '../api/v1/uiPreferenceCatalog';
@@ -2007,21 +2007,20 @@ export function HomeScreen({
     [state.parties, partyCycles, pendingAfkMs, expeditionProjectionRefresh],
   );
   const expeditionLogViews = useMemo(() => {
-    const retainedByParty = new Map(state.parties.map((party, partyIndex) => [
-      party.id,
-      partyCycles[partyIndex]?.state === 'explore'
-        ? disclosedExpeditionLogsRef.current[partyIndex] ?? null
-        : party.lastExpeditionLog,
-    ]));
+    const projectionByParty = new Map((latestBattleLogProjections ?? []).flatMap((projection) => (
+      projection.battleLog ? [[projection.battleLog.partyNumber, projection] as const] : []
+    )));
     const views = new Map<number, ExpeditionLogView | null>();
-    state.parties.forEach((party) => views.set(party.id, null));
-    for (const projection of latestBattleLogProjections ?? []) {
-      const partyNumber = projection.battleLog?.partyNumber;
-      if (partyNumber === undefined) continue;
-      views.set(partyNumber, buildExpeditionLogView(projection, retainedByParty.get(partyNumber)));
-    }
+    state.parties.forEach((party) => {
+      const exploration = expeditionProjection?.parties.find((entry) => entry.partyNumber === party.id)?.exploration;
+      views.set(party.id, buildPartyExpeditionLogView({
+        exploration,
+        latestBattleLog: projectionByParty.get(party.id),
+        retained: party.lastExpeditionLog,
+      }));
+    });
     return views;
-  }, [latestBattleLogProjections, partyCycles, state.parties]);
+  }, [expeditionProjection, latestBattleLogProjections, state.parties]);
   // SpecRef: 9.1.4.17 | UI state ownership | Retained selections come from `read/observation/setting` (uiPreferences)
   const settingObservation = useApiRead<{ settingInfo: { uiPreferences: Array<{ key: string; value: string | number | boolean }> } }>(
     inProcessApiRef.current, 'read/observation/setting', {}, [state.global.uiPreferences], isPartyTabVisible,

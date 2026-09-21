@@ -2681,11 +2681,26 @@
                             "additionalProperties": false,
                             "type": "object",
                             "required": [
+                              "dungeonId",
+                              "difficultyOffset",
+                              "totalRooms",
                               "revealedRoomCount",
                               "nextRevealAt",
                               "rooms"
                             ],
                             "properties": {
+                              "dungeonId": {
+                                "minimum": 1,
+                                "type": "integer"
+                              },
+                              "difficultyOffset": {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "totalRooms": {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
                               "revealedRoomCount": {
                                 "minimum": 0,
                                 "type": "integer"
@@ -2705,79 +2720,776 @@
                                 "maxItems": 24,
                                 "type": "array",
                                 "items": {
-                                  "additionalProperties": false,
-                                  "type": "object",
-                                  "required": [
-                                    "room",
-                                    "floor",
-                                    "roomInFloor",
-                                    "roomType",
-                                    "enemyId",
-                                    "outcome",
-                                    "remainingPartyHp",
-                                    "maximumPartyHp"
-                                  ],
-                                  "properties": {
-                                    "room": {
-                                      "minimum": 1,
-                                      "type": "integer"
-                                    },
-                                    "floor": {
-                                      "anyOf": [
-                                        {
+                                  "anyOf": [
+                                    {
+                                      "additionalProperties": false,
+                                      "type": "object",
+                                      "required": [
+                                        "room",
+                                        "floor",
+                                        "roomInFloor",
+                                        "roomType",
+                                        "enemyId",
+                                        "enemyMaximumHp",
+                                        "outcome",
+                                        "damageDealt",
+                                        "damageTaken",
+                                        "startingPartyHp",
+                                        "remainingPartyHp",
+                                        "maximumPartyHp",
+                                        "healAmount",
+                                        "attritionAmount",
+                                        "endEvents",
+                                        "eventFormat",
+                                        "terrain",
+                                        "actors",
+                                        "modifiers",
+                                        "events"
+                                      ],
+                                      "properties": {
+                                        "room": {
                                           "minimum": 1,
                                           "type": "integer"
                                         },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    },
-                                    "roomInFloor": {
-                                      "anyOf": [
-                                        {
-                                          "minimum": 1,
-                                          "type": "integer"
+                                        "floor": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
                                         },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    },
-                                    "roomType": {
-                                      "anyOf": [
-                                        {
+                                        "roomInFloor": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "roomType": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "enemyId": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "enemyMaximumHp": {
+                                          "minimum": 0,
+                                          "type": "number"
+                                        },
+                                        "outcome": {
+                                          "anyOf": [
+                                            {
+                                              "const": "victory",
+                                              "type": "string"
+                                            },
+                                            {
+                                              "const": "defeat",
+                                              "type": "string"
+                                            },
+                                            {
+                                              "const": "draw",
+                                              "type": "string"
+                                            }
+                                          ]
+                                        },
+                                        "damageDealt": {
+                                          "type": "number"
+                                        },
+                                        "damageTaken": {
+                                          "type": "number"
+                                        },
+                                        "startingPartyHp": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "remainingPartyHp": {
+                                          "type": "number"
+                                        },
+                                        "maximumPartyHp": {
+                                          "type": "number"
+                                        },
+                                        "healAmount": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "attritionAmount": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "endEvents": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "array",
+                                                "items": [
+                                                  {
+                                                    "const": 0,
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "object",
+                                                    "patternProperties": {
+                                                      "^(.*)$": {
+                                                        "anyOf": [
+                                                          {
+                                                            "type": "string"
+                                                          },
+                                                          {
+                                                            "type": "number"
+                                                          },
+                                                          {
+                                                            "type": "boolean"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "additionalItems": false,
+                                                "minItems": 2,
+                                                "maxItems": 2
+                                              },
+                                              {
+                                                "type": "array",
+                                                "items": [
+                                                  {
+                                                    "const": 1,
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "object",
+                                                    "patternProperties": {
+                                                      "^(.*)$": {
+                                                        "anyOf": [
+                                                          {
+                                                            "type": "string"
+                                                          },
+                                                          {
+                                                            "type": "number"
+                                                          },
+                                                          {
+                                                            "type": "boolean"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "additionalItems": false,
+                                                "minItems": 2,
+                                                "maxItems": 2
+                                              },
+                                              {
+                                                "type": "array",
+                                                "items": [
+                                                  {
+                                                    "const": 2,
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "additionalProperties": false,
+                                                    "type": "object",
+                                                    "required": [
+                                                      "id",
+                                                      "enhancement",
+                                                      "superRare"
+                                                    ],
+                                                    "properties": {
+                                                      "id": {
+                                                        "minimum": 1,
+                                                        "type": "integer"
+                                                      },
+                                                      "enhancement": {
+                                                        "minimum": 0,
+                                                        "maximum": 6,
+                                                        "type": "integer"
+                                                      },
+                                                      "superRare": {
+                                                        "minimum": 0,
+                                                        "type": "integer"
+                                                      },
+                                                      "jewel": {
+                                                        "anyOf": [
+                                                          {
+                                                            "additionalProperties": false,
+                                                            "type": "object",
+                                                            "required": [
+                                                              "key",
+                                                              "rank"
+                                                            ],
+                                                            "properties": {
+                                                              "key": {
+                                                                "minLength": 1,
+                                                                "maxLength": 200,
+                                                                "type": "string"
+                                                              },
+                                                              "rank": {
+                                                                "minimum": 1,
+                                                                "maximum": 8,
+                                                                "type": "integer"
+                                                              }
+                                                            }
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "type": "number"
+                                                  }
+                                                ],
+                                                "additionalItems": false,
+                                                "minItems": 3,
+                                                "maxItems": 3
+                                              },
+                                              {
+                                                "type": "array",
+                                                "items": [
+                                                  {
+                                                    "const": 3,
+                                                    "type": "number"
+                                                  }
+                                                ],
+                                                "additionalItems": false,
+                                                "minItems": 1,
+                                                "maxItems": 1
+                                              },
+                                              {
+                                                "type": "array",
+                                                "items": [
+                                                  {
+                                                    "const": 4,
+                                                    "type": "number"
+                                                  }
+                                                ],
+                                                "additionalItems": false,
+                                                "minItems": 1,
+                                                "maxItems": 1
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "eventFormat": {
+                                          "const": "compact-v1",
                                           "type": "string"
                                         },
-                                        {
-                                          "type": "null"
+                                        "terrain": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "actors": {
+                                          "type": "array",
+                                          "items": {
+                                            "additionalProperties": false,
+                                            "type": "object",
+                                            "required": [
+                                              "id",
+                                              "kind"
+                                            ],
+                                            "properties": {
+                                              "id": {
+                                                "type": "integer"
+                                              },
+                                              "kind": {
+                                                "anyOf": [
+                                                  {
+                                                    "const": "character",
+                                                    "type": "string"
+                                                  },
+                                                  {
+                                                    "const": "enemy",
+                                                    "type": "string"
+                                                  }
+                                                ]
+                                              },
+                                              "enemyId": {
+                                                "type": "integer"
+                                              },
+                                              "characterId": {
+                                                "type": "integer"
+                                              },
+                                              "name": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "modifiers": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "array",
+                                            "items": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "number"
+                                                },
+                                                {
+                                                  "type": "boolean"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        },
+                                        "events": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "array",
+                                            "items": [
+                                              {
+                                                "type": "integer"
+                                              },
+                                              {
+                                                "type": "integer"
+                                              },
+                                              {
+                                                "type": "integer"
+                                              },
+                                              {
+                                                "type": "integer"
+                                              },
+                                              {
+                                                "type": "integer"
+                                              },
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "integer"
+                                              },
+                                              {
+                                                "type": "integer"
+                                              },
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "patternProperties": {
+                                                  "^(.*)$": {
+                                                    "anyOf": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "number"
+                                                      },
+                                                      {
+                                                        "type": "boolean"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              }
+                                            ],
+                                            "additionalItems": false,
+                                            "minItems": 10,
+                                            "maxItems": 10
+                                          }
                                         }
-                                      ]
+                                      }
                                     },
-                                    "enemyId": {
-                                      "anyOf": [
-                                        {
-                                          "minimum": 0,
+                                    {
+                                      "additionalProperties": false,
+                                      "type": "object",
+                                      "required": [
+                                        "room",
+                                        "floor",
+                                        "roomInFloor",
+                                        "roomType",
+                                        "enemyId",
+                                        "enemyMaximumHp",
+                                        "outcome",
+                                        "damageDealt",
+                                        "damageTaken",
+                                        "startingPartyHp",
+                                        "remainingPartyHp",
+                                        "maximumPartyHp",
+                                        "healAmount",
+                                        "attritionAmount",
+                                        "endEvents",
+                                        "eventFormat",
+                                        "legacyIncomplete",
+                                        "events"
+                                      ],
+                                      "properties": {
+                                        "room": {
+                                          "minimum": 1,
                                           "type": "integer"
                                         },
-                                        {
-                                          "type": "null"
+                                        "floor": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "roomInFloor": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "roomType": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "enemyId": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "enemyMaximumHp": {
+                                          "minimum": 0,
+                                          "type": "number"
+                                        },
+                                        "outcome": {
+                                          "anyOf": [
+                                            {
+                                              "const": "victory",
+                                              "type": "string"
+                                            },
+                                            {
+                                              "const": "defeat",
+                                              "type": "string"
+                                            },
+                                            {
+                                              "const": "draw",
+                                              "type": "string"
+                                            }
+                                          ]
+                                        },
+                                        "damageDealt": {
+                                          "type": "number"
+                                        },
+                                        "damageTaken": {
+                                          "type": "number"
+                                        },
+                                        "startingPartyHp": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "remainingPartyHp": {
+                                          "type": "number"
+                                        },
+                                        "maximumPartyHp": {
+                                          "type": "number"
+                                        },
+                                        "healAmount": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "attritionAmount": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "endEvents": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "array",
+                                                "items": [
+                                                  {
+                                                    "const": 0,
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "object",
+                                                    "patternProperties": {
+                                                      "^(.*)$": {
+                                                        "anyOf": [
+                                                          {
+                                                            "type": "string"
+                                                          },
+                                                          {
+                                                            "type": "number"
+                                                          },
+                                                          {
+                                                            "type": "boolean"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "additionalItems": false,
+                                                "minItems": 2,
+                                                "maxItems": 2
+                                              },
+                                              {
+                                                "type": "array",
+                                                "items": [
+                                                  {
+                                                    "const": 1,
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "object",
+                                                    "patternProperties": {
+                                                      "^(.*)$": {
+                                                        "anyOf": [
+                                                          {
+                                                            "type": "string"
+                                                          },
+                                                          {
+                                                            "type": "number"
+                                                          },
+                                                          {
+                                                            "type": "boolean"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "additionalItems": false,
+                                                "minItems": 2,
+                                                "maxItems": 2
+                                              },
+                                              {
+                                                "type": "array",
+                                                "items": [
+                                                  {
+                                                    "const": 2,
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "additionalProperties": false,
+                                                    "type": "object",
+                                                    "required": [
+                                                      "id",
+                                                      "enhancement",
+                                                      "superRare"
+                                                    ],
+                                                    "properties": {
+                                                      "id": {
+                                                        "minimum": 1,
+                                                        "type": "integer"
+                                                      },
+                                                      "enhancement": {
+                                                        "minimum": 0,
+                                                        "maximum": 6,
+                                                        "type": "integer"
+                                                      },
+                                                      "superRare": {
+                                                        "minimum": 0,
+                                                        "type": "integer"
+                                                      },
+                                                      "jewel": {
+                                                        "anyOf": [
+                                                          {
+                                                            "additionalProperties": false,
+                                                            "type": "object",
+                                                            "required": [
+                                                              "key",
+                                                              "rank"
+                                                            ],
+                                                            "properties": {
+                                                              "key": {
+                                                                "minLength": 1,
+                                                                "maxLength": 200,
+                                                                "type": "string"
+                                                              },
+                                                              "rank": {
+                                                                "minimum": 1,
+                                                                "maximum": 8,
+                                                                "type": "integer"
+                                                              }
+                                                            }
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "type": "number"
+                                                  }
+                                                ],
+                                                "additionalItems": false,
+                                                "minItems": 3,
+                                                "maxItems": 3
+                                              },
+                                              {
+                                                "type": "array",
+                                                "items": [
+                                                  {
+                                                    "const": 3,
+                                                    "type": "number"
+                                                  }
+                                                ],
+                                                "additionalItems": false,
+                                                "minItems": 1,
+                                                "maxItems": 1
+                                              },
+                                              {
+                                                "type": "array",
+                                                "items": [
+                                                  {
+                                                    "const": 4,
+                                                    "type": "number"
+                                                  }
+                                                ],
+                                                "additionalItems": false,
+                                                "minItems": 1,
+                                                "maxItems": 1
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "eventFormat": {
+                                          "const": "legacy-facts",
+                                          "type": "string"
+                                        },
+                                        "legacyIncomplete": {
+                                          "const": true,
+                                          "type": "boolean"
+                                        },
+                                        "events": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "patternProperties": {
+                                              "^(.*)$": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "string"
+                                                  },
+                                                  {
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "boolean"
+                                                  },
+                                                  {
+                                                    "type": "object",
+                                                    "patternProperties": {
+                                                      "^(.*)$": {
+                                                        "anyOf": [
+                                                          {
+                                                            "type": "number"
+                                                          },
+                                                          {
+                                                            "type": "boolean"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
                                         }
-                                      ]
-                                    },
-                                    "outcome": {
-                                      "minLength": 1,
-                                      "type": "string"
-                                    },
-                                    "remainingPartyHp": {
-                                      "minimum": 0,
-                                      "type": "number"
-                                    },
-                                    "maximumPartyHp": {
-                                      "minimum": 0,
-                                      "type": "number"
+                                      }
                                     }
-                                  }
+                                  ]
                                 }
                               }
                             }
@@ -3323,11 +4035,26 @@
                                 "additionalProperties": false,
                                 "type": "object",
                                 "required": [
+                                  "dungeonId",
+                                  "difficultyOffset",
+                                  "totalRooms",
                                   "revealedRoomCount",
                                   "nextRevealAt",
                                   "rooms"
                                 ],
                                 "properties": {
+                                  "dungeonId": {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  },
+                                  "difficultyOffset": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "totalRooms": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
                                   "revealedRoomCount": {
                                     "minimum": 0,
                                     "type": "integer"
@@ -3347,79 +4074,776 @@
                                     "maxItems": 24,
                                     "type": "array",
                                     "items": {
-                                      "additionalProperties": false,
-                                      "type": "object",
-                                      "required": [
-                                        "room",
-                                        "floor",
-                                        "roomInFloor",
-                                        "roomType",
-                                        "enemyId",
-                                        "outcome",
-                                        "remainingPartyHp",
-                                        "maximumPartyHp"
-                                      ],
-                                      "properties": {
-                                        "room": {
-                                          "minimum": 1,
-                                          "type": "integer"
-                                        },
-                                        "floor": {
-                                          "anyOf": [
-                                            {
+                                      "anyOf": [
+                                        {
+                                          "additionalProperties": false,
+                                          "type": "object",
+                                          "required": [
+                                            "room",
+                                            "floor",
+                                            "roomInFloor",
+                                            "roomType",
+                                            "enemyId",
+                                            "enemyMaximumHp",
+                                            "outcome",
+                                            "damageDealt",
+                                            "damageTaken",
+                                            "startingPartyHp",
+                                            "remainingPartyHp",
+                                            "maximumPartyHp",
+                                            "healAmount",
+                                            "attritionAmount",
+                                            "endEvents",
+                                            "eventFormat",
+                                            "terrain",
+                                            "actors",
+                                            "modifiers",
+                                            "events"
+                                          ],
+                                          "properties": {
+                                            "room": {
                                               "minimum": 1,
                                               "type": "integer"
                                             },
-                                            {
-                                              "type": "null"
-                                            }
-                                          ]
-                                        },
-                                        "roomInFloor": {
-                                          "anyOf": [
-                                            {
-                                              "minimum": 1,
-                                              "type": "integer"
+                                            "floor": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "integer"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
                                             },
-                                            {
-                                              "type": "null"
-                                            }
-                                          ]
-                                        },
-                                        "roomType": {
-                                          "anyOf": [
-                                            {
+                                            "roomInFloor": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "integer"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            },
+                                            "roomType": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            },
+                                            "enemyId": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "integer"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            },
+                                            "enemyMaximumHp": {
+                                              "minimum": 0,
+                                              "type": "number"
+                                            },
+                                            "outcome": {
+                                              "anyOf": [
+                                                {
+                                                  "const": "victory",
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "const": "defeat",
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "const": "draw",
+                                                  "type": "string"
+                                                }
+                                              ]
+                                            },
+                                            "damageDealt": {
+                                              "type": "number"
+                                            },
+                                            "damageTaken": {
+                                              "type": "number"
+                                            },
+                                            "startingPartyHp": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "number"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            },
+                                            "remainingPartyHp": {
+                                              "type": "number"
+                                            },
+                                            "maximumPartyHp": {
+                                              "type": "number"
+                                            },
+                                            "healAmount": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "number"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            },
+                                            "attritionAmount": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "number"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            },
+                                            "endEvents": {
+                                              "type": "array",
+                                              "items": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "array",
+                                                    "items": [
+                                                      {
+                                                        "const": 0,
+                                                        "type": "number"
+                                                      },
+                                                      {
+                                                        "type": "object",
+                                                        "patternProperties": {
+                                                          "^(.*)$": {
+                                                            "anyOf": [
+                                                              {
+                                                                "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "number"
+                                                              },
+                                                              {
+                                                                "type": "boolean"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        }
+                                                      }
+                                                    ],
+                                                    "additionalItems": false,
+                                                    "minItems": 2,
+                                                    "maxItems": 2
+                                                  },
+                                                  {
+                                                    "type": "array",
+                                                    "items": [
+                                                      {
+                                                        "const": 1,
+                                                        "type": "number"
+                                                      },
+                                                      {
+                                                        "type": "object",
+                                                        "patternProperties": {
+                                                          "^(.*)$": {
+                                                            "anyOf": [
+                                                              {
+                                                                "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "number"
+                                                              },
+                                                              {
+                                                                "type": "boolean"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        }
+                                                      }
+                                                    ],
+                                                    "additionalItems": false,
+                                                    "minItems": 2,
+                                                    "maxItems": 2
+                                                  },
+                                                  {
+                                                    "type": "array",
+                                                    "items": [
+                                                      {
+                                                        "const": 2,
+                                                        "type": "number"
+                                                      },
+                                                      {
+                                                        "additionalProperties": false,
+                                                        "type": "object",
+                                                        "required": [
+                                                          "id",
+                                                          "enhancement",
+                                                          "superRare"
+                                                        ],
+                                                        "properties": {
+                                                          "id": {
+                                                            "minimum": 1,
+                                                            "type": "integer"
+                                                          },
+                                                          "enhancement": {
+                                                            "minimum": 0,
+                                                            "maximum": 6,
+                                                            "type": "integer"
+                                                          },
+                                                          "superRare": {
+                                                            "minimum": 0,
+                                                            "type": "integer"
+                                                          },
+                                                          "jewel": {
+                                                            "anyOf": [
+                                                              {
+                                                                "additionalProperties": false,
+                                                                "type": "object",
+                                                                "required": [
+                                                                  "key",
+                                                                  "rank"
+                                                                ],
+                                                                "properties": {
+                                                                  "key": {
+                                                                    "minLength": 1,
+                                                                    "maxLength": 200,
+                                                                    "type": "string"
+                                                                  },
+                                                                  "rank": {
+                                                                    "minimum": 1,
+                                                                    "maximum": 8,
+                                                                    "type": "integer"
+                                                                  }
+                                                                }
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        }
+                                                      },
+                                                      {
+                                                        "type": "number"
+                                                      }
+                                                    ],
+                                                    "additionalItems": false,
+                                                    "minItems": 3,
+                                                    "maxItems": 3
+                                                  },
+                                                  {
+                                                    "type": "array",
+                                                    "items": [
+                                                      {
+                                                        "const": 3,
+                                                        "type": "number"
+                                                      }
+                                                    ],
+                                                    "additionalItems": false,
+                                                    "minItems": 1,
+                                                    "maxItems": 1
+                                                  },
+                                                  {
+                                                    "type": "array",
+                                                    "items": [
+                                                      {
+                                                        "const": 4,
+                                                        "type": "number"
+                                                      }
+                                                    ],
+                                                    "additionalItems": false,
+                                                    "minItems": 1,
+                                                    "maxItems": 1
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "eventFormat": {
+                                              "const": "compact-v1",
                                               "type": "string"
                                             },
-                                            {
-                                              "type": "null"
+                                            "terrain": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            },
+                                            "actors": {
+                                              "type": "array",
+                                              "items": {
+                                                "additionalProperties": false,
+                                                "type": "object",
+                                                "required": [
+                                                  "id",
+                                                  "kind"
+                                                ],
+                                                "properties": {
+                                                  "id": {
+                                                    "type": "integer"
+                                                  },
+                                                  "kind": {
+                                                    "anyOf": [
+                                                      {
+                                                        "const": "character",
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "const": "enemy",
+                                                        "type": "string"
+                                                      }
+                                                    ]
+                                                  },
+                                                  "enemyId": {
+                                                    "type": "integer"
+                                                  },
+                                                  "characterId": {
+                                                    "type": "integer"
+                                                  },
+                                                  "name": {
+                                                    "type": "string"
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "modifiers": {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "array",
+                                                "items": {
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "number"
+                                                    },
+                                                    {
+                                                      "type": "boolean"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            },
+                                            "events": {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "array",
+                                                "items": [
+                                                  {
+                                                    "type": "integer"
+                                                  },
+                                                  {
+                                                    "type": "integer"
+                                                  },
+                                                  {
+                                                    "type": "integer"
+                                                  },
+                                                  {
+                                                    "type": "integer"
+                                                  },
+                                                  {
+                                                    "type": "integer"
+                                                  },
+                                                  {
+                                                    "type": "string"
+                                                  },
+                                                  {
+                                                    "type": "integer"
+                                                  },
+                                                  {
+                                                    "type": "integer"
+                                                  },
+                                                  {
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "object",
+                                                    "patternProperties": {
+                                                      "^(.*)$": {
+                                                        "anyOf": [
+                                                          {
+                                                            "type": "string"
+                                                          },
+                                                          {
+                                                            "type": "number"
+                                                          },
+                                                          {
+                                                            "type": "boolean"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "additionalItems": false,
+                                                "minItems": 10,
+                                                "maxItems": 10
+                                              }
                                             }
-                                          ]
+                                          }
                                         },
-                                        "enemyId": {
-                                          "anyOf": [
-                                            {
-                                              "minimum": 0,
+                                        {
+                                          "additionalProperties": false,
+                                          "type": "object",
+                                          "required": [
+                                            "room",
+                                            "floor",
+                                            "roomInFloor",
+                                            "roomType",
+                                            "enemyId",
+                                            "enemyMaximumHp",
+                                            "outcome",
+                                            "damageDealt",
+                                            "damageTaken",
+                                            "startingPartyHp",
+                                            "remainingPartyHp",
+                                            "maximumPartyHp",
+                                            "healAmount",
+                                            "attritionAmount",
+                                            "endEvents",
+                                            "eventFormat",
+                                            "legacyIncomplete",
+                                            "events"
+                                          ],
+                                          "properties": {
+                                            "room": {
+                                              "minimum": 1,
                                               "type": "integer"
                                             },
-                                            {
-                                              "type": "null"
+                                            "floor": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "integer"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            },
+                                            "roomInFloor": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "integer"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            },
+                                            "roomType": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            },
+                                            "enemyId": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "integer"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            },
+                                            "enemyMaximumHp": {
+                                              "minimum": 0,
+                                              "type": "number"
+                                            },
+                                            "outcome": {
+                                              "anyOf": [
+                                                {
+                                                  "const": "victory",
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "const": "defeat",
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "const": "draw",
+                                                  "type": "string"
+                                                }
+                                              ]
+                                            },
+                                            "damageDealt": {
+                                              "type": "number"
+                                            },
+                                            "damageTaken": {
+                                              "type": "number"
+                                            },
+                                            "startingPartyHp": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "number"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            },
+                                            "remainingPartyHp": {
+                                              "type": "number"
+                                            },
+                                            "maximumPartyHp": {
+                                              "type": "number"
+                                            },
+                                            "healAmount": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "number"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            },
+                                            "attritionAmount": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "number"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            },
+                                            "endEvents": {
+                                              "type": "array",
+                                              "items": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "array",
+                                                    "items": [
+                                                      {
+                                                        "const": 0,
+                                                        "type": "number"
+                                                      },
+                                                      {
+                                                        "type": "object",
+                                                        "patternProperties": {
+                                                          "^(.*)$": {
+                                                            "anyOf": [
+                                                              {
+                                                                "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "number"
+                                                              },
+                                                              {
+                                                                "type": "boolean"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        }
+                                                      }
+                                                    ],
+                                                    "additionalItems": false,
+                                                    "minItems": 2,
+                                                    "maxItems": 2
+                                                  },
+                                                  {
+                                                    "type": "array",
+                                                    "items": [
+                                                      {
+                                                        "const": 1,
+                                                        "type": "number"
+                                                      },
+                                                      {
+                                                        "type": "object",
+                                                        "patternProperties": {
+                                                          "^(.*)$": {
+                                                            "anyOf": [
+                                                              {
+                                                                "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "number"
+                                                              },
+                                                              {
+                                                                "type": "boolean"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        }
+                                                      }
+                                                    ],
+                                                    "additionalItems": false,
+                                                    "minItems": 2,
+                                                    "maxItems": 2
+                                                  },
+                                                  {
+                                                    "type": "array",
+                                                    "items": [
+                                                      {
+                                                        "const": 2,
+                                                        "type": "number"
+                                                      },
+                                                      {
+                                                        "additionalProperties": false,
+                                                        "type": "object",
+                                                        "required": [
+                                                          "id",
+                                                          "enhancement",
+                                                          "superRare"
+                                                        ],
+                                                        "properties": {
+                                                          "id": {
+                                                            "minimum": 1,
+                                                            "type": "integer"
+                                                          },
+                                                          "enhancement": {
+                                                            "minimum": 0,
+                                                            "maximum": 6,
+                                                            "type": "integer"
+                                                          },
+                                                          "superRare": {
+                                                            "minimum": 0,
+                                                            "type": "integer"
+                                                          },
+                                                          "jewel": {
+                                                            "anyOf": [
+                                                              {
+                                                                "additionalProperties": false,
+                                                                "type": "object",
+                                                                "required": [
+                                                                  "key",
+                                                                  "rank"
+                                                                ],
+                                                                "properties": {
+                                                                  "key": {
+                                                                    "minLength": 1,
+                                                                    "maxLength": 200,
+                                                                    "type": "string"
+                                                                  },
+                                                                  "rank": {
+                                                                    "minimum": 1,
+                                                                    "maximum": 8,
+                                                                    "type": "integer"
+                                                                  }
+                                                                }
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        }
+                                                      },
+                                                      {
+                                                        "type": "number"
+                                                      }
+                                                    ],
+                                                    "additionalItems": false,
+                                                    "minItems": 3,
+                                                    "maxItems": 3
+                                                  },
+                                                  {
+                                                    "type": "array",
+                                                    "items": [
+                                                      {
+                                                        "const": 3,
+                                                        "type": "number"
+                                                      }
+                                                    ],
+                                                    "additionalItems": false,
+                                                    "minItems": 1,
+                                                    "maxItems": 1
+                                                  },
+                                                  {
+                                                    "type": "array",
+                                                    "items": [
+                                                      {
+                                                        "const": 4,
+                                                        "type": "number"
+                                                      }
+                                                    ],
+                                                    "additionalItems": false,
+                                                    "minItems": 1,
+                                                    "maxItems": 1
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "eventFormat": {
+                                              "const": "legacy-facts",
+                                              "type": "string"
+                                            },
+                                            "legacyIncomplete": {
+                                              "const": true,
+                                              "type": "boolean"
+                                            },
+                                            "events": {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "object",
+                                                "patternProperties": {
+                                                  "^(.*)$": {
+                                                    "anyOf": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "number"
+                                                      },
+                                                      {
+                                                        "type": "boolean"
+                                                      },
+                                                      {
+                                                        "type": "object",
+                                                        "patternProperties": {
+                                                          "^(.*)$": {
+                                                            "anyOf": [
+                                                              {
+                                                                "type": "number"
+                                                              },
+                                                              {
+                                                                "type": "boolean"
+                                                              }
+                                                            ]
+                                                          }
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              }
                                             }
-                                          ]
-                                        },
-                                        "outcome": {
-                                          "minLength": 1,
-                                          "type": "string"
-                                        },
-                                        "remainingPartyHp": {
-                                          "minimum": 0,
-                                          "type": "number"
-                                        },
-                                        "maximumPartyHp": {
-                                          "minimum": 0,
-                                          "type": "number"
+                                          }
                                         }
-                                      }
+                                      ]
                                     }
                                   }
                                 }
@@ -3788,6 +5212,9 @@
                     "nextChangeAt": "1970-01-01T00:00:00.000Z"
                   },
                   "exploration": {
+                    "dungeonId": 1,
+                    "difficultyOffset": 0,
+                    "totalRooms": 0,
                     "revealedRoomCount": 0,
                     "nextRevealAt": "1970-01-01T00:00:00.000Z",
                     "rooms": [
@@ -3796,10 +5223,48 @@
                         "floor": 1,
                         "roomInFloor": 1,
                         "roomType": "xxxxxxx",
-                        "enemyId": 0,
-                        "outcome": "xxxxxxx",
-                        "remainingPartyHp": 0,
-                        "maximumPartyHp": 0
+                        "enemyId": 1,
+                        "enemyMaximumHp": 0,
+                        "outcome": "victory",
+                        "damageDealt": 1,
+                        "damageTaken": 1,
+                        "startingPartyHp": 1,
+                        "remainingPartyHp": 1,
+                        "maximumPartyHp": 1,
+                        "healAmount": 1,
+                        "attritionAmount": 1,
+                        "endEvents": [
+                          [
+                            3
+                          ]
+                        ],
+                        "eventFormat": "compact-v1",
+                        "terrain": "xxxxxxx",
+                        "actors": [
+                          {
+                            "id": 1,
+                            "kind": "character"
+                          }
+                        ],
+                        "modifiers": [
+                          [
+                            "xxxxxxx"
+                          ]
+                        ],
+                        "events": [
+                          [
+                            2,
+                            49,
+                            1,
+                            1,
+                            2147483649,
+                            "none",
+                            1,
+                            1,
+                            10,
+                            {}
+                          ]
+                        ]
                       }
                     ]
                   },

@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 76. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 79. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -163,3 +163,5 @@ Slices, in order:
 - **E2 (done, Build 77): pane rows from the projection.** State, progress, HP, charge, floor and outcome, gates, side quest, and controls come from `read/observation/expedition`, re-reading at `nextChangeAt`; the tab no longer takes `partyCycles`. The raw retained log remains only for E3 narration, with its visible room boundary taken from the server-gated projection.
 - **E3 (done, Build 78): logs.** The Expedition tab reads `latestBattleLog` through the trusted in-process adapter. `buildExpeditionLogView` makes the API's summary, reward, and room facts authoritative, supplies localized fallback narration from the public semantic event rows when retained detail is unavailable, and keeps retained log data confined to the adapter boundary for legacy/compact narration fields intentionally absent from the public wire shape. The tab no longer reads `party.lastExpeditionLog` directly.
 - **E4 (done, Build 76): forecast.** The pane's forecast is `simulationRun` read through the in-process adapter and rebuilt losslessly (`parseSimulationRunData`); the running count is replaced by a plain "Simulating" label because the read reports no partial progress. The statistics Reset button now commits `resetStatistics` (Spec 9.1.3, 3-2-4, Build 75), so the Expedition tab is handed no reducer action.
+
+**E3 review fixes (Build 79).** Two defects were found in the first E3 adapter: an exploring party's pane showed the previous expedition's rooms (the tab sliced the disclosed log by the running exploration's revealed count), and retained narration was matched to projection rooms by room number alone. The Expedition projection's `exploration` now carries the revealed rooms in full, the pane renders those, and retained narration is used only for a room that matches on every shared fact (`retainedRoomMatches`). Narration still comes from the retained log held by the renderer, as recorded for E3; projecting a narratable form remains an open decision.

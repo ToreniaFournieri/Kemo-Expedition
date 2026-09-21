@@ -99,6 +99,37 @@ function roomEnemyStatus(log: ExpeditionLog, entry: ExpeditionLog['entries'][num
   return buildEnemyStatus(entry.enemySnapshot, level);
 }
 
+// One retained room in its public shape. Shared by the retained log and by the running exploration, which publishes only the
+// rooms revealed so far (Spec 8.3, Update Timing).
+export function buildBattleRoomData(entry: ExpeditionLog['entries'][number]) {
+  return {
+    room: entry.room,
+    floor: entry.floor ?? null,
+    roomInFloor: entry.roomInFloor ?? null,
+    roomType: entry.roomType ?? null,
+    enemyId: entry.enemyId ?? null,
+    enemyMaximumHp: entry.enemyHP,
+    outcome: entry.outcome,
+    damageDealt: entry.damageDealt,
+    damageTaken: entry.damageTaken,
+    startingPartyHp: entry.startPartyHP ?? null,
+    remainingPartyHp: entry.remainingPartyHP,
+    maximumPartyHp: entry.maxPartyHP,
+    healAmount: entry.healAmount ?? null,
+    attritionAmount: entry.attritionAmount ?? null,
+    ...(entry.compactBattle ? compactApiBattle(entry.compactBattle) : {
+      eventFormat: 'legacy-facts' as const,
+      legacyIncomplete: true,
+      events: entry.details.map(serializeRetainedBattleEvent),
+    }),
+    endEvents: (entry.endEvents ?? []).map((event) => {
+      if (event[0] === 0) { const { flavorIndex: _flavor, ...facts } = event[1] as typeof event[1] & { flavorIndex?: number }; return [0, facts]; }
+      if (event[0] === 1) { const { flavorIndex: _flavor, ...facts } = event[1]; return [1, facts]; }
+      return event;
+    }),
+  };
+}
+
 const BOTTLENECK_DAMAGE_PERCENT = 35;
 
 // SpecRef: 9.1.3 | Read | 2-2-2 {p}/latestBattleLog
@@ -130,32 +161,7 @@ export function buildBattleLogData(log: ExpeditionLog | null, partyNumber: numbe
         superRare: item.superRare,
       })),
       autoSell: { count: log.autoSellCount, gold: log.autoSellProfit },
-      rooms: rooms.map((entry) => ({
-        room: entry.room,
-        floor: entry.floor ?? null,
-        roomInFloor: entry.roomInFloor ?? null,
-        roomType: entry.roomType ?? null,
-        enemyId: entry.enemyId ?? null,
-        enemyMaximumHp: entry.enemyHP,
-        outcome: entry.outcome,
-        damageDealt: entry.damageDealt,
-        damageTaken: entry.damageTaken,
-        startingPartyHp: entry.startPartyHP ?? null,
-        remainingPartyHp: entry.remainingPartyHP,
-        maximumPartyHp: entry.maxPartyHP,
-        healAmount: entry.healAmount ?? null,
-        attritionAmount: entry.attritionAmount ?? null,
-        ...(entry.compactBattle ? compactApiBattle(entry.compactBattle) : {
-          eventFormat: 'legacy-facts' as const,
-          legacyIncomplete: true,
-          events: entry.details.map(serializeRetainedBattleEvent),
-        }),
-        endEvents: (entry.endEvents ?? []).map((event) => {
-          if (event[0] === 0) { const { flavorIndex: _flavor, ...facts } = event[1] as typeof event[1] & { flavorIndex?: number }; return [0, facts]; }
-          if (event[0] === 1) { const { flavorIndex: _flavor, ...facts } = event[1]; return [1, facts]; }
-          return event;
-        }),
-      })),
+      rooms: rooms.map(buildBattleRoomData),
     },
     bottleneckEnemies: rooms.flatMap((entry) => {
       const damageTakenPercent = entry.maxPartyHP > 0 ? Math.round((entry.damageTaken / entry.maxPartyHP) * 1000) / 10 : 0;

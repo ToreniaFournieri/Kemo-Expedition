@@ -36,12 +36,21 @@ test('Expedition log projection adapter preserves public facts and supplies narr
     assert.equal(view.entries[0].details[0].totalAttempts, 2);
     assert.equal(view.entries[0].details[0].damage, 100);
     assert.match(view.entries[0].details[0].action, /Current Name/);
-    const retained = { dungeonId: 1, dungeonName: 'old dungeon name', difficultyOffset: 0, totalExperience: 0, totalRooms: 99, completedRooms: 99, finalOutcome: 'Clear', rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: 1, maxPartyHP: 1, entries: [{ room: 1, floor: 1, roomInFloor: 1, roomType: 'battle_Normal', enemyId: 1, enemyName: 'old enemy name', enemyHP: 1, enemyAttackValues: '0/0/0', outcome: 'victory', damageDealt: 1, damageTaken: 1, remainingPartyHP: 1, maxPartyHP: 1, details: [{ phase: 'combat', actor: 'effect', action: 'retained narration' }] }] };
-    const merged = buildExpeditionLogView(projection, retained);
+    // Retained narration is used only for a room that matches the projection on every shared fact.
+    const retainedRoom = (overrides) => ({ room: 1, floor: 1, roomInFloor: 1, roomType: 'battle_Normal', enemyId: 1, enemyName: 'old enemy name', enemyHP: 200, enemyAttackValues: '0/0/0', outcome: 'victory', damageDealt: 100, damageTaken: 20, remainingPartyHP: 80, maxPartyHP: 100, details: [{ phase: 'combat', actor: 'effect', action: 'retained narration' }], ...overrides });
+    const retained = (overrides) => ({ dungeonId: 1, dungeonName: 'old dungeon name', difficultyOffset: 0, totalExperience: 0, totalRooms: 99, completedRooms: 99, finalOutcome: 'Clear', rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: 1, maxPartyHP: 1, entries: [retainedRoom(overrides)] });
+    const merged = buildExpeditionLogView(projection, retained({}));
     assert.equal(merged.completedRooms, 1);
     assert.equal(merged.totalRooms, 2);
     assert.equal(merged.entries[0].remainingPartyHP, 80);
     assert.equal(merged.entries[0].details[0].action, 'retained narration');
+    for (const differing of [{ damageDealt: 1 }, { damageTaken: 1 }, { enemyId: 2 }, { outcome: 'draw' }, { remainingPartyHP: 79 }, { floor: 2 }]) {
+      const view = buildExpeditionLogView(projection, retained(differing));
+      assert.notEqual(view.entries[0].details[0].action, 'retained narration', JSON.stringify(differing));
+      assert.equal(view.entries[0].remainingPartyHP, 80, 'the projection facts win');
+    }
+    const otherDungeon = { ...retained({}), dungeonId: 2 };
+    assert.notEqual(buildExpeditionLogView(projection, otherDungeon).entries[0].details[0].action, 'retained narration');
   `);
   await build({ entryPoints: [source], outfile: entry, bundle: true, platform: 'node', format: 'esm' });
   const result = spawnSync(process.execPath, [entry], { encoding: 'utf8' });

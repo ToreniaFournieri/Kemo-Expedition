@@ -452,12 +452,16 @@ definitions in 9.1.3.
     Step's `subProgress` window (`startedAt`, `endsAt`), and `nextChangeAt`, the next
     instant the bar changes on its own.
   * `exploration` (only while the party is in `state.explore`): the exploration is
-    server-gated. `rooms` holds only the rooms revealed as of this read
-    (`revealedRoomCount`, at most 24), each with its room coordinates, enemy,
-    outcome, and remaining party HP; a room, HP value, or outcome from the future is
-    never sent, and `nextRevealAt` says when to read again (`null` once every room is
-    revealed). `currentHp` is the last revealed room's HP (the estimated starting HP
-    before the first room), not the final HP of the running exploration.
+    server-gated. It carries `dungeonId`, `difficultyOffset`, `totalRooms`, and `rooms`,
+    only the rooms revealed as of this read (`revealedRoomCount`, at most 24) in the same
+    public room shape as `latestBattleLog`, so a client renders the running exploration
+    from this projection alone. A room, HP value, or outcome from the future is never
+    sent, and the result, experience, and rewards are not disclosed until the exploration
+    ends. `nextRevealAt` says when to read again (`null` once every room is revealed).
+    `currentHp` is the last revealed room's HP (the estimated starting HP before the
+    first room), not the final HP of the running exploration. While a party explores,
+    `latestBattleLog` still returns the log disclosed before the exploration began, so it
+    must not be used to render the running rooms.
   * `clearGates`: the goals of the selected destination (`eliteGate`, `bossGate`,
     `entryGate`, `godGate`, `godEntry`) with `dungeonId`, `floor` where it applies, and
     `current` of `required`. `sideQuest` is the active side quest (`type`, `target`,

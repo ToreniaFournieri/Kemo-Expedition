@@ -88,7 +88,8 @@ export interface ExpeditionLogView {
   readonly totalExperience: number;
   readonly totalRooms: number;
   readonly completedRooms: number;
-  readonly finalOutcome: ApiBattleLog['finalOutcome'];
+  /** `null` while the exploration is still running: the result is not disclosed until it ends. */
+  readonly finalOutcome: ApiBattleLog['finalOutcome'] | null;
   readonly entries: ExpeditionLogEntry[];
   readonly rewards: Item[];
   readonly autoSellProfit: number;
@@ -208,7 +209,24 @@ function roomEnemyName(room: ApiBattleRoom, source?: ExpeditionLogEntry): string
   return `${formatEnemyDefName(enemy)}${suffix}`;
 }
 
-function roomNarrationEntry(source: ExpeditionLogEntry | undefined, room: ApiBattleRoom): ExpeditionLogEntry {
+/**
+ * Whether a retained room is the room the projection describes. Narration is copied from the retained log only for a room
+ * that matches on every fact both sides carry, so a retained log that is newer or older than the projection (they are read
+ * at different moments) can never lend its narration to another room.
+ */
+export function retainedRoomMatches(source: ExpeditionLogEntry, room: ApiBattleRoom): boolean {
+  return source.room === room.room
+    && (source.enemyId ?? null) === room.enemyId
+    && source.outcome === room.outcome
+    && source.damageDealt === room.damageDealt
+    && source.damageTaken === room.damageTaken
+    && source.remainingPartyHP === room.remainingPartyHp
+    && (source.floor ?? null) === room.floor
+    && (source.roomInFloor ?? null) === room.roomInFloor;
+}
+
+function roomNarrationEntry(retainedSource: ExpeditionLogEntry | undefined, room: ApiBattleRoom): ExpeditionLogEntry {
+  const source = retainedSource && retainedRoomMatches(retainedSource, room) ? retainedSource : undefined;
   const details = source?.details?.length ? source.details : publicEventsToBattleLog(room);
   const endEvents = source?.endEvents ?? room.endEvents as DiaryEndEvent[];
   return {
@@ -240,7 +258,7 @@ export function buildExpeditionLogView(
 ): ExpeditionLogView | null {
   const log = projection?.battleLog;
   if (!log) return null;
-  const narrated = retainedNarration ? renderExpeditionMetadata(retainedNarration) : null;
+  const narrated = retainedNarration && retainedNarration.dungeonId === log.dungeonId ? renderExpeditionMetadata(retainedNarration) : null;
   const sourceByRoom = new Map((narrated?.entries ?? []).map((entry) => [entry.room, entry]));
   const dungeonName = getDungeonById(log.dungeonId)?.name ?? narrated?.dungeonName ?? `${t('expedition.floor', { floor: log.dungeonId })}`;
   return {
@@ -260,4 +278,51 @@ export function buildExpeditionLogView(
     autoSellCount: log.autoSell.count,
     entries: log.rooms.map((room) => roomNarrationEntry(sourceByRoom.get(room.room), room)),
   };
+}
+
+/** The running exploration in the Expedition projection: only rooms revealed as of the read. */
+export interface ExplorationProjection {
+  readonly dungeonId: number;
+  readonly difficultyOffset: number;
+  readonly totalRooms: number;
+  readonly revealedRoomCount: number;
+  readonly nextRevealAt: string | null;
+  readonly rooms: readonly ApiBattleRoom[];
+}
+
+/**
+ * The view of a party's running exploration: its revealed rooms and nothing else. The result, experience, and rewards of the
+ * exploration are not disclosed until it ends, so they are empty and `finalOutcome` is `null`.
+ */
+export function buildExploringLogView(exploration: ExplorationProjection, retainedNarration?: ExpeditionLog | null): ExpeditionLogView {
+  const narrated = retainedNarration && retainedNarration.dungeonId === exploration.dungeonId ? renderExpeditionMetadata(retainedNarration) : null;
+  const sourceByRoom = new Map((narrated?.entries ?? []).map((entry) => [entry.room, entry]));
+  return {
+    logId: 'exploring',
+    dungeonId: exploration.dungeonId,
+    dungeonName: getDungeonById(exploration.dungeonId)?.name ?? `${t('expedition.floor', { floor: exploration.dungeonId })}`,
+    difficultyOffset: exploration.difficultyOffset,
+    totalExperience: 0,
+    totalRooms: exploration.totalRooms,
+    completedRooms: exploration.rooms.length,
+    finalOutcome: null,
+    entries: exploration.rooms.map((room) => roomNarrationEntry(sourceByRoom.get(room.room), room)),
+    rewards: [],
+    autoSellProfit: 0,
+    autoSellCount: 0,
+  };
+}
+
+/**
+ * The view the Expedition pane renders for one party. While the party is exploring it is the running exploration's revealed
+ * rooms (from the same Expedition projection that gates them); otherwise it is the newest disclosed log. The retained log is
+ * only a source of narration, and only for rooms it matches.
+ */
+export function buildPartyExpeditionLogView(input: {
+  exploration: ExplorationProjection | null | undefined;
+  latestBattleLog: LatestBattleLogProjection | null | undefined;
+  retained: ExpeditionLog | null | undefined;
+}): ExpeditionLogView | null {
+  if (input.exploration) return buildExploringLogView(input.exploration, input.retained);
+  return buildExpeditionLogView(input.latestBattleLog, input.retained);
 }

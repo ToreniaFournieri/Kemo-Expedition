@@ -20,7 +20,7 @@ import { formatEquipmentEntry, formatItem, parseEquipmentChange, parseEvaluatedI
 import { isJewelAllowedForCategory, JEWEL_DEFS } from '../../game/jewel.ts';
 import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
 import { apiExpeditionOutcomeOrNull } from './expeditionOutcome.ts';
-import { buildBattleLogData } from './battleLogs.ts';
+import { buildBattleLogData, buildBattleRoomData } from './battleLogs.ts';
 import { buildSimulationRunData } from './simulationView.ts';
 import { EQUIPMENT_EVALUATION_LIMIT } from './requestLimits.ts';
 import { describeUiPreferenceCatalog, listUiPreferences } from './uiPreferenceCatalog.ts';
@@ -219,18 +219,14 @@ function expeditionProjection(state: GameState, context: ApiV1ReadContext) {
           nextChangeAt: progress.nextChangeAt === null ? null : new Date(progress.nextChangeAt).toISOString(),
         },
         exploration: runningLog && progress ? {
+          dungeonId: runningLog.dungeonId,
+          difficultyOffset: runningLog.difficultyOffset ?? 0,
+          totalRooms: runningLog.totalRooms,
           revealedRoomCount: revealed.length,
           nextRevealAt: progress.nextChangeAt === null ? null : new Date(progress.nextChangeAt).toISOString(),
-          rooms: revealed.map((entry) => ({
-            room: entry.room,
-            floor: entry.floor ?? null,
-            roomInFloor: entry.roomInFloor ?? null,
-            roomType: entry.roomType ?? null,
-            enemyId: entry.enemyId ?? null,
-            outcome: entry.outcome,
-            remainingPartyHp: entry.remainingPartyHP,
-            maximumPartyHp: entry.maxPartyHP,
-          })),
+          // The revealed rooms in full (the same public room shape as `latestBattleLog`), so the pane renders the running
+          // exploration without ever holding a room from the future.
+          rooms: revealed.map(buildBattleRoomData),
         } : null,
         currentHp: displayedHp,
         maximumHp,
