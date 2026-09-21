@@ -37,3 +37,12 @@ test('Party character edits commit through the shared changeBuild handler, not d
   const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
   assert.match(home, /commit\('commit\/build\/character\/\{characterId\}\/changeBuild'/);
 });
+
+test('The Party inventory category is a retained per-character preference, not local state', () => {
+  const partyTab = fs.readFileSync(path.resolve('src/components/home/tabs/PartyTab.tsx'), 'utf8');
+  assert.equal(/useState\('armor'\)/.test(partyTab), false, 'equipCategory must not be plain component state');
+  assert.match(partyTab, /equipCategoryPreferences\[char\.id\]/);
+  const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
+  assert.match(home, /commit\('commit\/setting\/uiPreferences'/);
+  assert.match(home, /'read\/observation\/setting'/);
+});

@@ -101,6 +101,7 @@ import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIn
 import { parseInventoryStacks, parseJewelStacks, parseSavedEquipmentSet } from '../api/v1/itemFormat';
 import { buildPartySummaries, buildPartyView, type PartyProjection } from '../api/v1/partyView';
 import { useApiRead } from './home/useApiRead';
+import { PARTY_EQUIP_CATEGORY_FAMILY, partyEquipCategoryKey } from '../api/v1/uiPreferenceCatalog';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
 import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
@@ -1915,6 +1916,17 @@ export function HomeScreen({
     isPartyTabVisible,
   );
   const partyProjection = partyObservation?.partyInfo ?? null;
+  // SpecRef: 9.1.4.17 | UI state ownership | Retained selections come from `read/observation/setting` (uiPreferences)
+  const settingObservation = useApiRead<{ settingInfo: { uiPreferences: Array<{ key: string; value: string | number | boolean }> } }>(
+    inProcessApiRef.current, 'read/observation/setting', {}, [state.global.uiPreferences], isPartyTabVisible,
+  );
+  const equipCategoryPreferences = useMemo(() => {
+    const preferences: Record<number, string> = {};
+    for (const { key, value } of settingObservation?.settingInfo.uiPreferences ?? []) {
+      if (key.startsWith(`${PARTY_EQUIP_CATEGORY_FAMILY}.`) && typeof value === 'string') preferences[Number(key.slice(PARTY_EQUIP_CATEGORY_FAMILY.length + 1))] = value;
+    }
+    return preferences;
+  }, [settingObservation]);
   const partyView = useMemo(() => partyProjection ? buildPartyView(partyProjection) : null, [partyProjection]);
   const partySummaries = useMemo(() => partyProjection ? buildPartySummaries(partyProjection) : [], [partyProjection]);
 
@@ -4920,6 +4932,14 @@ export function HomeScreen({
           party={partyView}
           partyStats={{ hp: partyView.maxHp }}
           characterStatus={partyView.characterStatus}
+          equipCategoryPreferences={equipCategoryPreferences}
+          onSetEquipCategory={(characterId, category) => {
+            void inProcessApiRef.current!.commit('commit/setting/uiPreferences', {
+              parameters: { changes: [{ key: partyEquipCategoryKey(characterId), value: category }] },
+            }).then((response) => {
+              if (response.error) console.error('[api-v1] Retained category change failed', response.error);
+            });
+          }}
           selectedCharacter={selectedCharacter}
           setSelectedCharacter={setSelectedCharacter}
           editingCharacter={editingCharacter}

@@ -70,7 +70,8 @@ import { gameplayRandom, createApiRandom, withGameplayRandomSource } from '../ga
 import { replaceCharacterEquipment } from '../game/equipment';
 import {
   applyEquipmentSet,
-  evaluateEquipmentSet,
+  applyEquipmentState,
+  evaluateEquipmentState,
   MAX_SAVED_EQUIPMENT_SETS,
   normalizeSavedEquipmentSets,
   type EquipmentSetLoadMode,
@@ -1918,6 +1919,7 @@ export type GameAction =
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
   | { type: 'MARK_PARTY_DIARY_LOGS_SEEN'; partyIndex: number }
   | { type: 'MARK_DEVELOPER_NEWS_READ'; itemIds: string[] }
+  | { type: 'SET_UI_PREFERENCES'; changes: Array<{ key: string; value: string | number | boolean }> }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
   | { type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY'; partyId: number | null }
   | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: RuntimeGameMode; enemyLevelOffset?: number; simulatedEndAt?: number; cycleDurationScale?: number; cycleDurationByParty?: number[]; operationStart?: number; operationCount?: number; finalizeChunk?: boolean; chunkPartyStatus?: Array<{ party: Party; computed: ComputedPartyStatus }>; workerOptimization?: AfkWorkerSimulationStrategy; compactBattleResultOutput?: boolean; workerAttribution?: AfkWorkerPhaseAttribution; onOperationComplete?: (completedOperations: number, operationCount: number) => void }
@@ -2459,6 +2461,17 @@ function reduceGameState(
 
     case 'SELECT_PARTY':
       return { ...state, selectedPartyIndex: action.partyIndex };
+
+    case 'SET_UI_PREFERENCES': {
+      // SpecRef: 9.1.4.17 | UI state ownership | uiPreferences closed catalog
+      // The API validates the catalog before dispatching; an unchanged value keeps the state identity (a valid no-op).
+      const current = state.global.uiPreferences ?? {};
+      const changed = action.changes.filter((change) => current[change.key] !== change.value);
+      if (changed.length === 0) return state;
+      const next = { ...current };
+      changed.forEach((change) => { next[change.key] = change.value; });
+      return { ...state, global: { ...state.global, uiPreferences: next } };
+    }
 
     case 'MARK_DEVELOPER_NEWS_READ': {
       // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
@@ -3125,19 +3138,21 @@ function reduceGameState(
           : { slot: 0, name: '', createdAt: Date.now(), equipment: [] } satisfies SavedEquipmentSet;
       if (!set) return state;
       const maxSlots = computeCharacterStats(character, currentParty.level).maxEquipSlots;
-      // Undo/Redo must use precisely the saved-set availability contract. This
-      // check is kept in the reducer as well as the UI to reject stale clicks.
+      // Undo/Redo restores the recorded items and Jewel assignment exactly, or not at all. This check is kept in the
+      // reducer as well as the API to reject stale requests.
       if (action.type === 'RESTORE_EQUIPMENT_STATE'
-        && !evaluateEquipmentSet(set, character, state.global.inventory, maxSlots).allAvailable) return state;
-      const result = applyEquipmentSet(
-        set,
-        character,
-        state.global.inventory,
-        state.global.jewels,
-        state.global.gold,
-        maxSlots,
-        action.type === 'LOAD_EQUIPMENT_SET' ? action.mode : 'exact',
-      );
+        && !evaluateEquipmentState(set, character, state.global.inventory, state.global.jewels, maxSlots).allAvailable) return state;
+      const result = action.type === 'RESTORE_EQUIPMENT_STATE'
+        ? applyEquipmentState(set, character, state.global.inventory, state.global.jewels, state.global.gold, maxSlots)
+        : applyEquipmentSet(
+          set,
+          character,
+          state.global.inventory,
+          state.global.jewels,
+          state.global.gold,
+          maxSlots,
+          action.type === 'LOAD_EQUIPMENT_SET' ? action.mode : 'exact',
+        );
       const characters = [...currentParty.characters];
       characters[charIndex] = result.character;
       const parties = [...state.parties];

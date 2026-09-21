@@ -19,6 +19,7 @@ import { describeItem, describeJewel, formatItemDetails, type ItemDetails, type 
 import { formatEquipmentEntry, formatItem } from './itemFormat.ts';
 import { JEWEL_DEFS } from '../../game/jewel.ts';
 import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
+import { describeUiPreferenceCatalog, listUiPreferences } from './uiPreferenceCatalog.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { buildShopLineup, getShopRefreshPrice } from '../../game/shop.ts';
 import type { GameState, Item, JewelKey, Party } from '../../types/index.ts';
@@ -271,7 +272,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   }
   if (operationId === 'read/observation/base') return { baseInfo: baseProjection(state) };
   if (operationId === 'read/observation/diary') return { diaryInfo: diaryProjection(state) };
-  if (operationId === 'read/observation/setting') return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), uiPreferences: (context.control?.settings?.uiPreferences as unknown[] | undefined) ?? [] } };
+  if (operationId === 'read/observation/setting') return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), uiPreferences: listUiPreferences(state.global.uiPreferences), uiPreferenceCatalog: describeUiPreferenceCatalog() } };
 
   const expedition = operationId.match(/^read\/expedition\/(\d+)\/(setting|latestBattleLog|simulationRun|chargeStock)$/);
   if (expedition) {

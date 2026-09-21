@@ -148,3 +148,51 @@ test('saved equipment migration keeps only unique valid slots in the 1-99 range'
   const saved = setOf(item(10));
   assert.deepEqual(normalizeSavedEquipmentSets([saved, { ...saved, name: 'duplicate' }, { ...saved, slot: 100 }]).map((set) => set.name), ['set']);
 });
+
+test('an Undo/Redo state records the Jewel assignment and restores it exactly', async () => {
+  const { createEquipmentSetSnapshot, evaluateEquipmentState, applyEquipmentState } = await modulePromise;
+  const armor = item(10, 2, 0, 'armor');
+  const worn = { ...armor, jewel: { key: 'fort', rank: 2 } };
+  const state = createEquipmentSetSnapshot([worn], true);
+  assert.deepEqual(state.equipment[0].item.jewel, { key: 'fort', rank: 2 });
+  assert.equal(createEquipmentSetSnapshot([worn]).equipment[0].item.jewel, null, 'a saved set still carries no Jewel');
+  // After Remove All: the item and the Jewel are both back in their inventories.
+  const jewels = { 'fort:2': 1, 'fort:8': 1 };
+  assert.equal(evaluateEquipmentState(state, character([]), inventoryOf(armor), jewels, 2).allAvailable, true);
+  const restored = applyEquipmentState(state, character([]), inventoryOf(armor), jewels, 0, 2);
+  assert.deepEqual(restored.character.equipment[0]?.jewel, { key: 'fort', rank: 2 }, 'the recorded Jewel, not the strongest one');
+  assert.equal(restored.jewels['fort:2'] ?? 0, 0);
+  assert.equal(restored.jewels['fort:8'], 1, 'no other Jewel is consumed');
+});
+
+test('an Undo/Redo state without a Jewel restores without one', async () => {
+  const { createEquipmentSetSnapshot, applyEquipmentState } = await modulePromise;
+  const armor = item(10, 2, 0, 'armor');
+  const restored = applyEquipmentState(createEquipmentSetSnapshot([armor], true), character([]), inventoryOf(armor), { 'fort:8': 1 }, 0, 2);
+  assert.equal(restored.character.equipment[0]?.jewel, null, 'no spare Jewel is assigned');
+  assert.equal(restored.jewels['fort:8'], 1);
+});
+
+test('one unavailable Jewel makes the whole Undo/Redo state unavailable', async () => {
+  const { createEquipmentSetSnapshot, evaluateEquipmentState } = await modulePromise;
+  const armor = item(10, 2, 0, 'armor');
+  const sword = item(11, 0, 0, 'sword');
+  const state = createEquipmentSetSnapshot([{ ...armor, jewel: { key: 'fort', rank: 2 } }, sword], true);
+  const inventory = inventoryOf(armor, sword);
+  const result = evaluateEquipmentState(state, character([]), inventory, { 'fort:3': 1 }, 2);
+  assert.equal(result.allAvailable, false);
+  assert.deepEqual(result.entries.map((entry) => entry.available), [false, true]);
+  // A Jewel the item's category does not accept is never valid.
+  const invalid = createEquipmentSetSnapshot([{ ...armor, jewel: { key: 'might', rank: 1 } }], true);
+  assert.equal(evaluateEquipmentState(invalid, character([]), inventoryOf(armor), { 'might:1': 1 }, 2).allAvailable, false);
+});
+
+test('Jewel availability counts the copies already worn and each Jewel only once', async () => {
+  const { createEquipmentSetSnapshot, evaluateEquipmentState } = await modulePromise;
+  const armor = item(10, 2, 0, 'armor');
+  const wornJewel = { ...armor, jewel: { key: 'fort', rank: 2 } };
+  const state = createEquipmentSetSnapshot([wornJewel], true);
+  assert.equal(evaluateEquipmentState(state, character([wornJewel]), {}, {}, 2).allAvailable, true, 'the worn copy and its Jewel are available');
+  const two = createEquipmentSetSnapshot([wornJewel, { ...armor, jewel: { key: 'fort', rank: 2 } }], true);
+  assert.equal(evaluateEquipmentState(two, character([]), inventoryOf(armor, armor), { 'fort:2': 1 }, 2).allAvailable, false, 'two attachments need two Jewels');
+});

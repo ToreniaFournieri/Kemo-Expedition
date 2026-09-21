@@ -5,6 +5,8 @@ import { RACES } from '../data/races';
 import { addItemToInventory, removeItemFromInventory } from './inventoryMutation';
 import {
   addJewelToInventory,
+  getJewelOwnedCount,
+  isJewelAllowedForCategory,
   planAutoJewelAssignmentsForCharacter,
   removeJewelFromInventory,
 } from './jewel';
@@ -48,21 +50,18 @@ export function getSavedEquipmentSlot(entry: SavedEquipmentEntry, legacyIndex: n
 }
 
 /**
- * Creates an exact, in-memory equipment state target.  Undo/Redo deliberately
- * uses the same target shape and availability evaluator as saved equipment
- * sets, so category aptitude, duplicate variants, and slot limits cannot
- * drift between the two features.
+ * Creates an exact, in-memory equipment snapshot. A saved equipment set carries items and locks only: Jewels are stored
+ * separately and assigned independently every time a set is loaded (Spec 8.2.4). An Undo/Redo state is different: it
+ * records the Jewel assignment as well (`includeJewels`, Spec 9.1.3, 2-3-3), and restoring it is all or nothing.
  */
-export function createEquipmentSetSnapshot(equipment: readonly (Item | null | undefined)[]): SavedEquipmentSet {
+export function createEquipmentSetSnapshot(equipment: readonly (Item | null | undefined)[], includeJewels = false): SavedEquipmentSet {
   return {
     slot: 0,
     name: '',
     createdAt: 0,
     equipment: equipment.flatMap((item, slotIndex) => item ? [{
       slotIndex,
-      // Jewels are not part of an equipment state: they return to the inventory when equipment is removed, and every
-      // restore assigns Jewels afresh (see applyEquipmentSet), so a saved state never carries one.
-      item: { ...item, jewel: null },
+      item: { ...item, jewel: includeJewels && item.jewel ? { ...item.jewel } : null },
       isLocked: item.isLocked === true,
     }] : []),
   };
@@ -223,6 +222,78 @@ export function applyEquipmentSet(
   });
 
   return { character: nextCharacter, inventory: nextInventory, jewels: nextJewels, gold: nextGold };
+}
+
+/**
+ * Whether an Undo/Redo state can be restored exactly now (Spec 9.1.3, 2-3-3): every item must be available (in the
+ * inventory or already worn), the character must have the aptitude, the slot must exist, and every recorded Jewel must
+ * be available (in the Jewel inventory or worn now) and valid for its item. One unavailable item or Jewel makes the
+ * whole state unavailable; partial restoration is never allowed.
+ */
+export function evaluateEquipmentState(
+  state: SavedEquipmentSet,
+  character: Character,
+  inventory: InventoryRecord,
+  jewels: JewelInventory,
+  maxSlots: number,
+): EquipmentSetAvailability {
+  let availableItems = createVirtualInventory(character, inventory);
+  let availableJewels = jewels;
+  character.equipment.forEach((item) => {
+    if (item?.jewel) availableJewels = addJewelToInventory(availableJewels, item.jewel.key, item.jewel.rank);
+  });
+  const entries = state.equipment.map((entry, index) => {
+    const slotIndex = getSavedEquipmentSlot(entry, index);
+    const eligible = slotIndex >= 0 && slotIndex < maxSlots && canCharacterEquipCategory(character, entry.item.category);
+    const exact = eligible ? takeExact(availableItems, entry) : null;
+    if (!exact) return { entry, available: false };
+    const jewel = entry.item.jewel;
+    if (jewel && (!isJewelAllowedForCategory(exact.category, jewel.key) || getJewelOwnedCount(availableJewels, jewel.key, jewel.rank) <= 0)) {
+      return { entry, available: false };
+    }
+    availableItems = removeItemFromInventory(availableItems, getVariantKey(exact));
+    if (jewel) availableJewels = removeJewelFromInventory(availableJewels, jewel.key, jewel.rank);
+    return { entry, available: true };
+  });
+  return { allAvailable: entries.every((value) => value.available), entries };
+}
+
+/** Restores an Undo/Redo state exactly: the same items, slots, locks, and Jewel assignment. Validate with `evaluateEquipmentState` first. */
+export function applyEquipmentState(
+  state: SavedEquipmentSet,
+  character: Character,
+  inventory: InventoryRecord,
+  jewels: JewelInventory,
+  gold: number,
+  maxSlots: number,
+): { character: Character; inventory: InventoryRecord; jewels: JewelInventory; gold: number } {
+  let nextInventory = inventory;
+  let nextJewels = jewels;
+  let nextGold = gold;
+  character.equipment.forEach((item) => {
+    if (!item) return;
+    const result = addItemToInventory(nextInventory, { ...item, jewel: null }, nextGold);
+    nextInventory = result.inventory;
+    nextGold = result.gold;
+    if (item.jewel) nextJewels = addJewelToInventory(nextJewels, item.jewel.key, item.jewel.rank);
+  });
+  const equipment: (Item | null)[] = Array.from({ length: Math.max(character.equipment.length, maxSlots) }, () => null);
+  state.equipment.forEach((entry, index) => {
+    const slotIndex = getSavedEquipmentSlot(entry, index);
+    if (slotIndex < 0 || slotIndex >= maxSlots) return;
+    const exact = takeExact(nextInventory, entry);
+    if (!exact) return;
+    nextInventory = removeItemFromInventory(nextInventory, getVariantKey(exact));
+    const jewel = entry.item.jewel;
+    if (jewel) nextJewels = removeJewelFromInventory(nextJewels, jewel.key, jewel.rank);
+    equipment[slotIndex] = { ...exact, isLocked: entry.isLocked, jewel: jewel ? { ...jewel } : null };
+  });
+  return {
+    character: { ...character, equipment, autoEquipmentMode: character.autoEquipmentMode === 2 ? 1 : character.autoEquipmentMode },
+    inventory: nextInventory,
+    jewels: nextJewels,
+    gold: nextGold,
+  };
 }
 
 export function normalizeSavedEquipmentSets(value: unknown): SavedEquipmentSet[] {

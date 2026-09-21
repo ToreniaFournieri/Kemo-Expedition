@@ -44,7 +44,7 @@ assert.equal(full.simulatedRevision, 7);
   const unavailable = { ...same, equipment: same.equipment.map((entry, index) => index === 0 ? { ...entry, item: { ...entry.item, id: 999999 } } : entry) };
   const redo = (await readEquipment({ [key]: { undo: [], redo: [unavailable] as never[] } })).redoEquipment;
   assert.equal(redo.available, false);
-  assert.equal(redo.unavailableReason, 'The redo target contains unavailable items.');
+  assert.equal(redo.unavailableReason, 'The redo target contains unavailable items or Jewels.');
   assert.equal(redo.equipmentStates.length, 1);
   assert.match(redo.equipmentStates[0][0], /^\d+\/[01]\/999999\/\d\/\d+/);
 

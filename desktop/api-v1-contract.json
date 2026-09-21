@@ -4728,7 +4728,8 @@
                 "environment",
                 "gameMode",
                 "enemyLevelOffset",
-                "uiPreferences"
+                "uiPreferences",
+                "uiPreferenceCatalog"
               ],
               "properties": {
                 "language": {
@@ -5103,6 +5104,66 @@
                       }
                     }
                   }
+                },
+                "uiPreferenceCatalog": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "family",
+                      "subject",
+                      "type",
+                      "options",
+                      "defaultValue"
+                    ],
+                    "properties": {
+                      "family": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "subject": {
+                        "const": "characterId",
+                        "type": "string"
+                      },
+                      "type": {
+                        "anyOf": [
+                          {
+                            "const": "string",
+                            "type": "string"
+                          },
+                          {
+                            "const": "number",
+                            "type": "string"
+                          },
+                          {
+                            "const": "boolean",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "options": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "defaultValue": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "boolean"
+                          }
+                        ]
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -5155,7 +5216,8 @@
                     "environment",
                     "gameMode",
                     "enemyLevelOffset",
-                    "uiPreferences"
+                    "uiPreferences",
+                    "uiPreferenceCatalog"
                   ],
                   "properties": {
                     "language": {
@@ -5530,6 +5592,66 @@
                           }
                         }
                       }
+                    },
+                    "uiPreferenceCatalog": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "family",
+                          "subject",
+                          "type",
+                          "options",
+                          "defaultValue"
+                        ],
+                        "properties": {
+                          "family": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "subject": {
+                            "const": "characterId",
+                            "type": "string"
+                          },
+                          "type": {
+                            "anyOf": [
+                              {
+                                "const": "string",
+                                "type": "string"
+                              },
+                              {
+                                "const": "number",
+                                "type": "string"
+                              },
+                              {
+                                "const": "boolean",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "options": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "defaultValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -5574,6 +5696,17 @@
                 {
                   "key": "xxxxxxx",
                   "value": "xxxxxxx"
+                }
+              ],
+              "uiPreferenceCatalog": [
+                {
+                  "family": "xxxxxxx",
+                  "subject": "characterId",
+                  "type": "string",
+                  "options": [
+                    "xxxxxxx"
+                  ],
+                  "defaultValue": "xxxxxxx"
                 }
               ]
             }

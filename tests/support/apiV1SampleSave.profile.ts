@@ -159,10 +159,10 @@ const target = targetParty.characters.find((character) => character.equipment.so
   ?? targetParty.characters.find((character) => character.equipment.some((item) => item?.jewel))!;
 assert.ok(target, 'a character with Jewels');
 const equipmentOf = (source: GameState) => source.parties.flatMap((party) => party.characters).find((character) => character.id === target.id)!.equipment;
-// Restores are exact for items and locks. Jewels are never restored: every action that sets equipment starts with no
-// Jewel and assigns them independently, so each Jewel present afterwards must be valid for its item's category
-// (Spec 8.2.4); conservation of the total Jewel count is asserted separately.
-const assertRestored = (restored: GameState, message: string) => {
+// Undo/Redo restore items, locks, and the recorded Jewel assignment exactly (Spec 9.1.3, 2-3-3). A saved set restores
+// items and locks only and assigns Jewels independently (Spec 8.2.4), so every Jewel present must at least be valid for
+// its item's category; `exactJewels` selects which contract to assert.
+const assertRestored = (restored: GameState, message: string, exactJewels: boolean) => {
   const original = equipmentOf(state);
   const now = equipmentOf(restored);
   assert.equal(now.length, original.length, message);
@@ -171,7 +171,8 @@ const assertRestored = (restored: GameState, message: string) => {
     if (!item) return assert.equal(back, null, `${message}: slot ${slot} stays empty`);
     assert.ok(back, `${message}: slot ${slot} restored`);
     assert.deepEqual([back.id, back.enhancement, back.superRare, back.isLocked === true], [item.id, item.enhancement, item.superRare, item.isLocked === true], `${message}: slot ${slot} item`);
-    if (back.jewel) assert.ok(isJewelAllowedForCategory(back.category, back.jewel.key), `${message}: slot ${slot} Jewel ${back.jewel.key} is valid for ${back.category}`);
+    if (exactJewels) assert.deepEqual(back.jewel ?? null, item.jewel ?? null, `${message}: slot ${slot} Jewel`);
+    else if (back.jewel) assert.ok(isJewelAllowedForCategory(back.category, back.jewel.key), `${message}: slot ${slot} Jewel ${back.jewel.key} is valid for ${back.category}`);
   });
 };
 const before = { items: itemConservation(state), jewels: jewelConservation(state) };
@@ -182,16 +183,25 @@ const before = { items: itemConservation(state), jewels: jewelConservation(state
   assert.equal(removed.state.parties.flatMap((party) => party.characters).find((character) => character.id === target.id)!.equipment.filter(Boolean).length, 0);
 
   const undone = applyApiV1Commit(`commit/build/character/${target.id}/undoEquipment`, removed.state, {}, context());
-  assertRestored(undone.state, 'Undo restores every item and lock, then assigns valid Jewels');
+  assertRestored(undone.state, 'Undo restores every item, lock, and Jewel assignment exactly', true);
   assert.equal(itemConservation(undone.state), before.items);
   assert.equal(jewelConservation(undone.state), before.jewels);
+
+  // One missing Jewel makes the whole Undo unavailable: nothing is partially restored.
+  const jewelSlot = equipmentOf(state).find((item) => item?.jewel);
+  assert.ok(jewelSlot?.jewel, 'the real-save character wears a Jewel');
+  if (jewelSlot?.jewel) {
+    const jewelKey = `${jewelSlot.jewel.key}:${jewelSlot.jewel.rank}`;
+    const lacking = { ...removed.state, global: { ...removed.state.global, jewels: { ...removed.state.global.jewels, [jewelKey]: 0 } } };
+    assert.throws(() => applyApiV1Commit(`commit/build/character/${target.id}/undoEquipment`, lacking, {}, context()), /illegal_action/, 'an unavailable Jewel blocks the whole Undo');
+  }
 
   // Save, clear, and load an exact set: the character's equipment returns exactly.
   const saved = applyApiV1Commit(`commit/build/character/${target.id}/saveEquipmentSet`, state, { equipmentSet: { name: 'Real set' } }, context());
   const setId = (saved.data as { equipmentSetId: number }).equipmentSetId;
   const cleared = applyApiV1Commit(`commit/build/character/${target.id}/removeAllEquipment`, saved.state, {}, context());
   const loaded = applyApiV1Commit(`commit/build/character/${target.id}/loadEquipmentSet`, cleared.state, { equipmentSetId: setId, loadMode: 'equipSet' }, context());
-  assertRestored(loaded.state, 'an exact set load restores every item and lock, then assigns valid Jewels');
+  assertRestored(loaded.state, 'an exact set load restores every item and lock, then assigns valid Jewels', false);
   assert.equal(itemConservation(loaded.state), before.items);
   assert.equal(jewelConservation(loaded.state), before.jewels);
 }

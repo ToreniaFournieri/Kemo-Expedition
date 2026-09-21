@@ -2,13 +2,14 @@ import type { ApiV1DeliveryRecord } from './deliveries';
 import { DEVELOPER_NEWS_ITEMS } from '../../data/developerNews';
 import { getDeityId, getDeityNameFromId, isNoFaithDeity, normalizeDeityName } from '../../game/deity';
 import { isDebugModeEnabled } from '../../game/environment';
-import { canCharacterEquipCategory, createEquipmentSetSnapshot, evaluateEquipmentSet, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
+import { canCharacterEquipCategory, createEquipmentSetSnapshot, evaluateEquipmentSet, evaluateEquipmentState, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
 import { recordEquipmentState, redoEquipmentState, undoEquipmentState } from '../../game/equipmentHistory';
 import { computeCharacterStats } from '../../game/characterComputation';
 import { computePartyStats } from '../../game/partyComputation';
 import { hydrateGameState, serializeGameState } from '../../game/saveCodec';
 import { buildShopLineup } from '../../game/shop';
 import { describeEquipmentHistory } from './equipmentHistoryFacts';
+import { listUiPreferences, validateUiPreference, type UiPreferenceValue } from './uiPreferenceCatalog';
 import { isEquipmentSlotAction, planEquipOperation, planEquipmentSlotOperation } from './equipmentSlots';
 import { planCharacterBuildChange } from './buildChange';
 import { decodePersistedState, encodePersistedState } from '../../game/storageCompression';
@@ -153,7 +154,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const historyKey = String(characterId);
     const characterHistory = history[historyKey] ?? { undo: [], redo: [] };
     const snapshotEquipment = (character: Character): SavedEquipmentSet => ({
-      ...createEquipmentSetSnapshot(character.equipment),
+      ...createEquipmentSetSnapshot(character.equipment, true),
       name: 'API history',
       createdAt: simulatedAt,
     });
@@ -255,7 +256,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
         : redoEquipmentState(characterHistory, currentSnapshot);
       if (!transition || sameEquipment(transition.target, currentSnapshot)) throw new Error('illegal_action');
       const maxSlots = computeCharacterStats(current, next.parties[partyIndex].level).maxEquipSlots;
-      if (!evaluateEquipmentSet(transition.target, current, next.global.inventory, maxSlots).allAvailable) throw new Error('illegal_action');
+      if (!evaluateEquipmentState(transition.target, current, next.global.inventory, next.global.jewels, maxSlots).allAvailable) throw new Error('illegal_action');
       reduce({ type: 'RESTORE_EQUIPMENT_STATE', partyIndex, characterId, set: transition.target });
       history[historyKey] = transition.history;
     }
@@ -362,13 +363,14 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (Object.keys(parameters).length > 0) settings[key] = current;
     data = { current };
   } else if (operation === 'commit/setting/uiPreferences') {
-    const catalog = new Set(['settingPanelExpanded', 'clairvoyancePartyExpanded', 'glossaryTab', 'glossaryExpandedEntries', 'previousFeedbackName', 'selectedPartyNumber', 'selectedCharacterId', 'selectedDiaryPartyNumber', 'selectedDiaryEntryId', 'basePane', 'inventoryFilter']);
+    // SpecRef: 9.1.4.17 | UI state ownership | uiPreferences closed catalog
+    // Unknown or duplicate keys and wrongly typed values reject the whole update; the preferences live in the save.
     const changes = parameters.changes as Array<{ key?: unknown; value?: unknown }>;
-    if (!Array.isArray(changes) || changes.length === 0 || new Set(changes.map((entry) => entry?.key)).size !== changes.length || changes.some((entry) => !entry || !catalog.has(String(entry.key)) || !['string', 'number', 'boolean'].includes(typeof entry.value))) throw new Error('invalid_preferences');
-    const current = new Map((((settings.uiPreferences as Array<{ key: string; value: string | number | boolean }> | undefined) ?? []).map((entry) => [entry.key, entry.value])));
-    for (const change of changes) current.set(String(change.key), change.value as string | number | boolean);
-    settings.uiPreferences = [...current].map(([key, value]) => ({ key, value }));
-    data = { uiPreferences: settings.uiPreferences };
+    if (!Array.isArray(changes) || changes.length === 0) throw new Error('invalid_request:changes');
+    if (new Set(changes.map((entry) => entry?.key)).size !== changes.length) throw new Error('invalid_request:duplicate_key');
+    changes.forEach((entry) => validateUiPreference(next, entry?.key, entry?.value));
+    reduce({ type: 'SET_UI_PREFERENCES', changes: changes.map((entry) => ({ key: entry.key as string, value: entry.value as UiPreferenceValue })) });
+    data = { uiPreferences: listUiPreferences(next.global.uiPreferences) };
   }
   else throw new Error('invalid_request');
 

@@ -203,4 +203,33 @@ const seed: GameState = createFreshGameState('ja', Date.parse('2026-01-01T00:00:
   assert.ok(poor.includes('illegal_action'), poor);
 }
 
+// 9. uiPreferences: a closed, typed catalog stored in the save; unknown or invalid changes reject the whole update.
+{
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
+  const characterId = seed.parties[0].characters[0].id;
+  const key = `party.equipCategory.${characterId}`;
+  const commit = (state: GameState, changes: unknown) => applyApiV1Commit('commit/setting/uiPreferences', state, { changes }, baseContext());
+  const set = commit(seed, [{ key, value: 'wand' }]);
+  assert.deepEqual((set.data as { uiPreferences: unknown }).uiPreferences, [{ key, value: 'wand' }]);
+  assert.equal(set.state.global.uiPreferences?.[key], 'wand', 'the preference lives in the save');
+  assert.equal(seed.global.uiPreferences, undefined, 'the input snapshot is untouched');
+  assert.equal(commit(set.state, [{ key, value: 'wand' }]).state, set.state, 'an unchanged value keeps the state identity (valid no-op)');
+  const read = await buildApiV1ReadData('read/observation/setting', set.state, {}, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0 } as never) as { settingInfo: { uiPreferences: unknown; uiPreferenceCatalog: Array<{ family: string; options: string[]; defaultValue: string }> } };
+  assert.deepEqual(read.settingInfo.uiPreferences, [{ key, value: 'wand' }]);
+  assert.equal(read.settingInfo.uiPreferenceCatalog[0].family, 'party.equipCategory');
+  assert.equal(read.settingInfo.uiPreferenceCatalog[0].defaultValue, 'armor');
+  assert.ok(read.settingInfo.uiPreferenceCatalog[0].options.includes('katana'));
+
+  const rejects = (changes: unknown, expected: string) => assert.throws(() => commit(seed, changes), new RegExp(expected));
+  rejects([{ key: 'party.equipCategory.999999', value: 'wand' }], 'invalid_request:key');
+  rejects([{ key: 'party.equipCategory.abc', value: 'wand' }], 'invalid_request:key');
+  rejects([{ key: 'settingPanelExpanded', value: true }], 'invalid_request:key');
+  rejects([{ key, value: 'jewel' }], 'invalid_request:value');
+  rejects([{ key, value: 3 }], 'invalid_request:value');
+  rejects([{ key, value: 'wand' }, { key, value: 'bolt' }], 'invalid_request:duplicate_key');
+  rejects([], 'invalid_request:changes');
+  // Atomic: one bad entry applies nothing.
+  assert.throws(() => commit(seed, [{ key, value: 'wand' }, { key: 'nope', value: 'x' }]));
+}
+
 console.log('apiV1CommitOperations profile ok');

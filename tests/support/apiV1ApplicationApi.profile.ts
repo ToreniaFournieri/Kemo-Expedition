@@ -91,7 +91,7 @@ const steps: Step[] = [
   { operation: 'commit/base/changeJewelPriorityParty', parameters: { partyNumber: 'none' }, mutating: true },
   { operation: 'commit/base/changeJewelPriorityParty', parameters: { partyNumber: 'none' }, mutating: true },
   { operation: 'commit/expedition/{p}/changeExpedition', pathParameters: { p: 1 }, parameters: { destinationMode: 'fixed' }, mutating: true },
-  { operation: 'commit/setting/uiPreferences', parameters: { changes: [{ key: 'basePane', value: 'shop' }] }, mutating: true },
+  { operation: 'commit/setting/uiPreferences', parameters: { changes: [{ key: `party.equipCategory.${createFreshGameState('ja', 0).parties[0].characters[0].id}`, value: 'wand' }] }, mutating: true },
   { operation: 'commit/setting/modeSelect', parameters: { mode: 'mode.orca' }, mutating: true },
   { operation: 'commit/does/not/exist', mutating: true },
   { operation: 'read/observation/overview', mutating: false },

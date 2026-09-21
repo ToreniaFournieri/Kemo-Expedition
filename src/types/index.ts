@@ -490,6 +490,8 @@ interface GlobalState {
   enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
   altarVictoriesByEnemyType?: Record<string, number>;
   readDeveloperNewsItemIds: string[];
+  /** Explicitly persisted UI preferences (closed catalog, Spec 9.1.4.17); changed only through `SET_UI_PREFERENCES`. */
+  uiPreferences?: Record<string, string | number | boolean>;
   language: Language;
 }
 

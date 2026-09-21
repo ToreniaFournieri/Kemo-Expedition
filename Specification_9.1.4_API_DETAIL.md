@@ -445,14 +445,18 @@ definitions in 9.1.3.
   Duplicate indices are invalid.
 * `jewelAttach.jewelToSet` uses `Jewel Format`. The exact owned Jewel instance is
   reserved during validation and consumed only by the successful transaction.
-* Items and Jewels are stored separately (Spec 8.2.4). Saving an equipment set
-  records slot assignment, exact `Item Format`, and lock state, and never a
-  Jewel; the snapshot does not reserve items. Removing equipment returns its
-  Jewel to the inventory, so every action that sets equipment (set load, Undo,
-  Redo) starts with no Jewel and assigns Jewels independently, with the same
-  validity checks as Auto Equipment, each time. A Jewel is never a requirement:
-  it cannot make an entry unavailable or a restore fail, and a stored Jewel found
-  in an older save is discarded when it is loaded.
+* Saved equipment sets and Undo/Redo states differ in what they carry:
+  * A saved set records slot assignment, exact `Item Format`, and lock state, and
+    never a Jewel (Spec 8.2.4: items and Jewels are stored separately and assigned
+    independently). Loading a set starts with no Jewel and assigns Jewels with the
+    same validity checks as Auto Equipment each time. A Jewel is never a
+    requirement: it cannot make an entry unavailable, and a stored Jewel found in
+    an older save is discarded when it is loaded.
+  * An Undo/Redo state records the item, slot, lock, and Jewel assignment
+    (Spec 9.1.3, 2-3-3), and its restore is exact and all or nothing. One
+    unavailable item or Jewel (missing, already used elsewhere, or not valid for
+    its item) makes the whole state unavailable, and no partial restore happens.
+    A change that only moves Jewels adds an Undo entry.
 * `loadEquipmentSet.loadMode` is required in the confirmed execution:
   `equipSet` restores every stored exact item, slot, and lock when all are
   available; `equipExactMatchesOnly` equips only exact available stored matches;
@@ -461,10 +465,8 @@ definitions in 9.1.3.
   a stable reason.
 * `equipSet` is absent from `allowedChoices` when any exact item requirement is
   unavailable. A partial load requires the confirmation flow in 9.1.4.5.
-* Equipment Undo/Redo restores the complete item and lock state, then assigns
-  Jewels as above, and reports whether another Undo/Redo remains available. Each
-  restore is validated against current item availability. A change that only
-  moves Jewels adds no Undo entry.
+* Equipment Undo/Redo reports whether another Undo/Redo remains available; each
+  restore is validated against current item and Jewel availability.
 
 **Base**
 
@@ -960,6 +962,23 @@ valid options in `settingInfo.uiPreferences`. Unknown keys, duplicate keys, and
 wrong types reject the entire update; this is not a generic save-path setter.
 Return the complete public preference list. Defaults and retention scope follow
 8.x; do not make every local click a persisted mutation.
+
+Preferences are stored per save (in the game state, so they survive restart and
+backup export) and are changed only by this operation; setting the value a key
+already has is a valid no-op. `settingInfo.uiPreferences` lists the stored
+`{key, value}` pairs and `settingInfo.uiPreferenceCatalog` publishes each family
+with its subject, value type, valid options, and default. The catalog is closed:
+a key outside it, a key whose subject does not exist in the save, a duplicate key,
+a wrongly typed value, or a value outside the options rejects the whole update as
+`invalid_request`. Each screen adds its families when it migrates. Current
+catalog:
+
+| Family | Subject | Type | Options | Default |
+| --- | --- | --- | --- | --- |
+| `party.equipCategory` | `characterId` (key `party.equipCategory.<characterId>`) | string | `armor`, `robe`, `shield`, `sword`, `katana`, `gauntlet`, `arrow`, `bolt`, `archery`, `wand`, `grimoire`, `catalyst` | `armor` |
+
+The selected party (`selectedPartyIndex`) remains part of the game state that the
+Expedition, Party, and Diary tabs share, and is not a preference.
 
 `markItemsAsSeen.parameters.items` is a nonempty array of stable variant keys
 returned by the inventory projection. Return `{items: string[]}` of actually

@@ -84,6 +84,8 @@ export default function PartyTab({
   party,
   partyStats,
   characterStatus,
+  equipCategoryPreferences,
+  onSetEquipCategory,
   selectedCharacter,
   setSelectedCharacter,
   editingCharacter,
@@ -121,6 +123,9 @@ export default function PartyTab({
   partyStats: { hp: number };
   /** The projected calculated status of each member, aligned with `party.characters`. */
   characterStatus: CalculatedStatus[];
+  /** The retained inventory category of each character, by character id (`party.equipCategory.<characterId>`). */
+  equipCategoryPreferences: Record<number, string>;
+  onSetEquipCategory: (characterId: number, category: string) => void;
   selectedCharacter: number;
   setSelectedCharacter: Dispatch<SetStateAction<number>>;
   editingCharacter: number | null;
@@ -153,7 +158,6 @@ export default function PartyTab({
   isDarkModeEnabled: boolean;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
-  const [equipCategory, setEquipCategory] = useState('armor');
   const [activeInlineDetailHelp, setActiveInlineDetailHelp] = useState<{ key: string; title: string; description: string } | null>(null);
   const [inlineDetailHelpPosition, setInlineDetailHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const [partyRarityFilter, setPartyRarityFilter] = useState<RarityFilter>('all');
@@ -785,11 +789,11 @@ export default function PartyTab({
   const availableCategoryGroups = getAvailableCategoryGroups(char);
   const availableCategories = availableCategoryGroups.flatMap(group => group.categories);
 
-  useEffect(() => {
-    if (!availableCategories.includes(equipCategory)) {
-      setEquipCategory(availableCategories[0] ?? 'armor');
-    }
-  }, [availableCategories, equipCategory]);
+  // SpecRef: 8.2.4 | Equipment management | Default: 鎧 or the previously selected category of each character
+  const retainedEquipCategory = equipCategoryPreferences[char.id];
+  const equipCategory = retainedEquipCategory && availableCategories.includes(retainedEquipCategory)
+    ? retainedEquipCategory
+    : availableCategories.includes('armor') ? 'armor' : availableCategories[0] ?? 'armor';
 
   useEffect(() => {
     setShowBaseStatHelp(false);
@@ -2850,7 +2854,7 @@ export default function PartyTab({
                     {group.categories.map((cat, i) => (
                       <button
                         key={cat}
-                        onClick={() => setEquipCategory(cat)}
+                        onClick={() => { if (cat !== equipCategory) onSetEquipCategory(char.id, cat); }}
                         className={`px-2 py-1 text-xs shadow-sm shadow-slate-900/10 ${
                           i === 0 ? 'rounded-l' : i === group.categories.length - 1 ? 'rounded-r' : ''
                         } ${
