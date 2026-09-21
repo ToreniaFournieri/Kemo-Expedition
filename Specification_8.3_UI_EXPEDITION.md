@@ -221,7 +221,7 @@ HP 2350 / 4680
 - The thin line progress bar is displayed under the text.
 - Each progress item uses `current / total` progress.
 - A locked Clear-Gate's compact display, progress bar, and floating bubble show `current / total` progress.
-- Normal Clear-Gate progress updates after the normal expedition outcome is finalized. A `Clear` or `Turned_Back` increments it, while `Draw_Retreat`, `Wounded_Retreat`, or `Defeat` displays the reset value, such as `0/9` for the first Elite gate.
+- Normal Clear-Gate progress updates after the normal expedition outcome is finalized. A `Clear` or `Return` increments it, while `Draw`, `Retreat`, or `Defeat` displays the reset value, such as `0/9` for the first Elite gate.
 
 **Progress calculation:**
 
