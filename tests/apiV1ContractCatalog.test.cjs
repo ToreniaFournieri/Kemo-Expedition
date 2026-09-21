@@ -81,3 +81,25 @@ test('checked-in API v1 catalog matches the normative endpoint index', () => {
     assert.equal(validateEnvelope(structuredClone(envelopeExample)), true, `${operation.operationId} envelope example: ${JSON.stringify(validateEnvelope.errors)}`);
   }
 });
+
+test('searchItems response schema accepts every documented result format', () => {
+  const Ajv = require('ajv');
+  const catalog = require('../desktop/api-v1-contract.json');
+  const schema = catalog.operations.find((operation) => operation.operationId === 'read/base/searchItems').response.data;
+  const validate = new Ajv({ strict: true }).compile(schema);
+  const accepted = [
+    '0/1101/2/0/3',
+    '0/1104/0/12/1/ability=[a.pursuit]/cBonus=[c.magical-defense-x2/3]/otherBonus=[d.melee_attack:12, d.HP:20, e.ice+0.020]',
+    '0/1104/0/12/1/ability=[]/cBonus=[]',
+    '1/1211/0/0/101/fort:3',
+    '1/1211/0/0/101/0:0',
+    '1/1211/0/0/101/0:0/ability=[]/cBonus=[c.evasion+0.010]/otherBonus=[]',
+    'fort:3/2',
+    'fort:3/2/ability=[]/cBonus=[c.physical-defense+11]/otherBonus=[d.HP:10]',
+  ];
+  assert.equal(validate({ items: accepted, nextCursor: null }), true, JSON.stringify(validate.errors));
+  for (const rejected of ['', 'nonsense', '0/1101/2/0', 'fort:9/2', '0/1101/2/0/3/junk']) {
+    assert.equal(validate({ items: [rejected] }), false, `${rejected} must not validate`);
+  }
+  assert.equal(validate({ items: [], equippedItems: [] }), false, 'equippedItems is no longer part of the response');
+});

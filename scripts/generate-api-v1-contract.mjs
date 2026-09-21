@@ -52,7 +52,7 @@ const querySchemas = {
   'read/observation/diary': strict({ partyNumber: optional(partyNumber), diaryEntryId: optional(integerId) }),
   'read/expedition/{p}/latestBattleLog': strict({ logId: optional(Type.String({ minLength: 1, maxLength: 200 })) }),
   'read/build/character/{characterId}/equipmentSet': strict({ equipmentSetId: optional(Type.Union([integerId, nonEmptyArray(integerId, { uniqueItems: true })])), isEquipmentSetDetail: optional(Type.Boolean(), false) }),
-  'read/base/searchItems': strict({ state: optional(literals('owned', 'equipped', 'sold', 'all'), 'owned'), category: itemCategory, rarity: optional(rarity, 'all'), superRare: optional(Type.Boolean()), superRareId: optional(Type.Integer({ minimum: 0, maximum: 80 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), ...page }),
+  'read/base/searchItems': strict({ state: optional(literals('owned', 'equipped', 'sold', 'all'), 'owned'), category: optional(itemCategory), rarity: optional(rarity, 'all'), superRare: optional(Type.Boolean()), superRareId: optional(Type.Integer({ minimum: 0, maximum: 80 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), ...page }),
   'read/base/enemyFormList': strict({ enemyType: optional(stableKey), enemyId: optional(integerId) }),
   'resources/glossary': strict({ category: literals('Ab.', 'Base.', 'Fixed.', 'Inc.', 'Mech.', 'Faith.', 'Magic.', 'Quest.', 'Terrain.'), glossaryId: optional(stableKey), ...page }),
   'resources/itemCompendium': strict({ category: itemCategory, rarity: optional(rarity, 'all'), tier: optional(Type.Integer({ minimum: 1, maximum: 8 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), ...page }),
@@ -142,10 +142,11 @@ const equipmentCommitCurrent = strict({
   undoAvailable: Type.Boolean(),
   redoAvailable: Type.Boolean(),
 });
-const itemStackFormat = Type.String({ pattern: '^(?:(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))|(?:might|arcana|fort|ward|shade|focus):[1-8])/[0-9]+$' });
+// SpecRef: 9.1.3 | 2-4-1 searchItems | Return formats
+// One result string: an inventory stack, a character-owned item (`<Item Format>/<characterId>/<jewelType>:<jewelRank>`), or an
+// unassigned Jewel stack, optionally followed by the `ability=[..]`, `cBonus=[..]`, and `otherBonus=[..]` detail fields.
+const itemStackFormat = Type.String({ pattern: '^(?:(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))/[0-9]+(?:/(?:might|arcana|fort|ward|shade|focus|0):[0-8])?|(?:might|arcana|fort|ward|shade|focus):[1-8]/[0-9]+)(?:/(?:ability|cBonus|otherBonus)=\\[.*\\])*$' });
 sampleOverrides.set(itemStackFormat, '0/1');
-const equippedItemFormat = Type.String({ pattern: '^[1-6]/[0-9]+/(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))$' });
-sampleOverrides.set(equippedItemFormat, '1/101/0');
 const equipmentSet = strict({ equipmentSetId: integerId, name: Type.String({ minLength: 1 }), createdAt: isoTimestamp, equipment: optional(equipmentEntryList) });
 const diaryContent = Type.Union([
   strict({ format: Type.Literal('semantic'), title: semanticText, subtitle: semanticText, events: Type.Array(semanticText) }),
@@ -202,7 +203,7 @@ const responseDataSchemas = {
   'read/build/character/{characterId}/status': strict({ calculatedStatus, current: strict({ unique: Type.Boolean(), name: Type.String({ minLength: 1 }), racesAndGender: stableKey, mainClassId: stableKey, subClassId: stableKey, lineage: Type.Union([stableKey, Type.Null()]), predisposition: Type.Union([stableKey, Type.Null()]) }), editableFields: strict({ name: Type.Boolean(), unique: Type.Boolean() }), validOptions: strict({ racesAndGender: Type.Array(stableKey), mainClassId: Type.Array(stableKey), subClassId: Type.Array(stableKey), lineage: Type.Array(stableKey), predisposition: Type.Array(stableKey) }) }),
   'read/build/character/{characterId}/equipment': strict({ current: strict({ mode: literals('FULL', 'SEMI', 'OFF'), equipment: equipmentEntryList }), validOptions: strict({ mode: Type.Array(literals('FULL', 'SEMI', 'OFF')), numberOfEmptyEquipmentSlots: Type.Integer({ minimum: 0 }), undoEquipment: equipmentHistoryAction, redoEquipment: equipmentHistoryAction }) }),
   'read/build/character/{characterId}/equipmentSet': strict({ equipmentSets: Type.Array(strict({ equipmentSetId: integerId, equipmentSet })) }),
-  'read/base/searchItems': strict({ items: Type.Array(itemStackFormat), equippedItems: Type.Array(equippedItemFormat), details: Type.Unknown(), ...nextCursor }),
+  'read/base/searchItems': strict({ items: Type.Array(itemStackFormat), ...nextCursor }),
   'read/base/jewelPriorityParty': strict({ current: strict({ partyNumber: Type.Union([partyNumber, Type.Literal('none')]) }), validOptions: strict({ partyNumber: Type.Array(Type.Union([partyNumber, Type.Literal('none')])) }) }),
   'read/base/shopInfo': strict({ intimacy: Type.Integer({ minimum: 0, maximum: 99 }), dialogue: semanticText, paidRefreshCountdown: Type.Integer({ minimum: 0 }), paidRefreshPrice: Type.Integer({ minimum: 0 }) }),
   'read/base/shopItemsList': strict({ current: strict({ lineupId: stableKey, refreshesAt: isoTimestamp, items: Type.Array(strict({ shopItemId: stableKey, itemId: integerId, item: itemFormat, price: Type.Integer({ minimum: 0 }), soldOut: Type.Boolean(), available: Type.Boolean(), unavailableReason: Type.Union([Type.String(), Type.Null()]) })) }), validOptions: strict({ shopItemId: Type.Array(stableKey) }) }),

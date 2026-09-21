@@ -14,11 +14,13 @@ import { getSavedEquipmentSlot } from '../../game/equipmentSets.ts';
 import { computePartyStats } from '../../game/partyComputation.ts';
 import { buildCalculatedStatus } from './calculatedStatus.ts';
 import { getItemRarityById } from '../../game/itemRarity.ts';
+import { describeItem, describeJewel, formatItemDetails, type ItemDetails, type ItemDetailsMode } from './itemDetails.ts';
 import { formatEquipmentEntry, formatItem } from './itemFormat.ts';
+import { JEWEL_DEFS } from '../../game/jewel.ts';
 import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { buildShopLineup, getShopRefreshPrice } from '../../game/shop.ts';
-import type { GameState, Item, Party } from '../../types/index.ts';
+import type { GameState, Item, JewelKey, Party } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
 
@@ -144,14 +146,26 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>) 
 const API_CATEGORY_TO_ITEM_CATEGORY: Record<string, string> = { sword: 'sword', katana: 'katana', bow: 'archery', armor: 'armor', glove: 'gauntlet', wand: 'wand', robe: 'robe', shield: 'shield', bolt: 'bolt', book: 'grimoire', catalyst: 'catalyst', arrow: 'arrow' };
 
 /**
- * Searches the items known to the player. Equipment stacks are `<Item Format>/<quantity>` ordered by item id, then
- * enhancement, then Super Rare title. The `jewel` category lists Jewel stacks as `<jewelType>:<jewelRank>/<quantity>`.
- * The request contract requires `category`; the handler itself tolerates its absence, which the HTTP layer never produces.
+ * Searches the items known to the player (9.1.3, 2-4-1). Every result is one string in `items`:
+ * - inventory stacks: `<Item Format>/<quantity>`;
+ * - character-owned items: `<Item Format>/<characterId>/<jewelType>:<jewelRank>` (`0:0` when no Jewel is attached);
+ * - the `jewel` category: unassigned Jewels as `<jewelType>:<jewelRank>/<quantity>` and assigned Jewels as character-owned items.
+ * `state` selects owned stacks, character-owned (`equipped`) items, sold stacks, or all. The fields chosen by `details`
+ * are appended in the fixed order ability, cBonus, otherBonus. Results are ordered by item id, enhancement, Super Rare
+ * title, then stack before character-owned, then character id; unassigned Jewels come first, by Jewel type (specification
+ * order) and rank.
  */
 function searchItems(state: GameState, parameters: Record<string, unknown>) {
   const wantedState = String(parameters.state ?? 'owned');
   const category = parameters.category === undefined ? null : String(parameters.category);
-  const matches = (item: Item): boolean => {
+  const mode = String(parameters.details ?? 'abilityAndCBonus') as ItemDetailsMode;
+  const searchAbility = parameters.searchAbility === undefined ? null : String(parameters.searchAbility);
+  const searchBonus = parameters.searchBonus === undefined ? null : String(parameters.searchBonus);
+  const includesState = (name: 'owned' | 'sold' | 'equipped') => wantedState === 'all' || wantedState === name;
+  const itemFilterGiven = (parameters.rarity !== undefined && parameters.rarity !== 'all') || parameters.superRare !== undefined
+    || parameters.superRareId !== undefined || parameters.itemId !== undefined;
+
+  const matchesItem = (item: Item): boolean => {
     if (category !== null && category !== 'jewel' && item.category !== API_CATEGORY_TO_ITEM_CATEGORY[category]) return false;
     if (parameters.rarity !== undefined && parameters.rarity !== 'all' && getItemRarityById(item.id) !== parameters.rarity) return false;
     if (parameters.superRare !== undefined && (item.superRare > 0) !== (parameters.superRare === true || parameters.superRare === 'true')) return false;
@@ -159,24 +173,42 @@ function searchItems(state: GameState, parameters: Record<string, unknown>) {
     if (parameters.itemId !== undefined && item.id !== Number(parameters.itemId)) return false;
     return true;
   };
-  const byIdentity = (left: Item, right: Item) => left.id - right.id || left.enhancement - right.enhancement || left.superRare - right.superRare;
-  const includesState = (status: string) => wantedState === 'all' || wantedState === status;
+  const matchesDetails = (details: ItemDetails): boolean => (searchAbility === null || details.ability.some((entry) => entry.split(':')[0] === searchAbility))
+    && (searchBonus === null || details.cBonus.includes(searchBonus) || details.otherBonus.includes(searchBonus));
+  const withDetails = (base: string, details: ItemDetails) => [base, ...formatItemDetails(details, mode)].join('/');
 
-  if (category === 'jewel') {
-    const items = Object.entries(state.global.jewels)
-      .filter(([, count]) => count > 0)
-      .sort(([left], [right]) => left.localeCompare(right, 'en') )
-      .map(([key, count]) => `${key}/${count}`);
-    return { items: wantedState === 'owned' || wantedState === 'all' ? items : [], equippedItems: [], details: {} };
+  type Entry = { order: [number, number, number, number, number]; text: string };
+  const entries: Entry[] = [];
+  const jewelText = (jewel: { key: string; rank: number } | null | undefined) => jewel ? `${jewel.key}:${jewel.rank}` : '0:0';
+
+  if (category !== 'jewel') {
+    for (const variant of Object.values(state.global.inventory)) {
+      const status = variant.status === 'owned' ? 'owned' : variant.status === 'sold' ? 'sold' : null;
+      if (!status || !includesState(status) || (status === 'owned' && variant.count < 1) || !matchesItem(variant.item)) continue;
+      const details = describeItem(variant.item);
+      if (matchesDetails(details)) entries.push({ order: [variant.item.id, variant.item.enhancement, variant.item.superRare, 0, 0], text: withDetails(`${itemFormat(variant.item)}/${variant.count}`, details) });
+    }
+  } else if (!itemFilterGiven && includesState('owned')) {
+    for (const [key, count] of Object.entries(state.global.jewels)) {
+      const [jewelKey, rank] = key.split(':');
+      if (count < 1 || !(jewelKey in JEWEL_DEFS)) continue;
+      const details = describeJewel(jewelKey as JewelKey, Number(rank));
+      if (matchesDetails(details)) entries.push({ order: [-1, Object.keys(JEWEL_DEFS).indexOf(jewelKey), Number(rank), 0, 0], text: withDetails(`${key}/${count}`, details) });
+    }
   }
-  const items = Object.values(state.global.inventory)
-    .filter((variant) => includesState(variant.status) && (variant.status !== 'owned' || variant.count > 0) && matches(variant.item))
-    .sort((left, right) => byIdentity(left.item, right.item))
-    .map((variant) => `${itemFormat(variant.item)}/${variant.count}`);
-  const equippedItems = state.parties.flatMap((party) => party.characters.flatMap((character) => character.equipment
-    .filter((item): item is Item => Boolean(item) && matches(item as Item))
-    .map((item) => `${party.id}/${character.id}/${itemFormat(item)}`)));
-  return { items, equippedItems, details: {} };
+  if (includesState('equipped')) {
+    for (const party of state.parties) {
+      for (const character of party.characters) {
+        for (const item of character.equipment) {
+          if (!item || !matchesItem(item) || (category === 'jewel' && !item.jewel)) continue;
+          const details = category === 'jewel' && item.jewel ? describeJewel(item.jewel.key, item.jewel.rank) : describeItem(item);
+          if (matchesDetails(details)) entries.push({ order: [item.id, item.enhancement, item.superRare, 1, character.id], text: withDetails(`${itemFormat(item)}/${character.id}/${jewelText(item.jewel)}`, details) });
+        }
+      }
+    }
+  }
+  entries.sort((left, right) => { for (let index = 0; index < 5; index += 1) { const difference = left.order[index] - right.order[index]; if (difference !== 0) return difference; } return 0; });
+  return { items: entries.map((entry) => entry.text), nextCursor: null };
 }
 
 export function buildApiV1PartyObservationForTesting(state: GameState) {

@@ -28,28 +28,3 @@ export function useApiRead<T>(
   }, [adapter, operation, enabled, ...dependencies]);
   return data;
 }
-
-/** Reads one projection per input in parallel and returns the results in input order once every read has completed. */
-export function useApiReads<T>(
-  adapter: InProcessApiAdapter | null,
-  operation: string,
-  inputs: readonly { pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown> }[],
-  dependencies: readonly unknown[],
-  enabled = true,
-): T[] | null {
-  const [data, setData] = useState<T[] | null>(null);
-  useEffect(() => {
-    if (!enabled) return;
-    if (!adapter) { setData(null); return; }
-    let cancelled = false;
-    void Promise.all(inputs.map((input) => adapter.read(operation, input))).then((responses) => {
-      if (cancelled) return;
-      const failed = responses.find((response) => response.error);
-      if (failed) { console.error('[api-v1] Projection read failed', operation, failed.error); setData(null); return; }
-      setData(responses.map((response) => response.data as T));
-    });
-    return () => { cancelled = true; };
-    // `inputs` is derived from the caller's stable constants; the dependency list decides when to re-read.
-  }, [adapter, operation, enabled, ...dependencies]);
-  return data;
-}

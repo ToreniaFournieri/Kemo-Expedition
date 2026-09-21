@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 46. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 47. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -57,7 +57,7 @@ Next, in order:
 3. (Done, Build 43) Undo/Redo use the API's per-character history and the equipment projection's availability.
 4. **Party reads** (in progress; `PartyTab.tsx` is about 3,000 lines built on `Party`, `Character`, `Item`, and computed-stats objects, so it is migrated in steps):
    - 4a. (Done, Build 45) Saved equipment sets and the deity pane (donations, unlocked gods) render from projections; shared item wire-format module.
-   - 4b. (Done, Build 46) Owned inventory for equipping and the Jewel counts, from `searchItems` (`category: jewel` lists Jewel stacks). Pagination and the ability/bonus search remain with Stage 6.
+   - 4b. (Done, Build 46) Owned inventory for equipping and the Jewel counts, from `searchItems` (`category: jewel` lists Jewel stacks). `searchItems` follows the refined 2-4-1 contract (Build 47: optional category, character-owned items, details, ability/bonus search); pagination remains with Stage 6.
    - 4c. Character and member list: the identity fields, build options, and calculated status, from `read/build/character/{characterId}/status`. The status pane also needs bonus and ability display facts beyond `calculatedStatus`; decide whether to enrich the projection or resolve them from master data.
    - 4d. Equipment slots list from the `equipment` projection (entries parse to items through the shared format).
    - 4e. Retained selections (selected party and character, filters) through `uiPreferences`. Selected party is currently persisted in the save (`selectedPartyIndex`), so moving it changes what is persisted; decide first.

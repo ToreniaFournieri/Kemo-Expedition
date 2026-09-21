@@ -666,6 +666,8 @@ Path Parameters
 
 **2-4. `read/base`**
 
+
+
 **2-4-1. `searchItems`**
 
 * Searches items currently known to the player.
@@ -725,26 +727,41 @@ Path Parameters
     * Default: `abilityAndCBonus`.
 
 * Return:
-  * For non-character-owned items:
+  * For unassigned items:
     * `items`
       * Matching items, stacked by item variant.
       * Base format:
-        * `<Item Format>/<quantity>`
+        * `<Item Format>/<quantity>/<calculatedBasePower>`
+      * `calculatedBasePower`
+        * Calculated value of the item's `base_power`, as defined in `3.1.1 Item category`.
+        * Includes applicable modifiers such as enhancement level and other factors that affect the item's base power. Note: This caluclation is not including character's equipment bonus like `c.katana_x1.4`. (same behavior as UI part)
+        * Only the `d.` bonus corresponding to the item's defined `base_power` is included in `calculatedBasePower`.
+        * Other `d.` bonuses are returned separately in `otherBonus`.
+        * Examples:
+          * If `Item category` is `i.armor`:
+            * `base_power` is `d.physical_defense+D`.
+            * `calculatedBasePower` is the resulting physical defense value after applying enhancement and other applicable modifiers.
+            * Other `d.` bonuses are included in `otherBonus`.
+          * If `Item category` is `i.katana`:
+            * `base_power` is `d.melee_attack+D`.
+            * `calculatedBasePower` is the resulting melee attack value after applying enhancement and other applicable modifiers.
+            * Other `d.` bonuses are included in `otherBonus`.
       * Example:
-        * `["0/1101/2/0/3", "0/1104/0/12/1"]`
+        * `["0/1101/2/0/3/18", "0/1104/0/12/1/24"]`
       * Additional fields are appended according to the selected `details` value.
       * Detail fields are appended in the following fixed order:
         * `<ability>`
         * `<cBonus>`
         * `<otherBonus>`
       * Format when `details=all`:
-        * `<Item Format>/<quantity>/<ability>/<cBonus>/<otherBonus>`
+        * `<Item Format>/<quantity>/<calculatedBasePower>/<ability>/<cBonus>/<otherBonus>`
       * Example:
-        * `0/1104/0/12/1/ability=[a.pursuit]/cBonus=[c.magical-defense-x2/3]/otherBonus=[d.melee_attack:12, d.HP:20, e.ice+0.020]`
-  * For character-owned items:
+        * `0/1104/0/12/1/12/ability=[a.pursuit]/cBonus=[c.magical-defense-x2/3]/otherBonus=[d.melee_defense:6, d.HP:20, e.ice+0.020]`
+
+  * For character-assigned items:
     * `items`
       * Base format:
-        * `<Item Format>/<characterId>/<jewelType>:<jewelRank>`
+        * `<Item Format>/<characterId>/<jewelType>:<jewelRank>/<calculatedBasePower>`
       * `<jewelType>:<jewelRank>` is `0:0` if no jewel is attached.
       * Additional fields are appended according to the selected `details` value.
       * Detail fields are appended in the following fixed order:
@@ -752,22 +769,30 @@ Path Parameters
         * `<cBonus>`
         * `<otherBonus>`
       * Format when `details=all`:
-        * `<Item Format>/<characterId>/<jewelType>:<jewelRank>/<ability>/<cBonus>/<otherBonus>`
+        * `<Item Format>/<characterId>/<jewelType>:<jewelRank>/<calculatedBasePower>/<ability>/<cBonus>/<otherBonus>`
   * For the `jewel` category:
     * `items`
       * Base format for unassigned jewels:
         * `<jewelType>:<jewelRank>/<quantity>`
       * Base format for assigned jewels:
-        * `<Item Format>/<characterId>/<jewelType>:<jewelRank>`
+        * `<Item Format>/<characterId>/<jewelType>:<jewelRank>/<calculatedBasePower>`
         * Uses the same base format as character-owned items.
       * Additional fields are appended according to the selected `details` value.
       * Detail fields are appended in the following fixed order:
+        * `<calculatedBasePower>`
         * `<ability>`
         * `<cBonus>`
         * `<otherBonus>`
       * Format for assigned jewels when `details=all`:
-        * `<Item Format>/<characterId>/<jewelType>:<jewelRank>/<ability>/<cBonus>/<otherBonus>`
-
+        * `<Item Format>/<characterId>/<jewelType>:<jewelRank>/<calculatedBasePower>/<ability>/<cBonus>/<otherBonus>`
+  * Sort order:
+    * For equipment items:
+      * Higher `calculatedBasePower` first.
+      * If equal, higher `itemId` first.
+      * If still equal, higher `jewelRank` first.
+    * For unassigned jewels:
+      * Higher `jewelRank` first.
+      * If equal, higher `jewelType` first.
 
 **2-4-2. `jewelPriorityParty`**
 
