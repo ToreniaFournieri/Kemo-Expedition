@@ -6,23 +6,25 @@
 
 * This section is maintained by humans.
 * Core concepts:
-    * Each Commit API request is atomic. If any supplied field or entry is invalid, no game-state change is committed.
-    * API operations must share the same underlying game logic and validation logic as the UI.
-        * Do not duplicate existing game logic specifically for the API.
-        * Implement only behavior that is specific to the API interface.
+  * Each Commit API request is atomic. If any supplied field or entry is invalid, no game-state change is committed.
+  * API operations must share the same underlying game logic and validation logic as the UI.
+    * Do not duplicate existing game logic specifically for the API.
+    * Do not refactor or extract existing game logic solely to support the API unless required to avoid duplication or inconsistent behavior.
+    * Implement only behavior that is specific to the API interface.
+
 * Request/response types, defaults, query encoding, and examples are completed
   by 9.1.4.14. UI preference ownership is defined in 9.1.4.17; external delivery
   uses 9.1.4.15. These contracts do not change the referenced gameplay rules.
 
-```
+```text
 React UI ── typed in-process adapter ─┐
 Desktop ─── desktop bridge ───────────┼── Application API
 AI / CUI ── HTTP/JSON adapter ────────┘         │
                                                 ▼
-                                      Game Authority / Reducer
+                                   Progress/Game Authority / Reducer
                                                 │
                                                 ▼
-                                           Persistence                                           
+                                           Persistence
 ```
 
 
