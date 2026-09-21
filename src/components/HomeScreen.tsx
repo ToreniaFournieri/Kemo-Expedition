@@ -101,7 +101,8 @@ import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIn
 import { parseInventoryStacks, parseJewelStacks, parseSavedEquipmentSet } from '../api/v1/itemFormat';
 import { buildPartySummaries, buildPartyView, type PartyProjection } from '../api/v1/partyView';
 import type { ExpeditionProjection } from '../api/v1/expeditionView';
-import { useApiRead } from './home/useApiRead';
+import { buildExpeditionLogView, type ExpeditionLogView, type LatestBattleLogProjection } from '../api/v1/expeditionLogView';
+import { useApiRead, useApiReadMany } from './home/useApiRead';
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
 import { PARTY_EQUIP_CATEGORY_FAMILY, partyEquipCategoryKey } from '../api/v1/uiPreferenceCatalog';
 import { parseSimulationRunData, type SimulationRunData } from '../api/v1/simulationView';
@@ -1992,6 +1993,35 @@ export function HomeScreen({
     );
     return () => window.clearTimeout(timer);
   }, [expeditionProjection, isExpeditionTabVisible]);
+  // SpecRef: 8.3 | UI_EXPEDITION | E3 log projection/adapter
+  // Room summaries and rewards come from the public latestBattleLog projection. The retained log is supplied only to the
+  // adapter for narration fields intentionally absent from the language-neutral wire shape; the tab never receives it.
+  const latestBattleLogInputs = useMemo(
+    () => state.parties.map((party) => ({ pathParameters: { p: party.id } })),
+    [state.parties],
+  );
+  const latestBattleLogProjections = useApiReadMany<LatestBattleLogProjection>(
+    inProcessApiRef.current,
+    'read/expedition/{p}/latestBattleLog',
+    isExpeditionTabVisible ? latestBattleLogInputs : null,
+    [state.parties, partyCycles, pendingAfkMs, expeditionProjectionRefresh],
+  );
+  const expeditionLogViews = useMemo(() => {
+    const retainedByParty = new Map(state.parties.map((party, partyIndex) => [
+      party.id,
+      partyCycles[partyIndex]?.state === 'explore'
+        ? disclosedExpeditionLogsRef.current[partyIndex] ?? null
+        : party.lastExpeditionLog,
+    ]));
+    const views = new Map<number, ExpeditionLogView | null>();
+    state.parties.forEach((party) => views.set(party.id, null));
+    for (const projection of latestBattleLogProjections ?? []) {
+      const partyNumber = projection.battleLog?.partyNumber;
+      if (partyNumber === undefined) continue;
+      views.set(partyNumber, buildExpeditionLogView(projection, retainedByParty.get(partyNumber)));
+    }
+    return views;
+  }, [latestBattleLogProjections, partyCycles, state.parties]);
   // SpecRef: 9.1.4.17 | UI state ownership | Retained selections come from `read/observation/setting` (uiPreferences)
   const settingObservation = useApiRead<{ settingInfo: { uiPreferences: Array<{ key: string; value: string | number | boolean }> } }>(
     inProcessApiRef.current, 'read/observation/setting', {}, [state.global.uiPreferences], isPartyTabVisible,
@@ -5110,6 +5140,7 @@ export function HomeScreen({
           onSimulateExpedition={handleSimulateExpedition}
           isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
           expeditionProjection={expeditionProjection}
+          expeditionLogViews={expeditionLogViews}
           afkRecoveryProgressPercent={afkRecoveryProgressPercent}
           afkRecoveryCompletedMs={afkRecoveryCompletedMs}
           afkRecoveryTotalMs={afkRecoveryTotalMs}

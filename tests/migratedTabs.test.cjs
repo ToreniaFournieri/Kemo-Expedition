@@ -111,3 +111,15 @@ test('Expedition pane rows use the observation projection and never receive live
     assert.match(tab, new RegExp(projectedFact.replaceAll('.', '\\.')));
   }
 });
+
+test('Expedition logs use the latestBattleLog projection and keep retained narration inside the adapter', () => {
+  const home = read('src/components/HomeScreen.tsx');
+  const tab = read('src/components/home/tabs/ExpeditionTab.tsx');
+  const start = home.indexOf('<ExpeditionTab');
+  const jsx = home.slice(start, home.indexOf('\n        />', start));
+  assert.match(home, /useApiReadMany<LatestBattleLogProjection>\([\s\S]*?'read\/expedition\/\{p\}\/latestBattleLog'/);
+  assert.match(home, /buildExpeditionLogView\(projection, retainedByParty\.get\(partyNumber\)\)/);
+  assert.match(jsx, /expeditionLogViews=\{expeditionLogViews\}/);
+  assert.doesNotMatch(tab, /party\.lastExpeditionLog/);
+  assert.doesNotMatch(tab, /renderExpeditionMetadata/);
+});

@@ -1,4 +1,4 @@
-import { renderExpeditionMetadata, renderDiaryBattle, hasDiaryBattle, semanticBattleAction, diaryBattleFlags } from '../../../game/compactDiary.ts';
+import { renderDiaryBattle, hasDiaryBattle, semanticBattleAction, diaryBattleFlags } from '../../../game/compactDiary.ts';
 import { Fragment,memo,useEffect,useRef,useState,type Dispatch,type SetStateAction } from 'react';
 import {
 DUNGEONS,
@@ -15,6 +15,7 @@ import { EXPEDITION_SIMULATION_RUN_COUNT,getExpeditionSimulationRoomCoordinate,g
 import { t } from '../../../i18n';
 import { EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,Item } from '../../../types';
 import { expeditionStateName, type ExpeditionProjection } from '../../../api/v1/expeditionView';
+import type { ExpeditionLogView } from '../../../api/v1/expeditionLogView';
 
 
 import {
@@ -67,6 +68,7 @@ interface ExpeditionTabProps {
   onSimulateExpedition: (partyIndex: number) => Promise<ExpeditionSimulationResult>;
   isExpeditionStatsDisplayEnabled: boolean;
   expeditionProjection: ExpeditionProjection | null;
+  expeditionLogViews: ReadonlyMap<number, ExpeditionLogView | null>;
   afkRecoveryProgressPercent: number | null;
   afkRecoveryCompletedMs: number;
   afkRecoveryTotalMs: number;
@@ -92,6 +94,7 @@ function ExpeditionTab({
   onSimulateExpedition,
   isExpeditionStatsDisplayEnabled,
   expeditionProjection,
+  expeditionLogViews,
   afkRecoveryProgressPercent,
   afkRecoveryCompletedMs,
   afkRecoveryTotalMs,
@@ -421,7 +424,7 @@ function ExpeditionTab({
         const difficultySuperRareChanceTickets = getDifficultyOffsetSuperRareChanceTickets(selectedDifficultyOffset);
         const getDifficultyOffsetBubbleText = (offset: number) => t('home.expedition.difficultyOffsetBubble', { enemyLevel: formatNumber(offset), itemChance: formatNumber(getDifficultyOffsetItemChanceTickets(offset)), superRareChance: formatNumber(getDifficultyOffsetSuperRareChanceTickets(offset)) });
         const isLogExpanded = expandedLogParty === partyIndex;
-        const currentLog = party.lastExpeditionLog ? renderExpeditionMetadata(party.lastExpeditionLog) : null;
+        const currentLog = expeditionLogViews.get(party.id) ?? null;
         const currentLogDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === currentLog?.dungeonId)?.expLevel;
         // SpecRef: 8.3 | UI_EXPEDITION | First row text / Update Timing
         const headlineFloorName = projectedParty.disclosedFloor === null
