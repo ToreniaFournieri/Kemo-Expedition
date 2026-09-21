@@ -232,6 +232,9 @@ export function preloadRemainingHomeTabs() {
   ]);
 }
 
+// SpecRef: 9.1.3 | 2-4-1 searchItems | `limit`: the Party tab needs every owned stack, so it asks for the maximum (5000).
+const SEARCH_ITEMS_LIMIT = 5000;
+
 export function HomeScreen({
   state,
   actions,
@@ -1902,10 +1905,10 @@ export function HomeScreen({
   const isPartyTabVisible = isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'party' : activeTab === 'party';
   // `details: none` keeps each result to its base format (`<Item Format>/<quantity>` and `<jewelType>:<jewelRank>/<quantity>`).
   const ownedItemsProjection = useApiRead<{ items: string[] }>(
-    inProcessApiRef.current, 'read/base/searchItems', { parameters: { state: 'owned', details: 'none' } }, [state.global.inventory], isPartyTabVisible,
+    inProcessApiRef.current, 'read/base/searchItems', { parameters: { state: 'owned', details: 'none', limit: SEARCH_ITEMS_LIMIT } }, [state.global.inventory], isPartyTabVisible,
   );
   const ownedJewelsProjection = useApiRead<{ items: string[] }>(
-    inProcessApiRef.current, 'read/base/searchItems', { parameters: { state: 'owned', category: 'jewel', details: 'none' } }, [state.global.jewels], isPartyTabVisible,
+    inProcessApiRef.current, 'read/base/searchItems', { parameters: { state: 'owned', category: 'jewel', details: 'none', limit: SEARCH_ITEMS_LIMIT } }, [state.global.jewels], isPartyTabVisible,
   );
   const ownedInventoryView = useMemo(() => parseInventoryStacks(ownedItemsProjection?.items ?? []), [ownedItemsProjection]);
   const ownedJewelsView = useMemo(() => parseJewelStacks(ownedJewelsProjection?.items ?? []), [ownedJewelsProjection]);

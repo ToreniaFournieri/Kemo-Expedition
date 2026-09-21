@@ -20,7 +20,7 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
       if (operationId === 'fundamental/logIn') return { revision, data: { userId: 'Taro', environment: 'desktop', gameMode: 'normal', levelOffsetForOrca: null }, identity: { userId: 'Taro' } };
       if (operationId === 'fundamental/logOut') return { revision, data: { finalPersistedRevision: revision } };
       if (operationId === 'read/observation/overview') return { revision, data: { headerInfo: { gameMode: 'mode.normal', inGameTime: new Date(0).toISOString(), gold: 200 } } };
-      if (operationId === 'read/base/searchItems') return { revision, data: { items: ['0/1101/0/0/1'], nextCursor: null } };
+      if (operationId === 'read/base/searchItems') return { revision, data: { items: ['0/1101/0/0/1/12'] } };
       if (operationId === 'commit/base/changeJewelPriorityParty') {
         if (payload.idempotencyKey === 'operation-in-progress-key') return { status: 409, revision, error: { code: 'operation_in_progress', message: 'The operation is already in progress.' } };
         return { previousRevision: revision, revision: ++revision, data: { current: { partyNumber: 1 } } };
@@ -55,7 +55,9 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
   assert.equal((await fetch(`${descriptor.endpoint}/read/base/searchItems?category=nonsense`, { headers: session })).status, 400);
   const search = await fetch(`${descriptor.endpoint}/read/base/searchItems`, { headers: session });
   assert.equal(search.status, 200, 'category is optional');
-  assert.deepEqual((await search.json()).data.items, ['0/1101/0/0/1']);
+  assert.deepEqual((await search.json()).data.items, ['0/1101/0/0/1/12']);
+  assert.equal((await fetch(`${descriptor.endpoint}/read/base/searchItems?limit=5001`, { headers: session })).status, 400, 'limit is at most 5000');
+  assert.equal((await fetch(`${descriptor.endpoint}/read/base/searchItems?limit=0`, { headers: session })).status, 400, 'limit is at least 1');
   const invalidCommit = await fetch(`${descriptor.endpoint}/commit/base/changeJewelPriorityParty`, { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedRevision: 0, idempotencyKey: crypto.randomUUID(), parameters: {}, typo: true }) });
   assert.equal(invalidCommit.status, 400);
   const invalidCommitParameter = await fetch(`${descriptor.endpoint}/commit/base/changeJewelPriorityParty`, { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedRevision: 0, idempotencyKey: crypto.randomUUID(), parameters: { partyNumber: '1' } }) });

@@ -8222,14 +8222,9 @@
           },
           "limit": {
             "minimum": 1,
-            "maximum": 200,
+            "maximum": 5000,
             "type": "integer",
-            "default": 100
-          },
-          "cursor": {
-            "minLength": 1,
-            "maxLength": 200,
-            "type": "string"
+            "default": 10
           }
         }
       },
@@ -8249,21 +8244,9 @@
             "items": {
               "type": "array",
               "items": {
-                "pattern": "^(?:(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))/[0-9]+(?:/(?:might|arcana|fort|ward|shade|focus|0):[0-8])?|(?:might|arcana|fort|ward|shade|focus):[1-8]/[0-9]+)(?:/(?:ability|cBonus|otherBonus)=\\[.*\\])*$",
+                "pattern": "^(?:(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))/[0-9]+/-?[0-9]+(?:\\.[0-9]+)?|(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))/[0-9]+/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)/-?[0-9]+(?:\\.[0-9]+)?|(?:might|arcana|fort|ward|shade|focus):[1-8]/[0-9]+)(?:/(?:ability|cBonus|otherBonus)=\\[.*\\])*$",
                 "type": "string"
               }
-            },
-            "nextCursor": {
-              "anyOf": [
-                {
-                  "minLength": 1,
-                  "maxLength": 200,
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ]
             }
           }
         },
@@ -8309,21 +8292,9 @@
                 "items": {
                   "type": "array",
                   "items": {
-                    "pattern": "^(?:(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))/[0-9]+(?:/(?:might|arcana|fort|ward|shade|focus|0):[0-8])?|(?:might|arcana|fort|ward|shade|focus):[1-8]/[0-9]+)(?:/(?:ability|cBonus|otherBonus)=\\[.*\\])*$",
+                    "pattern": "^(?:(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))/[0-9]+/-?[0-9]+(?:\\.[0-9]+)?|(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))/[0-9]+/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)/-?[0-9]+(?:\\.[0-9]+)?|(?:might|arcana|fort|ward|shade|focus):[1-8]/[0-9]+)(?:/(?:ability|cBonus|otherBonus)=\\[.*\\])*$",
                     "type": "string"
                   }
-                },
-                "nextCursor": {
-                  "anyOf": [
-                    {
-                      "minLength": 1,
-                      "maxLength": 200,
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
                 }
               }
             }
@@ -8336,7 +8307,6 @@
         "control_lease_expired",
         "control_lease_invalid",
         "internal_error",
-        "invalid_cursor",
         "invalid_request",
         "login_required",
         "runtime_unavailable"
@@ -8359,7 +8329,7 @@
         "response": {
           "data": {
             "items": [
-              "0/1"
+              "0/1/12"
             ]
           }
         }

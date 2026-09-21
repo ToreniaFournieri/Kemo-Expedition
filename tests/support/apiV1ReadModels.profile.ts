@@ -111,35 +111,61 @@ assert.equal(full.simulatedRevision, 7);
   const none = { ...state, global: { ...state.global, unlockedDeities: [], deityDonations: {} } };
   assert.deepEqual((await buildApiV1ReadData('resources/donationBox', none, {}, context) as { gods: string[] }).gods, []);
 }
-// searchItems (9.1.3, 2-4-1): filters, states, formats, details, and Jewels; parsed stacks rebuild the inventory.
+// searchItems (9.1.3, 2-4-1): filters, states, formats, base power, sort order, limit, details, and Jewels.
 {
   const { parseInventoryStacks, parseJewelStacks } = await import('../../src/api/v1/itemFormat.ts');
+  const { getItemBasePower, getItemDisplayMultiplier } = await import('../../src/game/itemPower.ts');
   const { getVariantKey } = await import('../../src/types/index.ts');
   const target = state.parties[0].characters[0];
   const equippedArmor = target.equipment.findIndex((item) => item?.category === 'armor');
   const withJewels = { ...state, global: { ...state.global, jewels: { 'fort:3': 2, 'might:1': 1, 'ward:2': 0 } },
     parties: state.parties.map((party, index) => index === 0 ? { ...party, characters: party.characters.map((entry) => entry.id === target.id ? { ...entry, equipment: entry.equipment.map((item, slot) => slot === equippedArmor && item ? { ...item, jewel: { key: 'fort' as const, rank: 4 } } : item) } : entry) } : party) };
-  type Search = { items: string[]; nextCursor: null };
-  const search = async (parameters: Record<string, unknown>, from = withJewels) => (await buildApiV1ReadData('read/base/searchItems', from, { details: 'none', ...parameters }, context) as Search).items;
+  type Search = { items: string[] };
+  const search = async (parameters: Record<string, unknown>, from = withJewels) => (await buildApiV1ReadData('read/base/searchItems', from, { details: 'none', limit: 5000, ...parameters }, context) as Search).items;
 
   const owned = Object.values(state.global.inventory).filter((variant) => variant.status === 'owned' && variant.count > 0);
   assert.ok(owned.length > 3, 'the fresh state owns several variants');
   const all = await search({});
   assert.equal(all.length, owned.length, 'category is optional: omitting it searches every equipment category');
-  const ids = all.map((stack) => Number(stack.split('/')[1]));
-  assert.deepEqual(ids, [...ids].sort((left, right) => left - right), 'stacks are ordered by item id');
-  assert.equal((await buildApiV1ReadData('read/base/searchItems', withJewels, {}, context) as Search).nextCursor, null);
 
+  // Format: <Item Format>/<quantity>/<calculatedBasePower>, sorted by higher base power, then higher item id.
+  const powerOf = (stack: string) => Number(stack.split('/')[5]);
+  const idOf = (stack: string) => Number(stack.split('/')[1]);
+  for (let index = 1; index < all.length; index += 1) {
+    const [previous, current] = [all[index - 1], all[index]];
+    assert.ok(powerOf(previous) > powerOf(current) || (powerOf(previous) === powerOf(current) && idOf(previous) >= idOf(current)), `${previous} sorts before ${current}`);
+  }
+  for (const variant of owned) {
+    const stack = all.find((entry) => entry.startsWith(`0/${variant.item.id}/${variant.item.enhancement}/${variant.item.superRare}/`))!;
+    assert.equal(stack, `0/${variant.item.id}/${variant.item.enhancement}/${variant.item.superRare}/${variant.count}/${getItemBasePower(variant.item)}`);
+  }
   const rebuilt = parseInventoryStacks(all);
   assert.equal(Object.keys(rebuilt).length, owned.length);
-  for (const variant of owned) {
-    const entry = rebuilt[getVariantKey(variant.item)];
-    assert.equal(entry.count, variant.count);
-    assert.equal(entry.item.name, variant.item.name);
-  }
+  for (const variant of owned) assert.equal(rebuilt[getVariantKey(variant.item)].count, variant.count);
+
+  // Base power is the category's defining d. stat, scaled like the Inventory (no character bonus).
+  const armor = owned.find((variant) => variant.item.category === 'armor')!.item;
+  assert.equal(getItemBasePower(armor), Math.round((armor.physicalDefense ?? 0) * getItemDisplayMultiplier(armor)));
+  const enhanced = { ...armor, enhancement: 3 };
+  assert.ok(getItemBasePower(enhanced) > getItemBasePower(armor), 'enhancement raises the calculated base power');
+  const jeweledArmor = { ...armor, jewel: { key: 'fort' as const, rank: 3 } };
+  assert.ok(getItemBasePower(jeweledArmor) > getItemBasePower(armor), 'an attached Jewel adds its d. value for that stat');
+  const shield = owned.find((variant) => variant.item.category === 'shield')?.item;
+  if (shield) assert.equal(getItemBasePower(shield), Math.round((shield.partyHP ?? 0) * getItemDisplayMultiplier(shield)), 'a shield reports HP');
+  const gauntlet = owned.find((variant) => variant.item.category === 'gauntlet')?.item;
+  if (gauntlet) assert.equal(getItemBasePower(gauntlet), Math.round((gauntlet.meleeNoA ?? 0) * getItemDisplayMultiplier(gauntlet) * 100) / 100, 'a gauntlet reports its scaled melee NoA');
+  const katana = owned.find((variant) => variant.item.category === 'katana')?.item;
+  if (katana) assert.equal(getItemBasePower(katana), Math.round((katana.meleeAttack ?? 0) * getItemDisplayMultiplier(katana)), 'a katana reports melee attack, not its NoA penalty');
+
+  // limit: default 10, applied after filtering and sorting; out-of-range values are rejected.
+  const defaultLimit = (await buildApiV1ReadData('read/base/searchItems', withJewels, { details: 'none' }, context) as Search).items;
+  assert.equal(defaultLimit.length, Math.min(10, owned.length), 'the default limit is 10');
+  assert.deepEqual(defaultLimit, all.slice(0, defaultLimit.length), 'limit takes the top of the sorted result');
+  assert.deepEqual(await search({ limit: 2 }), all.slice(0, 2));
+  for (const limit of [0, -1, 5001, 1.5]) await assert.rejects(() => buildApiV1ReadData('read/base/searchItems', withJewels, { limit }, context), /invalid_request/, `limit ${limit}`);
 
   const first = owned[0].item;
-  assert.equal((await search({ itemId: first.id })).every((stack) => Number(stack.split('/')[1]) === first.id), true);
+  assert.equal((await search({ itemId: first.id })).every((stack) => idOf(stack) === first.id), true);
   const categoryOf = (api: string) => ({ bow: 'archery', glove: 'gauntlet', book: 'grimoire', sword: 'sword' } as Record<string, string>)[api];
   for (const api of ['sword', 'bow', 'glove', 'book']) {
     for (const stack of await search({ category: api })) assert.equal(Object.values(parseInventoryStacks([stack]))[0].item.category, categoryOf(api));
@@ -150,30 +176,35 @@ assert.equal(full.simulatedRevision, 7);
   assert.equal((await search({ superRare: false })).length, owned.length);
   assert.equal((await search({ state: 'sold' })).length, 0);
 
-  // Character-owned items: `<Item Format>/<characterId>/<jewelType>:<jewelRank>`, `0:0` without a Jewel.
+  // Character-assigned items: <Item Format>/<characterId>/<jewelType>:<jewelRank>/<calculatedBasePower>.
   const equippedList = await search({ state: 'equipped' });
   const equippedCount = state.parties.flatMap((party) => party.characters).flatMap((character) => character.equipment.filter(Boolean)).length;
   assert.equal(equippedList.length, equippedCount);
-  for (const entry of equippedList) assert.match(entry, /^[01]\/\d+\/[0-6]\/\d+\/\d+\/(?:0:0|[a-z]+:[1-8])$/);
-  const armorEntry = equippedList.find((entry) => entry.endsWith('/fort:4'));
+  for (const entry of equippedList) assert.match(entry, /^[01]\/\d+\/[0-6]\/\d+\/\d+\/(?:0:0|[a-z]+:[1-8])\/-?\d+(?:\.\d+)?$/);
+  const armorEntry = equippedList.find((entry) => entry.includes('/fort:4/'));
   assert.ok(armorEntry, 'the attached Jewel is reported');
   assert.equal(armorEntry!.split('/')[4], String(target.id));
-  assert.equal((await search({ state: 'all' })).length, owned.length + equippedCount, 'all lists stacks and character-owned items');
+  assert.equal(Number(armorEntry!.split('/')[6]), getItemBasePower({ ...target.equipment[equippedArmor]!, jewel: { key: 'fort', rank: 4 } }), 'the Jewel adds to the assigned item power');
+  assert.equal((await search({ state: 'all' })).length, owned.length + equippedCount, 'all lists stacks and character-assigned items');
+  const equippedPowers = equippedList.map((entry) => Number(entry.split('/')[6]));
+  assert.deepEqual(equippedPowers, [...equippedPowers].sort((left, right) => right - left), 'character-assigned items sort by higher power first');
 
-  // The jewel category: unassigned stacks and assigned Jewels (as character-owned items).
+  // The jewel category: unassigned stacks sort by higher rank, then higher Jewel type; assigned Jewels are character-assigned items.
   const unassigned = await search({ category: 'jewel' });
-  assert.deepEqual(unassigned, ['might:1/1', 'fort:3/2'], 'unassigned Jewels list owned counts only, by Jewel type then rank');
+  assert.deepEqual(unassigned, ['fort:3/2', 'might:1/1'], 'higher rank first');
   assert.deepEqual(parseJewelStacks(unassigned), { 'fort:3': 2, 'might:1': 1 });
+  const sameRank = { ...withJewels, global: { ...withJewels.global, jewels: { 'might:2': 1, 'fort:2': 1, 'focus:2': 1 } } };
+  assert.deepEqual(await search({ category: 'jewel' }, sameRank), ['focus:2/1', 'fort:2/1', 'might:2/1'], 'equal rank: higher Jewel type (specification order) first');
   const assigned = await search({ category: 'jewel', state: 'equipped' });
   assert.equal(assigned.length, 1);
-  assert.match(assigned[0], /\/fort:4$/);
+  assert.match(assigned[0], /\/fort:4\/-?\d+/);
   assert.equal((await search({ category: 'jewel', state: 'all' })).length, 3);
   assert.deepEqual(await search({ category: 'jewel', state: 'sold' }), []);
   assert.deepEqual(await search({ category: 'jewel', rarity: 'bossRare' }), [], 'item filters exclude unassigned Jewels');
 
-  // Details are appended in the fixed order ability, cBonus, otherBonus.
+  // Details follow the base format, in the fixed order ability, cBonus, otherBonus.
   const sample = Object.values(state.global.inventory).find((variant) => variant.item.id === 1104)!;
-  const sampleFormat = `0/${sample.item.id}/${sample.item.enhancement}/${sample.item.superRare}/${sample.count}`;
+  const sampleFormat = `0/${sample.item.id}/${sample.item.enhancement}/${sample.item.superRare}/${sample.count}/${getItemBasePower(sample.item)}`;
   const detailed = async (details: string) => (await search({ itemId: 1104, details }))[0];
   assert.equal(await detailed('none'), sampleFormat);
   assert.equal(await detailed('ability'), `${sampleFormat}/ability=[]`);
@@ -183,7 +214,7 @@ assert.equal(full.simulatedRevision, 7);
   assert.equal(await detailed('all'), `${sampleFormat}/ability=[]/cBonus=[c.accuracy+0.001, c.melee-attack+23]/otherBonus=[d.melee_attack:14]`);
   const defaulted = (await buildApiV1ReadData('read/base/searchItems', withJewels, { itemId: 1104 }, context) as Search).items[0];
   assert.equal(defaulted, `${sampleFormat}/ability=[]/cBonus=[c.accuracy+0.001, c.melee-attack+23]`, 'the default details are abilityAndCBonus');
-  assert.equal((await search({ category: 'jewel', details: 'all' }))[1], 'fort:3/2/ability=[]/cBonus=[c.physical-defense+11]/otherBonus=[d.physical_defense:10, d.HP:10]', 'a rank-3 Jewel reports its rank bonuses');
+  assert.equal((await search({ category: 'jewel', details: 'all' }))[0], 'fort:3/2/ability=[]/cBonus=[c.physical-defense+11]/otherBonus=[d.physical_defense:10, d.HP:10]', 'a rank-3 Jewel reports its rank bonuses');
 
   // searchAbility and searchBonus filter on the same ids the details report.
   const { describeItem } = await import('../../src/api/v1/itemDetails.ts');
@@ -195,7 +226,7 @@ assert.equal(full.simulatedRevision, 7);
   assert.deepEqual(describeItem({ ...getItemById(4313)!, enhancement: 0, superRare: 0 }).cBonus, ['c.penet+0.16']);
   const withPursuit = { ...state, global: { ...state.global, inventory: { ...state.global.inventory, [getVariantKey(pursuit)]: { item: pursuit, count: 2, status: 'owned' as const } } } };
   assert.deepEqual((await search({ searchAbility: 'a.pursuit' }, withPursuit)).map((stack) => stack.split('/')[1]), ['1304']);
-  assert.deepEqual((await search({ searchBonus: 'c.melee-attack+23' })).every((stack) => stack.split('/')[1] === '1104'), true);
+  assert.deepEqual((await search({ searchBonus: 'c.melee-attack+23' })).every((stack) => idOf(stack) === 1104), true);
   assert.deepEqual(await search({ searchAbility: 'a.does-not-exist' }), []);
 }
 assert.deepEqual(state, before);

@@ -52,10 +52,11 @@ export function parseSavedEquipmentSet(projection: { equipmentSetId: number; equ
   return { slot: projection.equipmentSetId, name: projection.equipmentSet.name, createdAt: Date.parse(projection.equipmentSet.createdAt), equipment: entries };
 }
 
-const ITEM_STACK = /^([01])\/(\d+)\/([0-6])\/(\d+)\/(\d+)$/;
+// `<Item Format>/<quantity>/<calculatedBasePower>`; the power is derived data, so the rebuilt item ignores it.
+const ITEM_STACK = /^([01])\/(\d+)\/([0-6])\/(\d+)\/(\d+)\/-?\d+(?:\.\d+)?$/;
 const JEWEL_STACK = /^([a-z]+):([1-8])\/(\d+)$/;
 
-/** Rebuilds the owned inventory from `searchItems` stacks (`<Item Format>/<quantity>`); unknown items are skipped. */
+/** Rebuilds the owned inventory from `searchItems` stacks (`details: none`); unknown items are skipped. */
 export function parseInventoryStacks(stacks: readonly string[]): InventoryRecord {
   const inventory: InventoryRecord = {};
   for (const stack of stacks) {

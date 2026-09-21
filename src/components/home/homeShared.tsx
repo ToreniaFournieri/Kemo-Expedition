@@ -15,7 +15,7 @@ getLocalizedExpeditionFloorConcept
 } from '../../data/dungeons';
 import { ENEMIES,getEnemyDropCandidates } from '../../data/enemies';
 import { GLOSSARY_SECTIONS } from '../../data/glossary';
-import { ENHANCEMENT_TITLES,SUPER_RARE_TITLES,getSuperRareBonuses } from '../../data/items';
+import { SUPER_RARE_TITLES,getSuperRareBonuses } from '../../data/items';
 import { LINEAGES } from '../../data/lineages';
 import { PREDISPOSITIONS } from '../../data/predispositions';
 import { RACES } from '../../data/races';
@@ -39,6 +39,7 @@ import { formatEnemyDefName,getEnemyTypeShortName } from '../../game/enemyDispla
 import { isEnemyTypeCBonusType } from '../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId } from '../../game/environment';
 import { getItemRarityById } from '../../game/itemRarity';
+import { getItemDisplayMultiplier } from '../../game/itemPower';
 import type { AfkPartyChunkResult } from '../../game/afkChunkCoordinator';
 import type { AutoEquipmentProfileAction } from '../../game/autoEquipmentAttribution';
 import {
@@ -2052,32 +2053,7 @@ export function getSideQuestSuccessMessage(partyName: string, sideQuestDetail?: 
 
 // Helper to format item stats
 
-export function getItemDisplayMultiplier(item: Item, categoryMultiplier: number = 1): number {
-  const enhancementMultiplier = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
-  const superRareMultiplier = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
-  const selfCategoryBonusTypeByItemCategory: Partial<Record<ItemCategory, BonusType>> = {
-    sword: 'sword_multiplier',
-    katana: 'katana_multiplier',
-    archery: 'archery_multiplier',
-    armor: 'armor_multiplier',
-    gauntlet: 'gauntlet_multiplier',
-    wand: 'wand_multiplier',
-    robe: 'robe_multiplier',
-    shield: 'shield_multiplier',
-    bolt: 'bolt_multiplier',
-    grimoire: 'grimoire_multiplier',
-    catalyst: 'catalyst_multiplier',
-    arrow: 'arrow_multiplier',
-  };
-  const selfCategoryBonusType = selfCategoryBonusTypeByItemCategory[item.category];
-  const selfCategoryMultiplier = selfCategoryBonusType
-    ? getSuperRareBonuses(item.superRare)
-      .filter((bonus) => bonus.type === selfCategoryBonusType)
-      .reduce((total, bonus) => total * bonus.value, 1)
-    : 1;
-  const baseMultiplier = item.baseMultiplier ?? 1;
-  return enhancementMultiplier * superRareMultiplier * baseMultiplier * categoryMultiplier * selfCategoryMultiplier;
-}
+export { getItemDisplayMultiplier };
 
 export function getItemInventoryDetailText(item: Item): string {
   return `[${t(CATEGORY_NAME_KEYS[item.category] ?? 'party.categoryName.unknown')}] ${getRarityShortLabel(item.id, item.name)} ${getItemStats(item)}`;
