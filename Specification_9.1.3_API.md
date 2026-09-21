@@ -677,7 +677,7 @@ Path Parameters
 * Parameters:
   * `targetItems`
     * One item or an array of items.
-    * Each item uses `Item Format`.
+    * Each item uses `<Item Format>/<jewelType>:<jewelRank>`.
 
 * Return:
   * `calculatedItemStatus`
