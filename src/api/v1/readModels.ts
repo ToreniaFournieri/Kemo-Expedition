@@ -27,7 +27,8 @@ import { EQUIPMENT_EVALUATION_LIMIT } from './requestLimits.ts';
 import { describeUiPreferenceCatalog, listUiPreferences } from './uiPreferenceCatalog.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { buildShopLineup, getShopRefreshPrice } from '../../game/shop.ts';
-import { MAX_LEVEL, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party } from '../../types/index.ts';
+import type { ApiV1PartyCycleView } from './commitOperations.ts';
+import { MAX_LEVEL, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
 
@@ -38,6 +39,16 @@ export interface ApiV1ReadContext {
   readonly enemyLevelOffset: number;
   readonly inGameTime: number;
   readonly simulation?: (partyIndex: number, count: number) => Promise<unknown>;
+  /** The live party cycle of a party (by index) for the ordinary player's runtime; absent for an API account. */
+  readonly partyCycle?: (partyIndex: number) => ApiV1PartyCycleView | undefined;
+  /**
+   * The expedition log the UI has disclosed for a party (by index): while a party is in `state.explore` this is the log from
+   * before the running exploration, so the result is not spoiled (Spec 8.3, Update Timing). `undefined` means no runtime
+   * memory, and the newest log is used.
+   */
+  readonly disclosedLog?: (partyIndex: number) => ExpeditionLog | null | undefined;
+  /** The Instant Expedition charge clock scale (the current Speed of Time); 1 when omitted. */
+  readonly chargeDurationScale?: number;
   readonly control?: { settings?: Record<string, unknown>; deliveries?: unknown[]; equipmentHistory?: Record<string, EquipmentHistoryBag> };
 }
 
@@ -67,7 +78,7 @@ function findCharacter(state: GameState, value: unknown) {
 function compactObservation(state: GameState, context: ApiV1ReadContext, simulations: string[]) {
   return {
     globalInfo: { gameMode: context.gameMode, inGameTime: new Date(context.inGameTime).toISOString(), gold: state.global.gold, prana: state.global.prana },
-    partyInfo: state.parties.map((party) => ({
+    partyInfo: state.parties.map((party, partyIndex) => ({
       party: {
         partyNumber: party.id,
         level: party.level,
@@ -76,9 +87,9 @@ function compactObservation(state: GameState, context: ApiV1ReadContext, simulat
         deityRank: getDeityRank(state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0),
         condition: party.condition,
       },
-      state: party.currentHp <= 0 ? 'state.rest' : 'state.idle',
-      lastDestination: party.lastExpeditionLog?.dungeonId ?? party.selectedDungeonId,
-      lastOutcome: apiExpeditionOutcomeOrNull(party.lastExpeditionLog),
+      state: partyStateKey(party, computePartyStats(party).partyStats.hp, context.partyCycle?.(partyIndex)),
+      lastDestination: disclosedLogOf(state, context, partyIndex)?.dungeonId ?? party.selectedDungeonId,
+      lastOutcome: apiExpeditionOutcomeOrNull(disclosedLogOf(state, context, partyIndex)),
     })),
     attention: {
       latestSimulationResult: simulations,
@@ -95,19 +106,41 @@ function compactObservation(state: GameState, context: ApiV1ReadContext, simulat
   };
 }
 
-function expeditionProjection(state: GameState) {
+/** The log a client may see for a party: the disclosed log while the runtime hides a running exploration, else the newest one. */
+function disclosedLogOf(state: GameState, context: ApiV1ReadContext, partyIndex: number): ExpeditionLog | null {
+  const disclosed = context.disclosedLog?.(partyIndex);
+  return disclosed !== undefined ? disclosed : state.parties[partyIndex].lastExpeditionLog;
+}
+
+/**
+ * `state.<name>` of a party: the live cycle when the ordinary player's runtime is the actor, otherwise the resume state of
+ * Spec 5.1.1 (below maximum HP the party rests, else it is idle) because an API account has no live cycle.
+ */
+function partyStateKey(party: Party, maximumHp: number, cycle: ApiV1PartyCycleView | undefined): string {
+  if (cycle) return `state.${cycle.state}`;
+  return party.currentHp < maximumHp ? 'state.rest' : 'state.idle';
+}
+
+function expeditionProjection(state: GameState, context: ApiV1ReadContext) {
   return {
-    parties: state.parties.map((party) => {
+    parties: state.parties.map((party, partyIndex) => {
       const computed = computePartyStats(party);
-      const charge = getInstantExpeditionChargeState(party);
+      const charge = getInstantExpeditionChargeState(party, Date.now(), context.chargeDurationScale ?? 1);
+      const cycle = context.partyCycle?.(partyIndex);
+      const timed = cycle && typeof cycle.stateStartedAt === 'number' && typeof cycle.durationMs === 'number' && cycle.state !== 'idle' && cycle.state !== 'reactivate';
+      const log = disclosedLogOf(state, context, partyIndex);
       return {
         partyNumber: party.id,
         name: party.name,
-        state: party.currentHp <= 0 ? 'state.rest' : 'state.idle',
+        state: partyStateKey(party, computed.partyStats.hp, cycle),
+        // The state's own clock (the runtime's wall-clock time): clients interpolate progress between the two instants.
+        stateStartedAt: timed ? new Date(cycle.stateStartedAt!).toISOString() : null,
+        stateDurationMs: timed ? cycle.durationMs! : null,
+        stateExpectedEndAt: timed ? new Date(cycle.stateStartedAt! + cycle.durationMs!).toISOString() : null,
         currentHp: party.currentHp,
         maximumHp: computed.partyStats.hp,
-        disclosedFloor: party.lastExpeditionLog?.entries.at(-1)?.floor ?? null,
-        disclosedOutcome: apiExpeditionOutcomeOrNull(party.lastExpeditionLog),
+        disclosedFloor: log?.entries.at(-1)?.floor ?? null,
+        disclosedOutcome: apiExpeditionOutcomeOrNull(log),
         destination: party.selectedDungeonId,
         destinationMode: party.expeditionDestinationMode,
         depthLimit: party.expeditionDepthLimit,
@@ -265,7 +298,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     return compactObservation(state, context, simulations);
   }
   if (operationId === 'read/observation/overview') return { headerInfo: { gameMode: context.gameMode, inGameTime: new Date(context.inGameTime).toISOString(), gold: state.global.gold, prana: state.global.prana, environment: context.environment, unreadDiary: state.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0) } };
-  if (operationId === 'read/observation/expedition') return { expeditionInfo: expeditionProjection(state) };
+  if (operationId === 'read/observation/expedition') return { expeditionInfo: expeditionProjection(state, context) };
   if (operationId === 'read/observation/party') {
     // `parties` lists every unlocked party's deity and members so the party selector and the deity and Mimorian
     // assignment rules do not need the other parties' full projections.
@@ -288,7 +321,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     if (expedition[2] === 'setting') return { current: { destination: party.selectedDungeonId, destinationMode: party.expeditionDestinationMode, depthLimit: party.expeditionDepthLimit, difficultyOffset: party.expeditionDifficultyOffset }, validOptions: { destination: DUNGEONS.map((entry) => entry.id), depthLimit: ['1f-3', '1f-4', '2f-3', '2f-4', '3f-3', '3f-4', '4f-3', '4f-4', '5f-3', '5f-4', 'beforeBoss', 'all'], difficultyOffset: { min: 0, max: 68, step: 2 } } };
     if (expedition[2] === 'latestBattleLog') {
       // Omitted `logId` selects the party's latest retained log; `diary:<id>` selects the log of one retained Diary entry.
-      if (parameters.logId === undefined) return buildBattleLogData(party.lastExpeditionLog, party.id, 'latest');
+      if (parameters.logId === undefined) return buildBattleLogData(disclosedLogOf(state, context, index), party.id, 'latest');
       const diaryId = /^diary:(.+)$/.exec(String(parameters.logId))?.[1];
       const diary = diaryId === undefined ? undefined : party.diaryLogs.find((entry) => String(entry.id) === diaryId);
       if (!diary) throw new Error('not_found');
@@ -298,7 +331,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       if (!context.simulation) throw new Error('runtime_unavailable');
       return buildSimulationRunData(await context.simulation(index, 1_000) as ExpeditionSimulationResult, context.revision, crypto.randomUUID());
     }
-    const charge = getInstantExpeditionChargeState(party);
+    const charge = getInstantExpeditionChargeState(party, Date.now(), context.chargeDurationScale ?? 1);
     return { chargeStock: charge.stock, chargeDuration: charge.remainingMs <= 0 ? 0 : Math.ceil(charge.remainingMs / 1000) };
   }
 

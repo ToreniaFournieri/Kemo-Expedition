@@ -373,6 +373,43 @@ calls.length = 0;
   assert.equal('Turned_Back' in first.expeditionStats, false);
   assert.deepEqual([first.lastExpeditionLog?.finalOutcome, first.pendingDiaryLog?.expeditionLog.finalOutcome, first.diaryLogs[0].expeditionLog.finalOutcome], ['Return', 'Return', 'Return']);
 }
+// The live party cycle and the disclosed log (Spec 8.3, Update Timing): the real state and its clock are projected for the ordinary
+// player's runtime, and while a party explores the previous log is what any client sees, so the running result is not spoiled.
+{
+  const room = (floor: number, outcome: 'victory' | 'defeat' | 'draw') => ({ room: floor, floor, roomInFloor: 1, roomType: 'battle_Normal', outcome, enemyName: 'x', enemyHP: 1, enemyAttackValues: '', damageDealt: 0, damageTaken: 0, remainingPartyHP: 1, maxPartyHP: 1, details: [] }) as never;
+  const log = (finalOutcome: 'Clear' | 'Return' | 'Retreat' | 'Defeat', floor: number, last: 'victory' | 'draw' | 'defeat' = 'victory') => ({ finalOutcome, entries: [room(floor, last)], dungeonId: 1, dungeonName: '', difficultyOffset: 0, totalExperience: 0, totalRooms: 24, completedRooms: floor, rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: 1, maxPartyHP: 1 }) as never;
+  const running = log('Defeat', 5, 'defeat');           // the exploration in progress (already resolved by the engine)
+  const previous = log('Return', 2);                    // what the player saw before it started
+  const source = { ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, lastExpeditionLog: running } : party) };
+  const startedAt = Date.UTC(2026, 8, 21, 1, 2, 3);
+  const live = { ...context, partyCycle: () => ({ state: 'explore', stateStartedAt: startedAt, durationMs: 60_000 }), disclosedLog: (index: number) => index === 0 ? previous : undefined, chargeDurationScale: 1 };
+  const expedition = await buildApiV1ReadData('read/observation/expedition', source, {}, live) as unknown as { expeditionInfo: { parties: Record<string, unknown>[] } };
+  const first = expedition.expeditionInfo.parties[0];
+  assert.equal(first.state, 'state.explore');
+  assert.equal(first.stateStartedAt, new Date(startedAt).toISOString());
+  assert.equal(first.stateDurationMs, 60_000);
+  assert.equal(first.stateExpectedEndAt, new Date(startedAt + 60_000).toISOString());
+  assert.equal(first.disclosedFloor, 2, 'the floor of the running exploration is not disclosed');
+  assert.equal(first.disclosedOutcome, 'Return', 'the outcome of the running exploration is not disclosed');
+  const idle = await buildApiV1ReadData('read/observation/expedition', source, {}, { ...live, partyCycle: () => ({ state: 'idle', stateStartedAt: startedAt, durationMs: 1000 }) }) as unknown as { expeditionInfo: { parties: Record<string, unknown>[] } };
+  assert.equal(idle.expeditionInfo.parties[0].state, 'state.idle');
+  assert.equal(idle.expeditionInfo.parties[0].stateStartedAt, null, 'an idle party has no state clock');
+  const compact = await buildApiV1ReadData('read/observation/compact', source, {}, live) as unknown as { partyInfo: { state: string; lastOutcome: string | null }[] };
+  assert.deepEqual([compact.partyInfo[0].state, compact.partyInfo[0].lastOutcome], ['state.explore', 'Return']);
+  const battle = await buildApiV1ReadData('read/expedition/1/latestBattleLog', source, {}, live) as unknown as { battleLog: { finalOutcome: string; rooms: { room: number }[] } };
+  assert.deepEqual([battle.battleLog.finalOutcome, battle.battleLog.rooms[0].room], ['Return', 2], 'the latest log is the disclosed one');
+  // Once the party is no longer exploring the newest log is disclosed.
+  const done = { ...live, partyCycle: () => ({ state: 'return', stateStartedAt: startedAt, durationMs: 1000 }), disclosedLog: () => running };
+  const after = await buildApiV1ReadData('read/observation/expedition', source, {}, done) as unknown as { expeditionInfo: { parties: Record<string, unknown>[] } };
+  assert.deepEqual([after.expeditionInfo.parties[0].state, after.expeditionInfo.parties[0].disclosedOutcome, after.expeditionInfo.parties[0].disclosedFloor], ['state.return', 'Defeat', 5]);
+  // No runtime memory (an API account): the newest log, and the resume state of Spec 5.1.1.
+  const account = await buildApiV1ReadData('read/observation/expedition', source, {}, context) as unknown as { expeditionInfo: { parties: Record<string, unknown>[] } };
+  assert.equal(account.expeditionInfo.parties[0].disclosedOutcome, 'Defeat');
+  assert.equal(account.expeditionInfo.parties[0].stateStartedAt, null);
+  const hurt = { ...source, parties: source.parties.map((party, index) => index === 0 ? { ...party, currentHp: 1 } : party) };
+  const resumed = await buildApiV1ReadData('read/observation/expedition', hurt, {}, context) as unknown as { expeditionInfo: { parties: { state: string }[] } };
+  assert.equal(resumed.expeditionInfo.parties[0].state, 'state.rest', 'below maximum HP an account party rests');
+}
 assert.deepEqual(state, before);
 
 // calculatedStatus is the public fact model (9.1.4.14), not the internal computed-stats object.

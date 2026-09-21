@@ -1,4 +1,4 @@
-import type { GameState } from '../../types';
+import type { ExpeditionLog, GameState } from '../../types';
 import { buildApiV1ReadData } from './readModels';
 import { SerializedApplicationApiAuthority, type ApiV1CommitAuthorityDependencies, type ApiV1ControlMetadata } from './authority';
 import { serializeGameState } from '../../game/saveCodec';
@@ -37,6 +37,8 @@ export interface ApplicationApiPorts {
     onPublicationFailure?: (error: unknown) => void;
     /** The live party cycle of a party (by index), for the ordinary player's runtime. */
     partyCycle?: ApiV1CommitAuthorityDependencies['partyCycle'];
+    /** The expedition log the UI has disclosed for a party (hidden while exploring); see `ApiV1ReadContext.disclosedLog`. */
+    disclosedExpeditionLog?: (partyIndex: number) => ExpeditionLog | null | undefined;
     /** Duration of `state.rest` for a party, as the UI computes it. */
     restDurationMs?: ApiV1CommitAuthorityDependencies['restDurationMs'];
     /** Applies a sortie's party-cycle reset to the running runtime (called after the commit is durable). */
@@ -170,6 +172,12 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
           inGameTime: snapshot.simulatedAt,
           simulation: (partyIndex, count) => ports.runtime.simulate(snapshot.state, partyIndex, count),
           control: snapshot.control,
+          // The live cycle and the disclosed logs belong to the ordinary player's runtime; an API account has neither.
+          ...(activeIdentity ? {} : {
+            partyCycle: ports.runtime.partyCycle,
+            disclosedLog: ports.runtime.disclosedExpeditionLog,
+            chargeDurationScale: ports.runtime.cycleDurationScale(),
+          }),
         });
         return { revision: snapshot.control.revisionHighWater, data };
       } catch (error) {

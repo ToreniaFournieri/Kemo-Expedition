@@ -407,6 +407,23 @@ definitions in 9.1.3.
   simulated revision and seed-domain identifier and returns both the compact
   strings required by 9.1.3 and structured numeric outcome percentages for the
   overview and each room. It never exposes or advances the live random stream.
+* The Expedition and compact projections report each party's real state:
+  `state` is `state.<name>` of the live party cycle for the ordinary player's runtime
+  (`state.rest`, `state.sell`, `state.free_action`, `state.sound_sleep`,
+  `state.pray`, `state.idle`, `state.move`, `state.explore`, `state.return`,
+  `state.reactivate`). Expedition also carries the state's own clock:
+  `stateStartedAt`, `stateDurationMs`, and `stateExpectedEndAt` (the runtime's
+  wall-clock instants), all `null` for `state.idle` and `state.reactivate`, so a
+  client interpolates continuous progress itself. An API account has no live
+  cycle: its `state` is the resume state of Spec 5.1.1 (`state.rest` below maximum
+  HP, otherwise `state.idle`) and its clock members are `null`.
+  No spoiler (Spec 8.3, Update Timing): while a party is in `state.explore`, the
+  floor and outcome (`disclosedFloor`, `disclosedOutcome`, the compact
+  `lastDestination` and `lastOutcome`) and the default `latestBattleLog` come from
+  the log disclosed before that exploration began, never from the exploration in
+  progress; once the party leaves `state.explore` the newest log is disclosed. A
+  Diary-retained log requested by `logId` is unaffected. The instant charge
+  `chargeStock` and `chargeDuration` use the current Speed of Time.
 * `sortie` and `godsBattle` behave as pressing the Sortie or Gods Battle button
   (9.1.3, 3-2-2): the same refusals and the same reducer actions in the same
   order. They are `illegal_action` (details name the reason) when the party has no

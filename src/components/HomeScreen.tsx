@@ -485,6 +485,8 @@ export function HomeScreen({
   const apiActionsRef = useRef(actions);
   const apiAutoEquipmentRunnerRef = useRef<AutoEquipmentRunner | null>(null);
   const apiCycleDurationScaleRef = useRef(1);
+  // SpecRef: 8.3 | UI_EXPEDITION | Update Timing: the log disclosed per party (the previous one while a party explores).
+  const disclosedExpeditionLogsRef = useRef<Array<Party['lastExpeditionLog'] | null>>([]);
   const restDurationMsRef = useRef<(party: Party) => number>(() => 1000);
   const sortieCycleWritesRef = useRef<(writes: ApiV1PartyCycleWrite[]) => void>(() => undefined);
   apiActionsRef.current = actions;
@@ -584,6 +586,7 @@ export function HomeScreen({
         partyCycle: (partyIndex) => partyCyclesRef.current[partyIndex],
         restDurationMs: (party) => restDurationMsRef.current(party),
         applyPartyCycleWrites: (writes) => sortieCycleWritesRef.current(writes),
+        disclosedExpeditionLog: (partyIndex) => disclosedExpeditionLogsRef.current[partyIndex],
       },
       help: { requirements: apiRequirementsDocument, detail: apiDetailDocument },
       onSessionActive: (active) => { apiControlActiveRef.current = active; setApiControlActive(active); },
@@ -4827,6 +4830,16 @@ export function HomeScreen({
   };
   const triggerSortieRef = useRef(triggerSortie);
   triggerSortieRef.current = triggerSortie;
+  // The latest log is disclosed only once a party is no longer exploring. This mirrors the Expedition tab's own memory and
+  // gives the Application API the same no-spoiler view of `latestBattleLog` and the outcome fields.
+  useEffect(() => {
+    const previous = disclosedExpeditionLogsRef.current;
+    disclosedExpeditionLogsRef.current = state.parties.map((party, index) => (
+      partyCycles[index]?.state === 'explore' && index < previous.length
+        ? previous[index] ?? null
+        : party.lastExpeditionLog ?? null
+    ));
+  }, [state.parties, partyCycles]);
   // The Application API's sortie (Spec 9.1.3, 3-2-2) resets the live cycle exactly as `triggerSortie` above does, and sets the
   // same presentation flags so the reward popups follow.
   restDurationMsRef.current = (party) => getStateDurationMs(party, 'rest');

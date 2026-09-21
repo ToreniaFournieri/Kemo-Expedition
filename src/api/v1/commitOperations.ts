@@ -59,6 +59,9 @@ export interface ApiV1CommitContext {
 /** What a sortie needs to know about the live party cycle (Spec 5.1.1). */
 export interface ApiV1PartyCycleView {
   readonly state: string;
+  /** The wall-clock start of the state and its planned duration; absent for a state without a clock (idle, reactivate). */
+  readonly stateStartedAt?: number;
+  readonly durationMs?: number;
   readonly isCurrentExpeditionGodsBattle?: boolean;
 }
 
