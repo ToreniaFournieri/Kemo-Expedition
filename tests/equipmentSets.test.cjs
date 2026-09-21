@@ -43,8 +43,12 @@ test('equipment-set availability includes current equipment and enforces slots a
   const armor = item(20, 0, 0, 'armor');
   const saved = setOf(sword, armor);
   assert.deepEqual(evaluateEquipmentSet(saved, character([sword]), inventoryOf(armor), 2).entries.map((entry) => entry.available), [true, true]);
-  assert.deepEqual(evaluateEquipmentSet(saved, character([sword]), inventoryOf(armor), 1).entries.map((entry) => entry.available), [true, false]);
-  assert.equal(evaluateEquipmentSet(setOf(sword), character([], 'guardian'), inventoryOf(sword), 2).allAvailable, false);
+  const slotLimited = evaluateEquipmentSet(saved, character([sword]), inventoryOf(armor), 1);
+  assert.deepEqual(slotLimited.entries.map((entry) => entry.available), [true, false]);
+  assert.equal(slotLimited.entries[1].unavailableReason, 'slot_unavailable');
+  const wrongAptitude = evaluateEquipmentSet(setOf(sword), character([], 'guardian'), inventoryOf(sword), 2);
+  assert.equal(wrongAptitude.allAvailable, false);
+  assert.equal(wrongAptitude.entries[0].unavailableReason, 'not_equippable');
 });
 
 test('equipment history snapshots use the saved-set availability contract', async () => {
@@ -53,7 +57,9 @@ test('equipment history snapshots use the saved-set availability contract', asyn
   const snapshot = createEquipmentSetSnapshot([sword, null]);
   assert.equal(evaluateEquipmentSet(snapshot, character([]), inventoryOf(sword), 2).allAvailable, true);
   assert.equal(evaluateEquipmentSet(snapshot, character([], 'guardian'), inventoryOf(sword), 2).allAvailable, false);
-  assert.equal(evaluateEquipmentSet(snapshot, character([]), {}, 2).allAvailable, false);
+  const missing = evaluateEquipmentSet(snapshot, character([]), {}, 2);
+  assert.equal(missing.allAvailable, false);
+  assert.equal(missing.entries[0].unavailableReason, 'unavailable');
 });
 
 test('exact load restores locks and assigns Jewels independently, strongest first', async () => {

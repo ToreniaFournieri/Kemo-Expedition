@@ -69,12 +69,44 @@ export function parseEvaluatedItemFormat(value: string): Item | null {
 }
 
 /** Rebuilds a saved equipment set from its projection (`equipmentSet` read with detail). */
-export function parseSavedEquipmentSet(projection: { equipmentSetId: number; equipmentSet: { name: string; createdAt: string; equipment?: string[] } }): SavedEquipmentSet {
+export type SavedEquipmentSetView = SavedEquipmentSet & {
+  availability: {
+    allAvailable: boolean;
+    entries: Array<{
+      entry: SavedEquipmentEntry;
+      available: boolean;
+      unavailableReason: 'slot_unavailable' | 'not_equippable' | 'unavailable' | null;
+    }>;
+  };
+};
+
+export function parseSavedEquipmentSet(projection: {
+  equipmentSetId: number;
+  equipmentSet: {
+    name: string;
+    createdAt: string;
+    equipment?: string[];
+    availability: {
+      allAvailable: boolean;
+      entries: Array<{ item: string; available: boolean; unavailableReason: 'slot_unavailable' | 'not_equippable' | 'unavailable' | null }>;
+    };
+  };
+}): SavedEquipmentSetView {
   const entries: SavedEquipmentEntry[] = (projection.equipmentSet.equipment ?? []).flatMap((entry) => {
     const parsed = parseEquipmentEntry(entry);
     return parsed ? [{ slotIndex: parsed.slotIndex, item: parsed.item, isLocked: parsed.isLocked }] : [];
   });
-  return { slot: projection.equipmentSetId, name: projection.equipmentSet.name, createdAt: Date.parse(projection.equipmentSet.createdAt), equipment: entries };
+  const availabilityEntries = projection.equipmentSet.availability.entries.flatMap((value) => {
+    const parsed = parseEquipmentEntry(value.item);
+    return parsed ? [{ entry: { slotIndex: parsed.slotIndex, item: parsed.item, isLocked: parsed.isLocked }, available: value.available, unavailableReason: value.unavailableReason }] : [];
+  });
+  return {
+    slot: projection.equipmentSetId,
+    name: projection.equipmentSet.name,
+    createdAt: Date.parse(projection.equipmentSet.createdAt),
+    equipment: entries,
+    availability: { allAvailable: projection.equipmentSet.availability.allAvailable, entries: availabilityEntries },
+  };
 }
 
 // `<Item Format>/<quantity>/<calculatedBasePower>`; the power is derived data, so the rebuilt item ignores it.

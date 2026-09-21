@@ -29,8 +29,8 @@ const REVIEWED_EXCEPTIONS = {
   // The item defense preview recomputes one hypothetical equipment change; API ownership needs an `equip` simulation (open spec question).
   characterComputation: ['computeCharacterStats'],
   equipment: ['replaceCharacterEquipment'],
-  // Per-entry availability of a saved set; the projection does not publish it yet.
-  equipmentSets: ['evaluateEquipmentSet', 'MAX_SAVED_EQUIPMENT_SETS', 'type EquipmentSetLoadMode'],
+  // Constants and transport-facing UI types; saved-set availability itself is projected by the Application API.
+  equipmentSets: ['MAX_SAVED_EQUIPMENT_SETS', 'type EquipmentSetLoadMode'],
 };
 
 function importedGameModules(source) {

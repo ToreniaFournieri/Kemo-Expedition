@@ -10,7 +10,7 @@ import { RACES } from '../../data/races.ts';
 import { renderDiaryMetadata } from '../../game/compactDiary.ts';
 import { getDeityId, getDeityRank, getNextRankDonationRequirement, isNoFaithDeity, normalizeDeityName } from '../../game/deity.ts';
 import { getInstantExpeditionChargeState } from '../../game/instantExpedition.ts';
-import { getSavedEquipmentSlot } from '../../game/equipmentSets.ts';
+import { evaluateEquipmentSet, getSavedEquipmentSlot } from '../../game/equipmentSets.ts';
 import { computePartyStats } from '../../game/partyComputation.ts';
 import { buildCalculatedStatus } from './calculatedStatus.ts';
 import { getItemBasePower } from '../../game/itemPower.ts';
@@ -352,7 +352,32 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       };
     }
     const ids = Array.isArray(parameters.equipmentSetId) ? parameters.equipmentSetId.map(Number) : parameters.equipmentSetId ? [Number(parameters.equipmentSetId)] : null;
-    return { equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => ({ equipmentSetId: set.slot, equipmentSet: { equipmentSetId: set.slot, name: set.name, createdAt: new Date(set.createdAt).toISOString(), ...(parameters.isEquipmentSetDetail === true || parameters.isEquipmentSetDetail === 'true' ? { equipment: set.equipment.map((entry, index) => formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, null)) } : {}) } })) };
+    const maxSlots = computePartyStats(party).characterStats[characterIndex].maxEquipSlots;
+    return {
+      equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => {
+        const availability = evaluateEquipmentSet(set, character, state.global.inventory, maxSlots);
+        return {
+          equipmentSetId: set.slot,
+          equipmentSet: {
+            equipmentSetId: set.slot,
+            name: set.name,
+            createdAt: new Date(set.createdAt).toISOString(),
+            ...(parameters.isEquipmentSetDetail === true || parameters.isEquipmentSetDetail === 'true'
+              ? { equipment: set.equipment.map((entry, index) => formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, null)) }
+              : {}),
+            availability: {
+              allAvailable: availability.allAvailable,
+              entries: availability.entries.map(({ entry, available, unavailableReason }, index) => ({
+                slotIndex: getSavedEquipmentSlot(entry, index),
+                item: formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, null),
+                available,
+                unavailableReason,
+              })),
+            },
+          },
+        };
+      }),
+    };
   }
 
   if (operationId === 'read/base/searchItems') return searchItems(state, parameters);

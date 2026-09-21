@@ -671,6 +671,15 @@ Path Parameters
     * Each entry:
       * `equipmentSetId`
       * `equipmentSet`
+        * Includes `availability`, evaluated for the target character against the
+          current inventory, aptitude, and equipment-slot count.
+        * `availability.allAvailable` is `true` only when the complete exact set
+          can be loaded.
+        * `availability.entries` preserves saved-set order. Each entry includes
+          `slotIndex`, `item`, `available`, and `unavailableReason`.
+        * `unavailableReason` is `slot_unavailable`, `not_equippable`,
+          `unavailable`, or `null` when available. Jewels do not affect saved-set
+          availability because saved equipment sets do not store Jewels.
 
 **2-3-5. `character/{characterId}/equipmentEvaluation`**
 
@@ -1810,4 +1819,3 @@ Path Parameters
       `["1/...", "2/...", "3/..."]`
 
 * `name` uses the current language setting.
-

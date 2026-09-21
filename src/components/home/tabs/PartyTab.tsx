@@ -13,19 +13,20 @@ import { buildCombatTotals, buildPartyStatsView } from '../../../api/v1/statusVi
 import { readStatusFacts } from '../../../api/v1/calculatedStatus';
 import type { CharacterBuildOutcome, CharacterBuildRequest } from '../../../api/v1/characterBuildParameters';
 import type { CalculatedStatus } from '../../../api/v1/contracts';
+import type { SavedEquipmentSetView } from '../../../api/v1/itemFormat';
 import { formatAttackSpeedHelp } from '../../../game/attackProfile';
 import { gameplayRandom } from '../../../game/gameplayRandom';
 import { computeCharacterStats } from '../../../game/characterComputation';
 import { DEITY_OPTIONS,getDeityDisplayName,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity } from '../../../game/deity';
 import { replaceCharacterEquipment } from '../../../game/equipment';
-import { evaluateEquipmentSet,MAX_SAVED_EQUIPMENT_SETS,type EquipmentSetLoadMode } from '../../../game/equipmentSets';
+import { MAX_SAVED_EQUIPMENT_SETS,type EquipmentSetLoadMode } from '../../../game/equipmentSets';
 import { replaceFlatItemStat } from '../../../game/equipmentDisplay';
 import { getItemDisplayName } from '../../../game/gameState';
 import { getJewelDisplayName,getJewelOwnedCount,JEWELS_BY_ITEM_CATEGORY } from '../../../game/jewel';
 import { resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../../game/magic';
 import { t } from '../../../i18n';
 import type { PartySummary, PartyView } from '../../../api/v1/partyView';
-import { AbilityId,Bonus,BonusType,Character,ElementalOffense,EnemyDef,InventoryRecord,Item,JewelKey,MAX_LEVEL,Race,RaceId,SavedEquipmentSet,getVariantKey,type EnemyAbility } from '../../../types';
+import { AbilityId,Bonus,BonusType,Character,ElementalOffense,EnemyDef,InventoryRecord,Item,JewelKey,MAX_LEVEL,Race,RaceId,getVariantKey,type EnemyAbility } from '../../../types';
 
 
 import {
@@ -147,7 +148,7 @@ export default function PartyTab({
   canRedoEquipment: boolean;
   onUndoEquipment: (characterId: number) => void;
   onRedoEquipment: (characterId: number) => void;
-  savedEquipmentSets: SavedEquipmentSet[];
+  savedEquipmentSets: SavedEquipmentSetView[];
   inventory: InventoryRecord;
   jewels: Record<string, number>;
   deityDonations: Record<string, number>;
@@ -2503,7 +2504,7 @@ export default function PartyTab({
             {Array.from({ length: MAX_SAVED_EQUIPMENT_SETS }, (_, index) => index + 1).map((slot) => {
               const set = savedEquipmentSets.find((candidate) => candidate.slot === slot);
               const isExpanded = expandedSavedEquipmentSlot === slot;
-              const availability = set ? evaluateEquipmentSet(set, char, inventory, stats.maxEquipSlots) : null;
+              const availability = set?.availability ?? null;
               return (
                 <div key={slot} className="text-xs">
                   <button

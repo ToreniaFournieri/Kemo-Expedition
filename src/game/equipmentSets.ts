@@ -41,7 +41,11 @@ export type EquipmentSetLoadMode = 'exact' | 'similar';
 
 export interface EquipmentSetAvailability {
   allAvailable: boolean;
-  entries: Array<{ entry: SavedEquipmentEntry; available: boolean }>;
+  entries: Array<{
+    entry: SavedEquipmentEntry;
+    available: boolean;
+    unavailableReason: 'slot_unavailable' | 'not_equippable' | 'unavailable' | null;
+  }>;
 }
 
 /** Legacy saved sets were dense arrays; new snapshots persist the exact slot explicitly. */
@@ -154,12 +158,18 @@ export function evaluateEquipmentSet(
   maxSlots: number,
 ): EquipmentSetAvailability {
   let available = createVirtualInventory(character, inventory);
-  const entries = set.equipment.map((entry, index) => {
+  const entries: EquipmentSetAvailability['entries'] = set.equipment.map((entry, index) => {
     const slotIndex = getSavedEquipmentSlot(entry, index);
-    const eligible = slotIndex >= 0 && slotIndex < maxSlots && canCharacterEquipCategory(character, entry.item.category);
+    const slotAvailable = slotIndex >= 0 && slotIndex < maxSlots;
+    const equippable = canCharacterEquipCategory(character, entry.item.category);
+    const eligible = slotAvailable && equippable;
     const exact = eligible ? takeExact(available, entry) : null;
     if (exact) available = removeItemFromInventory(available, getVariantKey(exact));
-    return { entry, available: Boolean(exact) };
+    return {
+      entry,
+      available: Boolean(exact),
+      unavailableReason: exact ? null : !slotAvailable ? 'slot_unavailable' : !equippable ? 'not_equippable' : 'unavailable',
+    };
   });
   return { allAvailable: entries.every((value) => value.available), entries };
 }
@@ -242,18 +252,24 @@ export function evaluateEquipmentState(
   character.equipment.forEach((item) => {
     if (item?.jewel) availableJewels = addJewelToInventory(availableJewels, item.jewel.key, item.jewel.rank);
   });
-  const entries = state.equipment.map((entry, index) => {
+  const entries: EquipmentSetAvailability['entries'] = state.equipment.map((entry, index) => {
     const slotIndex = getSavedEquipmentSlot(entry, index);
-    const eligible = slotIndex >= 0 && slotIndex < maxSlots && canCharacterEquipCategory(character, entry.item.category);
+    const slotAvailable = slotIndex >= 0 && slotIndex < maxSlots;
+    const equippable = canCharacterEquipCategory(character, entry.item.category);
+    const eligible = slotAvailable && equippable;
     const exact = eligible ? takeExact(availableItems, entry) : null;
-    if (!exact) return { entry, available: false };
+    if (!exact) return {
+      entry,
+      available: false,
+      unavailableReason: !slotAvailable ? 'slot_unavailable' as const : !equippable ? 'not_equippable' as const : 'unavailable' as const,
+    };
     const jewel = entry.item.jewel;
     if (jewel && (!isJewelAllowedForCategory(exact.category, jewel.key) || getJewelOwnedCount(availableJewels, jewel.key, jewel.rank) <= 0)) {
-      return { entry, available: false };
+      return { entry, available: false, unavailableReason: 'unavailable' as const };
     }
     availableItems = removeItemFromInventory(availableItems, getVariantKey(exact));
     if (jewel) availableJewels = removeJewelFromInventory(availableJewels, jewel.key, jewel.rank);
-    return { entry, available: true };
+    return { entry, available: true, unavailableReason: null };
   });
   return { allAvailable: entries.every((value) => value.available), entries };
 }

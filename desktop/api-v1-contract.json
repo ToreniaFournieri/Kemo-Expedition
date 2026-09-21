@@ -8244,7 +8244,8 @@
                     "required": [
                       "equipmentSetId",
                       "name",
-                      "createdAt"
+                      "createdAt",
+                      "availability"
                     ],
                     "properties": {
                       "equipmentSetId": {
@@ -8264,6 +8265,64 @@
                         "items": {
                           "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                           "type": "string"
+                        }
+                      },
+                      "availability": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "allAvailable",
+                          "entries"
+                        ],
+                        "properties": {
+                          "allAvailable": {
+                            "type": "boolean"
+                          },
+                          "entries": {
+                            "type": "array",
+                            "items": {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "slotIndex",
+                                "item",
+                                "available",
+                                "unavailableReason"
+                              ],
+                              "properties": {
+                                "slotIndex": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "item": {
+                                  "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
+                                  "type": "string"
+                                },
+                                "available": {
+                                  "type": "boolean"
+                                },
+                                "unavailableReason": {
+                                  "anyOf": [
+                                    {
+                                      "const": "slot_unavailable",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "not_equippable",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "unavailable",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
                         }
                       }
                     }
@@ -8332,7 +8391,8 @@
                         "required": [
                           "equipmentSetId",
                           "name",
-                          "createdAt"
+                          "createdAt",
+                          "availability"
                         ],
                         "properties": {
                           "equipmentSetId": {
@@ -8352,6 +8412,64 @@
                             "items": {
                               "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                               "type": "string"
+                            }
+                          },
+                          "availability": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "allAvailable",
+                              "entries"
+                            ],
+                            "properties": {
+                              "allAvailable": {
+                                "type": "boolean"
+                              },
+                              "entries": {
+                                "type": "array",
+                                "items": {
+                                  "additionalProperties": false,
+                                  "type": "object",
+                                  "required": [
+                                    "slotIndex",
+                                    "item",
+                                    "available",
+                                    "unavailableReason"
+                                  ],
+                                  "properties": {
+                                    "slotIndex": {
+                                      "minimum": 0,
+                                      "type": "integer"
+                                    },
+                                    "item": {
+                                      "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
+                                      "type": "string"
+                                    },
+                                    "available": {
+                                      "type": "boolean"
+                                    },
+                                    "unavailableReason": {
+                                      "anyOf": [
+                                        {
+                                          "const": "slot_unavailable",
+                                          "type": "string"
+                                        },
+                                        {
+                                          "const": "not_equippable",
+                                          "type": "string"
+                                        },
+                                        {
+                                          "const": "unavailable",
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
                             }
                           }
                         }
@@ -8400,7 +8518,18 @@
                 "equipmentSet": {
                   "equipmentSetId": 1,
                   "name": "xxxxxxx",
-                  "createdAt": "1970-01-01T00:00:00.000Z"
+                  "createdAt": "1970-01-01T00:00:00.000Z",
+                  "availability": {
+                    "allAvailable": true,
+                    "entries": [
+                      {
+                        "slotIndex": 0,
+                        "item": "0",
+                        "available": true,
+                        "unavailableReason": "slot_unavailable"
+                      }
+                    ]
+                  }
                 }
               }
             ]

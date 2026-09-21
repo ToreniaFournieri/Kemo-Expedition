@@ -72,6 +72,20 @@ export const EquipmentSetSchema = Type.Object({
   name: Type.String({ minLength: 1 }),
   createdAt: IsoTimestampSchema,
   equipment: Type.Optional(Type.Array(EquipmentEntryFormatSchema)),
+  availability: Type.Object({
+    allAvailable: Type.Boolean(),
+    entries: Type.Array(Type.Object({
+      slotIndex: Type.Integer({ minimum: 0 }),
+      item: EquipmentEntryFormatSchema,
+      available: Type.Boolean(),
+      unavailableReason: Type.Union([
+        Type.Literal('slot_unavailable'),
+        Type.Literal('not_equippable'),
+        Type.Literal('unavailable'),
+        Type.Null(),
+      ]),
+    }, { additionalProperties: false })),
+  }, { additionalProperties: false }),
 }, { additionalProperties: false });
 
 export const DiaryContentSchema = Type.Union([

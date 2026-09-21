@@ -152,7 +152,26 @@ const equipmentCommitCurrent = strict({
 // (`<Item Format>/<characterId>/<jewelType>:<jewelRank>/<calculatedBasePower>`), or an unassigned Jewel stack, optionally followed by the `ability=[..]`, `cBonus=[..]`, and `otherBonus=[..]` detail fields.
 const itemStackFormat = Type.String({ pattern: '^(?:(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))/[0-9]+/-?[0-9]+(?:\\.[0-9]+)?|(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))/[0-9]+/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)/-?[0-9]+(?:\\.[0-9]+)?|(?:might|arcana|fort|ward|shade|focus):[1-8]/[0-9]+)(?:/(?:ability|cBonus|otherBonus)=\\[.*\\])*$' });
 sampleOverrides.set(itemStackFormat, '0/1/12');
-const equipmentSet = strict({ equipmentSetId: integerId, name: Type.String({ minLength: 1 }), createdAt: isoTimestamp, equipment: optional(equipmentEntryList) });
+const equipmentSet = strict({
+  equipmentSetId: integerId,
+  name: Type.String({ minLength: 1 }),
+  createdAt: isoTimestamp,
+  equipment: optional(equipmentEntryList),
+  availability: strict({
+    allAvailable: Type.Boolean(),
+    entries: Type.Array(strict({
+      slotIndex: Type.Integer({ minimum: 0 }),
+      item: equipmentEntryFormat,
+      available: Type.Boolean(),
+      unavailableReason: Type.Union([
+        Type.Literal('slot_unavailable'),
+        Type.Literal('not_equippable'),
+        Type.Literal('unavailable'),
+        Type.Null(),
+      ]),
+    })),
+  }),
+});
 const diaryContent = Type.Union([
   strict({ format: Type.Literal('semantic'), title: semanticText, subtitle: semanticText, events: Type.Array(semanticText) }),
   strict({ format: Type.Literal('legacy'), title: Type.String(), subtitle: Type.String(), text: Type.String() }),

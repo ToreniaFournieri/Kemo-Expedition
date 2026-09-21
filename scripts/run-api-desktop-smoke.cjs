@@ -48,7 +48,7 @@ app.on('browser-window-created', (_event, window) => {
       }
       const session = { ...bootstrap, 'X-BoKemo-Session': login.data.sessionToken, 'X-BoKemo-Control-Lease': login.data.controlLeaseToken };
       const overview = await call('/read/observation/overview', { headers: session });
-      const evaluationTargets = ['0/1101/0/0/might:1', '0/1101/1/0/shade:2'];
+      const evaluationTargets = ['0/1101/0/0/fort:1', '0/1101/1/0/shade:2'];
       const evaluationQuery = evaluationTargets.map((item) => `targetItems=${encodeURIComponent(item)}`).join('&');
       const evaluation = await call(`/read/build/character/1/equipmentEvaluation?${evaluationQuery}`, { headers: session });
       assert.equal(evaluation.revision, overview.revision, 'equipment evaluation is a revision-neutral read');
