@@ -39,8 +39,8 @@ function itemFormat(item: Item): string {
   return formatItem(item, item.isLocked === true);
 }
 
-function equipmentEntry(item: Item | null, slotIndex: number): string | 0 {
-  return item ? formatEquipmentEntry(slotIndex, item, item.isLocked === true, item.jewel) : 0;
+function equipmentEntry(item: Item | null, slotIndex: number): string {
+  return item ? formatEquipmentEntry(slotIndex, item, item.isLocked === true, item.jewel) : '0';
 }
 
 function partyByNumber(state: GameState, value: unknown): { party: Party; index: number } | null {

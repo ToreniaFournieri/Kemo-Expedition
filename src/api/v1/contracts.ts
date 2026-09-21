@@ -64,7 +64,7 @@ export const CalculatedStatusSchema = Type.Object({
 }, { additionalProperties: false });
 
 export const EquipmentEntryFormatSchema = Type.String({
-  pattern: '^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$',
+  pattern: '^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|8[0-2])(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$',
 });
 
 export const EquipmentSetSchema = Type.Object({

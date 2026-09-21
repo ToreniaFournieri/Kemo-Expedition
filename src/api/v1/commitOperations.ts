@@ -275,7 +275,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
         ...data,
         current: {
           mode: currentCharacter.autoEquipmentMode === 2 ? 'FULL' : currentCharacter.autoEquipmentMode === 1 ? 'SEMI' : 'OFF',
-          equipment: currentCharacter.equipment.map((item, slot) => item ? `${slot}/${item.isLocked ? 1 : 0}/${item.id}/${item.enhancement}/${item.superRare}${item.jewel ? `/${item.jewel.key}:${item.jewel.rank}` : ''}` : 0),
+          equipment: currentCharacter.equipment.map((item, slot) => item ? `${slot}/${item.isLocked ? 1 : 0}/${item.id}/${item.enhancement}/${item.superRare}${item.jewel ? `/${item.jewel.key}:${item.jewel.rank}` : ''}` : '0'),
           undoAvailable: historyFacts.undoEquipment.available,
           redoAvailable: historyFacts.redoEquipment.available,
         },

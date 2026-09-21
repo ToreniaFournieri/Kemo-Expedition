@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 53. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 56. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -61,7 +61,8 @@ Next, in order:
    - 4c. Character and member list.
      - 4c-1. (Done, Build 49) Party pane, party selector, member list, and deity rules render from `read/observation/party` through `PartyView` and `PartySummary`.
      - 4c-2. (Done, Build 51) Offense and defense amplifiers, effective accuracy and decay, and total penetration come from one shared game function (`src/game/statusFacts.ts`), are published as `calculatedStatus` facts, and the tab reads them for its offense and defense lines and for the status-change notifications. Lossless round-trip test against the old formulas.
-     - 4c-3. (`changeBuild` simulation and confirmation moved to the API in Build 53, which removed the tab's hypothetical-stats logic for the edit warnings; one other local `computeCharacterStats` call remains, near the equipment-slot list.) The tab still reads `ComputedCharacterStats` (`characterStats`) for the ability list and sources, bonus list, HP breakdown, elemental help lines, spell name, equipment slot count, and per-item display. Publish the remaining facts (ability sources, aggregated bonuses with their display names, HP base and item contributions) and drop the `characterStats` prop.
+     - 4c-3. (Done, Build 54) The tab receives no `ComputedCharacterStats`: every character number it reads is rebuilt from `calculatedStatus` (`buildPartyStatsView`), and the edit warnings come from `changeBuild`'s simulation (Build 53). Its remaining game-logic calls are pure functions on the projected display objects (bonus list, HP breakdown, item stat text, and the equipped-item defense preview).
+   - Open question for the spec: the defense preview when hovering or tapping an item recomputes one hypothetical equipment change locally. If it should be API-owned, `equip` would need a `simulation` parameter like `changeBuild`.
    - 4d. Equipment slots list from the `equipment` projection (entries parse to items through the shared format).
    - 4e. Retained selections (selected party and character, filters) through `uiPreferences`. Selected party is currently persisted in the save (`selectedPartyIndex`), so moving it changes what is persisted; decide first.
    - 4f. Remove the `Party`, `Character`, `ComputedCharacterStats`, and inventory props, and add the mechanical check described in Stage 9.
@@ -109,6 +110,10 @@ Add a mechanical check so this does not rely on review: a test that fails if a m
 - Search-verify that no runtime route, alias, script, or test references the retired endpoint.
 - Run `npm test`, `npm run build`, `npm run api:v1:check`, `npm run test:api:desktop`, the persistence-failure suites, and the relevant AFK/performance suites.
 - Per AGENTS.md the build number increments after every runtime change; the cutover build gets its own changelog entry.
+
+## Test data
+
+`sample_savedata/Exp8,7,6,5,4,3_set_for_test_v0.9.3_dev_20260820.kemoz` is a real, heavy save (six parties, 36 characters, 2,300 item variants, Super Rare titles up to 82, 34 Jewel types, Mimorian, Avian, and Orcinian members). `tests/apiV1SampleSave.test.cjs` runs the Party projections and equipment commands against it and validates every response against the published schemas; extend it for each new projection and command. It found the empty-slot and Super Rare 81–82 schema defects in Build 55, which a fresh save cannot reach. An older save's `savedEquipmentSets` is normalized by the app's load path, not by `hydrateGameState`.
 
 ## Cleanup to schedule
 

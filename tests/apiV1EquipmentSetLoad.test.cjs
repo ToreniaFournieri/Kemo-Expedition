@@ -93,6 +93,9 @@ test('the status pane and its change notifications derive from the projected cal
   const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
   assert.match(home, /characterStatus=\{partyView\.characterStatus\}/);
   assert.match(partyTab, /buildCombatTotals\(characterStatus\[selectedCharacter\]/);
+  assert.match(partyTab, /buildPartyStatsView\(characterStatus\[selectedCharacter\]\)/);
+  assert.equal(partyTab.includes('characterStats'), false, 'the tab receives no computed character stats');
+  assert.equal(/ComputedCharacterStats|computePartyStats/.test(partyTab), false);
   assert.match(partyTab, /readStatusFacts\(characterStatus\[selectedCharacter\]\)/);
   for (const inlined of ['getOffenseMultiplierSum', 'getEffectiveAccuracyBonus', 'getCharacterDisplayedMagicalAttackAmplifier', 'deityOffenseAmplifierBonus', 'deityDefenseAmplifierBonus', 'heavyStrikePenetPerNoA']) {
     assert.equal(partyTab.includes(inlined), false, `${inlined} is derived by the shared game function, not inline in the tab`);

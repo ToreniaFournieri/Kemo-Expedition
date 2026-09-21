@@ -9,7 +9,7 @@ import { getSuperRareBonuses } from '../../../data/items';
 import { LINEAGES } from '../../../data/lineages';
 import { PREDISPOSITIONS } from '../../../data/predispositions';
 import { RACES } from '../../../data/races';
-import { buildCombatTotals } from '../../../api/v1/statusView';
+import { buildCombatTotals, buildPartyStatsView } from '../../../api/v1/statusView';
 import { readStatusFacts } from '../../../api/v1/calculatedStatus';
 import type { CharacterBuildOutcome, CharacterBuildRequest } from '../../../api/v1/characterBuildParameters';
 import type { CalculatedStatus } from '../../../api/v1/contracts';
@@ -23,7 +23,7 @@ import { replaceFlatItemStat } from '../../../game/equipmentDisplay';
 import { getItemDisplayName } from '../../../game/gameState';
 import { getJewelDisplayName,getJewelOwnedCount,JEWELS_BY_ITEM_CATEGORY } from '../../../game/jewel';
 import { resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../../game/magic';
-import { computeCharacterHpContribution,computePartyStats } from '../../../game/partyComputation';
+import { computeCharacterHpContribution } from '../../../game/partyComputation';
 import { getXpToNextLevel } from '../../../game/partyLevel';
 import { t } from '../../../i18n';
 import type { PartySummary, PartyView } from '../../../api/v1/partyView';
@@ -83,7 +83,6 @@ export default function PartyTab({
   selectedPartyIndex,
   party,
   partyStats,
-  characterStats,
   characterStatus,
   selectedCharacter,
   setSelectedCharacter,
@@ -120,7 +119,6 @@ export default function PartyTab({
   selectedPartyIndex: number;
   party: PartyView;
   partyStats: { hp: number };
-  characterStats: ReturnType<typeof computePartyStats>['characterStats'];
   /** The projected calculated status of each member, aligned with `party.characters`. */
   characterStatus: CalculatedStatus[];
   selectedCharacter: number;
@@ -562,7 +560,7 @@ export default function PartyTab({
   }, [party.deity.name, editingDeity]);
 
   const char = selectedChar;
-  const stats = characterStats[selectedCharacter];
+  const stats = buildPartyStatsView(characterStatus[selectedCharacter]);
   const hpDisplayMultiplier = ((stats.baseStats.vitality + stats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(char);
   const race = RACES.find(r => r.id === char.raceId) ?? RACES[0];
   const mainClass = CLASSES.find(c => c.id === char.mainClassId) ?? CLASSES[0];

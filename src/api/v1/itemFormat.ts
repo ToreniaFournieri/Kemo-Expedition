@@ -22,8 +22,9 @@ const ENTRY = /^(\d+)\/([01])\/(\d+)\/([0-6])\/(\d+)(?:\/([a-z]+):([1-8]))?$/;
 export interface ParsedEquipmentEntry { slotIndex: number; item: Item; isLocked: boolean }
 
 /** Rebuilds the display item for an equipment entry from master data; `null` for an empty slot (`0`) or a bad entry. */
-export function parseEquipmentEntry(entry: string | 0): ParsedEquipmentEntry | null {
-  if (entry === 0) return null;
+/** An empty slot is the string `0` (Spec 9.1.3, Item Format). */
+export function parseEquipmentEntry(entry: string): ParsedEquipmentEntry | null {
+  if (entry === '0') return null;
   const match = ENTRY.exec(entry);
   if (!match) return null;
   const [, slot, lock, itemId, enhancement, superRare, jewelKey, jewelRank] = match;

@@ -5158,10 +5158,14 @@ export function useGameState() {
 
     // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | Trusted in-process persistence and publication
     getApiReadiness: () => isSaveBlockedByLoadFailure ? 'save_error' as const : 'ready' as const,
+    // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | Trusted in-process persistence and publication
+    // The ordinary player's commit is queued on the coalescing, retrying autosave (compression runs in a worker), so a
+    // Party action never blocks the main thread on compressing the whole save (about 1.2 s for a large save). API
+    // sessions keep the synchronous atomic path through their own account store, where a failed write must fail the commit.
     persistApiState: useCallback(async (nextState: GameState) => {
       const coordinator = persistenceCoordinatorRef.current;
       if (!coordinator) throw new Error('persistence_unavailable');
-      coordinator.commitAtomic(nextState);
+      coordinator.requestOrdinary(nextState);
     }, []),
 
     publishApiState: useCallback(async (nextState: GameState) => {

@@ -13,7 +13,7 @@ export interface PartyProjection {
     partyNumber: number; name: string; level: number; experience: number; maxHp: number; deityId: string; deityRank: number; condition: number; order: number[];
     characters: {
       characterId: number; name: string; raceId: string; gender: string; mainClassId: string; subClassId: string; lineageId: string | null; predispositionId: string | null;
-      isUnique: boolean; mimorianEnemyId: number | null; equipment: (string | 0)[]; autoEquipmentMode: number; calculatedStatus: CalculatedStatus;
+      isUnique: boolean; mimorianEnemyId: number | null; equipment: string[]; autoEquipmentMode: number; calculatedStatus: CalculatedStatus;
     }[];
   };
   parties: { partyNumber: number; deityId: string; characters: { characterId: number; name: string; raceId: string; mimorianEnemyId: number | null }[] }[];

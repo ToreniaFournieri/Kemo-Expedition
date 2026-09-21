@@ -1,4 +1,5 @@
-import type { ElementalOffense } from '../../types';
+import { getAbilityDescription, getAbilityName } from '../../game/characterComputation';
+import type { Ability, AbilityId, ElementalOffense } from '../../types';
 import { readStatusFacts } from './calculatedStatus';
 import type { CalculatedStatus } from './contracts';
 
@@ -57,5 +58,47 @@ export function buildCombatTotals(status: CalculatedStatus, partyHp: number): Co
     elementalOffense: element,
     elementalOffensePercent: Math.round((stat(`e.${element}`) - 1) * 100),
     abilityLevels,
+  };
+}
+
+/**
+ * The character numbers the Party tab reads, rebuilt from a projected `CalculatedStatus` alone. The tab receives no
+ * `ComputedCharacterStats`: every value is a published fact, and ability names and descriptions are resolved from the
+ * ability id and level in the current language.
+ */
+export interface PartyStatsView {
+  baseStats: { vitality: number; strength: number; intelligence: number; mind: number };
+  maxEquipSlots: number;
+  physicalDefense: number; magicalDefense: number;
+  evasionBonus: number; accuracyPotency: number;
+  meleeAttack: number; rangedAttack: number; magicalAttack: number;
+  meleeNoA: number; rangedNoA: number; magicalNoA: number;
+  elementalOffense: ElementalOffense; elementalOffenseValue: number;
+  elementalDefenseMultipliers: { fire: number; ice: number; thunder: number };
+  abilities: Ability[];
+}
+
+export function buildPartyStatsView(status: CalculatedStatus): PartyStatsView {
+  const stat = (key: string): number => {
+    const found = status.stats.find((entry) => entry.key === key);
+    if (!found) throw new Error(`Missing calculated status fact ${key}`);
+    return found.value;
+  };
+  const attack = (attackType: 'melee' | 'ranged' | 'magical', key: 'attack' | 'NoA'): number =>
+    status.attacks.find((entry) => entry.attackType === attackType)?.facts.find((entry) => entry.key === `d.${attackType}_${key}`)?.value ?? 0;
+  const element = ELEMENTS.find((candidate) => status.stats.some((entry) => entry.key === `e.${candidate}`)) ?? 'none';
+  return {
+    baseStats: { vitality: stat('b.vitality'), strength: stat('b.strength'), intelligence: stat('b.intelligence'), mind: stat('b.mind') },
+    maxEquipSlots: stat('f.equipment_slots'),
+    physicalDefense: stat('d.physical_defense'), magicalDefense: stat('d.magical_defense'),
+    evasionBonus: stat('c.evasion'), accuracyPotency: stat('d.accuracy_potency'),
+    meleeAttack: attack('melee', 'attack'), rangedAttack: attack('ranged', 'attack'), magicalAttack: attack('magical', 'attack'),
+    meleeNoA: attack('melee', 'NoA'), rangedNoA: attack('ranged', 'NoA'), magicalNoA: attack('magical', 'NoA'),
+    elementalOffense: element, elementalOffenseValue: stat(`e.${element}`),
+    elementalDefenseMultipliers: { fire: stat('r.fire'), ice: stat('r.ice'), thunder: stat('r.thunder') },
+    abilities: status.abilities.map((ability) => {
+      const id = ability.abilityId.replace(/^a\./, '').replace(/-/g, '_') as AbilityId;
+      return { id, level: ability.level, name: getAbilityName(id, ability.level), description: getAbilityDescription(id, ability.level) };
+    }),
   };
 }

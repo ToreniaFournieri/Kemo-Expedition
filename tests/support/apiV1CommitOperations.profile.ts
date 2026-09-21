@@ -139,7 +139,7 @@ const seed: GameState = createFreshGameState('ja', Date.parse('2026-01-01T00:00:
 
   const removeOutcome = applyApiV1Commit(`commit/build/character/${characterId}/removeAllEquipment`, saveOutcome.state, {}, baseContext({ equipmentHistory: history }));
   assert.equal(history[String(characterId)]?.undo.length, 1, 'a real equipment mutation records one undo snapshot');
-  assert.equal((removeOutcome.data.current as { equipment: unknown[] }).equipment.every((slot) => slot === 0), true, 'every slot is empty after removeAllEquipment');
+  assert.equal((removeOutcome.data.current as { equipment: unknown[] }).equipment.every((slot) => slot === '0'), true, 'every slot is empty after removeAllEquipment');
 
   const undoOutcome = applyApiV1Commit(`commit/build/character/${characterId}/undoEquipment`, removeOutcome.state, {}, baseContext({ equipmentHistory: history }));
   assert.equal(history[String(characterId)]?.undo.length, 0, 'undo consumes the recorded snapshot');

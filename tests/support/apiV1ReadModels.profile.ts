@@ -300,37 +300,11 @@ assert.deepEqual(state, before);
 // losslessly. The oracle is a frozen copy of the formulas the Party tab used to hold inline (the pane version).
 {
   const { computePartyStats } = await import('../../src/game/partyComputation.ts');
-  const { deriveStatusFacts, getBaseOffenseScale, getCharacterDisplayedMagicalAttackAmplifier, getEffectiveAccuracyBonus, getOffenseMultiplierSum } = await import('../../src/game/statusFacts.ts');
+  const { deriveStatusFacts } = await import('../../src/game/statusFacts.ts');
   const { buildCalculatedStatus, readStatusFacts } = await import('../../src/api/v1/calculatedStatus.ts');
-  const { buildCombatTotals } = await import('../../src/api/v1/statusView.ts');
-  type Stats = ReturnType<typeof computePartyStats>['characterStats'][number];
-  type Char = (typeof state.parties)[number]['characters'][number];
+  const { buildCombatTotals, buildPartyStatsView } = await import('../../src/api/v1/statusView.ts');
 
-  const oracle = (character: Char, stats: Stats) => {
-    const items = character.equipment.filter((item): item is NonNullable<typeof item> => item != null);
-    const iaigiri = stats.abilities.find((ability) => ability.id === 'iaigiri');
-    const heavyStrike = stats.abilities.find((ability) => ability.id === 'heavy_strike');
-    const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 3 ? 3.0 : iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
-    const heavyStrikeMultiplier = heavyStrike ? 1.4 : 1.0;
-    const strength = getBaseOffenseScale(stats.baseStats.strength);
-    const intelligence = getBaseOffenseScale(stats.baseStats.intelligence);
-    const mult = (kind: 'melee' | 'ranged' | 'magical', bonus: number) => bonus + getOffenseMultiplierSum(items, kind, stats.offenseCBonusNames);
-    const physical = (base: number) => (((iaigiri ? iaigiriMultiplier * (1.0 + base) * stats.physicalOffenseMultiplier : (1.0 + base + stats.physicalAttackCBonus) * stats.physicalOffenseMultiplier) + stats.deityOffenseAmplifierBonus) * strength * heavyStrikeMultiplier);
-    const heavyStrikeAbility = stats.abilities.find((ability) => ability.id === 'heavy_strike' && ability.level > 0);
-    const perNoA = heavyStrikeAbility ? (heavyStrikeAbility.level >= 2 ? 0.015 : 0.01) : 0;
-    const penetBonus = heavyStrikeAbility ? Math.max(stats.rangedNoA, stats.magicalNoA, stats.meleeNoA) * perNoA : 0;
-    const effective = getEffectiveAccuracyBonus(stats.accuracyBonus, stats.abilities);
-    return {
-      melee: physical(mult('melee', stats.meleeAttackCBonus)),
-      ranged: physical(mult('ranged', stats.rangedAttackCBonus)),
-      magical: getCharacterDisplayedMagicalAttackAmplifier(((1.0 + mult('magical', stats.magicalAttackCBonus)) * stats.magicalOffenseMultiplier + stats.deityOffenseAmplifierBonus) * intelligence, stats.abilities),
-      physicalDefense: Math.max(0.01, stats.physicalDefenseAmplifier * stats.deityDefenseAmplifierBonus.physical),
-      magicalDefense: Math.max(0.01, stats.magicalDefenseAmplifier * stats.deityDefenseAmplifierBonus.magical),
-      effective,
-      decay: 0.90 + effective,
-      penetration: stats.penetMultiplier + penetBonus,
-    };
-  };
+  const { oracleStatusFacts: oracle } = await import('./statusFactsOracle.ts');
 
   const classes = ['guardian', 'samurai', 'striker', 'sage', 'wizard', 'ranger', 'sword-saint', 'alchemist'] as const;
   const deities = ['Goddess of Restoration', 'God of Attrition', 'God of Cunning', 'God of Fortification', 'Goddess of Fertility', 'God of Resonance', 'Goddess of Precision', 'God of Fate', 'God of Dusk', 'Goddess of Mirage'];
@@ -354,6 +328,16 @@ assert.deepEqual(state, before);
         const status = buildCalculatedStatus(character, stats);
         assert.deepEqual(readStatusFacts(status), derived, 'lossless round trip');
         for (const entry of status.stats) assert.equal(Number.isFinite(entry.value), true, entry.key);
+
+        // The Party tab's character numbers are rebuilt from the facts alone, with no loss against the computed stats.
+        const view = buildPartyStatsView(status);
+        assert.deepEqual(view.baseStats, stats.baseStats, 'base stats');
+        assert.equal(view.maxEquipSlots, stats.maxEquipSlots);
+        assert.deepEqual([view.physicalDefense, view.magicalDefense, view.evasionBonus, view.accuracyPotency], [stats.physicalDefense, stats.magicalDefense, stats.evasionBonus, stats.accuracyPotency]);
+        assert.deepEqual([view.meleeAttack, view.rangedAttack, view.magicalAttack, view.meleeNoA, view.rangedNoA, view.magicalNoA], [stats.meleeAttack, stats.rangedAttack, stats.magicalAttack, stats.meleeNoA, stats.rangedNoA, stats.magicalNoA], 'attacks and attack counts');
+        assert.deepEqual([view.elementalOffense, view.elementalOffenseValue], [stats.elementalOffense, stats.elementalOffenseValue]);
+        assert.deepEqual(view.elementalDefenseMultipliers, stats.elementalDefenseMultipliers);
+        assert.deepEqual(view.abilities, stats.abilities, 'abilities keep their order, level, localized name, and description');
 
         // The notification totals come from the projection and agree with the old rounding rules.
         const totals = buildCombatTotals(status, 12345.9);

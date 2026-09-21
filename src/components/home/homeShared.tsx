@@ -2314,7 +2314,7 @@ export function getEnemyBestiarySpellName(enemy: EnemyDef): string {
 
 
 
-export function getElementalOffenseHelpLines(character: Character, stats: ComputedCharacterStats): string[] {
+export function getElementalOffenseHelpLines(character: Character, stats: Pick<ComputedCharacterStats, 'maxEquipSlots' | 'elementalOffense' | 'elementalOffenseValue'>): string[] {
   const elementalSums: Record<ElementalOffense, number> = {
     none: 0,
     fire: 0,

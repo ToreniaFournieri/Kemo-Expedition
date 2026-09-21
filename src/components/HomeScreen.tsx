@@ -2299,7 +2299,6 @@ export function HomeScreen({
 
   const afkSummaryBaselineRef = useRef<AfkSummaryStats[] | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
-  const { characterStats } = computePresentationPartyStats(currentParty);
 
   useEffect(() => {
     preloadRaceIcons();
@@ -4921,7 +4920,6 @@ export function HomeScreen({
           party={partyView}
           partyStats={{ hp: partyView.maxHp }}
           characterStatus={partyView.characterStatus}
-          characterStats={characterStats}
           selectedCharacter={selectedCharacter}
           setSelectedCharacter={setSelectedCharacter}
           editingCharacter={editingCharacter}

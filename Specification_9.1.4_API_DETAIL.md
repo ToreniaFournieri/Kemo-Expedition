@@ -245,6 +245,11 @@ All JSON Commit requests use this transport envelope:
 
 ##### 9.1.4.5 Confirmation protocol
 
+This generic challenge applies to operations that do not define their own
+confirmation (`backup/import`, `backup/reset`, and partial `loadEquipmentSet`).
+`changeBuild` is excluded: it confirms through its `simulation` and
+`confirmation` parameters (9.1.4.9).
+
 An operation requiring confirmation first returns HTTP `409`:
 
 ```json
@@ -408,8 +413,33 @@ definitions in 9.1.3.
 
 **Party build and equipment**
 
-* `changeBuild` uses the same UI validation and confirmation rules for changes
-  that invalidate equipment or other dependent state.
+* `changeBuild` uses the same UI validation as the Party editor and owns its
+  confirmation through the `simulation` and `confirmation` parameters defined in
+  9.1.3 (3-3-2); it never issues the generic 9.1.4.5 challenge.
+  * `simulation` is required and must be a boolean. `simulation: true` validates
+    and reports without committing: it is a valid no-op (no revision change, no
+    state change, no equipment-history entry) that still records the idempotency
+    receipt, and it returns the same validation errors a commit would.
+  * The response `data` always includes `confirmationRequired`, `warnings`, and
+    `applied`, plus the complete new `current` object. `warnings` are semantic
+    `{key, args}` entries with numeric arguments, never localized text, and are
+    non-empty only when `confirmationRequired` is true. The keys are
+    `api.warning.changeBuild.equipmentSlotReduction` (`count`),
+    `api.warning.changeBuild.meleeAptitudeRemoved`,
+    `api.warning.changeBuild.rangedAptitudeRemoved`, and
+    `api.warning.changeBuild.magicAptitudeRemoved` (each with `items`, the
+    number of equipped items that would be removed).
+  * With `simulation: false`, a change that requires confirmation is applied only
+    with `confirmation: "yes"`. A missing confirmation is `invalid_request`
+    (field `confirmation`), because the caller is expected to simulate first.
+    `confirmation: "no"` cancels the change without modifying the character and
+    without advancing the revision. `confirmation` combined with
+    `simulation: true`, any value other than `yes` or `no`, and a non-boolean
+    `simulation` are rejected atomically as `invalid_request`.
+  * A confirmation is not bound to the state that was simulated. HTTP callers pass
+    the revision returned by the simulation as `expectedRevision`, so a change made
+    in between is rejected as `stale_revision`. The trusted in-process adapter
+    supplies the current revision on the caller's behalf.
 * For `removeEquipment`, `lockEquipment`, `unlockEquipment`, `jewelAttach`, and
   `jewelRemove`, `targetEquipment` is one slot index or an array of slot indices.
   Duplicate indices are invalid.

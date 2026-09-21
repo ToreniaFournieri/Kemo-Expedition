@@ -25,7 +25,7 @@ const nonEmptyArray = (items, options = {}) => Type.Array(items, { minItems: 1, 
 const integerId = Type.Integer({ minimum: 1 });
 const partyNumber = Type.Integer({ minimum: 1, maximum: 6 });
 const stableKey = Type.String({ minLength: 1, maxLength: 200 });
-const itemFormat = Type.String({ pattern: '^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))$' });
+const itemFormat = Type.String({ pattern: '^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|8[0-2]))$' });
 // ajv-formats is not a project dependency, so ISO instants are validated by pattern rather than the `format` keyword.
 const isoTimestamp = Type.String({ pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$' });
 // Concrete example values for schema objects whose pattern is too specific for the generic string heuristics in sample().
@@ -52,13 +52,13 @@ const querySchemas = {
   'read/observation/diary': strict({ partyNumber: optional(partyNumber), diaryEntryId: optional(integerId) }),
   'read/expedition/{p}/latestBattleLog': strict({ logId: optional(Type.String({ minLength: 1, maxLength: 200 })) }),
   'read/build/character/{characterId}/equipmentSet': strict({ equipmentSetId: optional(Type.Union([integerId, nonEmptyArray(integerId, { uniqueItems: true })])), isEquipmentSetDetail: optional(Type.Boolean(), false) }),
-  'read/base/searchItems': strict({ state: optional(literals('owned', 'equipped', 'sold', 'all'), 'owned'), category: optional(itemCategory), rarity: optional(rarity, 'all'), superRare: optional(Type.Boolean()), superRareId: optional(Type.Integer({ minimum: 0, maximum: 80 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), limit: optional(Type.Integer({ minimum: 1, maximum: 5000 }), 10) }),
+  'read/base/searchItems': strict({ state: optional(literals('owned', 'equipped', 'sold', 'all'), 'owned'), category: optional(itemCategory), rarity: optional(rarity, 'all'), superRare: optional(Type.Boolean()), superRareId: optional(Type.Integer({ minimum: 0, maximum: 82 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), limit: optional(Type.Integer({ minimum: 1, maximum: 5000 }), 10) }),
   'read/base/enemyFormList': strict({ enemyType: optional(stableKey), enemyId: optional(integerId) }),
   'resources/glossary': strict({ category: literals('Ab.', 'Base.', 'Fixed.', 'Inc.', 'Mech.', 'Faith.', 'Magic.', 'Quest.', 'Terrain.'), glossaryId: optional(stableKey), ...page }),
   'resources/itemCompendium': strict({ category: itemCategory, rarity: optional(rarity, 'all'), tier: optional(Type.Integer({ minimum: 1, maximum: 8 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), ...page }),
   'resources/characterRoster': strict({ race: literals('lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian', 'leporian', 'cervin', 'murid', 'kemoria', 'orcinian', 'avian', 'mimorian'), ...page }),
   'resources/bestiary': strict({ enemyId: optional(integerId), enemyType: optional(stableKey), expedition: optional(integerId), ...page }),
-  'resources/superRareList': strict({ superRareId: optional(Type.Integer({ minimum: 1, maximum: 80 })), ...page }),
+  'resources/superRareList': strict({ superRareId: optional(Type.Integer({ minimum: 1, maximum: 82 })), ...page }),
 };
 
 const threshold = Type.Union([literals('all', 'none'), Type.Integer({ minimum: 1, maximum: 6 })]);
@@ -131,7 +131,7 @@ const calculatedStatus = strict({ stats: Type.Array(numericFact), abilities: Typ
 const tradeResult = strict({ items: Type.Array(strict({ item: itemFormat, quantity: Type.Integer({ minimum: 1 }) })), goldDelta: Type.Integer(), pranaDelta: Type.Integer() });
 const semanticText = strict({ key: stableKey, args: Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), Type.Boolean()])) });
 const availability = strict({ available: Type.Boolean(), unavailableReason: Type.Union([Type.String(), Type.Null()]) });
-const equipmentEntryFormat = Type.String({ pattern: '^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$' });
+const equipmentEntryFormat = Type.String({ pattern: '^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|8[0-2])(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$' });
 sampleOverrides.set(equipmentEntryFormat, '0');
 const equipmentEntryList = Type.Array(equipmentEntryFormat);
 // SpecRef: 9.1.3 | 2-3-3 read/build/character/{characterId}/equipment | validOptions.undoEquipment and redoEquipment
@@ -145,7 +145,7 @@ const equipmentCommitCurrent = strict({
 // SpecRef: 9.1.3 | 2-4-1 searchItems | Return formats
 // One result string: an inventory stack (`<Item Format>/<quantity>/<calculatedBasePower>`), a character-assigned item
 // (`<Item Format>/<characterId>/<jewelType>:<jewelRank>/<calculatedBasePower>`), or an unassigned Jewel stack, optionally followed by the `ability=[..]`, `cBonus=[..]`, and `otherBonus=[..]` detail fields.
-const itemStackFormat = Type.String({ pattern: '^(?:(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))/[0-9]+/-?[0-9]+(?:\\.[0-9]+)?|(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))/[0-9]+/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)/-?[0-9]+(?:\\.[0-9]+)?|(?:might|arcana|fort|ward|shade|focus):[1-8]/[0-9]+)(?:/(?:ability|cBonus|otherBonus)=\\[.*\\])*$' });
+const itemStackFormat = Type.String({ pattern: '^(?:(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|8[0-2]))/[0-9]+/-?[0-9]+(?:\\.[0-9]+)?|(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|8[0-2]))/[0-9]+/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)/-?[0-9]+(?:\\.[0-9]+)?|(?:might|arcana|fort|ward|shade|focus):[1-8]/[0-9]+)(?:/(?:ability|cBonus|otherBonus)=\\[.*\\])*$' });
 sampleOverrides.set(itemStackFormat, '0/1/12');
 const equipmentSet = strict({ equipmentSetId: integerId, name: Type.String({ minLength: 1 }), createdAt: isoTimestamp, equipment: optional(equipmentEntryList) });
 const diaryContent = Type.Union([
