@@ -628,7 +628,10 @@ Path Parameters
       * Number of currently empty equipment slots.
       * Example: `1`.
     * `undoEquipment`
-      * Up to 30 equipment states available for Undo.
+      * Up to 30 equipment states available for Undo. 
+      * Each Undo state includes both equipped item information and jewel assignment information.
+      * If any required equipment item or jewel is unavailable, the entire Undo state is unavailable.
+      * Partial restoration is not allowed.
       * Format:
         * `{equipmentStates, available, unavailableReason}`
       * If no Undo state is available:
@@ -637,6 +640,9 @@ Path Parameters
         * `unavailableReason`: `No undo history.`
     * `redoEquipment`
       * Up to 30 equipment states available for Redo.
+      * Each Redo state includes both equipped item information and jewel assignment information.
+      * If any required equipment item or jewel is unavailable, the entire Redo state is unavailable.
+      * Partial restoration is not allowed.
       * Format:
         * `{equipmentStates, available, unavailableReason}`
       * If no Redo state is available:
