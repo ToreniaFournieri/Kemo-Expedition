@@ -59,6 +59,58 @@ assert.equal(full.simulatedRevision, 7);
   const bare = await buildApiV1ReadData(`read/build/character/${target.id}/equipment`, shortArray, {}, context) as { validOptions: { numberOfEmptyEquipmentSlots: number } };
   assert.ok(bare.validOptions.numberOfEmptyEquipmentSlots > 0, 'empty slots are counted against the real slot count, not the array length');
 }
+// Item and equipment-entry formats round-trip through master data, so a projection is enough to rebuild a display item.
+{
+  const { formatEquipmentEntry, parseEquipmentEntry, parseSavedEquipmentSet } = await import('../../src/api/v1/itemFormat.ts');
+  const target = state.parties[0].characters[0];
+  const equipped = target.equipment.flatMap((item, slot) => item ? [{ item, slot }] : []);
+  assert.ok(equipped.length > 0);
+  for (const { item, slot } of equipped) {
+    const jeweled = { ...item, jewel: { key: 'fort' as const, rank: 3 }, isLocked: true };
+    const parsed = parseEquipmentEntry(formatEquipmentEntry(slot, jeweled, true, jeweled.jewel))!;
+    assert.equal(parsed.slotIndex, slot);
+    assert.equal(parsed.isLocked, true);
+    assert.equal(parsed.item.id, item.id);
+    assert.equal(parsed.item.name, item.name);
+    assert.equal(parsed.item.enhancement, item.enhancement);
+    assert.equal(parsed.item.superRare, item.superRare);
+    assert.deepEqual(parsed.item.jewel, { key: 'fort', rank: 3 });
+  }
+  assert.equal(parseEquipmentEntry(0), null);
+  assert.equal(parseEquipmentEntry('3/1/999999/0/0'), null, 'an unknown item id does not parse');
+  assert.equal(parseEquipmentEntry('3/2/1101/0/0'), null, 'a bad lock flag does not parse');
+  assert.equal(parseEquipmentEntry('3/0/1101/0/0/notajewel:2'), null);
+
+  // The saved-set read returns each entry's own lock flag (not the item's) when detail is requested, as a boolean or a string.
+  const first = equipped[0];
+  const withSet = { ...state, global: { ...state.global, savedEquipmentSets: [{ slot: 4, name: 'Boss', createdAt: Date.UTC(2026, 8, 20), equipment: [{ slotIndex: first.slot, item: { ...first.item, isLocked: false, jewel: { key: 'ward' as const, rank: 2 } }, isLocked: true }] }] } };
+  for (const detail of [true, 'true']) {
+    const read = await buildApiV1ReadData(`read/build/character/${target.id}/equipmentSet`, withSet, { isEquipmentSetDetail: detail }, context) as { equipmentSets: { equipmentSetId: number; equipmentSet: { name: string; createdAt: string; equipment?: string[] } }[] };
+    assert.equal(read.equipmentSets[0].equipmentSet.equipment?.[0], `${first.slot}/1/${first.item.id}/${first.item.enhancement}/${first.item.superRare}/ward:2`);
+    const rebuilt = parseSavedEquipmentSet(read.equipmentSets[0]);
+    assert.equal(rebuilt.slot, 4);
+    assert.equal(rebuilt.equipment[0].isLocked, true);
+    assert.equal(rebuilt.equipment[0].item.jewel?.key, 'ward');
+    assert.equal(rebuilt.createdAt, Date.UTC(2026, 8, 20));
+  }
+  const summary = await buildApiV1ReadData(`read/build/character/${target.id}/equipmentSet`, withSet, {}, context) as { equipmentSets: { equipmentSet: { equipment?: string[] } }[] };
+  assert.equal(summary.equipmentSets[0].equipmentSet.equipment, undefined, 'the summary omits equipment');
+}
+
+// The donation box reports every unlocked god with its real rank and the total needed for the next rank.
+{
+  const { getDeityRank, getNextRankDonationRequirement } = await import('../../src/game/deity.ts');
+  const donated = { ...state, global: { ...state.global, unlockedDeities: ['Goddess of Restoration', 'God of Attrition'], deityDonations: { 'Goddess of Restoration': 1300, 'God of Attrition': 1_000_000_000 } } };
+  const box = await buildApiV1ReadData('resources/donationBox', donated, {}, context) as { gods: string[] };
+  assert.deepEqual(box.gods, [
+    `restoration/${getDeityRank(1300)}/1300/${getNextRankDonationRequirement(1300)}`,
+    `attrition/${getDeityRank(1_000_000_000)}/1000000000/MAX`,
+  ]);
+  assert.equal(getNextRankDonationRequirement(1_000_000_000), null, 'the top rank has no next requirement');
+  assert.ok(Number(box.gods[0].split('/')[3]) > 1300, 'the next-rank total is above the current donation');
+  const none = { ...state, global: { ...state.global, unlockedDeities: [], deityDonations: {} } };
+  assert.deepEqual((await buildApiV1ReadData('resources/donationBox', none, {}, context) as { gods: string[] }).gods, []);
+}
 assert.deepEqual(state, before);
 
 // calculatedStatus is the public fact model (9.1.4.14), not the internal computed-stats object.

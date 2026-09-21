@@ -8,11 +8,12 @@ import { LINEAGES } from '../../data/lineages.ts';
 import { PREDISPOSITIONS } from '../../data/predispositions.ts';
 import { RACES } from '../../data/races.ts';
 import { renderDiaryMetadata } from '../../game/compactDiary.ts';
-import { getDeityId, getDeityRank, normalizeDeityName } from '../../game/deity.ts';
+import { getDeityId, getDeityRank, getNextRankDonationRequirement, isNoFaithDeity, normalizeDeityName } from '../../game/deity.ts';
 import { getInstantExpeditionChargeState } from '../../game/instantExpedition.ts';
 import { getSavedEquipmentSlot } from '../../game/equipmentSets.ts';
 import { computePartyStats } from '../../game/partyComputation.ts';
 import { buildCalculatedStatus } from './calculatedStatus.ts';
+import { formatEquipmentEntry, formatItem } from './itemFormat.ts';
 import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { buildShopLineup, getShopRefreshPrice } from '../../game/shop.ts';
@@ -31,12 +32,11 @@ export interface ApiV1ReadContext {
 }
 
 function itemFormat(item: Item): string {
-  return `${item.isLocked === true ? 1 : 0}/${item.id}/${item.enhancement}/${item.superRare}`;
+  return formatItem(item, item.isLocked === true);
 }
 
 function equipmentEntry(item: Item | null, slotIndex: number): string | 0 {
-  if (!item) return 0;
-  return `${slotIndex}/${itemFormat(item)}${item.jewel ? `/${item.jewel.key}:${item.jewel.rank}` : ''}`;
+  return item ? formatEquipmentEntry(slotIndex, item, item.isLocked === true, item.jewel) : 0;
 }
 
 function partyByNumber(state: GameState, value: unknown): { party: Party; index: number } | null {
@@ -241,7 +241,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       };
     }
     const ids = Array.isArray(parameters.equipmentSetId) ? parameters.equipmentSetId.map(Number) : parameters.equipmentSetId ? [Number(parameters.equipmentSetId)] : null;
-    return { equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => ({ equipmentSetId: set.slot, equipmentSet: { equipmentSetId: set.slot, name: set.name, createdAt: new Date(set.createdAt).toISOString(), ...(parameters.isEquipmentSetDetail === 'true' ? { equipment: set.equipment.map((entry, index) => equipmentEntry(entry.item, getSavedEquipmentSlot(entry, index))) } : {}) } })) };
+    return { equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => ({ equipmentSetId: set.slot, equipmentSet: { equipmentSetId: set.slot, name: set.name, createdAt: new Date(set.createdAt).toISOString(), ...(parameters.isEquipmentSetDetail === true || parameters.isEquipmentSetDetail === 'true' ? { equipment: set.equipment.map((entry, index) => formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, entry.item.jewel)) } : {}) } })) };
   }
 
   if (operationId === 'read/base/searchItems') return { items: Object.values(state.global.inventory).filter((variant) => variant.status === (parameters.state ?? 'owned') || parameters.state === 'all').map((variant) => `${itemFormat(variant.item)}/${variant.count}`), equippedItems: state.parties.flatMap((party) => party.characters.flatMap((character) => character.equipment.filter(Boolean).map((item) => `${party.id}/${character.id}/${itemFormat(item!)}`))), details: {} };
@@ -266,7 +266,16 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   if (operationId.startsWith('read/setting/delivery/')) { const deliveryId = operationId.split('/').at(-1); const delivery = (context.control?.deliveries as ApiV1DeliveryRecord[] | undefined)?.find((entry) => entry.deliveryId === deliveryId); if (!delivery) throw new Error('not_found'); return projectDelivery(delivery); }
 
   if (operationId === 'resources/developerNewsNotification') return { entries: DEVELOPER_NEWS_ITEMS.map((entry) => ({ version: entry.id, date: entry.date, content: entry.content })) };
-  if (operationId === 'resources/donationBox') return { gods: Object.entries(state.global.deityDonations).map(([id, gold]) => `${id}/1/${gold}/MAX`) };
+  if (operationId === 'resources/donationBox') {
+    // Every unlocked god with its rank, donated Gold, and the total needed for the next rank.
+    const gods = state.global.unlockedDeities.flatMap((name) => {
+      if (isNoFaithDeity(name)) return [];
+      const donated = state.global.deityDonations[normalizeDeityName(name)] ?? 0;
+      const next = getNextRankDonationRequirement(donated);
+      return [`${getDeityId(name)}/${getDeityRank(donated)}/${donated}/${next ?? 'MAX'}`];
+    });
+    return { gods };
+  }
   if (operationId.startsWith('resources/clairvoyance/')) return { reward: {}, enhancement: {}, superRare: {}, sideQuest: {}, sleepiness: {} };
   if (operationId === 'resources/glossary') return { entries: [], validOptions: { category: ['Ab.', 'Base.', 'Fixed.', 'Inc.', 'Mech.', 'Faith.', 'Magic.', 'Quest.', 'Terrain.'] } };
   if (operationId === 'resources/itemCompendium') return { items: ITEMS.filter((item) => !parameters.itemId || item.id === Number(parameters.itemId)).map((item) => ({ itemId: item.id, name: item.name, category: item.category, ability: [], cBonus: item.bonuses ?? [], otherBonus: [] })) };

@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 44. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 45. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -55,7 +55,14 @@ Next, in order:
 1. (Done, Build 40) Equipment controls.
 2. (Done, Build 42) Equipment sets: save, load with the confirmation choice, rename, delete.
 3. (Done, Build 43) Undo/Redo use the API's per-character history and the equipment projection's availability.
-4. **Party reads.** Render the Party tab from `read/observation/party` and `read/build/*` instead of props built from the complete game state. Retained selections and filters go through `uiPreferences`.
+4. **Party reads** (in progress; `PartyTab.tsx` is about 3,000 lines built on `Party`, `Character`, `Item`, and computed-stats objects, so it is migrated in steps):
+   - 4a. (Done, Build 45) Saved equipment sets and the deity pane (donations, unlocked gods) render from projections; shared item wire-format module.
+   - 4b. Owned inventory for equipping and the Jewel counts, from `searchItems` and a Jewel projection. The Jewel projection does not exist yet (Jewels are not listed by `searchItems`).
+   - 4c. Character and member list: the identity fields, build options, and calculated status, from `read/build/character/{characterId}/status`. The status pane also needs bonus and ability display facts beyond `calculatedStatus`; decide whether to enrich the projection or resolve them from master data.
+   - 4d. Equipment slots list from the `equipment` projection (entries parse to items through the shared format).
+   - 4e. Retained selections (selected party and character, filters) through `uiPreferences`. Selected party is currently persisted in the save (`selectedPartyIndex`), so moving it changes what is persisted; decide first.
+   - 4f. Remove the `Party`, `Character`, `ComputedCharacterStats`, and inventory props, and add the mechanical check described in Stage 9.
+   - Open design question: the projections must carry enough display facts (per-entry availability of a saved set, bonus and ability facts). Prefer additive members under 9.1.4.1 and update Spec 9.1.3 to match.
 
 Gate: no `actions.*` reducer call remains in `PartyTab.tsx` for these controls; the Party tab renders only from its projections.
 

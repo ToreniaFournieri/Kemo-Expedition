@@ -24,7 +24,7 @@ import {
 isDungeonEntryUnlocked
 } from '../game/clearGate';
 import { DebugSettings,getDebugSettings,getTimeSpeedScale,isUnlimitedTimeSpeed,saveDebugSettings } from '../game/debugSettings';
-import { getDeityDepositMultiplier,getDeityId,getDeityStateDurationMultiplier,isNoFaithDeity,normalizeDeityName } from '../game/deity';
+import { getDeityDepositMultiplier,getDeityId,getDeityNameFromId,getDeityStateDurationMultiplier,isNoFaithDeity,normalizeDeityName } from '../game/deity';
 import { getDesktopNotificationRewardItems } from '../game/desktopNotificationRewards';
 import { getDesktopPreferences,getProcessedDiaryIds,saveProcessedDiaryIds } from '../game/desktopNotifications';
 import {
@@ -98,6 +98,7 @@ import { setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
 import { characterEditToChangeBuildParameters } from '../api/v1/characterBuildParameters';
 import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIntents';
+import { parseSavedEquipmentSet } from '../api/v1/itemFormat';
 import { useApiRead } from './home/useApiRead';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
@@ -1885,6 +1886,34 @@ export function HomeScreen({
     historyCharacter ? { pathParameters: { characterId: historyCharacter.id } } : null,
     [historyCharacter?.id, historyCharacter?.equipment, state.global.inventory, state.global.jewels, currentParty.level],
   );
+
+  // SpecRef: 8.2 | UI_PARTY | Saved equipment sets and the deity pane render from projections
+  const equipmentSetProjection = useApiRead<{ equipmentSets: Parameters<typeof parseSavedEquipmentSet>[0][] }>(
+    inProcessApiRef.current,
+    'read/build/character/{characterId}/equipmentSet',
+    historyCharacter ? { pathParameters: { characterId: historyCharacter.id }, parameters: { isEquipmentSetDetail: true } } : null,
+    [historyCharacter?.id, state.global.savedEquipmentSets],
+  );
+  const savedEquipmentSetsView = useMemo(
+    () => (equipmentSetProjection?.equipmentSets ?? []).map(parseSavedEquipmentSet),
+    [equipmentSetProjection],
+  );
+  const donationProjection = useApiRead<{ gods: string[] }>(
+    inProcessApiRef.current, 'resources/donationBox', {},
+    [state.global.deityDonations, state.global.unlockedDeities],
+  );
+  const deityView = useMemo(() => {
+    const donations: Record<string, number> = {};
+    const unlocked: string[] = [];
+    for (const god of donationProjection?.gods ?? []) {
+      const [id, , donated] = god.split('/');
+      const name = getDeityNameFromId(id);
+      if (name === null) continue;
+      unlocked.push(name);
+      donations[name] = Number(donated);
+    }
+    return { donations, unlocked };
+  }, [donationProjection]);
 
   useEffect(() => {
     if (!__AUTO_EQUIPMENT_PROFILE_ENABLED__) return;
@@ -4915,11 +4944,11 @@ export function HomeScreen({
           canRedoEquipment={equipmentProjection?.validOptions.redoEquipment.available === true}
           onUndoEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'undo' })}
           onRedoEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'redo' })}
-          savedEquipmentSets={state.global.savedEquipmentSets}
+          savedEquipmentSets={savedEquipmentSetsView}
           inventory={state.global.inventory}
           jewels={state.global.jewels}
-          deityDonations={state.global.deityDonations}
-          unlockedDeities={state.global.unlockedDeities}
+          deityDonations={deityView.donations}
+          unlockedDeities={deityView.unlocked}
           unlockedMimorianEnemyIds={state.global.unlockedMimorianEnemyIds}
           isDarkModeEnabled={isDarkModeEnabled}
         />

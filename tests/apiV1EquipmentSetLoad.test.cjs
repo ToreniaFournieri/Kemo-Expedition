@@ -45,3 +45,15 @@ test('Party equipment-set controls commit through the Application API', () => {
   }
   assert.match(home, /kind: 'loadSet', slot, mode/);
 });
+
+test('Party saved sets and the deity pane render from projections', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
+  const partyTag = home.slice(home.indexOf('<PartyTab'), home.indexOf('/>', home.indexOf('isDarkModeEnabled={isDarkModeEnabled}', home.indexOf('<PartyTab'))));
+  assert.match(partyTag, /savedEquipmentSets=\{savedEquipmentSetsView\}/);
+  assert.match(partyTag, /deityDonations=\{deityView\.donations\}/);
+  assert.match(partyTag, /unlockedDeities=\{deityView\.unlocked\}/);
+  assert.doesNotMatch(partyTag, /state\.global\.savedEquipmentSets|state\.global\.deityDonations|state\.global\.unlockedDeities/);
+  assert.match(home, /'resources\/donationBox'/);
+});
