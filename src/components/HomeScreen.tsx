@@ -98,8 +98,8 @@ import { setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
 import { characterEditToChangeBuildParameters } from '../api/v1/characterBuildParameters';
 import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIntents';
-import { parseSavedEquipmentSet } from '../api/v1/itemFormat';
-import { useApiRead } from './home/useApiRead';
+import { parseInventoryStacks, parseJewelStacks, parseSavedEquipmentSet } from '../api/v1/itemFormat';
+import { useApiRead, useApiReads } from './home/useApiRead';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
 import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
@@ -231,6 +231,9 @@ export function preloadRemainingHomeTabs() {
     loadSettingTab(),
   ]);
 }
+
+// SpecRef: 9.1.3 | 2-4-1 searchItems | `category` selects one Item category, so the inventory is read per category.
+const EQUIPMENT_SEARCH_CATEGORIES = ['armor', 'robe', 'shield', 'sword', 'katana', 'glove', 'arrow', 'bolt', 'bow', 'wand', 'book', 'catalyst'] as const;
 
 export function HomeScreen({
   state,
@@ -1898,6 +1901,18 @@ export function HomeScreen({
     () => (equipmentSetProjection?.equipmentSets ?? []).map(parseSavedEquipmentSet),
     [equipmentSetProjection],
   );
+  // The owned inventory and Jewel counts are only needed while the Party tab is on screen.
+  const isPartyTabVisible = isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'party' : activeTab === 'party';
+  const ownedItemsProjection = useApiReads<{ items: string[] }>(
+    inProcessApiRef.current, 'read/base/searchItems',
+    EQUIPMENT_SEARCH_CATEGORIES.map((category) => ({ parameters: { state: 'owned', category } })),
+    [state.global.inventory], isPartyTabVisible,
+  );
+  const ownedJewelsProjection = useApiRead<{ items: string[] }>(
+    inProcessApiRef.current, 'read/base/searchItems', { parameters: { state: 'owned', category: 'jewel' } }, [state.global.jewels], isPartyTabVisible,
+  );
+  const ownedInventoryView = useMemo(() => parseInventoryStacks(ownedItemsProjection?.flatMap((entry) => entry.items) ?? []), [ownedItemsProjection]);
+  const ownedJewelsView = useMemo(() => parseJewelStacks(ownedJewelsProjection?.items ?? []), [ownedJewelsProjection]);
   const donationProjection = useApiRead<{ gods: string[] }>(
     inProcessApiRef.current, 'resources/donationBox', {},
     [state.global.deityDonations, state.global.unlockedDeities],
@@ -4945,8 +4960,8 @@ export function HomeScreen({
           onUndoEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'undo' })}
           onRedoEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'redo' })}
           savedEquipmentSets={savedEquipmentSetsView}
-          inventory={state.global.inventory}
-          jewels={state.global.jewels}
+          inventory={ownedInventoryView}
+          jewels={ownedJewelsView}
           deityDonations={deityView.donations}
           unlockedDeities={deityView.unlocked}
           unlockedMimorianEnemyIds={state.global.unlockedMimorianEnemyIds}

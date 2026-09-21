@@ -13,6 +13,7 @@ import { getInstantExpeditionChargeState } from '../../game/instantExpedition.ts
 import { getSavedEquipmentSlot } from '../../game/equipmentSets.ts';
 import { computePartyStats } from '../../game/partyComputation.ts';
 import { buildCalculatedStatus } from './calculatedStatus.ts';
+import { getItemRarityById } from '../../game/itemRarity.ts';
 import { formatEquipmentEntry, formatItem } from './itemFormat.ts';
 import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
@@ -139,6 +140,45 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>) 
   };
 }
 
+// SpecRef: 9.1.3 | 2-4-1 searchItems | Item category filter
+const API_CATEGORY_TO_ITEM_CATEGORY: Record<string, string> = { sword: 'sword', katana: 'katana', bow: 'archery', armor: 'armor', glove: 'gauntlet', wand: 'wand', robe: 'robe', shield: 'shield', bolt: 'bolt', book: 'grimoire', catalyst: 'catalyst', arrow: 'arrow' };
+
+/**
+ * Searches the items known to the player. Equipment stacks are `<Item Format>/<quantity>` ordered by item id, then
+ * enhancement, then Super Rare title. The `jewel` category lists Jewel stacks as `<jewelType>:<jewelRank>/<quantity>`.
+ * The request contract requires `category`; the handler itself tolerates its absence, which the HTTP layer never produces.
+ */
+function searchItems(state: GameState, parameters: Record<string, unknown>) {
+  const wantedState = String(parameters.state ?? 'owned');
+  const category = parameters.category === undefined ? null : String(parameters.category);
+  const matches = (item: Item): boolean => {
+    if (category !== null && category !== 'jewel' && item.category !== API_CATEGORY_TO_ITEM_CATEGORY[category]) return false;
+    if (parameters.rarity !== undefined && parameters.rarity !== 'all' && getItemRarityById(item.id) !== parameters.rarity) return false;
+    if (parameters.superRare !== undefined && (item.superRare > 0) !== (parameters.superRare === true || parameters.superRare === 'true')) return false;
+    if (parameters.superRareId !== undefined && item.superRare !== Number(parameters.superRareId)) return false;
+    if (parameters.itemId !== undefined && item.id !== Number(parameters.itemId)) return false;
+    return true;
+  };
+  const byIdentity = (left: Item, right: Item) => left.id - right.id || left.enhancement - right.enhancement || left.superRare - right.superRare;
+  const includesState = (status: string) => wantedState === 'all' || wantedState === status;
+
+  if (category === 'jewel') {
+    const items = Object.entries(state.global.jewels)
+      .filter(([, count]) => count > 0)
+      .sort(([left], [right]) => left.localeCompare(right, 'en') )
+      .map(([key, count]) => `${key}/${count}`);
+    return { items: wantedState === 'owned' || wantedState === 'all' ? items : [], equippedItems: [], details: {} };
+  }
+  const items = Object.values(state.global.inventory)
+    .filter((variant) => includesState(variant.status) && (variant.status !== 'owned' || variant.count > 0) && matches(variant.item))
+    .sort((left, right) => byIdentity(left.item, right.item))
+    .map((variant) => `${itemFormat(variant.item)}/${variant.count}`);
+  const equippedItems = state.parties.flatMap((party) => party.characters.flatMap((character) => character.equipment
+    .filter((item): item is Item => Boolean(item) && matches(item as Item))
+    .map((item) => `${party.id}/${character.id}/${itemFormat(item)}`)));
+  return { items, equippedItems, details: {} };
+}
+
 export function buildApiV1PartyObservationForTesting(state: GameState) {
   return { parties: state.parties.map((party) => partyProjection(state, { partyNumber: party.id }).party) };
 }
@@ -244,7 +284,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     return { equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => ({ equipmentSetId: set.slot, equipmentSet: { equipmentSetId: set.slot, name: set.name, createdAt: new Date(set.createdAt).toISOString(), ...(parameters.isEquipmentSetDetail === true || parameters.isEquipmentSetDetail === 'true' ? { equipment: set.equipment.map((entry, index) => formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, entry.item.jewel)) } : {}) } })) };
   }
 
-  if (operationId === 'read/base/searchItems') return { items: Object.values(state.global.inventory).filter((variant) => variant.status === (parameters.state ?? 'owned') || parameters.state === 'all').map((variant) => `${itemFormat(variant.item)}/${variant.count}`), equippedItems: state.parties.flatMap((party) => party.characters.flatMap((character) => character.equipment.filter(Boolean).map((item) => `${party.id}/${character.id}/${itemFormat(item!)}`))), details: {} };
+  if (operationId === 'read/base/searchItems') return searchItems(state, parameters);
   if (operationId === 'read/base/jewelPriorityParty') return { current: { partyNumber: state.global.jewelAutoEquipPriorityPartyId ?? 'none' }, validOptions: { partyNumber: [...state.parties.map((party) => party.id), 'none'] } };
   if (operationId === 'read/base/shopInfo') return { intimacy: state.global.shopIntimacy, dialogue: { key: 'shop.dialogue.default', args: {} }, paidRefreshCountdown: 0, paidRefreshPrice: getShopRefreshPrice(state.global.shopIntimacy) };
   if (operationId === 'read/base/shopItemsList') {

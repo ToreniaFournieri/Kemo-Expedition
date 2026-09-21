@@ -57,3 +57,14 @@ test('Party saved sets and the deity pane render from projections', () => {
   assert.doesNotMatch(partyTag, /state\.global\.savedEquipmentSets|state\.global\.deityDonations|state\.global\.unlockedDeities/);
   assert.match(home, /'resources\/donationBox'/);
 });
+
+test('Party inventory and Jewel counts render from searchItems projections', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
+  const partyTag = home.slice(home.indexOf('<PartyTab'), home.indexOf('/>', home.indexOf('isDarkModeEnabled={isDarkModeEnabled}', home.indexOf('<PartyTab'))));
+  assert.match(partyTag, /inventory=\{ownedInventoryView\}/);
+  assert.match(partyTag, /jewels=\{ownedJewelsView\}/);
+  assert.doesNotMatch(partyTag, /state\.global\.inventory|state\.global\.jewels/);
+  assert.match(home, /category: 'jewel'/);
+});

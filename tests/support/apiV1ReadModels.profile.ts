@@ -111,6 +111,53 @@ assert.equal(full.simulatedRevision, 7);
   const none = { ...state, global: { ...state.global, unlockedDeities: [], deityDonations: {} } };
   assert.deepEqual((await buildApiV1ReadData('resources/donationBox', none, {}, context) as { gods: string[] }).gods, []);
 }
+// searchItems filters, orders, and lists Jewels; the parsed stacks rebuild the owned inventory and Jewel counts.
+{
+  const { parseInventoryStacks, parseJewelStacks } = await import('../../src/api/v1/itemFormat.ts');
+  const { getVariantKey } = await import('../../src/types/index.ts');
+  const jeweled = { ...state, global: { ...state.global, jewels: { 'fort:3': 2, 'might:1': 1, 'ward:2': 0 } } };
+  type Search = { items: string[]; equippedItems: string[] };
+  const search = async (parameters: Record<string, unknown>, from = jeweled) => await buildApiV1ReadData('read/base/searchItems', from, parameters, context) as Search;
+
+  const owned = Object.values(state.global.inventory).filter((variant) => variant.status === 'owned' && variant.count > 0);
+  assert.ok(owned.length > 3, 'the fresh state owns several variants');
+  const categories = ['armor', 'robe', 'shield', 'sword', 'katana', 'glove', 'arrow', 'bolt', 'bow', 'wand', 'book', 'catalyst'];
+  const all = { items: (await Promise.all(categories.map((category) => search({ category })))).flatMap((found) => found.items).sort((left, right) => Number(left.split('/')[1]) - Number(right.split('/')[1])) };
+  assert.equal(all.items.length, owned.length, 'the twelve equipment categories together cover every owned stack');
+  const ids = all.items.map((stack) => Number(stack.split('/')[1]));
+  assert.deepEqual(ids, [...ids].sort((left, right) => left - right), 'stacks are ordered by item id');
+
+  const rebuilt = parseInventoryStacks(all.items);
+  assert.equal(Object.keys(rebuilt).length, owned.length);
+  for (const variant of owned) {
+    const entry = rebuilt[getVariantKey(variant.item)];
+    assert.equal(entry.count, variant.count);
+    assert.equal(entry.item.name, variant.item.name);
+    assert.equal(entry.status, 'owned');
+  }
+
+  const first = owned[0].item;
+  assert.deepEqual((await search({ itemId: first.id })).items.every((stack) => Number(stack.split('/')[1]) === first.id), true);
+  const categoryOf = (api: string) => ({ bow: 'archery', glove: 'gauntlet', book: 'grimoire', sword: 'sword' } as Record<string, string>)[api];
+  for (const api of ['sword', 'bow', 'glove', 'book']) {
+    const found = await search({ category: api });
+    for (const stack of found.items) assert.equal(parseInventoryStacks([stack])[Object.keys(parseInventoryStacks([stack]))[0]].item.category, categoryOf(api));
+  }
+  const sword = { category: 'sword' };
+  assert.equal((await search({ ...sword, rarity: 'bossRare' })).items.length, 0, 'a fresh state owns no boss rare items');
+  assert.equal((await search({ ...sword, rarity: 'common' })).items.length, (await search(sword)).items.length);
+  assert.equal((await search({ ...sword, superRare: 'true' })).items.length, 0);
+  assert.equal((await search({ ...sword, superRare: true })).items.length, 0);
+  assert.equal((await search({ ...sword, superRare: false })).items.length, (await search(sword)).items.length);
+  assert.deepEqual((await search({ ...sword, state: 'equipped' })).items, [], 'the equipped state lists no stacks');
+  assert.ok((await search({ category: 'armor', state: 'equipped' })).equippedItems.length > 0);
+  assert.equal((await search({ ...sword, state: 'sold' })).items.length, 0);
+
+  const jewelStacks = (await search({ category: 'jewel' })).items;
+  assert.deepEqual(jewelStacks, ['fort:3/2', 'might:1/1'], 'Jewel stacks list owned counts only, ordered by key');
+  assert.deepEqual(parseJewelStacks(jewelStacks), { 'fort:3': 2, 'might:1': 1 });
+  assert.deepEqual((await search({ category: 'jewel', state: 'sold' })).items, []);
+}
 assert.deepEqual(state, before);
 
 // calculatedStatus is the public fact model (9.1.4.14), not the internal computed-stats object.

@@ -38,6 +38,7 @@ isDungeonEntryUnlocked,
 import { formatEnemyDefName,getEnemyTypeShortName } from '../../game/enemyDisplay';
 import { isEnemyTypeCBonusType } from '../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId } from '../../game/environment';
+import { getItemRarityById } from '../../game/itemRarity';
 import type { AfkPartyChunkResult } from '../../game/afkChunkCoordinator';
 import type { AutoEquipmentProfileAction } from '../../game/autoEquipmentAttribution';
 import {
@@ -1612,14 +1613,7 @@ export function formatAutoSellSummary(autoSellProfit: number, autoSellMultiplier
   return t('home.autoSell.basic', { gold: formatNumber(autoSellProfit) });
 }
 
-export function getItemRarityById(itemId: number): ItemRarity {
-  const rarityCode = itemId % 1000;
-  if (rarityCode >= 500) return 'mythicRare';
-  if (rarityCode >= 400) return 'bossRare';
-  if (rarityCode >= 300) return 'eliteRare';
-  if (rarityCode >= 200) return 'uncommon';
-  return 'common';
-}
+export { getItemRarityById };
 
 export const MYTHIC_TIER_BY_NAME = new Map(GOD_MYTHIC_DROPS.map((drop) => [drop.name, drop.tier]));
 

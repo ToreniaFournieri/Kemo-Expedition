@@ -142,7 +142,7 @@ const equipmentCommitCurrent = strict({
   undoAvailable: Type.Boolean(),
   redoAvailable: Type.Boolean(),
 });
-const itemStackFormat = Type.String({ pattern: '^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))/[0-9]+$' });
+const itemStackFormat = Type.String({ pattern: '^(?:(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))|(?:might|arcana|fort|ward|shade|focus):[1-8])/[0-9]+$' });
 sampleOverrides.set(itemStackFormat, '0/1');
 const equippedItemFormat = Type.String({ pattern: '^[1-6]/[0-9]+/(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))$' });
 sampleOverrides.set(equippedItemFormat, '1/101/0');
