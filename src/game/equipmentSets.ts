@@ -27,6 +27,16 @@ const MELEE_CATEGORIES = new Set<ItemCategory>(['sword', 'katana', 'gauntlet']);
 const RANGED_CATEGORIES = new Set<ItemCategory>(['arrow', 'bolt', 'archery']);
 const MAGIC_CATEGORIES = new Set<ItemCategory>(['wand', 'grimoire', 'catalyst']);
 
+export type EquipmentAptitude = 'melee' | 'ranged' | 'magic';
+
+/** The combat aptitude an item category needs (`c.equip_melee`, `c.equip_ranged`, `c.equip_magic`); null for none. */
+export function getEquipmentAptitudeForCategory(category: ItemCategory): EquipmentAptitude | null {
+  if (MELEE_CATEGORIES.has(category)) return 'melee';
+  if (RANGED_CATEGORIES.has(category)) return 'ranged';
+  if (MAGIC_CATEGORIES.has(category)) return 'magic';
+  return null;
+}
+
 export type EquipmentSetLoadMode = 'exact' | 'similar';
 
 export interface EquipmentSetAvailability {

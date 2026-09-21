@@ -31,3 +31,16 @@ export function characterEditToChangeBuildParameters(character: EditableCharacte
   if (changed('predispositionId')) parameters.predisposition = edits.predispositionId;
   return parameters;
 }
+
+// SpecRef: 9.1.3 | Commit | 3-3-2 character/{characterId}/changeBuild
+/** What the Party editor asks of `changeBuild`: a simulation (no commit) or a commit, with the player's answer if needed. */
+export type CharacterBuildRequest = { simulation: true } | { simulation: false; confirmation?: 'yes' | 'no' };
+
+export interface CharacterBuildOutcome {
+  status: 'ok' | 'error';
+  /** Whether the requested change needs the player's confirmation before it can be committed. */
+  confirmationRequired: boolean;
+  /** Stable warning keys with numeric arguments; the UI localizes them. */
+  warnings: { key: string; args: Record<string, number> }[];
+  applied: boolean;
+}

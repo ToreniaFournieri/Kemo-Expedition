@@ -161,8 +161,23 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const sameEquipment = (left: SavedEquipmentSet, right: SavedEquipmentSet) => JSON.stringify(left.equipment) === JSON.stringify(right.equipment);
     const recordsEquipmentHistory = !['saveEquipmentSet', 'deleteEquipmentSet', 'renameEquipmentSet', 'undoEquipment', 'redoEquipment'].includes(action);
     if (action === 'changeBuild') {
-      const plan = planCharacterBuildChange(next, characterId, parameters);
-      if (Object.keys(plan.updates).length > 0) reduce({ type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: plan.updates, validatedMimorianAssignments: true });
+      // SpecRef: 9.1.3 | Commit | 3-3-2 character/{characterId}/changeBuild
+      // `simulation` validates and reports without committing; `confirmation` answers a reported warning. This operation
+      // owns its confirmation, so it never issues the generic 9.1.4.5 confirmation challenge.
+      const { simulation, confirmation, ...buildParameters } = parameters;
+      if (typeof simulation !== 'boolean') throw new Error('invalid_request:simulation');
+      if (confirmation !== undefined && confirmation !== 'yes' && confirmation !== 'no') throw new Error('invalid_request:confirmation');
+      if (simulation && confirmation !== undefined) throw new Error('invalid_request:confirmation_with_simulation');
+      const plan = planCharacterBuildChange(next, characterId, buildParameters);
+      let applied = false;
+      if (!simulation && confirmation !== 'no') {
+        if (plan.requiresConfirmation && confirmation !== 'yes') throw new Error('invalid_request:confirmation_required');
+        if (Object.keys(plan.updates).length > 0) {
+          reduce({ type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: plan.updates, validatedMimorianAssignments: true });
+          applied = true;
+        }
+      }
+      data = { confirmationRequired: plan.requiresConfirmation, warnings: plan.warnings, applied };
     }
     else if (action === 'removeAllEquipment') reduce({ type: 'REMOVE_ALL_EQUIPMENT', partyIndex, characterId });
     else if (isEquipmentSlotAction(action)) {

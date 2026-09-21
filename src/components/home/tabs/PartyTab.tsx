@@ -11,6 +11,7 @@ import { PREDISPOSITIONS } from '../../../data/predispositions';
 import { RACES } from '../../../data/races';
 import { buildCombatTotals } from '../../../api/v1/statusView';
 import { readStatusFacts } from '../../../api/v1/calculatedStatus';
+import type { CharacterBuildOutcome, CharacterBuildRequest } from '../../../api/v1/characterBuildParameters';
 import type { CalculatedStatus } from '../../../api/v1/contracts';
 import { formatAttackSpeedHelp } from '../../../game/attackProfile';
 import { gameplayRandom } from '../../../game/gameplayRandom';
@@ -63,13 +64,10 @@ getRarityShortLabel,
 IOS_GLASS_BUTTON_CLASS,
 IOS_GLASS_TAB_CLASS,
 LINEAGE_SHORT_NAME_KEYS,
-MAGIC_CATEGORIES,
 matchesRarityFilter,
-MELEE_CATEGORIES,
 normalizeAutoEquipmentMode,
 PREDISPOSITION_SHORT_NAME_KEYS,
 RaceIcon,
-RANGED_CATEGORIES,
 RARITY_FILTER_LABELS,
 RARITY_FILTER_OPTIONS,
 RarityFilter,
@@ -129,7 +127,7 @@ export default function PartyTab({
   setSelectedCharacter: Dispatch<SetStateAction<number>>;
   editingCharacter: number | null;
   setEditingCharacter: Dispatch<SetStateAction<number | null>>;
-  onChangeCharacterBuild: (characterId: number, edits: Partial<Character>, confirmed: boolean) => Promise<'ok' | 'confirmation_required' | 'error'>;
+  onChangeCharacterBuild: (characterId: number, edits: Partial<Character>, request: CharacterBuildRequest) => Promise<CharacterBuildOutcome>;
   onReorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
   onToggleEquipmentLock: (characterId: number, slotIndex: number) => void;
@@ -461,6 +459,7 @@ export default function PartyTab({
       onAddStatNotifications, selectedCharacter, selectedPartyIndex]);
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
+  const [editConfirmationWarnings, setEditConfirmationWarnings] = useState<CharacterBuildOutcome['warnings']>([]);
   const [showBaseStatHelp, setShowBaseStatHelp] = useState(false);
   const [baseStatHelpPosition, setBaseStatHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const [showAutoEquipmentHelp, setShowAutoEquipmentHelp] = useState(false);
@@ -727,129 +726,51 @@ export default function PartyTab({
     setShowAutoEquipmentHelp(true);
   };
 
-  const getEquipSlotReductionCount = (edits: Partial<Character> | null): number => {
-    const changedKeys = getChangedEditKeys(edits);
-    if (changedKeys.length === 0) return 0;
-
-    const nextCharacter = { ...char, ...edits };
-    const nextStats = computeCharacterStats(nextCharacter, party.level);
-    return Math.max(0, stats.maxEquipSlots - nextStats.maxEquipSlots);
+  // SpecRef: 9.1.3 | Commit | 3-3-2 character/{characterId}/changeBuild
+  // The API decides whether a build change needs confirmation and reports the warnings: the edit is first simulated
+  // (nothing is committed), and only a confirmed change is committed. The tab holds no hypothetical-stats logic of its own.
+  const CHANGE_BUILD_WARNING_TEXT: Record<string, (args: Record<string, number>) => string> = {
+    'api.warning.changeBuild.equipmentSlotReduction': (args) => t('home.party.equipmentSlotReductionWarning', { count: args.count }),
+    'api.warning.changeBuild.meleeAptitudeRemoved': () => t('home.party.meleeCapabilityRemovedWarning'),
+    'api.warning.changeBuild.rangedAptitudeRemoved': () => t('home.party.rangedCapabilityRemovedWarning'),
+    'api.warning.changeBuild.magicAptitudeRemoved': () => t('home.party.magicCapabilityRemovedWarning'),
   };
+  const editConfirmWarnings = editConfirmationWarnings.map((warning) => (CHANGE_BUILD_WARNING_TEXT[warning.key] ?? (() => warning.key))(warning.args));
 
-  const hasEquippedItemInReducedSlots = (edits: Partial<Character> | null): boolean => {
-    const changedKeys = getChangedEditKeys(edits);
-    if (changedKeys.length === 0) return false;
-
-    const nextCharacter = { ...char, ...edits };
-    const nextStats = computeCharacterStats(nextCharacter, party.level);
-    if (nextStats.maxEquipSlots >= stats.maxEquipSlots) return false;
-
-    return char.equipment
-      .slice(nextStats.maxEquipSlots, stats.maxEquipSlots)
-      .some((item) => item != null);
-  };
-
-  const getCapabilityRemovalWarningState = (edits: Partial<Character> | null): { melee: boolean; ranged: boolean; magic: boolean } => {
-    const changedKeys = getChangedEditKeys(edits);
-    if (changedKeys.length === 0) {
-      return { melee: false, ranged: false, magic: false };
-    }
-
-    const nextCharacter = { ...char, ...edits };
-    const oldCombatBonuses = getCharacterCombatBonusLevels(char);
-    const nextCombatBonuses = getCharacterCombatBonusLevels(nextCharacter);
-    const lostMeleeAptitude = oldCombatBonuses.melee && !nextCombatBonuses.melee;
-    const lostRangedAptitude = oldCombatBonuses.ranged && !nextCombatBonuses.ranged;
-    const lostMagicAptitude = oldCombatBonuses.magic && !nextCombatBonuses.magic;
-
-    if (!lostMeleeAptitude && !lostRangedAptitude && !lostMagicAptitude) {
-      return { melee: false, ranged: false, magic: false };
-    }
-
-    const hasMeleeEquipment = lostMeleeAptitude && char.equipment.some((item) => item != null && MELEE_CATEGORIES.has(item.category));
-    const hasRangedEquipment = lostRangedAptitude && char.equipment.some((item) => item != null && RANGED_CATEGORIES.has(item.category));
-    const hasMagicEquipment = lostMagicAptitude && char.equipment.some((item) => item != null && MAGIC_CATEGORIES.has(item.category));
-
-    return { melee: hasMeleeEquipment, ranged: hasRangedEquipment, magic: hasMagicEquipment };
-  };
-
-  const getEditConfirmWarnings = (edits: Partial<Character> | null): string[] => {
-    const warnings: string[] = [];
-    const equipSlotReductionCount = getEquipSlotReductionCount(edits);
-    if (equipSlotReductionCount > 0) {
-      warnings.push(t('home.party.equipmentSlotReductionWarning', { count: equipSlotReductionCount }));
-    }
-
-    const capabilityWarnings = getCapabilityRemovalWarningState(edits);
-    if (capabilityWarnings.melee) {
-      warnings.push(t('home.party.meleeCapabilityRemovedWarning'));
-    }
-    if (capabilityWarnings.ranged) {
-      warnings.push(t('home.party.rangedCapabilityRemovedWarning'));
-    }
-    if (capabilityWarnings.magic) {
-      warnings.push(t('home.party.magicCapabilityRemovedWarning'));
-    }
-
-    return warnings;
-  };
-
-  const editConfirmWarnings = getEditConfirmWarnings(pendingEdits);
-
-  // SpecRef: 9.1.4.9 | Operation-specific completion rules | Party build and equipment
-  // The edit is committed through `changeBuild`; the API decides whether the UI's confirmation dialog is required.
-  const commitCharacterBuild = async (edits: Partial<Character>, confirmed: boolean) => {
-    const outcome = await onChangeCharacterBuild(char.id, edits, confirmed);
-    if (outcome === 'confirmation_required') {
-      setShowEditConfirm(true);
-      return;
-    }
-    // A rejected edit keeps the editor open so the pending selections are not lost.
-    if (outcome === 'error') return;
+  const finishCharacterEdit = () => {
     setPendingEdits(null);
     setEditingCharacter(null);
     setShowEditConfirm(false);
+    setEditConfirmationWarnings([]);
   };
 
-  const completeCharacterEdit = () => {
+  const completeCharacterEdit = async () => {
     const changedKeys = getChangedEditKeys(pendingEdits);
+    if (changedKeys.length === 0 || !pendingEdits) return finishCharacterEdit();
 
-    if (changedKeys.length === 0) {
-      setPendingEdits(null);
-      setEditingCharacter(null);
-      setShowEditConfirm(false);
-      return;
-    }
-
+    // A rename never needs confirmation, so it is committed directly.
     if (changedKeys.length === 1 && changedKeys[0] === 'name') {
-      void commitCharacterBuild({ name: pendingEdits?.name ?? char.name }, false);
+      const renamed = await onChangeCharacterBuild(char.id, { name: pendingEdits.name ?? char.name }, { simulation: false });
+      if (renamed.status === 'ok') finishCharacterEdit();
       return;
     }
 
-    const equipSlotReductionCount = getEquipSlotReductionCount(pendingEdits);
-    const capabilityWarnings = getCapabilityRemovalWarningState(pendingEdits);
-    const hasCapabilityRemovals = capabilityWarnings.melee || capabilityWarnings.ranged || capabilityWarnings.magic;
-    if (equipSlotReductionCount === 0 && !hasCapabilityRemovals) {
-      void commitCharacterBuild(pendingEdits ?? {}, false);
+    const simulated = await onChangeCharacterBuild(char.id, pendingEdits, { simulation: true });
+    // A rejected edit keeps the editor open so the pending selections are not lost.
+    if (simulated.status === 'error') return;
+    if (simulated.confirmationRequired) {
+      setEditConfirmationWarnings(simulated.warnings);
+      setShowEditConfirm(true);
       return;
     }
-
-    if (equipSlotReductionCount > 0 && !hasEquippedItemInReducedSlots(pendingEdits) && !hasCapabilityRemovals) {
-      void commitCharacterBuild(pendingEdits ?? {}, false);
-      return;
-    }
-
-    setShowEditConfirm(true);
+    const committed = await onChangeCharacterBuild(char.id, pendingEdits, { simulation: false });
+    if (committed.status === 'ok') finishCharacterEdit();
   };
 
-  const saveCharacterEditWithEquipmentReset = () => {
-    if (getChangedEditKeys(pendingEdits).length === 0 || !pendingEdits) {
-      setPendingEdits(null);
-      setEditingCharacter(null);
-      setShowEditConfirm(false);
-      return;
-    }
-    void commitCharacterBuild(pendingEdits, true);
+  const saveCharacterEditWithEquipmentReset = async () => {
+    if (getChangedEditKeys(pendingEdits).length === 0 || !pendingEdits) return finishCharacterEdit();
+    const committed = await onChangeCharacterBuild(char.id, pendingEdits, { simulation: false, confirmation: 'yes' });
+    if (committed.status === 'ok') finishCharacterEdit();
   };
 
   const baseStatMultiplierRows = [

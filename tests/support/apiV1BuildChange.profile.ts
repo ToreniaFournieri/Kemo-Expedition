@@ -21,9 +21,12 @@ const character = (state: GameState, id = characterId) => state.parties[0].chara
 function context(applyAutoEquipment: ApiV1CommitContext['applyAutoEquipment'] = (state) => state): ApiV1CommitContext {
   return { simulatedAt: now, gameMode: 'mode.normal', enemyLevelOffset: 0, settings: {}, equipmentHistory: {}, uploadedFiles: {}, canonicalFiles: {}, applyAutoEquipment, createDeliveryId: () => 'd', now: () => now };
 }
-function fails(state: GameState, id: number, parameters: Record<string, unknown>, marker: string): void {
+// `simulation` is required by the contract; these helpers add it so each case reads as the change it exercises.
+const change = (state: GameState, id: number, parameters: Record<string, unknown>, extra: Record<string, unknown> = { simulation: false }) =>
+  applyApiV1Commit(path(id, 'changeBuild'), state, { ...parameters, ...extra }, context());
+function fails(state: GameState, id: number, parameters: Record<string, unknown>, marker: string, extra: Record<string, unknown> = { simulation: false }): void {
   let message = '';
-  try { applyApiV1Commit(path(id, 'changeBuild'), state, parameters, context()); } catch (error) { message = String(error); }
+  try { change(state, id, parameters, extra); } catch (error) { message = String(error); }
   assert.ok(message.includes(marker), `${JSON.stringify(parameters)} expected ${marker}, got ${message}`);
 }
 
@@ -37,12 +40,12 @@ fails(base, characterId, { racesAndGender: 'mimorian/female/999999' }, 'illegal_
 
 // The combined stable race/gender key is applied, including a validated, unlocked Mimorian form.
 {
-  const changed = applyApiV1Commit(path(characterId, 'changeBuild'), base, { racesAndGender: 'murid/male' }, context());
+  const changed = change(base, characterId, { racesAndGender: 'murid/male' });
   assert.equal(character(changed.state).raceId, 'murid');
   assert.equal(character(changed.state).gender, 'male');
   const enemyId = ENEMIES[0].id;
   const unlocked: GameState = { ...base, global: { ...base.global, unlockedMimorianEnemyIds: [enemyId] } };
-  const mimorian = applyApiV1Commit(path(characterId, 'changeBuild'), unlocked, { racesAndGender: `mimorian/female/${enemyId}` }, context());
+  const mimorian = change(unlocked, characterId, { racesAndGender: `mimorian/female/${enemyId}` });
   assert.equal(character(mimorian.state).raceId, 'mimorian');
   assert.equal(character(mimorian.state).gender, 'female');
   assert.equal(character(mimorian.state).mimorianEnemyId, enemyId);
@@ -62,31 +65,71 @@ function request(parameters: Record<string, unknown>, overrides: Partial<ApiV1Co
   return { operation: path(characterId, 'changeBuild'), expectedRevision: 0, idempotencyKey: 'change-build-key-001', requestId: 'build', parameters, uploadedFiles: {}, state: base, simulatedAt: now, control: control(), ...overrides };
 }
 
+// The contract's own confirmation protocol (Spec 9.1.3, 3-3-2): `simulation` reports without committing, and a change
+// that needs confirmation applies only with `confirmation: yes`. The generic 9.1.4.5 challenge is never issued.
 {
-  const challenged = await executeApiV1CommitTransaction(request(riskyParameters), dependencies());
-  assert.equal(challenged.ok, false);
-  if (challenged.ok) throw new Error('expected build confirmation');
-  assert.equal(challenged.error.code, 'confirmation_required');
-  assert.equal(challenged.error.details?.warningKey, 'api.warning.changeBuildEquipment');
-  assert.deepEqual(challenged.error.details?.allowedChoices, []);
-  assert.deepEqual(challenged.error.details?.warningArgs, {
-    equipmentSlotsRemoved: riskyPlan.equipmentSlotsRemoved,
-    invalidEquipment: riskyPlan.invalidEquipment,
-  });
-  const confirmed = await executeApiV1CommitTransaction(request(riskyParameters, {
-    control: challenged.durableControl!, confirmationToken: String(challenged.error.details?.confirmationToken),
-  }), dependencies());
+  const simulated = change(base, characterId, riskyParameters, { simulation: true });
+  assert.equal(simulated.data.confirmationRequired, true);
+  assert.equal(simulated.data.applied, false);
+  const warnings = simulated.data.warnings as { key: string; args: Record<string, number> }[];
+  assert.ok(warnings.length > 0);
+  assert.ok(warnings.every((warning) => warning.key.startsWith('api.warning.changeBuild.')));
+  assert.equal(warnings.some((warning) => warning.key === 'api.warning.changeBuild.meleeAptitudeRemoved' && warning.args.items > 0), true, 'the lost melee aptitude is named with its item count');
+  assert.deepEqual(simulated.state, base, 'a simulation never changes the state');
+
+  const missing = await executeApiV1CommitTransaction(request({ ...riskyParameters, simulation: false }), dependencies());
+  assert.equal(missing.ok, false);
+  if (missing.ok) throw new Error('expected a rejection');
+  assert.equal(missing.error.code, 'invalid_request', 'a required confirmation that is missing is a request error, not a generic challenge');
+
+  const cancelled = await executeApiV1CommitTransaction(request({ ...riskyParameters, simulation: false, confirmation: 'no' }, { idempotencyKey: 'change-build-no-0001' }), dependencies());
+  assert.equal(cancelled.ok, true);
+  if (!cancelled.ok) throw new Error(cancelled.error.code);
+  assert.equal(cancelled.response.revision, 0, 'a cancelled change does not advance the revision');
+  assert.equal(cancelled.stateChanged, false);
+  assert.equal((cancelled.response.data as { applied: boolean }).applied, false);
+
+  const confirmed = await executeApiV1CommitTransaction(request({ ...riskyParameters, simulation: false, confirmation: 'yes' }, { idempotencyKey: 'change-build-yes-001' }), dependencies());
   assert.equal(confirmed.ok, true);
   if (!confirmed.ok) throw new Error(confirmed.error.code);
   assert.equal(character(confirmed.state).mainClassId, 'guardian');
   assert.equal(character(confirmed.state).subClassId, 'guardian');
   assert.equal(confirmed.response.revision, 1);
+  assert.equal((confirmed.response.data as { applied: boolean; confirmationRequired: boolean }).applied, true);
   assert.equal(character(confirmed.state).equipment.filter(Boolean).length < character(base).equipment.filter(Boolean).length, true);
+
+  // Simulating through the authority is a valid no-op: no revision, no state change.
+  const simulatedTransaction = await executeApiV1CommitTransaction(request({ ...riskyParameters, simulation: true }, { idempotencyKey: 'change-build-sim-001' }), dependencies());
+  assert.equal(simulatedTransaction.ok, true);
+  if (!simulatedTransaction.ok) throw new Error(simulatedTransaction.error.code);
+  assert.equal(simulatedTransaction.response.revision, 0);
+  assert.equal(simulatedTransaction.stateChanged, false);
 }
+
+// Request validation of the two control parameters.
+fails(base, characterId, riskyParameters, 'invalid_request', {});
+fails(base, characterId, riskyParameters, 'invalid_request', { simulation: 'false' });
+fails(base, characterId, riskyParameters, 'invalid_request', { simulation: false });
+fails(base, characterId, riskyParameters, 'invalid_request', { simulation: false, confirmation: 'maybe' });
+fails(base, characterId, riskyParameters, 'invalid_request', { simulation: true, confirmation: 'yes' });
+// A change that needs no confirmation applies without one, reports no warnings, and `no` still cancels it.
+{
+  const rename = change(base, characterId, { name: 'Renamed' });
+  assert.equal(rename.data.confirmationRequired, false);
+  assert.deepEqual(rename.data.warnings, []);
+  assert.equal(rename.data.applied, true);
+  assert.equal(character(rename.state).name, 'Renamed');
+  const declined = change(base, characterId, { name: 'Renamed' }, { simulation: false, confirmation: 'no' });
+  assert.equal(declined.data.applied, false);
+  assert.equal(character(declined.state).name, character(base).name);
+}
+// A simulation reports the same errors a commit would.
+fails(base, characterId, { mainClassId: 'unknown' }, 'invalid_request', { simulation: true });
+fails(base, uniqueCharacterId, { name: 'renamed unique' }, 'illegal_action', { simulation: true });
 
 // A semantic no-op bypasses confirmation and retains the revision.
 {
-  const noOp = await executeApiV1CommitTransaction(request({ mainClassId: character(base).mainClassId }, { idempotencyKey: 'change-build-noop-01' }), dependencies());
+  const noOp = await executeApiV1CommitTransaction(request({ mainClassId: character(base).mainClassId, simulation: false }, { idempotencyKey: 'change-build-noop-01' }), dependencies());
   assert.equal(noOp.ok, true);
   if (!noOp.ok) throw new Error(noOp.error.code);
   assert.equal(noOp.response.revision, 0);
@@ -141,7 +184,7 @@ function request(parameters: Record<string, unknown>, overrides: Partial<ApiV1Co
   assert.throws(() => characterEditToChangeBuildParameters(target, { autoEquipmentMode: 2 }), /unsupported_character_edit:autoEquipmentMode/);
 
   const parameters = characterEditToChangeBuildParameters(target, { name: 'Renamed', mainClassId: 'guardian', subClassId: 'guardian' });
-  const applied = applyApiV1Commit(path(characterId, 'changeBuild'), base, parameters, context());
+  const applied = change(base, characterId, parameters, { simulation: false, confirmation: 'yes' });
   assert.equal(character(applied.state).name, 'Renamed');
   assert.equal(character(applied.state).mainClassId, 'guardian');
 }

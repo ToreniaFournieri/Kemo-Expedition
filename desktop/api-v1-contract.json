@@ -13865,6 +13865,9 @@
           "parameters": {
             "additionalProperties": false,
             "type": "object",
+            "required": [
+              "simulation"
+            ],
             "properties": {
               "name": {
                 "minLength": 1,
@@ -13895,6 +13898,21 @@
                 "minLength": 1,
                 "maxLength": 200,
                 "type": "string"
+              },
+              "simulation": {
+                "type": "boolean"
+              },
+              "confirmation": {
+                "anyOf": [
+                  {
+                    "const": "yes",
+                    "type": "string"
+                  },
+                  {
+                    "const": "no",
+                    "type": "string"
+                  }
+                ]
               }
             }
           },
@@ -13910,7 +13928,10 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "current"
+            "current",
+            "confirmationRequired",
+            "warnings",
+            "applied"
           ],
           "properties": {
             "current": {
@@ -13953,6 +13974,48 @@
                   "type": "boolean"
                 }
               }
+            },
+            "confirmationRequired": {
+              "type": "boolean"
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "key",
+                  "args"
+                ],
+                "properties": {
+                  "key": {
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "args": {
+                    "type": "object",
+                    "patternProperties": {
+                      "^(.*)$": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "boolean"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "applied": {
+              "type": "boolean"
             }
           }
         },
@@ -14000,7 +14063,10 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "current"
+                "current",
+                "confirmationRequired",
+                "warnings",
+                "applied"
               ],
               "properties": {
                 "current": {
@@ -14043,6 +14109,48 @@
                       "type": "boolean"
                     }
                   }
+                },
+                "confirmationRequired": {
+                  "type": "boolean"
+                },
+                "warnings": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "key",
+                      "args"
+                    ],
+                    "properties": {
+                      "key": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "args": {
+                        "type": "object",
+                        "patternProperties": {
+                          "^(.*)$": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "applied": {
+                  "type": "boolean"
                 }
               }
             },
@@ -14124,7 +14232,9 @@
           "body": {
             "expectedRevision": 0,
             "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
-            "parameters": {}
+            "parameters": {
+              "simulation": true
+            }
           }
         },
         "invalidRequest": {
@@ -14141,7 +14251,15 @@
               ],
               "undoAvailable": true,
               "redoAvailable": true
-            }
+            },
+            "confirmationRequired": true,
+            "warnings": [
+              {
+                "key": "xxxxxxx",
+                "args": {}
+              }
+            ],
+            "applied": true
           }
         }
       }

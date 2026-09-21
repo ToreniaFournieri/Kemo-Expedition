@@ -1,10 +1,10 @@
 import { evaluateEquipmentSet } from '../../game/equipmentSets';
 import { computeCharacterStats } from '../../game/characterComputation';
 import type { GameState } from '../../types';
-import { planCharacterBuildChange } from './buildChange';
 
 // SpecRef: 9.1.4.5 | Confirmation protocol | Confirmation challenge and choices
 // Decides, from one immutable snapshot, whether a commit needs the confirmation flow and which choices it offers.
+// `changeBuild` is not listed: it confirms through its own `simulation` and `confirmation` parameters (Spec 9.1.3, 3-3-2).
 
 export interface ApiV1ConfirmationPolicy {
   warningKey: string;
@@ -15,7 +15,6 @@ export interface ApiV1ConfirmationPolicy {
 }
 
 const LOAD_SET = /^commit\/build\/character\/(\d+)\/loadEquipmentSet$/;
-const CHANGE_BUILD = /^commit\/build\/character\/(\d+)\/changeBuild$/;
 
 /** Every choice a partial equipment-set load may take. `equipSet` is deliberately absent: it needs every exact item. */
 export const PARTIAL_LOAD_CHOICES = ['equipSimilar', 'equipExactMatchesOnly'] as const;
@@ -23,20 +22,6 @@ export const PARTIAL_LOAD_CHOICES = ['equipSimilar', 'equipExactMatchesOnly'] as
 export function resolveConfirmationPolicy(operation: string, state: GameState, parameters: Record<string, unknown>): ApiV1ConfirmationPolicy | null {
   if (operation === 'commit/setting/backup/reset') return { warningKey: 'api.warning.backupReset', warningArgs: {}, allowedChoices: [] };
   if (operation === 'commit/setting/backup/import') return { warningKey: 'api.warning.backupImport', warningArgs: {}, allowedChoices: [] };
-  const buildChange = operation.match(CHANGE_BUILD);
-  if (buildChange) {
-    try {
-      const plan = planCharacterBuildChange(state, Number(buildChange[1]), parameters);
-      return plan.requiresConfirmation ? {
-        warningKey: 'api.warning.changeBuildEquipment',
-        warningArgs: { equipmentSlotsRemoved: plan.equipmentSlotsRemoved, invalidEquipment: plan.invalidEquipment },
-        allowedChoices: [],
-      } : null;
-    } catch {
-      // Invalid requests are classified by the commit handler; they must not receive a confirmation reservation.
-      return null;
-    }
-  }
   const load = operation.match(LOAD_SET);
   if (!load) return null;
 

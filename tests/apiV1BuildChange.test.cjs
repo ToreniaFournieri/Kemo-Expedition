@@ -28,7 +28,11 @@ test('character build changes validate, confirm equipment loss, and report auto-
 
 test('Party character edits commit through the shared changeBuild handler, not direct reducer updates', () => {
   const partyTab = fs.readFileSync(path.resolve('src/components/home/tabs/PartyTab.tsx'), 'utf8');
-  assert.match(partyTab, /onChangeCharacterBuild\(char\.id, edits, confirmed\)/);
+  assert.match(partyTab, /onChangeCharacterBuild\(char\.id, pendingEdits, \{ simulation: true \}\)/, 'the edit is simulated first');
+  assert.match(partyTab, /\{ simulation: false, confirmation: 'yes' \}/, 'only a confirmed change is committed with confirmation');
+  for (const local of ['getEquipSlotReductionCount', 'hasEquippedItemInReducedSlots', 'getCapabilityRemovalWarningState', 'getEditConfirmWarnings']) {
+    assert.equal(partyTab.includes(local), false, `${local}: the API decides confirmation and warnings, not the tab`);
+  }
   assert.doesNotMatch(partyTab, /onUpdateCharacter\(char\.id, (pendingEdits|\{ name)/, 'build edits must not bypass the Application API');
   const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
   assert.match(home, /commit\('commit\/build\/character\/\{characterId\}\/changeBuild'/);

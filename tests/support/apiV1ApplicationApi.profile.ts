@@ -167,15 +167,28 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
 }
 
 // 1b. A UI-confirmed trusted command still traverses the shared challenge/token policy with one idempotency key.
+// (`changeBuild` confirms through its own `simulation` and `confirmation` parameters; a partial set load uses the shared policy.)
 {
   const h = harness();
   const local = h.api.createInProcessAdapter();
-  const confirmed = await local.commit('commit/build/character/{characterId}/changeBuild', {
-    pathParameters: { characterId: 2 }, parameters: { mainClassId: 'guardian', subClassId: 'guardian' }, confirmed: true,
+  const saved = await local.commit('commit/build/character/{characterId}/saveEquipmentSet', { pathParameters: { characterId: 1 }, parameters: { equipmentSet: { name: 'Shared set' } } }) as { data: { equipmentSetId: number }; error?: unknown };
+  assert.equal(saved.error, undefined);
+  const eventsBefore = h.playerCommitEvents.length;
+  const confirmed = await local.commit('commit/build/character/{characterId}/loadEquipmentSet', {
+    pathParameters: { characterId: 2 }, parameters: { equipmentSetId: saved.data.equipmentSetId, loadMode: 'equipSimilar' }, confirmed: true,
   }) as { revision: number; error?: unknown };
   assert.equal(confirmed.error, undefined);
-  assert.equal(confirmed.revision, 1);
-  assert.deepEqual(h.playerCommitEvents, ['persist', 'persist', 'publish'], 'challenge reservation precedes durable commit and publication');
+  assert.deepEqual(h.playerCommitEvents.slice(eventsBefore), ['persist', 'persist', 'publish'], 'challenge reservation precedes durable commit and publication');
+}
+{
+  // Without the UI's confirmation, the same partial load is challenged rather than applied.
+  const h = harness();
+  const local = h.api.createInProcessAdapter();
+  const saved = await local.commit('commit/build/character/{characterId}/saveEquipmentSet', { pathParameters: { characterId: 1 }, parameters: { equipmentSet: { name: 'Shared set' } } }) as { data: { equipmentSetId: number } };
+  const challenged = await local.commit('commit/build/character/{characterId}/loadEquipmentSet', {
+    pathParameters: { characterId: 2 }, parameters: { equipmentSetId: saved.data.equipmentSetId, loadMode: 'equipSimilar' },
+  }) as { error?: { code?: string } };
+  assert.equal(challenged.error?.code, 'confirmation_required');
 }
 
 // 1c. The adapter tells subscribers after a commit is fully installed, so a projection that depends on control

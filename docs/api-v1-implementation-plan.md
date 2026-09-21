@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 52. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 53. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -61,7 +61,7 @@ Next, in order:
    - 4c. Character and member list.
      - 4c-1. (Done, Build 49) Party pane, party selector, member list, and deity rules render from `read/observation/party` through `PartyView` and `PartySummary`.
      - 4c-2. (Done, Build 51) Offense and defense amplifiers, effective accuracy and decay, and total penetration come from one shared game function (`src/game/statusFacts.ts`), are published as `calculatedStatus` facts, and the tab reads them for its offense and defense lines and for the status-change notifications. Lossless round-trip test against the old formulas.
-     - 4c-3. The tab still reads `ComputedCharacterStats` (`characterStats`) for the ability list and sources, bonus list, HP breakdown, elemental help lines, spell name, equipment slot count, and per-item display. Publish the remaining facts (ability sources, aggregated bonuses with their display names, HP base and item contributions) and drop the `characterStats` prop.
+     - 4c-3. (`changeBuild` simulation and confirmation moved to the API in Build 53, which removed the tab's hypothetical-stats logic for the edit warnings; one other local `computeCharacterStats` call remains, near the equipment-slot list.) The tab still reads `ComputedCharacterStats` (`characterStats`) for the ability list and sources, bonus list, HP breakdown, elemental help lines, spell name, equipment slot count, and per-item display. Publish the remaining facts (ability sources, aggregated bonuses with their display names, HP base and item contributions) and drop the `characterStats` prop.
    - 4d. Equipment slots list from the `equipment` projection (entries parse to items through the shared format).
    - 4e. Retained selections (selected party and character, filters) through `uiPreferences`. Selected party is currently persisted in the save (`selectedPartyIndex`), so moving it changes what is persisted; decide first.
    - 4f. Remove the `Party`, `Character`, `ComputedCharacterStats`, and inventory props, and add the mechanical check described in Stage 9.

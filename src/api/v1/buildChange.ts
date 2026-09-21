@@ -3,7 +3,7 @@ import { ENEMIES } from '../../data/enemies';
 import { LINEAGES } from '../../data/lineages';
 import { PREDISPOSITIONS } from '../../data/predispositions';
 import { computeCharacterStats } from '../../game/characterComputation';
-import { canCharacterEquipCategory } from '../../game/equipmentSets';
+import { canCharacterEquipCategory, getEquipmentAptitudeForCategory, type EquipmentAptitude } from '../../game/equipmentSets';
 import type { Character, GameState, RaceId } from '../../types';
 
 // SpecRef: 8.2.3 | Character Edit Mode (selected member) | Race, gender, class, lineage, and predisposition selection
@@ -16,6 +16,18 @@ const EDITABLE_RACES = new Set<RaceId>([
 ]);
 const ALLOWED_PARAMETERS = new Set(['name', 'racesAndGender', 'mainClassId', 'subClassId', 'lineage', 'predisposition']);
 
+/** A warning the caller must confirm, as a stable key with numeric arguments (never localized text). */
+export interface CharacterBuildWarning { key: string; args: Record<string, number> }
+
+export const BUILD_WARNING_KEYS = {
+  equipmentSlotReduction: 'api.warning.changeBuild.equipmentSlotReduction',
+  aptitudeRemoved: {
+    melee: 'api.warning.changeBuild.meleeAptitudeRemoved',
+    ranged: 'api.warning.changeBuild.rangedAptitudeRemoved',
+    magic: 'api.warning.changeBuild.magicAptitudeRemoved',
+  },
+} as const;
+
 export interface CharacterBuildChangePlan {
   partyIndex: number;
   character: Character;
@@ -23,6 +35,8 @@ export interface CharacterBuildChangePlan {
   equipmentSlotsRemoved: number;
   invalidEquipment: number;
   requiresConfirmation: boolean;
+  /** Empty unless confirmation is required (Spec 9.1.3, 3-3-2). */
+  warnings: CharacterBuildWarning[];
 }
 
 function invalid(reason: string): never { throw new Error(`invalid_request:${reason}`); }
@@ -109,12 +123,23 @@ export function planCharacterBuildChange(state: GameState, characterId: number, 
   const equipmentSlotsRemoved = Math.max(0, oldMaximum - nextMaximum);
   const reducedSlotContainsEquipment = equipmentSlotsRemoved > 0
     && character.equipment.slice(nextMaximum, oldMaximum).some((item) => item !== null);
-  const invalidEquipment = character.equipment.filter((item) => item !== null
-    && canCharacterEquipCategory(character, item.category)
-    && !canCharacterEquipCategory(effectiveCharacter, item.category)).length;
+  const lostAptitudeItems: Record<EquipmentAptitude, number> = { melee: 0, ranged: 0, magic: 0 };
+  for (const item of character.equipment) {
+    if (item === null || !canCharacterEquipCategory(character, item.category) || canCharacterEquipCategory(effectiveCharacter, item.category)) continue;
+    const aptitude = getEquipmentAptitudeForCategory(item.category);
+    if (aptitude) lostAptitudeItems[aptitude] += 1;
+  }
+  const invalidEquipment = lostAptitudeItems.melee + lostAptitudeItems.ranged + lostAptitudeItems.magic;
+  const requiresConfirmation = reducedSlotContainsEquipment || invalidEquipment > 0;
 
-  return {
-    partyIndex, character, updates, equipmentSlotsRemoved, invalidEquipment,
-    requiresConfirmation: reducedSlotContainsEquipment || invalidEquipment > 0,
-  };
+  // The slot warning is reported with the aptitude warnings whenever confirmation is needed, as the Party UI shows them.
+  const warnings: CharacterBuildWarning[] = [];
+  if (requiresConfirmation) {
+    if (equipmentSlotsRemoved > 0) warnings.push({ key: BUILD_WARNING_KEYS.equipmentSlotReduction, args: { count: equipmentSlotsRemoved } });
+    for (const aptitude of ['melee', 'ranged', 'magic'] as const) {
+      if (lostAptitudeItems[aptitude] > 0) warnings.push({ key: BUILD_WARNING_KEYS.aptitudeRemoved[aptitude], args: { items: lostAptitudeItems[aptitude] } });
+    }
+  }
+
+  return { partyIndex, character, updates, equipmentSlotsRemoved, invalidEquipment, requiresConfirmation, warnings };
 }

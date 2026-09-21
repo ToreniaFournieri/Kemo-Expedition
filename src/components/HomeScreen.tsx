@@ -96,7 +96,7 @@ import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
 import { DEFAULT_ORCA_ENEMY_LEVEL_OFFSET, isRuntimeGameMode, normalizeOrcaEnemyLevelOffset, type RuntimeGameMode } from '../game/runtimeGameMode';
 import { setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
-import { characterEditToChangeBuildParameters } from '../api/v1/characterBuildParameters';
+import { characterEditToChangeBuildParameters, type CharacterBuildOutcome } from '../api/v1/characterBuildParameters';
 import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIntents';
 import { parseInventoryStacks, parseJewelStacks, parseSavedEquipmentSet } from '../api/v1/itemFormat';
 import { buildPartySummaries, buildPartyView, type PartyProjection } from '../api/v1/partyView';
@@ -4926,19 +4926,21 @@ export function HomeScreen({
           setSelectedCharacter={setSelectedCharacter}
           editingCharacter={editingCharacter}
           setEditingCharacter={setEditingCharacter}
-          onChangeCharacterBuild={async (characterId, edits, confirmed) => {
+          onChangeCharacterBuild={async (characterId, edits, request): Promise<CharacterBuildOutcome> => {
+            const failed: CharacterBuildOutcome = { status: 'error', confirmationRequired: false, warnings: [], applied: false };
             const target = currentParty.characters.find((character) => character.id === characterId);
-            if (!target) return 'error';
+            if (!target) return failed;
             const parameters = characterEditToChangeBuildParameters(target, edits);
-            if (Object.keys(parameters).length === 0) return 'ok';
+            if (Object.keys(parameters).length === 0) return { status: 'ok', confirmationRequired: false, warnings: [], applied: false };
             const response = await inProcessApiRef.current!.commit('commit/build/character/{characterId}/changeBuild', {
-              pathParameters: { characterId }, parameters, confirmed,
+              pathParameters: { characterId }, parameters: { ...parameters, ...request },
             });
-            const error = response.error as { code?: string } | undefined;
-            if (!error) return 'ok';
-            if (error.code === 'confirmation_required') return 'confirmation_required';
-            console.error('[api-v1] Character build change failed', error);
-            return 'error';
+            if (response.error) {
+              console.error('[api-v1] Character build change failed', response.error);
+              return failed;
+            }
+            const data = response.data as { confirmationRequired: boolean; warnings: CharacterBuildOutcome['warnings']; applied: boolean };
+            return { status: 'ok', confirmationRequired: data.confirmationRequired, warnings: data.warnings, applied: data.applied };
           }}
           onReorderPartyCharacter={(fromIndex, toIndex) => {
             const order = currentParty.characters.map((character) => character.id);
