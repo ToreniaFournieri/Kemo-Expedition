@@ -87,7 +87,7 @@ test('seven consecutive successful returns unlock the first Clear-Gate permanent
   let party = gateParty();
 
   for (let run = 1; run <= required; run += 1) {
-    const result = applyClearGateOutcome(party, 1, 'Turned_Back');
+    const result = applyClearGateOutcome(party, 1, 'Return');
     party = { ...party, clearGateProgress: result.progress, clearGateStatus: result.status };
     assert.equal(getClearGateProgress(party, gateKey), run);
   }
@@ -107,7 +107,7 @@ test('a failed run resets only the active next-gate streak', () => {
     clearGateStatus: { [firstGate]: true },
   });
 
-  const result = applyClearGateOutcome(party, 1, 'Wounded_Retreat');
+  const result = applyClearGateOutcome(party, 1, 'Retreat');
   assert.equal(result.progress[String(firstGate)], firstRequired);
   assert.equal(result.progress[String(secondGate)], 0);
   assert.equal(result.status[firstGate], true);

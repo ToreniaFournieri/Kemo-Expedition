@@ -1,6 +1,6 @@
 import type { Item, Party } from '../types/index.ts';
 
-export type ClearGateOutcome = 'Clear' | 'Turned_Back' | 'Draw_Retreat' | 'Wounded_Retreat' | 'Defeat';
+export type ClearGateOutcome = 'Clear' | 'Return' | 'Draw' | 'Retreat' | 'Defeat';
 
 export const ELITE_GATE_REQUIREMENTS: Readonly<Record<number, number>> = {
   1: 7,
@@ -91,7 +91,7 @@ export function applyClearGateOutcome(
 
   const key = String(gateKey);
   const required = getClearGateRequired(gateKey);
-  if (outcome === 'Clear' || outcome === 'Turned_Back') {
+  if (outcome === 'Clear' || outcome === 'Return') {
     const nextCount = Math.min(required, getClearGateProgress(party, gateKey) + 1);
     progress[key] = nextCount;
     if (nextCount >= required) status[gateKey] = true;

@@ -485,7 +485,7 @@ function ExpeditionTab({
         // the authoritative aggregate outcome instead of inferring the label
         // from the configured depth selector alone.
         const simulationUsesClearLabel = simulation?.result
-          ? simulation.result.Turned_Back === 0
+          ? simulation.result.Return === 0
           : party.expeditionDepthLimit === 'all';
         const simulationResultText = simulation?.status === 'complete' && simulation.result
           ? t(simulationUsesClearLabel
@@ -493,9 +493,9 @@ function ExpeditionTab({
             : 'party.expedition.simulationResult.return', {
             success: formatDecimal((simulationUsesClearLabel
               ? simulation.result.Clear
-              : simulation.result.Turned_Back) / simulation.result.total * 100, 1),
-            draw: formatDecimal(simulation.result.Draw_Retreat / simulation.result.total * 100, 1),
-            retreat: formatDecimal(simulation.result.Wounded_Retreat / simulation.result.total * 100, 1),
+              : simulation.result.Return) / simulation.result.total * 100, 1),
+            draw: formatDecimal(simulation.result.Draw / simulation.result.total * 100, 1),
+            retreat: formatDecimal(simulation.result.Retreat / simulation.result.total * 100, 1),
             defeat: formatDecimal(simulation.result.Defeat / simulation.result.total * 100, 1),
           })
           : null;
@@ -1085,7 +1085,7 @@ function ExpeditionTab({
                 {isExpeditionStatsDisplayEnabled && (
                   <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
                     <span>
-                      {t('party.expedition.stats', { clear: formatNumber(displayedExpeditionStats.Clear), returned: formatNumber(displayedExpeditionStats.Turned_Back), draw: formatNumber(displayedExpeditionStats.Draw_Retreat), retreat: formatNumber(displayedExpeditionStats.Wounded_Retreat), defeat: formatNumber(displayedExpeditionStats.Defeat), total: formatNumber(displayedExpeditionStats.Clear + displayedExpeditionStats.Turned_Back + displayedExpeditionStats.Draw_Retreat + displayedExpeditionStats.Wounded_Retreat + displayedExpeditionStats.Defeat) })}
+                      {t('party.expedition.stats', { clear: formatNumber(displayedExpeditionStats.Clear), returned: formatNumber(displayedExpeditionStats.Return), draw: formatNumber(displayedExpeditionStats.Draw), retreat: formatNumber(displayedExpeditionStats.Retreat), defeat: formatNumber(displayedExpeditionStats.Defeat), total: formatNumber(displayedExpeditionStats.Clear + displayedExpeditionStats.Return + displayedExpeditionStats.Draw + displayedExpeditionStats.Retreat + displayedExpeditionStats.Defeat) })}
                     </span>
                     <button
                       type="button"

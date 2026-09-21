@@ -407,9 +407,24 @@ definitions in 9.1.3.
   simulated revision and seed-domain identifier and returns both the compact
   strings required by 9.1.3 and structured numeric outcome percentages for the
   overview and each room. It never exposes or advances the live random stream.
-* `sortie` and `godsBattle` return the final outcome, return reason, rewards,
-  affected inventory/currency, Diary references, and retained battle-log
-  reference needed to explain the committed result.
+* `sortie` and `godsBattle` behave as pressing the Sortie or Gods Battle button
+  (9.1.3, 3-2-2): the same refusals and the same reducer actions in the same
+  order. They are `illegal_action` (details name the reason) when the party has no
+  Instant Expedition charge (`charge_insufficient`), is exhausted at 0 HP outside
+  the Colosseum (`party_exhausted`), when `godsBattle` is requested without an
+  available Gods Battle (`gods_battle_unavailable`), or when the party is already
+  moving to a Gods Battle (`already_moving_to_gods_battle`). Otherwise the request
+  cancels the party's side quest (Gods Battle only), consumes one stock at the
+  current Speed of Time, finalizes the running exploration's Diary entry when the
+  party is in `state.explore`, clears the pending profit, restores HP, resolves the
+  expedition, rolls sleepiness, and leaves the party at the beginning of
+  `state.rest`. For the ordinary player's runtime, that last step is a write to the
+  live party cycle, applied after the commit is durable and in the same tick as the
+  published state; an API account has no live cycle, so it neither reads nor writes
+  one. The result is `{outcome, rewards, diaryEntryId, logId}`: `outcome` uses the
+  outcome names above, `diaryEntryId` is the Diary entry this sortie created (or
+  `null`), and `logId` is `diary:<diaryEntryId>` for that entry or `latest` for the
+  party's newest retained log.
 
 **Party build and equipment**
 
@@ -846,11 +861,10 @@ type DiaryEntry = {
   evaluated. `abilities` lists the item's ability IDs.
 * Every expedition outcome in a response (`finalOutcome`, the sortie and Gods Battle
   `outcome`, the compact `lastOutcome`, and the Expedition `disclosedOutcome`) uses
-  the wording of the Simulation Run and `latestSimulationResult`: `Clear`, `Return`,
-  `Draw`, `Retreat`, or `Defeat` (Spec 6.1.5). The runtime's stored names (`Escape`)
-  and the canonical Clear-Gate names (`Turned_Back`, `Draw_Retreat`,
-  `Wounded_Retreat`) are never returned; a stored `Retreat` is a `Draw` when the last
-  room ended in a draw, as the game itself decides.
+  the one set of outcome names the runtime and the specifications share (Spec
+  6.1.5): `Clear`, `Return`, `Draw`, `Retreat`, or `Defeat`. A finished log stores
+  `Retreat` for both a draw and a retreat; a `Draw` is reported when the last room
+  ended in a draw, as the game itself decides.
 * `latestBattleLog` returns `{battleLog: BattleLog | null, bottleneckEnemies}`.
   `BattleLog` is `{logId, partyNumber, dungeonId, difficultyOffset, finalOutcome
   ("Clear"|"Return"|"Draw"|"Retreat"|"Defeat"), totalExperience, completedRooms,

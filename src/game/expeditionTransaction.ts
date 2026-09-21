@@ -10,7 +10,7 @@ import {
   type ExpeditionOutcomeResult,
 } from './expeditionEffects/expeditionOutcome.ts';
 
-export type ExpeditionFinalOutcome = 'Clear' | 'Escape' | 'Defeat' | 'Retreat';
+export type ExpeditionFinalOutcome = 'Clear' | 'Return' | 'Defeat' | 'Retreat';
 export type EnemyBattleStats = Record<number, { defeats: number; encounters: number }>;
 
 export interface CreateExpeditionTransactionInput {
@@ -90,9 +90,9 @@ export interface PlanExpeditionFinalizationInput {
 
 export interface ExpeditionStatistics {
   readonly Clear: number;
-  readonly Turned_Back: number;
-  readonly Draw_Retreat: number;
-  readonly Wounded_Retreat: number;
+  readonly Return: number;
+  readonly Draw: number;
+  readonly Retreat: number;
   readonly Defeat: number;
   readonly donatedGold: number;
   readonly savedGold: number;
@@ -207,7 +207,7 @@ export class ExpeditionTransactionAccumulator {
       return;
     }
     this.currentHp = input.finalHp;
-    if (input.reachedDepthLimit) this.end('Escape');
+    if (input.reachedDepthLimit) this.end('Return');
   }
 
   recordDefeat(partyHp: number): void {

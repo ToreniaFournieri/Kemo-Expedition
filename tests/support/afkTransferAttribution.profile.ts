@@ -24,7 +24,10 @@ const SIMULATED_END_AT = Date.UTC(2026, 7, 16);
 // Compact Diary checkpoint; pre-change/current non-history state hashes were verified equal.
 // Updated when the retired apiRuntime branch was intentionally removed from
 // canonical save serialization; gameplay and compact/full parity remain gated.
-const EXPECTED_FINAL_HASH = 'd60d4a82ecec04c073d45da035718fcd3d126c98ee0f46018dc20f844729254c';
+// Build 69 renamed the persisted outcome names (`Turned_Back`, `Draw_Retreat`, `Wounded_Retreat`, and the stored `Escape`) to
+// `Return`, `Draw`, `Retreat`, and `Return`. The previous pin (d60d4a82ecec04c0…) is this state with only those names changed:
+// the serialization was verified byte-for-byte equal after mapping the old names to the new ones.
+const EXPECTED_FINAL_HASH = '8f42893aeec20efce020282167144f5a48dd90c6f75cb0b590fa2649494cf590';
 
 function createSeededRandom(seed: number): () => number {
   let value = seed >>> 0 || 0x9e3779b9;

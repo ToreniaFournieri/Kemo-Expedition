@@ -66,6 +66,7 @@ import {
   normalizeRevealedGlossaryAbilityIds,
   normalizeRevealedGlossaryTerrainKeys,
 } from '../game/glossaryDisclosure';
+import { upgradeLegacyOutcomeKeys } from '../game/legacyOutcomeKeys';
 import { gameplayRandom, createApiRandom, withGameplayRandomSource } from '../game/gameplayRandom';
 import { replaceCharacterEquipment } from '../game/equipment';
 import {
@@ -559,18 +560,18 @@ type PartyConditionState =
   | 'condition.great'
   | 'condition.excellent';
 
-type ConditionOutcomeKey = 'Clear' | 'Turned_Back' | 'Draw_Retreat' | 'Wounded_Retreat' | 'Defeat';
+type ConditionOutcomeKey = 'Clear' | 'Return' | 'Draw' | 'Retreat' | 'Defeat';
 
 const CONDITION_ADJUSTMENTS: Record<PartyConditionState, Record<ConditionOutcomeKey, number>> = {
-  'condition.terrible': { Clear: 15, Turned_Back: 6, Draw_Retreat: 2, Wounded_Retreat: 1, Defeat: -4 },
-  'condition.poor': { Clear: 12, Turned_Back: 5, Draw_Retreat: 1, Wounded_Retreat: 0, Defeat: -15 },
-  'condition.low': { Clear: 9, Turned_Back: 4, Draw_Retreat: 1, Wounded_Retreat: -1, Defeat: -26 },
-  'condition.cautious': { Clear: 6, Turned_Back: 3, Draw_Retreat: 0, Wounded_Retreat: -2, Defeat: -38 },
-  'condition.normal': { Clear: 4, Turned_Back: 2, Draw_Retreat: -1, Wounded_Retreat: -8, Defeat: -50 },
-  'condition.steady': { Clear: 3, Turned_Back: 1, Draw_Retreat: -3, Wounded_Retreat: -10, Defeat: -58 },
-  'condition.good': { Clear: 2, Turned_Back: 1, Draw_Retreat: -4, Wounded_Retreat: -12, Defeat: -64 },
-  'condition.great': { Clear: 1, Turned_Back: 0, Draw_Retreat: -5, Wounded_Retreat: -14, Defeat: -68 },
-  'condition.excellent': { Clear: 1, Turned_Back: 0, Draw_Retreat: -6, Wounded_Retreat: -16, Defeat: -70 },
+  'condition.terrible': { Clear: 15, Return: 6, Draw: 2, Retreat: 1, Defeat: -4 },
+  'condition.poor': { Clear: 12, Return: 5, Draw: 1, Retreat: 0, Defeat: -15 },
+  'condition.low': { Clear: 9, Return: 4, Draw: 1, Retreat: -1, Defeat: -26 },
+  'condition.cautious': { Clear: 6, Return: 3, Draw: 0, Retreat: -2, Defeat: -38 },
+  'condition.normal': { Clear: 4, Return: 2, Draw: -1, Retreat: -8, Defeat: -50 },
+  'condition.steady': { Clear: 3, Return: 1, Draw: -3, Retreat: -10, Defeat: -58 },
+  'condition.good': { Clear: 2, Return: 1, Draw: -4, Retreat: -12, Defeat: -64 },
+  'condition.great': { Clear: 1, Return: 0, Draw: -5, Retreat: -14, Defeat: -68 },
+  'condition.excellent': { Clear: 1, Return: 0, Draw: -6, Retreat: -16, Defeat: -70 },
 };
 
 // SpecRef: 7.1.2 | AUTO progress logic | condition state classification
@@ -588,8 +589,8 @@ function getConditionState(condition: number): PartyConditionState {
 
 function getConditionOutcomeKey(finalOutcome: ExpeditionLog['finalOutcome'], endedWithDrawRetreat: boolean): ConditionOutcomeKey {
   if (finalOutcome === 'Clear') return 'Clear';
-  if (finalOutcome === 'Escape') return 'Turned_Back';
-  if (finalOutcome === 'Retreat') return endedWithDrawRetreat ? 'Draw_Retreat' : 'Wounded_Retreat';
+  if (finalOutcome === 'Return') return 'Return';
+  if (finalOutcome === 'Retreat') return endedWithDrawRetreat ? 'Draw' : 'Retreat';
   return 'Defeat';
 }
 
@@ -732,14 +733,14 @@ function getAltarVictoriesWithDefaults(value: unknown): Record<string, number> {
 }
 function getExpeditionStatsWithDefaults(value: unknown) {
   if (!value || typeof value !== 'object') {
-    return { Clear: 0, Turned_Back: 0, Draw_Retreat: 0, Wounded_Retreat: 0, Defeat: 0, donatedGold: 0, savedGold: 0 };
+    return { Clear: 0, Return: 0, Draw: 0, Retreat: 0, Defeat: 0, donatedGold: 0, savedGold: 0 };
   }
-  const raw = value as Record<string, unknown>;
+  const raw = upgradeLegacyOutcomeKeys(value) as Record<string, unknown>;
   return {
     Clear: typeof raw.Clear === 'number' ? raw.Clear : (typeof raw.victories === 'number' ? raw.victories : 0),
-    Turned_Back: typeof raw.Turned_Back === 'number' ? raw.Turned_Back : (typeof raw.returns === 'number' ? raw.returns : 0),
-    Draw_Retreat: typeof raw.Draw_Retreat === 'number' ? raw.Draw_Retreat : (typeof raw.draws === 'number' ? raw.draws : 0),
-    Wounded_Retreat: typeof raw.Wounded_Retreat === 'number' ? raw.Wounded_Retreat : (typeof raw.retreats === 'number' ? raw.retreats : 0),
+    Return: typeof raw.Return === 'number' ? raw.Return : (typeof raw.returns === 'number' ? raw.returns : 0),
+    Draw: typeof raw.Draw === 'number' ? raw.Draw : (typeof raw.draws === 'number' ? raw.draws : 0),
+    Retreat: typeof raw.Retreat === 'number' ? raw.Retreat : (typeof raw.retreats === 'number' ? raw.retreats : 0),
     Defeat: typeof raw.Defeat === 'number' ? raw.Defeat : (typeof raw.defeats === 'number' ? raw.defeats : 0),
     donatedGold: typeof raw.donatedGold === 'number' ? raw.donatedGold : 0,
     savedGold: typeof raw.savedGold === 'number' ? raw.savedGold : 0,
@@ -911,13 +912,15 @@ export function getAfkInventoryDeltaForState(state: GameState): AfkInventoryDelt
   return afkInventoryDeltaByState.get(state);
 }
 
-function normalizeExpeditionFinalOutcome(rawOutcome: unknown): 'Clear' | 'Escape' | 'Retreat' | 'Defeat' {
-  if (rawOutcome === 'Clear' || rawOutcome === 'Escape' || rawOutcome === 'Retreat' || rawOutcome === 'Defeat') {
+function normalizeExpeditionFinalOutcome(rawOutcome: unknown): 'Clear' | 'Return' | 'Retreat' | 'Defeat' {
+  // `Escape` is the name saves used before the outcome names were unified.
+  if (rawOutcome === 'Escape') return 'Return';
+  if (rawOutcome === 'Clear' || rawOutcome === 'Return' || rawOutcome === 'Retreat' || rawOutcome === 'Defeat') {
     return rawOutcome;
   }
   if (rawOutcome === 'victory') return 'Clear';
   if (rawOutcome === 'defeat') return 'Defeat';
-  if (rawOutcome === 'escape' || rawOutcome === 'return') return 'Escape';
+  if (rawOutcome === 'escape' || rawOutcome === 'return') return 'Return';
   if (rawOutcome === 'retreat') return 'Retreat';
   return 'Retreat';
 }
@@ -2908,7 +2911,7 @@ function reduceGameState(
               totalExperience: 0,
               totalRooms: 0,
               completedRooms: 0,
-              finalOutcome: 'Escape',
+              finalOutcome: 'Return',
               entries: [],
               rewards: [],
               autoSellProfit: 0,
@@ -4676,9 +4679,9 @@ export async function simulateExpeditionRuns(
 
   const result: ExpeditionSimulationResult = {
     Clear: 0,
-    Turned_Back: 0,
-    Draw_Retreat: 0,
-    Wounded_Retreat: 0,
+    Return: 0,
+    Draw: 0,
+    Retreat: 0,
     Defeat: 0,
     total,
     rooms: createExpeditionSimulationRoomResults(total),
@@ -4709,18 +4712,18 @@ export async function simulateExpeditionRuns(
     if (resolution.outcome === 'Clear') {
       result.Clear += 1;
       terminalStatus = 'Clear';
-    } else if (resolution.outcome === 'Escape') {
-      result.Turned_Back += 1;
+    } else if (resolution.outcome === 'Return') {
+      result.Return += 1;
       terminalStatus = 'Return';
     } else if (resolution.outcome === 'Defeat') {
       result.Defeat += 1;
       terminalStatus = 'Defeat';
     } else {
       if (resolution.terminalBattleOutcome === 'draw') {
-        result.Draw_Retreat += 1;
+        result.Draw += 1;
         terminalStatus = 'Draw';
       } else {
-        result.Wounded_Retreat += 1;
+        result.Retreat += 1;
         terminalStatus = 'Retreat';
       }
     }

@@ -378,9 +378,9 @@ export interface Party {
   diarySettings: DiarySettings;
   expeditionStats: {
     Clear: number;
-    Turned_Back: number;
-    Draw_Retreat: number;
-    Wounded_Retreat: number;
+    Return: number;
+    Draw: number;
+    Retreat: number;
     Defeat: number;
     donatedGold: number;
     savedGold: number;
@@ -756,7 +756,7 @@ export interface ExpeditionLog {
   totalExperience: number;
   totalRooms: number;
   completedRooms: number;
-  finalOutcome: 'Clear' | 'Escape' | 'Retreat' | 'Defeat';
+  finalOutcome: 'Clear' | 'Return' | 'Retreat' | 'Defeat';
   entries: ExpeditionLogEntry[];
   rewards: Item[];
   autoSellProfit: number;
@@ -769,9 +769,9 @@ export interface ExpeditionLog {
 
 export interface ExpeditionSimulationResult {
   Clear: number;
-  Turned_Back: number;
-  Draw_Retreat: number;
-  Wounded_Retreat: number;
+  Return: number;
+  Draw: number;
+  Retreat: number;
   Defeat: number;
   total: number;
   rooms: ExpeditionSimulationRoomResult[];

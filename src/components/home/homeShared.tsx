@@ -1,3 +1,4 @@
+import { upgradeLegacyOutcomeKeys } from '../../game/legacyOutcomeKeys';
 import { renderDiaryMetadata } from '../../game/compactDiary.ts';
 import { Fragment,useEffect,useState,type CSSProperties,type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -817,19 +818,19 @@ export function getExplorationVisibleRoomCount(elapsedMs: number, durationMs: nu
   );
 }
 
-export function getExpeditionOutcomeLabel(outcome: 'Clear' | 'Escape' | 'Defeat' | 'Retreat' | string): string {
+export function getExpeditionOutcomeLabel(outcome: 'Clear' | 'Return' | 'Defeat' | 'Retreat' | string): string {
   if (outcome === 'Clear' || outcome === 'victory') return t('expedition.outcome.clear');
-  if (outcome === 'Escape' || outcome === 'escape' || outcome === 'return') return t('expedition.outcome.return');
+  if (outcome === 'Return' || outcome === 'Escape' || outcome === 'escape' || outcome === 'return') return t('expedition.outcome.return');
   if (outcome === 'Defeat' || outcome === 'defeat') return t('expedition.outcome.defeat');
   return t('expedition.outcome.retreat');
 }
 
-export function getReturnedExpeditionOutcome(log: ExpeditionLog | null | undefined): 'Defeat' | 'Wounded_Retreat' | 'Draw_Retreat' | 'Turned_Back' | 'Clear' | undefined {
+export function getReturnedExpeditionOutcome(log: ExpeditionLog | null | undefined): 'Defeat' | 'Retreat' | 'Draw' | 'Return' | 'Clear' | undefined {
   if (!log) return undefined;
   if (log.finalOutcome === 'Defeat') return 'Defeat';
-  if (log.finalOutcome === 'Escape') return 'Turned_Back';
-  if (log.entries.length > 0 && log.entries[log.entries.length - 1].outcome === 'draw') return 'Draw_Retreat';
-  if (log.finalOutcome === 'Retreat') return 'Wounded_Retreat';
+  if (log.finalOutcome === 'Return') return 'Return';
+  if (log.entries.length > 0 && log.entries[log.entries.length - 1].outcome === 'draw') return 'Draw';
+  if (log.finalOutcome === 'Retreat') return 'Retreat';
   return 'Clear';
 }
 
@@ -1324,9 +1325,9 @@ export function renderTextWithRaceIcons(text: string, iconClassName = 'h-3.5 w-3
 
 export type AfkSummaryStats = {
   Clear: number;
-  Turned_Back: number;
-  Draw_Retreat: number;
-  Wounded_Retreat: number;
+  Return: number;
+  Draw: number;
+  Retreat: number;
   Defeat: number;
   donatedGold: number;
   savedGold: number;
@@ -1337,22 +1338,23 @@ export function isAfkSummaryStats(value: unknown): value is AfkSummaryStats {
   const stats = value as Partial<Record<keyof AfkSummaryStats, unknown>>;
   return (
     typeof stats.Clear === 'number'
-    && typeof stats.Turned_Back === 'number'
-    && typeof stats.Draw_Retreat === 'number'
-    && typeof stats.Wounded_Retreat === 'number'
+    && typeof stats.Return === 'number'
+    && typeof stats.Draw === 'number'
+    && typeof stats.Retreat === 'number'
     && typeof stats.Defeat === 'number'
     && typeof stats.donatedGold === 'number'
     && typeof stats.savedGold === 'number'
   );
 }
 
-export function normalizeAfkSummaryStats(value: unknown): AfkSummaryStats | null {
+export function normalizeAfkSummaryStats(rawValue: unknown): AfkSummaryStats | null {
+  const value = upgradeLegacyOutcomeKeys(rawValue);
   if (!isAfkSummaryStats(value)) return null;
   return {
     Clear: Math.max(0, Math.floor(value.Clear)),
-    Turned_Back: Math.max(0, Math.floor(value.Turned_Back)),
-    Draw_Retreat: Math.max(0, Math.floor(value.Draw_Retreat)),
-    Wounded_Retreat: Math.max(0, Math.floor(value.Wounded_Retreat)),
+    Return: Math.max(0, Math.floor(value.Return)),
+    Draw: Math.max(0, Math.floor(value.Draw)),
+    Retreat: Math.max(0, Math.floor(value.Retreat)),
     Defeat: Math.max(0, Math.floor(value.Defeat)),
     donatedGold: Math.max(0, Math.floor(value.donatedGold)),
     savedGold: Math.max(0, Math.floor(value.savedGold)),
@@ -1363,9 +1365,9 @@ export function normalizeAfkSummaryStats(value: unknown): AfkSummaryStats | null
 export function buildAfkSummaryNotification(stats: AfkSummaryStats): string | null {
   const summaryParts: string[] = [];
   if (stats.Clear > 0) summaryParts.push(t('home.afk.clearCount', { count: formatNumber(stats.Clear) }));
-  if (stats.Turned_Back > 0) summaryParts.push(t('home.afk.returnCount', { count: formatNumber(stats.Turned_Back) }));
-  if (stats.Draw_Retreat > 0) summaryParts.push(t('home.afk.drawCount', { count: formatNumber(stats.Draw_Retreat) }));
-  if (stats.Wounded_Retreat > 0) summaryParts.push(t('home.afk.retreatCount', { count: formatNumber(stats.Wounded_Retreat) }));
+  if (stats.Return > 0) summaryParts.push(t('home.afk.returnCount', { count: formatNumber(stats.Return) }));
+  if (stats.Draw > 0) summaryParts.push(t('home.afk.drawCount', { count: formatNumber(stats.Draw) }));
+  if (stats.Retreat > 0) summaryParts.push(t('home.afk.retreatCount', { count: formatNumber(stats.Retreat) }));
   if (stats.Defeat > 0) summaryParts.push(t('home.afk.defeatCount', { count: formatNumber(stats.Defeat) }));
 
   const financeParts: string[] = [];
@@ -2005,9 +2007,9 @@ export function getDisplayedExpeditionStats(party: Party, cycleState?: PartyCycl
   return {
     ...latestStats,
     Clear: Math.max(0, latestStats.Clear - (returnOutcome === 'Clear' ? 1 : 0)),
-    Turned_Back: Math.max(0, latestStats.Turned_Back - (returnOutcome === 'Turned_Back' ? 1 : 0)),
-    Draw_Retreat: Math.max(0, latestStats.Draw_Retreat - (returnOutcome === 'Draw_Retreat' ? 1 : 0)),
-    Wounded_Retreat: Math.max(0, latestStats.Wounded_Retreat - (returnOutcome === 'Wounded_Retreat' ? 1 : 0)),
+    Return: Math.max(0, latestStats.Return - (returnOutcome === 'Return' ? 1 : 0)),
+    Draw: Math.max(0, latestStats.Draw - (returnOutcome === 'Draw' ? 1 : 0)),
+    Retreat: Math.max(0, latestStats.Retreat - (returnOutcome === 'Retreat' ? 1 : 0)),
     Defeat: Math.max(0, latestStats.Defeat - (returnOutcome === 'Defeat' ? 1 : 0)),
   };
 }

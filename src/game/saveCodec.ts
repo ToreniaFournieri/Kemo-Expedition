@@ -1,3 +1,4 @@
+import { upgradeLegacyOutcomeKeys } from './legacyOutcomeKeys';
 import { mapCompactHistories } from './compactDiaryStorage.ts';
 import { getItemById } from '../data/items';
 import { getInstantExpeditionChargeState } from './instantExpedition';
@@ -200,6 +201,23 @@ export function serializeGameState(state: GameState): GameState {
   };
 }
 
+// Saves written before the outcome names were unified store a finished expedition as `Escape` and count returns, draws,
+// and retreats under `Turned_Back`, `Draw_Retreat`, and `Wounded_Retreat`. Every load path goes through hydration, so the
+// upgrade lives here and the rest of the runtime only ever sees the current names.
+function upgradeLegacyLog<T extends { finalOutcome: unknown } | null | undefined>(log: T): T {
+  return log && (log.finalOutcome as string) === 'Escape' ? { ...log, finalOutcome: 'Return' } : log;
+}
+
+function normalizePartyLegacyOutcomes(party: Party): Party {
+  return {
+    ...party,
+    ...(party.expeditionStats ? { expeditionStats: upgradeLegacyOutcomeKeys(party.expeditionStats) as Party['expeditionStats'] } : {}),
+    lastExpeditionLog: upgradeLegacyLog(party.lastExpeditionLog),
+    pendingDiaryLog: party.pendingDiaryLog ? { ...party.pendingDiaryLog, expeditionLog: upgradeLegacyLog(party.pendingDiaryLog.expeditionLog) } : party.pendingDiaryLog,
+    diaryLogs: (party.diaryLogs ?? []).map((entry) => ({ ...entry, expeditionLog: upgradeLegacyLog(entry.expeditionLog) })),
+  };
+}
+
 // SpecRef: 9 | Environment | hydrateGameState
 export function hydrateGameState(state: GameState): GameState {
   state = mapCompactHistories(state, true);
@@ -222,7 +240,7 @@ export function hydrateGameState(state: GameState): GameState {
       language: normalizeLanguage(state.global.language),
     },
     parties: state.parties.map((party) => {
-      const normalizedParty = normalizePartyInstantExpeditionCharge(normalizePartyClearGates(party));
+      const normalizedParty = normalizePartyInstantExpeditionCharge(normalizePartyClearGates(normalizePartyLegacyOutcomes(party)));
       const partyBags = normalizedParty.bags ?? state.bags;
       return {
         ...normalizedParty,

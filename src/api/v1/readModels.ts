@@ -257,10 +257,10 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   if (operationId === 'read/observation' || operationId === 'read/observation/compact') {
     const simulations: string[] = [];
     for (let index = 0; index < state.parties.length; index += 1) {
-      const result = await context.simulation?.(index, 100) as { Clear?: number; Turned_Back?: number; Draw_Retreat?: number; Wounded_Retreat?: number; Defeat?: number; total?: number } | undefined;
+      const result = await context.simulation?.(index, 100) as { Clear?: number; Return?: number; Draw?: number; Retreat?: number; Defeat?: number; total?: number } | undefined;
       const total = result?.total ?? 100;
       const percent = (value: number | undefined) => Math.round(((value ?? 0) / total) * 100);
-      simulations.push(`PT${state.parties[index].id} / Clear ${percent(result?.Clear)}% / Return ${percent(result?.Turned_Back)}% / Draw ${percent(result?.Draw_Retreat)}% / Retreat ${percent(result?.Wounded_Retreat)}% / Defeat ${percent(result?.Defeat)}%`);
+      simulations.push(`PT${state.parties[index].id} / Clear ${percent(result?.Clear)}% / Return ${percent(result?.Return)}% / Draw ${percent(result?.Draw)}% / Retreat ${percent(result?.Retreat)}% / Defeat ${percent(result?.Defeat)}%`);
     }
     return compactObservation(state, context, simulations);
   }

@@ -9,12 +9,12 @@ test('treasure quests count only their matching recovered reward class', () => {
   const rewards = [item(1401), item(1402, 7), item(1501, 3)];
   assert.deepEqual(resolveSideQuestOutcome({
     sideQuestType: 'q.treasure-super-rare',
-    finalOutcome: 'Escape',
+    finalOutcome: 'Return',
     rewards,
   }), { type: 'advance', amount: 2 });
   assert.deepEqual(resolveSideQuestOutcome({
     sideQuestType: 'q.treasure_boss_rare',
-    finalOutcome: 'Escape',
+    finalOutcome: 'Return',
     rewards,
   }), { type: 'advance', amount: 2 });
 });
@@ -46,7 +46,7 @@ test('Consecutive Wins advances on Clear and resets on every other outcome', () 
     finalOutcome: 'Clear',
     rewards: [],
   }), { type: 'advance', amount: 1 });
-  for (const finalOutcome of ['Escape', 'Retreat', 'Defeat'] as const) {
+  for (const finalOutcome of ['Return', 'Retreat', 'Defeat'] as const) {
     assert.deepEqual(resolveSideQuestOutcome({
       sideQuestType: 'q.consecutive_wins',
       finalOutcome,

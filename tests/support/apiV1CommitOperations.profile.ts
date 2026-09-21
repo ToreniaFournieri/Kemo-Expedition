@@ -232,4 +232,69 @@ const seed: GameState = createFreshGameState('ja', Date.parse('2026-01-01T00:00:
   assert.throws(() => commit(seed, [{ key, value: 'wand' }, { key: 'nope', value: 'x' }]));
 }
 
+// 10. Sortie (Spec 9.1.3, 3-2-2): the same refusals and reducer sequence as pressing the Sortie button, and a party-cycle reset
+// returned as a write for the runtime to apply after the durable commit.
+{
+  const at = Date.parse('2026-01-01T00:00:00.000Z');
+  const withParty = (state: GameState, changes: Record<string, unknown>) => ({ ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, ...changes } : party) }) as GameState;
+  const charged = withParty(seed, { instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null });
+  const cycles: Record<number, { state: string; isCurrentExpeditionGodsBattle?: boolean }> = {};
+  const context = (overrides: Partial<ApiV1CommitContext> = {}) => baseContext({
+    simulatedAt: at, partyCycle: (index) => cycles[index], restDurationMs: () => 12_345, chargeDurationScale: 1, now: () => 777, ...overrides,
+  });
+  const sortie = (state: GameState, ctx: ApiV1CommitContext = context(), operation = 'commit/expedition/1/sortie') => applyApiV1Commit(operation, state, {}, ctx);
+  const refuses = (state: GameState, marker: string, operation = 'commit/expedition/1/sortie', ctx: ApiV1CommitContext = context()) => assert.throws(() => sortie(state, ctx, operation), new RegExp(`illegal_action:${marker}`), marker);
+
+  // A legal sortie consumes exactly one stock, restores HP, and resets the cycle to the beginning of rest.
+  const ok = sortie(charged);
+  assert.equal(ok.state.parties[0].instantExpeditionStock, 2, 'one stock is consumed');
+  assert.deepEqual(ok.partyCycleWrites, [{ partyIndex: 0, cycle: { state: 'rest', stateStartedAt: 777, durationMs: 12_345, restInitialTotalSteps: 1, isCurrentExpeditionGodsBattle: false } }]);
+  assert.match(String((ok.data as { logId: string }).logId), /^(latest|diary:.+)$/);
+  assert.ok(['Clear', 'Return', 'Draw', 'Retreat', 'Defeat'].includes(String((ok.data as { outcome: string }).outcome)));
+  assert.equal(charged.parties[0].instantExpeditionStock, 3, 'the input snapshot is untouched');
+
+  // No charge, no expedition (the button refuses too).
+  refuses(withParty(seed, { instantExpeditionStock: 0, instantExpeditionChargeStartedAt: at }), 'charge_insufficient');
+  // The consumption follows the current Speed of Time: a 20x speed-up charges a slower clock the same way the UI passes its scale.
+  const scaled = sortie(charged, context({ chargeDurationScale: 0.05 }));
+  assert.equal(scaled.state.parties[0].instantExpeditionStock, 2);
+  // An exhausted party refuses; the Colosseum needs neither HP nor charge.
+  refuses(withParty(charged, { currentHp: 0 }), 'party_exhausted');
+  const colosseum = sortie(withParty(seed, { selectedDungeonId: 99, currentHp: 0, instantExpeditionStock: 0, instantExpeditionChargeStartedAt: at }));
+  assert.ok(colosseum.state.parties[0].lastExpeditionLog, 'the Colosseum sortie ran');
+  // A Gods Battle needs its gate.
+  refuses(charged, 'gods_battle_unavailable', 'commit/expedition/1/godsBattle');
+  // Exploring: the current exploration is finalized first (its pending Diary entry is settled), then the cycle is reset.
+  cycles[0] = { state: 'explore' };
+  const exploring = sortie(charged);
+  assert.equal(exploring.state.parties[0].pendingDiaryLog, null, 'the pending Diary entry is finalized');
+  assert.equal(exploring.partyCycleWrites?.[0].cycle.state, 'rest');
+  // Gods Battle: available once the boss was defeated and the gate is filled; it cancels the party's side quest, and a party
+  // already moving to a Gods Battle refuses a second one.
+  {
+    const { getGodsBattleProgressKey } = await import('../../src/game/clearGateCore');
+    const ready = withParty(charged, {
+      defeatedBossExpeditions: { 1: true },
+      clearGateProgress: { ...charged.parties[0].clearGateProgress, [getGodsBattleProgressKey(1)]: 3 },
+      selectedDungeonId: 1,
+      sideQuest: { id: 1, type: 'q.exercise', target: 5, progress: 0, deadline: at + 1e9, startedAt: at, reward: { jewelRank: 1 } },
+    });
+    cycles[0] = { state: 'move', isCurrentExpeditionGodsBattle: true };
+    refuses(ready, 'already_moving_to_gods_battle', 'commit/expedition/1/godsBattle');
+    cycles[0] = { state: 'move', isCurrentExpeditionGodsBattle: false };
+    const god = sortie(ready, context(), 'commit/expedition/1/godsBattle');
+    assert.equal(god.state.parties[0].sideQuest, null, 'a Gods Battle cancels the side quest');
+    assert.equal(god.state.parties[0].instantExpeditionStock, 2);
+    assert.equal(god.partyCycleWrites?.[0].cycle.isCurrentExpeditionGodsBattle, false);
+    // A plain sortie leaves the side quest alone.
+    assert.ok(sortie(ready).state.parties[0].sideQuest, 'a normal sortie keeps the side quest');
+    delete cycles[0];
+  }
+  // Without a runtime (an API account), nothing is read and no write is returned.
+  const accountContext = baseContext({ simulatedAt: at, chargeDurationScale: 1 });
+  const account = sortie(charged, accountContext);
+  assert.deepEqual(account.partyCycleWrites, [], 'an API account has no live cycle to reset');
+  assert.equal(account.state.parties[0].instantExpeditionStock, 2);
+}
+
 console.log('apiV1CommitOperations profile ok');

@@ -139,7 +139,7 @@ export function runExpeditionService<TPresentation>(
           remainingPartyHp: transaction.currentHp,
           gate,
         });
-        transaction.end('Escape');
+        transaction.end('Return');
         break;
       }
 

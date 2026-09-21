@@ -19,9 +19,9 @@ function createItem(id: number): Item {
 const BASE_FINALIZATION_STATE = {
   expeditionStats: {
     Clear: 1,
-    Turned_Back: 2,
-    Draw_Retreat: 3,
-    Wounded_Retreat: 4,
+    Return: 2,
+    Draw: 3,
+    Retreat: 4,
     Defeat: 5,
     donatedGold: 6,
     savedGold: 7,
@@ -183,9 +183,9 @@ test('finalization plans statistics, unique Altar victories, and Boss party unlo
 
   assert.deepEqual(plan.expeditionStats, {
     Clear: 2,
-    Turned_Back: 2,
-    Draw_Retreat: 3,
-    Wounded_Retreat: 4,
+    Return: 2,
+    Draw: 3,
+    Retreat: 4,
     Defeat: 5,
     donatedGold: 6,
     savedGold: 7,
@@ -262,7 +262,7 @@ test('wounded retreat has precedence while ordinary continuation can end at the 
     shouldRetreat: false,
     reachedDepthLimit: true,
   });
-  assert.equal(depthLimited.finish().finalOutcome, 'Escape');
+  assert.equal(depthLimited.finish().finalOutcome, 'Return');
   assert.equal(depthLimited.finish().currentHp, 390);
 });
 

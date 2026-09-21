@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 68. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 70. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -65,18 +65,11 @@ Gate: no `Type.Unknown`, no `{}` or `[]` stand-in for real data, no raw master-d
 What the API still cannot see is the live party cycle (`partyCycles`: `state`, `stateStartedAt`, `durationMs`), which lives in the component. Two smaller, no-refactor steps replace the extraction:
 
 1. **Read-only runtime port.** `HomeScreen` already keeps `partyCyclesRef`; expose a snapshot of it (plus the emulated time and the pending-AFK flag) to the read models through a port, as it already supplies the clock and the simulation runner. Nothing moves. The `expedition`, `compact`, and `overview` projections then report the real state, its progress timing, and the no-spoiler rule (latest floor, outcome, and log update only at the end of `state.explore`), instead of the current guess from HP.
-2. **Sortie parity by reusing the same reducer actions, not by extracting.** The UI sortie (`triggerSortie`, HomeScreen) is a sequence of existing reducer actions plus notifications and a cycle reset. The API sortie is a shorter sequence and is observably inconsistent today (each is a defect to fix, and each is required by "avoid inconsistent behavior"):
-   - No charge check: with 0 Instant Expedition stock an API sortie still runs (the UI refuses). The stock is also consumed with the default charge scale instead of the current Speed of Time.
-   - No 0-HP refusal (the UI refuses, except in the Colosseum).
-   - `godsBattle` does not check that a Gods Battle is available (Spec 9.1.3, 3-2-3 requires an error) and does not cancel the party's side quest.
-   - Missing `finalizeDiaryLog` when the party is exploring, and `rollPartySleepiness` after the sortie.
-   - The party cycle is not reset to the beginning of `state.rest` (this needs the runtime port to accept a write, or the cycle to be derived when the API is the only actor).
-   - `logId` is the Diary entry ID; it should be the `logId` of the retained log (`diary:<id>`, or `latest`).
-   Fix by calling the same reducer actions in the same order, add `illegal_action` for the refusals, and pin the two paths together with a differential test that applies the UI's action sequence and the API sortie to the same state and compares the results.
+2. **Sortie parity (done, Build 70).** The API sortie follows the button's own reducer sequence and refusals, and resets the live cycle through a runtime port write applied after the durable commit (the spec owner accepted the write). No logic was extracted. A differential check against the UI's own action sequence is not possible without running `HomeScreen`, so the behavior is pinned by tests of each refusal, the sequence's effects, and the persist, cycle, publish order.
 3. **Projections and simulation:** complete `{p}/setting`, `chargeStock`, `overview` (progress report), and `compact`; the exact 100/1,000-run counts are already tested.
 4. **Migrate the header and the Expedition tab** to projections and commands, with the migration guard. Continuous progress bars interpolate from the projected start and expected end times.
 
-Open question for the spec owner: is a runtime-port write acceptable for the cycle reset (item 2), or should an API sortie leave the cycle untouched and let the next UI tick derive it? The first keeps the two actors identical.
+The runtime port (`partyCycle`) now exists for the sortie; using it to project the real state in `expedition`, `compact`, and `overview` (and the no-spoiler rule) is the next step.
 
 ## Stage 5 — Party, character, equipment (complete)
 

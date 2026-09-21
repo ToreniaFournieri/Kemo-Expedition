@@ -17,16 +17,16 @@ export function floorRoomLabel(room: number): string {
 
 export function buildSimulationRunData(result: ExpeditionSimulationResult, simulatedRevision: number, seedDomain: string) {
   const total = result.total;
-  const success = percent(result.Clear + result.Turned_Back, total);
-  const draw = percent(result.Draw_Retreat, total);
-  const retreat = percent(result.Wounded_Retreat, total);
+  const success = percent(result.Clear + result.Return, total);
+  const draw = percent(result.Draw, total);
+  const retreat = percent(result.Retreat, total);
   const defeat = percent(result.Defeat, total);
   return {
     simulatedRevision,
     seedDomain,
     runs: total,
     overview: `Success ${label(success)}% / Draw ${label(draw)}% / Retreat ${label(retreat)}% / Defeat ${label(defeat)}%`,
-    overviewPercent: { success, clear: percent(result.Clear, total), return: percent(result.Turned_Back, total), draw, retreat, defeat },
+    overviewPercent: { success, clear: percent(result.Clear, total), return: percent(result.Return, total), draw, retreat, defeat },
     detail: result.rooms.map((room) => {
       const won = room.Victory + room.Clear + room.Return;
       return `${floorRoomLabel(room.room)}/Success ${label(percent(won, total))}% / Draw ${label(percent(room.Draw, total))}% / Retreat ${label(percent(room.Retreat, total))}% / Defeat ${label(percent(room.Defeat, total))}% / Not reached ${label(percent(room.NotReached, total))}%`;

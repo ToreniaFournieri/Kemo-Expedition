@@ -43,7 +43,7 @@ test('expedition simulation UI exposes asynchronous progress and conditional suc
   assert.match(tabSource, /party\.expedition\.simulationRunning/);
   assert.match(tabSource, /party\.expedition\.simulationResult\.clear/);
   assert.match(tabSource, /party\.expedition\.simulationResult\.return/);
-  assert.match(tabSource, /simulation\.result\.Turned_Back === 0/);
+  assert.match(tabSource, /simulation\.result\.Return === 0/);
   assert.match(tabSource, /activeSimulationResultBubble/);
   assert.match(tabSource, /role="tooltip"/);
   assert.match(tabSource, /\[room\.successfulHp\.Full, 'rgb\(var\(--color-sub\)\)'\]/);
@@ -55,9 +55,9 @@ test('expedition simulation UI exposes asynchronous progress and conditional suc
     assert.match(tabSource, new RegExp(`color-mix\\(in srgb, rgb\\(var\\(--color-accent\\)\\) ${retainedAccentPercent}%, white\\)`));
   }
   assert.match(tabSource, /\[room\.Defeat, 'rgb\(var\(--color-accent\)\)'\]/);
-  assert.match(tabSource, /simulation\.result\.Draw_Retreat \/ simulation\.result\.total/);
-  assert.match(tabSource, /formatDecimal\(simulation\.result\.Draw_Retreat \/ simulation\.result\.total \* 100, 1\)/);
-  assert.match(tabSource, /formatDecimal\(simulation\.result\.Wounded_Retreat \/ simulation\.result\.total \* 100, 1\)/);
+  assert.match(tabSource, /simulation\.result\.Draw \/ simulation\.result\.total/);
+  assert.match(tabSource, /formatDecimal\(simulation\.result\.Draw \/ simulation\.result\.total \* 100, 1\)/);
+  assert.match(tabSource, /formatDecimal\(simulation\.result\.Retreat \/ simulation\.result\.total \* 100, 1\)/);
   assert.match(tabSource, /formatDecimal\(simulation\.result\.Defeat \/ simulation\.result\.total \* 100, 1\)/);
   assert.match(tabSource, /simulation\.result\.rooms\.map/);
   assert.match(tabSource, /party\.expedition\.simulationRoomReached/);

@@ -13,7 +13,7 @@ function fakeSimulation(total: number) {
   rooms[0].retreatHp.From30 = retreat;
   Object.assign(rooms[1], { Clear: first, reached: first, NotReached: total - first });
   for (let index = 2; index < rooms.length; index += 1) rooms[index].NotReached = total;
-  return { Clear: first, Turned_Back: 0, Draw_Retreat: draw, Wounded_Retreat: retreat, Defeat: defeat, total, rooms };
+  return { Clear: first, Return: 0, Draw: draw, Retreat: retreat, Defeat: defeat, total, rooms };
 }
 
 const state = createFreshGameState('en', Date.UTC(2026, 8, 20));
@@ -332,16 +332,16 @@ calls.length = 0;
 {
   const { apiExpeditionOutcome, apiExpeditionOutcomeOrNull } = await import('../../src/api/v1/expeditionOutcome.ts');
   const room = (outcome: 'victory' | 'draw' | 'defeat') => ({ room: 1, outcome, enemyName: 'x', enemyHP: 1, enemyAttackValues: '', damageDealt: 0, damageTaken: 0, remainingPartyHP: 1, maxPartyHP: 1, details: [] }) as never;
-  const log = (finalOutcome: 'Clear' | 'Escape' | 'Retreat' | 'Defeat', last: 'victory' | 'draw' | 'defeat') => ({ finalOutcome, entries: [room('victory'), room(last)] });
+  const log = (finalOutcome: 'Clear' | 'Return' | 'Retreat' | 'Defeat', last: 'victory' | 'draw' | 'defeat') => ({ finalOutcome, entries: [room('victory'), room(last)] });
   assert.equal(apiExpeditionOutcome(log('Clear', 'victory')), 'Clear');
-  assert.equal(apiExpeditionOutcome(log('Escape', 'victory')), 'Return', 'a stored Escape is a Return');
+  assert.equal(apiExpeditionOutcome(log('Return', 'victory')), 'Return');
   assert.equal(apiExpeditionOutcome(log('Retreat', 'draw')), 'Draw', 'a retreat that ended in a draw is a Draw');
   assert.equal(apiExpeditionOutcome(log('Retreat', 'victory')), 'Retreat', 'a retreat after a victory is a Retreat');
   assert.equal(apiExpeditionOutcome(log('Defeat', 'defeat')), 'Defeat');
   assert.equal(apiExpeditionOutcome({ finalOutcome: 'Retreat', entries: [] }), 'Retreat');
   assert.equal(apiExpeditionOutcomeOrNull(null), null);
-  const withLog = (finalOutcome: 'Clear' | 'Escape' | 'Retreat' | 'Defeat', last: 'victory' | 'draw') => ({ ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, lastExpeditionLog: { ...log(finalOutcome, last), dungeonId: 1, dungeonName: '', difficultyOffset: 0, totalExperience: 0, totalRooms: 24, completedRooms: 2, rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: 1, maxPartyHP: 1 } as never } : party) });
-  for (const [stored, last, expected] of [['Clear', 'victory', 'Clear'], ['Escape', 'victory', 'Return'], ['Retreat', 'draw', 'Draw'], ['Retreat', 'victory', 'Retreat'], ['Defeat', 'victory', 'Defeat']] as const) {
+  const withLog = (finalOutcome: 'Clear' | 'Return' | 'Retreat' | 'Defeat', last: 'victory' | 'draw') => ({ ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, lastExpeditionLog: { ...log(finalOutcome, last), dungeonId: 1, dungeonName: '', difficultyOffset: 0, totalExperience: 0, totalRooms: 24, completedRooms: 2, rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: 1, maxPartyHP: 1 } as never } : party) });
+  for (const [stored, last, expected] of [['Clear', 'victory', 'Clear'], ['Return', 'victory', 'Return'], ['Retreat', 'draw', 'Draw'], ['Retreat', 'victory', 'Retreat'], ['Defeat', 'victory', 'Defeat']] as const) {
     const source = withLog(stored, last === 'victory' ? 'victory' : 'draw');
     const compact = await buildApiV1ReadData('read/observation/compact', source, {}, context) as unknown as { partyInfo: { lastOutcome: string | null }[] };
     assert.equal(compact.partyInfo[0].lastOutcome, expected, `compact ${stored}/${last}`);
@@ -350,6 +350,28 @@ calls.length = 0;
     const battle = await buildApiV1ReadData('read/expedition/1/latestBattleLog', source, {}, context) as unknown as { battleLog: { finalOutcome: string } };
     assert.equal(battle.battleLog.finalOutcome, expected, `battle log ${stored}/${last}`);
   }
+}
+// Saves written before the outcome names were unified (`Escape`, `Turned_Back`, `Draw_Retreat`, `Wounded_Retreat`) load with the
+// current names, from any load path (they all go through hydration).
+{
+  const { hydrateGameState } = await import('../../src/game/saveCodec.ts');
+  const { upgradeLegacyOutcomeKeys } = await import('../../src/game/legacyOutcomeKeys.ts');
+  assert.deepEqual(upgradeLegacyOutcomeKeys({ Clear: 1, Turned_Back: 2, Draw_Retreat: 3, Wounded_Retreat: 4, Defeat: 5, donatedGold: 6 }), { Clear: 1, Return: 2, Draw: 3, Retreat: 4, Defeat: 5, donatedGold: 6 });
+  assert.deepEqual(upgradeLegacyOutcomeKeys({ Return: 9, Turned_Back: 2 }), { Return: 9 }, 'a current key wins over a legacy one');
+  assert.equal(upgradeLegacyOutcomeKeys(null), null);
+  const legacyLog = { finalOutcome: 'Escape', entries: [], dungeonId: 1, dungeonName: '', difficultyOffset: 0, totalExperience: 0, totalRooms: 24, completedRooms: 3, rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: 1, maxPartyHP: 1 };
+  const legacy = JSON.parse(JSON.stringify({ ...state, parties: state.parties.map((party, index) => index === 0 ? {
+    ...party,
+    expeditionStats: { Clear: 1, Turned_Back: 2, Draw_Retreat: 3, Wounded_Retreat: 4, Defeat: 5, donatedGold: 0, savedGold: 0 },
+    lastExpeditionLog: legacyLog,
+    pendingDiaryLog: { id: 'p', expeditionLog: legacyLog, triggers: [], createdAt: 0, isRead: false },
+    diaryLogs: [{ id: 'd', expeditionLog: legacyLog, triggers: [], createdAt: 0, isRead: false }],
+  } : party) }));
+  const loaded = hydrateGameState(legacy);
+  const first = loaded.parties[0];
+  assert.deepEqual([first.expeditionStats.Return, first.expeditionStats.Draw, first.expeditionStats.Retreat], [2, 3, 4]);
+  assert.equal('Turned_Back' in first.expeditionStats, false);
+  assert.deepEqual([first.lastExpeditionLog?.finalOutcome, first.pendingDiaryLog?.expeditionLog.finalOutcome, first.diaryLogs[0].expeditionLog.finalOutcome], ['Return', 'Return', 'Return']);
 }
 assert.deepEqual(state, before);
 

@@ -1,7 +1,7 @@
 import type { GameState, SavedEquipmentSet } from '../../types';
 import { serializeGameState } from '../../game/saveCodec';
 import { createApiRandom, withGameplayRandomSource } from '../../game/gameplayRandom';
-import { applyApiV1Commit, type ApiV1CommitContext } from './commitOperations';
+import { applyApiV1Commit, type ApiV1CommitContext, type ApiV1PartyCycleWrite } from './commitOperations';
 import { stageApiV1ElapsedProgression } from './elapsedProgression';
 import { resolveConfirmationPolicy } from './confirmationPolicy';
 import { prepareSaveReplacement, type ApiV1DeliveryRecord } from './deliveries';
@@ -76,6 +76,13 @@ export interface ApiV1CommitAuthorityDependencies {
   applyAutoEquipment: ApiV1CommitContext['applyAutoEquipment'];
   persist: (state: GameState, control: ApiV1ControlMetadata) => Promise<void>;
   publish: (state: GameState) => Promise<void>;
+  /** The Instant Expedition charge clock scale (the current Speed of Time). */
+  chargeDurationScale?: number;
+  /** Live party-cycle access for the ordinary player's runtime; omitted for an API account, which has no live cycle. */
+  partyCycle?: ApiV1CommitContext['partyCycle'];
+  restDurationMs?: ApiV1CommitContext['restDurationMs'];
+  /** Applies live party-cycle changes right before the committed state is published (after it is durable). */
+  applyPartyCycleWrites?: (writes: ApiV1PartyCycleWrite[]) => void;
   createOpaqueId: () => string;
   createRandomSeed: () => number;
   now: () => number;
@@ -242,6 +249,9 @@ export async function executeApiV1CommitTransaction(
         applyAutoEquipment: dependencies.applyAutoEquipment,
         createDeliveryId: dependencies.createOpaqueId,
         now: dependencies.now,
+        chargeDurationScale: dependencies.chargeDurationScale,
+        partyCycle: dependencies.partyCycle,
+        restDurationMs: dependencies.restDurationMs,
       }));
     }
   } catch (error) {
@@ -306,6 +316,8 @@ export async function executeApiV1CommitTransaction(
   let published = !stateChanged;
   if (stateChanged) {
     try {
+      // A sortie's cycle reset is applied in the same tick as the published state, so no tick sees one without the other.
+      if (outcome.partyCycleWrites?.length) dependencies.applyPartyCycleWrites?.(outcome.partyCycleWrites);
       await dependencies.publish(outcome.state);
       published = true;
     } catch (error) {

@@ -282,6 +282,18 @@ const before = { items: itemConservation(state), jewels: jewelConservation(state
   console.log(`latestBattleLog: ${logs} retained logs, ${bottlenecks} bottleneck rooms validated`);
 }
 
+// 5d. The old save's outcome names are upgraded on load: every log and count uses Clear, Return, Draw, Retreat, and Defeat.
+{
+  const allowed = new Set(['Clear', 'Return', 'Retreat', 'Defeat']);
+  for (const party of state.parties) {
+    for (const log of [party.lastExpeditionLog, party.pendingDiaryLog?.expeditionLog, ...party.diaryLogs.map((entry) => entry.expeditionLog)]) {
+      if (log) assert.equal(allowed.has(log.finalOutcome), true, `stored outcome ${log.finalOutcome}`);
+    }
+    for (const key of ['Turned_Back', 'Draw_Retreat', 'Wounded_Retreat']) assert.equal(key in (party.expeditionStats as object), false, `${key} is upgraded`);
+    for (const key of ['Return', 'Draw', 'Retreat']) assert.equal(typeof (party.expeditionStats as unknown as Record<string, number>)[key], 'number', key);
+  }
+}
+
 // 6. The heavy projections stay fast: the whole check above runs well within a generous budget.
 const elapsed = performance.now() - startedAt;
 assert.ok(elapsed < 20_000, `the real-save checks took ${Math.round(elapsed)} ms`);

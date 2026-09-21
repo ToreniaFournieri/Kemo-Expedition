@@ -101,6 +101,7 @@ import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIn
 import { parseInventoryStacks, parseJewelStacks, parseSavedEquipmentSet } from '../api/v1/itemFormat';
 import { buildPartySummaries, buildPartyView, type PartyProjection } from '../api/v1/partyView';
 import { useApiRead } from './home/useApiRead';
+import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
 import { PARTY_EQUIP_CATEGORY_FAMILY, partyEquipCategoryKey } from '../api/v1/uiPreferenceCatalog';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
@@ -484,6 +485,8 @@ export function HomeScreen({
   const apiActionsRef = useRef(actions);
   const apiAutoEquipmentRunnerRef = useRef<AutoEquipmentRunner | null>(null);
   const apiCycleDurationScaleRef = useRef(1);
+  const restDurationMsRef = useRef<(party: Party) => number>(() => 1000);
+  const sortieCycleWritesRef = useRef<(writes: ApiV1PartyCycleWrite[]) => void>(() => undefined);
   apiActionsRef.current = actions;
   debugSettingsRef.current = debugSettings;
   const effectiveDebugSettings = useMemo<DebugSettings>(() => runtimeGameMode === 'mode.orca' && !hasOrcaTimeSpeedOverride
@@ -577,6 +580,10 @@ export function HomeScreen({
         createRandomSeed: () => crypto.getRandomValues(new Uint32Array(1))[0],
         now: () => Date.now(),
         onPublicationFailure: (error) => console.error('[api-v1] durable commit could not be published to the renderer', error),
+        // SpecRef: 9.1.3 | Commit | 3-2-2 {p}/sortie: the API sortie sees and resets the live party cycle like the button does.
+        partyCycle: (partyIndex) => partyCyclesRef.current[partyIndex],
+        restDurationMs: (party) => restDurationMsRef.current(party),
+        applyPartyCycleWrites: (writes) => sortieCycleWritesRef.current(writes),
       },
       help: { requirements: apiRequirementsDocument, detail: apiDetailDocument },
       onSessionActive: (active) => { apiControlActiveRef.current = active; setApiControlActive(active); },
@@ -2672,9 +2679,9 @@ export function HomeScreen({
 
       const stats = {
         Clear: Math.max(0, party.expeditionStats.Clear - baseline.Clear),
-        Turned_Back: Math.max(0, party.expeditionStats.Turned_Back - baseline.Turned_Back),
-        Draw_Retreat: Math.max(0, party.expeditionStats.Draw_Retreat - baseline.Draw_Retreat),
-        Wounded_Retreat: Math.max(0, party.expeditionStats.Wounded_Retreat - baseline.Wounded_Retreat),
+        Return: Math.max(0, party.expeditionStats.Return - baseline.Return),
+        Draw: Math.max(0, party.expeditionStats.Draw - baseline.Draw),
+        Retreat: Math.max(0, party.expeditionStats.Retreat - baseline.Retreat),
         Defeat: Math.max(0, party.expeditionStats.Defeat - baseline.Defeat),
         donatedGold: Math.max(0, party.expeditionStats.donatedGold - baseline.donatedGold),
         savedGold: Math.max(0, party.expeditionStats.savedGold - baseline.savedGold),
@@ -4820,6 +4827,20 @@ export function HomeScreen({
   };
   const triggerSortieRef = useRef(triggerSortie);
   triggerSortieRef.current = triggerSortie;
+  // The Application API's sortie (Spec 9.1.3, 3-2-2) resets the live cycle exactly as `triggerSortie` above does, and sets the
+  // same presentation flags so the reward popups follow.
+  restDurationMsRef.current = (party) => getStateDurationMs(party, 'rest');
+  sortieCycleWritesRef.current = (writes) => {
+    writes.forEach(({ partyIndex }) => {
+      pendingGodsBattleByPartyRef.current[partyIndex] = false;
+      instantSortieRewardNotificationPendingRef.current[partyIndex] = true;
+    });
+    setPartyCycles((previous) => {
+      const next = { ...previous };
+      writes.forEach(({ partyIndex, cycle }) => { next[partyIndex] = cycle; });
+      return next;
+    });
+  };
   const handleTriggerSortie = useCallback((partyIndex: number, triggerGodsBattle: boolean = false) => {
     triggerSortieRef.current(partyIndex, triggerGodsBattle);
   }, []);

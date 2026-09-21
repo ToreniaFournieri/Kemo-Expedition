@@ -20,7 +20,7 @@ function createDiaryLog(createdAt: number): DiaryLog {
       totalExperience: 0,
       totalRooms: 0,
       completedRooms: 0,
-      finalOutcome: 'Escape',
+      finalOutcome: 'Return',
       entries: [],
       rewards: [],
       autoSellProfit: 0,
@@ -42,9 +42,9 @@ test('Diary defeat notification modes select the specified expedition outcomes',
   assert.equal(getDiaryOutcomeTrigger('Clear', false, 'defeatAndDraw'), null);
   assert.equal(getDiaryOutcomeTrigger('Retreat', true, 'defeatDrawRetreat'), 'draw');
   assert.equal(getDiaryOutcomeTrigger('Retreat', false, 'defeatDrawRetreat'), 'retreat');
-  assert.equal(getDiaryOutcomeTrigger('Escape', false, 'defeatDrawRetreat'), null);
+  assert.equal(getDiaryOutcomeTrigger('Return', false, 'defeatDrawRetreat'), null);
   assert.equal(getDiaryOutcomeTrigger('Clear', false, 'all'), 'victory');
-  assert.equal(getDiaryOutcomeTrigger('Escape', false, 'all'), 'return');
+  assert.equal(getDiaryOutcomeTrigger('Return', false, 'all'), 'return');
   assert.equal(getDiaryOutcomeTrigger('Defeat', false, 'all'), 'defeat');
   assert.equal(getDiaryOutcomeTrigger('Retreat', true, 'all'), 'draw');
   assert.equal(getDiaryOutcomeTrigger('Retreat', false, 'all'), 'retreat');

@@ -34,7 +34,7 @@ function parseCondition(raw) {
   const condition = raw.trim();
   if (condition === 'none') return { k: 'none' };
 
-  const returnOutcomeMatch = condition.match(/^(Defeat|Wounded_Retreat|Draw_Retreat|Turned_Back|Clear)$/);
+  const returnOutcomeMatch = condition.match(/^(Defeat|Retreat|Draw|Return|Clear)$/);
   if (returnOutcomeMatch) {
     return { k: 'return_outcome_is', v: returnOutcomeMatch[1] };
   }

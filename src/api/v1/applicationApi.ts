@@ -35,6 +35,12 @@ export interface ApplicationApiPorts {
     createRandomSeed: () => number;
     now: () => number;
     onPublicationFailure?: (error: unknown) => void;
+    /** The live party cycle of a party (by index), for the ordinary player's runtime. */
+    partyCycle?: ApiV1CommitAuthorityDependencies['partyCycle'];
+    /** Duration of `state.rest` for a party, as the UI computes it. */
+    restDurationMs?: ApiV1CommitAuthorityDependencies['restDurationMs'];
+    /** Applies a sortie's party-cycle reset to the running runtime (called after the commit is durable). */
+    applyPartyCycleWrites?: ApiV1CommitAuthorityDependencies['applyPartyCycleWrites'];
   };
   help: { requirements: string; detail: string };
   /** Notifies the UI that an exclusive API session started or ended (it disables state-mutating controls). */
@@ -196,6 +202,14 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
         else await ports.runtime.persistPlayer(snapshot);
       },
       publish: ports.runtime.publish,
+      // The live party cycle belongs to the ordinary player's runtime; an API account has none, so a sortie for it
+      // neither reads nor writes one.
+      ...(identity ? {} : {
+        chargeDurationScale: ports.runtime.cycleDurationScale(),
+        partyCycle: ports.runtime.partyCycle,
+        restDurationMs: ports.runtime.restDurationMs,
+        applyPartyCycleWrites: ports.runtime.applyPartyCycleWrites,
+      }),
       onPublicationFailure: ports.runtime.onPublicationFailure,
       yieldBetweenChunks: ports.runtime.yieldBetweenChunks,
     });

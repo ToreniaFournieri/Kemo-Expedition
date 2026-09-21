@@ -18,6 +18,7 @@ interface Harness {
   persistedPlayers: GameState[];
   published: GameState[];
   playerCommitEvents: string[];
+  cycleWrites: unknown[];
   sessionEvents: boolean[];
   idleState: GameState;
 }
@@ -29,6 +30,7 @@ function harness(): Harness {
   const published: GameState[] = [];
   const persistedPlayers: GameState[] = [];
   const playerCommitEvents: string[] = [];
+  const cycleWrites: unknown[] = [];
   const sessionEvents: boolean[] = [];
   let counter = 0;
   let returnPayload: string | null = null;
@@ -63,9 +65,12 @@ function harness(): Harness {
       enemyLevelOffset: () => 0,
       cycleDurationScale: () => 1,
       applyAutoEquipment: (state) => state,
-      simulate: async () => ({ total: 100, Clear: 40, Turned_Back: 10, Draw_Retreat: 10, Wounded_Retreat: 10, Defeat: 30 }),
+      simulate: async () => ({ total: 100, Clear: 40, Return: 10, Draw: 10, Retreat: 10, Defeat: 30 }),
       persistPlayer: async (state) => { playerCommitEvents.push('persist'); persistedPlayers.push(state); },
       publish: async (state) => { playerCommitEvents.push('publish'); published.push(state); },
+      partyCycle: () => ({ state: 'explore' }),
+      restDurationMs: () => 9_999,
+      applyPartyCycleWrites: (writes) => { playerCommitEvents.push('cycle'); cycleWrites.push(...writes); },
       yieldBetweenChunks: async () => undefined,
       createOpaqueId: () => `opaque-id-${String(++counter).padStart(16, '0')}`,
       createRandomSeed: () => 12345,
@@ -74,7 +79,7 @@ function harness(): Harness {
     help: { requirements: 'REQUIREMENTS', detail: 'DETAIL' },
     onSessionActive: (active) => { sessionEvents.push(active); },
   };
-  return { api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, idleState };
+  return { cycleWrites, api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, idleState };
 }
 
 type Step = { operation: string; pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown>; mutating: boolean };
@@ -165,6 +170,20 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
   assert.equal(h.published.length, 1);
   assert.deepEqual(h.playerCommitEvents, ['persist', 'publish']);
   assert.equal(h.api.isSessionActive(), false);
+}
+
+// 1a-bis. The ordinary player's sortie resets the live party cycle once, after persistence and before publication (Spec 9.1.3, 3-2-2).
+{
+  const h = harness();
+  const local = h.api.createInProcessAdapter();
+  const charged = { ...h.idleState, parties: h.idleState.parties.map((party, index) => index === 0 ? { ...party, instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null } : party) } as typeof h.idleState;
+  h.api.syncIdleState(charged);
+  const sortie = await local.commit('commit/expedition/{p}/sortie', { pathParameters: { p: 1 }, parameters: {} }) as { revision: number; error?: unknown; data: { logId: string } };
+  assert.equal(sortie.error, undefined);
+  assert.equal(sortie.revision, 1);
+  assert.deepEqual(h.playerCommitEvents, ['persist', 'cycle', 'publish']);
+  assert.deepEqual(h.cycleWrites, [{ partyIndex: 0, cycle: { state: 'rest', stateStartedAt: t0, durationMs: 9_999, restInitialTotalSteps: 1, isCurrentExpeditionGodsBattle: false } }]);
+  assert.match(sortie.data.logId, /^(latest|diary:.+)$/);
 }
 
 // 1b. A UI-confirmed trusted command still traverses the shared challenge/token policy with one idempotency key.

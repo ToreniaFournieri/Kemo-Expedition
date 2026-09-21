@@ -282,4 +282,35 @@ function dependencies(overrides: Partial<ApiV1CommitAuthorityDependencies> = {})
   assert.equal(deps.published.length, 0);
 }
 
+// A sortie's party-cycle reset is applied only after the commit is durable, right before publication, never for a failed
+// persistence, and receives the cycle the runtime reports.
+{
+  const events: string[] = [];
+  const charged = { ...seed, parties: seed.parties.map((party, index) => index === 0 ? { ...party, instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null } : party) } as GameState;
+  const cycleDependencies = (overrides: Partial<ApiV1CommitAuthorityDependencies> = {}) => dependencies({
+    persist: async () => { events.push('persist'); },
+    publish: async () => { events.push('publish'); },
+    partyCycle: () => ({ state: 'explore' }),
+    restDurationMs: () => 4242,
+    applyPartyCycleWrites: (writes) => { events.push(`cycle:${writes[0].partyIndex}:${writes[0].cycle.state}:${writes[0].cycle.durationMs}`); },
+    ...overrides,
+  });
+  const ok = await executeApiV1CommitTransaction(input({ operation: 'commit/expedition/1/sortie', parameters: {}, state: charged, idempotencyKey: 'sortie-cycle-key-0001' }), cycleDependencies().value);
+  assert.equal(ok.ok, true, ok.ok ? '' : JSON.stringify(ok.error));
+  assert.deepEqual(events, ['persist', 'cycle:0:rest:4242', 'publish'], 'persist, then the cycle reset, then publication');
+
+  events.length = 0;
+  const failed = await executeApiV1CommitTransaction(input({ operation: 'commit/expedition/1/sortie', parameters: {}, state: charged, idempotencyKey: 'sortie-cycle-key-0002' }), cycleDependencies({ persist: async () => { throw new Error('injected'); } }).value);
+  assert.equal(failed.ok, false);
+  assert.deepEqual(events, [], 'a failed persistence resets nothing and publishes nothing');
+
+  // A refused sortie (no charge) changes nothing and writes no cycle.
+  events.length = 0;
+  const empty = { ...seed, parties: seed.parties.map((party, index) => index === 0 ? { ...party, instantExpeditionStock: 0, instantExpeditionChargeStartedAt: fixedNow } : party) } as GameState;
+  const refused = await executeApiV1CommitTransaction(input({ operation: 'commit/expedition/1/sortie', parameters: {}, state: empty, idempotencyKey: 'sortie-cycle-key-0003' }), cycleDependencies().value);
+  assert.equal(refused.ok, false);
+  if (!refused.ok) assert.equal(refused.error.code, 'illegal_action');
+  assert.deepEqual(events, [], 'a refused sortie writes and publishes nothing');
+}
+
 console.log('apiV1Authority profile ok');

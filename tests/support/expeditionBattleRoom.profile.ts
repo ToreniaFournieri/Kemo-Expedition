@@ -226,7 +226,7 @@ test('expedition service owns gate termination before battle and consumes no ran
   assert.equal(randomDraws, 0);
   assert.equal(result.rooms.length, 1);
   assert.equal(result.rooms[0]?.kind, 'gate');
-  assert.equal(result.transaction.finalOutcome, 'Escape');
+  assert.equal(result.transaction.finalOutcome, 'Return');
   assert.equal(result.transaction.roomCounter, 1);
   assert.equal(result.completedBossVictory, false);
 });

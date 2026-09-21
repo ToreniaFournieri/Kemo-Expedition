@@ -34,7 +34,7 @@ export function getDiaryOutcomeTrigger(
   mode: DiaryDefeatNotificationMode,
 ): DiaryOutcomeTrigger | null {
   if (mode === 'all' && finalOutcome === 'Clear') return 'victory';
-  if (mode === 'all' && finalOutcome === 'Escape') return 'return';
+  if (mode === 'all' && finalOutcome === 'Return') return 'return';
   if (mode !== 'none' && finalOutcome === 'Defeat') return 'defeat';
   if ((mode === 'defeatAndDraw' || mode === 'defeatDrawRetreat' || mode === 'all') && finalOutcome === 'Retreat' && endedWithDrawRetreat) return 'draw';
   if ((mode === 'defeatDrawRetreat' || mode === 'all') && finalOutcome === 'Retreat' && !endedWithDrawRetreat) return 'retreat';

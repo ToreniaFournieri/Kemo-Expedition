@@ -7,7 +7,7 @@ import {
   type ClearGateOutcome,
 } from '../clearGateCore.ts';
 
-export type RuntimeExpeditionOutcome = 'Clear' | 'Escape' | 'Defeat' | 'Retreat';
+export type RuntimeExpeditionOutcome = 'Clear' | 'Return' | 'Defeat' | 'Retreat';
 
 export interface ResolveExpeditionOutcomeInput {
   readonly finalOutcome: RuntimeExpeditionOutcome;
@@ -34,9 +34,9 @@ export function getCanonicalClearGateOutcome(
   endedWithDrawRetreat: boolean,
 ): ClearGateOutcome {
   if (finalOutcome === 'Clear') return 'Clear';
-  if (finalOutcome === 'Escape') return 'Turned_Back';
+  if (finalOutcome === 'Return') return 'Return';
   if (finalOutcome === 'Defeat') return 'Defeat';
-  return endedWithDrawRetreat ? 'Draw_Retreat' : 'Wounded_Retreat';
+  return endedWithDrawRetreat ? 'Draw' : 'Retreat';
 }
 
 export function resolveExpeditionOutcome(input: ResolveExpeditionOutcomeInput): ExpeditionOutcomeResult {

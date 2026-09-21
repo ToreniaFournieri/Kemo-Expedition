@@ -5,6 +5,8 @@ import { isDebugModeEnabled } from '../../game/environment';
 import { canCharacterEquipCategory, createEquipmentSetSnapshot, evaluateEquipmentSet, evaluateEquipmentState, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
 import { recordEquipmentState, redoEquipmentState, undoEquipmentState } from '../../game/equipmentHistory';
 import { computeCharacterStats } from '../../game/characterComputation';
+import { isGodsBattleAvailable } from '../../game/clearGate';
+import { getInstantExpeditionChargeState } from '../../game/instantExpedition';
 import { computePartyStats } from '../../game/partyComputation';
 import { hydrateGameState, serializeGameState } from '../../game/saveCodec';
 import { buildShopLineup } from '../../game/shop';
@@ -46,6 +48,25 @@ export interface ApiV1CommitContext {
   readonly createDeliveryId: () => string;
   /** Real wall-clock epoch ms, used only for delivery record timestamps (distinct from the in-game `simulatedAt`). */
   readonly now: () => number;
+  /** The Instant Expedition charge clock scale (the current Speed of Time); 1 when omitted. */
+  readonly chargeDurationScale?: number;
+  /** The live party cycle of a party (by index) when the ordinary player's runtime is the actor; absent for an API account. */
+  readonly partyCycle?: (partyIndex: number) => ApiV1PartyCycleView | undefined;
+  /** Duration of `state.rest` for a party under the current Speed of Time, deity, and modifiers (the UI's own rule). */
+  readonly restDurationMs?: (party: Party) => number;
+}
+
+/** What a sortie needs to know about the live party cycle (Spec 5.1.1). */
+export interface ApiV1PartyCycleView {
+  readonly state: string;
+  readonly isCurrentExpeditionGodsBattle?: boolean;
+}
+
+/** A change to the live party cycle that must be applied only after the commit is durable. */
+export interface ApiV1PartyCycleWrite {
+  readonly partyIndex: number;
+  /** A sortie always leaves the party at the beginning of `state.rest` (Spec 5.1.1, Immediate 出撃 / 神魔戦). */
+  readonly cycle: { state: 'rest'; stateStartedAt: number; durationMs: number; restInitialTotalSteps: 1; isCurrentExpeditionGodsBattle: false };
 }
 
 export interface ApiV1CommitOutcome {
@@ -57,6 +78,8 @@ export interface ApiV1CommitOutcome {
   /** `commit/setting/backup/import` and `commit/setting/backup/reset` invalidate outstanding popups and confirmations. */
   resetControlEvents: boolean;
   delivery: ApiV1DeliveryRecord | null;
+  /** Live party-cycle changes the caller applies after the durable commit (empty for every operation but a sortie). */
+  partyCycleWrites?: ApiV1PartyCycleWrite[];
 }
 
 /**
@@ -72,6 +95,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
   const settings = context.settings;
   let resetControlEvents = false;
   let delivery: ApiV1DeliveryRecord | null = null;
+  const partyCycleWrites: ApiV1PartyCycleWrite[] = [];
   const reduce = (action: Parameters<typeof gameReducer>[1]) => { next = gameReducer(next, action); };
   const partyMatch = operation.match(/^commit\/expedition\/(\d+)\/(changeExpedition|sortie|godsBattle)$/);
   const characterMatch = operation.match(/^commit\/build\/character\/(\d+)\/(.+)$/);
@@ -108,14 +132,36 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       const party = next.parties[partyIndex];
       data = { current: { destination: party.selectedDungeonId, destinationMode: party.expeditionDestinationMode, depthLimit: party.expeditionDepthLimit, difficultyOffset: party.expeditionDifficultyOffset } };
     } else {
+      // SpecRef: 9.1.3 | Commit | 3-2-2 {p}/sortie
+      // SpecRef: 5.1.1 | Party State Machine | Immediate 出撃 / 神魔戦
+      // The same sequence of reducer actions as pressing the Sortie or Gods Battle button (HomeScreen `triggerSortie`),
+      // with the same refusals. The live party cycle is read through the context and its reset to the beginning of
+      // `state.rest` is returned as a write the caller applies once the commit is durable.
       const party = next.parties[partyIndex];
+      const godsBattle = partyMatch[2] === 'godsBattle';
+      const isColosseum = party.selectedDungeonId === 99;
+      const cycle = context.partyCycle?.(partyIndex);
       const maximumHp = computePartyStats(party).partyStats.hp;
-      reduce({ type: 'CONSUME_INSTANT_EXPEDITION_STOCK', partyIndex, now: context.simulatedAt });
+      const chargeScale = context.chargeDurationScale ?? 1;
+      const previousDiaryIds = new Set(party.diaryLogs.map((entry) => entry.id));
+      if (godsBattle && !isGodsBattleAvailable(party, party.selectedDungeonId)) throw new Error('illegal_action:gods_battle_unavailable');
+      if (!isColosseum && (party.currentHp <= 0 || maximumHp <= 0)) throw new Error('illegal_action:party_exhausted');
+      if (godsBattle && cycle?.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true) throw new Error('illegal_action:already_moving_to_gods_battle');
+      if (!isColosseum && getInstantExpeditionChargeState(party, context.simulatedAt, chargeScale).stock <= 0) throw new Error('illegal_action:charge_insufficient');
+      if (godsBattle && party.sideQuest) reduce({ type: 'CANCEL_SIDE_QUEST', partyIndex });
+      if (!isColosseum) reduce({ type: 'CONSUME_INSTANT_EXPEDITION_STOCK', partyIndex, now: context.simulatedAt, chargeDurationScale: chargeScale });
+      if (cycle?.state === 'explore') reduce({ type: 'FINALIZE_DIARY_LOG', partyIndex, simulatedAt: context.simulatedAt });
       reduce({ type: 'CLEAR_PENDING_PROFIT', partyIndex });
       reduce({ type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
-      reduce({ type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, simulatedAt: context.simulatedAt, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, triggerGodsBattle: partyMatch[2] === 'godsBattle' });
+      reduce({ type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, simulatedAt: context.simulatedAt, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, triggerGodsBattle: godsBattle });
+      reduce({ type: 'ROLL_PARTY_SLEEPINESS', partyIndex });
+      if (context.partyCycle && context.restDurationMs) {
+        partyCycleWrites.push({ partyIndex, cycle: { state: 'rest', stateStartedAt: context.now(), durationMs: context.restDurationMs(next.parties[partyIndex]), restInitialTotalSteps: 1, isCurrentExpeditionGodsBattle: false } });
+      }
       const resolved = next.parties[partyIndex];
-      data = { outcome: apiExpeditionOutcomeOrNull(resolved.lastExpeditionLog), rewards: resolved.lastExpeditionLog?.rewards.map((item) => getVariantKey(item)) ?? [], diaryEntryId: resolved.diaryLogs[0]?.id ?? null, logId: resolved.diaryLogs[0]?.id ?? null };
+      // Only an outcome the party's Diary settings record creates an entry; otherwise the result is the party's latest log.
+      const newDiaryEntry = resolved.diaryLogs.find((entry) => !previousDiaryIds.has(entry.id));
+      data = { outcome: apiExpeditionOutcomeOrNull(resolved.lastExpeditionLog), rewards: resolved.lastExpeditionLog?.rewards.map((item) => getVariantKey(item)) ?? [], diaryEntryId: newDiaryEntry?.id ?? null, logId: newDiaryEntry ? `diary:${newDiaryEntry.id}` : 'latest' };
     }
   } else if (operation.match(/^commit\/build\/party\/(\d+)$/)) {
     const partyNumber = Number(operation.split('/').at(-1));
@@ -375,5 +421,5 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
   }
   else throw new Error('invalid_request');
 
-  return { state: next, data, simulatedAt, settings: context.settings, equipmentHistory: context.equipmentHistory, resetControlEvents, delivery };
+  return { state: next, data, simulatedAt, settings: context.settings, equipmentHistory: context.equipmentHistory, resetControlEvents, delivery, partyCycleWrites };
 }
