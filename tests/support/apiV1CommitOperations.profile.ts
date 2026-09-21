@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
 import { createFreshGameState } from '../../src/hooks/useGameState';
-import type { GameState, SavedEquipmentSet } from '../../src/types';
+import { buildShopLineup } from '../../src/game/shop';
+import { getVariantKey, type GameState, type SavedEquipmentSet } from '../../src/types';
 
 // SpecRef: 9.1 | Desktop distribution | Application API
 // Isolated, transport-neutral behavioral coverage for the extracted commit-operation module: no React, no
@@ -156,6 +157,50 @@ const seed: GameState = createFreshGameState('ja', Date.parse('2026-01-01T00:00:
     code = String(error);
   }
   assert.ok(code.includes('invalid_request'), code);
+}
+
+// 3. Sell results report the exact stacks and currency deltas; a bad entry sells nothing (atomic validation).
+{
+  const stack = Object.values(seed.global.inventory).find((variant) => variant.status === 'owned' && variant.count > 0)!;
+  const format = `0/${stack.item.id}/${stack.item.enhancement}/${stack.item.superRare}`;
+  const sold = applyApiV1Commit('commit/base/sellInventoryItems', seed, { items: [format] }, baseContext());
+  const data = sold.data as { items: { item: string; quantity: number }[]; goldDelta: number; pranaDelta: number };
+  assert.deepEqual(data.items, [{ item: format, quantity: stack.count }]);
+  assert.equal(data.goldDelta, sold.state.global.gold - seed.global.gold);
+  assert.equal(data.pranaDelta, sold.state.global.prana - seed.global.prana);
+  assert.equal(sold.state.global.inventory[getVariantKey(stack.item)].status, 'sold');
+  assert.equal(seed.global.inventory[getVariantKey(stack.item)].status, 'owned', 'the input snapshot is not mutated');
+
+  const failure = (items: string[]) => { try { applyApiV1Commit('commit/base/sellInventoryItems', seed, { items }, baseContext()); return ''; } catch (error) { return String(error); } };
+  assert.ok(failure([format, format]).includes('invalid_request'), 'duplicate variants are invalid');
+  assert.ok(failure([format, '0/999999/0/0']).includes('not_found'), 'an unknown variant rejects the whole request');
+  assert.ok(failure([`0/${stack.item.id}/${stack.item.enhancement}/x`]).includes('invalid_request'));
+  const alreadySold = applyApiV1Commit('commit/base/sellInventoryItems', seed, { items: [format] }, baseContext()).state;
+  let again = '';
+  try { applyApiV1Commit('commit/base/sellInventoryItems', alreadySold, { items: [format] }, baseContext()); } catch (error) { again = String(error); }
+  assert.ok(again.includes('illegal_action'), 'a sold variant cannot be sold again');
+}
+
+// 4. Purchase results report the exact drawn variants and the net currency delta; the request is atomic.
+{
+  const richState: GameState = { ...seed, global: { ...seed.global, gold: 1_000_000 } };
+  const simulatedAt = Date.parse('2026-01-01T00:00:00.000Z');
+  const lineup = buildShopLineup({ parties: richState.parties, gold: richState.global.gold, shopPurchases: richState.global.shopPurchases, shopRefreshCounts: richState.global.shopRefreshCounts, shopIntimacy: richState.global.shopIntimacy, shopIntimacyLastDecayAt: richState.global.shopIntimacyLastDecayAt }, new Date(simulatedAt));
+  const entry = lineup.entries.find((candidate) => !candidate.soldOut)!;
+  const bought = applyApiV1Commit('commit/base/purchaseShopItems', richState, { items: [{ shopItemId: entry.stockEntryId }] }, baseContext({ simulatedAt }));
+  const data = bought.data as { items: { item: string; quantity: number }[]; goldDelta: number; pranaDelta: number };
+  assert.equal(data.items.length, 1);
+  assert.equal(data.items[0].quantity, 1);
+  assert.match(data.items[0].item, new RegExp(`^0/${entry.itemId}/[0-6]/[0-9]+$`));
+  assert.equal(data.goldDelta, bought.state.global.gold - richState.global.gold);
+  assert.ok(data.goldDelta <= 0 && data.goldDelta >= -entry.price, 'the price is charged, minus any auto-sell proceeds');
+
+  let duplicate = '';
+  try { applyApiV1Commit('commit/base/purchaseShopItems', richState, { items: [{ shopItemId: entry.stockEntryId }, { shopItemId: entry.stockEntryId }] }, baseContext({ simulatedAt })); } catch (error) { duplicate = String(error); }
+  assert.ok(duplicate.includes('invalid_items'), duplicate);
+  let poor = '';
+  try { applyApiV1Commit('commit/base/purchaseShopItems', { ...richState, global: { ...richState.global, gold: 0 } }, { items: [{ shopItemId: entry.stockEntryId }] }, baseContext({ simulatedAt })); } catch (error) { poor = String(error); }
+  assert.ok(poor.includes('illegal_action'), poor);
 }
 
 console.log('apiV1CommitOperations profile ok');

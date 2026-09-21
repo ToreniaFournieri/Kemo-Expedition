@@ -1909,7 +1909,8 @@ export type GameAction =
   | { type: 'SELL_ALL_OWNED' }
   | { type: 'GRANT_FEEDBACK_REWARD' }
   | { type: 'UNLOCK_MIMORIAN_ENEMY'; enemyId: number }
-  | { type: 'BUY_SHOP_ITEM'; itemId: number; stockItemKey: string; partyIndex?: number }
+  // `onPurchased` lets a synchronous caller (the Application API) learn the hidden enhancement/Super Rare result.
+  | { type: 'BUY_SHOP_ITEM'; itemId: number; stockItemKey: string; partyIndex?: number; onPurchased?: (purchased: Item) => void }
   | { type: 'BUY_DEBUG_STORE_ITEM'; itemId: number }
   | { type: 'REFRESH_SHOP_LINEUP' }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
@@ -3565,6 +3566,7 @@ function reduceGameState(
         enhancement,
         superRare,
       };
+      action.onPurchased?.(purchasedItem);
       const autoSellMultiplier = getCurrentPartyCunningMultiplier(currentParty);
       const inventoryResult = addItemToInventory(
         globalState.inventory,
@@ -5049,14 +5051,6 @@ export function useGameState() {
       dispatch({ type: 'SET_SIDE_QUEST_PROGRESS', partyIndex, progress });
     }, []),
 
-    equipItem: useCallback((characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => {
-      dispatch({ type: 'EQUIP_ITEM', characterId, slotIndex, itemKey, partyIndex });
-    }, []),
-
-    removeAllEquipment: useCallback((characterId: number, partyIndex?: number) => {
-      dispatch({ type: 'REMOVE_ALL_EQUIPMENT', characterId, partyIndex });
-    }, []),
-
     saveEquipmentSet: useCallback((characterId: number, name: string, createdAt: number, partyIndex?: number) => {
       dispatch({ type: 'SAVE_EQUIPMENT_SET', characterId, name, createdAt, partyIndex });
     }, []),
@@ -5079,18 +5073,6 @@ export function useGameState() {
 
     applyAutoEquipmentActions: useCallback((actions: AutoEquipmentProfileAction[]) => {
       dispatch({ type: 'APPLY_AUTO_EQUIPMENT_ACTIONS', actions });
-    }, []),
-
-    toggleEquipmentLock: useCallback((characterId: number, slotIndex: number, partyIndex?: number) => {
-      dispatch({ type: 'TOGGLE_EQUIPMENT_LOCK', characterId, slotIndex, partyIndex });
-    }, []),
-
-    attachJewel: useCallback((characterId: number, slotIndex: number, jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus', rank: number, partyIndex?: number) => {
-      dispatch({ type: 'ATTACH_JEWEL', characterId, slotIndex, jewelKey, rank, partyIndex });
-    }, []),
-
-    updateCharacter: useCallback((characterId: number, updates: Partial<Character>, partyIndex?: number) => {
-      dispatch({ type: 'UPDATE_CHARACTER', characterId, updates, partyIndex });
     }, []),
 
     reorderPartyCharacter: useCallback((fromIndex: number, toIndex: number, partyIndex?: number) => {

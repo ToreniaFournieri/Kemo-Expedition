@@ -2787,7 +2787,7 @@
                                     },
                                     "level": {
                                       "minimum": 1,
-                                      "maximum": 5,
+                                      "maximum": 10,
                                       "type": "integer"
                                     }
                                   }
@@ -3205,7 +3205,7 @@
                                         },
                                         "level": {
                                           "minimum": 1,
-                                          "maximum": 5,
+                                          "maximum": 10,
                                           "type": "integer"
                                         }
                                       }
@@ -4867,7 +4867,7 @@
                           },
                           "level": {
                             "minimum": 1,
-                            "maximum": 5,
+                            "maximum": 10,
                             "type": "integer"
                           }
                         }
@@ -5294,7 +5294,7 @@
                               },
                               "level": {
                                 "minimum": 1,
-                                "maximum": 5,
+                                "maximum": 10,
                                 "type": "integer"
                               }
                             }
@@ -6640,7 +6640,7 @@
                       },
                       "level": {
                         "minimum": 1,
-                        "maximum": 5,
+                        "maximum": 10,
                         "type": "integer"
                       }
                     }
@@ -7011,7 +7011,7 @@
                           },
                           "level": {
                             "minimum": 1,
-                            "maximum": 5,
+                            "maximum": 10,
                             "type": "integer"
                           }
                         }
@@ -10547,7 +10547,7 @@
                       },
                       "level": {
                         "minimum": 1,
-                        "maximum": 5,
+                        "maximum": 10,
                         "type": "integer"
                       }
                     }
@@ -10738,7 +10738,7 @@
                           },
                           "level": {
                             "minimum": 1,
-                            "maximum": 5,
+                            "maximum": 10,
                             "type": "integer"
                           }
                         }
@@ -18791,7 +18791,40 @@
         "data": {
           "additionalProperties": false,
           "type": "object",
-          "properties": {}
+          "required": [
+            "items",
+            "goldDelta",
+            "pranaDelta"
+          ],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "item",
+                  "quantity"
+                ],
+                "properties": {
+                  "item": {
+                    "pattern": "^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))$",
+                    "type": "string"
+                  },
+                  "quantity": {
+                    "minimum": 1,
+                    "type": "integer"
+                  }
+                }
+              }
+            },
+            "goldDelta": {
+              "type": "integer"
+            },
+            "pranaDelta": {
+              "type": "integer"
+            }
+          }
         },
         "envelope": {
           "additionalProperties": false,
@@ -18836,7 +18869,40 @@
             "data": {
               "additionalProperties": false,
               "type": "object",
-              "properties": {}
+              "required": [
+                "items",
+                "goldDelta",
+                "pranaDelta"
+              ],
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "item",
+                      "quantity"
+                    ],
+                    "properties": {
+                      "item": {
+                        "pattern": "^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))$",
+                        "type": "string"
+                      },
+                      "quantity": {
+                        "minimum": 1,
+                        "type": "integer"
+                      }
+                    }
+                  }
+                },
+                "goldDelta": {
+                  "type": "integer"
+                },
+                "pranaDelta": {
+                  "type": "integer"
+                }
+              }
             },
             "effects": {
               "type": "array",
@@ -18927,7 +18993,16 @@
           }
         },
         "response": {
-          "data": {}
+          "data": {
+            "items": [
+              {
+                "item": "0",
+                "quantity": 1
+              }
+            ],
+            "goldDelta": 1,
+            "pranaDelta": 1
+          }
         }
       }
     },
@@ -19006,20 +19081,36 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "purchased",
-            "gold"
+            "items",
+            "goldDelta",
+            "pranaDelta"
           ],
           "properties": {
-            "purchased": {
+            "items": {
               "type": "array",
               "items": {
-                "minLength": 1,
-                "maxLength": 200,
-                "type": "string"
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "item",
+                  "quantity"
+                ],
+                "properties": {
+                  "item": {
+                    "pattern": "^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))$",
+                    "type": "string"
+                  },
+                  "quantity": {
+                    "minimum": 1,
+                    "type": "integer"
+                  }
+                }
               }
             },
-            "gold": {
-              "minimum": 0,
+            "goldDelta": {
+              "type": "integer"
+            },
+            "pranaDelta": {
               "type": "integer"
             }
           }
@@ -19068,20 +19159,36 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "purchased",
-                "gold"
+                "items",
+                "goldDelta",
+                "pranaDelta"
               ],
               "properties": {
-                "purchased": {
+                "items": {
                   "type": "array",
                   "items": {
-                    "minLength": 1,
-                    "maxLength": 200,
-                    "type": "string"
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "item",
+                      "quantity"
+                    ],
+                    "properties": {
+                      "item": {
+                        "pattern": "^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80))$",
+                        "type": "string"
+                      },
+                      "quantity": {
+                        "minimum": 1,
+                        "type": "integer"
+                      }
+                    }
                   }
                 },
-                "gold": {
-                  "minimum": 0,
+                "goldDelta": {
+                  "type": "integer"
+                },
+                "pranaDelta": {
                   "type": "integer"
                 }
               }
@@ -19177,10 +19284,14 @@
         },
         "response": {
           "data": {
-            "purchased": [
-              "xxxxxxx"
+            "items": [
+              {
+                "item": "0",
+                "quantity": 1
+              }
             ],
-            "gold": 0
+            "goldDelta": 1,
+            "pranaDelta": 1
           }
         }
       }
@@ -21712,7 +21823,7 @@
                     },
                     "level": {
                       "minimum": 1,
-                      "maximum": 5,
+                      "maximum": 10,
                       "type": "integer"
                     }
                   }
@@ -21787,7 +21898,7 @@
                       },
                       "level": {
                         "minimum": 1,
-                        "maximum": 5,
+                        "maximum": 10,
                         "type": "integer"
                       }
                     }
@@ -21896,7 +22007,7 @@
                           },
                           "level": {
                             "minimum": 1,
-                            "maximum": 5,
+                            "maximum": 10,
                             "type": "integer"
                           }
                         }

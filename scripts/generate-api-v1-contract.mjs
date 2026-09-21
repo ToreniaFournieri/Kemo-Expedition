@@ -79,7 +79,7 @@ const debug = {
   displayFlavorCondition: optional(Type.Boolean()), displayAfkDuration: optional(Type.Boolean()), displayAllBestiary: optional(Type.Boolean()), displayAllCompendium: optional(Type.Boolean()),
   displayAllGlossary: optional(Type.Boolean()), colosseumMode: optional(Type.Boolean()),
 };
-const addedAbility = strict({ abilityId: stableKey, level: Type.Integer({ minimum: 1, maximum: 5 }) });
+const addedAbility = strict({ abilityId: stableKey, level: Type.Integer({ minimum: 1, maximum: 10 }) });
 const enemyEdit = { enemyLevel: optional(Type.Integer({ minimum: 1, maximum: 99 })), enemyName: optional(Type.String({ minLength: 1, maxLength: 100 })), terrainEffect: optional(stableKey), enemyType: optional(stableKey), mainClass: optional(stableKey), subClass: optional(stableKey), addedAbilities: optional(Type.Array(addedAbility, { maxItems: 5 })) };
 
 const commitParameters = {
@@ -123,11 +123,12 @@ const directBodySchemas = {
 
 // SpecRef: 9.1.4.14 | Parameter and payload schema conventions | Concrete response catalog
 const numericFact = strict({ key: stableKey, value: Type.Number(), unit: literals('number', 'ratio', 'seconds') });
-const abilityFact = strict({ abilityId: stableKey, level: Type.Integer({ minimum: 1, maximum: 5 }) });
+const abilityFact = strict({ abilityId: stableKey, level: Type.Integer({ minimum: 1, maximum: 10 }) });
 const bonusFact = strict({ bonusId: stableKey, value: Type.Number() });
 const attackFact = strict({ attackType: literals('melee', 'ranged', 'magical'), available: Type.Boolean(), facts: Type.Array(numericFact), speed: Type.Union([Type.Null(), strict({ min: Type.Integer(), max: Type.Integer(), diceCount: Type.Integer(), dieSize: Type.Integer() })]) });
-// Follow-up: `calculatedStatus` is the spec-normative shape; readModels.ts still emits the internal computePartyStats() object and needs Milestone 4 alignment.
 const calculatedStatus = strict({ stats: Type.Array(numericFact), abilities: Type.Array(abilityFact), bonuses: Type.Array(bonusFact), attacks: Type.Array(attackFact) });
+// SpecRef: 9.1.4.14 | Parameter and payload schema conventions | Sell/purchase results
+const tradeResult = strict({ items: Type.Array(strict({ item: itemFormat, quantity: Type.Integer({ minimum: 1 }) })), goldDelta: Type.Integer(), pranaDelta: Type.Integer() });
 const semanticText = strict({ key: stableKey, args: Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), Type.Boolean()])) });
 const availability = strict({ available: Type.Boolean(), unavailableReason: Type.Union([Type.String(), Type.Null()]) });
 const equipmentEntryFormat = Type.String({ pattern: '^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:[0-9]|[1-7][0-9]|80)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$' });
@@ -253,9 +254,8 @@ const responseDataSchemas = {
   'commit/build/character/{characterId}/undoEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/redoEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/base/changeJewelPriorityParty': strict({ current: strict({ partyNumber: Type.Union([partyNumber, Type.Literal('none')]) }) }),
-  // Follow-up: spec 9.1.4.9 requires {items, goldDelta, pranaDelta}; the current handler leaves `data` empty.
-  'commit/base/sellInventoryItems': empty,
-  'commit/base/purchaseShopItems': strict({ purchased: Type.Array(stableKey), gold: Type.Integer({ minimum: 0 }) }),
+  'commit/base/sellInventoryItems': tradeResult,
+  'commit/base/purchaseShopItems': tradeResult,
   'commit/base/paidShopRefresh': empty,
   'commit/base/unlockSoldItems': strict({ items: Type.Array(itemFormat) }),
   'commit/base/unlockForm': empty,

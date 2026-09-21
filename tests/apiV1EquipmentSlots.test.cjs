@@ -32,3 +32,14 @@ test('equipment slot commands validate atomically and report real effects', asyn
   const result = spawnSync(process.execPath, [output], { encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
+
+test('Party equipment controls commit through the Application API, not direct reducer actions', () => {
+  const partyTab = fs.readFileSync(path.resolve('src/components/home/tabs/PartyTab.tsx'), 'utf8');
+  assert.doesNotMatch(partyTab, /onUpdateCharacter/, 'the Party tab has no direct reducer character update');
+  assert.match(partyTab, /onSetAutoEquipmentMode\(char\.id, nextMode\)/);
+  const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
+  for (const removed of ['actions.equipItem', 'actions.toggleEquipmentLock', 'actions.attachJewel', 'actions.removeAllEquipment', 'actions.updateCharacter']) {
+    assert.equal(home.includes(removed), false, `${removed} must not be reachable from HomeScreen`);
+  }
+  assert.match(home, /dispatchEquipmentIntent\(characterId, \{ kind: 'equip', slotIndex, itemKey \}\)/);
+});

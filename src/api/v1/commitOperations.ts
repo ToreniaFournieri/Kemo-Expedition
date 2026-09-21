@@ -255,7 +255,23 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     reduce({ type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY', partyId: parameters.partyNumber === 'none' ? null : Number(parameters.partyNumber) });
     data = { current: { partyNumber: next.global.jewelAutoEquipPriorityPartyId ?? 'none' } };
   } else if (operation === 'commit/base/sellInventoryItems') {
-    for (const item of parameters.items as string[]) { const [, itemId, enhancement, superRare] = item.split('/').map(Number); const key = Object.keys(next.global.inventory).find((variantKey) => { const candidate = next.global.inventory[variantKey].item; return candidate.id === itemId && candidate.enhancement === enhancement && candidate.superRare === superRare; }); if (!key) throw new Error('not_found'); reduce({ type: 'SELL_STACK', variantKey: key }); }
+    // Validate every entry against one snapshot before any sale, so a bad entry sells nothing.
+    const requested = Array.isArray(parameters.items) ? parameters.items.map(String) : [];
+    if (requested.length === 0) throw new Error('invalid_request:items');
+    const stacks = requested.map((format) => {
+      const [lock, itemId, enhancement, superRare] = format.split('/').map(Number);
+      if (![lock, itemId, enhancement, superRare].every(Number.isInteger)) throw new Error('invalid_request:item_format');
+      const variantKey = getVariantKey({ id: itemId, enhancement, superRare });
+      const variant = next.global.inventory[variantKey];
+      if (!variant) throw new Error('not_found');
+      // Selling is all-or-nothing per owned stack; sold, not-owned, or empty variants are unavailable.
+      if (variant.status !== 'owned' || variant.count < 1) throw new Error('illegal_action:variant_not_sellable');
+      return { variantKey, format: `0/${itemId}/${enhancement}/${superRare}`, quantity: variant.count };
+    });
+    if (new Set(stacks.map((stack) => stack.variantKey)).size !== stacks.length) throw new Error('invalid_request:duplicate_items');
+    const before = { gold: next.global.gold, prana: next.global.prana };
+    for (const stack of stacks) reduce({ type: 'SELL_STACK', variantKey: stack.variantKey });
+    data = { items: stacks.map((stack) => ({ item: stack.format, quantity: stack.quantity })), goldDelta: next.global.gold - before.gold, pranaDelta: next.global.prana - before.prana };
   } else if (operation === 'commit/base/purchaseShopItems') {
     const items = parameters.items;
     const requested = (Array.isArray(items) ? items : []).map((item) => String(item && typeof item === 'object' ? (item as Record<string, unknown>).shopItemId : ''));
@@ -263,8 +279,16 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const lineup = buildShopLineup({ parties: next.parties, gold: next.global.gold, shopPurchases: next.global.shopPurchases, shopRefreshCounts: next.global.shopRefreshCounts, shopIntimacy: next.global.shopIntimacy, shopIntimacyLastDecayAt: next.global.shopIntimacyLastDecayAt }, new Date(simulatedAt));
     const entries = requested.map((id) => lineup.entries.find((entry) => entry.stockEntryId === id));
     if (entries.some((entry) => !entry || entry.soldOut) || entries.reduce((sum, entry) => sum + (entry?.price ?? 0), 0) > next.global.gold) throw new Error('illegal_action');
-    for (const entry of entries) reduce({ type: 'BUY_SHOP_ITEM', itemId: entry!.itemId, stockItemKey: entry!.stockEntryId });
-    data = { purchased: entries.map((entry) => entry!.stockEntryId), gold: next.global.gold };
+    const before = { gold: next.global.gold, prana: next.global.prana };
+    const purchasedFormats: string[] = [];
+    for (const entry of entries) {
+      // The enhancement and Super Rare title are drawn inside the reducer; the callback reports the exact result.
+      reduce({ type: 'BUY_SHOP_ITEM', itemId: entry!.itemId, stockItemKey: entry!.stockEntryId, onPurchased: (purchased) => { purchasedFormats.push(`0/${purchased.id}/${purchased.enhancement}/${purchased.superRare}`); } });
+    }
+    if (purchasedFormats.length !== entries.length) throw new Error('illegal_action:purchase_rejected');
+    const quantities = new Map<string, number>();
+    for (const format of purchasedFormats) quantities.set(format, (quantities.get(format) ?? 0) + 1);
+    data = { items: [...quantities].map(([item, quantity]) => ({ item, quantity })), goldDelta: next.global.gold - before.gold, pranaDelta: next.global.prana - before.prana };
   } else if (operation === 'commit/base/unlockSoldItems') {
     const items = parameters.items as string[];
     const keys = Array.isArray(items) ? items.map((format) => { const [, itemId, enhancement, superRare] = String(format).split('/').map(Number); return Object.keys(next.global.inventory).find((variantKey) => { const candidate = next.global.inventory[variantKey]; return candidate.status === 'sold' && candidate.item.id === itemId && candidate.item.enhancement === enhancement && candidate.item.superRare === superRare; }); }) : [];

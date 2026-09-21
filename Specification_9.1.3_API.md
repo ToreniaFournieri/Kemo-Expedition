@@ -1145,13 +1145,18 @@ Path Parameters
 * Parameters:
   * `targetEquipment`
     * One equipment entry or an array of equipment entries.
-    * Equipment slot cannot be specified.
-    * Equipped items are automatically assigned and sorted into valid equipment slots using the same logic as the UI.
     * Uses `Item Format`.
-    * Example:
-      `0/1101/2/0`
-    * Example:
-      `["0/1101/2/0", "1/1102/1/0"]`
+    * Examples:
+      * `0/1101/2/0`
+      * `["0/1101/2/0", "1/1102/1/0"]`
+    * If `targetSlot` is not specified, equipment slots cannot be selected explicitly.
+    * The specified items are automatically assigned and sorted into valid equipment slots using the same logic as the UI.
+
+  * `targetSlot`
+    * Optional.
+    * Format: `slotIndex`.
+    * If specified, equips the target item to the specified slot, replacing the currently equipped item in that slot.
+
 
 **3-3-6. `character/{characterId}/lockEquipment`**
 

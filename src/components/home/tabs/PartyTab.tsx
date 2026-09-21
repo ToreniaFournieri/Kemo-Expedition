@@ -96,11 +96,12 @@ export default function PartyTab({
   setSelectedCharacter,
   editingCharacter,
   setEditingCharacter,
-  onUpdateCharacter,
+  onChangeCharacterBuild,
   onReorderPartyCharacter,
   onEquipItem,
   onToggleEquipmentLock,
   onAttachJewel,
+  onSetAutoEquipmentMode,
   onAddStatNotifications,
   onSelectParty,
   onUpdatePartyDeity,
@@ -128,11 +129,12 @@ export default function PartyTab({
   setSelectedCharacter: Dispatch<SetStateAction<number>>;
   editingCharacter: number | null;
   setEditingCharacter: Dispatch<SetStateAction<number | null>>;
-  onUpdateCharacter: (id: number, updates: Partial<Character>) => void;
+  onChangeCharacterBuild: (characterId: number, edits: Partial<Character>, confirmed: boolean) => Promise<'ok' | 'confirmation_required' | 'error'>;
   onReorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
   onToggleEquipmentLock: (characterId: number, slotIndex: number) => void;
   onAttachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number) => void;
+  onSetAutoEquipmentMode: (characterId: number, mode: AutoEquipmentMode) => void;
   onAddStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   onSelectParty: (partyIndex: number) => void;
   onUpdatePartyDeity: (partyIndex: number, deityName: string) => void;
@@ -748,7 +750,7 @@ export default function PartyTab({
 
   const handleAutoEquipmentModeCycle = () => {
     const nextMode = ((autoEquipmentMode + 1) % 3) as AutoEquipmentMode;
-    onUpdateCharacter(char.id, { autoEquipmentMode: nextMode });
+    onSetAutoEquipmentMode(char.id, nextMode);
   };
 
   const handleAutoEquipmentButtonClick = () => {
@@ -868,6 +870,21 @@ export default function PartyTab({
 
   const editConfirmWarnings = getEditConfirmWarnings(pendingEdits);
 
+  // SpecRef: 9.1.4.9 | Operation-specific completion rules | Party build and equipment
+  // The edit is committed through `changeBuild`; the API decides whether the UI's confirmation dialog is required.
+  const commitCharacterBuild = async (edits: Partial<Character>, confirmed: boolean) => {
+    const outcome = await onChangeCharacterBuild(char.id, edits, confirmed);
+    if (outcome === 'confirmation_required') {
+      setShowEditConfirm(true);
+      return;
+    }
+    // A rejected edit keeps the editor open so the pending selections are not lost.
+    if (outcome === 'error') return;
+    setPendingEdits(null);
+    setEditingCharacter(null);
+    setShowEditConfirm(false);
+  };
+
   const completeCharacterEdit = () => {
     const changedKeys = getChangedEditKeys(pendingEdits);
 
@@ -879,10 +896,7 @@ export default function PartyTab({
     }
 
     if (changedKeys.length === 1 && changedKeys[0] === 'name') {
-      onUpdateCharacter(char.id, { name: pendingEdits?.name ?? char.name });
-      setPendingEdits(null);
-      setEditingCharacter(null);
-      setShowEditConfirm(false);
+      void commitCharacterBuild({ name: pendingEdits?.name ?? char.name }, false);
       return;
     }
 
@@ -890,18 +904,12 @@ export default function PartyTab({
     const capabilityWarnings = getCapabilityRemovalWarningState(pendingEdits);
     const hasCapabilityRemovals = capabilityWarnings.melee || capabilityWarnings.ranged || capabilityWarnings.magic;
     if (equipSlotReductionCount === 0 && !hasCapabilityRemovals) {
-      onUpdateCharacter(char.id, pendingEdits ?? {});
-      setPendingEdits(null);
-      setEditingCharacter(null);
-      setShowEditConfirm(false);
+      void commitCharacterBuild(pendingEdits ?? {}, false);
       return;
     }
 
     if (equipSlotReductionCount > 0 && !hasEquippedItemInReducedSlots(pendingEdits) && !hasCapabilityRemovals) {
-      onUpdateCharacter(char.id, pendingEdits ?? {});
-      setPendingEdits(null);
-      setEditingCharacter(null);
-      setShowEditConfirm(false);
+      void commitCharacterBuild(pendingEdits ?? {}, false);
       return;
     }
 
@@ -909,14 +917,13 @@ export default function PartyTab({
   };
 
   const saveCharacterEditWithEquipmentReset = () => {
-    const changedKeys = getChangedEditKeys(pendingEdits);
-    if (changedKeys.length > 0 && pendingEdits) {
-      onUpdateCharacter(char.id, pendingEdits);
+    if (getChangedEditKeys(pendingEdits).length === 0 || !pendingEdits) {
+      setPendingEdits(null);
+      setEditingCharacter(null);
+      setShowEditConfirm(false);
+      return;
     }
-
-    setPendingEdits(null);
-    setEditingCharacter(null);
-    setShowEditConfirm(false);
+    void commitCharacterBuild(pendingEdits, true);
   };
 
   const baseStatMultiplierRows = [

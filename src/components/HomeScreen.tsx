@@ -96,6 +96,8 @@ import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
 import { DEFAULT_ORCA_ENEMY_LEVEL_OFFSET, isRuntimeGameMode, normalizeOrcaEnemyLevelOffset, type RuntimeGameMode } from '../game/runtimeGameMode';
 import { setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
+import { characterEditToChangeBuildParameters } from '../api/v1/characterBuildParameters';
+import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIntents';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
 import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
@@ -1837,6 +1839,42 @@ export function HomeScreen({
     });
     return plan.summary;
   }, [actions, planAutoEquipment, state]);
+
+  // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | Party equipment controls use the Application API
+  // Equipment intents are serialized so a multi-command intent (replace = remove + equip) is never interleaved.
+  const equipmentIntentQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const dispatchEquipmentIntent = useCallback((characterId: number, intent: EquipmentIntent) => {
+    equipmentIntentQueueRef.current = equipmentIntentQueueRef.current.then(async () => {
+      const adapter = inProcessApiRef.current;
+      if (!adapter) return;
+      const snapshot = applicationApiRef.current!.authority.getSnapshot().state;
+      let commands: ReturnType<typeof planEquipmentIntent>;
+      try {
+        commands = planEquipmentIntent(snapshot, characterId, intent);
+      } catch (error) {
+        console.error('[api-v1] Equipment intent rejected', intent.kind, error);
+        return;
+      }
+      // The manual Auto Equipment button reports what it changed; the plan is deterministic for this snapshot.
+      const partyIndex = snapshot.parties.findIndex((party) => party.characters.some((character) => character.id === characterId));
+      const notifications = intent.kind === 'runAuto' && partyIndex >= 0
+        ? planAutoEquipment(snapshot, [partyIndex], [characterId], { forceFull: true }).notifications
+        : [];
+      for (const command of commands) {
+        const response = await adapter.commit(`commit/build/character/{characterId}/${command.action}`, {
+          pathParameters: { characterId }, parameters: command.parameters,
+        });
+        if (response.error) {
+          console.error('[api-v1] Equipment command failed', command.action, response.error);
+          return;
+        }
+      }
+      for (const { message, partyIndex: notifiedPartyIndex } of notifications) {
+        if (snapshot.parties[notifiedPartyIndex]?.diarySettings.notifyAutoEquipmentPopup === false) continue;
+        actions.addNotification(message, 'normal', 'item', true, { rarity: 'common', isSuperRareItem: false });
+      }
+    });
+  }, [actions, planAutoEquipment]);
 
   useEffect(() => {
     if (!__AUTO_EQUIPMENT_PROFILE_ENABLED__) return;
@@ -4817,7 +4855,20 @@ export function HomeScreen({
           setSelectedCharacter={setSelectedCharacter}
           editingCharacter={editingCharacter}
           setEditingCharacter={setEditingCharacter}
-          onUpdateCharacter={actions.updateCharacter}
+          onChangeCharacterBuild={async (characterId, edits, confirmed) => {
+            const target = currentParty.characters.find((character) => character.id === characterId);
+            if (!target) return 'error';
+            const parameters = characterEditToChangeBuildParameters(target, edits);
+            if (Object.keys(parameters).length === 0) return 'ok';
+            const response = await inProcessApiRef.current!.commit('commit/build/character/{characterId}/changeBuild', {
+              pathParameters: { characterId }, parameters, confirmed,
+            });
+            const error = response.error as { code?: string } | undefined;
+            if (!error) return 'ok';
+            if (error.code === 'confirmation_required') return 'confirmation_required';
+            console.error('[api-v1] Character build change failed', error);
+            return 'error';
+          }}
           onReorderPartyCharacter={(fromIndex, toIndex) => {
             const order = currentParty.characters.map((character) => character.id);
             const [moved] = order.splice(fromIndex, 1);
@@ -4829,9 +4880,10 @@ export function HomeScreen({
               if (response.error) console.error('[api-v1] Party order change failed', response.error);
             });
           }}
-          onEquipItem={actions.equipItem}
-          onToggleEquipmentLock={actions.toggleEquipmentLock}
-          onAttachJewel={actions.attachJewel}
+          onEquipItem={(characterId, slotIndex, itemKey) => dispatchEquipmentIntent(characterId, { kind: 'equip', slotIndex, itemKey })}
+          onToggleEquipmentLock={(characterId, slotIndex) => dispatchEquipmentIntent(characterId, { kind: 'toggleLock', slotIndex })}
+          onAttachJewel={(characterId, slotIndex, jewelKey, rank) => dispatchEquipmentIntent(characterId, { kind: 'attachJewel', slotIndex, jewelKey, rank })}
+          onSetAutoEquipmentMode={(characterId, mode) => dispatchEquipmentIntent(characterId, { kind: 'setMode', mode })}
           onAddStatNotifications={actions.addStatNotifications}
           onSelectParty={actions.selectParty}
           onUpdatePartyDeity={(partyIndex, deityName) => {
@@ -4843,8 +4895,8 @@ export function HomeScreen({
               if (response.error) console.error('[api-v1] Party deity change failed', response.error);
             });
           }}
-          onRunAutoEquipmentForCharacter={(characterId) => runAutoEquipment([safeSelectedPartyIndex], [characterId], { forceFull: true })}
-          onRemoveAllEquipment={actions.removeAllEquipment}
+          onRunAutoEquipmentForCharacter={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'runAuto' })}
+          onRemoveAllEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'removeAll' })}
           onSaveEquipmentSet={actions.saveEquipmentSet}
           onRenameEquipmentSet={actions.renameEquipmentSet}
           onDeleteEquipmentSet={actions.deleteEquipmentSet}

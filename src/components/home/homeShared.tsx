@@ -210,17 +210,12 @@ export interface HomeScreenProps {
     cancelSideQuest: (partyIndex: number) => void;
     advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
-    equipItem: (characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => void;
-    removeAllEquipment: (characterId: number, partyIndex?: number) => void;
     saveEquipmentSet: (characterId: number, name: string, createdAt: number, partyIndex?: number) => void;
     renameEquipmentSet: (slot: number, name: string) => void;
     deleteEquipmentSet: (slot: number) => void;
     loadEquipmentSet: (characterId: number, slot: number, mode: EquipmentSetLoadMode, partyIndex?: number) => void;
     restoreEquipmentState: (characterId: number, set: SavedEquipmentSet, partyIndex?: number) => void;
     applyAutoEquipmentActions: (actions: AutoEquipmentProfileAction[]) => void;
-    toggleEquipmentLock: (characterId: number, slotIndex: number, partyIndex?: number) => void;
-    attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number, partyIndex?: number) => void;
-    updateCharacter: (characterId: number, updates: Partial<Character>, partyIndex?: number) => void;
     reorderPartyCharacter: (fromIndex: number, toIndex: number, partyIndex?: number) => void;
     sellStack: (variantKey: string) => void;
     sellAllOwned: () => void;

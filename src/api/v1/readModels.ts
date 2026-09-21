@@ -12,6 +12,7 @@ import { getDeityId, getDeityRank, normalizeDeityName } from '../../game/deity.t
 import { getInstantExpeditionChargeState } from '../../game/instantExpedition.ts';
 import { getSavedEquipmentSlot } from '../../game/equipmentSets.ts';
 import { computePartyStats } from '../../game/partyComputation.ts';
+import { buildCalculatedStatus } from './calculatedStatus.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { buildShopLineup, getShopRefreshPrice } from '../../game/shop.ts';
 import type { GameState, Item, Party } from '../../types/index.ts';
@@ -120,7 +121,7 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>) 
       deityRank: getDeityRank(state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0),
       condition: party.condition,
       order: party.characters.map((character) => character.id),
-      characters: party.characters.map((character, index) => ({
+      characters: (() => { const computed = computePartyStats(party).characterStats; return party.characters.map((character, index) => ({
         characterId: character.id,
         name: character.name,
         raceId: character.raceId,
@@ -129,10 +130,10 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>) 
         subClassId: character.subClassId,
         lineageId: character.lineageId,
         predispositionId: character.predispositionId,
-        calculatedStatus: computePartyStats(party).characterStats[index],
+        calculatedStatus: buildCalculatedStatus(computed[index]),
         equipment: character.equipment.map(equipmentEntry),
         autoEquipmentMode: character.autoEquipmentMode,
-      })),
+      })); })(),
     },
   };
 }
@@ -217,7 +218,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
         .filter((enemyId) => ENEMIES.some((enemy) => enemy.id === enemyId) && !assignedMimorianForms.has(enemyId))
         .map((enemyId) => `mimorian/female/${enemyId}`);
       return {
-        calculatedStatus: computePartyStats(party).characterStats[characterIndex],
+        calculatedStatus: buildCalculatedStatus(computePartyStats(party).characterStats[characterIndex]),
         current: { unique: character.isUnique === true, name: character.name, racesAndGender, mainClassId: character.mainClassId, subClassId: character.subClassId, lineage: character.lineageId, predisposition: character.predispositionId },
         editableFields: { name: character.isUnique !== true, unique: character.isUnique === true },
         validOptions: {

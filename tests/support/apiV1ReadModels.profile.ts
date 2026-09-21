@@ -24,3 +24,21 @@ const full = await buildApiV1ReadData('read/expedition/1/simulationRun', state, 
 assert.deepEqual(calls, [{ partyIndex: 0, count: 1_000 }]);
 assert.equal(full.simulatedRevision, 7);
 assert.deepEqual(state, before);
+
+// calculatedStatus is the public fact model (9.1.4.14), not the internal computed-stats object.
+{
+  const { Value } = await import('@sinclair/typebox/value');
+  const { CalculatedStatusSchema } = await import('../../src/api/v1/contracts.ts');
+  const party = await buildApiV1ReadData('read/observation/party', state, {}, context) as { partyInfo: { party: { characters: { characterId: number; calculatedStatus: unknown }[] } } };
+  const character = party.partyInfo.party.characters[0];
+  const status = await buildApiV1ReadData(`read/build/character/${character.characterId}/status`, state, {}, context) as { calculatedStatus: { stats: { key: string }[]; attacks: { attackType: string; available: boolean; speed: unknown }[] } };
+  for (const projected of [character.calculatedStatus, status.calculatedStatus]) {
+    assert.equal(Value.Check(CalculatedStatusSchema, projected), true, JSON.stringify([...Value.Errors(CalculatedStatusSchema, projected)].slice(0, 3)));
+  }
+  assert.deepEqual(status.calculatedStatus, character.calculatedStatus, 'both projections use the same fact model');
+  assert.ok(status.calculatedStatus.stats.some((entry) => entry.key === 'b.vitality'));
+  assert.deepEqual(status.calculatedStatus.attacks.map((entry) => entry.attackType), ['melee', 'ranged', 'magical']);
+  for (const attack of status.calculatedStatus.attacks) assert.equal(attack.available, attack.speed !== null);
+  assert.equal('rangedNoA' in (status.calculatedStatus as object), false, 'no internal computed-stats members leak');
+}
+assert.deepEqual(state, before);

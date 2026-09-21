@@ -4,6 +4,7 @@ import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/comm
 import { createFreshGameState, gameReducer } from '../../src/hooks/useGameState';
 import { canCharacterEquipCategory } from '../../src/game/equipmentSets';
 import { getVariantKey, type GameState } from '../../src/types';
+import { planEquipmentIntent, type EquipmentIntent } from '../../src/api/v1/equipmentIntents';
 
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | Party build and equipment
 // Slot-addressed equipment commands must validate the whole request against one snapshot and report real effects.
@@ -188,5 +189,52 @@ try { applyApiV1Commit(path('undoEquipment'), base, {}, context(undoHistory)); }
 assert.ok(undoError.includes('illegal_action'));
 assert.equal(undoHistory[String(characterId)].undo.length, 1);
 assert.equal(undoHistory[String(characterId)].redo.length, 0);
+
+// The Party equipment controls translate into the API commands the handlers accept, applied in order.
+{
+  const run = (state: GameState, intent: EquipmentIntent): GameState => {
+    let current = state;
+    for (const command of planEquipmentIntent(current, characterId, intent)) {
+      current = applyApiV1Commit(path(command.action), current, command.parameters, context()).state;
+    }
+    return current;
+  };
+  const commandNames = (state: GameState, intent: EquipmentIntent) => planEquipmentIntent(state, characterId, intent).map((command) => command.action);
+
+  // Unequip: an occupied slot is removed; an empty slot has nothing to remove.
+  assert.deepEqual(commandNames(base, { kind: 'equip', slotIndex: armor, itemKey: null }), ['removeEquipment']);
+  assert.throws(() => planEquipmentIntent(base, characterId, { kind: 'equip', slotIndex: emptySlot >= 0 ? emptySlot : 99, itemKey: null }), /illegal_action/);
+  const removed = run(base, { kind: 'equip', slotIndex: armor, itemKey: null });
+  assert.equal(character(removed).equipment[armor], null);
+
+  // Equip into an empty slot is one command; replacing an occupied slot removes it first and re-equips.
+  const spare = Object.entries(removed.global.inventory).find(([, variant]) => variant.status === 'owned' && variant.count > 0 && canCharacterEquipCategory(character(removed), variant.item.category));
+  assert.ok(spare, 'the freed item is available in the inventory');
+  const [spareKey, spareVariant] = spare!;
+  const freeSlot = character(removed).equipment.findIndex((item) => item === null);
+  assert.deepEqual(commandNames(removed, { kind: 'equip', slotIndex: freeSlot, itemKey: spareKey }), ['equip']);
+  const occupied = character(removed).equipment.findIndex((item) => item !== null);
+  assert.deepEqual(commandNames(removed, { kind: 'equip', slotIndex: occupied, itemKey: spareKey }), ['removeEquipment', 'equip']);
+  const equipped = run(removed, { kind: 'equip', slotIndex: freeSlot, itemKey: spareKey });
+  assert.ok(character(equipped).equipment.some((item) => item && getVariantKey(item) === getVariantKey(spareVariant.item)));
+  assert.throws(() => planEquipmentIntent(base, characterId, { kind: 'equip', slotIndex: 0, itemKey: 'missing-key' }), /not_found/);
+
+  // Lock direction follows the current state; the Jewel toggle removes an attached rank and otherwise attaches.
+  const fullMode: GameState = { ...base, parties: base.parties.map((party, index) => index === 0 ? { ...party, characters: party.characters.map((entry) => entry.id === characterId ? { ...entry, autoEquipmentMode: 2 as const } : entry) } : party) };
+  assert.deepEqual(commandNames(fullMode, { kind: 'toggleLock', slotIndex: armor }), ['lockEquipment']);
+  const locked = run(fullMode, { kind: 'toggleLock', slotIndex: armor });
+  assert.equal(character(locked).equipment[armor]!.isLocked, true);
+  assert.deepEqual(commandNames(locked, { kind: 'toggleLock', slotIndex: armor }), ['unlockEquipment']);
+  const withJewel = run(seeded, { kind: 'attachJewel', slotIndex: armor, jewelKey: 'fort', rank: 3 });
+  assert.deepEqual(character(withJewel).equipment[armor]!.jewel, { key: 'fort', rank: 3 });
+  assert.deepEqual(commandNames(withJewel, { kind: 'attachJewel', slotIndex: armor, jewelKey: 'fort', rank: 3 }), ['jewelRemove']);
+  assert.equal(character(run(withJewel, { kind: 'attachJewel', slotIndex: armor, jewelKey: 'fort', rank: 3 })).equipment[armor]!.jewel ?? null, null);
+
+  // Mode and Auto Equipment intents map to the single autoEquipment command.
+  assert.deepEqual(planEquipmentIntent(base, characterId, { kind: 'setMode', mode: 1 }), [{ action: 'autoEquipment', parameters: { mode: 'SEMI', immediateAutoEquipment: false } }]);
+  assert.deepEqual(planEquipmentIntent(base, characterId, { kind: 'runAuto' }), [{ action: 'autoEquipment', parameters: { mode: 'FULL', immediateAutoEquipment: true } }]);
+  assert.deepEqual(commandNames(base, { kind: 'removeAll' }), ['removeAllEquipment']);
+  assert.throws(() => planEquipmentIntent(base, 999999, { kind: 'removeAll' }), /not_found/);
+}
 
 console.log('apiV1EquipmentSlots profile ok');

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { ENEMIES } from '../../src/data/enemies';
 import { executeApiV1CommitTransaction, type ApiV1CommitAuthorityDependencies, type ApiV1CommitAuthorityInput, type ApiV1ControlMetadata } from '../../src/api/v1/authority';
 import { planCharacterBuildChange } from '../../src/api/v1/buildChange';
+import { characterEditToChangeBuildParameters } from '../../src/api/v1/characterBuildParameters';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
 import { buildApiV1ReadData } from '../../src/api/v1/readModels';
 import { createFreshGameState, gameReducer } from '../../src/hooks/useGameState';
@@ -123,6 +124,26 @@ function request(parameters: Record<string, unknown>, overrides: Partial<ApiV1Co
   assert.deepEqual(uniqueStatus.validOptions.racesAndGender, ['none']);
   assert.deepEqual(uniqueStatus.validOptions.lineage, ['none']);
   assert.deepEqual(uniqueStatus.validOptions.predisposition, ['none']);
+}
+
+// The Party editor's pending edits map to exactly the changed changeBuild parameters, and the mapped request applies.
+{
+  const target = character(base);
+  assert.deepEqual(characterEditToChangeBuildParameters(target, {}), {});
+  assert.deepEqual(characterEditToChangeBuildParameters(target, { name: target.name, raceId: target.raceId, gender: target.gender }), {}, 'unchanged values are omitted');
+  assert.deepEqual(characterEditToChangeBuildParameters(target, { name: 'Renamed' }), { name: 'Renamed' });
+  assert.deepEqual(characterEditToChangeBuildParameters(target, { gender: target.gender === 'male' ? 'female' : 'male' }).racesAndGender,
+    `${target.raceId}/${target.gender === 'male' ? 'female' : 'male'}`);
+  assert.deepEqual(characterEditToChangeBuildParameters(target, { mainClassId: 'guardian', lineageId: 'oath', predispositionId: 'Stubborn' }),
+    { mainClassId: 'guardian', lineage: 'oath', predisposition: 'Stubborn' });
+  const enemyId = ENEMIES[0].id;
+  assert.equal(characterEditToChangeBuildParameters(target, { raceId: 'mimorian', gender: 'female', mimorianEnemyId: enemyId, name: 'x' }).racesAndGender, `mimorian/female/${enemyId}`);
+  assert.throws(() => characterEditToChangeBuildParameters(target, { autoEquipmentMode: 2 }), /unsupported_character_edit:autoEquipmentMode/);
+
+  const parameters = characterEditToChangeBuildParameters(target, { name: 'Renamed', mainClassId: 'guardian', subClassId: 'guardian' });
+  const applied = applyApiV1Commit(path(characterId, 'changeBuild'), base, parameters, context());
+  assert.equal(character(applied.state).name, 'Renamed');
+  assert.equal(character(applied.state).mainClassId, 'guardian');
 }
 
 console.log('apiV1BuildChange profile ok');

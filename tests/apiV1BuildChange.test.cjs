@@ -25,3 +25,11 @@ test('character build changes validate, confirm equipment loss, and report auto-
   const result = spawnSync(process.execPath, [output], { encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
+
+test('Party character edits commit through the shared changeBuild handler, not direct reducer updates', () => {
+  const partyTab = fs.readFileSync(path.resolve('src/components/home/tabs/PartyTab.tsx'), 'utf8');
+  assert.match(partyTab, /onChangeCharacterBuild\(char\.id, edits, confirmed\)/);
+  assert.doesNotMatch(partyTab, /onUpdateCharacter\(char\.id, (pendingEdits|\{ name)/, 'build edits must not bypass the Application API');
+  const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
+  assert.match(home, /commit\('commit\/build\/character\/\{characterId\}\/changeBuild'/);
+});

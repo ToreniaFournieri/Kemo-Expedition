@@ -38,7 +38,7 @@ export const NumericFactSchema = Type.Object({
 
 export const AbilityFactSchema = Type.Object({
   abilityId: Type.String({ minLength: 1, maxLength: 200 }),
-  level: Type.Integer({ minimum: 1, maximum: 5 }),
+  level: Type.Integer({ minimum: 1, maximum: 10 }),
 }, { additionalProperties: false });
 
 export const BonusFactSchema = Type.Object({
@@ -56,9 +56,6 @@ export const AttackFactSchema = Type.Object({
   ]),
 }, { additionalProperties: false });
 
-// Follow-up (Milestone 4): readModels.ts still emits the internal computePartyStats() object here rather than
-// this spec-normative shape; response validation in desktop/api-v1.cjs currently allows either via Type.Unknown()
-// at the call sites that use it, pending that projection rewrite.
 export const CalculatedStatusSchema = Type.Object({
   stats: Type.Array(NumericFactSchema),
   abilities: Type.Array(AbilityFactSchema),
