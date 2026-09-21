@@ -142,6 +142,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
      {p}/changeExpedition
      {p}/sortie
      {p}/godsBattle
+     {p}/resetStatistics 
 
 3-3. commit/build
      party/{p}
@@ -1220,6 +1221,11 @@ Path Parameters
 * Parameters: none.
   * If `Gods battle` is unavailable, return error.
 
+**3-2-4. `{p}/resetStatistics`**
+
+* Parameters: none.
+
+
 **3-3. `commit/build`**
 
 **3-3-1. `party/{p}`**
@@ -1267,7 +1273,6 @@ Path Parameters
         * Applies the requested changes.
       * `no`
         * Cancels the requested changes without modifying the character.
-
 
 
 **3-3-3. `character/{characterId}/removeAllEquipment`**
