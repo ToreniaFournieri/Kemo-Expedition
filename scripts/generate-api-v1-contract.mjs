@@ -13,7 +13,7 @@ const operations = [...specification.matchAll(rowPattern)].map((match) => ({
   method: match[1], path: match[2], access: match[3].toLowerCase(), purpose: match[4].trim(),
   operationId: match[2].slice('/api/v1/'.length),
 }));
-if (operations.length !== 84) throw new Error(`Expected 84 /api/v1 operations, found ${operations.length}.`);
+if (operations.length !== 85) throw new Error(`Expected 85 /api/v1 operations, found ${operations.length}.`);
 if (new Set(operations.map(({ method, path }) => `${method} ${path}`)).size !== operations.length) throw new Error('Duplicate /api/v1 method/path pair in the endpoint index.');
 if (operations.some(({ path }) => !path.startsWith('/api/v1/'))) throw new Error('Non-v1 route found in the v1 endpoint index.');
 
@@ -145,7 +145,7 @@ const commitParameters = {
   'commit/progress/elapsed': strict({ calculateToRealTime: optional(Type.Boolean()), elapsedSeconds: optional(Type.Integer({ minimum: 60, maximum: 43200 })) }),
   'commit/progress/progressReport': empty,
   'commit/expedition/{p}/changeExpedition': strict({ destination: optional(integerId), destinationMode: optional(literals('auto', 'fixed')), depthLimit: optional(Type.String({ pattern: '^(?:[1-9][0-9]*f-[1-9][0-9]*|beforeBoss|all)$' })), difficultyOffset: optional(Type.Integer({ minimum: 0, maximum: 68, multipleOf: 2 })) }),
-  'commit/expedition/{p}/sortie': empty, 'commit/expedition/{p}/godsBattle': empty,
+  'commit/expedition/{p}/sortie': empty, 'commit/expedition/{p}/godsBattle': empty, 'commit/expedition/{p}/resetStatistics': empty,
   'commit/build/party/{p}': strict({ deityId: optional(stableKey), order: optional(nonEmptyArray(integerId, { minItems: 6, maxItems: 6, uniqueItems: true })) }),
   'commit/build/character/{characterId}/changeBuild': strict({ name: optional(Type.String({ minLength: 1, maxLength: 100 })), racesAndGender: optional(stableKey), mainClassId: optional(stableKey), subClassId: optional(stableKey), lineage: optional(stableKey), predisposition: optional(stableKey), simulation: Type.Boolean(), confirmation: Type.Optional(Type.Union([Type.Literal('yes'), Type.Literal('no')])) }),
   'commit/build/character/{characterId}/removeAllEquipment': empty,
@@ -353,6 +353,7 @@ const responseDataSchemas = {
   'commit/expedition/{p}/changeExpedition': strict({ current: strict({ destination: integerId, destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0, maximum: 68, multipleOf: 2 }) }) }),
   'commit/expedition/{p}/sortie': strict({ outcome: Type.Union([expeditionOutcome, Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]) }),
   'commit/expedition/{p}/godsBattle': strict({ outcome: Type.Union([expeditionOutcome, Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]) }),
+  'commit/expedition/{p}/resetStatistics': empty,
   'commit/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }) }),
   'commit/build/character/{characterId}/changeBuild': strict({ current: equipmentCommitCurrent, confirmationRequired: Type.Boolean(), warnings: Type.Array(semanticText), applied: Type.Boolean() }),
   'commit/build/character/{characterId}/removeAllEquipment': strict({ current: equipmentCommitCurrent }),

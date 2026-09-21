@@ -465,6 +465,12 @@ definitions in 9.1.3.
     `charge_insufficient`; the Colosseum is exempt from the gate, HP, and charge
     checks. While a party explores, the HP check uses the revealed HP, like the
     button; the commit itself uses the party's current HP, like `triggerSortie`.
+* `resetStatistics` is the Expedition pane's Reset button (9.1.3, 3-2-4): it restores
+  the party's expedition statistics (the Clear, Return, Draw, Retreat, and Defeat
+  counts and the donated and saved Gold totals) to their defaults and changes nothing
+  else. It takes no parameters, returns `{}`, and is a valid no-op (no revision
+  change) when the statistics already hold their defaults. An unknown party is
+  `not_found`.
 * `sortie` and `godsBattle` behave as pressing the Sortie or Gods Battle button
   (9.1.3, 3-2-2): the same refusals and the same reducer actions in the same
   order. They are `illegal_action` (details name the reason) when the party has no
@@ -724,6 +730,7 @@ use the same operation without HTTP authentication headers.
 | POST | `/api/v1/commit/expedition/{p}/changeExpedition` | Session | Change expedition. |
 | POST | `/api/v1/commit/expedition/{p}/sortie` | Session | Resolve one sortie. |
 | POST | `/api/v1/commit/expedition/{p}/godsBattle` | Session | Resolve one Gods Battle. |
+| POST | `/api/v1/commit/expedition/{p}/resetStatistics` | Session | Reset the party's expedition statistics. |
 | POST | `/api/v1/commit/build/party/{p}` | Session | Change party build. |
 | POST | `/api/v1/commit/build/character/{characterId}/changeBuild` | Session | Change character build. |
 | POST | `/api/v1/commit/build/character/{characterId}/removeAllEquipment` | Session | Remove all equipment. |

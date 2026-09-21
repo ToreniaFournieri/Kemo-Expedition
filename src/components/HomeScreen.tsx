@@ -1918,6 +1918,17 @@ export function HomeScreen({
     });
   }, []);
 
+  // SpecRef: 9.1.3 | Commit | 3-2-4 {p}/resetStatistics
+  const resetExpeditionStatistics = useCallback((partyIndex: number) => {
+    expeditionCommandQueueRef.current = expeditionCommandQueueRef.current.then(async () => {
+      const adapter = inProcessApiRef.current;
+      const partyNumber = applicationApiRef.current?.authority.getSnapshot().state.parties[partyIndex]?.id;
+      if (!adapter || partyNumber === undefined) return;
+      const response = await adapter.commit('commit/expedition/{p}/resetStatistics', { pathParameters: { p: partyNumber }, parameters: {} });
+      if (response.error) console.error('[api-v1] Expedition statistics reset failed', response.error);
+    });
+  }, []);
+
   // SpecRef: 8.2.4 | Equipment management | Undo and Redo availability comes from the equipment projection
   const historyCharacter = currentParty.characters[selectedCharacter] ?? currentParty.characters[0];
   const equipmentProjection = useApiRead<{ validOptions: { undoEquipment: { available: boolean }; redoEquipment: { available: boolean } } }>(
@@ -5060,7 +5071,7 @@ export function HomeScreen({
           onToggleExpeditionDestinationMode={(partyIndex, mode) => commitExpeditionChange(partyIndex, { destinationMode: mode })}
           onSetExpeditionDepthLimit={(partyIndex, depthLimit) => commitExpeditionChange(partyIndex, { depthLimit })}
           onSetExpeditionDifficultyOffset={(partyIndex, difficultyOffset) => commitExpeditionChange(partyIndex, { difficultyOffset })}
-          onResetExpeditionStats={actions.resetExpeditionStats}
+          onResetExpeditionStats={resetExpeditionStatistics}
           onSimulateExpedition={handleSimulateExpedition}
           isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
           partyCycles={partyCycles}

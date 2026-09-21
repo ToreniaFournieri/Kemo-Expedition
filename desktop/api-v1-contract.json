@@ -18513,6 +18513,205 @@
     },
     {
       "method": "POST",
+      "path": "/api/v1/commit/expedition/{p}/resetStatistics",
+      "access": "session",
+      "purpose": "Reset the party's expedition statistics.",
+      "operationId": "commit/expedition/{p}/resetStatistics",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p"
+        ],
+        "properties": {
+          "p": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expectedRevision",
+          "idempotencyKey",
+          "parameters"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "idempotencyKey": {
+            "minLength": 16,
+            "maxLength": 128,
+            "pattern": "^[\\x20-\\x7e]+$",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {}
+          },
+          "confirmationToken": {
+            "minLength": 1,
+            "maxLength": 512,
+            "type": "string"
+          }
+        }
+      },
+      "response": {
+        "data": {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {}
+        },
+        "envelope": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "apiVersion",
+            "schemaVersion",
+            "requestId",
+            "previousRevision",
+            "revision",
+            "committedAt",
+            "data",
+            "effects",
+            "changedResources"
+          ],
+          "properties": {
+            "apiVersion": {
+              "const": "v1",
+              "type": "string"
+            },
+            "schemaVersion": {
+              "const": 1,
+              "type": "number"
+            },
+            "requestId": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            },
+            "previousRevision": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "revision": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "committedAt": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": false,
+              "type": "object",
+              "properties": {}
+            },
+            "effects": {
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "key",
+                  "args"
+                ],
+                "properties": {
+                  "key": {
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "args": {
+                    "type": "object",
+                    "patternProperties": {
+                      "^(.*)$": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "boolean"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "changedResources": {
+              "type": "array",
+              "items": {
+                "minLength": 1,
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "errors": [
+        "authentication_failed",
+        "authentication_required",
+        "busy",
+        "control_lease_expired",
+        "control_lease_invalid",
+        "idempotency_conflict",
+        "idempotency_expired",
+        "illegal_action",
+        "internal_error",
+        "invalid_request",
+        "login_required",
+        "not_found",
+        "operation_in_progress",
+        "runtime_unavailable",
+        "save_failed",
+        "stale_revision"
+      ],
+      "restrictions": {
+        "environments": "all",
+        "requiresDebugMode": false,
+        "requiresLogin": true
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "p": 1
+          },
+          "query": {},
+          "body": {
+            "expectedRevision": 0,
+            "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+            "parameters": {}
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        },
+        "response": {
+          "data": {}
+        }
+      }
+    },
+    {
+      "method": "POST",
       "path": "/api/v1/commit/build/party/{p}",
       "access": "session",
       "purpose": "Change party build.",

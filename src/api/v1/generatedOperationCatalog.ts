@@ -38,6 +38,7 @@ export const API_V1_OPERATIONS = [
   {"method":"POST","path":"/api/v1/commit/expedition/{p}/changeExpedition","access":"session","purpose":"Change expedition.","operationId":"commit/expedition/{p}/changeExpedition"},
   {"method":"POST","path":"/api/v1/commit/expedition/{p}/sortie","access":"session","purpose":"Resolve one sortie.","operationId":"commit/expedition/{p}/sortie"},
   {"method":"POST","path":"/api/v1/commit/expedition/{p}/godsBattle","access":"session","purpose":"Resolve one Gods Battle.","operationId":"commit/expedition/{p}/godsBattle"},
+  {"method":"POST","path":"/api/v1/commit/expedition/{p}/resetStatistics","access":"session","purpose":"Reset the party's expedition statistics.","operationId":"commit/expedition/{p}/resetStatistics"},
   {"method":"POST","path":"/api/v1/commit/build/party/{p}","access":"session","purpose":"Change party build.","operationId":"commit/build/party/{p}"},
   {"method":"POST","path":"/api/v1/commit/build/character/{characterId}/changeBuild","access":"session","purpose":"Change character build.","operationId":"commit/build/character/{characterId}/changeBuild"},
   {"method":"POST","path":"/api/v1/commit/build/character/{characterId}/removeAllEquipment","access":"session","purpose":"Remove all equipment.","operationId":"commit/build/character/{characterId}/removeAllEquipment"},

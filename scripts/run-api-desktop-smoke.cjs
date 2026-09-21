@@ -70,7 +70,7 @@ app.on('browser-window-created', (_event, window) => {
       await call('/fundamental/logOut', { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: '{}' });
       await window.webContents.executeJavaScript('window.bokemoDesktop.setApiV1Enabled(false)');
       assert.equal(fs.existsSync(settings.connectionFile), false);
-      console.log(JSON.stringify({ smoke: 'passed', apiVersion: 'v1', operations: 84 }));
+      console.log(JSON.stringify({ smoke: 'passed', apiVersion: 'v1', operations: 85 }));
       clearTimeout(timeout);
       app.quit();
     } catch (error) {

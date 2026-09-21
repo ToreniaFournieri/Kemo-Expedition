@@ -344,4 +344,18 @@ const seed: GameState = createFreshGameState('ja', Date.parse('2026-01-01T00:00:
   assert.doesNotThrow(() => change(defeated, { difficultyOffset: opened.difficultyOffset.max }), 'the offered maximum is accepted');
 }
 
+// resetStatistics restores the party's expedition statistics to their defaults and touches nothing else (Spec 9.1.3, 3-2-4).
+{
+  const played = { ...seed, parties: seed.parties.map((party, index) => index === 0
+    ? { ...party, expeditionStats: { ...party.expeditionStats, Clear: 5, Return: 3, Defeat: 2, donatedGold: 900, savedGold: 400 } as never }
+    : party) } as GameState;
+  const reset = applyApiV1Commit('commit/expedition/1/resetStatistics', played, {}, baseContext());
+  assert.deepEqual(reset.data, {});
+  assert.deepEqual(reset.state.parties[0].expeditionStats, seed.parties[0].expeditionStats, 'the statistics are back to their defaults');
+  assert.equal(reset.state.parties[0].currentHp, played.parties[0].currentHp);
+  assert.equal(reset.state.global, played.global, 'nothing outside the party changes');
+  assert.notDeepEqual(played.parties[0].expeditionStats, seed.parties[0].expeditionStats, 'the fixture really differed');
+  assert.throws(() => applyApiV1Commit('commit/expedition/9/resetStatistics', played, {}, baseContext()), /not_found/);
+}
+
 console.log('apiV1CommitOperations profile ok');

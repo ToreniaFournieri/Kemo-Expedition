@@ -111,7 +111,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
   let delivery: ApiV1DeliveryRecord | null = null;
   const partyCycleWrites: ApiV1PartyCycleWrite[] = [];
   const reduce = (action: Parameters<typeof gameReducer>[1]) => { next = gameReducer(next, action); };
-  const partyMatch = operation.match(/^commit\/expedition\/(\d+)\/(changeExpedition|sortie|godsBattle)$/);
+  const partyMatch = operation.match(/^commit\/expedition\/(\d+)\/(changeExpedition|sortie|godsBattle|resetStatistics)$/);
   const characterMatch = operation.match(/^commit\/build\/character\/(\d+)\/(.+)$/);
 
   if (operation === 'commit/setting/backup/export') {
@@ -154,6 +154,12 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       if (parameters.difficultyOffset !== undefined) reduce({ type: 'SET_EXPEDITION_DIFFICULTY_OFFSET', partyIndex, difficultyOffset: Number(parameters.difficultyOffset) });
       const party = next.parties[partyIndex];
       data = { current: { destination: party.selectedDungeonId, destinationMode: party.expeditionDestinationMode, depthLimit: party.expeditionDepthLimit, difficultyOffset: party.expeditionDifficultyOffset } };
+    } else if (partyMatch[2] === 'resetStatistics') {
+      // SpecRef: 9.1.3 | Commit | 3-2-4 {p}/resetStatistics
+      // The Expedition pane's Reset button: the same reducer action, which restores the party's expedition statistics
+      // (Clear, Return, Draw, Retreat, Defeat, and the totals) to their defaults.
+      reduce({ type: 'RESET_EXPEDITION_STATS', partyIndex });
+      data = {};
     } else {
       // SpecRef: 9.1.3 | Commit | 3-2-2 {p}/sortie
       // SpecRef: 5.1.1 | Party State Machine | Immediate 出撃 / 神魔戦

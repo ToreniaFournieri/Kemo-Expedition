@@ -85,9 +85,8 @@ test('Expedition controls are Application API commits, not reducer actions (migr
   const start = home.indexOf('<ExpeditionTab');
   const jsx = home.slice(start, home.indexOf('\n        />', start));
   const actions = [...jsx.matchAll(/actions\.([A-Za-z]+)/g)].map((match) => match[1]);
-  // Reviewed remainder: the statistics reset has no API operation yet (recorded in the plan).
-  assert.deepEqual([...new Set(actions)].sort(), ['resetExpeditionStats'], 'only the reviewed reducer actions may be passed to the Expedition tab');
-  for (const command of ['changeExpedition']) assert.match(home, new RegExp(`commit/expedition/\\{p\\}/${command}`));
+  assert.deepEqual([...new Set(actions)].sort(), [], 'no reducer action may be passed to the Expedition tab');
+  for (const command of ['changeExpedition', 'resetStatistics']) assert.match(home, new RegExp(`commit/expedition/\\{p\\}/${command}`));
   // The button's expedition is the API sortie: `triggerSortie` keeps only its popups and no longer runs the reducer sequence.
   const trigger = home.slice(home.indexOf('const triggerSortie = ('), home.indexOf('const triggerSortieRef'));
   assert.match(trigger, /commit\/expedition\/\{p\}\/godsBattle/);
