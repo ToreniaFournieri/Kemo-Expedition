@@ -68,3 +68,20 @@ test('Party inventory and Jewel counts render from searchItems projections', () 
   assert.doesNotMatch(partyTag, /state\.global\.inventory|state\.global\.jewels/);
   assert.match(home, /category: 'jewel'/);
 });
+
+test('Party pane, member list, and party selector render from the party projection', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
+  const partyTag = home.slice(home.indexOf('<PartyTab'), home.indexOf('/>', home.indexOf('isDarkModeEnabled={isDarkModeEnabled}', home.indexOf('<PartyTab'))));
+  assert.match(partyTag, /parties=\{partySummaries\}/);
+  assert.match(partyTag, /party=\{partyView\}/);
+  assert.match(partyTag, /partyStats=\{\{ hp: partyView\.maxHp \}\}/);
+  assert.doesNotMatch(partyTag, /parties=\{state\.parties\}|party=\{currentParty\}/);
+  assert.match(home, /'read\/observation\/party'/);
+  // The observation wraps the projection in `partyInfo`; reading it unwrapped crashed the renderer at startup.
+  assert.match(home, /useApiRead<\{ partyInfo: PartyProjection \}>/);
+  assert.match(home, /partyObservation\?\.partyInfo/);
+  const partyTab = fs.readFileSync(path.resolve('src/components/home/tabs/PartyTab.tsx'), 'utf8');
+  assert.doesNotMatch(partyTab, /\bParty\b[,\s]*(?:from|\})/, 'the tab no longer imports the Party domain type');
+});

@@ -116,17 +116,21 @@ function expeditionProjection(state: GameState) {
 function partyProjection(state: GameState, parameters: Record<string, unknown>) {
   const selected = partyByNumber(state, parameters.partyNumber) ?? { party: state.parties[state.selectedPartyIndex] ?? state.parties[0], index: state.selectedPartyIndex };
   const party = selected.party;
+  const partyStatus = computePartyStats(party);
+  const computed = partyStatus.characterStats;
   return {
     effectiveSelection: { partyNumber: party.id, characterId: Number(parameters.characterId) || party.characters[0]?.id || null },
     party: {
       partyNumber: party.id,
       name: party.name,
       level: party.level,
+      experience: party.experience,
+      maxHp: Math.floor(partyStatus.partyStats.hp),
       deityId: getDeityId(party.deity.name),
       deityRank: getDeityRank(state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0),
       condition: party.condition,
       order: party.characters.map((character) => character.id),
-      characters: (() => { const computed = computePartyStats(party).characterStats; return party.characters.map((character, index) => ({
+      characters: party.characters.map((character, index) => ({
         characterId: character.id,
         name: character.name,
         raceId: character.raceId,
@@ -135,10 +139,12 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>) 
         subClassId: character.subClassId,
         lineageId: character.lineageId,
         predispositionId: character.predispositionId,
+        isUnique: character.isUnique === true,
+        mimorianEnemyId: character.mimorianEnemyId ?? null,
         calculatedStatus: buildCalculatedStatus(computed[index]),
         equipment: character.equipment.map(equipmentEntry),
         autoEquipmentMode: character.autoEquipmentMode,
-      })); })(),
+      })),
     },
   };
 }
@@ -253,7 +259,16 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   }
   if (operationId === 'read/observation/overview') return { headerInfo: { gameMode: context.gameMode, inGameTime: new Date(context.inGameTime).toISOString(), gold: state.global.gold, prana: state.global.prana, environment: context.environment, unreadDiary: state.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0) } };
   if (operationId === 'read/observation/expedition') return { expeditionInfo: expeditionProjection(state) };
-  if (operationId === 'read/observation/party') return { partyInfo: partyProjection(state, parameters) };
+  if (operationId === 'read/observation/party') {
+    // `parties` lists every unlocked party's deity and members so the party selector and the deity and Mimorian
+    // assignment rules do not need the other parties' full projections.
+    const parties = state.parties.map((party) => ({
+      partyNumber: party.id,
+      deityId: getDeityId(party.deity.name),
+      characters: party.characters.map((character) => ({ characterId: character.id, name: character.name, raceId: character.raceId, mimorianEnemyId: character.mimorianEnemyId ?? null })),
+    }));
+    return { partyInfo: { ...partyProjection(state, parameters), parties } };
+  }
   if (operationId === 'read/observation/base') return { baseInfo: baseProjection(state) };
   if (operationId === 'read/observation/diary') return { diaryInfo: diaryProjection(state) };
   if (operationId === 'read/observation/setting') return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), uiPreferences: (context.control?.settings?.uiPreferences as unknown[] | undefined) ?? [] } };

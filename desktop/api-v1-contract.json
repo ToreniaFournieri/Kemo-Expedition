@@ -2566,7 +2566,8 @@
               "type": "object",
               "required": [
                 "effectiveSelection",
-                "party"
+                "party",
+                "parties"
               ],
               "properties": {
                 "effectiveSelection": {
@@ -2602,6 +2603,8 @@
                     "partyNumber",
                     "name",
                     "level",
+                    "experience",
+                    "maxHp",
                     "deityId",
                     "deityRank",
                     "condition",
@@ -2621,6 +2624,14 @@
                     "level": {
                       "minimum": 1,
                       "maximum": 69,
+                      "type": "integer"
+                    },
+                    "experience": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maxHp": {
+                      "minimum": 0,
                       "type": "integer"
                     },
                     "deityId": {
@@ -2658,6 +2669,8 @@
                           "subClassId",
                           "lineageId",
                           "predispositionId",
+                          "isUnique",
+                          "mimorianEnemyId",
                           "calculatedStatus",
                           "equipment",
                           "autoEquipmentMode"
@@ -2716,6 +2729,20 @@
                                 "minLength": 1,
                                 "maxLength": 200,
                                 "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "isUnique": {
+                            "type": "boolean"
+                          },
+                          "mimorianEnemyId": {
+                            "anyOf": [
+                              {
+                                "minimum": 1,
+                                "type": "integer"
                               },
                               {
                                 "type": "null"
@@ -2935,6 +2962,69 @@
                       }
                     }
                   }
+                },
+                "parties": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "partyNumber",
+                      "deityId",
+                      "characters"
+                    ],
+                    "properties": {
+                      "partyNumber": {
+                        "minimum": 1,
+                        "maximum": 6,
+                        "type": "integer"
+                      },
+                      "deityId": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "characters": {
+                        "type": "array",
+                        "items": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "characterId",
+                            "name",
+                            "raceId",
+                            "mimorianEnemyId"
+                          ],
+                          "properties": {
+                            "characterId": {
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "name": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "raceId": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "mimorianEnemyId": {
+                              "anyOf": [
+                                {
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -2984,7 +3074,8 @@
                   "type": "object",
                   "required": [
                     "effectiveSelection",
-                    "party"
+                    "party",
+                    "parties"
                   ],
                   "properties": {
                     "effectiveSelection": {
@@ -3020,6 +3111,8 @@
                         "partyNumber",
                         "name",
                         "level",
+                        "experience",
+                        "maxHp",
                         "deityId",
                         "deityRank",
                         "condition",
@@ -3039,6 +3132,14 @@
                         "level": {
                           "minimum": 1,
                           "maximum": 69,
+                          "type": "integer"
+                        },
+                        "experience": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "maxHp": {
+                          "minimum": 0,
                           "type": "integer"
                         },
                         "deityId": {
@@ -3076,6 +3177,8 @@
                               "subClassId",
                               "lineageId",
                               "predispositionId",
+                              "isUnique",
+                              "mimorianEnemyId",
                               "calculatedStatus",
                               "equipment",
                               "autoEquipmentMode"
@@ -3134,6 +3237,20 @@
                                     "minLength": 1,
                                     "maxLength": 200,
                                     "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "isUnique": {
+                                "type": "boolean"
+                              },
+                              "mimorianEnemyId": {
+                                "anyOf": [
+                                  {
+                                    "minimum": 1,
+                                    "type": "integer"
                                   },
                                   {
                                     "type": "null"
@@ -3353,6 +3470,69 @@
                           }
                         }
                       }
+                    },
+                    "parties": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "partyNumber",
+                          "deityId",
+                          "characters"
+                        ],
+                        "properties": {
+                          "partyNumber": {
+                            "minimum": 1,
+                            "maximum": 6,
+                            "type": "integer"
+                          },
+                          "deityId": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "characters": {
+                            "type": "array",
+                            "items": {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "characterId",
+                                "name",
+                                "raceId",
+                                "mimorianEnemyId"
+                              ],
+                              "properties": {
+                                "characterId": {
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "name": {
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "raceId": {
+                                  "minLength": 1,
+                                  "maxLength": 200,
+                                  "type": "string"
+                                },
+                                "mimorianEnemyId": {
+                                  "anyOf": [
+                                    {
+                                      "minimum": 1,
+                                      "type": "integer"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -3397,6 +3577,8 @@
                 "partyNumber": 1,
                 "name": "xxxxxxx",
                 "level": 1,
+                "experience": 0,
+                "maxHp": 0,
                 "deityId": "xxxxxxx",
                 "deityRank": 0,
                 "condition": -400,
@@ -3413,6 +3595,8 @@
                     "subClassId": "xxxxxxx",
                     "lineageId": "xxxxxxx",
                     "predispositionId": "xxxxxxx",
+                    "isUnique": true,
+                    "mimorianEnemyId": 1,
                     "calculatedStatus": {
                       "stats": [
                         {
@@ -3454,7 +3638,21 @@
                     "autoEquipmentMode": 0
                   }
                 ]
-              }
+              },
+              "parties": [
+                {
+                  "partyNumber": 1,
+                  "deityId": "xxxxxxx",
+                  "characters": [
+                    {
+                      "characterId": 1,
+                      "name": "xxxxxxx",
+                      "raceId": "xxxxxxx",
+                      "mimorianEnemyId": 1
+                    }
+                  ]
+                }
+              ]
             }
           }
         }

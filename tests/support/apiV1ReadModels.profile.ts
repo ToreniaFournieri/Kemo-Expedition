@@ -229,6 +229,53 @@ assert.equal(full.simulatedRevision, 7);
   assert.deepEqual((await search({ searchBonus: 'c.melee-attack+23' })).every((stack) => idOf(stack) === 1104), true);
   assert.deepEqual(await search({ searchAbility: 'a.does-not-exist' }), []);
 }
+// The party observation carries what the Party tab needs, validates against the published schema, and rebuilds the view.
+{
+  const { default: Ajv } = await import('ajv');
+  const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
+  const { buildPartySummaries, buildPartyView } = await import('../../src/api/v1/partyView.ts');
+  const { getDeityNameFromId } = await import('../../src/game/deity.ts');
+  const party = state.parties[0];
+  const observation = await buildApiV1ReadData('read/observation/party', state, { partyNumber: party.id }, context) as { partyInfo: never };
+  const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'read/observation/party')!.response.data);
+  assert.equal(validate(observation), true, JSON.stringify(validate.errors));
+
+  const projection = (observation as { partyInfo: Parameters<typeof buildPartyView>[0] }).partyInfo;
+  const view = buildPartyView(projection);
+  assert.equal(view.id, party.id);
+  assert.equal(view.level, party.level);
+  assert.equal(view.experience, party.experience);
+  assert.equal(view.maxHp, projection.party.maxHp);
+  assert.ok(view.maxHp > 0, 'the maximum party HP is projected');
+  assert.equal(view.deity.name, getDeityNameFromId(projection.party.deityId) ?? 'None');
+  assert.equal(view.characters.length, party.characters.length);
+  view.characters.forEach((rebuilt, index) => {
+    const original = party.characters[index];
+    for (const key of ['id', 'name', 'gender', 'raceId', 'mainClassId', 'subClassId', 'lineageId', 'predispositionId'] as const) assert.equal(rebuilt[key], original[key], key);
+    assert.equal(Boolean(rebuilt.isUnique), Boolean(original.isUnique), 'the unique flag is projected');
+    assert.equal(rebuilt.autoEquipmentMode, original.autoEquipmentMode);
+    assert.equal(rebuilt.mimorianEnemyId, original.mimorianEnemyId);
+    assert.equal(rebuilt.equipment.length, original.equipment.length);
+    original.equipment.forEach((item, slot) => {
+      const back = rebuilt.equipment[slot];
+      if (!item) return assert.equal(back, null);
+      assert.ok(back);
+      assert.deepEqual([back.id, back.name, back.enhancement, back.superRare, back.isLocked === true, back.jewel ?? null], [item.id, item.name, item.enhancement, item.superRare, item.isLocked === true, item.jewel ?? null], `slot ${slot}`);
+    });
+  });
+  assert.ok(view.characters.some((character) => character.isUnique), 'the fixture party has a unique member');
+
+  // The summaries list every party with its deity and member identities, including Mimorian forms.
+  const withMimorian = { ...state, parties: state.parties.map((entry, index) => index === 0 ? { ...entry, characters: entry.characters.map((character, slot) => slot === 1 ? { ...character, raceId: 'mimorian' as const, mimorianEnemyId: 193 } : character) } : entry) };
+  const both = await buildApiV1ReadData('read/observation/party', withMimorian, { partyNumber: party.id }, context) as { partyInfo: Parameters<typeof buildPartyView>[0] };
+  assert.equal(validate(both), true, JSON.stringify(validate.errors));
+  const summaries = buildPartySummaries(both.partyInfo);
+  assert.equal(summaries.length, state.parties.length);
+  assert.deepEqual(summaries[0].characters.map((character) => character.name), party.characters.map((character) => character.name));
+  assert.equal(summaries[0].characters[1].mimorianEnemyId, 193);
+  assert.equal(summaries[0].characters[0].mimorianEnemyId, undefined);
+  assert.equal(summaries[0].deity.name, view.deity.name);
+}
 assert.deepEqual(state, before);
 
 // calculatedStatus is the public fact model (9.1.4.14), not the internal computed-stats object.

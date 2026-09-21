@@ -99,6 +99,7 @@ import { serializeGameState } from '../game/saveCodec';
 import { characterEditToChangeBuildParameters } from '../api/v1/characterBuildParameters';
 import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIntents';
 import { parseInventoryStacks, parseJewelStacks, parseSavedEquipmentSet } from '../api/v1/itemFormat';
+import { buildPartySummaries, buildPartyView, type PartyProjection } from '../api/v1/partyView';
 import { useApiRead } from './home/useApiRead';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
@@ -1903,6 +1904,20 @@ export function HomeScreen({
   );
   // The owned inventory and Jewel counts are only needed while the Party tab is on screen.
   const isPartyTabVisible = isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'party' : activeTab === 'party';
+
+  // SpecRef: 8.2 | UI_PARTY | The party pane, member list, and deity pane render from `read/observation/party`.
+  // Re-read only when a displayed fact changes: the selected party's members, level, experience, and deity, or any party's
+  // deity and member identities (the deity assignment, naming, and Mimorian rules read every party).
+  const partiesSignature = state.parties.map((party) => `${party.id}:${party.deity.name}:${party.characters.map((character) => `${character.id}/${character.name}/${character.raceId}/${character.mimorianEnemyId ?? ''}`).join(',')}`).join('|');
+  const partyObservation = useApiRead<{ partyInfo: PartyProjection }>(
+    inProcessApiRef.current, 'read/observation/party', { parameters: { partyNumber: currentParty.id } },
+    [currentParty.id, currentParty.characters, currentParty.level, currentParty.experience, currentParty.deity.name, partiesSignature],
+    isPartyTabVisible,
+  );
+  const partyProjection = partyObservation?.partyInfo ?? null;
+  const partyView = useMemo(() => partyProjection ? buildPartyView(partyProjection) : null, [partyProjection]);
+  const partySummaries = useMemo(() => partyProjection ? buildPartySummaries(partyProjection) : [], [partyProjection]);
+
   // `details: none` keeps each result to its base format (`<Item Format>/<quantity>` and `<jewelType>:<jewelRank>/<quantity>`).
   const ownedItemsProjection = useApiRead<{ items: string[] }>(
     inProcessApiRef.current, 'read/base/searchItems', { parameters: { state: 'owned', details: 'none', limit: SEARCH_ITEMS_LIMIT } }, [state.global.inventory], isPartyTabVisible,
@@ -2284,7 +2299,7 @@ export function HomeScreen({
 
   const afkSummaryBaselineRef = useRef<AfkSummaryStats[] | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
-  const { partyStats, characterStats } = computePresentationPartyStats(currentParty);
+  const { characterStats } = computePresentationPartyStats(currentParty);
 
   useEffect(() => {
     preloadRaceIcons();
@@ -4897,12 +4912,14 @@ export function HomeScreen({
 
   const renderTabContent = (tab: Tab) => {
     if (tab === 'party') {
+      // The projection loads right after the tab opens or the party changes; nothing is drawn from another party's data.
+      if (!partyView || partyView.id !== currentParty.id) return null;
       return (
         <PartyTab
-          parties={state.parties}
+          parties={partySummaries}
           selectedPartyIndex={safeSelectedPartyIndex}
-          party={currentParty}
-          partyStats={partyStats}
+          party={partyView}
+          partyStats={{ hp: partyView.maxHp }}
           characterStats={characterStats}
           selectedCharacter={selectedCharacter}
           setSelectedCharacter={setSelectedCharacter}

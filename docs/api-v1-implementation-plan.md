@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 48. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 50. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -58,7 +58,9 @@ Next, in order:
 4. **Party reads** (in progress; `PartyTab.tsx` is about 3,000 lines built on `Party`, `Character`, `Item`, and computed-stats objects, so it is migrated in steps):
    - 4a. (Done, Build 45) Saved equipment sets and the deity pane (donations, unlocked gods) render from projections; shared item wire-format module.
    - 4b. (Done, Build 46) Owned inventory for equipping and the Jewel counts, from `searchItems` (`category: jewel` lists Jewel stacks). `searchItems` follows the refined 2-4-1 contract (Builds 47–48: optional category, character-assigned items, details, ability/bonus search, calculated base power, sort order, `limit`).
-   - 4c. Character and member list: the identity fields, build options, and calculated status, from `read/build/character/{characterId}/status`. The status pane also needs bonus and ability display facts beyond `calculatedStatus`; decide whether to enrich the projection or resolve them from master data.
+   - 4c. Character and member list.
+     - 4c-1. (Done, Build 49) Party pane, party selector, member list, and deity rules render from `read/observation/party` through `PartyView` and `PartySummary`.
+     - 4c-2. The status pane still reads `ComputedCharacterStats` for the selected party from the game state (`characterStats`), and derives display values itself: offense amplifiers, defense resistances, and accuracy decay. Move those derivations into one shared game function, publish the results as `calculatedStatus` facts (the missing keys are the deity offense and defense amplifier bonuses, the offense `c.` bonus names, and the attack amplifiers), and have the tab read them. Prove it with a lossless round-trip test against `computePartyStats`.
    - 4d. Equipment slots list from the `equipment` projection (entries parse to items through the shared format).
    - 4e. Retained selections (selected party and character, filters) through `uiPreferences`. Selected party is currently persisted in the save (`selectedPartyIndex`), so moving it changes what is persisted; decide first.
    - 4f. Remove the `Party`, `Character`, `ComputedCharacterStats`, and inventory props, and add the mechanical check described in Stage 9.

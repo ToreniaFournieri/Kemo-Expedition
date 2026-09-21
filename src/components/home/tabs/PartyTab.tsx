@@ -22,7 +22,8 @@ import { resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../../g
 import { computeCharacterHpContribution,computePartyStats } from '../../../game/partyComputation';
 import { getXpToNextLevel } from '../../../game/partyLevel';
 import { t } from '../../../i18n';
-import { AbilityId,Bonus,BonusType,Character,ElementalOffense,EnemyDef,InventoryRecord,Item,JewelKey,MAX_LEVEL,Party,Race,RaceId,SavedEquipmentSet,getVariantKey,type EnemyAbility } from '../../../types';
+import type { PartySummary, PartyView } from '../../../api/v1/partyView';
+import { AbilityId,Bonus,BonusType,Character,ElementalOffense,EnemyDef,InventoryRecord,Item,JewelKey,MAX_LEVEL,Race,RaceId,SavedEquipmentSet,getVariantKey,type EnemyAbility } from '../../../types';
 
 
 import {
@@ -116,10 +117,10 @@ export default function PartyTab({
   unlockedMimorianEnemyIds,
   isDarkModeEnabled,
 }: {
-  parties: Party[];
+  parties: PartySummary[];
   selectedPartyIndex: number;
-  party: Party;
-  partyStats: ReturnType<typeof computePartyStats>['partyStats'];
+  party: PartyView;
+  partyStats: { hp: number };
   characterStats: ReturnType<typeof computePartyStats>['characterStats'];
   selectedCharacter: number;
   setSelectedCharacter: Dispatch<SetStateAction<number>>;
