@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 88. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 91. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -16,7 +16,7 @@ This document supersedes the earlier "Build 23" plan. Stages are numbered once, 
 | 4 | Expedition and shell | Runtime and Expedition UI done; header UI migration remains |
 | 5 | Party, character, equipment | Done (UI projection complete) |
 | 6 | Base, inventory, shop, Altar | Done (UI projection complete) |
-| 7 | Diary and popup streaming | Diary contracts and UI migration done; complete popup/SSE behavior remains |
+| 7 | Diary and popup streaming | Complete |
 | 8 | Settings, files, delivery, Help, Resources | Partial |
 | 9 | Conformance hardening and public cutover | Not started |
 
@@ -110,8 +110,9 @@ Gate passed: no `actions.*` reducer call remains in `PartyTab.tsx` for these con
 - **D1 (done, Build 88): Diary contracts and commands.** Closed semantic/legacy summaries, opaque stable entry IDs, `diary:<id>` log references, current Party identity, effective selection and filtering, exact setting values/options, and precise atomic read acknowledgement. The real mixed-history save and both adapter shapes validate.
 - **D2 (done, Build 89): Diary UI migration.** `DiaryTab` renders closed API summaries and `diary:<id>` retained-log responses through `src/api/v1/diaryTabView.ts`; settings, per-entry acknowledgement, tab-exit acknowledgement, and Party-switch acknowledgement are commits. Current character display identities are projected so compact battle records use current names with their recorded appearance. Party selection remains the one reviewed shared-state action, as specified. The tab receives no raw Party/Diary save object, no longer owns an undocumented local-storage selection, and is protected by the mechanical migration guard.
 - **D3 (done, Build 90): durable popup production.** The transaction authority derives language-neutral Cycle, item-drop, automatic-equipment, and Side Quest events from its immutable before/after snapshots; popup settings gate each category, controlled elapsed progression and login catch-up emit the existing per-Party AFK summary instead of event bursts, and import/reset fences the prior buffer. Events receive deterministic `revision:sequence` IDs and the complete v1 wire metadata, retain the union of the latest 256 and the last five minutes, and are written atomically with state, retained records, receipts, and revision. Persistence failure publishes nothing, receipt replay produces nothing twice, and pre-D3 prototype records are normalized before replay.
-- **D4: SSE lifecycle.** Push committed events to streams, complete cursor replay/resync and session/import/reset/shutdown fencing, and add reconnect/deduplication lifecycle coverage.
-- SSE: persist popup events with the committing transaction, push to open streams, replay from `Last-Event-ID`, retain at least 256 events or five minutes, emit `resyncRequired` on invalid or fenced cursors, close streams on logout / expiry / reset / import / shutdown, keep heartbeats independent of lease renewal, group AFK events per the existing notification rules.
+- **D4 (done, Build 91): SSE lifecycle.** The authority's `notifyPopupActivity` dependency fires after every durably committed, changed commit (never for a no-op or an idempotent receipt replay); the renderer relays it to the desktop main process over a new one-way IPC channel (`desktop:api-v1-popup-activity`), and `desktop/api-v1.cjs` pushes every open `popupEventStream` connection immediately by re-running its per-connection tick on demand. The 1-second poll remains as a resilience backstop (the same `tick`, just interval-driven) and now renews the control lease only on a tick that actually delivers an event, leaving heartbeats (still on their own 15-second, lease-independent cadence) as the only truly inert traffic. A cursor-not-found read now returns the catalogued `invalid_cursor` (400, `Specification_9.1.4_API_DETAIL.md` §9.1.4.11) instead of an uncatalogued code, cross-referenced from §9.1.4.8. Fixing the read model's cursor semantics (an absent `Last-Event-ID` now means "from the beginning of the retained buffer," with the transport layer deciding what a fresh connect actually replays) also fixed a real bug: the first event pushed after a fresh connect into an already-populated buffer could previously be silently dropped, because "no cursor" was reinterpreted as "current tail" on every tick, not just the initial connect. `commit/setting/backup/import` and `commit/setting/backup/reset` now call the same `closeStreams()` used by logout, synchronously in the same request, instead of leaving fenced streams to discover the reset on their next poll tick. Covered by `tests/apiV1PopupStream.test.cjs` (push, reconnect replay, invalid-cursor rejection on connect, mid-stream resync, synchronous close on reset/logout/shutdown) and an extension to `tests/support/apiV1Authority.profile.ts` (notify fires once per changed commit, never on replay/no-op, fires again on a confirmed reset).
+
+**Stage 7 is complete.** Diary contracts and UI, and durable popup production and its SSE push/reconnect/fencing lifecycle, are all on the Application API.
 
 ## Stage 8 — Settings, files, delivery, Help, Resources
 
@@ -154,7 +155,7 @@ Add a mechanical check so this does not rely on review: a test that fails if a m
 
 ## Recommended order
 
-1. Stage 7 D4: complete the SSE lifecycle over the durable D3 event buffer.
+1. ~~Stage 7 D4: complete the SSE lifecycle over the durable D3 event buffer.~~ (Done, Build 91.)
 2. Finish the Stage 4 header UI migration.
 3. Stage 8 (Settings, files, delivery sender, Help, Resources), including the remaining `Type.Unknown` rows.
 4. Stage 9 (conformance matrix, ownership audit, cutover).

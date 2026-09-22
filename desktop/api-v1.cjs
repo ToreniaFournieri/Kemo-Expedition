@@ -312,25 +312,37 @@ function createApiV1(options) {
       });
       response.flushHeaders();
       const events = Array.isArray(result.data?.events) ? result.data.events : [];
-      for (const event of events) response.write(`id: ${event.eventId}\nevent: popup\ndata: ${JSON.stringify({ apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, ...event })}\n\n`);
+      // No Last-Event-ID means a fresh connect: an absent cursor now reads the whole retained buffer (see
+      // applicationApi.ts), but a fresh connect starts after the current boundary and must not replay any of it —
+      // only anchor `cursor` on the newest entry so the next tick reports only what is genuinely new. A supplied
+      // Last-Event-ID is a real resume request, so its delta is replayed to the client.
+      if (request.headers['last-event-id']) {
+        for (const event of events) response.write(`id: ${event.eventId}\nevent: popup\ndata: ${JSON.stringify({ apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, ...event })}\n\n`);
+      }
       let cursor = events.at(-1)?.eventId ?? request.headers['last-event-id'] ?? null;
       const heartbeat = setInterval(() => { if (!response.writableEnded) response.write(': heartbeat\n\n'); }, 15_000);
       let polling = false;
-      const poll = setInterval(async () => {
+      // Called on the 1-second poll (a resilience backstop) and immediately on `notifyPopupActivity()` (the real
+      // push path); the `polling` guard makes an overlapping call a safe no-op either way.
+      const tick = async () => {
         if (polling || response.writableEnded) return;
         if (!lease || nowMonotonic() >= lease.deadline) { closeStreams(); return; }
         polling = true;
         try {
           const update = await options.invokeApplication(route.operationId, { parameters: {}, pathParameters: {}, transport: { requestId: requestId(), lastEventId: cursor } });
           if (update?.error) { response.write(`event: resyncRequired\ndata: ${JSON.stringify({ apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, revision: update.revision })}\n\n`); response.end(); return; }
-          for (const event of update?.data?.events ?? []) {
+          const delivered = update?.data?.events ?? [];
+          for (const event of delivered) {
             response.write(`id: ${event.eventId}\nevent: popup\ndata: ${JSON.stringify({ apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, ...event })}\n\n`);
             cursor = event.eventId;
           }
+          // Only genuine delivered activity renews the lease; an empty tick behaves like a heartbeat.
+          if (delivered.length > 0) renewLease();
         } catch { response.end(); }
         finally { polling = false; }
-      }, 1_000);
-      const stream = { response, heartbeat, poll };
+      };
+      const poll = setInterval(() => { void tick(); }, 1_000);
+      const stream = { response, heartbeat, poll, tick };
       streams.add(stream);
       request.once('close', () => { clearInterval(heartbeat); clearInterval(poll); streams.delete(stream); });
       return;
@@ -353,6 +365,10 @@ function createApiV1(options) {
       lease = null;
       if (expiryTimer) clearTimeout(expiryTimer);
     } else if (route.access === 'session') renewLease();
+
+    // Import/reset atomically fence the popup-event buffer (authority.ts); close open streams synchronously here
+    // rather than waiting for their next poll tick to discover the fenced cursor.
+    if (route.operationId === 'commit/setting/backup/import' || route.operationId === 'commit/setting/backup/reset') closeStreams();
 
     assertResponseData(route, result.data ?? {});
 
@@ -447,7 +463,13 @@ function createApiV1(options) {
   }
 
   async function shutdown() { shuttingDown = true; await disable(); }
-  return { enable, disable, shutdown, getSettings, get isShuttingDown() { return shuttingDown; }, get activeOperations() { return activeOperations; } };
+
+  // The renderer's push signal: re-check every open popup-event stream now instead of waiting for its next poll tick.
+  function notifyPopupActivity() {
+    for (const stream of streams) void stream.tick();
+  }
+
+  return { enable, disable, shutdown, getSettings, notifyPopupActivity, get isShuttingDown() { return shuttingDown; }, get activeOperations() { return activeOperations; } };
 }
 
 module.exports = { createApiV1, API_PREFIX, API_VERSION, SCHEMA_VERSION, LEASE_IDLE_TIMEOUT_MS };

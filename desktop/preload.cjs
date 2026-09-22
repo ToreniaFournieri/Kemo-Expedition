@@ -26,6 +26,7 @@ contextBridge.exposeInMainWorld('bokemoDesktop', {
     ipcRenderer.send('desktop:api-v1-ready');
     return () => ipcRenderer.removeListener('desktop:api-v1-request', listener);
   },
+  notifyApiV1PopupActivity: () => ipcRenderer.invoke('desktop:api-v1-popup-activity'),
   onNotificationActivated: (callback) => {
     const listener = (_event, payload) => callback(payload);
     ipcRenderer.on('desktop:notification-activated', listener);

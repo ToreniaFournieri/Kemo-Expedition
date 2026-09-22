@@ -350,4 +350,47 @@ function dependencies(overrides: Partial<ApiV1CommitAuthorityDependencies> = {})
   assert.deepEqual(events, [], 'a refused sortie writes and publishes nothing');
 }
 
+// SpecRef: 9.1.4.8 | Popup event stream | notifyPopupActivity lets the transport push open streams instead of waiting
+// for their next poll. It fires once a changed commit is durable, never for a no-op or an idempotent replay, never for
+// a confirmation reservation alone (the popup buffer is untouched until confirmed), and once more for the confirmed
+// reset that fences the buffer.
+{
+  let notifyCount = 0;
+  const deps = dependencies({ notifyPopupActivity: () => { notifyCount += 1; } });
+  const result = await executeApiV1CommitTransaction(input({ idempotencyKey: 'authority-key-notify-0001' }), deps.value);
+  assert.equal(result.ok, true);
+  if (!result.ok) throw new Error(result.error.code);
+  assert.equal(notifyCount, 1, 'a changed commit notifies once its persist is durable');
+
+  const replay = await executeApiV1CommitTransaction(input({ state: result.state, control: result.control, expectedRevision: 0, idempotencyKey: 'authority-key-notify-0001' }), deps.value);
+  assert.equal(replay.ok, true);
+  if (!replay.ok) throw new Error(replay.error.code);
+  assert.equal(notifyCount, 1, 'an idempotent receipt replay persists nothing and notifies nothing again');
+
+  const noop = await executeApiV1CommitTransaction(input({ idempotencyKey: 'authority-key-notify-0002', parameters: { partyNumber: 1 } }), deps.value);
+  assert.equal(noop.ok, true);
+  if (!noop.ok) throw new Error(noop.error.code);
+  assert.equal(notifyCount, 1, 'a persisted no-op receipt (unchanged revision) does not notify');
+
+  const withPopup = control();
+  withPopup.popupEvents = [{
+    apiVersion: 'v1', schemaVersion: 1, revision: 0, sequence: 1, eventId: '0:1', eventKey: 'popup.test',
+    args: {}, partyNumber: 1, diaryEntryId: null, groupKey: null, createdAt: new Date(fixedNow).toISOString(),
+  }];
+  const resetInput = input({ operation: 'commit/setting/backup/reset', idempotencyKey: 'authority-key-notify-reset', control: withPopup });
+  const challenge = await executeApiV1CommitTransaction(resetInput, deps.value);
+  assert.equal(challenge.ok, false);
+  if (challenge.ok) throw new Error('expected confirmation');
+  assert.equal(notifyCount, 1, 'a confirmation reservation leaves the popup buffer untouched and does not notify');
+
+  const confirmed = await executeApiV1CommitTransaction({
+    ...resetInput,
+    control: challenge.durableControl!,
+    confirmationToken: String(challenge.error.details?.confirmationToken),
+  }, deps.value);
+  assert.equal(confirmed.ok, true);
+  if (!confirmed.ok) throw new Error(confirmed.error.code);
+  assert.equal(notifyCount, 2, 'the confirmed reset that fences the popup buffer notifies once more');
+}
+
 console.log('apiV1Authority profile ok');

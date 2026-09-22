@@ -431,6 +431,10 @@ ipcMain.handle('desktop:get-api-v1-settings', () => apiV1.getSettings());
 ipcMain.handle('desktop:set-api-v1-enabled', async (_event, enabled) => (
   enabled === true ? apiV1.enable() : apiV1.disable()
 ));
+ipcMain.handle('desktop:api-v1-popup-activity', (event) => {
+  if (event.sender !== mainWindow?.webContents) return;
+  apiV1.notifyPopupActivity();
+});
 ipcMain.handle('desktop:api-account-create', (event, identity, savePayload) => {
   if (event.sender !== mainWindow?.webContents || typeof savePayload !== 'string') throw new Error('invalid_request');
   if (identity?.environment !== desktopEnvironment) throw new Error('invalid_environment');

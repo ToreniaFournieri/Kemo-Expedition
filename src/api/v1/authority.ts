@@ -77,6 +77,8 @@ export interface ApiV1CommitAuthorityDependencies {
   applyAutoEquipment: ApiV1CommitContext['applyAutoEquipment'];
   persist: (state: GameState, control: ApiV1ControlMetadata) => Promise<void>;
   publish: (state: GameState) => Promise<void>;
+  /** Fired after a changed commit is durably persisted, so a transport layer can push open popup-event streams immediately instead of waiting for their next poll. */
+  notifyPopupActivity?: () => void;
   /** The Instant Expedition charge clock scale (the current Speed of Time). */
   chargeDurationScale?: number;
   /** The runtime's Colosseum Debug setting (the ordinary player only). */
@@ -317,6 +319,7 @@ export async function executeApiV1CommitTransaction(
   } catch {
     return failure('save_failed', 'The previous account manifest remains authoritative.');
   }
+  if (changed) dependencies.notifyPopupActivity?.();
 
   let published = !stateChanged;
   if (stateChanged) {

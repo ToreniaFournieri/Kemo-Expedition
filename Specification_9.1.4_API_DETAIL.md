@@ -374,7 +374,9 @@ data: {"apiVersion":"v1","schemaVersion":1,"revision":43,"sequence":2,"eventId":
   IDs scoped to the authenticated save, never transfer them between saves, and
   discard them after `resyncRequired`.
 * If replay is no longer possible, emit `event: resyncRequired` containing the
-  current revision, then close. The client refreshes its projections.
+  current revision, then close. The client refreshes its projections. The
+  underlying JSON error is `invalid_cursor` (9.1.4.11); the stream layer maps
+  it to the `resyncRequired` SSE event before closing.
 * Emit an SSE comment heartbeat every 15 seconds. Heartbeats do not renew the
   control lease or change game state.
 * Closing a toast is local presentation state and is not a Commit operation.

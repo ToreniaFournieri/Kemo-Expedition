@@ -582,6 +582,7 @@ export function HomeScreen({
         simulate: async (snapshot, partyIndex, count) => simulateExpeditionRuns(snapshot, partyIndex, gameModeRef.current, count, undefined, apiRuntimeRef.current.enemyLevelOffset),
         persistPlayer: async (snapshot) => { await apiActionsRef.current.persistApiState(snapshot); },
         publish: async (snapshot) => { await apiActionsRef.current.publishApiState(snapshot); },
+        notifyPopupActivity: () => { void window.bokemoDesktop?.notifyApiV1PopupActivity?.(); },
         yieldBetweenChunks: () => new Promise<void>((resolve) => window.setTimeout(resolve, 0)),
         createOpaqueId: () => crypto.randomUUID(),
         createRandomSeed: () => crypto.getRandomValues(new Uint32Array(1))[0],

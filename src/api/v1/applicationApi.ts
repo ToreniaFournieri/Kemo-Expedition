@@ -31,6 +31,8 @@ export interface ApplicationApiPorts {
     persistPlayer: (state: GameState) => Promise<void>;
     /** Publishes an already-durable committed state to the running renderer. */
     publish: (state: GameState) => Promise<void>;
+    /** Notifies the transport layer that a changed commit is durable, so it can push open popup-event streams immediately. */
+    notifyPopupActivity?: () => void;
     yieldBetweenChunks: () => Promise<void>;
     createOpaqueId: () => string;
     createRandomSeed: () => number;
@@ -158,8 +160,10 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       const lastEventId = typeof transport.lastEventId === 'string' ? transport.lastEventId : null;
       const snapshot = authority.getSnapshot();
       const events = normalizeApiV1PopupEvents(snapshot.control.popupEvents);
-      const start = lastEventId ? events.findIndex((event) => event.eventId === lastEventId) : events.length - 1;
-      if (lastEventId && start < 0) return failure(409, 'resync_required', 'The popup replay cursor is unavailable.');
+      // No cursor means "from the beginning of the retained buffer": the transport layer (which alone knows whether
+      // this is a fresh connect or a push/poll tick) decides what to actually deliver to the client from that.
+      const start = lastEventId ? events.findIndex((event) => event.eventId === lastEventId) : -1;
+      if (lastEventId && start < 0) return failure(400, 'invalid_cursor', 'The popup replay cursor is unavailable.');
       return { revision: snapshot.control.revisionHighWater, data: { events: events.slice(start + 1) } };
     }
 
@@ -213,6 +217,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       createOpaqueId: ports.runtime.createOpaqueId,
       createRandomSeed: ports.runtime.createRandomSeed,
       now: ports.runtime.now,
+      notifyPopupActivity: ports.runtime.notifyPopupActivity,
       persist: async (snapshot, control) => {
         if (identity) await ports.session.accounts.commit(identity, encodePersistedState(JSON.stringify(serializeGameState(snapshot))), control as DesktopApiControlMetadata);
         else await ports.runtime.persistPlayer(snapshot);

@@ -581,6 +581,8 @@ function errorsFor(operation, query) {
   if (CONFIRMATION_GATED_OPERATIONS.has(operation.operationId)) { codes.add('confirmation_required'); codes.add('confirmation_invalid'); }
   if (operation.operationId === 'commit/setting/backup/import') codes.add('incompatible_backup');
   if (query.properties?.cursor) codes.add('invalid_cursor');
+  // The replay cursor travels via `Last-Event-ID`, not a query property, so the generic detection above misses it.
+  if (operation.operationId === 'read/observation/popupEventStream') codes.add('invalid_cursor');
   if (operation.operationId === 'fundamental/signUp') codes.add('already_exists');
   if (operation.operationId === 'fundamental/logIn') { codes.add('control_unavailable'); codes.add('not_found'); }
   if (operation.operationId === 'fundamental/logOut') codes.add('save_failed');
