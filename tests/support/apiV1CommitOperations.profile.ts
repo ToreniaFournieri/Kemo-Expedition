@@ -492,4 +492,42 @@ const seed: GameState = createFreshGameState('ja', Date.parse('2026-01-01T00:00:
   assert.deepEqual((await read(earned, 'read/observation/base')).baseInfo.altar, altar);
 }
 
+// The inventory projection and its commands: what selling pays is what selling does, worn items and held Jewels are listed with
+// their owners, and acknowledging new items is precise and atomic.
+{
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
+  const baseInfo = async (state: GameState) => (await buildApiV1ReadData('read/observation/base', state, {}, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, revision: 1, inGameTime: 0 } as never) as any).baseInfo;
+  const ownedKey = Object.keys(seed.global.inventory).find((key) => seed.global.inventory[key].status === 'owned' && seed.global.inventory[key].count > 0)!;
+  const withNew = { ...seed, global: { ...seed.global, inventory: { ...seed.global.inventory, [ownedKey]: { ...seed.global.inventory[ownedKey], isNew: true } }, jewels: { 'fort:3': 2 } } } as GameState;
+  const info = await baseInfo(withNew);
+  const row = info.inventory.find((entry: { variantKey: string }) => entry.variantKey === ownedKey);
+  assert.equal(row.isNew, true);
+  // The advertised sale is exactly what the sale does (Super Rare items pay Prana only, never Gold).
+  const sold = applyApiV1Commit('commit/base/sellInventoryItems', withNew, { items: [row.item] }, baseContext());
+  assert.deepEqual([sold.state.global.gold - withNew.global.gold, sold.state.global.prana - withNew.global.prana], [row.sale.gold, row.sale.prana]);
+  for (const entry of info.inventory as { status: string; quantity: number; sale: unknown }[]) assert.equal(entry.sale !== null, entry.status === 'owned' && entry.quantity > 0, 'only an owned stack has a sale value');
+  assert.deepEqual(info.jewels, [{ jewelKey: 'fort', rank: 3, quantity: 2 }]);
+  // Every worn item is listed with its owner, and a Jewel is listed with the item it is attached to.
+  const worn = seed.parties.flatMap((party) => party.characters.flatMap((character) => character.equipment.filter(Boolean).map((item) => [party.id, character.id, item])));
+  assert.equal(info.equippedItems.length, worn.length);
+  assert.ok(info.equippedItems.length > 0);
+  const jeweled = { ...withNew, parties: withNew.parties.map((party, index) => index === 0 ? { ...party, characters: party.characters.map((character, ci) => ci === 0 ? { ...character, equipment: character.equipment.map((item, si) => si === 0 && item ? { ...item, jewel: { key: 'might', rank: 2 } } : item) } : character) } : party) } as GameState;
+  const jeweledFirst = (await baseInfo(jeweled)).equippedItems.find((entry: { characterId: number; slotIndex: number }) => entry.characterId === jeweled.parties[0].characters[0].id && entry.slotIndex === 0);
+  assert.equal(jeweledFirst.jewel, 'might:2');
+
+  const seen = (state: GameState, items: unknown) => { try { return applyApiV1Commit('commit/base/markItemsAsSeen', state, { items }, baseContext()); } catch (error) { return String(error); } };
+  const acknowledged = seen(withNew, [ownedKey]) as ReturnType<typeof applyApiV1Commit>;
+  assert.deepEqual(acknowledged.data, { items: [ownedKey] });
+  assert.equal(acknowledged.state.global.inventory[ownedKey].isNew, false);
+  assert.deepEqual((seen(acknowledged.state, [ownedKey]) as ReturnType<typeof applyApiV1Commit>).data, { items: [] }, 'acknowledging a seen variant is a no-op');
+  assert.match(String(seen(withNew, [ownedKey, 'no-such-variant'])), /not_found/, 'an unknown variant rejects the whole request');
+  assert.match(String(seen(withNew, [ownedKey, ownedKey])), /invalid_request/);
+  assert.match(String(seen(withNew, [])), /invalid_request/);
+
+  const priority = (partyNumber: unknown) => { try { return applyApiV1Commit('commit/base/changeJewelPriorityParty', seed, { partyNumber }, baseContext()); } catch (error) { return String(error); } };
+  assert.match(String(priority(6)), /not_found/, 'a party that does not exist is refused, not quietly replaced by PT1');
+  assert.equal((priority(1) as ReturnType<typeof applyApiV1Commit>).state.global.jewelAutoEquipPriorityPartyId, 1);
+  assert.equal((priority('none') as ReturnType<typeof applyApiV1Commit>).state.global.jewelAutoEquipPriorityPartyId, null);
+}
+
 console.log('apiV1CommitOperations profile ok');

@@ -329,6 +329,22 @@ const before = { items: itemConservation(state), jewels: jewelConservation(state
   console.log(`log rendering: ${rooms} rooms (${compact} compact, ${legacy} legacy) render identically from the response`);
 }
 
+// 5c-3. The Base projection on the real save: every variant, every worn item with its owner, and every held Jewel, valid
+// against the published schema and consistent with the save.
+{
+  const validateBase = validator('read/observation/base');
+  const response = await read('read/observation/base') as { baseInfo: { inventory: { variantKey: string; status: string; quantity: number; sale: { gold: number; prana: number } | null }[]; jewels: { quantity: number }[]; equippedItems: { characterId: number; item: string; jewel: string | null; active: boolean }[]; altar: { categories: unknown[] } } };
+  assert.equal(validateBase(response), true, JSON.stringify(validateBase.errors?.slice(0, 3)));
+  assert.equal(response.baseInfo.inventory.length, Object.keys(state.global.inventory).length);
+  const wornCount = state.parties.reduce((sum, party) => sum + party.characters.reduce((inner, character) => inner + character.equipment.filter(Boolean).length, 0), 0);
+  assert.equal(response.baseInfo.equippedItems.length, wornCount, 'every worn item is listed');
+  const attachedJewels = state.parties.flatMap((party) => party.characters.flatMap((character) => character.equipment.filter((item) => item?.jewel)));
+  assert.equal(response.baseInfo.equippedItems.filter((entry) => entry.jewel !== null).length, attachedJewels.length, 'every attached Jewel is listed with its item');
+  assert.equal(response.baseInfo.jewels.reduce((sum, entry) => sum + entry.quantity, 0), Object.values(state.global.jewels).reduce((sum, count) => sum + count, 0), 'every held Jewel is listed');
+  for (const entry of response.baseInfo.inventory) assert.equal(entry.sale !== null, entry.status === 'owned' && entry.quantity > 0);
+  console.log(`base projection: ${response.baseInfo.inventory.length} variants, ${response.baseInfo.equippedItems.length} worn items, ${response.baseInfo.jewels.length} Jewel kinds validated`);
+}
+
 // 5d. The old save's outcome names are upgraded on load: every log and count uses Clear, Return, Draw, Retreat, and Defeat.
 {
   const allowed = new Set(['Clear', 'Return', 'Retreat', 'Defeat']);

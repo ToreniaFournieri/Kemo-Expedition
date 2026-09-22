@@ -363,6 +363,8 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       };
     }
   } else if (operation === 'commit/base/changeJewelPriorityParty') {
+    // The reducer would quietly fall back to PT1 for a party that does not exist; the API refuses it instead.
+    if (parameters.partyNumber !== 'none' && !next.parties.some((party) => party.id === Number(parameters.partyNumber))) throw new Error('not_found');
     reduce({ type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY', partyId: parameters.partyNumber === 'none' ? null : Number(parameters.partyNumber) });
     data = { current: { partyNumber: next.global.jewelAutoEquipPriorityPartyId ?? 'none' } };
   } else if (operation === 'commit/base/sellInventoryItems') {
@@ -441,10 +443,15 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (!next.global.unlockedMimorianEnemyIds.includes(enemyId)) throw new Error('illegal_action:unlock_rejected');
     data = { enemyId, pranaDelta: next.global.prana - pranaBefore };
   } else if (operation === 'commit/base/markItemsAsSeen') {
-    const keys = parameters.items as string[];
-    if (!Array.isArray(keys) || keys.some((key) => !next.global.inventory[key])) throw new Error('invalid_items');
-    next = { ...next, global: { ...next.global, inventory: Object.fromEntries(Object.entries(next.global.inventory).map(([key, variant]) => [key, keys.includes(key) ? { ...variant, isNew: false } : variant])) } };
-    data = { items: keys };
+    // SpecRef: 9.1.4.17 | UI state ownership | Newly acquired inventory highlighting
+    // Acknowledges the displayed variants only. An unknown variant rejects the whole request; acknowledging a variant that is
+    // already seen is a no-op, and only the variants that actually changed are returned.
+    const keys = Array.isArray(parameters.items) ? parameters.items.map(String) : [];
+    if (keys.length === 0 || new Set(keys).size !== keys.length) throw new Error('invalid_request:items');
+    if (keys.some((key) => !next.global.inventory[key])) throw new Error('not_found');
+    const changed = keys.filter((key) => next.global.inventory[key].isNew === true);
+    if (changed.length > 0) next = { ...next, global: { ...next.global, inventory: { ...next.global.inventory, ...Object.fromEntries(changed.map((key) => [key, { ...next.global.inventory[key], isNew: false }])) } } };
+    data = { items: changed };
   } else if (operation.match(/^commit\/diary\/(\d+)\/diarySetting$/)) {
     const partyNumber = Number(operation.split('/')[2]); const partyIndex = next.parties.findIndex((entry) => entry.id === partyNumber); if (partyIndex < 0) throw new Error('not_found'); reduce({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings: parameters }); data = { current: next.parties[partyIndex].diarySettings };
   } else if (operation === 'commit/diary/diaryEntry/markAsRead') {

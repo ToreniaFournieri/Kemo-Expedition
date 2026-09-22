@@ -9076,6 +9076,8 @@
               "required": [
                 "currencies",
                 "inventory",
+                "jewels",
+                "equippedItems",
                 "jewelPriorityParty",
                 "shop",
                 "altar"
@@ -9109,7 +9111,8 @@
                       "item",
                       "quantity",
                       "status",
-                      "isNew"
+                      "isNew",
+                      "sale"
                     ],
                     "properties": {
                       "variantKey": {
@@ -9142,6 +9145,136 @@
                         ]
                       },
                       "isNew": {
+                        "type": "boolean"
+                      },
+                      "sale": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "gold",
+                              "prana"
+                            ],
+                            "properties": {
+                              "gold": {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "prana": {
+                                "minimum": 0,
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "jewels": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "jewelKey",
+                      "rank",
+                      "quantity"
+                    ],
+                    "properties": {
+                      "jewelKey": {
+                        "anyOf": [
+                          {
+                            "const": "might",
+                            "type": "string"
+                          },
+                          {
+                            "const": "arcana",
+                            "type": "string"
+                          },
+                          {
+                            "const": "fort",
+                            "type": "string"
+                          },
+                          {
+                            "const": "ward",
+                            "type": "string"
+                          },
+                          {
+                            "const": "shade",
+                            "type": "string"
+                          },
+                          {
+                            "const": "focus",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "rank": {
+                        "minimum": 1,
+                        "maximum": 8,
+                        "type": "integer"
+                      },
+                      "quantity": {
+                        "minimum": 1,
+                        "type": "integer"
+                      }
+                    }
+                  }
+                },
+                "equippedItems": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "characterId",
+                      "partyNumber",
+                      "member",
+                      "slotIndex",
+                      "item",
+                      "jewel",
+                      "active"
+                    ],
+                    "properties": {
+                      "characterId": {
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "partyNumber": {
+                        "minimum": 1,
+                        "maximum": 6,
+                        "type": "integer"
+                      },
+                      "member": {
+                        "minimum": 1,
+                        "maximum": 6,
+                        "type": "integer"
+                      },
+                      "slotIndex": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "item": {
+                        "pattern": "^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))$",
+                        "type": "string"
+                      },
+                      "jewel": {
+                        "anyOf": [
+                          {
+                            "pattern": "^(might|arcana|fort|ward|shade|focus):[1-8]$",
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "active": {
                         "type": "boolean"
                       }
                     }
@@ -9455,6 +9588,8 @@
                   "required": [
                     "currencies",
                     "inventory",
+                    "jewels",
+                    "equippedItems",
                     "jewelPriorityParty",
                     "shop",
                     "altar"
@@ -9488,7 +9623,8 @@
                           "item",
                           "quantity",
                           "status",
-                          "isNew"
+                          "isNew",
+                          "sale"
                         ],
                         "properties": {
                           "variantKey": {
@@ -9521,6 +9657,136 @@
                             ]
                           },
                           "isNew": {
+                            "type": "boolean"
+                          },
+                          "sale": {
+                            "anyOf": [
+                              {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "gold",
+                                  "prana"
+                                ],
+                                "properties": {
+                                  "gold": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "prana": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "jewels": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "jewelKey",
+                          "rank",
+                          "quantity"
+                        ],
+                        "properties": {
+                          "jewelKey": {
+                            "anyOf": [
+                              {
+                                "const": "might",
+                                "type": "string"
+                              },
+                              {
+                                "const": "arcana",
+                                "type": "string"
+                              },
+                              {
+                                "const": "fort",
+                                "type": "string"
+                              },
+                              {
+                                "const": "ward",
+                                "type": "string"
+                              },
+                              {
+                                "const": "shade",
+                                "type": "string"
+                              },
+                              {
+                                "const": "focus",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "rank": {
+                            "minimum": 1,
+                            "maximum": 8,
+                            "type": "integer"
+                          },
+                          "quantity": {
+                            "minimum": 1,
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    },
+                    "equippedItems": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "characterId",
+                          "partyNumber",
+                          "member",
+                          "slotIndex",
+                          "item",
+                          "jewel",
+                          "active"
+                        ],
+                        "properties": {
+                          "characterId": {
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "partyNumber": {
+                            "minimum": 1,
+                            "maximum": 6,
+                            "type": "integer"
+                          },
+                          "member": {
+                            "minimum": 1,
+                            "maximum": 6,
+                            "type": "integer"
+                          },
+                          "slotIndex": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "item": {
+                            "pattern": "^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))$",
+                            "type": "string"
+                          },
+                          "jewel": {
+                            "anyOf": [
+                              {
+                                "pattern": "^(might|arcana|fort|ward|shade|focus):[1-8]$",
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "active": {
                             "type": "boolean"
                           }
                         }
@@ -9830,7 +10096,29 @@
                   "item": "0",
                   "quantity": 0,
                   "status": "owned",
-                  "isNew": true
+                  "isNew": true,
+                  "sale": {
+                    "gold": 0,
+                    "prana": 0
+                  }
+                }
+              ],
+              "jewels": [
+                {
+                  "jewelKey": "might",
+                  "rank": 1,
+                  "quantity": 1
+                }
+              ],
+              "equippedItems": [
+                {
+                  "characterId": 1,
+                  "partyNumber": 1,
+                  "member": 1,
+                  "slotIndex": 0,
+                  "item": "0",
+                  "jewel": null,
+                  "active": true
                 }
               ],
               "jewelPriorityParty": 1,

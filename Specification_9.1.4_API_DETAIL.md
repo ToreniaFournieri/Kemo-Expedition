@@ -630,6 +630,22 @@ definitions in 9.1.3.
 * `unlockForm` refuses a form that cannot be unlocked with `illegal_action` and that
   reason (the reducer would ignore it silently), `not_found` for an unknown enemy, and
   otherwise spends the Prana and returns `{enemyId, pranaDelta}`.
+* The `base` projection carries the Inventory pane's facts (Spec 8.4.2). `inventory`
+  lists every variant with `variantKey`, `item`, `quantity`, `status`, `isNew` (the
+  highlight), and `sale` (`{gold, prana}` for an owned stack, else `null`): the
+  advertised sale is exactly what selling does, and a Super Rare item pays Prana only,
+  never Gold. `jewels` lists the unassigned Jewels held (`jewelKey`, `rank`, `quantity`),
+  and `equippedItems` lists every worn item with its owner (`characterId`, `partyNumber`,
+  1-based `member` position, `slotIndex`), its attached Jewel as `<key>:<rank>` or `null`,
+  and `active` (a slot beyond the character's current slot count keeps its item but does
+  not work, and its Jewel does not count). `jewelPriorityParty` is the Jewel Priority
+  Party. The Ashen Route Vault (Spec 8.4.3, "API: no api") has no operation and no
+  projection: it is a debug shop that stays with the application.
+* `markItemsAsSeen` acknowledges the displayed variants only: an unknown variant is
+  `not_found` (rejecting the whole request), an empty or duplicate list is
+  `invalid_request`, and the result lists just the variants that changed (already-seen
+  variants are a no-op). `changeJewelPriorityParty` refuses a party that does not exist
+  with `not_found` instead of quietly selecting PT1.
 * `sellInventoryItems` sells the entire owned stack for each supplied variant.
   `unlockSoldItems` only changes `s.sold` to `s.notown`; it restores no quantity
   and refunds no currency. Duplicate variants in either request are invalid.

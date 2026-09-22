@@ -30,8 +30,10 @@ import { DIFFICULTY_OFFSET_STEP, EXPEDITION_DEPTH_LIMITS, getSelectableDestinati
 import { getSortieUnavailableReason } from './sortieAvailability.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { getShopFacts, shopLineupInputOf } from '../../game/shopFacts.ts';
+import { getStackSale } from '../../game/inventoryMutation.ts';
+import { getSuperRareItemPrana, MAX_ALTAR_LEVEL } from '../../game/prana.ts';
+import { getJewelOwnedCount } from '../../game/jewel.ts';
 import { getAltarCategoryFacts, getAltarEnemyTypes, getEnemyFormFacts } from '../../game/altarFacts.ts';
-import { MAX_ALTAR_LEVEL } from '../../game/prana.ts';
 import { getEnemyIndividualBonuses, getEnemyTypeBonuses, getMimorianEnemyAbilities } from '../../data/enemies.ts';
 import type { ApiV1PartyCycleView } from './commitOperations.ts';
 import { MAX_LEVEL, type EnemyDef, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party } from '../../types/index.ts';
@@ -426,11 +428,46 @@ function enemyFormEntry(state: GameState, enemy: EnemyDef) {
   };
 }
 
+// SpecRef: 8.4.2 | Inventory(所持品)
+// The inventory as the Inventory pane shows it: every variant with its state, count, highlight, and what selling it pays; the
+// Jewels held; and every item worn by a character with its owner (a Jewel is listed with the item it is attached to).
+function inventoryProjection(state: GameState) {
+  const authorities = { getPrana: getSuperRareItemPrana };
+  const jewels = (Object.keys(JEWEL_DEFS) as JewelKey[]).flatMap((jewelKey) => Array.from({ length: 8 }, (_, index) => ({ jewelKey, rank: index + 1, quantity: getJewelOwnedCount(state.global.jewels, jewelKey, index + 1) })))
+    .filter((entry) => entry.quantity > 0);
+  const computedByParty = state.parties.map((party) => computePartyStats(party).characterStats);
+  const equippedItems = state.parties.flatMap((party, partyIndex) => party.characters.flatMap((character, memberIndex) => {
+    const maxSlots = computedByParty[partyIndex].find((entry) => entry.characterId === character.id)?.maxEquipSlots ?? character.equipment.length;
+    return character.equipment.flatMap((item, slotIndex) => item ? [{
+      characterId: character.id,
+      partyNumber: party.id,
+      member: memberIndex + 1,
+      slotIndex,
+      item: itemFormat(item),
+      jewel: item.jewel ? `${item.jewel.key}:${item.jewel.rank}` : null,
+      // A slot beyond the character's current slot count keeps its item but does not work, and its Jewel is not counted.
+      active: slotIndex < maxSlots,
+    }] : []);
+  }));
+  return {
+    inventory: Object.entries(state.global.inventory).map(([variantKey, variant]) => ({
+      variantKey,
+      item: itemFormat(variant.item),
+      quantity: variant.count,
+      status: variant.status,
+      isNew: variant.isNew === true,
+      sale: variant.status === 'owned' && variant.count > 0 ? getStackSale(variant.item, variant.count, authorities) : null,
+    })),
+    jewels,
+    equippedItems,
+    jewelPriorityParty: state.global.jewelAutoEquipPriorityPartyId ?? 'none',
+  };
+}
+
 function baseProjection(state: GameState, context: ApiV1ReadContext) {
   return {
     currencies: { gold: state.global.gold, prana: state.global.prana },
-    inventory: Object.entries(state.global.inventory).map(([variantKey, variant]) => ({ variantKey, item: itemFormat(variant.item), quantity: variant.count, status: variant.status, isNew: variant.isNew === true })),
-    jewelPriorityParty: state.global.jewelAutoEquipPriorityPartyId ?? 'none',
+    ...inventoryProjection(state),
     shop: shopProjection(state, context.inGameTime),
     altar: altarProjection(state),
   };
