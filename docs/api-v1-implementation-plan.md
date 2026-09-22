@@ -109,7 +109,7 @@ Gate passed: no `actions.*` reducer call remains in `PartyTab.tsx` for these con
 
 - **D1 (done, Build 88): Diary contracts and commands.** Closed semantic/legacy summaries, opaque stable entry IDs, `diary:<id>` log references, current Party identity, effective selection and filtering, exact setting values/options, and precise atomic read acknowledgement. The real mixed-history save and both adapter shapes validate.
 - **D2 (done, Build 89): Diary UI migration.** `DiaryTab` renders closed API summaries and `diary:<id>` retained-log responses through `src/api/v1/diaryTabView.ts`; settings, per-entry acknowledgement, tab-exit acknowledgement, and Party-switch acknowledgement are commits. Current character display identities are projected so compact battle records use current names with their recorded appearance. Party selection remains the one reviewed shared-state action, as specified. The tab receives no raw Party/Diary save object, no longer owns an undocumented local-storage selection, and is protected by the mechanical migration guard.
-- **D3: durable popup production.** Generate every configured popup category atomically with the committing transaction, including AFK grouping, deterministic sequence IDs, retention, and replay fencing.
+- **D3 (done, Build 90): durable popup production.** The transaction authority derives language-neutral Cycle, item-drop, automatic-equipment, and Side Quest events from its immutable before/after snapshots; popup settings gate each category, controlled elapsed progression and login catch-up emit the existing per-Party AFK summary instead of event bursts, and import/reset fences the prior buffer. Events receive deterministic `revision:sequence` IDs and the complete v1 wire metadata, retain the union of the latest 256 and the last five minutes, and are written atomically with state, retained records, receipts, and revision. Persistence failure publishes nothing, receipt replay produces nothing twice, and pre-D3 prototype records are normalized before replay.
 - **D4: SSE lifecycle.** Push committed events to streams, complete cursor replay/resync and session/import/reset/shutdown fencing, and add reconnect/deduplication lifecycle coverage.
 - SSE: persist popup events with the committing transaction, push to open streams, replay from `Last-Event-ID`, retain at least 256 events or five minutes, emit `resyncRequired` on invalid or fenced cursors, close streams on logout / expiry / reset / import / shutdown, keep heartbeats independent of lease renewal, group AFK events per the existing notification rules.
 
@@ -154,7 +154,7 @@ Add a mechanical check so this does not rely on review: a test that fails if a m
 
 ## Recommended order
 
-1. Stage 7 D3–D4: complete durable popup production and the SSE lifecycle.
+1. Stage 7 D4: complete the SSE lifecycle over the durable D3 event buffer.
 2. Finish the Stage 4 header UI migration.
 3. Stage 8 (Settings, files, delivery sender, Help, Resources), including the remaining `Type.Unknown` rows.
 4. Stage 9 (conformance matrix, ownership audit, cutover).

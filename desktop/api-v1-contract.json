@@ -13099,6 +13099,8 @@
                 "additionalProperties": false,
                 "type": "object",
                 "required": [
+                  "apiVersion",
+                  "schemaVersion",
                   "revision",
                   "sequence",
                   "eventId",
@@ -13110,6 +13112,14 @@
                   "createdAt"
                 ],
                 "properties": {
+                  "apiVersion": {
+                    "const": "v1",
+                    "type": "string"
+                  },
+                  "schemaVersion": {
+                    "const": 1,
+                    "type": "number"
+                  },
                   "revision": {
                     "minimum": 0,
                     "type": "integer"
@@ -13222,6 +13232,8 @@
           "data": {
             "events": [
               {
+                "apiVersion": "v1",
+                "schemaVersion": 1,
                 "revision": 0,
                 "sequence": 1,
                 "eventId": "xxxxxxx",

@@ -6,6 +6,7 @@ import { stageApiV1ElapsedProgression } from './elapsedProgression';
 import { resolveConfirmationPolicy } from './confirmationPolicy';
 import { prepareSaveReplacement, type ApiV1DeliveryRecord } from './deliveries';
 import type { FeedbackRewardState } from '../../game/feedbackRewards';
+import { appendApiV1PopupEvents, planApiV1PopupCandidates, type ApiV1PopupEvent } from './popupEvents';
 
 // SpecRef: 9.1.4.4 | Commit, revision, and idempotency contract | Serialized transaction authority
 
@@ -31,7 +32,7 @@ export interface ApiV1ControlMetadata {
   receipts: ApiV1Receipt[];
   tombstones: string[];
   confirmations?: ApiV1Confirmation[];
-  popupEvents?: Array<Record<string, unknown>>;
+  popupEvents?: ApiV1PopupEvent[];
   deliveries?: ApiV1DeliveryRecord[];
   /** Server-owned feedback cooldown for this API account; excluded from backups like every other control member. */
   feedbackReward?: FeedbackRewardState;
@@ -287,14 +288,10 @@ export async function executeApiV1CommitTransaction(
   const previousRevision = stagedControl.revisionHighWater;
   const revision = changed ? previousRevision + 1 : previousRevision;
 
-  if (changed && /^commit\/expedition\/\d+\/(sortie|godsBattle)$/.test(input.operation)) {
-    const popupEvents = stagedControl.popupEvents ??= [];
-    const sequence = 1 + popupEvents.filter((event) => event.revision === revision).length;
-    popupEvents.push({ revision, sequence, eventId: `${revision}:${sequence}`, eventKey: 'popup.expeditionComplete', args: { outcome: String(outcome.data.outcome ?? '') }, partyNumber: Number(input.operation.split('/')[2]), diaryEntryId: outcome.data.diaryEntryId ?? null, groupKey: null, createdAt: new Date(dependencies.now()).toISOString() });
-    const cutoff = dependencies.now() - 300_000;
-    const firstRecent = popupEvents.findIndex((event) => Date.parse(String(event.createdAt)) >= cutoff);
-    const retainFrom = Math.min(firstRecent < 0 ? popupEvents.length : firstRecent, Math.max(0, popupEvents.length - 256));
-    stagedControl.popupEvents = popupEvents.slice(retainFrom);
+  const committedAt = new Date(dependencies.now()).toISOString();
+  if (changed && !outcome.resetControlEvents) {
+    const popupCandidates = planApiV1PopupCandidates(input.operation, input.state, outcome.state, outcome.data);
+    stagedControl.popupEvents = appendApiV1PopupEvents(stagedControl.popupEvents ?? [], popupCandidates, revision, committedAt);
   }
 
   const response: ApiV1CommitResponse = {
@@ -304,7 +301,7 @@ export async function executeApiV1CommitTransaction(
     data: outcome.data,
     effects: [],
     changedResources: changedResourcesFor(input.operation, changed),
-    committedAt: new Date(dependencies.now()).toISOString(),
+    committedAt,
   };
   stagedControl.receipts.push({ key: input.idempotencyKey, operation: input.operation, canonical, response });
   stagedControl.revisionHighWater = revision;

@@ -127,7 +127,34 @@ function ports(overrides: Partial<ApiV1SessionPorts> = {}): {
   assert.ok(p.returnStore.value, 'the player return payload is staged before the runtime state is swapped');
 }
 
-// 6. logOut restores the exact staged player return payload and clears it, and reports the durable final revision.
+// 6. Login catch-up uses the same popup transaction boundary: grouped AFK events are in the account commit that advances
+// the revision and are already present when the runtime snapshot is swapped.
+{
+  const p = ports();
+  const catchUpState = createFreshGameState('ja', fixedNow - 180_000);
+  const account: DesktopApiAccountRecord = {
+    identity: { userId: 'Taro', environment: 'desktop', gameMode: 'normal' },
+    savePayload: accountPayload(catchUpState),
+    control: { revisionHighWater: 5, inGameTime: fixedNow - 180_000, receipts: [], tombstones: [], popupEvents: [], deliveries: [] },
+  };
+  p.value.accounts.load = async () => account;
+  p.value.catchUp.cycleDurationScale = () => 0.01;
+  p.value.catchUp.applyAutoEquipment = (state, partyIndex) => ({
+    ...state,
+    parties: state.parties.map((party, index) => index === partyIndex ? {
+      ...party,
+      expeditionStats: { ...party.expeditionStats, Clear: party.expeditionStats.Clear + 1 },
+    } : party),
+  });
+  const result = await logInApiAccount({ userId: 'Taro', environment: 'desktop', gameMode: 'normal' }, null, p.value);
+  assert.equal(result.ok, true, result.ok ? '' : JSON.stringify(result));
+  if (!result.ok) throw new Error(result.code);
+  assert.equal(result.session.control.revisionHighWater, 6);
+  assert.ok(result.session.control.popupEvents?.some((event) => event.eventKey === 'popup.afkSummary'));
+  assert.deepEqual(p.accountsCommitted[0].control.popupEvents, result.session.control.popupEvents, 'catch-up events are durable before publication');
+}
+
+// 7. logOut restores the exact staged player return payload and clears it, and reports the durable final revision.
 {
   const p = ports();
   const stagedPlayerState = createFreshGameState('en', fixedNow);
@@ -147,7 +174,7 @@ function ports(overrides: Partial<ApiV1SessionPorts> = {}): {
   assert.equal(p.accountsCommitted.length, 1, 'the account is durably persisted before the player save is restored');
 }
 
-// 7. logOut without an active session is login_required.
+// 8. logOut without an active session is login_required.
 {
   const p = ports();
   const result = await logOutApiAccount(null, p.value);
@@ -156,7 +183,7 @@ function ports(overrides: Partial<ApiV1SessionPorts> = {}): {
   assert.equal(result.code, 'login_required');
 }
 
-// 8. logOut fails safely (and never clears the return payload) when no player return payload was staged, e.g. after a
+// 9. logOut fails safely (and never clears the return payload) when no player return payload was staged, e.g. after a
 // crash between login's account swap and a later logout in the same process.
 {
   const p = ports();

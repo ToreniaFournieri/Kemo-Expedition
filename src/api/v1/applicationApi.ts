@@ -1,6 +1,7 @@
 import type { ExpeditionLog, GameState } from '../../types';
 import { buildApiV1ReadData, type ApiV1ReadContext } from './readModels';
 import { SerializedApplicationApiAuthority, type ApiV1CommitAuthorityDependencies, type ApiV1ControlMetadata } from './authority';
+import { normalizeApiV1PopupEvents } from './popupEvents';
 import { serializeGameState } from '../../game/saveCodec';
 import { encodePersistedState } from '../../game/storageCompression';
 import { logInApiAccount, logOutApiAccount, signUpApiAccount, type ApiV1SessionPorts } from './sessionLifecycle';
@@ -156,7 +157,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       const transport = asRecord(request.transport);
       const lastEventId = typeof transport.lastEventId === 'string' ? transport.lastEventId : null;
       const snapshot = authority.getSnapshot();
-      const events = snapshot.control.popupEvents ?? [];
+      const events = normalizeApiV1PopupEvents(snapshot.control.popupEvents);
       const start = lastEventId ? events.findIndex((event) => event.eventId === lastEventId) : events.length - 1;
       if (lastEventId && start < 0) return failure(409, 'resync_required', 'The popup replay cursor is unavailable.');
       return { revision: snapshot.control.revisionHighWater, data: { events: events.slice(start + 1) } };

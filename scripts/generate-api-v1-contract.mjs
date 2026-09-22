@@ -304,7 +304,7 @@ const diaryEntrySummary = strict({
 const range = strict({ min: Type.Number(), max: Type.Number(), step: optional(Type.Number()) });
 // Spec 9.1.4.3: paginated lists include `nextCursor`, or null when complete; optional here since readModels.ts does not yet paginate (Milestone 4).
 const nextCursor = { nextCursor: optional(Type.Union([stableKey, Type.Null()])) };
-const popupEvent = strict({ revision: Type.Integer({ minimum: 0 }), sequence: Type.Integer({ minimum: 1 }), eventId: stableKey, eventKey: stableKey, args: Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), Type.Boolean()])), partyNumber: Type.Union([partyNumber, Type.Null()]), diaryEntryId: Type.Union([stableKey, Type.Null()]), groupKey: Type.Union([stableKey, Type.Null()]), createdAt: isoTimestamp });
+const popupEvent = strict({ apiVersion: Type.Literal('v1'), schemaVersion: Type.Literal(1), revision: Type.Integer({ minimum: 0 }), sequence: Type.Integer({ minimum: 1 }), eventId: stableKey, eventKey: stableKey, args: Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), Type.Boolean()])), partyNumber: Type.Union([partyNumber, Type.Null()]), diaryEntryId: Type.Union([stableKey, Type.Null()]), groupKey: Type.Union([stableKey, Type.Null()]), createdAt: isoTimestamp });
 const deliveryStatus = literals('queued', 'sending', 'delivered', 'failed', 'unknown', 'cancelled');
 // Spec 9.1.4.15: the public delivery projection; payload parameters/files are never returned.
 const deliveryRecord = strict({ deliveryId: stableKey, status: deliveryStatus, createdAt: isoTimestamp, updatedAt: isoTimestamp, failureReason: Type.Union([Type.String(), Type.Null()]), rewardApplied: Type.Boolean() });

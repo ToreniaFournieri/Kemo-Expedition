@@ -6,6 +6,7 @@ import { createFreshGameState } from '../../hooks/useGameState';
 import { decodeApiSavePayload } from './commitOperations';
 import { stageApiV1ElapsedProgression } from './elapsedProgression';
 import { recoverInterruptedDeliveries } from './deliveries';
+import { appendApiV1PopupEvents, normalizeApiV1PopupEvents, planApiV1PopupCandidates } from './popupEvents';
 
 // SpecRef: 9.1.3.2 | API requirement fundamental | signUp / logIn / logOut
 // SpecRef: 9.1.4.16 | Admitted work, disconnection, and shutdown | Durable hand-back before releasing authority
@@ -97,12 +98,14 @@ export async function logInApiAccount(request: Record<string, unknown>, activeSe
 
     let accountState = decodeApiSavePayload(account.savePayload);
     const control = structuredClone(account.control);
+    control.popupEvents = normalizeApiV1PopupEvents(control.popupEvents);
     const realNow = ports.now();
     // SpecRef: 9.1.4.15 | A process restart while sending cannot know the remote outcome: those jobs become `unknown`.
     if (control.deliveries?.some((record) => record.status === 'sending')) control.deliveries = recoverInterruptedDeliveries(control.deliveries, realNow);
     const previousInGameTime = Number.isFinite(control.inGameTime) ? Number(control.inGameTime) : realNow;
     const catchUpMs = Math.min(ports.catchUp.maximumElapsedMs, Math.max(0, realNow - previousInGameTime));
     if (catchUpMs >= 60_000) {
+      const beforeCatchUp = accountState;
       const apiRandom = createApiRandom(control.rngState ?? ports.catchUp.randomSeed());
       let randomDrawCount = 0;
       const catchUp = await stageApiV1ElapsedProgression(accountState, { calculateToRealTime: true }, {
@@ -119,7 +122,14 @@ export async function logInApiAccount(request: Record<string, unknown>, activeSe
       });
       accountState = catchUp.state;
       if (randomDrawCount > 0) control.rngState = apiRandom.state;
-      control.revisionHighWater += 1;
+      const revision = control.revisionHighWater + 1;
+      control.popupEvents = appendApiV1PopupEvents(
+        control.popupEvents,
+        planApiV1PopupCandidates('commit/progress/elapsed', beforeCatchUp, accountState, catchUp.data),
+        revision,
+        new Date(realNow).toISOString(),
+      );
+      control.revisionHighWater = revision;
     }
     control.inGameTime = Math.max(previousInGameTime, realNow);
     await ports.accounts.commit(account.identity, encodePersistedState(JSON.stringify(serializeGameState(accountState))), control);

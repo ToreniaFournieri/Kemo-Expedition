@@ -157,6 +157,31 @@ function dependencies(overrides: Partial<ApiV1CommitAuthorityDependencies> = {})
   assert.equal(retry.durableControl?.confirmations?.length, 1);
 }
 
+// Reset fences the old replay buffer in the same durable transaction. The confirmation reservation itself leaves the
+// buffer intact; only the successful replacement clears it.
+{
+  const withPopup = control();
+  withPopup.popupEvents = [{
+    apiVersion: 'v1', schemaVersion: 1, revision: 0, sequence: 1, eventId: '0:1', eventKey: 'popup.test',
+    args: {}, partyNumber: 1, diaryEntryId: null, groupKey: null, createdAt: new Date(fixedNow).toISOString(),
+  }];
+  const deps = dependencies();
+  const resetInput = input({ operation: 'commit/setting/backup/reset', idempotencyKey: 'authority-reset-fence', control: withPopup });
+  const challenge = await executeApiV1CommitTransaction(resetInput, deps.value);
+  assert.equal(challenge.ok, false);
+  if (challenge.ok) throw new Error('expected confirmation');
+  assert.equal(challenge.durableControl?.popupEvents?.length, 1);
+  const confirmed = await executeApiV1CommitTransaction({
+    ...resetInput,
+    control: challenge.durableControl!,
+    confirmationToken: String(challenge.error.details?.confirmationToken),
+  }, deps.value);
+  assert.equal(confirmed.ok, true);
+  if (!confirmed.ok) throw new Error(confirmed.error.code);
+  assert.deepEqual(confirmed.control.popupEvents, []);
+  assert.deepEqual(deps.persisted.at(-1)?.control.popupEvents, [], 'the replay fence and replacement state share one durable write');
+}
+
 // The snapshot owner rejects an admitted duplicate immediately and keeps reads on the pre-commit snapshot.
 {
   let releasePersistence!: () => void;
@@ -286,18 +311,30 @@ function dependencies(overrides: Partial<ApiV1CommitAuthorityDependencies> = {})
 // persistence, and receives the cycle the runtime reports.
 {
   const events: string[] = [];
+  let durablePopupEvents: ApiV1ControlMetadata['popupEvents'];
   const charged = { ...seed, parties: seed.parties.map((party, index) => index === 0 ? { ...party, instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null } : party) } as GameState;
   const cycleDependencies = (overrides: Partial<ApiV1CommitAuthorityDependencies> = {}) => dependencies({
-    persist: async () => { events.push('persist'); },
+    persist: async (_state, metadata) => { durablePopupEvents = structuredClone(metadata.popupEvents); events.push('persist'); },
     publish: async () => { events.push('publish'); },
     partyCycle: () => ({ state: 'explore' }),
     restDurationMs: () => 4242,
     applyPartyCycleWrites: (writes) => { events.push(`cycle:${writes[0].partyIndex}:${writes[0].cycle.state}:${writes[0].cycle.durationMs}`); },
     ...overrides,
   });
-  const ok = await executeApiV1CommitTransaction(input({ operation: 'commit/expedition/1/sortie', parameters: {}, state: charged, idempotencyKey: 'sortie-cycle-key-0001' }), cycleDependencies().value);
+  const okDependencies = cycleDependencies();
+  const ok = await executeApiV1CommitTransaction(input({ operation: 'commit/expedition/1/sortie', parameters: {}, state: charged, idempotencyKey: 'sortie-cycle-key-0001' }), okDependencies.value);
   assert.equal(ok.ok, true, ok.ok ? '' : JSON.stringify(ok.error));
+  if (!ok.ok) throw new Error(ok.error.code);
+  assert.ok((ok.control.popupEvents?.length ?? 0) > 0, 'the committing transaction durably records its popup events');
+  assert.deepEqual(ok.control.popupEvents, durablePopupEvents, 'events are present in the one durable write');
+  assert.deepEqual(ok.control.popupEvents?.map((entry) => entry.eventId), ok.control.popupEvents?.map((_, index) => `1:${index + 1}`));
   assert.deepEqual(events, ['persist', 'cycle:0:rest:4242', 'publish'], 'persist, then the cycle reset, then publication');
+
+  const replayDependencies = cycleDependencies();
+  const replay = await executeApiV1CommitTransaction(input({ operation: 'commit/expedition/1/sortie', parameters: {}, state: ok.state, control: ok.control, expectedRevision: 0, idempotencyKey: 'sortie-cycle-key-0001' }), replayDependencies.value);
+  assert.equal(replay.ok, true);
+  if (!replay.ok) throw new Error(replay.error.code);
+  assert.deepEqual(replay.control.popupEvents, ok.control.popupEvents, 'receipt replay creates no second popup event');
 
   events.length = 0;
   const failed = await executeApiV1CommitTransaction(input({ operation: 'commit/expedition/1/sortie', parameters: {}, state: charged, idempotencyKey: 'sortie-cycle-key-0002' }), cycleDependencies({ persist: async () => { throw new Error('injected'); } }).value);
