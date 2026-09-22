@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 91. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 92. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -13,7 +13,7 @@ This document supersedes the earlier "Build 23" plan. Stages are numbered once, 
 | 1 | Contract catalog | Mostly done; `Type.Unknown` remains only in five Stage 8 Resource operations (see Stage 1) |
 | 2 | Standalone Application API and authority | Done (foundation) |
 | 3 | HTTP transport and sessions | Implemented, test-only |
-| 4 | Expedition and shell | Runtime and Expedition UI done; header UI migration remains |
+| 4 | Expedition and shell | Complete |
 | 5 | Party, character, equipment | Done (UI projection complete) |
 | 6 | Base, inventory, shop, Altar | Done (UI projection complete) |
 | 7 | Diary and popup streaming | Complete |
@@ -69,7 +69,11 @@ What the API still cannot see is the live party cycle (`partyCycles`: `state`, `
 3. **Projections and simulation:** complete `{p}/setting`, `chargeStock`, `overview` (progress report), and `compact`; the exact 100/1,000-run counts are already tested.
 4. **Migrate the header and the Expedition tab** to projections and commands, with the migration guard. Continuous progress bars interpolate from the projected start and expected end times.
 
-The runtime port now serves the projections too (Build 71): real `state`, its clock, and the no-spoiler rule are done for `expedition`, `compact`, and the default `latestBattleLog`. Build 72 added step counts and sub-progress, server-gated exploration (`exploration.rooms`, `nextRevealAt`), Clear-Gate and side-quest facts from shared `src/game/expeditionGoals.ts`, and the sortie and Gods Battle controls with unavailable reasons (`src/api/v1/sortieAvailability.ts`, shared with the commit, which now also refuses `entry_gate_locked`). Build 73 added the `overview` header facts (Speed of Time, auto-repeat, progress-report state) through a runtime `headerRuntime` port. Build 77 migrated the Expedition pane rows and their timed refresh to the projection. Build 78 completed E3: the tab reads each party's `latestBattleLog` projection through the trusted adapter, and `src/api/v1/expeditionLogView.ts` rebuilds the renderer view from projected summary/room facts while retaining only the language-neutral/legacy narration details needed for display. Still to do: the header migration.
+The runtime port now serves the projections too (Build 71): real `state`, its clock, and the no-spoiler rule are done for `expedition`, `compact`, and the default `latestBattleLog`. Build 72 added step counts and sub-progress, server-gated exploration (`exploration.rooms`, `nextRevealAt`), Clear-Gate and side-quest facts from shared `src/game/expeditionGoals.ts`, and the sortie and Gods Battle controls with unavailable reasons (`src/api/v1/sortieAvailability.ts`, shared with the commit, which now also refuses `entry_gate_locked`). Build 73 added the `overview` header facts (Speed of Time, auto-repeat, progress-report state) through a runtime `headerRuntime` port. Build 77 migrated the Expedition pane rows and their timed refresh to the projection. Build 78 completed E3: the tab reads each party's `latestBattleLog` projection through the trusted adapter, and `src/api/v1/expeditionLogView.ts` rebuilds the renderer view from projected summary/room facts while retaining only the language-neutral/legacy narration details needed for display.
+
+**Header migration (done, Build 92).** `src/components/home/HeaderBar.tsx` renders the fixed top bar from `read/observation/overview`'s `headerInfo` through a pure view builder (`src/api/v1/headerView.ts`); the existing Speed-of-Time symbol/label logic (including the orca-mode `x5`→`x6` bonus case) is ported unchanged, re-keyed to the projected `speedOfTime`/`gameMode` facts instead of local debug-settings refs, and gold reads `headerInfo.gold` instead of `state.global.gold`. Two controls stay reviewed local exceptions, each with its reason recorded: Report Progress still performs its own webhook call directly (`commit/progress/progressReport` exists but has no real network sender until Stage 8's delivery-sender work), and auto-repeat stays local/runtime state (it is one field of the spec's bundled `commit/setting/modeSelect`, §2-6-2/§3-6-2 of `Specification_9.1.3_API.md` — explicit Stage 8 scope, not a header-only concern). Both reviewed calls live in a named `handleReportProgress` handler outside the guarded JSX, matching the Expedition/Diary precedent. `tests/migratedTabs.test.cjs` covers the header the same way as every other migrated area.
+
+**Stage 4 is complete.**
 
 ## Stage 5 — Party, character, equipment (complete)
 
@@ -156,7 +160,7 @@ Add a mechanical check so this does not rely on review: a test that fails if a m
 ## Recommended order
 
 1. ~~Stage 7 D4: complete the SSE lifecycle over the durable D3 event buffer.~~ (Done, Build 91.)
-2. Finish the Stage 4 header UI migration.
+2. ~~Finish the Stage 4 header UI migration.~~ (Done, Build 92.)
 3. Stage 8 (Settings, files, delivery sender, Help, Resources), including the remaining `Type.Unknown` rows.
 4. Stage 9 (conformance matrix, ownership audit, cutover).
 

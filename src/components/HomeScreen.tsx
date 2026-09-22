@@ -105,6 +105,8 @@ import type { BaseProjection, EnemyFormProjection } from '../api/v1/baseView';
 import { buildInventoryView } from '../api/v1/inventoryView';
 import { buildPartyExpeditionLogView, type ExpeditionLogView, type LatestBattleLogProjection } from '../api/v1/expeditionLogView';
 import { buildDiaryTabView, type DiaryProjection } from '../api/v1/diaryTabView';
+import { type HeaderProjection } from '../api/v1/headerView';
+import { HeaderBar } from './home/HeaderBar';
 import { useApiRead, useApiReadMany } from './home/useApiRead';
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
 import { PARTY_EQUIP_CATEGORY_FAMILY, partyEquipCategoryKey } from '../api/v1/uiPreferenceCatalog';
@@ -173,7 +175,6 @@ getSideQuestAssignMessage,
 getSideQuestSuccessMessage,
 hasActiveNonGodBattleClearGateCondition,
 HomeScreenProps,
-IOS_GLASS_BUTTON_CLASS,
 IOS_GLASS_TOP_TAB_CLASS,
 MAIN_TAB_ORDER,
 normalizeAutoEquipmentMode,
@@ -816,25 +817,6 @@ export function HomeScreen({
     setTimeSpeedBonusUntilMs(null);
   }, [timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
-  const speedOfTimeLabel = useMemo(() => {
-    if (effectiveDebugSettings.timeSpeed === 'unlimited') return '(∞)';
-    const remainingHours = hasActiveTimeSpeedBonus && timeSpeedBonusUntilMs !== null
-      ? Math.max(0, Math.ceil((timeSpeedBonusUntilMs - timeSpeedNowMs) / (60 * 60 * 1000)))
-      : null;
-    if (runtimeGameMode === 'mode.orca' && effectiveDebugSettings.timeSpeed === 'x5') {
-      const modeSpeed = hasActiveTimeSpeedBonus ? 'x6' : 'x5';
-      return remainingHours === null
-        ? `(${modeSpeed})`
-        : `(${modeSpeed}) (${formatNumber(remainingHours)}h)`;
-    }
-    return remainingHours === null ? '' : `(${formatNumber(remainingHours)}h)`;
-  }, [effectiveDebugSettings.timeSpeed, hasActiveTimeSpeedBonus, runtimeGameMode, timeSpeedBonusUntilMs, timeSpeedNowMs]);
-
-  const speedOfTimeSymbol = useMemo(() => {
-    if (!hasActiveTimeSpeedBonus && effectiveDebugSettings.timeSpeed !== 'x1_2' && effectiveDebugSettings.timeSpeed !== 'unlimited') return '▷';
-    return '▶︎';
-  }, [effectiveDebugSettings.timeSpeed, hasActiveTimeSpeedBonus]);
-
   const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
     const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
     const party = state.parties[partyIndex];
@@ -1068,6 +1050,29 @@ export function HomeScreen({
     localStorage.setItem(partySnapshotsKey, JSON.stringify(partySnapshots));
     return true;
   }, [state]);
+
+  // SpecRef: 8.6 | UI_SETTING | Debug pane(デバッグ)
+  // Reviewed exception (docs/api-v1-implementation-plan.md, Stage 4): Report Progress still reads raw state and sends
+  // its own webhook directly; only the header's *display* of the resulting bonus is projected. Revisit once Stage 8
+  // wires a real network sender for `commit/progress/progressReport`.
+  const handleReportProgress = useCallback(async () => {
+    const confirmed = window.confirm(t('home.debug.reportProgressConfirm'));
+    if (!confirmed) return;
+    try {
+      const isReported = await reportProgressForSpeedOfTime();
+      if (!isReported) {
+        window.alert(t('home.debug.reportProgressUnset'));
+        return;
+      }
+      const bonusStartedAt = Date.now();
+      setTimeSpeedNowMs(bonusStartedAt);
+      setTimeSpeedBonusUntilMs(bonusStartedAt + SPEED_OF_TIME_BONUS_DURATION_MS);
+      actions.addNotification(t('home.debug.reportProgressSuccess'), 'normal', 'stat', true);
+    } catch (error) {
+      console.error('Failed to report progress for Speed of Time:', error);
+      window.alert(t('home.debug.reportProgressFailure'));
+    }
+  }, [actions, reportProgressForSpeedOfTime]);
 
   const planAutoEquipment = useCallback((
     sourceState: GameState,
@@ -5145,6 +5150,12 @@ export function HomeScreen({
     document.title = gameTitle;
   }, [gameTitle]);
 
+  // SpecRef: 8.1.2 | Header | The header is always visible, so its projection is always enabled (unlike a per-tab read).
+  const overview = useApiRead<{ headerInfo: HeaderProjection }>(
+    inProcessApiRef.current, 'read/observation/overview', {},
+    [state.global.gold, state.parties, headerRuntimeRef.current],
+  );
+
   const isPartyExpeditionSplitView = isPartyExpeditionSplitViewEnabled;
 
   const renderTabContent = (tab: Tab) => {
@@ -5443,63 +5454,14 @@ export function HomeScreen({
         </div>
       )}
       <div className="contents" {...(apiControlActive ? { inert: '' } : {})}>
-      {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-30 pt-[env(safe-area-inset-top)]">
-        <div className="absolute inset-0 bg-white/25 backdrop-blur-[4px]" aria-hidden="true" />
-        <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white/25 backdrop-blur-[4px]">
-          <div className="flex justify-between items-center gap-3 min-h-[44px]">
-            <div className="pl-3">
-              {/* SpecRef: 8.1.2 | Header | Game title label */}
-              <h1 className="flex items-center gap-1 text-lg font-bold">
-                <span aria-label={gameTitle}>
-                  <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>{t('home.nav.expeditionIcon')}</span>
-                  <span>{t('setting.theme.kemo')}</span>
-                  {runtimeGameMode === 'mode.orca' && <span>orca</span>}
-                </span>
-                <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
-              </h1>
-            </div>
-            <div className="flex items-center gap-2 pr-3 text-right text-sm font-medium leading-none">
-              <button
-                type="button"
-                onClick={async () => {
-                  // SpecRef: 8.6 | UI_SETTING | Debug pane(デバッグ)
-                  const confirmed = window.confirm(t('home.debug.reportProgressConfirm'));
-                  if (!confirmed) return;
-                  try {
-                    const isReported = await reportProgressForSpeedOfTime();
-                    if (!isReported) {
-                      window.alert(t('home.debug.reportProgressUnset'));
-                      return;
-                    }
-                    const bonusStartedAt = Date.now();
-                    setTimeSpeedNowMs(bonusStartedAt);
-                    setTimeSpeedBonusUntilMs(bonusStartedAt + SPEED_OF_TIME_BONUS_DURATION_MS);
-                    actions.addNotification(t('home.debug.reportProgressSuccess'), 'normal', 'stat', true);
-                  } catch (error) {
-                    console.error('Failed to report progress for Speed of Time:', error);
-                    window.alert(t('home.debug.reportProgressFailure'));
-                  }
-                }}
-                className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
-              >
-                {speedOfTimeLabel ? `${speedOfTimeSymbol} ${speedOfTimeLabel}` : speedOfTimeSymbol}
-              </button>
-              <span>{formatNumber(state.global.gold)}G</span>
-              {!isAutoRepeatEnabled && (
-                <button
-                  type="button"
-                  onClick={() => setAutoRepeatEnabled(true)}
-                  className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
-                >
-                  {t('home.header.paused')}
-                </button>
-              )}
-            </div>
-          </div>
-
-        </div>
-      </div>
+        <HeaderBar
+          header={overview?.headerInfo ?? null}
+          nowMs={timeSpeedNowMs}
+          gameTitle={gameTitle}
+          versionLabel={versionLabel}
+          onReportProgress={handleReportProgress}
+          onEnableAutoRepeat={() => setAutoRepeatEnabled(true)}
+        />
 
       {/* Bottom Tabs */}
       <nav

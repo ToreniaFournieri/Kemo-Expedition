@@ -211,3 +211,29 @@ test('the Inventory pane draws the Base projection and sells, unlocks, acknowled
   // The pane rebuilds items from the projected Item Format and master data; it holds no sell-price or Prana rule.
   assert.doesNotMatch(tab, /calculateItemSellPrice|getSuperRareItemPrana/);
 });
+
+test('the header renders only from the overview projection, importing no game module', () => {
+  const source = read('src/components/home/HeaderBar.tsx');
+  assert.doesNotMatch(source, /from\s+'\.\.\/\.\.\/game\//, 'HeaderBar must not import any game/ module');
+  for (const banned of [/hooks\/useGameState/, /\bGameState\b/, /\bactions\./, /\bdispatch\(/, /\buseGameState\b/]) {
+    assert.doesNotMatch(source, banned, `HeaderBar must not reference ${banned}`);
+  }
+  assert.match(source, /header: HeaderProjection \| null;/);
+});
+
+test('HomeScreen gives the header the overview projection, not raw game state or reducer actions', () => {
+  const home = read('src/components/HomeScreen.tsx');
+  const start = home.indexOf('<HeaderBar');
+  assert.ok(start >= 0);
+  const end = home.indexOf('\n        />', start);
+  const jsx = home.slice(start, end);
+  const rawReads = [...jsx.matchAll(/^\s+([A-Za-z]+)=\{state\./gm)].map((match) => match[1]);
+  assert.deepEqual(rawReads, [], `header props read the game state directly: ${rawReads.join(', ')}`);
+  const actions = [...jsx.matchAll(/actions\.([A-Za-z]+)/g)].map((match) => match[1]);
+  assert.deepEqual(actions, [], 'no reducer action may be passed directly to the header');
+  assert.match(home, /useApiRead<\{ headerInfo: HeaderProjection \}>\([\s\S]*?'read\/observation\/overview'/);
+  // Report Progress and auto-repeat are reviewed local exceptions (docs/api-v1-implementation-plan.md, Stage 4):
+  // the reducer call lives in a named handler outside the guarded JSX slice, not inline in a prop.
+  const handler = home.slice(home.indexOf('const handleReportProgress = '), home.indexOf('const planAutoEquipment = '));
+  assert.match(handler, /actions\.addNotification/);
+});
