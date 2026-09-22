@@ -5153,7 +5153,7 @@ export function HomeScreen({
   // SpecRef: 8.1.2 | Header | The header is always visible, so its projection is always enabled (unlike a per-tab read).
   const overview = useApiRead<{ headerInfo: HeaderProjection }>(
     inProcessApiRef.current, 'read/observation/overview', {},
-    [state.global.gold, state.parties, headerRuntimeRef.current],
+    [state.global.gold, state.parties, effectiveDebugSettings.timeSpeed, timeSpeedBonusUntilMs, isAutoRepeatEnabled],
   );
 
   const isPartyExpeditionSplitView = isPartyExpeditionSplitViewEnabled;
