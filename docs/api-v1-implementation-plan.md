@@ -16,7 +16,7 @@ This document supersedes the earlier "Build 23" plan. Stages are numbered once, 
 | 4 | Expedition and shell | Runtime and Expedition UI done; header UI migration remains |
 | 5 | Party, character, equipment | Done (UI projection complete) |
 | 6 | Base, inventory, shop, Altar | Done (UI projection complete) |
-| 7 | Diary and popup streaming | Diary contracts done; UI and complete popup/SSE behavior remain |
+| 7 | Diary and popup streaming | Diary contracts and UI migration done; complete popup/SSE behavior remains |
 | 8 | Settings, files, delivery, Help, Resources | Partial |
 | 9 | Conformance hardening and public cutover | Not started |
 
@@ -108,7 +108,7 @@ Gate passed: no `actions.*` reducer call remains in `PartyTab.tsx` for these con
 ## Stage 7 — Diary and popup streaming
 
 - **D1 (done, Build 88): Diary contracts and commands.** Closed semantic/legacy summaries, opaque stable entry IDs, `diary:<id>` log references, current Party identity, effective selection and filtering, exact setting values/options, and precise atomic read acknowledgement. The real mixed-history save and both adapter shapes validate.
-- **D2 (next): Diary UI migration.** Render summaries and expanded retained battle logs from API responses; route settings and read acknowledgement through commits; add the mechanical migration guard.
+- **D2 (done, Build 89): Diary UI migration.** `DiaryTab` renders closed API summaries and `diary:<id>` retained-log responses through `src/api/v1/diaryTabView.ts`; settings, per-entry acknowledgement, tab-exit acknowledgement, and Party-switch acknowledgement are commits. Current character display identities are projected so compact battle records use current names with their recorded appearance. Party selection remains the one reviewed shared-state action, as specified. The tab receives no raw Party/Diary save object, no longer owns an undocumented local-storage selection, and is protected by the mechanical migration guard.
 - **D3: durable popup production.** Generate every configured popup category atomically with the committing transaction, including AFK grouping, deterministic sequence IDs, retention, and replay fencing.
 - **D4: SSE lifecycle.** Push committed events to streams, complete cursor replay/resync and session/import/reset/shutdown fencing, and add reconnect/deduplication lifecycle coverage.
 - SSE: persist popup events with the committing transaction, push to open streams, replay from `Last-Event-ID`, retain at least 256 events or five minutes, emit `resyncRequired` on invalid or fenced cursors, close streams on logout / expiry / reset / import / shutdown, keep heartbeats independent of lease renewal, group AFK events per the existing notification rules.
@@ -154,11 +154,10 @@ Add a mechanical check so this does not rely on review: a test that fails if a m
 
 ## Recommended order
 
-1. Stage 7 D2: migrate the Diary UI and add its ownership guard.
-2. Stage 7 D3–D4: complete durable popup production and the SSE lifecycle.
-3. Finish the Stage 4 header UI migration.
-4. Stage 8 (Settings, files, delivery sender, Help, Resources), including the remaining `Type.Unknown` rows.
-5. Stage 9 (conformance matrix, ownership audit, cutover).
+1. Stage 7 D3–D4: complete durable popup production and the SSE lifecycle.
+2. Finish the Stage 4 header UI migration.
+3. Stage 8 (Settings, files, delivery sender, Help, Resources), including the remaining `Type.Unknown` rows.
+4. Stage 9 (conformance matrix, ownership audit, cutover).
 
 ## Expedition tab migration (in progress)
 

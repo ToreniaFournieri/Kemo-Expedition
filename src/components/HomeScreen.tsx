@@ -104,6 +104,7 @@ import type { ExpeditionProjection } from '../api/v1/expeditionView';
 import type { BaseProjection, EnemyFormProjection } from '../api/v1/baseView';
 import { buildInventoryView } from '../api/v1/inventoryView';
 import { buildPartyExpeditionLogView, type ExpeditionLogView, type LatestBattleLogProjection } from '../api/v1/expeditionLogView';
+import { buildDiaryTabView, type DiaryProjection } from '../api/v1/diaryTabView';
 import { useApiRead, useApiReadMany } from './home/useApiRead';
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
 import { PARTY_EQUIP_CATEGORY_FAMILY, partyEquipCategoryKey } from '../api/v1/uiPreferenceCatalog';
@@ -116,7 +117,7 @@ applyAutoEquipmentProfileActions,
 applyAutoEquipmentProfileActionsSequentially,
 type AfkPartyTransactionAttribution,
 } from '../hooks/useGameState';
-import { Bonus,Character,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry } from '../types';
+import { Bonus,Character,DiarySettings,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry } from '../types';
 import { NotificationToast } from './NotificationToast';
 import { getBrowserChromeColor, getDesktopTheme, getThemeClassName, isGameModeAvailable, THEME_CLASS_NAMES } from '../theme/theme';
 
@@ -2778,7 +2779,7 @@ export function HomeScreen({
       const partyIndex = payload.partyId === undefined
         ? state.selectedPartyIndex
         : state.parties.findIndex((party) => party.id === payload.partyId);
-      if (partyIndex >= 0) actions.selectParty(partyIndex);
+      const selectActivatedParty = () => { if (partyIndex >= 0) actions.selectParty(partyIndex); };
       if (isPartyExpeditionSplitViewEnabled) {
         setActiveWideModeSecondaryTab('diary');
       } else {
@@ -2786,7 +2787,19 @@ export function HomeScreen({
       }
       if (payload.diaryLogId) {
         setDiaryExpandedLogs((previous) => ({ ...previous, [payload.diaryLogId!]: true }));
-        actions.markDiaryLogSeen(payload.diaryLogId);
+        const partyNumber = payload.partyId ?? state.parties[partyIndex]?.id;
+        if (partyNumber !== undefined) {
+          const acknowledgement = inProcessApiRef.current?.commit('commit/diary/diaryEntry/markAsRead', {
+            parameters: { partyNumber, diaryEntryId: payload.diaryLogId },
+          });
+          if (!acknowledgement) selectActivatedParty();
+          else void acknowledgement.then((response) => {
+            if (response?.error) console.error('[api-v1] Diary notification acknowledgement failed', response.error);
+            selectActivatedParty();
+          });
+        } else selectActivatedParty();
+      } else {
+        selectActivatedParty();
       }
     });
   }, [actions, isPartyExpeditionSplitViewEnabled, state.parties, state.selectedPartyIndex]);
@@ -4995,17 +5008,74 @@ export function HomeScreen({
   const isDiaryTabVisible = isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'diary'
     : activeTab === 'diary';
-  const selectedDiaryPartyIndexRef = useRef(0);
-  const handleSelectedDiaryPartyIndexChange = useCallback((partyIndex: number) => {
-    selectedDiaryPartyIndexRef.current = partyIndex;
+  // SpecRef: 8.5 / 9.1.4.17 | The Diary pane receives only API summaries and retained-log projections. The shared Party
+  // selection remains persisted game state; settings and read acknowledgement are serialized Application API commits.
+  const diaryObservation = useApiRead<{ diaryInfo: DiaryProjection }>(
+    inProcessApiRef.current,
+    'read/observation/diary',
+    {},
+    [state.parties, state.selectedPartyIndex],
+    isDiaryTabVisible,
+  );
+  const diaryProjection = diaryObservation?.diaryInfo ?? null;
+  const selectedDiaryProjection = diaryProjection?.parties.find((party) => party.partyNumber === diaryProjection.effectiveSelection.partyNumber) ?? null;
+  const diaryBattleLogInputs = useMemo(
+    () => (selectedDiaryProjection?.entries ?? []).flatMap((entry) => entry.battleLog?.availability.available
+      ? [{ pathParameters: { p: selectedDiaryProjection!.partyNumber }, parameters: { logId: entry.battleLog.logId } }]
+      : []),
+    [selectedDiaryProjection],
+  );
+  const diaryBattleLogProjections = useApiReadMany<LatestBattleLogProjection>(
+    inProcessApiRef.current,
+    'read/expedition/{p}/latestBattleLog',
+    isDiaryTabVisible ? diaryBattleLogInputs : null,
+    [state.parties, diaryProjection?.effectiveSelection.partyNumber],
+  );
+  const diaryView = useMemo(
+    () => buildDiaryTabView(diaryProjection, diaryBattleLogProjections),
+    [diaryBattleLogProjections, diaryProjection],
+  );
+  const diaryCommandQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const markDiaryEntriesRead = useCallback((partyNumber: number, diaryEntryId: string | 'ALL') => {
+    diaryCommandQueueRef.current = diaryCommandQueueRef.current.then(async () => {
+      const response = await inProcessApiRef.current?.commit('commit/diary/diaryEntry/markAsRead', {
+        parameters: { partyNumber, diaryEntryId },
+      });
+      if (response?.error) console.error('[api-v1] Diary read acknowledgement failed', response.error);
+    });
   }, []);
+  const updateDiarySettings = useCallback((partyNumber: number, settings: Partial<DiarySettings>) => {
+    diaryCommandQueueRef.current = diaryCommandQueueRef.current.then(async () => {
+      const response = await inProcessApiRef.current?.commit(`commit/diary/${partyNumber}/diarySetting`, { parameters: settings });
+      if (response?.error) console.error('[api-v1] Diary settings change failed', response.error);
+    });
+  }, []);
+  const selectedDiaryPartyNumberRef = useRef(diaryProjection?.effectiveSelection.partyNumber ?? state.parties[state.selectedPartyIndex]?.id ?? 1);
+  selectedDiaryPartyNumberRef.current = diaryProjection?.effectiveSelection.partyNumber ?? selectedDiaryPartyNumberRef.current;
+  const selectDiaryParty = useCallback((partyNumber: number) => {
+    if (partyNumber === selectedDiaryPartyNumberRef.current) return;
+    const previousPartyNumber = selectedDiaryPartyNumberRef.current;
+    selectedDiaryPartyNumberRef.current = partyNumber;
+    diaryCommandQueueRef.current = diaryCommandQueueRef.current.then(async () => {
+      const response = await inProcessApiRef.current?.commit('commit/diary/diaryEntry/markAsRead', {
+        parameters: { partyNumber: previousPartyNumber, diaryEntryId: 'ALL' },
+      });
+      if (response?.error) {
+        console.error('[api-v1] Diary read acknowledgement failed', response.error);
+        selectedDiaryPartyNumberRef.current = previousPartyNumber;
+        return;
+      }
+      const partyIndex = applicationApiRef.current?.authority.getSnapshot().state.parties.findIndex((party) => party.id === partyNumber) ?? -1;
+      if (partyIndex >= 0) actions.selectParty(partyIndex);
+    });
+  }, [actions]);
   const prevDiaryTabVisibleRef = useRef(isDiaryTabVisible);
   useEffect(() => {
     if (prevDiaryTabVisibleRef.current && !isDiaryTabVisible) {
-      actions.markPartyDiaryLogsSeen(selectedDiaryPartyIndexRef.current);
+      markDiaryEntriesRead(selectedDiaryPartyNumberRef.current, 'ALL');
     }
     prevDiaryTabVisibleRef.current = isDiaryTabVisible;
-  }, [isDiaryTabVisible, actions]);
+  }, [isDiaryTabVisible, markDiaryEntriesRead]);
 
   const isSettingTabVisible = isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'setting'
@@ -5223,11 +5293,10 @@ export function HomeScreen({
     if (tab === 'diary') {
       return (
         <DiaryTab
-          parties={state.parties}
-          onOpenDiaryLog={actions.markDiaryLogSeen}
-          onMarkPartyDiaryLogsSeen={actions.markPartyDiaryLogsSeen}
-          onSelectedPartyIndexChange={handleSelectedDiaryPartyIndexChange}
-          onUpdateDiarySettings={actions.updateDiarySettings}
+          diary={diaryView}
+          onOpenDiaryLog={markDiaryEntriesRead}
+          onSelectParty={selectDiaryParty}
+          onUpdateDiarySettings={updateDiarySettings}
           expandedLogs={diaryExpandedLogs}
           onSetExpandedLogs={setDiaryExpandedLogs}
           expandedRooms={diaryExpandedRooms}

@@ -1069,8 +1069,12 @@ type DiaryEntry = {
   keys, dungeon/difficulty facts, reward Item Formats, optional language-neutral
   side-quest/unlock facts, and the current Party name. The projection returns
   all unlocked Parties with per-Party unread counts and exact notification
-  settings, plus `effectiveSelection`. Entries are newest first. An explicit
-  entry must belong to the explicitly or implicitly selected Party.
+  settings, plus `effectiveSelection`. Each Party also carries its current
+  character display identities (`characterId`, name, race, gender, unique and
+  lineage identity, and Mimorian enemy ID) so compact retained battles render
+  current names while keeping their recorded historical appearance. Entries
+  are newest first. An explicit entry must belong to the explicitly or
+  implicitly selected Party.
 * `chargeDuration` is a nonnegative number of remaining real-time seconds until
   the next stock under current speed settings; zero at maximum stock. API reads
   do not themselves advance the charge clock.

@@ -1006,12 +1006,17 @@ export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-export function getCharacterBattleLogChibiSrc(party: Party, character: Pick<Character, 'raceId' | 'mimorianEnemyId' | 'isUnique' | 'lineageId' | 'gender'>): string | null {
+type BattleLogPartyView = {
+  id: number;
+  characters: readonly (Pick<Character, 'id' | 'name' | 'raceId' | 'gender'> & Partial<Pick<Character, 'mimorianEnemyId' | 'isUnique' | 'lineageId'>>)[];
+};
+
+export function getCharacterBattleLogChibiSrc(party: Pick<BattleLogPartyView, 'id'>, character: Pick<Character, 'raceId' | 'gender'> & Partial<Pick<Character, 'mimorianEnemyId' | 'isUnique' | 'lineageId'>>): string | null {
   if (character.raceId === 'mimorian' && character.mimorianEnemyId != null) {
     return `${import.meta.env.BASE_URL}chibi/C_E_${character.mimorianEnemyId}.png`;
   }
   if (character.isUnique) {
-    const uniqueFileName = UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId];
+    const uniqueFileName = character.lineageId ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId] : undefined;
     return uniqueFileName ? `${import.meta.env.BASE_URL}chibi/C_${uniqueFileName}` : null;
   }
 
@@ -1063,7 +1068,7 @@ export function BattleLogInlineChibi({ src, alt }: { src: string; alt: string })
 }
 
 // SpecRef: 6.1.7 | Logs | Chibi images for each character name
-export function renderBattleLogTextWithInlineChibis(action: string, party: Party, entry: ExpeditionLogEntry): ReactNode {
+export function renderBattleLogTextWithInlineChibis(action: string, party: BattleLogPartyView, entry: ExpeditionLogEntry): ReactNode {
   const markers: Array<{ label: string; src: string; alt: string; priority: number }> = [];
   const enemySrc = getEnemyBattleLogChibiSrc(entry);
   if (enemySrc) {

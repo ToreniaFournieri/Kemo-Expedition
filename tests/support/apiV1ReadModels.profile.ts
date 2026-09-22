@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { buildApiV1ReadData } from '../../src/api/v1/readModels.ts';
+import { buildDiaryTabView, type DiaryProjection } from '../../src/api/v1/diaryTabView.ts';
 import { createFreshGameState } from '../../src/hooks/useGameState.ts';
 
 import { createExpeditionSimulationRoomResults } from '../../src/game/expeditionSimulation.ts';
@@ -109,12 +110,22 @@ calls.length = 0;
   (diaryState.parties[0].diarySettings as typeof diaryState.parties[0]['diarySettings'] & { notifyDefeat?: boolean }).notifyDefeat = true;
   const projection = await buildApiV1ReadData('read/observation/diary', diaryState, { partyNumber: 1, diaryEntryId: compactEntry.id }, context) as any;
   assert.deepEqual(projection.diaryInfo.effectiveSelection, { partyNumber: 1, diaryEntryId: compactEntry.id });
+  assert.equal(projection.diaryInfo.parties[0].characters[0].characterId, diaryState.parties[0].characters[0].id);
+  assert.equal(projection.diaryInfo.parties[0].characters[0].name, diaryState.parties[0].characters[0].name);
   assert.deepEqual(projection.diaryInfo.parties[0].entries.map((entry: { diaryEntryId: string }) => entry.diaryEntryId), [compactEntry.id, legacyEntry.id], 'newest entry is first');
   assert.equal(projection.diaryInfo.parties[0].entries[0].content.format, 'semantic');
   assert.equal(projection.diaryInfo.parties[0].entries[0].battleLog.logId, `diary:${compactEntry.id}`);
   assert.deepEqual(projection.diaryInfo.parties[0].entries[0].sideQuest, { label: { format: 'semantic', text: ['sideQuest.label.test'] }, jewelKey: 'fort', jewelRank: 3 });
   assert.deepEqual(projection.diaryInfo.parties[0].entries[1].content, { format: 'legacy', title: 'Stored legacy headline', subtitle: 'Stored legacy detail', text: 'Stored legacy headline\nStored legacy detail' });
   assert.equal('notifyDefeat' in projection.diaryInfo.parties[0].settings, false, 'the legacy migration alias is not public');
+  const retainedBattle = await buildApiV1ReadData('read/expedition/1/latestBattleLog', diaryState, { logId: `diary:${compactEntry.id}` }, context) as any;
+  const tabView = buildDiaryTabView(projection.diaryInfo as DiaryProjection, [retainedBattle]);
+  assert.equal(tabView?.selectedPartyNumber, 1);
+  assert.equal(tabView?.parties[0].diaryLogs[0].expeditionLog.logId, `diary:${compactEntry.id}`);
+  assert.equal(tabView?.parties[0].diaryLogs[0].sideQuestLabel, 'sideQuest.label.test');
+  assert.equal(tabView?.parties[0].diaryLogs[1].unlockHeadline, 'Stored legacy headline');
+  assert.equal(tabView?.parties[0].diaryLogs[1].unlockDetail, 'Stored legacy detail');
+  assert.equal(tabView?.parties[0].characters[0].name, diaryState.parties[0].characters[0].name);
 
   const Ajv = (await import('ajv')).default;
   const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };

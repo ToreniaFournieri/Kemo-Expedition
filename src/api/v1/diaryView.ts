@@ -149,6 +149,15 @@ export function buildDiaryProjection(state: GameState, parameters: Record<string
       partyNumber: party.id,
       name: party.name,
       unreadCount: party.diaryLogs.filter((entry) => !entry.isRead).length,
+      characters: party.characters.map((character) => ({
+        characterId: character.id,
+        name: character.name,
+        raceId: character.raceId,
+        gender: character.gender,
+        isUnique: character.isUnique === true,
+        lineageId: character.lineageId ?? null,
+        mimorianEnemyId: character.mimorianEnemyId ?? null,
+      })),
       settings: diarySettingsView(party.diarySettings),
       entries: [...party.diaryLogs]
         .sort((left, right) => right.createdAt - left.createdAt)

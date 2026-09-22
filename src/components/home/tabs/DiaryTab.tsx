@@ -1,15 +1,16 @@
-import { renderDiaryMetadata, renderExpeditionMetadata, renderDiaryBattle, semanticBattleAction, diaryBattleFlags } from '../../../game/compactDiary.ts';
-import { Fragment,useEffect,useState,type Dispatch,type SetStateAction } from 'react';
+import { renderDiaryBattle, semanticBattleAction, diaryBattleFlags } from '../../../game/compactDiary.ts';
+import { Fragment,useState,type Dispatch,type SetStateAction } from 'react';
 import { GOD_ENEMY_PROFILES } from '../../../data/dropTables';
 import {
 DUNGEONS,
 getEffectiveEnemyLevel,
 getLocalizedExpeditionFloorConcept
 } from '../../../data/dungeons';
-import { DIARY_LOG_RETENTION_LIMIT } from '../../../game/diary';
 import { getItemDisplayName } from '../../../game/gameState';
 import { t } from '../../../i18n';
-import { DiaryDefeatNotificationMode,DiaryLog,DiarySettings,EnemyDef,ExpeditionLog,ExpeditionLogEntry,Item,Party } from '../../../types';
+import { DiaryDefeatNotificationMode,DiarySettings,DiaryTrigger,EnemyDef,ExpeditionLogEntry,Item } from '../../../types';
+import type { DiaryPartyView,DiaryTabView } from '../../../api/v1/diaryTabView';
+import type { ExpeditionLogView } from '../../../api/v1/expeditionLogView';
 
 
 import {
@@ -45,8 +46,10 @@ RewardItemBubble,
 UiIconKey
 } from '../homeShared';
 
+const DIARY_PARTY_UNREAD_BADGE_MAX = 12;
+
 function DiaryPartyTabs({ parties, selectedIndex, onSelect }: {
-  parties: Party[];
+  parties: readonly DiaryPartyView[];
   selectedIndex: number;
   onSelect: (index: number) => void;
 }) {
@@ -71,11 +74,11 @@ function DiaryPartyTabs({ parties, selectedIndex, onSelect }: {
           {/* SpecRef: 8.5 | UI_DIARY | The Diary has six subcategory tabs: PT1, PT2, PT3, PT4, PT5, PT6. */}
           {`PT${index + 1}`}
           {(() => {
-            const unreadCount = party.diaryLogs.filter((log) => !log.isRead).length;
+            const unreadCount = party.unreadCount;
             if (unreadCount === 0) return null;
             return (
               <span className="absolute -right-1 -top-1 rounded-full bg-status-unread px-1 py-0.5 text-[9px] leading-none text-content-inverse">
-                {Math.min(unreadCount, DIARY_LOG_RETENTION_LIMIT)}
+                {Math.min(unreadCount, DIARY_PARTY_UNREAD_BADGE_MAX)}
               </span>
             );
           })()}
@@ -86,10 +89,9 @@ function DiaryPartyTabs({ parties, selectedIndex, onSelect }: {
 }
 
 export default function DiaryTab({
-  parties,
+  diary,
   onOpenDiaryLog,
-  onMarkPartyDiaryLogsSeen,
-  onSelectedPartyIndexChange,
+  onSelectParty,
   onUpdateDiarySettings,
   expandedLogs,
   onSetExpandedLogs,
@@ -99,11 +101,10 @@ export default function DiaryTab({
   onSetIsSettingsExpanded,
   isDarkModeEnabled,
 }: {
-  parties: Party[];
-  onOpenDiaryLog: (logId: string) => void;
-  onMarkPartyDiaryLogsSeen: (partyIndex: number) => void;
-  onSelectedPartyIndexChange: (partyIndex: number) => void;
-  onUpdateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
+  diary: DiaryTabView | null;
+  onOpenDiaryLog: (partyNumber: number, logId: string) => void;
+  onSelectParty: (partyNumber: number) => void;
+  onUpdateDiarySettings: (partyNumber: number, settings: Partial<DiarySettings>) => void;
   expandedLogs: Record<string, boolean>;
   onSetExpandedLogs: Dispatch<SetStateAction<Record<string, boolean>>>;
   expandedRooms: Record<string, boolean>;
@@ -112,26 +113,15 @@ export default function DiaryTab({
   onSetIsSettingsExpanded: Dispatch<SetStateAction<boolean>>;
   isDarkModeEnabled: boolean;
 }) {
-  const availableParties = parties;
-  const diaryPartyStorageKey = `bokemo:${window.location.pathname}:selected-diary-party`;
-  const [selectedDiaryPartyIndex, setSelectedDiaryPartyIndex] = useState(() => {
-    const stored = Number.parseInt(window.localStorage.getItem(diaryPartyStorageKey) ?? '0', 10);
-    return Number.isInteger(stored) && stored >= 0 ? Math.min(stored, availableParties.length - 1) : 0;
-  });
-  const safeDiaryPartyIndex = Math.min(selectedDiaryPartyIndex, availableParties.length - 1);
+  const availableParties = diary?.parties ?? [];
+  const selectedDiaryPartyIndex = Math.max(0, availableParties.findIndex((party) => party.id === diary?.selectedPartyNumber));
+  const safeDiaryPartyIndex = Math.min(selectedDiaryPartyIndex, Math.max(0, availableParties.length - 1));
   const selectedDiaryParty = availableParties[safeDiaryPartyIndex];
-
-  useEffect(() => {
-    if (selectedDiaryPartyIndex !== safeDiaryPartyIndex) setSelectedDiaryPartyIndex(safeDiaryPartyIndex);
-    window.localStorage.setItem(diaryPartyStorageKey, String(safeDiaryPartyIndex));
-    onSelectedPartyIndexChange(safeDiaryPartyIndex);
-  }, [diaryPartyStorageKey, onSelectedPartyIndexChange, safeDiaryPartyIndex, selectedDiaryPartyIndex]);
 
   const selectDiaryParty = (partyIndex: number) => {
     if (partyIndex === safeDiaryPartyIndex) return;
-    onMarkPartyDiaryLogsSeen(safeDiaryPartyIndex);
-    onSelectedPartyIndexChange(partyIndex);
-    setSelectedDiaryPartyIndex(partyIndex);
+    const partyNumber = availableParties[partyIndex]?.id;
+    if (partyNumber !== undefined) onSelectParty(partyNumber);
   };
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
@@ -195,7 +185,7 @@ export default function DiaryTab({
     .map((diaryLog) => ({ partyName: selectedDiaryParty.name, ...diaryLog }))
     .sort((a, b) => b.createdAt - a.createdAt);
 
-  const getDiaryTitle = (triggers: DiaryLog['triggers']) => {
+  const getDiaryTitle = (triggers: readonly DiaryTrigger[]) => {
     if (triggers.includes('victory') && triggers.length === 1) return t('diary.title.victory');
     if (triggers.includes('return') && triggers.length === 1) return t('diary.title.return');
     if (triggers.includes('defeat') && triggers.length === 1) return t('diary.title.defeat');
@@ -212,7 +202,7 @@ export default function DiaryTab({
   };
 
 
-  const getGodsBattleOutcomeLabel = (expeditionLog: ExpeditionLog) => {
+  const getGodsBattleOutcomeLabel = (expeditionLog: ExpeditionLogView) => {
     const hasGodsBattleEntry = expeditionLog.entries.some((entry) => (entry.godsBattle || entry.enemyName.includes('(神魔戦)')));
     if (!hasGodsBattleEntry) return t('diary.outcome.notReached');
     if (expeditionLog.finalOutcome === 'Clear') return t('diary.outcome.victory');
@@ -236,9 +226,9 @@ export default function DiaryTab({
 
   const getDiaryHeadline = (
     partyName: string,
-    triggers: DiaryLog['triggers'],
+    triggers: readonly DiaryTrigger[],
     rewards: Item[],
-    expeditionLog: ExpeditionLog,
+    expeditionLog: ExpeditionLogView,
     sideQuestLabel?: string,
     unlockHeadline?: string
   ) => {
@@ -357,7 +347,7 @@ export default function DiaryTab({
       {isSettingsExpanded && (
         <div className="mt-3 space-y-3">
           {selectedDiaryParty && (() => {
-            const partyIndex = safeDiaryPartyIndex;
+            const partyNumber = selectedDiaryParty.id;
             const party = selectedDiaryParty;
             const settings = party.diarySettings;
             return (
@@ -369,7 +359,7 @@ export default function DiaryTab({
                     <span>{t('diary.settings.superRareNotification')}</span>
                     <select
                       value={settings.superRareThreshold}
-                      onChange={(event) => onUpdateDiarySettings(partyIndex, { superRareThreshold: parseDiaryThreshold(event.target.value) })}
+                      onChange={(event) => onUpdateDiarySettings(partyNumber, { superRareThreshold: parseDiaryThreshold(event.target.value) })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
@@ -381,7 +371,7 @@ export default function DiaryTab({
                     <span>{t('diary.settings.eliteRareNotification')}</span>
                     <select
                       value={settings.rareThreshold}
-                      onChange={(event) => onUpdateDiarySettings(partyIndex, { rareThreshold: parseDiaryThreshold(event.target.value) })}
+                      onChange={(event) => onUpdateDiarySettings(partyNumber, { rareThreshold: parseDiaryThreshold(event.target.value) })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
@@ -393,7 +383,7 @@ export default function DiaryTab({
                     <span>{t('diary.settings.bossRareNotification')}</span>
                     <select
                       value={settings.bossThreshold}
-                      onChange={(event) => onUpdateDiarySettings(partyIndex, { bossThreshold: parseDiaryThreshold(event.target.value) })}
+                      onChange={(event) => onUpdateDiarySettings(partyNumber, { bossThreshold: parseDiaryThreshold(event.target.value) })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
@@ -405,7 +395,7 @@ export default function DiaryTab({
                     <span>{t('diary.settings.godsBattleNotification')}</span>
                     <select
                       value={settings.notifyGodsBattle ? 'yes' : 'no'}
-                      onChange={(event) => onUpdateDiarySettings(partyIndex, { notifyGodsBattle: event.target.value === 'yes' })}
+                      onChange={(event) => onUpdateDiarySettings(partyNumber, { notifyGodsBattle: event.target.value === 'yes' })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       <option value="yes">{t('common.yes')}</option>
@@ -416,7 +406,7 @@ export default function DiaryTab({
                     <span>{t('diary.settings.mythicRareNotification')}</span>
                     <select
                       value={settings.mythicThreshold}
-                      onChange={(event) => onUpdateDiarySettings(partyIndex, { mythicThreshold: parseDiaryThreshold(event.target.value) })}
+                      onChange={(event) => onUpdateDiarySettings(partyNumber, { mythicThreshold: parseDiaryThreshold(event.target.value) })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
@@ -428,7 +418,7 @@ export default function DiaryTab({
                     <span>{t('diary.settings.defeatNotification')}</span>
                     <select
                       value={settings.defeatNotificationMode}
-                      onChange={(event) => onUpdateDiarySettings(partyIndex, { defeatNotificationMode: event.target.value as DiaryDefeatNotificationMode })}
+                      onChange={(event) => onUpdateDiarySettings(partyNumber, { defeatNotificationMode: event.target.value as DiaryDefeatNotificationMode })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_DEFEAT_NOTIFICATION_OPTIONS.map((option) => (
@@ -441,7 +431,7 @@ export default function DiaryTab({
                     <span>{t('diary.settings.sideQuestNotification')}</span>
                     <select
                       value={settings.sideQuestThreshold}
-                      onChange={(event) => onUpdateDiarySettings(partyIndex, { sideQuestThreshold: parseDiarySideQuestThreshold(event.target.value) })}
+                      onChange={(event) => onUpdateDiarySettings(partyNumber, { sideQuestThreshold: parseDiarySideQuestThreshold(event.target.value) })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_SIDE_QUEST_THRESHOLD_OPTIONS.map((option) => (
@@ -464,7 +454,7 @@ export default function DiaryTab({
                       <span>{t(labelKey)}</span>
                       <select
                         value={settings[settingKey] ? 'yes' : 'no'}
-                        onChange={(event) => onUpdateDiarySettings(partyIndex, { [settingKey]: event.target.value === 'yes' })}
+                        onChange={(event) => onUpdateDiarySettings(partyNumber, { [settingKey]: event.target.value === 'yes' })}
                         className="rounded border border-gray-300 bg-white px-2 py-1"
                       >
                         <option value="yes">{t('common.yes')}</option>
@@ -539,12 +529,11 @@ export default function DiaryTab({
       )}
       <DiaryPartyTabs parties={availableParties} selectedIndex={safeDiaryPartyIndex} onSelect={selectDiaryParty} />
       {renderDiarySettings()}
-      {diaryLogs.map((storedDiaryLog) => {
-        const diaryLog = renderDiaryMetadata(storedDiaryLog);
+      {diaryLogs.map((diaryLog) => {
         const isSideQuestLog = diaryLog.triggers.includes('sideQuest');
         const isExpanded = isSideQuestLog ? false : !!expandedLogs[diaryLog.id];
-        const log = renderExpeditionMetadata(diaryLog.expeditionLog);
-        const diaryParty = parties.find((candidate) => candidate.name === diaryLog.partyName) ?? parties[0];
+        const log = diaryLog.expeditionLog;
+        const diaryParty = selectedDiaryParty;
         const specialRewards = log.rewards.filter((item) => {
           const rarity = getItemRarityById(item.id);
           return rarity === 'bossRare' || rarity === 'mythicRare' || item.superRare > 0;
@@ -554,13 +543,13 @@ export default function DiaryTab({
             <button
               onClick={() => {
                 if (isSideQuestLog) {
-                  if (!diaryLog.isRead) onOpenDiaryLog(diaryLog.id);
+                  if (!diaryLog.isRead) onOpenDiaryLog(selectedDiaryParty.id, diaryLog.id);
                   return;
                 }
                 const nextExpanded = !isExpanded;
                 onSetExpandedLogs((prev) => ({ ...prev, [diaryLog.id]: nextExpanded }));
                 if (nextExpanded && !diaryLog.isRead) {
-                  onOpenDiaryLog(diaryLog.id);
+                  onOpenDiaryLog(selectedDiaryParty.id, diaryLog.id);
                 }
               }}
               className="w-full text-left text-sm"

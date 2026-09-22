@@ -373,7 +373,11 @@ const baseProjectionSchema = strict({ currencies: strict({ gold: Type.Integer({ 
 const diaryProjectionSchema = strict({
   effectiveSelection: strict({ partyNumber, diaryEntryId: Type.Union([stableKey, Type.Null()]) }),
   unreadTotal: Type.Integer({ minimum: 0 }),
-  parties: Type.Array(strict({ partyNumber, name: Type.String({ minLength: 1 }), unreadCount: Type.Integer({ minimum: 0 }), settings: strict(diarySettingMembers), entries: Type.Array(diaryEntrySummary) })),
+  parties: Type.Array(strict({
+    partyNumber, name: Type.String({ minLength: 1 }), unreadCount: Type.Integer({ minimum: 0 }),
+    characters: Type.Array(strict({ characterId: integerId, name: Type.String({ minLength: 1 }), raceId: stableKey, gender: literals('male', 'female'), isUnique: Type.Boolean(), lineageId: Type.Union([stableKey, Type.Null()]), mimorianEnemyId: Type.Union([integerId, Type.Null()]) })),
+    settings: strict(diarySettingMembers), entries: Type.Array(diaryEntrySummary),
+  })),
 });
 const settingProjectionSchema = strict({ language, environment: Type.String(), gameMode: modeKey, enemyLevelOffset: Type.Integer({ minimum: 0, maximum: 20 }), modeSelect: optional(strict(modeSelect)), debug: optional(strict(debug)), enemyEditPane: optional(strict(enemyEdit)), uiPreferences: Type.Array(strict({ key: stableKey, value: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), uiPreferenceCatalog: Type.Array(strict({ family: stableKey, subject: Type.Literal('characterId'), type: Type.Union([Type.Literal('string'), Type.Literal('number'), Type.Literal('boolean')]), options: Type.Array(Type.String()), defaultValue: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })) });
 const popupStreamSchema = strict({ events: Type.Array(popupEvent) });

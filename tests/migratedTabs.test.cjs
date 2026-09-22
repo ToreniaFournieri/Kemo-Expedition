@@ -128,6 +128,37 @@ test('Expedition logs use the latestBattleLog projection and keep retained narra
   assert.doesNotMatch(tab, /renderExpeditionMetadata/);
 });
 
+test('the Diary tab renders API views and owns no saved Party or Diary log objects', () => {
+  const tab = read('src/components/home/tabs/DiaryTab.tsx');
+  assert.match(tab, /diary: DiaryTabView \| null;/);
+  assert.match(tab, /DiaryPartyView/);
+  assert.doesNotMatch(tab, /import\s*\{[^}]*\b(?:Party|DiaryLog)\b[^}]*\}\s*from\s*'\.\.\/\.\.\/\.\.\/types/, 'DiaryTab must not import saved Party or DiaryLog types');
+  for (const banned of [
+    /renderDiaryMetadata/,
+    /renderExpeditionMetadata/,
+    /localStorage/,
+    /hooks\/useGameState/,
+    /\bactions\./,
+  ]) assert.doesNotMatch(tab, banned, `DiaryTab must not reference ${banned}`);
+});
+
+test('HomeScreen gives the Diary tab projections and commits, with only shared Party selection using the reducer', () => {
+  const home = read('src/components/HomeScreen.tsx');
+  const start = home.indexOf('<DiaryTab');
+  assert.ok(start >= 0);
+  const jsx = home.slice(start, home.indexOf('\n        />', start));
+  assert.match(home, /useApiRead<\{ diaryInfo: DiaryProjection \}>\([\s\S]*?'read\/observation\/diary'/);
+  assert.match(home, /useApiReadMany<LatestBattleLogProjection>\([\s\S]*?'read\/expedition\/\{p\}\/latestBattleLog'/);
+  assert.match(home, /buildDiaryTabView\(diaryProjection, diaryBattleLogProjections\)/);
+  assert.match(home, /commit\/diary\/diaryEntry\/markAsRead/);
+  assert.match(home, /commit\/diary\/\$\{partyNumber\}\/diarySetting/);
+  assert.match(jsx, /diary=\{diaryView\}/);
+  assert.doesNotMatch(jsx, /state\.parties|actions\./);
+  const selection = home.slice(home.indexOf('const selectDiaryParty ='), home.indexOf('const prevDiaryTabVisibleRef'));
+  assert.match(selection, /actions\.selectParty\(partyIndex\)/, 'the persisted shared Party selection is the one reviewed reducer exception');
+  assert.doesNotMatch(selection, /actions\.(markDiaryLogSeen|markPartyDiaryLogsSeen|updateDiarySettings)/);
+});
+
 test('a disabled multi-read keeps its last result, so a hidden tab never returns empty', () => {
   const hook = read('src/components/home/useApiRead.ts');
   const many = hook.slice(hook.indexOf('export function useApiReadMany'));

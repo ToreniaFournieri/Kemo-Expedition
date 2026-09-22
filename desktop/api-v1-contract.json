@@ -10391,6 +10391,7 @@
                       "partyNumber",
                       "name",
                       "unreadCount",
+                      "characters",
                       "settings",
                       "entries"
                     ],
@@ -10407,6 +10408,75 @@
                       "unreadCount": {
                         "minimum": 0,
                         "type": "integer"
+                      },
+                      "characters": {
+                        "type": "array",
+                        "items": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "characterId",
+                            "name",
+                            "raceId",
+                            "gender",
+                            "isUnique",
+                            "lineageId",
+                            "mimorianEnemyId"
+                          ],
+                          "properties": {
+                            "characterId": {
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "name": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "raceId": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "gender": {
+                              "anyOf": [
+                                {
+                                  "const": "male",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "female",
+                                  "type": "string"
+                                }
+                              ]
+                            },
+                            "isUnique": {
+                              "type": "boolean"
+                            },
+                            "lineageId": {
+                              "anyOf": [
+                                {
+                                  "minLength": 1,
+                                  "maxLength": 200,
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "mimorianEnemyId": {
+                              "anyOf": [
+                                {
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          }
+                        }
                       },
                       "settings": {
                         "additionalProperties": false,
@@ -11134,6 +11204,7 @@
                           "partyNumber",
                           "name",
                           "unreadCount",
+                          "characters",
                           "settings",
                           "entries"
                         ],
@@ -11150,6 +11221,75 @@
                           "unreadCount": {
                             "minimum": 0,
                             "type": "integer"
+                          },
+                          "characters": {
+                            "type": "array",
+                            "items": {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "characterId",
+                                "name",
+                                "raceId",
+                                "gender",
+                                "isUnique",
+                                "lineageId",
+                                "mimorianEnemyId"
+                              ],
+                              "properties": {
+                                "characterId": {
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "name": {
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "raceId": {
+                                  "minLength": 1,
+                                  "maxLength": 200,
+                                  "type": "string"
+                                },
+                                "gender": {
+                                  "anyOf": [
+                                    {
+                                      "const": "male",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "female",
+                                      "type": "string"
+                                    }
+                                  ]
+                                },
+                                "isUnique": {
+                                  "type": "boolean"
+                                },
+                                "lineageId": {
+                                  "anyOf": [
+                                    {
+                                      "minLength": 1,
+                                      "maxLength": 200,
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "mimorianEnemyId": {
+                                  "anyOf": [
+                                    {
+                                      "minimum": 1,
+                                      "type": "integer"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
                           },
                           "settings": {
                             "additionalProperties": false,
@@ -11830,6 +11970,17 @@
                   "partyNumber": 1,
                   "name": "xxxxxxx",
                   "unreadCount": 0,
+                  "characters": [
+                    {
+                      "characterId": 1,
+                      "name": "xxxxxxx",
+                      "raceId": "xxxxxxx",
+                      "gender": "male",
+                      "isUnique": true,
+                      "lineageId": "xxxxxxx",
+                      "mimorianEnemyId": 1
+                    }
+                  ],
                   "settings": {
                     "superRareThreshold": "all",
                     "bossThreshold": "all",
