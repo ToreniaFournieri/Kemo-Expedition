@@ -221,6 +221,41 @@ test('the header renders only from the overview projection, importing no game mo
   assert.match(source, /header: HeaderProjection \| null;/);
 });
 
+// SpecRef: 9.1.4.17 | UI state ownership | Settings UI migration (Stage 8's last item)
+// Unlike the tabs above, the Setting tab is only *partially* migrated: Glossary, Item Compendium, Character Roster,
+// Bestiary, Super Rare, Debug, and Send Feedback are explicitly deferred/reviewed exceptions and still read raw
+// `GameState` and dispatch reducer actions directly. These two guards are therefore narrower than the others on
+// purpose — they check that the specific migrated panels (Backup/Reset, News, Donation, Clairvoyance, and Enemy
+// Edit's option lists) no longer use their old direct entry points, not that the whole file is clean.
+test('the Setting tab reads News/Donation/Clairvoyance/Enemy-Edit-options from the Application API (migration in progress)', () => {
+  const tab = read('src/components/home/tabs/SettingTab.tsx');
+  for (const banned of [/DEVELOPER_NEWS_ITEMS/, /getDeveloperNewsContent/, /\bdeityDonations\b/, /donationByDeity/, /onResetCommonBags/, /onResetUniqueBags/, /onResetSideQuestBag/]) {
+    assert.doesNotMatch(tab, banned, `SettingTab must not reference ${banned}`);
+  }
+  assert.match(tab, /developerNewsEntries: Array<\{ version: string; date: string; content: string \}>;/);
+  assert.match(tab, /donationRows: Array<\{ deityName: string; donationGold: number; rank: number; nextRankDonationRequirement: number \| null \}>;/);
+  assert.match(tab, /clairvoyanceProjections: ApiV1ClairvoyanceProjection\[\] \| null;/);
+  assert.match(tab, /onClairvoyanceReset: \(partyIndex: number, changes:/);
+  assert.match(tab, /enemyEditValidOptions\?\.enemyType/, 'Enemy Edit\'s type dropdown reads its option keys from the API, not only the hand-maintained label map');
+});
+
+test('HomeScreen wires the Setting tab\'s migrated panels through the Application API, not raw reducer actions', () => {
+  const home = read('src/components/HomeScreen.tsx');
+  for (const operation of [
+    'resources/developerNewsNotification', 'resources/donationBox', "resources/clairvoyance/{p}'", "read/setting/enemyEditPane'",
+    'commit/setting/markNewsAsRead', 'commit/setting/clairvoyanceReset', 'commit/setting/modeSelect',
+    'commit/setting/backup/export', 'commit/setting/backup/import', 'commit/setting/backup/reset',
+  ]) assert.ok(home.includes(operation), `HomeScreen must call ${operation}`);
+  const start = home.indexOf('<SettingTab');
+  assert.ok(start >= 0);
+  const jsx = home.slice(start, home.indexOf('\n      />', start));
+  assert.doesNotMatch(
+    jsx,
+    /actions\.(setLanguage|markDeveloperNewsRead|resetCommonBags|resetUniqueBags|resetSideQuestBag|resetGame|importGameState|getCompressedSavePayload)\b/,
+    'a migrated Setting panel must not be wired to a raw reducer action',
+  );
+});
+
 test('HomeScreen gives the header the overview projection, not raw game state or reducer actions', () => {
   const home = read('src/components/HomeScreen.tsx');
   const start = home.indexOf('<HeaderBar');

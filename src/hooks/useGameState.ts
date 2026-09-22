@@ -5154,6 +5154,14 @@ export function useGameState() {
       coordinator.requestOrdinary(nextState);
     }, []),
 
+    // SpecRef: 9.1.4.15 | `commit/setting/backup/import`/`reset` replace the save wholesale (see `actions.importGameState`,
+    // which already uses this same coordinator method for the same reason); awaited, unlike the ordinary coalescing path.
+    persistApiStateReplacement: useCallback(async (nextState: GameState) => {
+      const coordinator = persistenceCoordinatorRef.current;
+      if (!coordinator) throw new Error('persistence_unavailable');
+      await coordinator.replaceDurable(nextState);
+    }, []),
+
     publishApiState: useCallback(async (nextState: GameState) => {
       latestGameStateRef.current = nextState;
       dispatch({ type: 'COMMIT_API_STATE', state: nextState });

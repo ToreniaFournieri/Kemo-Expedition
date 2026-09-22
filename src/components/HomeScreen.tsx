@@ -94,8 +94,9 @@ import { getXpToNextLevel } from '../game/partyLevel';
 import { getFreeActionStepCount } from '../game/partyStateDuration';
 import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
 import { DEFAULT_ORCA_ENEMY_LEVEL_OFFSET, isRuntimeGameMode, normalizeOrcaEnemyLevelOffset, type RuntimeGameMode } from '../game/runtimeGameMode';
-import { setLanguage,t } from '../i18n';
+import { ensureLanguageLoaded,setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
+import { base64FromUtf8, encodePersistedState } from '../game/storageCompression';
 import { characterEditToChangeBuildParameters, type CharacterBuildOutcome } from '../api/v1/characterBuildParameters';
 import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIntents';
 import { parseInventoryStacks, parseJewelStacks, parseSavedEquipmentSet } from '../api/v1/itemFormat';
@@ -112,6 +113,7 @@ import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
 import { PARTY_EQUIP_CATEGORY_FAMILY, partyEquipCategoryKey } from '../api/v1/uiPreferenceCatalog';
 import { parseSimulationRunData, type SimulationRunData } from '../api/v1/simulationView';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
+import type { ApiV1ClairvoyanceProjection } from '../api/v1/readModels';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
 import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
 import {
@@ -583,6 +585,7 @@ export function HomeScreen({
         applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
         simulate: async (snapshot, partyIndex, count) => simulateExpeditionRuns(snapshot, partyIndex, gameModeRef.current, count, undefined, apiRuntimeRef.current.enemyLevelOffset),
         persistPlayer: async (snapshot) => { await apiActionsRef.current.persistApiState(snapshot); },
+        persistPlayerReplacement: async (snapshot) => { await apiActionsRef.current.persistApiStateReplacement(snapshot); },
         publish: async (snapshot) => { await apiActionsRef.current.publishApiState(snapshot); },
         notifyPopupActivity: () => { void window.bokemoDesktop?.notifyApiV1PopupActivity?.(); },
         yieldBetweenChunks: () => new Promise<void>((resolve) => window.setTimeout(resolve, 0)),
@@ -2116,6 +2119,19 @@ export function HomeScreen({
     }
     return { donations, unlocked };
   }, [donationProjection]);
+  // SpecRef: 8.6 | UI_SETTING | Donation (寄付) — the Setting tab's donation-rank panel; `deityView` above feeds a
+  // different (Party-tab) display and only keeps the donated amount, not the rank/next-requirement this panel shows.
+  const donationRows = useMemo(() => (donationProjection?.gods ?? []).flatMap((god) => {
+    const [id, rank, donatedGold, nextRankGold] = god.split('/');
+    const deityName = getDeityNameFromId(id);
+    if (deityName === null) return [];
+    return [{
+      deityName,
+      donationGold: Number(donatedGold),
+      rank: Number(rank),
+      nextRankDonationRequirement: nextRankGold === 'MAX' ? null : Number(nextRankGold),
+    }];
+  }).sort((a, b) => (b.donationGold - a.donationGold) || a.deityName.localeCompare(b.deityName, 'ja')), [donationProjection]);
 
   useEffect(() => {
     if (!__AUTO_EQUIPMENT_PROFILE_ENABLED__) return;
@@ -2412,7 +2428,17 @@ export function HomeScreen({
     });
   }, [state.parties]);
 
-  const handleResetGame = useCallback(() => {
+  // SpecRef: 9.1.4.15 | `commit/setting/backup/reset` already produces the same `createFreshGameState(language)` the
+  // reducer's `RESET_GAME` did; `skipConfirmation: true` is right here because the Setting tab already ran its own
+  // native confirm dialog before calling this — a second internal challenge/confirm round trip would be a silent,
+  // redundant extra step the user never sees. The publish step (`persistApiStateReplacement`/`publishApiState`)
+  // already installs the fresh state, so no separate reducer dispatch is needed.
+  const handleResetGame = useCallback(async () => {
+    const result = await inProcessApiRef.current?.commit('commit/setting/backup/reset', { parameters: { skipConfirmation: true } });
+    if (result?.error) {
+      console.error('Failed to reset game state via the Application API:', result.error);
+      return;
+    }
     afkRuntimeTrace.cancelRecovery('game_reset');
     autoRepeatEnabledRef.current = true;
     setIsAutoRepeatEnabled(true);
@@ -2446,8 +2472,7 @@ export function HomeScreen({
     } catch (error) {
       console.error('Failed to clear AFK runtime state:', error);
     }
-    actions.resetGame();
-  }, [actions, state, updateAfkTraceCoordinator]);
+  }, [state, updateAfkTraceCoordinator]);
 
   useEffect(() => {
     gameModeRef.current = runtimeGameMode;
@@ -4017,11 +4042,23 @@ export function HomeScreen({
     }
   }, [getRuntimeSnapshot]);
 
+  // SpecRef: 9.1.4.15 | `skipConfirmation: true`: the Setting tab already ran its own native confirm dialogs
+  // (integrity warnings, then a final "replace the save?" confirm) before calling this — a second internal
+  // challenge/confirm round trip would be a silent, redundant extra step the user never sees. The uploaded backup
+  // is the client's own re-serialization of the already-locally-validated `nextState`, matching exactly what a real
+  // downloaded-then-reuploaded backup file's bytes would be (`commit/setting/backup/export`'s own output shape).
   const handleImportGameState = useCallback(async (nextState: GameState, rawRuntimeSnapshot?: unknown) => {
-    const result = await actions.importGameState(nextState);
-    if (!result.state) return result;
+    const backupPayload = encodePersistedState(JSON.stringify(serializeGameState(nextState)));
+    const result = await inProcessApiRef.current?.commit('commit/setting/backup/import', {
+      parameters: { skipConfirmation: true },
+      uploadedFiles: { backup: { contentBase64: base64FromUtf8(backupPayload) } },
+    });
+    if (result?.error) {
+      const error = result.error as { message?: unknown; code?: unknown };
+      return { state: null, errorLog: String(error.message ?? error.code ?? 'import_failed') };
+    }
 
-    const importedRuntime = normalizeRuntimeSnapshot(rawRuntimeSnapshot, result.state.parties.length);
+    const importedRuntime = normalizeRuntimeSnapshot(rawRuntimeSnapshot, nextState.parties.length);
     const now = Date.now();
     const nextAutoRepeatEnabled = importedRuntime?.autoRepeatEnabled ?? true;
     const nextCycles = importedRuntime?.partyCycles ?? {};
@@ -4041,7 +4078,7 @@ export function HomeScreen({
     shouldShowAfkSummaryRef.current = importedRuntime?.shouldShowAfkSummary ?? false;
     afkChunkCursorRef.current = importedRuntime?.afkChunkCursor ?? null;
     afkRemainingMsByPartyRef.current = importedRuntime?.afkRemainingMsByParty
-      ?? Object.fromEntries(result.state.parties.map((_, partyIndex) => [partyIndex, nextPendingAfkMs]));
+      ?? Object.fromEntries(nextState.parties.map((_, partyIndex) => [partyIndex, nextPendingAfkMs]));
     afkInFlightCompletedMsByPartyRef.current = {};
     shouldRebuildPartyCyclesAfterAfkRef.current = nextPendingAfkMs > 0;
     lastCheckpointAtRef.current = importedRuntime?.checkpointAt ?? now;
@@ -4053,8 +4090,8 @@ export function HomeScreen({
       console.error('Failed to replace AFK runtime state during import:', error);
       window.alert(`${t('save.writeWarning')}\n\n${error instanceof Error ? error.message : String(error)}`);
     }
-    return result;
-  }, [actions, getRuntimeSnapshot]);
+    return { state: nextState, errorLog: null };
+  }, [getRuntimeSnapshot]);
 
   useEffect(() => {
     persistAfkRuntimeState();
@@ -5096,21 +5133,73 @@ export function HomeScreen({
     ? activeWideModeSecondaryTab === 'setting'
     : activeTab === 'setting';
   const prevSettingTabVisibleRef = useRef(isSettingTabVisible);
+
+  // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
+  const developerNewsObservation = useApiRead<{ entries: Array<{ version: string; date: string; content: string }> }>(
+    inProcessApiRef.current, 'resources/developerNewsNotification', {}, [state.global.language], isSettingTabVisible,
+  );
+  const developerNewsEntries = developerNewsObservation?.entries ?? [];
+  // `version` omitted marks every article read, matching `commitOperations.ts`'s own default.
+  const handleMarkNewsRead = useCallback((versions?: string[]) => {
+    void inProcessApiRef.current?.commit('commit/setting/markNewsAsRead', { parameters: versions ? { version: versions } : {} });
+  }, []);
+
+  // SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視)
+  const clairvoyanceInputs = useMemo(() => state.parties.map((party) => ({ pathParameters: { p: party.id } })), [state.parties]);
+  const clairvoyanceProjections = useApiReadMany<ApiV1ClairvoyanceProjection>(
+    inProcessApiRef.current, 'resources/clairvoyance/{p}', isSettingTabVisible ? clairvoyanceInputs : null,
+    [state.parties.map((party) => party.bags), state.parties.map((party) => party.sleepinessOfPartyBag)],
+  );
+  const handleClairvoyanceReset = useCallback((partyIndex: number, changes: { resetCommonRewards?: boolean; resetRewards?: boolean; resetSideQuest?: boolean }) => {
+    const party = state.parties[partyIndex];
+    if (!party) return;
+    void inProcessApiRef.current?.commit('commit/setting/clairvoyanceReset', {
+      parameters: { partyNumber: party.id, resetCommonRewards: changes.resetCommonRewards === true, resetRewards: changes.resetRewards === true, resetSideQuest: changes.resetSideQuest === true },
+    });
+  }, [state.parties]);
+
+  // SpecRef: 8.6 | UI_SETTING | Enemy Edit Pane — only the dropdown option lists move to the API; the edited value
+  // stays on the existing localStorage-backed mechanism, since an ordinary player's `control.settings` (unlike
+  // `GameState` itself) is never durably persisted (see `persistApiStateReplacement`'s doc comment for the same
+  // distinction elsewhere in this migration).
+  const enemyEditPaneRead = useApiRead<{ validOptions: { terrainEffect: string[]; enemyType: string[] } }>(
+    inProcessApiRef.current, 'read/setting/enemyEditPane', {}, [], isSettingTabVisible && isDebugModeEnabled(),
+  );
+
+  // SpecRef: 8.6 | UI_SETTING | Mode select — only `language` moves to the API: it is real `GameState.global.language`
+  // (`commitOperations.ts` already handles `SET_LANGUAGE` there), unlike this panel's other fields (auto-repeat, dark
+  // mode, game mode, runtime mode, orca offset), which stay local/device state, same precedent as the header's auto-repeat.
+  const handleSetLanguage = useCallback(async (nextLanguage: GameState['global']['language']) => {
+    // `setLanguage(state.global.language)` runs unconditionally on every render (below) and throws if that
+    // language's dictionary bundle is not yet loaded — it must be pre-loaded before the commit lands, not after.
+    await ensureLanguageLoaded(nextLanguage);
+    await inProcessApiRef.current?.commit('commit/setting/modeSelect', { parameters: { language: nextLanguage } });
+  }, []);
+
+  // SpecRef: 8.6 | UI_SETTING | 5.1 Backup (Export) — the export byte source, not the platform-specific
+  // share/download/file-picker logic around it, which stays exactly as it is in SettingTab.tsx.
+  const handleExportGameStatePayload = useCallback(async (): Promise<string> => {
+    const result = await inProcessApiRef.current?.commit('commit/setting/backup/export', { parameters: {} });
+    const savePayload = (result?.data as Record<string, unknown> | undefined)?.savePayload;
+    if (result?.error || typeof savePayload !== 'string') throw new Error('Failed to export the save through the Application API.');
+    return savePayload;
+  }, []);
+
   const isDeveloperNewsPaneExpandedRef = useRef(false);
   // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
   const handleDeveloperNewsPaneExpandedChange = useCallback((expanded: boolean) => {
     if (shouldMarkDeveloperNewsReadOnPaneChange(isDeveloperNewsPaneExpandedRef.current, expanded)) {
-      actions.markDeveloperNewsRead(DEVELOPER_NEWS_ITEMS.map((item) => item.id));
+      handleMarkNewsRead();
     }
     isDeveloperNewsPaneExpandedRef.current = expanded;
-  }, [actions]);
+  }, [handleMarkNewsRead]);
   // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
   useEffect(() => {
     if (prevSettingTabVisibleRef.current && !isSettingTabVisible && isDeveloperNewsPaneExpandedRef.current) {
-      actions.markDeveloperNewsRead(DEVELOPER_NEWS_ITEMS.map((item) => item.id));
+      handleMarkNewsRead();
     }
     prevSettingTabVisibleRef.current = isSettingTabVisible;
-  }, [isSettingTabVisible, actions]);
+  }, [isSettingTabVisible, handleMarkNewsRead]);
 
   // SpecRef: 9.1.4.17 | UI state ownership | Newly acquired inventory highlighting
   // Once the Inventory pane has displayed the new variants, acknowledge exactly those with `markItemsAsSeen`.
@@ -5332,16 +5421,17 @@ export function HomeScreen({
     return (
       <SettingTab
         gameState={state}
-        deityDonations={state.global.deityDonations}
+        developerNewsEntries={developerNewsEntries}
+        donationRows={donationRows}
+        clairvoyanceProjections={clairvoyanceProjections}
+        enemyEditValidOptions={enemyEditPaneRead?.validOptions ?? null}
         onResetGame={handleResetGame}
         onImportGameState={handleImportGameState}
-        getCompressedSavePayload={actions.getCompressedSavePayload}
+        getCompressedSavePayload={handleExportGameStatePayload}
         getRuntimeSnapshot={getRuntimeSnapshot}
         onAddNotification={actions.addNotification}
         onGrantFeedbackReward={actions.grantFeedbackReward}
-        onResetCommonBags={actions.resetCommonBags}
-        onResetUniqueBags={actions.resetUniqueBags}
-        onResetSideQuestBag={actions.resetSideQuestBag}
+        onClairvoyanceReset={handleClairvoyanceReset}
         selectedBestiaryDungeonId={selectedBestiaryDungeonId}
         onSetSelectedBestiaryDungeonId={setSelectedBestiaryDungeonId}
         expandedBestiaryEnemies={expandedBestiaryEnemies}
@@ -5365,8 +5455,8 @@ export function HomeScreen({
         partyCount={state.parties.length}
         onPartyUnlock={actions.unlockPartySlot}
         language={state.global.language}
-        onSetLanguage={actions.setLanguage}
-        onMarkDeveloperNewsRead={actions.markDeveloperNewsRead}
+        onSetLanguage={handleSetLanguage}
+        onMarkDeveloperNewsRead={handleMarkNewsRead}
         onNewsPaneExpandedChange={handleDeveloperNewsPaneExpandedChange}
       />
     );

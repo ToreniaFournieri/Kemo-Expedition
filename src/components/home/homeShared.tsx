@@ -190,6 +190,11 @@ export interface HomeScreenProps {
   actions: {
     getApiReadiness: () => 'ready' | 'save_error';
     persistApiState: (state: GameState) => Promise<void>;
+    /** Only for `commit/setting/backup/import`/`reset`: the new state is unrelated to the current one, so it must
+     *  use the coordinator's full-replacement write (garbage-collects the prior Diary-record generation), never the
+     *  ordinary coalescing autosave `persistApiState` uses (that assumes incremental continuity from the last save,
+     *  and could otherwise leave orphaned or incorrectly-retained segment records behind). */
+    persistApiStateReplacement: (state: GameState) => Promise<void>;
     publishApiState: (state: GameState) => Promise<void>;
     commitApiState: (state: GameState) => Promise<void>;
     selectParty: (partyIndex: number) => void;

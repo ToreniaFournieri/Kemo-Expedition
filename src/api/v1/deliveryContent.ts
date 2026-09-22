@@ -1,7 +1,7 @@
 import type { GameState } from '../../types';
 import { computePartyStats } from '../../game/partyComputation';
 import { serializeGameState } from '../../game/saveCodec';
-import { encodePersistedState } from '../../game/storageCompression';
+import { base64FromUtf8, encodePersistedState } from '../../game/storageCompression';
 import { buildBattleLogData } from './battleLogs';
 import type { ApiV1DeliveryAttachment, ApiV1DeliveryPayload } from './deliveries';
 
@@ -9,16 +9,6 @@ import type { ApiV1DeliveryAttachment, ApiV1DeliveryPayload } from './deliveries
 // Builds the exact network payload for `commit/progress/progressReport` and `commit/setting/feedback` from one
 // immutable (state, parameters, uploadedFiles) snapshot at commit time. The sender (applicationApi.ts) only ever
 // reads the stored result on every attempt — content is never re-derived from live state on retry.
-
-/** UTF-8-safe base64: `btoa` alone only accepts Latin1 code units, and the compressed backup payload routinely
- *  contains characters above that range (see the matching decode fix in commitOperations.ts for `backup/import`). */
-function base64FromUtf8(text: string): string {
-  const bytes = new TextEncoder().encode(text);
-  let binary = '';
-  const chunkSize = 0x8000;
-  for (let index = 0; index < bytes.length; index += chunkSize) binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
-  return btoa(binary);
-}
 
 export function buildProgressReportDeliveryPayload(state: GameState, now: number): ApiV1DeliveryPayload {
   const partyLines = state.parties.map((party, index) => {

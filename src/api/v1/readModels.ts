@@ -466,18 +466,30 @@ function characterRoster(parameters: Record<string, unknown>) {
 // SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視)
 // Every remaining/total pair compares the party's live bag against a freshly created one of the same kind, so a bag's
 // own per-slot ticket overrides (for example the general enhancement bag's boosted "untitled" slot) are never hand-copied.
-interface ApiV1ClairvoyanceBagFacts { remaining: number; total: number; hitsRemaining: number; hitsTotal: number }
+export interface ApiV1ClairvoyanceBagFacts { remaining: number; total: number; hitsRemaining: number; hitsTotal: number }
+export interface ApiV1ClairvoyanceEnhancementFacts { remaining: number; total: number; tiers: Array<{ tier: number; remaining: number; total: number }> }
+export interface ApiV1ClairvoyanceSleepinessFacts {
+  remaining: number; total: number;
+  awake: { remaining: number; total: number }; nap: { remaining: number; total: number }; deepSleep: { remaining: number; total: number };
+}
+export interface ApiV1ClairvoyanceProjection {
+  reward: { common: ApiV1ClairvoyanceBagFacts; uncommon: ApiV1ClairvoyanceBagFacts; eliteRare: ApiV1ClairvoyanceBagFacts; bossRare: ApiV1ClairvoyanceBagFacts; mythicRare: ApiV1ClairvoyanceBagFacts };
+  enhancement: { common: ApiV1ClairvoyanceEnhancementFacts; general: ApiV1ClairvoyanceEnhancementFacts };
+  superRare: { common: ApiV1ClairvoyanceBagFacts; rare: ApiV1ClairvoyanceBagFacts };
+  sideQuest: ApiV1ClairvoyanceBagFacts;
+  sleepiness: ApiV1ClairvoyanceSleepinessFacts;
+}
 function bagHitFacts(bag: RandomBag, defaultBag: RandomBag, hitIds: readonly number[]): ApiV1ClairvoyanceBagFacts {
   const sum = (source: RandomBag) => hitIds.reduce((total, id) => total + getBagEntryTickets(source, id), 0);
   return { remaining: getBagTicketTotal(bag), total: getBagTicketTotal(defaultBag), hitsRemaining: sum(bag), hitsTotal: sum(defaultBag) };
 }
-function enhancementBagFacts(bag: RandomBag, defaultBag: RandomBag) {
+function enhancementBagFacts(bag: RandomBag, defaultBag: RandomBag): ApiV1ClairvoyanceEnhancementFacts {
   const tiers = ENHANCEMENT_TITLES.filter((title) => title.value > 0).map((title) => ({
     tier: title.value, remaining: getBagEntryTickets(bag, title.value), total: getBagEntryTickets(defaultBag, title.value),
   }));
   return { remaining: getBagTicketTotal(bag), total: getBagTicketTotal(defaultBag), tiers };
 }
-function sleepinessBagFacts(bag: RandomBag) {
+function sleepinessBagFacts(bag: RandomBag): ApiV1ClairvoyanceSleepinessFacts {
   const normalized = normalizeSleepinessPartyBag(bag);
   const defaultBag = createSleepinessPartyBag();
   const of = (id: number) => ({ remaining: getBagEntryTickets(normalized, id), total: getBagEntryTickets(defaultBag, id) });
@@ -827,7 +839,8 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   if (operationId === 'read/setting/debug') return { current: (context.control?.settings?.debug as Record<string, unknown> | undefined) ?? {}, validOptions: { speedOfTime: ['real', 'x1.2', 'x5', 'x20', 'x100', 'unlimited'], godsBattleCondition: ['normal', 'simple'], godsStrength: ['normal', 'veryWeak'] } };
   if (operationId.startsWith('read/setting/delivery/')) { const deliveryId = operationId.split('/').at(-1); const delivery = (context.control?.deliveries as ApiV1DeliveryRecord[] | undefined)?.find((entry) => entry.deliveryId === deliveryId); if (!delivery) throw new Error('not_found'); return projectDelivery(delivery); }
 
-  if (operationId === 'resources/developerNewsNotification') return { entries: DEVELOPER_NEWS_ITEMS.map((entry) => ({ version: entry.id, date: entry.date, content: entry.content })) };
+  // SpecRef: 9.1.3, 4-2-1 | "content is returned in the currently selected language."
+  if (operationId === 'resources/developerNewsNotification') return { entries: DEVELOPER_NEWS_ITEMS.map((entry) => ({ version: entry.id, date: entry.date, content: entry.content[state.global.language] })) };
   if (operationId === 'resources/donationBox') {
     // Every unlocked god with its rank, donated Gold, and the total needed for the next rank.
     const gods = state.global.unlockedDeities.flatMap((name) => {

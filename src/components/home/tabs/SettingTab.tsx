@@ -1,4 +1,5 @@
 import { renderDiaryBattle, renderExpeditionMetadata } from '../../../game/compactDiary.ts';
+import type { ApiV1ClairvoyanceProjection } from '../../../api/v1/readModels';
 import { Fragment,useCallback,useEffect,useMemo,useRef,useState,type ChangeEvent,type Dispatch,type MouseEvent,type ReactNode,type SetStateAction } from 'react';
 import {
 BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID,
@@ -6,7 +7,6 @@ LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES,
 type BonusAbilityGlossarySubcategoryId,
 } from '../../../data/bonusAbilityGlossary';
 import { CLASS_SHORT_NAMES } from '../../../data/classes';
-import { DEVELOPER_NEWS_ITEMS,getDeveloperNewsContent } from '../../../data/developerNews';
 import { GOD_ENEMY_PROFILES,GOD_MYTHIC_DROPS } from '../../../data/dropTables';
 import {
 DUNGEONS,
@@ -17,9 +17,8 @@ getLocalizedExpeditionFloorConcept,
 } from '../../../data/dungeons';
 import { ENEMIES,getEnemyDropCandidates } from '../../../data/enemies';
 import { GLOSSARY_SECTIONS } from '../../../data/glossary';
-import { ENHANCEMENT_TITLES,ITEMS,SUPER_RARE_TITLES } from '../../../data/items';
+import { ITEMS,SUPER_RARE_TITLES } from '../../../data/items';
 import { RACES } from '../../../data/races';
-import { createCommonRewardBag,createCommonSuperRareBag,createMythicRareRewardBag,createRareSuperRareBag,createSideQuestBag,createSleepinessPartyBag,createUncommonRewardBag,getBagEntryTickets,getBagTicketTotal,normalizeSleepinessPartyBag } from '../../../game/bags';
 import { getAbilityDescription } from '../../../game/characterComputation';
 import {
 isDungeonEntryUnlocked
@@ -28,7 +27,7 @@ import { buildColosseumEnemy,ColosseumEnemySettings,getColosseumEnemySettings,no
 import { DebugSettings } from '../../../game/debugSettings';
 import { RuntimeDiagnostics } from '../../MemoryDiagnostics';
 import { addOrcaEnemyAbilities, ORCA_ENEMY_LEVEL_OFFSET_MAX, ORCA_ENEMY_LEVEL_OFFSET_MIN, RUNTIME_GAME_MODES, type RuntimeGameMode } from '../../../game/runtimeGameMode';
-import { DEITY_OPTIONS,getDeityDisplayName,getDeityRank,getNextRankDonationRequirement,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
+import { getDeityDisplayName } from '../../../game/deity';
 import { formatEnemyDefName } from '../../../game/enemyDisplay';
 import { getEncounterEnemyWithScaling } from '../../../game/enemyScaling';
 import { resolveEnemyPassiveAbilities } from '../../../game/enemyPassiveAbilities';
@@ -96,16 +95,17 @@ UiIconKey
 
 export default function SettingTab({
   gameState,
-  deityDonations,
+  developerNewsEntries,
+  donationRows,
+  clairvoyanceProjections,
+  enemyEditValidOptions,
   onResetGame,
   onImportGameState,
   getCompressedSavePayload,
   getRuntimeSnapshot,
   onAddNotification,
   onGrantFeedbackReward,
-  onResetCommonBags,
-  onResetUniqueBags,
-  onResetSideQuestBag,
+  onClairvoyanceReset,
   selectedBestiaryDungeonId,
   onSetSelectedBestiaryDungeonId,
   expandedBestiaryEnemies,
@@ -134,8 +134,11 @@ export default function SettingTab({
   onNewsPaneExpandedChange,
 }: {
   gameState: GameState;
-  deityDonations: Record<string, number>;
-  onResetGame: () => void;
+  developerNewsEntries: Array<{ version: string; date: string; content: string }>;
+  donationRows: Array<{ deityName: string; donationGold: number; rank: number; nextRankDonationRequirement: number | null }>;
+  clairvoyanceProjections: ApiV1ClairvoyanceProjection[] | null;
+  enemyEditValidOptions: { terrainEffect: string[]; enemyType: string[] } | null;
+  onResetGame: () => Promise<void>;
   onImportGameState: (state: GameState, runtimeSnapshot?: unknown) => Promise<{ state: GameState | null; errorLog: string | null }>;
   getCompressedSavePayload: () => Promise<string>;
   getRuntimeSnapshot: () => PersistedRuntimeSnapshot;
@@ -146,9 +149,7 @@ export default function SettingTab({
     isPositive?: boolean
   ) => void;
   onGrantFeedbackReward: () => void;
-  onResetCommonBags: (partyIndex?: number) => void;
-  onResetUniqueBags: (partyIndex?: number) => void;
-  onResetSideQuestBag: (partyIndex?: number) => void;
+  onClairvoyanceReset: (partyIndex: number, changes: { resetCommonRewards?: boolean; resetRewards?: boolean; resetSideQuest?: boolean }) => void;
   selectedBestiaryDungeonId: number;
   onSetSelectedBestiaryDungeonId: Dispatch<SetStateAction<number>>;
   expandedBestiaryEnemies: Record<number, boolean>;
@@ -542,7 +543,7 @@ export default function SettingTab({
     }
   }, [expandedGlossaryEntries]);
 
-  const unreadDeveloperNewsItems = DEVELOPER_NEWS_ITEMS.filter((item) => !(gameState.global.readDeveloperNewsItemIds ?? []).includes(item.id));
+  const unreadDeveloperNewsItems = developerNewsEntries.filter((item) => !(gameState.global.readDeveloperNewsItemIds ?? []).includes(item.version));
   const hasUnreadDeveloperNews = unreadDeveloperNewsItems.length > 0;
 
   // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
@@ -840,12 +841,6 @@ export default function SettingTab({
     bestiaryListRef.current?.scrollTo({ top: bestiaryScrollTop, behavior: 'auto' });
   }, [bestiaryScrollTop]);
 
-  const commonRewardTotal = getBagTicketTotal(createCommonRewardBag());
-  const commonEnhancementTotal = ENHANCEMENT_TITLES.reduce((sum, t) => sum + t.tickets, 0);
-  const uniqueRewardTotal = getBagTicketTotal(createUncommonRewardBag());
-  const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
-  const mythicRewardTotal = getBagTicketTotal(createMythicRareRewardBag());
-
   const confirmReset = (label: string, onConfirm: () => void) => {
     if (!window.confirm(t('setting.clairvoyance.resetConfirmation', { label }))) {
       return;
@@ -853,50 +848,6 @@ export default function SettingTab({
 
     onConfirm();
   };
-
-  const commonSuperRareTotal = getBagTicketTotal(createCommonSuperRareBag());
-  const rareSuperRareTotal = getBagTicketTotal(createRareSuperRareBag());
-  const superRareHitTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + (t.value > 0 ? t.tickets : 0), 0);
-  const enhancementCountTargets = [
-    { value: 1 },
-    { value: 2 },
-    { value: 3 },
-    { value: 4 },
-    { value: 5 },
-    { value: 6 },
-  ] as const;
-  const sideQuestDefaultBag = createSideQuestBag();
-  const sideQuestTotal = getBagTicketTotal(sideQuestDefaultBag);
-  const sleepinessDefaultBag = createSleepinessPartyBag();
-
-  const visibleDeityNames = new Set(
-    gameState.global.unlockedDeities
-      .map((deityName) => normalizeDeityName(deityName))
-      .filter((deityName) => !isNoFaithDeity(deityName))
-  );
-
-  const donationByDeity = DEITY_OPTIONS.reduce<Record<string, number>>((totals, deity) => {
-    const deityName = normalizeDeityName(deity.name);
-    if (!visibleDeityNames.has(deityName)) return totals;
-    totals[deityName] = deityDonations[deityName] ?? 0;
-    return totals;
-  }, {});
-
-  Object.entries(deityDonations).forEach(([deityName, donation]) => {
-    const normalizedDeityName = normalizeDeityName(deityName);
-    if (!visibleDeityNames.has(normalizedDeityName)) return;
-    donationByDeity[normalizedDeityName] = Math.max(donationByDeity[normalizedDeityName] ?? 0, donation);
-  });
-
-  const donationRows = Object.entries(donationByDeity)
-    .filter(([deityName]) => !isNoFaithDeity(deityName))
-    .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0], 'ja'))
-    .map(([deityName, donationGold]) => ({
-      deityName,
-      donationGold,
-      rank: getDeityRank(donationGold),
-      nextRankDonationRequirement: getNextRankDonationRequirement(donationGold),
-    }));
 
   const compendiumItems = ITEMS
     .filter(item =>
@@ -1568,19 +1519,19 @@ export default function SettingTab({
               {t('setting.developerNews.discordCommunity')}
             </a>
             <div className="max-h-96 overflow-y-auto overscroll-contain rounded border border-gray-200 bg-white text-sm pane-button-shadow">
-              {DEVELOPER_NEWS_ITEMS.map((item) => (
+              {developerNewsEntries.map((item) => (
                 <button
-                  key={item.id}
+                  key={item.version}
                   type="button"
-                  onClick={() => onMarkDeveloperNewsRead([item.id])}
+                  onClick={() => onMarkDeveloperNewsRead([item.version])}
                   className="block w-full space-y-1 border-b border-gray-100 p-3 text-left last:border-b-0"
                 >
                   <div className="flex items-center justify-between gap-3 text-xs text-gray-500">
                     <span className="font-semibold text-gray-700">{item.version}</span>
                     <span>{item.date}</span>
                   </div>
-                  <p className={`text-gray-700 ${unreadDeveloperNewsItems.some((unreadItem) => unreadItem.id === item.id) ? 'font-bold' : 'font-normal'}`}>
-                    {getDeveloperNewsContent(item, gameState.global.language)}
+                  <p className={`text-gray-700 ${unreadDeveloperNewsItems.some((unreadItem) => unreadItem.version === item.version) ? 'font-bold' : 'font-normal'}`}>
+                    {item.content}
                   </p>
                 </button>
               ))}
@@ -1626,89 +1577,81 @@ export default function SettingTab({
               return null;
             }
 
-            const partyBags = party.bags;
+            const clairvoyance = clairvoyanceProjections?.[partyIndex];
             const isExpanded = clairvoyancePartyExpanded[partyIndex] === true;
             return <div key={`clairvoyance-${party.id}`} className="rounded border border-gray-200 bg-white p-2 pane-button-shadow">
               <button type="button" className="flex w-full items-center justify-between text-left font-semibold" onClick={() => setClairvoyancePartyExpanded((prev) => ({ ...prev, [partyIndex]: !isExpanded }))}>
                 <span>PT{partyIndex + 1} {isExpanded ? '▲' : '▼'}</span>
               </button>
-              {isExpanded && <div className="mt-2 space-y-3 text-sm">
+              {isExpanded && (!clairvoyance ? null : <div className="mt-2 space-y-3 text-sm">
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
                   <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('setting.clairvoyance.common')}</div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('setting.clairvoyance.commonRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.commonRewardBag))} / {formatNumber(commonRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.commonRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.commonRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.common.remaining)} / {formatNumber(clairvoyance.reward.common.total)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.common.hitsRemaining)}</span></div>
                   </div>
-                  <div>{t('setting.clairvoyance.commonEnhancement')}: {formatNumber(getBagTicketTotal(partyBags.commonEnhancementBag))} / {formatNumber(commonEnhancementTotal)}</div>
+                  <div>{t('setting.clairvoyance.commonEnhancement')}: {formatNumber(clairvoyance.enhancement.common.remaining)} / {formatNumber(clairvoyance.enhancement.common.total)}</div>
                   <div className="pl-1 text-xs text-gray-500">
-                    {enhancementCountTargets.map(({ value }) => {
-                      const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
-                      return (
-                        <div key={`common-enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
-                          <span className="tabular-nums text-right text-gray-400">{value}</span>
-                          <span>{t('setting.enhancementRemaining', { title: getLocalizedEnhancementTitle(value) })}</span>
-                          <span className="tabular-nums text-right">{formatNumber(getBagEntryTickets(partyBags.commonEnhancementBag, value))} / {formatNumber(initialCount)}</span>
-                        </div>
-                      );
-                    })}
+                    {clairvoyance.enhancement.common.tiers.map(({ tier, remaining, total }) => (
+                      <div key={`common-enhancement-${party.id}-${tier}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
+                        <span className="tabular-nums text-right text-gray-400">{tier}</span>
+                        <span>{t('setting.enhancementRemaining', { title: getLocalizedEnhancementTitle(tier) })}</span>
+                        <span className="tabular-nums text-right">{formatNumber(remaining)} / {formatNumber(total)}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div>{t('setting.clairvoyance.commonSuperRare')}: {formatNumber(getBagTicketTotal(partyBags.commonSuperRareBag))} / {formatNumber(commonSuperRareTotal)}</div>
-                  <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.superRareRemaining')} {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.commonSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
-                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetCommonRewards'), () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetCommonRewards')}</button>}
+                  <div>{t('setting.clairvoyance.commonSuperRare')}: {formatNumber(clairvoyance.superRare.common.remaining)} / {formatNumber(clairvoyance.superRare.common.total)}</div>
+                  <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.superRareRemaining')} {formatNumber(clairvoyance.superRare.common.hitsRemaining)} / {formatNumber(clairvoyance.superRare.common.hitsTotal)}</div>
+                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetCommonRewards'), () => onClairvoyanceReset(partyIndex, { resetCommonRewards: true }))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetCommonRewards')}</button>}
                 </div>
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
                   <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('setting.clairvoyance.otherRarities')}</div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('setting.clairvoyance.uncommonRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.uncommonRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.uncommonRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.uncommonRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.uncommon.remaining)} / {formatNumber(clairvoyance.reward.uncommon.total)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.uncommon.hitsRemaining)}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('setting.clairvoyance.eliteRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.eliteRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.eliteRareRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.eliteRareRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.eliteRare.remaining)} / {formatNumber(clairvoyance.reward.eliteRare.total)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.eliteRare.hitsRemaining)}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('setting.clairvoyance.bossRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.bossRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.bossRareRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.bossRareRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.bossRare.remaining)} / {formatNumber(clairvoyance.reward.bossRare.total)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.bossRare.hitsRemaining)}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('setting.clairvoyance.mythicRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.mythicRareRewardBag))} / {formatNumber(mythicRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.mythicRareRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.mythicRareRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.mythicRare.remaining)} / {formatNumber(clairvoyance.reward.mythicRare.total)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.mythicRare.hitsRemaining)}</span></div>
                   </div>
-                  <div>{t('setting.clairvoyance.enhancement')}: {formatNumber(getBagTicketTotal(partyBags.enhancementBag))} / {formatNumber(enhancementTotal)}</div>
+                  <div>{t('setting.clairvoyance.enhancement')}: {formatNumber(clairvoyance.enhancement.general.remaining)} / {formatNumber(clairvoyance.enhancement.general.total)}</div>
                   <div className="pl-1 text-xs text-gray-500">
-                    {enhancementCountTargets.map(({ value }) => {
-                      const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
-                      return (
-                        <div key={`enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
-                          <span className="tabular-nums text-right text-gray-400">{value}</span>
-                          <span>{t('setting.enhancementRemaining', { title: getLocalizedEnhancementTitle(value) })}</span>
-                          <span className="tabular-nums text-right">{formatNumber(getBagEntryTickets(partyBags.enhancementBag, value))} / {formatNumber(initialCount)}</span>
-                        </div>
-                      );
-                    })}
+                    {clairvoyance.enhancement.general.tiers.map(({ tier, remaining, total }) => (
+                      <div key={`enhancement-${party.id}-${tier}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
+                        <span className="tabular-nums text-right text-gray-400">{tier}</span>
+                        <span>{t('setting.enhancementRemaining', { title: getLocalizedEnhancementTitle(tier) })}</span>
+                        <span className="tabular-nums text-right">{formatNumber(remaining)} / {formatNumber(total)}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div>{t('setting.clairvoyance.superRareEnhancement')}: {formatNumber(getBagTicketTotal(partyBags.rareSuperRareBag))} / {formatNumber(rareSuperRareTotal)}</div>
-                  <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.superRareRemaining')} {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.rareSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
-                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetRewards'), () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetRewards')}</button>}
+                  <div>{t('setting.clairvoyance.superRareEnhancement')}: {formatNumber(clairvoyance.superRare.rare.remaining)} / {formatNumber(clairvoyance.superRare.rare.total)}</div>
+                  <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.superRareRemaining')} {formatNumber(clairvoyance.superRare.rare.hitsRemaining)} / {formatNumber(clairvoyance.superRare.rare.hitsTotal)}</div>
+                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetRewards'), () => onClairvoyanceReset(partyIndex, { resetRewards: true }))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetRewards')}</button>}
                 </div>
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
                   <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('setting.clairvoyance.sideQuest')}</div>
                   {/* SpecRef: 8.6 | UI_SETTING | サイドクエスト */}
-                  <div>{t('setting.clairvoyance.sideQuestDraw')}: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
+                  <div>{t('setting.clairvoyance.sideQuestDraw')}: {formatNumber(clairvoyance.sideQuest.remaining)} / {formatNumber(clairvoyance.sideQuest.total)}</div>
                   <div className="text-xs text-gray-500 text-right">
-                    {t('setting.clairvoyance.hitsRemaining')} {formatNumber(sideQuestDefaultBag.entries.reduce((sum, entry) => (
-                      entry.id > 0 ? sum + getBagEntryTickets(partyBags.sideQuestBag, entry.id) : sum
-                    ), 0))}
+                    {t('setting.clairvoyance.hitsRemaining')} {formatNumber(clairvoyance.sideQuest.hitsRemaining)}
                   </div>
-                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetSideQuest'), () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetSideQuest')}</button>}
+                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetSideQuest'), () => onClairvoyanceReset(partyIndex, { resetSideQuest: true }))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetSideQuest')}</button>}
                 </div>
                 <div className="flex items-start justify-between gap-3">
-                  <div>{t('setting.clairvoyance.sleepinessDraw')}: {formatNumber(getBagTicketTotal(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag)))} / {formatNumber(getBagTicketTotal(sleepinessDefaultBag))}</div>
+                  <div>{t('setting.clairvoyance.sleepinessDraw')}: {formatNumber(clairvoyance.sleepiness.remaining)} / {formatNumber(clairvoyance.sleepiness.total)}</div>
                   <div className="text-xs text-gray-500 text-right">
-                    {t('setting.clairvoyance.sleepinessOutcomes', { awake: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 0)), nap: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 1)), deepSleep: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 2)) })}
+                    {t('setting.clairvoyance.sleepinessOutcomes', { awake: formatNumber(clairvoyance.sleepiness.awake.remaining), nap: formatNumber(clairvoyance.sleepiness.nap.remaining), deepSleep: formatNumber(clairvoyance.sleepiness.deepSleep.remaining) })}
                   </div>
                 </div>
-              </div>}
+              </div>)}
             </div>;
           })}
         </div>}
@@ -2556,7 +2499,11 @@ export default function SettingTab({
               {(TERRAIN_EFFECT_OPTIONS.find((entry) => entry.key === colosseumEnemySettings.terrainEffect)?.description) ?? t('home.terrainEffect.noneDescription')}
             </div>
           </label>
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
+          {/* SpecRef: 8.6 | UI_SETTING | `enemyType`'s option keys come from `read/setting/enemyEditPane`'s
+              `validOptions` — the same `ENEMIES` master-data-derived set the server validates against — instead of
+              this file's own hand-maintained `ENEMY_TYPE_LABELS` map, which only supplies display labels now and
+              could otherwise silently omit a new enemy type it was never updated for. */}
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{(enemyEditValidOptions?.enemyType ?? Object.keys(ENEMY_TYPE_LABELS)).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy main class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyMainClass} onChange={(e) => updateColosseumEnemySettings({ enemyMainClass: e.target.value as ColosseumEnemySettings['enemyMainClass'] })}>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy sub class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemySubClass} onChange={(e) => updateColosseumEnemySettings({ enemySubClass: e.target.value as ColosseumEnemySettings['enemySubClass'] })}><option value="none">none</option>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
           {[0, 1, 2, 3, 4].map((slot) => {

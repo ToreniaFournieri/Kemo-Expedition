@@ -257,3 +257,17 @@ export function decodePersistedState(rawPayload: string): string {
   }
   return decompressed;
 }
+
+/**
+ * UTF-8-safe base64: `btoa` alone only accepts Latin1 code units, but `encodePersistedState`'s UTF16 packing
+ * routinely produces characters above that range. Used wherever a compressed save payload becomes a multipart
+ * upload's `contentBase64` (`commit/setting/backup/import`'s `uploadedFiles.backup`), matching the UTF-8-decode
+ * pairing `commitOperations.ts` already uses to reverse this on the server (`atob` + `TextDecoder`).
+ */
+export function base64FromUtf8(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let index = 0; index < bytes.length; index += chunkSize) binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+  return btoa(binary);
+}

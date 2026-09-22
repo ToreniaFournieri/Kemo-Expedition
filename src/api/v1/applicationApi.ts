@@ -31,6 +31,11 @@ export interface ApplicationApiPorts {
     simulate: (state: GameState, partyIndex: number, count: number) => Promise<unknown>;
     /** Durably persists a trusted in-process player's state before it is published. */
     persistPlayer: (state: GameState) => Promise<void>;
+    /** SpecRef: 9.1.4.15 | Used instead of `persistPlayer` only for `commit/setting/backup/import`/`reset`: the new
+     *  state is unrelated to the current one, so it needs a full-replacement durable write, not an ordinary/
+     *  incremental one (see `persistApiStateReplacement` in `homeShared.tsx` for why). Falls back to `persistPlayer`
+     *  when omitted (every existing test harness; only the desktop app's real wiring needs to supply this). */
+    persistPlayerReplacement?: (state: GameState) => Promise<void>;
     /** Publishes an already-durable committed state to the running renderer. */
     publish: (state: GameState) => Promise<void>;
     /** Notifies the transport layer that a changed commit is durable, so it can push open popup-event streams immediately. */
@@ -63,7 +68,9 @@ export interface ApplicationApiPorts {
 /** The trusted in-process adapter API: it supplies revision and idempotency metadata on the caller's behalf. */
 export interface InProcessApiAdapter {
   read: (operation: string, input?: { pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown> }) => Promise<ApiV1ApplicationResponse>;
-  commit: (operation: string, input?: { pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown>; confirmed?: boolean }) => Promise<ApiV1ApplicationResponse>;
+  /** `uploadedFiles` is for the rare trusted caller of a multipart operation (e.g. `commit/setting/backup/import`
+   *  from the Settings UI); every other caller omits it, matching today's always-empty behavior. */
+  commit: (operation: string, input?: { pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown>; confirmed?: boolean; uploadedFiles?: Record<string, Record<string, unknown>> }) => Promise<ApiV1ApplicationResponse>;
   /**
    * Calls the listener after each successful commit has been fully installed in the authority (state, control metadata
    * such as the equipment history, and receipt). A projection re-read triggered by a game-state change alone can run
@@ -325,6 +332,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       notifyPopupActivity: ports.runtime.notifyPopupActivity,
       persist: async (snapshot, control) => {
         if (identity) await ports.session.accounts.commit(identity, encodePersistedState(JSON.stringify(serializeGameState(snapshot))), control as DesktopApiControlMetadata);
+        else if ((operation === 'commit/setting/backup/import' || operation === 'commit/setting/backup/reset') && ports.runtime.persistPlayerReplacement) await ports.runtime.persistPlayerReplacement(snapshot);
         else await ports.runtime.persistPlayer(snapshot);
       },
       publish: ports.runtime.publish,
@@ -368,7 +376,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
     }, true);
     const commit: InProcessApiAdapter['commit'] = async (operation, input) => {
       const request = {
-        pathParameters: input?.pathParameters ?? {}, parameters: input?.parameters ?? {}, uploadedFiles: {},
+        pathParameters: input?.pathParameters ?? {}, parameters: input?.parameters ?? {}, uploadedFiles: input?.uploadedFiles ?? {},
         transport: { requestId: ports.runtime.createOpaqueId() },
         expectedRevision: authority.getSnapshot().control.revisionHighWater,
         idempotencyKey: ports.runtime.createOpaqueId(),
