@@ -3,6 +3,7 @@ import { buildApiV1ReadData } from '../../src/api/v1/readModels.ts';
 import { createFreshGameState } from '../../src/hooks/useGameState.ts';
 
 import { createExpeditionSimulationRoomResults } from '../../src/game/expeditionSimulation.ts';
+import type { DiaryLog, ExpeditionLog } from '../../src/types/index.ts';
 
 // A hand-built forecast: room 1 is reached by every run, room 2 by 900, and later rooms by nobody.
 function fakeSimulation(total: number) {
@@ -62,6 +63,76 @@ assert.equal(full.simulatedRevision, 7);
   assert.notEqual(second.seedDomain, data.seedDomain, 'each forecast has its own seed domain');
 }
 calls.length = 0;
+// Diary reads publish a closed, language-neutral projection for compact entries, preserve stored legacy prose,
+// use the save's durable opaque IDs, and validate against the generated contract.
+{
+  const expedition = (compact: boolean): ExpeditionLog => ({
+    dungeonId: 1,
+    ...(compact ? { compactVersion: 1 as const } : {}),
+    dungeonName: compact ? '' : 'Stored legacy dungeon',
+    difficultyOffset: 4,
+    totalExperience: 0,
+    totalRooms: 0,
+    completedRooms: 0,
+    finalOutcome: 'Return',
+    entries: [],
+    rewards: [],
+    autoSellProfit: 0,
+    autoSellCount: 0,
+    autoSellItems: [],
+    remainingPartyHP: 100,
+    maxPartyHP: 100,
+  });
+  const compactEntry: DiaryLog = {
+    id: '1758331425678-k3m9xq',
+    expeditionLog: expedition(true),
+    triggers: ['sideQuest'],
+    semantic: { version: 1, quest: { label: ['sideQuest.label.test'], jewel: ['fort', 3] } },
+    createdAt: Date.UTC(2026, 8, 20, 2),
+    isRead: false,
+  };
+  const legacyEntry: DiaryLog = {
+    id: 'legacy-diary-id',
+    expeditionLog: expedition(false),
+    triggers: ['unlock'],
+    unlockHeadline: 'Stored legacy headline',
+    unlockDetail: 'Stored legacy detail',
+    createdAt: Date.UTC(2026, 8, 20, 1),
+    isRead: true,
+  };
+  const secondParty = { ...structuredClone(state.parties[0]), id: 2, name: 'PT2', diaryLogs: [legacyEntry] };
+  const diaryState = {
+    ...structuredClone(state),
+    selectedPartyIndex: 1,
+    parties: [{ ...structuredClone(state.parties[0]), diaryLogs: [legacyEntry, compactEntry] }, secondParty],
+  };
+  (diaryState.parties[0].diarySettings as typeof diaryState.parties[0]['diarySettings'] & { notifyDefeat?: boolean }).notifyDefeat = true;
+  const projection = await buildApiV1ReadData('read/observation/diary', diaryState, { partyNumber: 1, diaryEntryId: compactEntry.id }, context) as any;
+  assert.deepEqual(projection.diaryInfo.effectiveSelection, { partyNumber: 1, diaryEntryId: compactEntry.id });
+  assert.deepEqual(projection.diaryInfo.parties[0].entries.map((entry: { diaryEntryId: string }) => entry.diaryEntryId), [compactEntry.id, legacyEntry.id], 'newest entry is first');
+  assert.equal(projection.diaryInfo.parties[0].entries[0].content.format, 'semantic');
+  assert.equal(projection.diaryInfo.parties[0].entries[0].battleLog.logId, `diary:${compactEntry.id}`);
+  assert.deepEqual(projection.diaryInfo.parties[0].entries[0].sideQuest, { label: { format: 'semantic', text: ['sideQuest.label.test'] }, jewelKey: 'fort', jewelRank: 3 });
+  assert.deepEqual(projection.diaryInfo.parties[0].entries[1].content, { format: 'legacy', title: 'Stored legacy headline', subtitle: 'Stored legacy detail', text: 'Stored legacy headline\nStored legacy detail' });
+  assert.equal('notifyDefeat' in projection.diaryInfo.parties[0].settings, false, 'the legacy migration alias is not public');
+
+  const Ajv = (await import('ajv')).default;
+  const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
+  const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'read/observation/diary')!.response.data);
+  assert.equal(validate(projection), true, JSON.stringify(validate.errors?.slice(0, 3)));
+
+  const detail = await buildApiV1ReadData(`read/diary/diaryEntry/${encodeURIComponent(legacyEntry.id)}`, diaryState, {}, context) as any;
+  assert.equal(detail.entry.diaryEntryId, legacyEntry.id);
+  assert.equal(detail.entry.content.format, 'legacy');
+  assert.equal(detail.entry.battleLog.logId, `diary:${legacyEntry.id}`);
+  const settings = await buildApiV1ReadData('read/diary/1/diarySetting', diaryState, {}, context) as any;
+  assert.deepEqual(settings.validOptions.sideQuestThreshold, ['all', 2, 3, 4, 5, 6, 7, 8, 'none']);
+  assert.deepEqual(settings.validOptions.notifySideQuestPopup, [true, false]);
+  await assert.rejects(() => buildApiV1ReadData('read/observation/diary', diaryState, { partyNumber: 2, diaryEntryId: compactEntry.id }, context), /not_found/);
+  const anotherLanguage = await buildApiV1ReadData('read/observation/diary', { ...diaryState, global: { ...diaryState.global, language: 'ko' } }, { partyNumber: 1 }, context);
+  const originalLanguage = await buildApiV1ReadData('read/observation/diary', diaryState, { partyNumber: 1 }, context);
+  assert.deepEqual(anotherLanguage, originalLanguage, 'new compact Diary facts do not depend on the active dictionary');
+}
 // Undo/Redo are part of the equipment projection: up to 30 states, most recent first, plus next-step availability.
 {
   const { snapshotCharacterEquipment } = await import('../../src/api/v1/equipmentHistoryFacts.ts');

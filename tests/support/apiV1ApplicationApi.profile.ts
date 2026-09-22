@@ -29,6 +29,15 @@ function harness(): Harness {
   let runtimeNow = t0;
   const idleState = createFreshGameState('ja', t0);
   const accountState = createFreshGameState('ja', t0);
+  accountState.parties[0].diaryLogs = [{
+    id: 'parity-diary-id',
+    expeditionLog: {
+      dungeonId: 1, compactVersion: 1, dungeonName: '', difficultyOffset: 0, totalExperience: 0, totalRooms: 0, completedRooms: 0,
+      finalOutcome: 'Return', entries: [], rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: 100, maxPartyHP: 100,
+    },
+    triggers: ['return'], createdAt: t0, isRead: false,
+  }];
+  accountState.parties[0].hasUnreadDiary = true;
   const persisted: Harness['persisted'] = [];
   const published: GameState[] = [];
   const persistedPlayers: GameState[] = [];
@@ -92,6 +101,8 @@ const steps: Step[] = [
   { operation: 'read/observation/party', mutating: false },
   { operation: 'read/observation/base', mutating: false },
   { operation: 'read/observation/diary', mutating: false },
+  { operation: 'read/diary/diaryEntry/{diaryEntryId}', pathParameters: { diaryEntryId: 'parity-diary-id' }, mutating: false },
+  { operation: 'read/diary/{p}/diarySetting', pathParameters: { p: 1 }, mutating: false },
   { operation: 'read/observation/setting', mutating: false },
   { operation: 'read/observation/compact', mutating: false },
   { operation: 'read/expedition/{p}/setting', pathParameters: { p: 1 }, mutating: false },
@@ -102,6 +113,7 @@ const steps: Step[] = [
   { operation: 'commit/expedition/{p}/changeExpedition', pathParameters: { p: 1 }, parameters: { destinationMode: 'fixed' }, mutating: true },
   { operation: 'commit/expedition/{p}/resetStatistics', pathParameters: { p: 1 }, mutating: true },
   { operation: 'commit/expedition/{p}/resetStatistics', pathParameters: { p: 9 }, mutating: true },
+  { operation: 'commit/diary/diaryEntry/markAsRead', parameters: { diaryEntryId: 'parity-diary-id', partyNumber: 1 }, mutating: true },
   { operation: 'commit/setting/uiPreferences', parameters: { changes: [{ key: `party.equipCategory.${createFreshGameState('ja', 0).parties[0].characters[0].id}`, value: 'wand' }] }, mutating: true },
   { operation: 'commit/setting/modeSelect', parameters: { mode: 'mode.orca' }, mutating: true },
   { operation: 'commit/does/not/exist', mutating: true },

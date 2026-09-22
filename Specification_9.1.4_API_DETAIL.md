@@ -357,7 +357,7 @@ Each state-derived event has this shape:
 ```text
 id: 43:2
 event: popup
-data: {"apiVersion":"v1","schemaVersion":1,"revision":43,"sequence":2,"eventId":"43:2","eventKey":"popup.itemDrop","args":{},"partyNumber":1,"diaryEntryId":120,"groupKey":null,"createdAt":"2026-09-20T01:23:45.678Z"}
+data: {"apiVersion":"v1","schemaVersion":1,"revision":43,"sequence":2,"eventId":"43:2","eventKey":"popup.itemDrop","args":{},"partyNumber":1,"diaryEntryId":"1758331425678-k3m9xq","groupKey":null,"createdAt":"2026-09-20T01:23:45.678Z"}
 ```
 
 * `eventKey` and `args` are semantic and language-neutral. Each client localizes
@@ -951,7 +951,7 @@ type EquipmentSet = {
   equipment?: string[]; // Equipment Entry, complete slot order when requested
 };
 type DiaryEntry = {
-  diaryEntryId: number;
+  diaryEntryId: string; // Stable retained ID; existing saves use opaque timestamp-token IDs.
   partyNumber: number;
   occurredAt: string; // emulated in-game instant
   unread: boolean;
@@ -1056,12 +1056,21 @@ type DiaryEntry = {
 * `loadEquipmentSet` defaults to `equipSet` when all exact requirements are
   available. When a partial load needs confirmation, no choice is guessed;
   the repeated request supplies `loadMode` via the confirmation protocol.
-* `diaryEntry/{diaryEntryId}` returns `{entry: DiaryEntry}`. Missing/evicted IDs
+* Diary-entry IDs are stable opaque strings. Existing saves use timestamp-token
+  IDs; transports must not coerce them to numbers or derive replacement IDs.
+  `diaryEntry/{diaryEntryId}` returns `{entry: DiaryEntry}`. Missing/evicted IDs
   return `not_found`. Semantic events preserve their recorded order and cover
   non-battle narration. Battle detail is fetched through `latestBattleLog` with
   optional `logId`; omission selects the party's latest retained log, while an
   explicit ID selects that party's referenced retained log or returns `not_found`.
   Legacy text remains unchanged; do not infer semantic facts from it.
+* Each `diary` projection summary contains the same identity, timestamp, unread
+  state, content, and `battleLog` reference as `DiaryEntry`, plus ordered trigger
+  keys, dungeon/difficulty facts, reward Item Formats, optional language-neutral
+  side-quest/unlock facts, and the current Party name. The projection returns
+  all unlocked Parties with per-Party unread counts and exact notification
+  settings, plus `effectiveSelection`. Entries are newest first. An explicit
+  entry must belong to the explicitly or implicitly selected Party.
 * `chargeDuration` is a nonnegative number of remaining real-time seconds until
   the next stock under current speed settings; zero at maximum stock. API reads
   do not themselves advance the charge clock.

@@ -99,7 +99,7 @@ export const BattleLogReferenceSchema = Type.Union([
 ]);
 
 export const DiaryEntrySchema = Type.Object({
-  diaryEntryId: StableIntegerIdSchema,
+  diaryEntryId: Type.String({ minLength: 1, maxLength: 200 }),
   partyNumber: PartyNumberSchema,
   occurredAt: IsoTimestampSchema,
   unread: Type.Boolean(),

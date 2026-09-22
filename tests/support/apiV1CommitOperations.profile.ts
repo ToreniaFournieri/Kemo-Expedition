@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
 import { createFreshGameState } from '../../src/hooks/useGameState';
-import { getVariantKey, type GameState, type SavedEquipmentSet } from '../../src/types';
+import { getVariantKey, type DiaryLog, type ExpeditionLog, type GameState, type SavedEquipmentSet } from '../../src/types';
 
 // SpecRef: 9.1 | Desktop distribution | Application API
 // Isolated, transport-neutral behavioral coverage for the extracted commit-operation module: no React, no
@@ -24,6 +24,14 @@ function baseContext(overrides: Partial<ApiV1CommitContext> = {}): ApiV1CommitCo
 }
 
 const seed: GameState = createFreshGameState('ja', Date.parse('2026-01-01T00:00:00.000Z'));
+
+function diaryLog(id: string, isRead = false): DiaryLog {
+  const expeditionLog: ExpeditionLog = {
+    dungeonId: 1, compactVersion: 1, dungeonName: '', difficultyOffset: 0, totalExperience: 0, totalRooms: 0, completedRooms: 0,
+    finalOutcome: 'Return', entries: [], rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: 100, maxPartyHP: 100,
+  };
+  return { id, expeditionLog, triggers: ['return'], createdAt: Date.parse('2026-01-01T00:00:00.000Z'), isRead };
+}
 
 // 1. A simple successful mutation returns updated data without mutating the input state.
 // createFreshGameState defaults jewelAutoEquipPriorityPartyId to 1, so dispatch 'none' to
@@ -117,6 +125,34 @@ const seed: GameState = createFreshGameState('ja', Date.parse('2026-01-01T00:00:
     code = String(error);
   }
   assert.ok(code.includes('invalid_elapsed'), code);
+}
+
+// 10. Diary acknowledgement is atomic, honors the optional Party scope, and rejects unknown or mismatched IDs.
+{
+  const first = diaryLog('diary-first');
+  const second = diaryLog('diary-second');
+  const diarySeed: GameState = {
+    ...structuredClone(seed),
+    parties: [
+      { ...structuredClone(seed.parties[0]), id: 1, diaryLogs: [first] },
+      { ...structuredClone(seed.parties[0]), id: 2, name: 'PT2', diaryLogs: [second] },
+    ],
+  };
+  const one = applyApiV1Commit('commit/diary/diaryEntry/markAsRead', diarySeed, { diaryEntryId: first.id, partyNumber: 1 }, baseContext());
+  assert.equal(one.state.parties[0].diaryLogs[0].isRead, true);
+  assert.equal(one.state.parties[1].diaryLogs[0].isRead, false);
+  assert.deepEqual(one.data, { diaryEntryId: [first.id], unreadTotal: 1 });
+
+  const all = applyApiV1Commit('commit/diary/diaryEntry/markAsRead', diarySeed, { diaryEntryId: 'ALL', partyNumber: 2 }, baseContext());
+  assert.equal(all.state.parties[0].diaryLogs[0].isRead, false);
+  assert.equal(all.state.parties[1].diaryLogs[0].isRead, true);
+  assert.deepEqual(all.data, { diaryEntryId: [second.id], unreadTotal: 1 });
+
+  for (const parameters of [{ diaryEntryId: 'missing' }, { diaryEntryId: second.id, partyNumber: 1 }, { diaryEntryId: [first.id, first.id] }]) {
+    assert.throws(() => applyApiV1Commit('commit/diary/diaryEntry/markAsRead', diarySeed, parameters, baseContext()), /not_found|invalid_request/);
+    assert.equal(diarySeed.parties[0].diaryLogs[0].isRead, false, 'a rejected acknowledgement does not mutate its input');
+    assert.equal(diarySeed.parties[1].diaryLogs[0].isRead, false, 'a rejected acknowledgement is atomic across parties');
+  }
 }
 
 // 10. Character equipment history: saveEquipmentSet does NOT itself touch the equipped loadout, so it is

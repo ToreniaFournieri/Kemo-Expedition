@@ -6,7 +6,7 @@ import { ITEMS, SUPER_RARE_TITLES } from '../../data/items.ts';
 import { LINEAGES } from '../../data/lineages.ts';
 import { PREDISPOSITIONS } from '../../data/predispositions.ts';
 import { RACES } from '../../data/races.ts';
-import { renderDiaryMetadata } from '../../game/compactDiary.ts';
+import { buildDiaryProjection, DIARY_SETTING_VALID_OPTIONS, diarySettingsView, findDiaryEntryView } from './diaryView.ts';
 import { getDeityId, getDeityRank, getNextRankDonationRequirement, isNoFaithDeity, normalizeDeityName } from '../../game/deity.ts';
 import { getInstantExpeditionChargeState } from '../../game/instantExpedition.ts';
 import { evaluateEquipmentSet, getSavedEquipmentSlot } from '../../game/equipmentSets.ts';
@@ -474,13 +474,6 @@ function baseProjection(state: GameState, context: ApiV1ReadContext) {
   };
 }
 
-function diaryProjection(state: GameState) {
-  return {
-    unreadTotal: state.parties.reduce((total, party) => total + party.diaryLogs.filter((entry) => !entry.isRead).length, 0),
-    parties: state.parties.map((party) => ({ partyNumber: party.id, settings: party.diarySettings, entries: party.diaryLogs.map((entry) => ({ diaryEntryId: entry.id, partyNumber: party.id, occurredAt: new Date(entry.createdAt).toISOString(), unread: !entry.isRead, metadata: renderDiaryMetadata(entry), battleLog: entry.expeditionLog ? { logId: entry.id, availability: { available: true, unavailableReason: null } } : null })) })),
-  };
-}
-
 export async function buildApiV1ReadData(operationId: string, state: GameState, parameters: Record<string, unknown>, context: ApiV1ReadContext): Promise<Record<string, unknown>> {
   if (operationId === 'read/observation' || operationId === 'read/observation/compact') {
     const simulations: string[] = [];
@@ -505,7 +498,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     return { partyInfo: { ...partyProjection(state, parameters), parties, unlockedMimorianEnemyIds: [...state.global.unlockedMimorianEnemyIds] } };
   }
   if (operationId === 'read/observation/base') return { baseInfo: baseProjection(state, context) };
-  if (operationId === 'read/observation/diary') return { diaryInfo: diaryProjection(state) };
+  if (operationId === 'read/observation/diary') return { diaryInfo: buildDiaryProjection(state, parameters) };
   if (operationId === 'read/observation/setting') return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), uiPreferences: listUiPreferences(state.global.uiPreferences), uiPreferenceCatalog: describeUiPreferenceCatalog() } };
 
   const expedition = operationId.match(/^read\/expedition\/(\d+)\/(setting|latestBattleLog|simulationRun|chargeStock)$/);
@@ -683,9 +676,9 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   }
 
   const diarySetting = operationId.match(/^read\/diary\/(\d+)\/diarySetting$/);
-  if (diarySetting) { const selected = partyByNumber(state, diarySetting[1]); if (!selected) throw new Error('not_found'); return { current: selected.party.diarySettings, validOptions: { superRareThreshold: ['all', 1, 2, 3, 4, 5, 6, 'none'], defeatNotificationMode: ['defeatOnly', 'defeatAndDraw', 'defeatDrawRetreat', 'all', 'none'] } }; }
+  if (diarySetting) { const selected = partyByNumber(state, diarySetting[1]); if (!selected) throw new Error('not_found'); return { current: diarySettingsView(selected.party.diarySettings), validOptions: DIARY_SETTING_VALID_OPTIONS }; }
   const diaryEntry = operationId.match(/^read\/diary\/diaryEntry\/(.+)$/);
-  if (diaryEntry) { for (const party of state.parties) { const entry = party.diaryLogs.find((candidate) => candidate.id === diaryEntry[1]); if (entry) return { entry: { diaryEntryId: entry.id, partyNumber: party.id, occurredAt: new Date(entry.createdAt).toISOString(), unread: !entry.isRead, content: { format: 'semantic', title: { key: 'diary.title', args: {} }, subtitle: { key: 'diary.subtitle', args: {} }, events: [] }, battleLog: { logId: entry.id, availability: { available: true, unavailableReason: null } } } }; } throw new Error('not_found'); }
+  if (diaryEntry) return { entry: findDiaryEntryView(state, decodeURIComponent(diaryEntry[1])) };
 
   if (operationId === 'read/setting/modeSelect') return { current: { mode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: state.global.language, ...((context.control?.settings?.modeSelect as Record<string, unknown> | undefined) ?? {}) }, validOptions: { mode: ['mode.normal', 'mode.orca'], enemyLevelOffset: { min: 0, max: 20, step: 1 }, language: ['ja', 'en', 'zh-CN', 'zh-TW', 'ko'], darkMode: ['off', 'on', 'system'], theme: ['theme.kemo', 'theme.laika', 'theme.leonard', 'theme.orca', 'theme.nox', 'theme.luna', 'theme.mishka', 'theme.puchitsa', 'theme.hagakure', 'theme.souga-ha', 'theme.finn', 'theme.merle', 'theme.rosaria', 'theme.milly', 'theme.guabi', 'theme.nemea', 'theme.bernetta', 'theme.yone', 'theme.niv', 'theme.nave'] } };
   if (operationId === 'read/setting/enemyEditPane') return { current: (context.control?.settings?.enemyEditPane as Record<string, unknown> | undefined) ?? {}, validOptions: { enemyLevel: { min: 1, max: 99, step: 1 }, terrainEffect: ['none'], enemyType: [], mainClass: CLASSES.map((entry) => entry.id), subClass: ['none', ...CLASSES.map((entry) => entry.id)], addedAbilities: { maximumEntries: 5, level: { min: 1, max: 5 } } } };

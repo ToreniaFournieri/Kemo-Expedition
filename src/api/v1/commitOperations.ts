@@ -22,6 +22,7 @@ import { decodePersistedState, encodePersistedState } from '../../game/storageCo
 import { createFreshGameState, gameReducer } from '../../hooks/useGameState';
 import type { Character, GameState, Party, SavedEquipmentSet } from '../../types';
 import { getVariantKey } from '../../types';
+import { diarySettingsView } from './diaryView';
 
 // SpecRef: 9.1 | Desktop distribution | Application API
 // This is the transport-neutral gameplay-mutation slice of the `/api/v1` commit dispatcher. It owns exactly the
@@ -453,9 +454,20 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (changed.length > 0) next = { ...next, global: { ...next.global, inventory: { ...next.global.inventory, ...Object.fromEntries(changed.map((key) => [key, { ...next.global.inventory[key], isNew: false }])) } } };
     data = { items: changed };
   } else if (operation.match(/^commit\/diary\/(\d+)\/diarySetting$/)) {
-    const partyNumber = Number(operation.split('/')[2]); const partyIndex = next.parties.findIndex((entry) => entry.id === partyNumber); if (partyIndex < 0) throw new Error('not_found'); reduce({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings: parameters }); data = { current: next.parties[partyIndex].diarySettings };
+    const partyNumber = Number(operation.split('/')[2]); const partyIndex = next.parties.findIndex((entry) => entry.id === partyNumber); if (partyIndex < 0) throw new Error('not_found'); reduce({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings: parameters }); data = { current: diarySettingsView(next.parties[partyIndex].diarySettings) };
   } else if (operation === 'commit/diary/diaryEntry/markAsRead') {
-    const ids = parameters.diaryEntryId === 'ALL' ? next.parties.flatMap((party) => party.diaryLogs.map((entry) => entry.id)) : (Array.isArray(parameters.diaryEntryId) ? parameters.diaryEntryId : [parameters.diaryEntryId]).map(String);
+    const partyNumber = parameters.partyNumber === undefined ? null : Number(parameters.partyNumber);
+    const selectedParties = partyNumber === null ? next.parties : next.parties.filter((party) => party.id === partyNumber);
+    if (selectedParties.length === 0) throw new Error('not_found');
+    const requested = parameters.diaryEntryId;
+    if (requested !== 'ALL' && typeof requested !== 'string' && !Array.isArray(requested)) throw new Error('invalid_request:diaryEntryId');
+    const ids = requested === 'ALL'
+      ? selectedParties.flatMap((party) => party.diaryLogs.map((entry) => entry.id))
+      : (Array.isArray(requested) ? requested : [requested]).map(String);
+    if (ids.length === 0 && requested !== 'ALL') throw new Error('invalid_request:diaryEntryId');
+    if (new Set(ids).size !== ids.length) throw new Error('invalid_request:duplicate_diaryEntryId');
+    const applicableIds = new Set(selectedParties.flatMap((party) => party.diaryLogs.map((entry) => entry.id)));
+    if (ids.some((id) => !applicableIds.has(id))) throw new Error('not_found');
     for (const id of ids) reduce({ type: 'MARK_DIARY_LOG_SEEN', logId: id });
     data = { diaryEntryId: ids, unreadTotal: next.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0) };
   } else if (operation === 'commit/setting/markNewsAsRead') {

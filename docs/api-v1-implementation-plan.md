@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 87. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 88. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -10,19 +10,19 @@ This document supersedes the earlier "Build 23" plan. Stages are numbered once, 
 
 | Stage | Area | State |
 |---|---|---|
-| 1 | Contract catalog | Mostly done; 11 `Type.Unknown` and placeholder payloads remain (see Stage 1) |
+| 1 | Contract catalog | Mostly done; `Type.Unknown` remains only in five Stage 8 Resource operations (see Stage 1) |
 | 2 | Standalone Application API and authority | Done (foundation) |
 | 3 | HTTP transport and sessions | Implemented, test-only |
-| 4 | Expedition and shell | Revised (no extraction): runtime port and sortie parity first; header migration remains |
+| 4 | Expedition and shell | Runtime and Expedition UI done; header UI migration remains |
 | 5 | Party, character, equipment | Done (UI projection complete) |
-| 6 | Base, inventory, shop, Altar | Runtime early, UI not migrated |
-| 7 | Diary and popup streaming | Foundation only |
+| 6 | Base, inventory, shop, Altar | Done (UI projection complete) |
+| 7 | Diary and popup streaming | Diary contracts done; UI and complete popup/SSE behavior remain |
 | 8 | Settings, files, delivery, Help, Resources | Partial |
 | 9 | Conformance hardening and public cutover | Not started |
 
 ## Done so far
 
-- All 84 routes are cataloged, generated (`npm run api:v1:check`), and validated with TypeBox/Ajv, including response envelopes, stable errors, and per-operation error lists.
+- All 85 routes are cataloged, generated (`npm run api:v1:check`), and validated with TypeBox/Ajv, including response envelopes, stable errors, and per-operation error lists.
 - The Application API (`src/api/v1/applicationApi.ts`) is transport-neutral. `HomeScreen.tsx` supplies runtime ports only.
 - The serialized authority provides revisions, receipts, tombstones, admitted-duplicate handling, durable confirmation reservations, rollback, isolated RNG, and atomic multi-Chunk elapsed progression.
 - API-account storage is manifest-last; login stages catch-up privately and logout restores the flushed player save.
@@ -38,18 +38,18 @@ Verified at Build 64: `tsc`, lint, `api:v1:check` (84 operations), `npm test` (5
 
 All three closed in Build 65: `targetItems` and `equipmentChanges` are bounded at 100 per request with chunked, debounced reads in the tab (`useApiReadMany`); each preview computes only the target character (about 3× faster on the real save); and an in-process versus HTTP-shaped parity step covers the read. The POST-read alternative was not needed.
 
-## Stage 1 — Close the contract catalog (next)
+## Stage 1 — Close the contract catalog
 
-`scripts/generate-api-v1-contract.mjs` still has 11 `Type.Unknown` and several implementations are placeholders. Inventory (each needs a concrete schema, an example, an implementation, and a parity-fixture case):
+`scripts/generate-api-v1-contract.mjs` has 14 `Type.Unknown` fields confined to five Stage 8 Resource operations, and several implementations remain placeholders. Inventory (each open row needs a concrete schema, an example, an implementation, and a parity-fixture case):
 
 | Operation | Gap |
 |---|---|
-| `read/expedition/{p}/latestBattleLog` | Done in Build 67 (public log shape, `logId`, bottleneck enemies with `EnemyStatus`). Still to do with the Stage 4 runtime port: no-spoiler timing (the log must not be readable before the end of `state.explore`). |
+| `read/expedition/{p}/latestBattleLog` | Done in Builds 67, 71, and 82 (public log/resources shape, retained `logId`, bottleneck enemies, and no-spoiler timing). |
 | `read/expedition/{p}/simulationRun` | Done in Build 66 (compact strings, percentages, structured rooms with HP buckets). |
-| `read/observation/expedition` and `compact` | `state` is faked (`state.rest` or `state.idle` from HP); no step progress, timing, Clear-Gate, side-quest, or Diary references; `disclosedFloor` and `disclosedOutcome` read `lastExpeditionLog` directly (no-spoiler timing not enforced). |
-| `read/observation/diary`, `diaryEntry/{id}` | `metadata` is `Unknown`; semantic and legacy content and battle-log references are incomplete. |
-| `read/base/shopInfo` | Default dialogue key and `paidRefreshCountdown: 0` are placeholders (intimacy dialogue tiers and the refresh countdown exist in the game). |
-| `read/base/altarInfo`, `enemyFormList` | Donations and victories are dumped raw; `unlockCost` is 0, `enemyBonus` is `[]`, `unlockCondition` is null; Alter level and Prana cost rules (8.4.5) are not projected. |
+| `read/observation/expedition` and `compact` | Done in Builds 71–73 (live state/timing, disclosure, progress, goals, side quests, and controls). |
+| `read/observation/diary`, `diaryEntry/{id}` | Done in Build 88 (closed semantic/legacy summaries, stable opaque IDs, selection/filtering, exact settings, and retained-log references). |
+| `read/base/shopInfo` | Done in Build 81. |
+| `read/base/altarInfo`, `enemyFormList` | Done in Build 83. |
 | `resources/clairvoyance/{p}` | Returns empty objects although the bag state exists. |
 | `resources/glossary` | `entries` is always `[]`. |
 | `resources/itemCompendium` | `ability` and `otherBonus` are `[]`; `cBonus` is a raw bonus object. Reuse `describeItem`. |
@@ -107,9 +107,11 @@ Gate passed: no `actions.*` reducer call remains in `PartyTab.tsx` for these con
 
 ## Stage 7 — Diary and popup streaming
 
-- Diary projections: semantic and legacy entries, current-name versus historical-appearance battle logs, stable entry and log IDs, party filtering, exact notification settings.
+- **D1 (done, Build 88): Diary contracts and commands.** Closed semantic/legacy summaries, opaque stable entry IDs, `diary:<id>` log references, current Party identity, effective selection and filtering, exact setting values/options, and precise atomic read acknowledgement. The real mixed-history save and both adapter shapes validate.
+- **D2 (next): Diary UI migration.** Render summaries and expanded retained battle logs from API responses; route settings and read acknowledgement through commits; add the mechanical migration guard.
+- **D3: durable popup production.** Generate every configured popup category atomically with the committing transaction, including AFK grouping, deterministic sequence IDs, retention, and replay fencing.
+- **D4: SSE lifecycle.** Push committed events to streams, complete cursor replay/resync and session/import/reset/shutdown fencing, and add reconnect/deduplication lifecycle coverage.
 - SSE: persist popup events with the committing transaction, push to open streams, replay from `Last-Event-ID`, retain at least 256 events or five minutes, emit `resyncRequired` on invalid or fenced cursors, close streams on logout / expiry / reset / import / shutdown, keep heartbeats independent of lease renewal, group AFK events per the existing notification rules.
-- Migrate the Diary UI; leaving a party tab marks that party's entries read through the explicit command.
 
 ## Stage 8 — Settings, files, delivery, Help, Resources
 
@@ -152,13 +154,11 @@ Add a mechanical check so this does not rely on review: a test that fails if a m
 
 ## Recommended order
 
-1. Close the Builds 62–64 review points (batch bound, per-change cost, parity case).
-2. Stage 1 contract-fidelity closure (the table above), starting with the operations Stage 4 consumes (`latestBattleLog`, `simulationRun`, `expedition`, `compact`, `overview`).
-3. Stage 4 (revised): the read-only runtime port, sortie parity fixes, the remaining projections, then the header and Expedition tab. No extraction.
-4. Stage 6 (Base), including its Stage 1 rows (shop, Altar, enemy form).
-5. Stage 7 (Diary and streaming), including `diary` and battle-log rows.
-6. Stage 8 (Settings, files, delivery sender, Help, Resources), including the resource rows.
-7. Stage 9 (conformance matrix, ownership audit, cutover).
+1. Stage 7 D2: migrate the Diary UI and add its ownership guard.
+2. Stage 7 D3–D4: complete durable popup production and the SSE lifecycle.
+3. Finish the Stage 4 header UI migration.
+4. Stage 8 (Settings, files, delivery sender, Help, Resources), including the remaining `Type.Unknown` rows.
+5. Stage 9 (conformance matrix, ownership audit, cutover).
 
 ## Expedition tab migration (in progress)
 

@@ -148,7 +148,7 @@ const floorRoomKey = Type.String({ pattern: '^[1-6]f-[1-4]$' });
 sampleOverrides.set(floorRoomKey, '1f-1');
 const count = Type.Integer({ minimum: 0 });
 const pathSchemas = {
-  p: strict({ p: partyNumber }), characterId: strict({ characterId: integerId }), diaryEntryId: strict({ diaryEntryId: integerId }),
+  p: strict({ p: partyNumber }), characterId: strict({ characterId: integerId }), diaryEntryId: strict({ diaryEntryId: stableKey }),
   deliveryId: strict({ deliveryId: Type.String({ minLength: 1, maxLength: 200 }) }),
 };
 
@@ -156,7 +156,7 @@ const page = { limit: optional(Type.Integer({ minimum: 1, maximum: 200 }), 100),
 const querySchemas = {
   'read/observation/party': strict({ partyNumber: optional(partyNumber), characterId: optional(integerId) }),
   'read/observation/base': strict({ pane: optional(literals('shop', 'inventory', 'vault', 'workshop', 'altar')) }),
-  'read/observation/diary': strict({ partyNumber: optional(partyNumber), diaryEntryId: optional(integerId) }),
+  'read/observation/diary': strict({ partyNumber: optional(partyNumber), diaryEntryId: optional(stableKey) }),
   'read/expedition/{p}/latestBattleLog': strict({ logId: optional(Type.String({ minLength: 1, maxLength: 200 })) }),
   'read/build/character/{characterId}/equipmentSet': strict({ equipmentSetId: optional(Type.Union([integerId, nonEmptyArray(integerId, { uniqueItems: true })])), isEquipmentSetDetail: optional(Type.Boolean(), false) }),
   'read/build/character/{characterId}/equipmentEvaluation': strict({
@@ -173,12 +173,19 @@ const querySchemas = {
 };
 
 const threshold = Type.Union([literals('all', 'none'), Type.Integer({ minimum: 1, maximum: 6 })]);
-const diarySetting = {
-  superRareThreshold: optional(threshold), bossThreshold: optional(threshold), mythicThreshold: optional(threshold), rareThreshold: optional(threshold),
-  sideQuestThreshold: optional(Type.Union([literals('all', 'none'), Type.Integer({ minimum: 2, maximum: 8 })])), notifyGodsBattle: optional(Type.Boolean()),
-  defeatNotificationMode: optional(literals('defeatOnly', 'defeatAndDraw', 'defeatDrawRetreat', 'all', 'none')), notifyCyclePopup: optional(Type.Boolean()),
-  notifyItemDropPopup: optional(Type.Boolean()), notifyAutoEquipmentPopup: optional(Type.Boolean()), notifySideQuestPopup: optional(Type.Boolean()),
+const sideQuestThreshold = Type.Union([literals('all', 'none'), Type.Integer({ minimum: 2, maximum: 8 })]);
+const defeatNotificationMode = literals('defeatOnly', 'defeatAndDraw', 'defeatDrawRetreat', 'all', 'none');
+const diarySettingMembers = {
+  superRareThreshold: threshold, bossThreshold: threshold, mythicThreshold: threshold, rareThreshold: threshold,
+  sideQuestThreshold, notifyGodsBattle: Type.Boolean(), defeatNotificationMode, notifyCyclePopup: Type.Boolean(),
+  notifyItemDropPopup: Type.Boolean(), notifyAutoEquipmentPopup: Type.Boolean(), notifySideQuestPopup: Type.Boolean(),
 };
+const diarySetting = Object.fromEntries(Object.entries(diarySettingMembers).map(([key, schema]) => [key, optional(schema)]));
+const diarySettingValidOptions = strict({
+  superRareThreshold: Type.Array(threshold), bossThreshold: Type.Array(threshold), mythicThreshold: Type.Array(threshold), rareThreshold: Type.Array(threshold),
+  sideQuestThreshold: Type.Array(sideQuestThreshold), notifyGodsBattle: Type.Array(Type.Boolean()), defeatNotificationMode: Type.Array(defeatNotificationMode),
+  notifyCyclePopup: Type.Array(Type.Boolean()), notifyItemDropPopup: Type.Array(Type.Boolean()), notifyAutoEquipmentPopup: Type.Array(Type.Boolean()), notifySideQuestPopup: Type.Array(Type.Boolean()),
+});
 const modeSelect = {
   mode: optional(modeKey), enemyLevelOffset: optional(Type.Integer({ minimum: 0, maximum: 20 })), language: optional(language), darkMode: optional(literals('off', 'on', 'system')),
   autoRepeat: optional(Type.Boolean()), showExpeditionStats: optional(Type.Boolean()),
@@ -219,7 +226,7 @@ const commitParameters = {
   'commit/base/paidShopRefresh': empty, 'commit/base/unlockSoldItems': strict({ items: nonEmptyArray(itemFormat, { uniqueItems: true }) }),
   'commit/base/unlockForm': strict({ enemyId: integerId }), 'commit/base/markItemsAsSeen': strict({ items: nonEmptyArray(stableKey, { uniqueItems: true }) }),
   'commit/diary/{p}/diarySetting': strict(diarySetting),
-  'commit/diary/diaryEntry/markAsRead': strict({ diaryEntryId: Type.Union([Type.Literal('ALL'), integerId, nonEmptyArray(integerId, { uniqueItems: true })]), partyNumber: optional(partyNumber) }),
+  'commit/diary/diaryEntry/markAsRead': strict({ diaryEntryId: Type.Union([Type.Literal('ALL'), stableKey, nonEmptyArray(stableKey, { uniqueItems: true })]), partyNumber: optional(partyNumber) }),
   'commit/setting/clairvoyanceReset': strict({ partyNumber, resetCommonRewards: Type.Boolean(), resetRewards: Type.Boolean(), resetSideQuest: Type.Boolean() }),
   'commit/setting/modeSelect': strict(modeSelect), 'commit/setting/enemyEditPane': strict(enemyEdit),
   'commit/setting/feedback': strict({ name: Type.String({ minLength: 1, maxLength: 100 }), category: literals('feedback', 'question', 'featureRequest', 'bugReport'), text: Type.String({ minLength: 1, maxLength: 20000 }), latestBattleLogParty: optional(Type.Union([partyNumber, Type.Literal('none')]), 1), includeBackup: optional(Type.Boolean(), false), attachments: optional(Type.Array(Type.String({ pattern: '^attachment[0-3]$' }), { maxItems: 4, uniqueItems: true }), []) }),
@@ -283,9 +290,17 @@ const diaryContent = Type.Union([
   strict({ format: Type.Literal('legacy'), title: Type.String(), subtitle: Type.String(), text: Type.String() }),
 ]);
 const battleLogReference = Type.Union([Type.Null(), strict({ logId: stableKey, availability })]);
-const diaryEntry = strict({ diaryEntryId: integerId, partyNumber, occurredAt: isoTimestamp, unread: Type.Boolean(), content: diaryContent, battleLog: battleLogReference });
-// `metadata` mirrors renderDiaryMetadata()'s existing narration output; tracked for a concrete shape once Diary compaction (Milestone 5) is finished.
-const diaryEntrySummary = strict({ diaryEntryId: integerId, partyNumber, occurredAt: isoTimestamp, unread: Type.Boolean(), metadata: Type.Unknown(), battleLog: battleLogReference });
+const diaryEntry = strict({ diaryEntryId: stableKey, partyNumber, occurredAt: isoTimestamp, unread: Type.Boolean(), content: diaryContent, battleLog: battleLogReference });
+const diaryTrigger = literals('victory', 'return', 'defeat', 'draw', 'retreat', 'eliteRare', 'bossRare', 'mythicRare', 'superRare', 'godsBattle', 'sideQuest', 'unlock');
+const diaryLabel = Type.Union([strict({ format: Type.Literal('semantic'), text: diaryText }), strict({ format: Type.Literal('legacy'), text: Type.String() })]);
+const diaryEntrySummary = strict({
+  ...diaryEntry.properties,
+  triggers: Type.Array(diaryTrigger, { uniqueItems: true }),
+  expedition: strict({ dungeonId: integerId, difficultyOffset: Type.Integer({ minimum: 0 }) }),
+  rewards: Type.Array(presentItemFormat),
+  sideQuest: Type.Union([Type.Null(), strict({ label: diaryLabel, jewelKey: literals('might', 'arcana', 'fort', 'ward', 'shade', 'focus'), jewelRank: Type.Integer({ minimum: 1, maximum: 8 }) })]),
+  unlock: Type.Union([Type.Null(), strict({ boss: Type.Boolean(), partySlot: Type.Integer({ minimum: 2, maximum: 6 }) })]),
+});
 const range = strict({ min: Type.Number(), max: Type.Number(), step: optional(Type.Number()) });
 // Spec 9.1.4.3: paginated lists include `nextCursor`, or null when complete; optional here since readModels.ts does not yet paginate (Milestone 4).
 const nextCursor = { nextCursor: optional(Type.Union([stableKey, Type.Null()])) };
@@ -355,7 +370,11 @@ const heldJewel = strict({ jewelKey: literals('might', 'arcana', 'fort', 'ward',
 const equippedItem = strict({ characterId: integerId, partyNumber, member: Type.Integer({ minimum: 1, maximum: 6 }), owner: strict({ name: Type.String(), raceId: stableKey, gender: literals('male', 'female'), isUnique: Type.Boolean(), lineageId: Type.Union([stableKey, Type.Null()]), mimorianEnemyId: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]) }), slotIndex: Type.Integer({ minimum: 0 }), item: itemFormat, jewel: Type.Union([Type.String({ pattern: '^(might|arcana|fort|ward|shade|focus):[1-8]$' }), Type.Null()]), active: Type.Boolean() });
 sampleOverrides.set(equippedItem.properties.jewel, null);
 const baseProjectionSchema = strict({ currencies: strict({ gold: Type.Integer({ minimum: 0 }), prana: Type.Integer({ minimum: 0 }) }), inventory: Type.Array(inventoryVariant), jewels: Type.Array(heldJewel), equippedItems: Type.Array(equippedItem), jewelPriorityParty: Type.Union([partyNumber, Type.Literal('none')]), shop: strict({ lineupId: stableKey, ...shopInfoMembers, refreshesAt: isoTimestamp, entries: Type.Array(shopEntry, { maxItems: 5 }) }), altar: altarOverview });
-const diaryProjectionSchema = strict({ unreadTotal: Type.Integer({ minimum: 0 }), parties: Type.Array(strict({ partyNumber, settings: strict(diarySetting), entries: Type.Array(diaryEntrySummary) })) });
+const diaryProjectionSchema = strict({
+  effectiveSelection: strict({ partyNumber, diaryEntryId: Type.Union([stableKey, Type.Null()]) }),
+  unreadTotal: Type.Integer({ minimum: 0 }),
+  parties: Type.Array(strict({ partyNumber, name: Type.String({ minLength: 1 }), unreadCount: Type.Integer({ minimum: 0 }), settings: strict(diarySettingMembers), entries: Type.Array(diaryEntrySummary) })),
+});
 const settingProjectionSchema = strict({ language, environment: Type.String(), gameMode: modeKey, enemyLevelOffset: Type.Integer({ minimum: 0, maximum: 20 }), modeSelect: optional(strict(modeSelect)), debug: optional(strict(debug)), enemyEditPane: optional(strict(enemyEdit)), uiPreferences: Type.Array(strict({ key: stableKey, value: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), uiPreferenceCatalog: Type.Array(strict({ family: stableKey, subject: Type.Literal('characterId'), type: Type.Union([Type.Literal('string'), Type.Literal('number'), Type.Literal('boolean')]), options: Type.Array(Type.String()), defaultValue: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })) });
 const popupStreamSchema = strict({ events: Type.Array(popupEvent) });
 
@@ -418,7 +437,7 @@ const responseDataSchemas = {
   'read/base/shopItemsList': strict({ current: strict({ lineupId: stableKey, refreshesAt: isoTimestamp, items: Type.Array(shopItemString, { maxItems: 5 }), entries: Type.Array(shopEntry, { maxItems: 5 }) }), validOptions: strict({ items: Type.Array(Type.Integer({ minimum: 1, maximum: 5 })) }) }),
   'read/base/altarInfo': strict({ altarOverview }),
   'read/base/enemyFormList': strict({ current: strict({ enemyFormList: Type.Array(enemyForm) }), validOptions: strict({ enemyId: Type.Array(Type.Integer({ minimum: 0 })) }) }),
-  'read/diary/{p}/diarySetting': strict({ current: strict(diarySetting), validOptions: strict({ superRareThreshold: Type.Array(Type.Union([Type.String(), Type.Integer()])), defeatNotificationMode: Type.Array(Type.String()) }) }),
+  'read/diary/{p}/diarySetting': strict({ current: strict(diarySettingMembers), validOptions: diarySettingValidOptions }),
   'read/diary/diaryEntry/{diaryEntryId}': strict({ entry: diaryEntry }),
   'read/setting/enemyEditPane': strict({ current: strict(enemyEdit), validOptions: strict({ enemyLevel: range, terrainEffect: Type.Array(Type.String()), enemyType: Type.Array(Type.String()), mainClass: Type.Array(stableKey), subClass: Type.Array(Type.String()), addedAbilities: strict({ maximumEntries: Type.Integer({ minimum: 0 }), level: strict({ min: Type.Integer(), max: Type.Integer() }) }) }) }),
   'read/setting/modeSelect': strict({ current: strict(modeSelect), validOptions: strict({ mode: Type.Array(modeKey), enemyLevelOffset: range, language: Type.Array(language), darkMode: Type.Array(Type.String()), theme: Type.Array(Type.String()) }) }),
@@ -472,7 +491,7 @@ const responseDataSchemas = {
   'commit/base/paidShopRefresh': strict({ lineupId: stableKey, goldDelta: Type.Integer(), paidRefreshPrice: Type.Integer({ minimum: 0 }) }),
   'commit/base/unlockSoldItems': strict({ items: Type.Array(itemFormat) }),
   'commit/base/unlockForm': strict({ enemyId: Type.Integer({ minimum: 0 }), pranaDelta: Type.Integer() }),
-  'commit/diary/{p}/diarySetting': strict({ current: strict(diarySetting) }),
+  'commit/diary/{p}/diarySetting': strict({ current: strict(diarySettingMembers) }),
   'commit/diary/diaryEntry/markAsRead': strict({ diaryEntryId: Type.Array(stableKey), unreadTotal: Type.Integer({ minimum: 0 }) }),
   'commit/setting/clairvoyanceReset': strict({ partyNumber, resetCommonRewards: Type.Boolean(), resetRewards: Type.Boolean(), resetSideQuest: Type.Boolean() }),
   'commit/setting/modeSelect': strict({ current: strict(modeSelect) }),

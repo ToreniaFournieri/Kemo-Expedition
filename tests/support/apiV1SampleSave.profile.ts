@@ -39,6 +39,8 @@ const validateSearch = validator('read/base/searchItems');
 const validateEquipment = validator('read/build/character/{characterId}/equipment');
 const validateStatus = validator('read/build/character/{characterId}/status');
 const validateDonation = validator('resources/donationBox');
+const validateDiary = validator('read/observation/diary');
+const validateDiaryEntry = validator('read/diary/diaryEntry/{diaryEntryId}');
 
 const equippedCount = (source: GameState) => source.parties.flatMap((party) => party.characters).reduce((sum, character) => sum + character.equipment.filter(Boolean).length, 0);
 const attachedJewels = (source: GameState) => source.parties.flatMap((party) => party.characters).flatMap((character) => character.equipment).filter((item) => item?.jewel).length;
@@ -49,6 +51,24 @@ const itemConservation = (source: GameState) => inventoryTotal(source) + equippe
 const jewelConservation = (source: GameState) => jewelTotal(source) + attachedJewels(source);
 
 const startedAt = performance.now();
+
+// The mixed retained history in the real pre-v1 save uses opaque string IDs and legacy records. Every summary and
+// focused entry must validate without exposing an internal DiaryLog or converting old prose into invented semantics.
+{
+  const observation = await read('read/observation/diary') as { diaryInfo: { parties: Array<{ partyNumber: number; entries: Array<{ diaryEntryId: string; content: { format: string }; battleLog: { logId: string } | null }> }> } };
+  assert.equal(validateDiary(observation), true, JSON.stringify(validateDiary.errors?.slice(0, 3)));
+  let retained = 0;
+  for (const party of observation.diaryInfo.parties) {
+    for (const summary of party.entries) {
+      retained += 1;
+      assert.equal(typeof summary.diaryEntryId, 'string');
+      assert.equal(summary.battleLog?.logId, `diary:${summary.diaryEntryId}`);
+      const focused = await read(`read/diary/diaryEntry/${encodeURIComponent(summary.diaryEntryId)}`);
+      assert.equal(validateDiaryEntry(focused), true, `${summary.diaryEntryId}: ${JSON.stringify(validateDiaryEntry.errors?.slice(0, 3))}`);
+    }
+  }
+  assert.ok(retained > 0, 'the real save contains retained Diary history');
+}
 
 // 1. Party observations validate against the published schema, rebuild every member losslessly, and stay finite.
 let statusChecked = 0;
