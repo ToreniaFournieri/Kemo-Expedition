@@ -202,6 +202,36 @@ assert.equal(validateDonation(donations), true, JSON.stringify(validateDonation.
   }
 }
 
+// The last two Resource fixes (Stage 1 gate), validated against the real save.
+{
+  const { RACES } = await import('../../src/data/races.ts');
+  const validateRoster = validator('resources/characterRoster');
+  const validateClairvoyance = validator('resources/clairvoyance/{p}');
+
+  for (const race of RACES) {
+    const roster = await read('resources/characterRoster', { race: race.id }) as { races: { raceId: string; status: unknown; defaultAbility: string | null; unlockAbility: string | null }[] };
+    assert.equal(validateRoster(roster), true, `${race.id}: ${JSON.stringify(validateRoster.errors?.slice(0, 3))}`);
+    assert.deepEqual(roster.races.map((entry) => entry.raceId), [race.id]);
+    assert.deepEqual(roster.races[0].status, race.stats);
+    assert.equal(roster.races[0].defaultAbility, race.defaultAbility.id === 'none' ? null : race.defaultAbility.id);
+    assert.equal(roster.races[0].unlockAbility, race.unlockAbility ? race.unlockAbility.id : null);
+  }
+
+  for (const party of state.parties) {
+    const clairvoyance = await read(`resources/clairvoyance/${party.id}`) as {
+      reward: Record<string, { remaining: number; total: number; hitsRemaining: number; hitsTotal: number }>;
+      enhancement: Record<string, { remaining: number; total: number; tiers: { tier: number; remaining: number; total: number }[] }>;
+      sleepiness: { remaining: number; total: number };
+    };
+    assert.equal(validateClairvoyance(clairvoyance), true, `PT${party.id}: ${JSON.stringify(validateClairvoyance.errors?.slice(0, 3))}`);
+    // A real, heavily-played save has drawn from at least one common reward bag by now.
+    for (const facts of Object.values(clairvoyance.reward)) assert.ok(facts.remaining <= facts.total && facts.hitsRemaining <= facts.hitsTotal, `PT${party.id} reward bag bounds`);
+    assert.equal(clairvoyance.enhancement.common.tiers.length, 6);
+    assert.ok(clairvoyance.sleepiness.remaining <= clairvoyance.sleepiness.total);
+  }
+  await assert.rejects(read('resources/clairvoyance/99'), /not_found/);
+}
+
 // 4. Equipment commands on real gear conserve every item and Jewel, and Undo restores the exact equipment.
 const equipmentHistory: ApiV1CommitContext['equipmentHistory'] = {};
 const context = (): ApiV1CommitContext => ({

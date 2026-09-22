@@ -168,7 +168,8 @@ const querySchemas = {
   // Category letters match Specification_1.1_CONSTANTS_GLOSSARY.md's own section numbering (1.1.1 a., 1.1.2 b., ...).
   'resources/glossary': strict({ category: literals('a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.'), glossaryId: optional(stableKey), ...page }),
   'resources/itemCompendium': strict({ category: itemCategory, rarity: optional(rarity, 'all'), tier: optional(Type.Integer({ minimum: 1, maximum: 8 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), ...page }),
-  'resources/characterRoster': strict({ race: literals('lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian', 'leporian', 'cervin', 'murid', 'kemoria', 'orcinian', 'avian', 'mimorian'), ...page }),
+  // `mustelid` was missing from this list, making it unreachable through this operation (RaceId has 14 members, not 13).
+  'resources/characterRoster': strict({ race: literals('lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'mustelid', 'procyonian', 'leporian', 'cervin', 'murid', 'kemoria', 'orcinian', 'avian', 'mimorian'), ...page }),
   'resources/bestiary': strict({ enemyId: optional(integerId), enemyType: optional(stableKey), expedition: optional(integerId), ...page }),
   'resources/superRareList': strict({ superRareId: optional(Type.Integer({ minimum: 1 })), ...page }),
 };
@@ -383,6 +384,14 @@ const diaryProjectionSchema = strict({
 const settingProjectionSchema = strict({ language, environment: Type.String(), gameMode: modeKey, enemyLevelOffset: Type.Integer({ minimum: 0, maximum: 20 }), modeSelect: optional(strict(modeSelect)), debug: optional(strict(debug)), enemyEditPane: optional(strict(enemyEdit)), uiPreferences: Type.Array(strict({ key: stableKey, value: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), uiPreferenceCatalog: Type.Array(strict({ family: stableKey, subject: Type.Literal('characterId'), type: Type.Union([Type.Literal('string'), Type.Literal('number'), Type.Literal('boolean')]), options: Type.Array(Type.String()), defaultValue: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })) });
 const popupStreamSchema = strict({ events: Type.Array(popupEvent) });
 
+// SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視)
+const clairvoyanceBagFacts = strict({ remaining: Type.Integer({ minimum: 0 }), total: Type.Integer({ minimum: 0 }), hitsRemaining: Type.Integer({ minimum: 0 }), hitsTotal: Type.Integer({ minimum: 0 }) });
+const clairvoyanceEnhancementFacts = strict({
+  remaining: Type.Integer({ minimum: 0 }), total: Type.Integer({ minimum: 0 }),
+  tiers: Type.Array(strict({ tier: Type.Integer({ minimum: 1, maximum: 6 }), remaining: Type.Integer({ minimum: 0 }), total: Type.Integer({ minimum: 0 }) })),
+});
+const baseStats = strict({ vitality: Type.Integer({ minimum: 0 }), strength: Type.Integer({ minimum: 0 }), intelligence: Type.Integer({ minimum: 0 }), mind: Type.Integer({ minimum: 0 }) });
+
 const responseDataSchemas = {
   'fundamental/status': strict({ systemStatus: Type.String({ minLength: 1 }), versionBuild: Type.String({ minLength: 1 }), environment: Type.String({ minLength: 1 }) }),
   'fundamental/signUp': strict({ userId: identity.userId, environment, gameMode, levelOffsetForOrca: Type.Integer({ minimum: 0, maximum: 20 }), revision: optional(Type.Integer({ minimum: 0 })) }),
@@ -514,14 +523,25 @@ const responseDataSchemas = {
   'help/endpoints': strict({ requirements: Type.String(), detail: Type.String(), schemaVersion: Type.Integer() }),
   'resources/developerNewsNotification': strict({ entries: Type.Array(strict({ version: stableKey, date: Type.String(), content: Type.String() })) }),
   'resources/donationBox': strict({ gods: Type.Array(Type.String()) }),
-  'resources/clairvoyance/{p}': strict({ reward: Type.Unknown(), enhancement: Type.Unknown(), superRare: Type.Unknown(), sideQuest: Type.Unknown(), sleepiness: Type.Unknown() }),
+  'resources/clairvoyance/{p}': strict({
+    reward: strict({ common: clairvoyanceBagFacts, uncommon: clairvoyanceBagFacts, eliteRare: clairvoyanceBagFacts, bossRare: clairvoyanceBagFacts, mythicRare: clairvoyanceBagFacts }),
+    enhancement: strict({ common: clairvoyanceEnhancementFacts, general: clairvoyanceEnhancementFacts }),
+    superRare: strict({ common: clairvoyanceBagFacts, rare: clairvoyanceBagFacts }),
+    sideQuest: clairvoyanceBagFacts,
+    sleepiness: strict({
+      remaining: Type.Integer({ minimum: 0 }), total: Type.Integer({ minimum: 0 }),
+      awake: strict({ remaining: Type.Integer({ minimum: 0 }), total: Type.Integer({ minimum: 0 }) }),
+      nap: strict({ remaining: Type.Integer({ minimum: 0 }), total: Type.Integer({ minimum: 0 }) }),
+      deepSleep: strict({ remaining: Type.Integer({ minimum: 0 }), total: Type.Integer({ minimum: 0 }) }),
+    }),
+  }),
   'resources/glossary': strict({
     entries: Type.Array(strict({ glossaryId: stableKey, category: literals('a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.'), label: Type.String(), description: Type.String() })),
     validOptions: strict({ category: Type.Array(literals('a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.')) }),
     ...nextCursor,
   }),
   'resources/itemCompendium': strict({ items: Type.Array(strict({ itemId: integerId, name: Type.String(), category: stableKey, revealed: Type.Boolean(), ability: Type.Array(Type.String()), cBonus: Type.Array(Type.String()), otherBonus: Type.Array(Type.String()) })), ...nextCursor }),
-  'resources/characterRoster': strict({ races: Type.Array(strict({ raceId: stableKey, status: Type.Unknown(), bonus: Type.Unknown(), defaultAbility: Type.Unknown(), unlockAbility: Type.Unknown() })), ...nextCursor }),
+  'resources/characterRoster': strict({ races: Type.Array(strict({ raceId: stableKey, status: baseStats, ability: Type.Array(Type.String()), cBonus: Type.Array(Type.String()), otherBonus: Type.Array(Type.String()), defaultAbility: Type.Union([stableKey, Type.Null()]), unlockAbility: Type.Union([stableKey, Type.Null()]) })), ...nextCursor }),
   'resources/bestiary': strict({ enemies: Type.Array(strict({ ...enemyStatus.properties, revealed: Type.Boolean(), encounters: Type.Integer({ minimum: 0 }), defeats: Type.Integer({ minimum: 0 }) })), ...nextCursor }),
   'resources/superRareList': strict({ superRare: Type.Array(Type.String()), ...nextCursor }),
 };

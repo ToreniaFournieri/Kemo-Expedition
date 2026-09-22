@@ -40264,11 +40264,430 @@
             "sleepiness"
           ],
           "properties": {
-            "reward": {},
-            "enhancement": {},
-            "superRare": {},
-            "sideQuest": {},
-            "sleepiness": {}
+            "reward": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "common",
+                "uncommon",
+                "eliteRare",
+                "bossRare",
+                "mythicRare"
+              ],
+              "properties": {
+                "common": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "remaining",
+                    "total",
+                    "hitsRemaining",
+                    "hitsTotal"
+                  ],
+                  "properties": {
+                    "remaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsRemaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsTotal": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                },
+                "uncommon": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "remaining",
+                    "total",
+                    "hitsRemaining",
+                    "hitsTotal"
+                  ],
+                  "properties": {
+                    "remaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsRemaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsTotal": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                },
+                "eliteRare": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "remaining",
+                    "total",
+                    "hitsRemaining",
+                    "hitsTotal"
+                  ],
+                  "properties": {
+                    "remaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsRemaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsTotal": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                },
+                "bossRare": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "remaining",
+                    "total",
+                    "hitsRemaining",
+                    "hitsTotal"
+                  ],
+                  "properties": {
+                    "remaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsRemaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsTotal": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                },
+                "mythicRare": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "remaining",
+                    "total",
+                    "hitsRemaining",
+                    "hitsTotal"
+                  ],
+                  "properties": {
+                    "remaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsRemaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsTotal": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            },
+            "enhancement": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "common",
+                "general"
+              ],
+              "properties": {
+                "common": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "remaining",
+                    "total",
+                    "tiers"
+                  ],
+                  "properties": {
+                    "remaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "tiers": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "tier",
+                          "remaining",
+                          "total"
+                        ],
+                        "properties": {
+                          "tier": {
+                            "minimum": 1,
+                            "maximum": 6,
+                            "type": "integer"
+                          },
+                          "remaining": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "total": {
+                            "minimum": 0,
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "general": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "remaining",
+                    "total",
+                    "tiers"
+                  ],
+                  "properties": {
+                    "remaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "tiers": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "tier",
+                          "remaining",
+                          "total"
+                        ],
+                        "properties": {
+                          "tier": {
+                            "minimum": 1,
+                            "maximum": 6,
+                            "type": "integer"
+                          },
+                          "remaining": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "total": {
+                            "minimum": 0,
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "superRare": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "common",
+                "rare"
+              ],
+              "properties": {
+                "common": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "remaining",
+                    "total",
+                    "hitsRemaining",
+                    "hitsTotal"
+                  ],
+                  "properties": {
+                    "remaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsRemaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsTotal": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                },
+                "rare": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "remaining",
+                    "total",
+                    "hitsRemaining",
+                    "hitsTotal"
+                  ],
+                  "properties": {
+                    "remaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsRemaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsTotal": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            },
+            "sideQuest": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "remaining",
+                "total",
+                "hitsRemaining",
+                "hitsTotal"
+              ],
+              "properties": {
+                "remaining": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "total": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "hitsRemaining": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "hitsTotal": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            },
+            "sleepiness": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "remaining",
+                "total",
+                "awake",
+                "nap",
+                "deepSleep"
+              ],
+              "properties": {
+                "remaining": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "total": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "awake": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "remaining",
+                    "total"
+                  ],
+                  "properties": {
+                    "remaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                },
+                "nap": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "remaining",
+                    "total"
+                  ],
+                  "properties": {
+                    "remaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                },
+                "deepSleep": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "remaining",
+                    "total"
+                  ],
+                  "properties": {
+                    "remaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "envelope": {
@@ -40314,11 +40733,430 @@
                 "sleepiness"
               ],
               "properties": {
-                "reward": {},
-                "enhancement": {},
-                "superRare": {},
-                "sideQuest": {},
-                "sleepiness": {}
+                "reward": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "common",
+                    "uncommon",
+                    "eliteRare",
+                    "bossRare",
+                    "mythicRare"
+                  ],
+                  "properties": {
+                    "common": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "remaining",
+                        "total",
+                        "hitsRemaining",
+                        "hitsTotal"
+                      ],
+                      "properties": {
+                        "remaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "hitsRemaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "hitsTotal": {
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "uncommon": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "remaining",
+                        "total",
+                        "hitsRemaining",
+                        "hitsTotal"
+                      ],
+                      "properties": {
+                        "remaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "hitsRemaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "hitsTotal": {
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "eliteRare": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "remaining",
+                        "total",
+                        "hitsRemaining",
+                        "hitsTotal"
+                      ],
+                      "properties": {
+                        "remaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "hitsRemaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "hitsTotal": {
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "bossRare": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "remaining",
+                        "total",
+                        "hitsRemaining",
+                        "hitsTotal"
+                      ],
+                      "properties": {
+                        "remaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "hitsRemaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "hitsTotal": {
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "mythicRare": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "remaining",
+                        "total",
+                        "hitsRemaining",
+                        "hitsTotal"
+                      ],
+                      "properties": {
+                        "remaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "hitsRemaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "hitsTotal": {
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "enhancement": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "common",
+                    "general"
+                  ],
+                  "properties": {
+                    "common": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "remaining",
+                        "total",
+                        "tiers"
+                      ],
+                      "properties": {
+                        "remaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "tiers": {
+                          "type": "array",
+                          "items": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "tier",
+                              "remaining",
+                              "total"
+                            ],
+                            "properties": {
+                              "tier": {
+                                "minimum": 1,
+                                "maximum": 6,
+                                "type": "integer"
+                              },
+                              "remaining": {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "total": {
+                                "minimum": 0,
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "general": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "remaining",
+                        "total",
+                        "tiers"
+                      ],
+                      "properties": {
+                        "remaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "tiers": {
+                          "type": "array",
+                          "items": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "tier",
+                              "remaining",
+                              "total"
+                            ],
+                            "properties": {
+                              "tier": {
+                                "minimum": 1,
+                                "maximum": 6,
+                                "type": "integer"
+                              },
+                              "remaining": {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "total": {
+                                "minimum": 0,
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "superRare": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "common",
+                    "rare"
+                  ],
+                  "properties": {
+                    "common": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "remaining",
+                        "total",
+                        "hitsRemaining",
+                        "hitsTotal"
+                      ],
+                      "properties": {
+                        "remaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "hitsRemaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "hitsTotal": {
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "rare": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "remaining",
+                        "total",
+                        "hitsRemaining",
+                        "hitsTotal"
+                      ],
+                      "properties": {
+                        "remaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "hitsRemaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "hitsTotal": {
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "sideQuest": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "remaining",
+                    "total",
+                    "hitsRemaining",
+                    "hitsTotal"
+                  ],
+                  "properties": {
+                    "remaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsRemaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "hitsTotal": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                },
+                "sleepiness": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "remaining",
+                    "total",
+                    "awake",
+                    "nap",
+                    "deepSleep"
+                  ],
+                  "properties": {
+                    "remaining": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "awake": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "remaining",
+                        "total"
+                      ],
+                      "properties": {
+                        "remaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "nap": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "remaining",
+                        "total"
+                      ],
+                      "properties": {
+                        "remaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "deepSleep": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "remaining",
+                        "total"
+                      ],
+                      "properties": {
+                        "remaining": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
               }
             }
           }
@@ -40354,11 +41192,98 @@
         },
         "response": {
           "data": {
-            "reward": null,
-            "enhancement": null,
-            "superRare": null,
-            "sideQuest": null,
-            "sleepiness": null
+            "reward": {
+              "common": {
+                "remaining": 0,
+                "total": 0,
+                "hitsRemaining": 0,
+                "hitsTotal": 0
+              },
+              "uncommon": {
+                "remaining": 0,
+                "total": 0,
+                "hitsRemaining": 0,
+                "hitsTotal": 0
+              },
+              "eliteRare": {
+                "remaining": 0,
+                "total": 0,
+                "hitsRemaining": 0,
+                "hitsTotal": 0
+              },
+              "bossRare": {
+                "remaining": 0,
+                "total": 0,
+                "hitsRemaining": 0,
+                "hitsTotal": 0
+              },
+              "mythicRare": {
+                "remaining": 0,
+                "total": 0,
+                "hitsRemaining": 0,
+                "hitsTotal": 0
+              }
+            },
+            "enhancement": {
+              "common": {
+                "remaining": 0,
+                "total": 0,
+                "tiers": [
+                  {
+                    "tier": 1,
+                    "remaining": 0,
+                    "total": 0
+                  }
+                ]
+              },
+              "general": {
+                "remaining": 0,
+                "total": 0,
+                "tiers": [
+                  {
+                    "tier": 1,
+                    "remaining": 0,
+                    "total": 0
+                  }
+                ]
+              }
+            },
+            "superRare": {
+              "common": {
+                "remaining": 0,
+                "total": 0,
+                "hitsRemaining": 0,
+                "hitsTotal": 0
+              },
+              "rare": {
+                "remaining": 0,
+                "total": 0,
+                "hitsRemaining": 0,
+                "hitsTotal": 0
+              }
+            },
+            "sideQuest": {
+              "remaining": 0,
+              "total": 0,
+              "hitsRemaining": 0,
+              "hitsTotal": 0
+            },
+            "sleepiness": {
+              "remaining": 0,
+              "total": 0,
+              "awake": {
+                "remaining": 0,
+                "total": 0
+              },
+              "nap": {
+                "remaining": 0,
+                "total": 0
+              },
+              "deepSleep": {
+                "remaining": 0,
+                "total": 0
+              }
+            }
           }
         }
       }
@@ -41251,6 +42176,10 @@
                 "type": "string"
               },
               {
+                "const": "mustelid",
+                "type": "string"
+              },
+              {
                 "const": "procyonian",
                 "type": "string"
               },
@@ -41318,7 +42247,9 @@
                 "required": [
                   "raceId",
                   "status",
-                  "bonus",
+                  "ability",
+                  "cBonus",
+                  "otherBonus",
                   "defaultAbility",
                   "unlockAbility"
                 ],
@@ -41328,10 +42259,76 @@
                     "maxLength": 200,
                     "type": "string"
                   },
-                  "status": {},
-                  "bonus": {},
-                  "defaultAbility": {},
-                  "unlockAbility": {}
+                  "status": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "vitality",
+                      "strength",
+                      "intelligence",
+                      "mind"
+                    ],
+                    "properties": {
+                      "vitality": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "strength": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "intelligence": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "mind": {
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "ability": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "cBonus": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "otherBonus": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "defaultAbility": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "unlockAbility": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -41396,7 +42393,9 @@
                     "required": [
                       "raceId",
                       "status",
-                      "bonus",
+                      "ability",
+                      "cBonus",
+                      "otherBonus",
                       "defaultAbility",
                       "unlockAbility"
                     ],
@@ -41406,10 +42405,76 @@
                         "maxLength": 200,
                         "type": "string"
                       },
-                      "status": {},
-                      "bonus": {},
-                      "defaultAbility": {},
-                      "unlockAbility": {}
+                      "status": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "vitality",
+                          "strength",
+                          "intelligence",
+                          "mind"
+                        ],
+                        "properties": {
+                          "vitality": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "strength": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "intelligence": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "mind": {
+                            "minimum": 0,
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      "ability": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "cBonus": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "otherBonus": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "defaultAbility": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "unlockAbility": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
                     }
                   }
                 },
@@ -41463,10 +42528,23 @@
             "races": [
               {
                 "raceId": "xxxxxxx",
-                "status": null,
-                "bonus": null,
-                "defaultAbility": null,
-                "unlockAbility": null
+                "status": {
+                  "vitality": 0,
+                  "strength": 0,
+                  "intelligence": 0,
+                  "mind": 0
+                },
+                "ability": [
+                  "xxxxxxx"
+                ],
+                "cBonus": [
+                  "xxxxxxx"
+                ],
+                "otherBonus": [
+                  "xxxxxxx"
+                ],
+                "defaultAbility": "xxxxxxx",
+                "unlockAbility": "xxxxxxx"
               }
             ]
           }

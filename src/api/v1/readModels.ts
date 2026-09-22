@@ -2,7 +2,7 @@ import { CLASSES } from '../../data/classes.ts';
 import { projectDelivery, type ApiV1DeliveryRecord } from './deliveries.ts';
 import { DEVELOPER_NEWS_ITEMS } from '../../data/developerNews.ts';
 import { ENEMIES } from '../../data/enemies.ts';
-import { ITEMS, SUPER_RARE_TITLES } from '../../data/items.ts';
+import { ENHANCEMENT_TITLES, ITEMS, SUPER_RARE_TITLES } from '../../data/items.ts';
 import { LINEAGES } from '../../data/lineages.ts';
 import { PREDISPOSITIONS } from '../../data/predispositions.ts';
 import { RACES } from '../../data/races.ts';
@@ -37,8 +37,13 @@ import { getAltarCategoryFacts, getAltarEnemyTypes, getEnemyFormFacts } from '..
 import { getEnemyIndividualBonuses, getEnemyTypeBonuses, getMimorianEnemyAbilities } from '../../data/enemies.ts';
 import { buildEnemyStatus } from './enemyStatus.ts';
 import { GLOSSARY_SECTIONS, TERRAIN_EFFECT_GLOSSARY_SECTION } from '../../data/glossary.ts';
+import {
+  createCommonEnhancementBag, createCommonRewardBag, createCommonSuperRareBag, createEliteRareRewardBag, createEnhancementBag,
+  createBossRareRewardBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag,
+  createUncommonRewardBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag,
+} from '../../game/bags.ts';
 import type { ApiV1PartyCycleView } from './commitOperations.ts';
-import { MAX_LEVEL, type EnemyDef, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party } from '../../types/index.ts';
+import { MAX_LEVEL, type EnemyDef, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party, type RandomBag } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
 
@@ -443,6 +448,66 @@ function glossary(state: GameState, parameters: Record<string, unknown>) {
   return { entries, validOptions: { category: GLOSSARY_CATEGORY_KEYS } };
 }
 
+// SpecRef: 8.6 | UI_SETTING | Character Roster (味方キャラクター図鑑)
+// `status` is already a public shape (BaseStats). Ability-type bonuses are excluded from the bonus vocabulary: they are
+// redundant with `defaultAbility`/`unlockAbility`, which already carry the same stable ability IDs.
+function characterRoster(parameters: Record<string, unknown>) {
+  const raceId = parameters.race === undefined ? null : String(parameters.race);
+  const races = RACES.filter((race) => raceId === null || race.id === raceId).map((race) => ({
+    raceId: race.id,
+    status: race.stats,
+    ...describeBonuses(race.bonuses.filter((bonus) => bonus.type !== 'ability')),
+    defaultAbility: race.defaultAbility.id === 'none' ? null : race.defaultAbility.id,
+    unlockAbility: race.unlockAbility ? race.unlockAbility.id : null,
+  }));
+  return { races };
+}
+
+// SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視)
+// Every remaining/total pair compares the party's live bag against a freshly created one of the same kind, so a bag's
+// own per-slot ticket overrides (for example the general enhancement bag's boosted "untitled" slot) are never hand-copied.
+interface ApiV1ClairvoyanceBagFacts { remaining: number; total: number; hitsRemaining: number; hitsTotal: number }
+function bagHitFacts(bag: RandomBag, defaultBag: RandomBag, hitIds: readonly number[]): ApiV1ClairvoyanceBagFacts {
+  const sum = (source: RandomBag) => hitIds.reduce((total, id) => total + getBagEntryTickets(source, id), 0);
+  return { remaining: getBagTicketTotal(bag), total: getBagTicketTotal(defaultBag), hitsRemaining: sum(bag), hitsTotal: sum(defaultBag) };
+}
+function enhancementBagFacts(bag: RandomBag, defaultBag: RandomBag) {
+  const tiers = ENHANCEMENT_TITLES.filter((title) => title.value > 0).map((title) => ({
+    tier: title.value, remaining: getBagEntryTickets(bag, title.value), total: getBagEntryTickets(defaultBag, title.value),
+  }));
+  return { remaining: getBagTicketTotal(bag), total: getBagTicketTotal(defaultBag), tiers };
+}
+function sleepinessBagFacts(bag: RandomBag) {
+  const normalized = normalizeSleepinessPartyBag(bag);
+  const defaultBag = createSleepinessPartyBag();
+  const of = (id: number) => ({ remaining: getBagEntryTickets(normalized, id), total: getBagEntryTickets(defaultBag, id) });
+  return { remaining: getBagTicketTotal(normalized), total: getBagTicketTotal(defaultBag), awake: of(0), nap: of(1), deepSleep: of(2) };
+}
+function clairvoyance(party: Party) {
+  const bags = party.bags;
+  const superRareHitIds = SUPER_RARE_TITLES.filter((title) => title.value > 0).map((title) => title.value);
+  const sideQuestHitIds = createSideQuestBag().entries.filter((entry) => entry.id > 0).map((entry) => entry.id);
+  return {
+    reward: {
+      common: bagHitFacts(bags.commonRewardBag, createCommonRewardBag(), [1]),
+      uncommon: bagHitFacts(bags.uncommonRewardBag, createUncommonRewardBag(), [1]),
+      eliteRare: bagHitFacts(bags.eliteRareRewardBag, createEliteRareRewardBag(), [1]),
+      bossRare: bagHitFacts(bags.bossRareRewardBag, createBossRareRewardBag(), [1]),
+      mythicRare: bagHitFacts(bags.mythicRareRewardBag, createMythicRareRewardBag(), [1]),
+    },
+    enhancement: {
+      common: enhancementBagFacts(bags.commonEnhancementBag, createCommonEnhancementBag()),
+      general: enhancementBagFacts(bags.enhancementBag, createEnhancementBag()),
+    },
+    superRare: {
+      common: bagHitFacts(bags.commonSuperRareBag, createCommonSuperRareBag(), superRareHitIds),
+      rare: bagHitFacts(bags.rareSuperRareBag, createRareSuperRareBag(), superRareHitIds),
+    },
+    sideQuest: bagHitFacts(bags.sideQuestBag, createSideQuestBag(), sideQuestHitIds),
+    sleepiness: sleepinessBagFacts(party.sleepinessOfPartyBag),
+  };
+}
+
 export function buildApiV1PartyObservationForTesting(state: GameState) {
   return { parties: state.parties.map((party) => partyProjection(state, { partyNumber: party.id }).party) };
 }
@@ -767,10 +832,15 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     });
     return { gods };
   }
-  if (operationId.startsWith('resources/clairvoyance/')) return { reward: {}, enhancement: {}, superRare: {}, sideQuest: {}, sleepiness: {} };
+  const clairvoyanceMatch = operationId.match(/^resources\/clairvoyance\/(\d+)$/);
+  if (clairvoyanceMatch) {
+    const selected = partyByNumber(state, clairvoyanceMatch[1]);
+    if (!selected) throw new Error('not_found');
+    return clairvoyance(selected.party);
+  }
   if (operationId === 'resources/glossary') return glossary(state, parameters);
   if (operationId === 'resources/itemCompendium') return itemCompendium(state, parameters);
-  if (operationId === 'resources/characterRoster') return { races: RACES.map((race) => ({ raceId: race.id, status: race.stats, bonus: race.bonuses, defaultAbility: race.defaultAbility, unlockAbility: race.unlockAbility })) };
+  if (operationId === 'resources/characterRoster') return characterRoster(parameters);
   if (operationId === 'resources/bestiary') return bestiary(state, parameters);
   if (operationId === 'resources/superRareList') return { superRare: SUPER_RARE_TITLES.map((entry) => `${entry.value}/${entry.title}/${entry.multiplier}`) };
   return {};

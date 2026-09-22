@@ -821,4 +821,63 @@ assert.deepEqual(state, before);
   assert.deepEqual(narrowed.entries.map((entry) => entry.glossaryId), [bonusSection.entries[0].key]);
 }
 
+// Character Roster (8.6): base status is unchanged; the bonus vocabulary excludes ability-type bonuses (redundant with
+// the separate ability fields); ability fields are stable IDs, not the raw definition objects.
+{
+  const Ajv = (await import('ajv')).default;
+  const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
+  const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'resources/characterRoster')!.response.data);
+  const { RACES } = await import('../../src/data/races.ts');
+  const lupinian = RACES.find((race) => race.id === 'lupinian')!;
+  const read = await buildApiV1ReadData('resources/characterRoster', state, { race: 'lupinian' }, context) as { races: { raceId: string; status: unknown; ability: string[]; defaultAbility: string | null; unlockAbility: string | null }[] };
+  assert.equal(validate(read), true, JSON.stringify(validate.errors));
+  assert.deepEqual(read.races.map((race) => race.raceId), ['lupinian'], 'the race filter returns exactly one race');
+  const [entry] = read.races;
+  assert.deepEqual(entry.status, lupinian.stats);
+  assert.equal(entry.ability.length, 0, 'ability-type bonuses are excluded (redundant with defaultAbility/unlockAbility)');
+  assert.equal(entry.defaultAbility, lupinian.defaultAbility.id);
+  assert.equal(entry.unlockAbility, lupinian.unlockAbility!.id);
+  const rosterAll = await buildApiV1ReadData('resources/characterRoster', state, { race: 'kemoria' }, context) as { races: { defaultAbility: string | null }[] };
+  assert.equal(rosterAll.races[0].defaultAbility, null, "kemoria's 'none' sentinel becomes null, not the literal string");
+  const mustelid = await buildApiV1ReadData('resources/characterRoster', state, { race: 'mustelid' }, context) as { races: { raceId: string }[] };
+  assert.deepEqual(mustelid.races.map((race) => race.raceId), ['mustelid'], 'mustelid (missing from the original query enum) is reachable');
+}
+
+// Clairvoyance (8.6): remaining/total/hitsRemaining/hitsTotal per bag, compared against a freshly created bag of the
+// same kind; a fresh save's live bags equal their own defaults everywhere.
+{
+  const Ajv = (await import('ajv')).default;
+  const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
+  const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'resources/clairvoyance/{p}')!.response.data);
+  type BagFacts = { remaining: number; total: number; hitsRemaining: number; hitsTotal: number };
+  const fresh = await buildApiV1ReadData('resources/clairvoyance/1', state, {}, context) as {
+    reward: Record<string, BagFacts>; enhancement: Record<string, { remaining: number; total: number; tiers: { tier: number; remaining: number; total: number }[] }>;
+    superRare: Record<string, BagFacts>; sideQuest: BagFacts; sleepiness: { remaining: number; total: number; awake: { remaining: number; total: number } };
+  };
+  assert.equal(validate(fresh), true, JSON.stringify(validate.errors));
+  for (const facts of Object.values(fresh.reward)) assert.deepEqual([facts.remaining, facts.hitsRemaining], [facts.total, facts.hitsTotal], 'a fresh bag equals its own default');
+  for (const facts of Object.values(fresh.superRare)) assert.deepEqual([facts.remaining, facts.hitsRemaining], [facts.total, facts.hitsTotal]);
+  assert.deepEqual([fresh.sideQuest.remaining, fresh.sideQuest.hitsRemaining], [fresh.sideQuest.total, fresh.sideQuest.hitsTotal]);
+  assert.ok(fresh.enhancement.common.tiers.length === 6 && fresh.enhancement.common.tiers.every((tier) => tier.remaining === tier.total));
+  assert.deepEqual([fresh.sleepiness.remaining, fresh.sleepiness.awake.remaining], [fresh.sleepiness.total, fresh.sleepiness.awake.total]);
+  assert.ok(fresh.reward.common.total > 0 && fresh.enhancement.general.total > 0, 'totals are real positive counts, not placeholders');
+
+  // Drawing down one party's common reward "win" slot changes only that bag's live facts, never its own total or any
+  // other bag/party's facts. A fresh save has only one party, so a second, untouched party is added for this check.
+  const drawnDown = {
+    ...state,
+    parties: [
+      { ...state.parties[0], bags: { ...state.parties[0].bags, commonRewardBag: { entries: state.parties[0].bags.commonRewardBag.entries.map((entry) => entry.id === 1 ? { ...entry, tickets: entry.tickets - 1 } : entry) } } },
+      { ...state.parties[0], id: 2 },
+    ],
+  };
+  const afterDraw = await buildApiV1ReadData('resources/clairvoyance/1', drawnDown, {}, context) as typeof fresh;
+  assert.equal(afterDraw.reward.common.hitsRemaining, fresh.reward.common.hitsTotal - 1);
+  assert.equal(afterDraw.reward.common.total, fresh.reward.common.total, 'the total never changes with the live bag');
+  assert.deepEqual(afterDraw.reward.uncommon, fresh.reward.uncommon, 'another bag is untouched');
+  const otherParty = await buildApiV1ReadData('resources/clairvoyance/2', drawnDown, {}, context) as typeof fresh;
+  assert.deepEqual(otherParty.reward.common, fresh.reward.common, "another party's bag is untouched");
+  await assert.rejects(buildApiV1ReadData('resources/clairvoyance/99', state, {}, context), /not_found/);
+}
+
 assert.deepEqual(state, before);
