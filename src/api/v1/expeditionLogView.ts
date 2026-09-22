@@ -1,23 +1,26 @@
 import { getDungeonById } from '../../data/dungeons.ts';
 import { ENEMIES } from '../../data/enemies.ts';
+import { getItemById } from '../../data/items.ts';
 import { formatEnemyDefName } from '../../game/enemyDisplay.ts';
-import { DIARY_EVENT_CODES } from '../../game/compactBattleLog.ts';
-import { renderExpeditionMetadata, type DiaryEndEvent } from '../../game/compactDiary.ts';
+import type { CompactBattleLog } from '../../game/compactBattleLog.ts';
+import { renderExpeditionMetadata, type DiaryEndEvent, type DiaryItem, type DiaryText } from '../../game/compactDiary.ts';
 import { t } from '../../i18n/index.ts';
 import type {
-  AttackType,
   BattleLogEntry,
+  EnemyDef,
   ExpeditionLog,
   ExpeditionLogEntry,
   Item,
+  ItemRarity,
   RoomType,
 } from '../../types/index.ts';
 import { parseItemFormat } from './itemFormat.ts';
 
 // SpecRef: 9.1.3 | Read | 2-2-2 {p}/latestBattleLog
-// The API deliberately returns language-neutral facts. This view is the renderer-side adapter: public room and reward
-// facts are authoritative, while retained narration is copied only at this boundary because the public contract does not
-// publish rendered prose, replay metadata, enemy snapshots, or per-room reward labels.
+// The renderer-side adapter for the Expedition pane. A retained battle log is described completely by the API response: the
+// public facts of `battleLog` (rooms, HP, outcome, rewards) and the supporting `resources` (the stored language-neutral
+// records, the enemy as it was met, and the prose of a legacy record). This module rebuilds the view the pane draws from
+// those two members alone; it reads no game state, so a view can never mix two logs.
 
 export type ApiBattleLogEvent = readonly [
   category: number,
@@ -77,6 +80,7 @@ export interface ApiBattleLog {
 
 export interface LatestBattleLogProjection {
   readonly battleLog: ApiBattleLog | null;
+  readonly resources?: ApiBattleLogResources | null;
   readonly bottleneckEnemies?: readonly unknown[];
 }
 
@@ -97,186 +101,124 @@ export interface ExpeditionLogView {
   readonly autoSellMultiplier?: number;
 }
 
-const API_OPCODE_NAMES = new Map<number, string>(Object.entries(DIARY_EVENT_CODES).map(([name, code]) => [code, name]));
-
-function actorName(room: ApiBattleRoom, id: number): string {
-  const actor = room.actors?.find((candidate) => candidate.id === id);
-  if (actor?.name) return actor.name;
-  if (actor?.kind === 'enemy' && actor.enemyId !== undefined) {
-    const enemy = ENEMIES.find((candidate) => candidate.id === actor.enemyId);
-    if (enemy) return formatEnemyDefName(enemy);
-  }
-  return id === 0 ? t('battle.actor.ally') : `${t('home.battle.enemyPrefix')} ${id}`;
+/** The stored records of one room (Spec 9.1.3, 2-2-2 `resources`). */
+export interface ApiRoomResources {
+  readonly room: number;
+  readonly godsBattle: boolean;
+  readonly gateText: DiaryText | null;
+  readonly postBattlePartyHp: number | null;
+  readonly enemy: EnemyDef | null;
+  readonly rewardItems: readonly DiaryItem[];
+  readonly battle: { readonly format: 'compact-v1'; readonly log: CompactBattleLog } | { readonly format: 'legacy'; readonly details: readonly BattleLogEntry[] };
+  readonly endEvents: readonly DiaryEndEvent[];
+  readonly legacyText: { readonly enemyName: string; readonly gateInfo: string | null; readonly reward: string | null; readonly rewardRarity: string | null; readonly rewardIsSuperRare: boolean | null } | null;
 }
 
-function actorKind(room: ApiBattleRoom, id: number): 'character' | 'enemy' | 'effect' {
-  return room.actors?.find((candidate) => candidate.id === id)?.kind ?? 'effect';
+export interface ApiBattleLogResources {
+  readonly rooms: readonly ApiRoomResources[];
+  readonly autoSellMultiplier: number | null;
+  /** `true` for a compact (language-neutral) record, whose names and texts are rendered from its facts. */
+  readonly compact: boolean;
 }
 
-function attackType(value: unknown): AttackType | undefined {
-  return value === 'ranged' || value === 'magical' || value === 'melee' ? value : undefined;
+function toItem(diary: DiaryItem): Item | null {
+  const base = getItemById(diary.id);
+  return base ? { ...base, enhancement: diary.enhancement, superRare: diary.superRare, jewel: diary.jewel ?? null } : null;
 }
 
-function elementalOffense(value: unknown): BattleLogEntry['elementalOffense'] | undefined {
-  return value === 'none' || value === 'fire' || value === 'thunder' || value === 'ice' ? value : undefined;
-}
-
-function abilityLabel(ability: unknown): string {
-  if (typeof ability !== 'string' || ability.length === 0) return t('battleLog.action.attackName');
-  return t(`ability.${ability}.label`);
-}
-
-function compactEventToBattleLogEntry(room: ApiBattleRoom, event: ApiBattleLogEvent): BattleLogEntry {
-  const [, , actorId, opcodeNumber, targetId, element, hits, attempts, eventValue, eventFacts] = event;
-  const opcode = API_OPCODE_NAMES.get(opcodeNumber) ?? `event ${opcodeNumber}`;
-  const facts = eventFacts ?? {};
-  const actor = actorKind(room, actorId);
-  const target = actorName(room, targetId);
-  const source = actorName(room, actorId);
-  const type = attackType(facts.attackType);
-  const ability = facts.ability;
-  const reaction = typeof facts.reaction === 'number' ? facts.reaction : 0;
-  const phaseNumber = typeof facts.phase === 'number' ? facts.phase : 2;
-  const phase: BattleLogEntry['phase'] = phaseNumber >= 3 ? 'end' : phaseNumber <= 1 ? 'start' : 'combat';
-  const isAttack = opcode === 'attack';
-  const isEnemy = actor === 'enemy';
-  const action = isAttack
-    ? isEnemy
-      ? type === 'magical'
-        ? t('battleLog.action.targetMagicHit', { target })
-        : t('battleLog.action.targetAttack', { target, attack: reaction === 3 ? t('battleLog.action.reAttackName') : t('battleLog.action.attackName') })
-      : t(type === 'magical' ? 'battleLog.action.characterSpellCast' : 'battleLog.action.characterAttack', {
-        actor: source,
-        attack: ability ? abilityLabel(ability) : reaction === 3 ? t('battleLog.action.reAttackName') : t('battleLog.action.attackName'),
-      })
-    : opcode === 'terrain_effect'
-      ? t('battle.action.discordDeityEffect')
-      : opcode === 'ability_activated'
-        ? t('battle.action.ownerAbility', { owner: source, ability: abilityLabel(ability) })
-        : opcode === 'resurrected' || opcode === 'reanimated'
-          ? t('battleLog.action.enemyResurrect', { action: source })
-          : opcode === 'action_skipped'
-            ? t('battle.action.ownerAbility', { owner: source, ability: abilityLabel(ability) })
-            : `${source}: ${abilityLabel(ability)}`;
-
-  const value = typeof facts.sourceValue === 'number' ? facts.sourceValue : eventValue;
-  const secondaryValue = typeof facts.secondaryValue === 'number' ? facts.secondaryValue : undefined;
-  return {
-    semanticPresentation: true,
-    phase,
-    actor: isAttack ? (isEnemy ? 'enemy' : 'character') : actor === 'character' ? 'triggered' : actor,
-    ...(actor === 'character' ? { characterId: actorId } : {}),
-    action,
-    ...(type ? { attackType: type } : {}),
-    ...(elementalOffense(element) ? { elementalOffense: elementalOffense(element) } : {}),
-    ...(hits >= 0 ? { hits } : {}),
-    ...(attempts >= 0 ? { totalAttempts: attempts } : {}),
-    ...(isAttack ? { damage: secondaryValue ?? value, damageTarget: isEnemy ? 'party' : 'enemy' as const } : {}),
-    ...(reaction === 3 ? { isReAttack: true } : {}),
-    ...(reaction >= 4 && reaction <= 7 ? { isCounter: true } : {}),
-    ...(isEnemy && type === 'magical' ? { isEnemyTargetHit: true } : {}),
-    ...(opcode === 'nullified' ? { wasNegated: true } : {}),
-  };
-}
-
-function publicEventsToBattleLog(room: ApiBattleRoom): BattleLogEntry[] {
-  if (room.eventFormat === 'legacy-facts') {
-    return room.events.map((event) => {
-      const value = event as ApiLegacyBattleEvent;
-      const actor = value.actor === 'enemy' ? 'enemy' : value.actor === 'character' ? 'character' : 'effect';
-      const phase = value.phase === 'end' ? 'end' : value.phase === 'start' ? 'start' : 'combat';
-      return {
-        semanticPresentation: true,
-        phase,
-        actor,
-        ...(typeof value.characterId === 'number' ? { characterId: value.characterId } : {}),
-        action: typeof value.action === 'string' ? value.action : `${actor}: ${String(value.effectKind ?? 'event')}`,
-        ...(attackType(value.attackType) ? { attackType: attackType(value.attackType) } : {}),
-        ...(typeof value.damage === 'number' ? { damage: value.damage } : {}),
-        ...(typeof value.hits === 'number' ? { hits: value.hits } : {}),
-        ...(typeof value.attempts === 'number' ? { totalAttempts: value.attempts } : {}),
-      } satisfies BattleLogEntry;
-    });
-  }
-  return room.events.map((event) => compactEventToBattleLogEntry(room, event as ApiBattleLogEvent));
-}
-
-function roomEnemyName(room: ApiBattleRoom, source?: ExpeditionLogEntry): string {
-  if (source?.enemyName) return source.enemyName;
+function roomEnemyName(room: ApiBattleRoom, resources: ApiRoomResources | undefined): string {
+  if (resources?.legacyText) return resources.legacyText.enemyName;
   const enemy = room.enemyId === null ? undefined : ENEMIES.find((candidate) => candidate.id === room.enemyId);
   if (!enemy) return room.enemyId === null ? '-' : `${t('home.battle.enemyPrefix')} ${room.enemyId}`;
   const suffix = room.roomType === 'battle_Elite' ? ' (ELITE)' : room.roomType === 'battle_Boss' ? ' (BOSS)' : '';
   return `${formatEnemyDefName(enemy)}${suffix}`;
 }
 
-/**
- * Whether a retained room is the room the projection describes. Narration is copied from the retained log only for a room
- * that matches on every fact both sides carry, so a retained log that is newer or older than the projection (they are read
- * at different moments) can never lend its narration to another room.
- */
-export function retainedRoomMatches(source: ExpeditionLogEntry, room: ApiBattleRoom): boolean {
-  return source.room === room.room
-    && (source.enemyId ?? null) === room.enemyId
-    && source.outcome === room.outcome
-    && source.damageDealt === room.damageDealt
-    && source.damageTaken === room.damageTaken
-    && source.remainingPartyHP === room.remainingPartyHp
-    && (source.floor ?? null) === room.floor
-    && (source.roomInFloor ?? null) === room.roomInFloor;
-}
-
-function roomNarrationEntry(retainedSource: ExpeditionLogEntry | undefined, room: ApiBattleRoom): ExpeditionLogEntry {
-  const source = retainedSource && retainedRoomMatches(retainedSource, room) ? retainedSource : undefined;
-  const details = source?.details?.length ? source.details : publicEventsToBattleLog(room);
-  const endEvents = source?.endEvents ?? room.endEvents as DiaryEndEvent[];
+function roomEntry(room: ApiBattleRoom, resources: ApiRoomResources | undefined): ExpeditionLogEntry {
+  const legacy = resources?.legacyText;
+  const rewardItems = (resources?.rewardItems ?? []).flatMap((item) => { const built = toItem(item); return built ? [built] : []; });
   return {
-    ...(source ?? {}),
     room: room.room,
     floor: room.floor ?? undefined,
     roomInFloor: room.roomInFloor ?? undefined,
-    roomType: (room.roomType ?? source?.roomType) as RoomType | undefined,
-    enemyId: room.enemyId ?? source?.enemyId,
-    enemyName: roomEnemyName(room, source),
+    roomType: (room.roomType ?? undefined) as RoomType | undefined,
+    enemyId: room.enemyId ?? undefined,
+    enemyName: roomEnemyName(room, resources),
     enemyHP: room.enemyMaximumHp,
-    enemyAttackValues: source?.enemyAttackValues ?? '0/0/0',
+    enemyAttackValues: '0/0/0',
     outcome: room.outcome,
     damageDealt: room.damageDealt,
     damageTaken: room.damageTaken,
     startPartyHP: room.startingPartyHp ?? undefined,
+    postBattlePartyHP: resources?.postBattlePartyHp ?? undefined,
     remainingPartyHP: room.remainingPartyHp,
     maxPartyHP: room.maximumPartyHp,
     healAmount: room.healAmount ?? undefined,
     attritionAmount: room.attritionAmount ?? undefined,
-    details,
-    ...(endEvents.length > 0 ? { endEvents: [...endEvents] } : {}),
+    ...(resources?.godsBattle ? { godsBattle: true } : {}),
+    ...(resources?.gateText ? { gateText: resources.gateText } : {}),
+    ...(resources?.enemy ? { enemySnapshot: resources.enemy } : {}),
+    ...(rewardItems.length > 0 ? { rewardItems } : {}),
+    ...(legacy?.gateInfo ? { gateInfo: legacy.gateInfo } : {}),
+    ...(legacy?.reward ? { reward: legacy.reward } : {}),
+    ...(legacy?.rewardRarity ? { rewardRarity: legacy.rewardRarity as ItemRarity } : {}),
+    ...(legacy?.rewardIsSuperRare !== null && legacy?.rewardIsSuperRare !== undefined ? { rewardIsSuperRare: legacy.rewardIsSuperRare } : {}),
+    ...(resources?.battle.format === 'compact-v1' ? { compactBattle: resources.battle.log } : {}),
+    details: resources?.battle.format === 'legacy' ? [...resources.battle.details] : [],
+    ...(resources && resources.endEvents.length > 0 ? { endEvents: [...resources.endEvents] } : {}),
   };
 }
 
-export function buildExpeditionLogView(
-  projection: LatestBattleLogProjection | null | undefined,
-  retainedNarration?: ExpeditionLog | null,
-): ExpeditionLogView | null {
+/** Rebuilds the rendered entries of `rooms` from their public facts and stored resources, in the current language. */
+function buildEntries(rooms: readonly ApiBattleRoom[], resources: ApiBattleLogResources | null | undefined, header: { dungeonId: number; difficultyOffset: number; totalRooms: number; completedRooms: number; totalExperience: number; finalOutcome: ExpeditionLog['finalOutcome']; rewards: Item[]; autoSellProfit: number; autoSellCount: number; maximumPartyHp: number; remainingPartyHp: number }): ExpeditionLogEntry[] {
+  const byRoom = new Map((resources?.rooms ?? []).map((entry) => [entry.room, entry]));
+  const log: ExpeditionLog = {
+    ...(resources?.compact ? { compactVersion: 1 as const } : {}),
+    dungeonId: header.dungeonId,
+    dungeonName: '',
+    difficultyOffset: header.difficultyOffset,
+    totalExperience: header.totalExperience,
+    totalRooms: header.totalRooms,
+    completedRooms: header.completedRooms,
+    finalOutcome: header.finalOutcome,
+    entries: rooms.map((room) => roomEntry(room, byRoom.get(room.room))),
+    rewards: header.rewards,
+    autoSellProfit: header.autoSellProfit,
+    autoSellCount: header.autoSellCount,
+    autoSellItems: [],
+    remainingPartyHP: header.remainingPartyHp,
+    maxPartyHP: header.maximumPartyHp,
+  };
+  // The compact record's enemy names, gate texts, and reward labels are rendered from its facts in the current language.
+  return renderExpeditionMetadata(log).entries;
+}
+
+export function buildExpeditionLogView(projection: LatestBattleLogProjection | null | undefined): ExpeditionLogView | null {
   const log = projection?.battleLog;
   if (!log) return null;
-  const narrated = retainedNarration && retainedNarration.dungeonId === log.dungeonId ? renderExpeditionMetadata(retainedNarration) : null;
-  const sourceByRoom = new Map((narrated?.entries ?? []).map((entry) => [entry.room, entry]));
-  const dungeonName = getDungeonById(log.dungeonId)?.name ?? narrated?.dungeonName ?? `${t('expedition.floor', { floor: log.dungeonId })}`;
+  const rewards = log.rewards.flatMap((reward) => {
+    const item = parseItemFormat(reward.item);
+    return item ? [item] : [];
+  });
+  const entries = buildEntries(log.rooms, projection?.resources, {
+    dungeonId: log.dungeonId, difficultyOffset: log.difficultyOffset, totalRooms: log.totalRooms, completedRooms: log.completedRooms, totalExperience: log.totalExperience,
+    finalOutcome: log.finalOutcome === 'Draw' ? 'Retreat' : log.finalOutcome, rewards, autoSellProfit: log.autoSell.gold, autoSellCount: log.autoSell.count,
+    maximumPartyHp: log.maximumPartyHp, remainingPartyHp: log.remainingPartyHp,
+  });
   return {
     logId: log.logId,
     dungeonId: log.dungeonId,
-    dungeonName,
+    dungeonName: getDungeonById(log.dungeonId)?.name ?? `${t('expedition.floor', { floor: log.dungeonId })}`,
     difficultyOffset: log.difficultyOffset,
     totalExperience: log.totalExperience,
     totalRooms: log.totalRooms,
     completedRooms: log.completedRooms,
     finalOutcome: log.finalOutcome,
-    rewards: log.rewards.flatMap((reward) => {
-      const item = parseItemFormat(reward.item);
-      return item ? [item] : [];
-    }),
+    entries,
+    rewards,
     autoSellProfit: log.autoSell.gold,
     autoSellCount: log.autoSell.count,
-    entries: log.rooms.map((room) => roomNarrationEntry(sourceByRoom.get(room.room), room)),
+    ...(projection?.resources?.autoSellMultiplier != null ? { autoSellMultiplier: projection.resources.autoSellMultiplier } : {}),
   };
 }
 
@@ -288,15 +230,18 @@ export interface ExplorationProjection {
   readonly revealedRoomCount: number;
   readonly nextRevealAt: string | null;
   readonly rooms: readonly ApiBattleRoom[];
+  readonly resources: { readonly rooms: readonly ApiRoomResources[]; readonly compact: boolean };
 }
 
 /**
  * The view of a party's running exploration: its revealed rooms and nothing else. The result, experience, and rewards of the
  * exploration are not disclosed until it ends, so they are empty and `finalOutcome` is `null`.
  */
-export function buildExploringLogView(exploration: ExplorationProjection, retainedNarration?: ExpeditionLog | null): ExpeditionLogView {
-  const narrated = retainedNarration && retainedNarration.dungeonId === exploration.dungeonId ? renderExpeditionMetadata(retainedNarration) : null;
-  const sourceByRoom = new Map((narrated?.entries ?? []).map((entry) => [entry.room, entry]));
+export function buildExploringLogView(exploration: ExplorationProjection): ExpeditionLogView {
+  const entries = buildEntries(exploration.rooms, { ...exploration.resources, autoSellMultiplier: null }, {
+    dungeonId: exploration.dungeonId, difficultyOffset: exploration.difficultyOffset, totalRooms: exploration.totalRooms, completedRooms: exploration.rooms.length, totalExperience: 0,
+    finalOutcome: 'Return', rewards: [], autoSellProfit: 0, autoSellCount: 0, maximumPartyHp: 0, remainingPartyHp: 0,
+  });
   return {
     logId: 'exploring',
     dungeonId: exploration.dungeonId,
@@ -306,7 +251,7 @@ export function buildExploringLogView(exploration: ExplorationProjection, retain
     totalRooms: exploration.totalRooms,
     completedRooms: exploration.rooms.length,
     finalOutcome: null,
-    entries: exploration.rooms.map((room) => roomNarrationEntry(sourceByRoom.get(room.room), room)),
+    entries,
     rewards: [],
     autoSellProfit: 0,
     autoSellCount: 0,
@@ -314,15 +259,13 @@ export function buildExploringLogView(exploration: ExplorationProjection, retain
 }
 
 /**
- * The view the Expedition pane renders for one party. While the party is exploring it is the running exploration's revealed
- * rooms (from the same Expedition projection that gates them); otherwise it is the newest disclosed log. The retained log is
- * only a source of narration, and only for rooms it matches.
+ * The view the Expedition pane renders for one party: the running exploration's revealed rooms while it explores, otherwise
+ * the newest disclosed log. Both come from the API alone.
  */
 export function buildPartyExpeditionLogView(input: {
   exploration: ExplorationProjection | null | undefined;
   latestBattleLog: LatestBattleLogProjection | null | undefined;
-  retained: ExpeditionLog | null | undefined;
 }): ExpeditionLogView | null {
-  if (input.exploration) return buildExploringLogView(input.exploration, input.retained);
-  return buildExpeditionLogView(input.latestBattleLog, input.retained);
+  if (input.exploration) return buildExploringLogView(input.exploration);
+  return buildExpeditionLogView(input.latestBattleLog);
 }

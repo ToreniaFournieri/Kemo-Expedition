@@ -1994,8 +1994,10 @@ export function HomeScreen({
     return () => window.clearTimeout(timer);
   }, [expeditionProjection, isExpeditionTabVisible]);
   // SpecRef: 8.3 | UI_EXPEDITION | E3 log projection/adapter
-  // Room summaries and rewards come from the public latestBattleLog projection. The retained log is supplied only to the
-  // adapter for narration fields intentionally absent from the language-neutral wire shape; the tab never receives it.
+  // Every party's log is rendered from the API alone: an exploring party's revealed rooms come from the Expedition projection,
+  // any other party's newest disclosed log from `latestBattleLog` (public facts plus its supporting `resources`). The pane never
+  // receives, and this view never reads, the retained log from the game state. The last result stays on screen while a re-read
+  // is in flight and while the tab is hidden, so switching back never shows an empty pane.
   const latestBattleLogInputs = useMemo(
     () => state.parties.map((party) => ({ pathParameters: { p: party.id } })),
     [state.parties],
@@ -2007,16 +2009,12 @@ export function HomeScreen({
     [state.parties, partyCycles, pendingAfkMs, expeditionProjectionRefresh],
   );
   const expeditionLogViews = useMemo(() => {
-    const projectionByParty = new Map((latestBattleLogProjections ?? []).flatMap((projection) => (
-      projection.battleLog ? [[projection.battleLog.partyNumber, projection] as const] : []
-    )));
     const views = new Map<number, ExpeditionLogView | null>();
-    state.parties.forEach((party) => {
+    state.parties.forEach((party, partyIndex) => {
       const exploration = expeditionProjection?.parties.find((entry) => entry.partyNumber === party.id)?.exploration;
       views.set(party.id, buildPartyExpeditionLogView({
         exploration,
-        latestBattleLog: projectionByParty.get(party.id),
-        retained: party.lastExpeditionLog,
+        latestBattleLog: latestBattleLogProjections?.[partyIndex],
       }));
     });
     return views;

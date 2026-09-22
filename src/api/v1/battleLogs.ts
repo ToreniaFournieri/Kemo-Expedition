@@ -1,7 +1,8 @@
 import { decodeCompactBattleEvents, DIARY_EVENT_CODES, getDiaryEventCategory, type CompactBattleLog } from '../../game/compactBattleLog.ts';
 import { getDungeonById, getEffectiveEnemyLevel } from '../../data/dungeons.ts';
+import { diaryItem } from '../../game/compactDiary.ts';
 import type { ExpeditionLog, Item, ItemRarity } from '../../types/index.ts';
-import { buildEnemyStatus, type EnemyStatus } from './enemyStatus.ts';
+import { buildEnemyStatus, publicEnemySnapshot, type EnemyStatus } from './enemyStatus.ts';
 import { apiExpeditionOutcome } from './expeditionOutcome.ts';
 import { formatItem } from './itemFormat.ts';
 
@@ -130,6 +131,28 @@ export function buildBattleRoomData(entry: ExpeditionLog['entries'][number]) {
   };
 }
 
+// SpecRef: 9.1.3 | Read | 2-2-2 {p}/latestBattleLog (resources)
+// The supporting resources a client needs to render a retained battle log in its own language without any other source: the
+// stored language-neutral records (the compact battle envelope, the end events with their flavor facts, the gate text, the
+// reward items), the enemy as it was met (for the Bestiary bubble), and, for a legacy record, the prose it was saved with
+// (a legacy log keeps its original text and is never reinterpreted). Replay seeds and random state are never published.
+export function buildRoomResources(entry: ExpeditionLog['entries'][number]) {
+  return {
+    room: entry.room,
+    godsBattle: entry.godsBattle === true,
+    gateText: entry.gateText ?? null,
+    postBattlePartyHp: entry.postBattlePartyHP ?? null,
+    enemy: entry.enemySnapshot ? publicEnemySnapshot(entry.enemySnapshot) : null,
+    rewardItems: (entry.rewardItems ?? []).map(diaryItem),
+    battle: entry.compactBattle
+      ? { format: 'compact-v1' as const, log: entry.compactBattle }
+      : { format: 'legacy' as const, details: entry.details },
+    endEvents: entry.endEvents ?? [],
+    // Only a legacy record (no compact discriminator) carries prose that cannot be rebuilt from its facts.
+    legacyText: entry.compactBattle || entry.gateText ? null : { enemyName: entry.enemyName, gateInfo: entry.gateInfo ?? null, reward: entry.reward ?? null, rewardRarity: entry.rewardRarity ?? null, rewardIsSuperRare: entry.rewardIsSuperRare ?? null },
+  };
+}
+
 const BOTTLENECK_DAMAGE_PERCENT = 35;
 
 // SpecRef: 9.1.3 | Read | 2-2-2 {p}/latestBattleLog
@@ -137,7 +160,7 @@ const BOTTLENECK_DAMAGE_PERCENT = 35;
 // original legacy facts, never rendered narration), plus the enemies that were bottlenecks: a room where the party took
 // at least 35% of its maximum HP in damage, or that ended in a draw or a defeat. Replay seeds are not published.
 export function buildBattleLogData(log: ExpeditionLog | null, partyNumber: number, logId: string) {
-  if (!log) return { battleLog: null, bottleneckEnemies: [] as never[] };
+  if (!log) return { battleLog: null, resources: null, bottleneckEnemies: [] as never[] };
   const rooms = log.entries;
   return {
     battleLog: {
@@ -163,6 +186,7 @@ export function buildBattleLogData(log: ExpeditionLog | null, partyNumber: numbe
       autoSell: { count: log.autoSellCount, gold: log.autoSellProfit },
       rooms: rooms.map(buildBattleRoomData),
     },
+    resources: { rooms: rooms.map(buildRoomResources), autoSellMultiplier: log.autoSellMultiplier ?? null, compact: log.compactVersion === 1 },
     bottleneckEnemies: rooms.flatMap((entry) => {
       const damageTakenPercent = entry.maxPartyHP > 0 ? Math.round((entry.damageTaken / entry.maxPartyHP) * 1000) / 10 : 0;
       const byDamage = damageTakenPercent >= BOTTLENECK_DAMAGE_PERCENT;

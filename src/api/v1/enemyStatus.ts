@@ -66,3 +66,19 @@ export function buildEnemyStatus(enemy: EnemyDef, level: number | null): EnemySt
     dropItemIds: getEnemyDropCandidates({ ...enemy, itemIds: enemy.itemIds ?? [] }).map((item) => item.id),
   };
 }
+
+const ENEMY_SNAPSHOT_KEYS = [
+  'id', 'type', 'enemyType', 'spawnTier', 'spawnPool', 'poolId', 'name', 'nameKey', 'enemyClass', 'enemySubClass', 'abilities', 'bonuses', 'accuracyBonus', 'evasionBonus', 'hp',
+  'rangedAttack', 'rangedNoA', 'magicalAttack', 'magicalNoA', 'magicStyle', 'meleeAttack', 'meleeNoA', 'rangedAttackAmplifier', 'magicalAttackAmplifier', 'meleeAttackAmplifier',
+  'physicalDefense', 'magicalDefense', 'elementalOffense', 'elementalOffenseValue', 'elementalResistance', 'physicalDefenseAmplifier', 'magicalDefenseAmplifier', 'experience',
+  'itemIds', 'isGodEnemy', 'image_path',
+] as const;
+
+/**
+ * The enemy as it was met, in the public shape the Bestiary bubble renders from (Spec 9.1.3, 2-2-2 `resources`). Only the
+ * documented members are published: an older retained snapshot may carry members that no longer exist, and they are dropped.
+ */
+export function publicEnemySnapshot(enemy: EnemyDef): EnemyDef {
+  const source = enemy as unknown as Record<string, unknown>;
+  return Object.fromEntries(ENEMY_SNAPSHOT_KEYS.filter((key) => source[key] !== undefined).map((key) => [key, source[key]])) as unknown as EnemyDef;
+}

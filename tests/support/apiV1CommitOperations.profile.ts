@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
 import { createFreshGameState } from '../../src/hooks/useGameState';
-import { buildShopLineup } from '../../src/game/shop';
 import { getVariantKey, type GameState, type SavedEquipmentSet } from '../../src/types';
 
 // SpecRef: 9.1 | Desktop distribution | Application API
@@ -409,6 +408,38 @@ const seed: GameState = createFreshGameState('ja', Date.parse('2026-01-01T00:00:
   assert.equal(reset.state.global, played.global, 'nothing outside the party changes');
   assert.notDeepEqual(played.parties[0].expeditionStats, seed.parties[0].expeditionStats, 'the fixture really differed');
   assert.throws(() => applyApiV1Commit('commit/expedition/9/resetStatistics', played, {}, baseContext()), /not_found/);
+}
+
+// A real, freshly resolved expedition (a compact, language-neutral record) renders from the `latestBattleLog` response alone
+// exactly as the retained record itself does: names, gate and reward text, the Bestiary snapshot, and the whole narration.
+{
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
+  const { publicEnemySnapshot } = await import('../../src/api/v1/enemyStatus');
+  const { buildExpeditionLogView } = await import('../../src/api/v1/expeditionLogView');
+  const { renderExpeditionMetadata, renderDiaryBattle } = await import('../../src/game/compactDiary');
+  const at = Date.parse('2026-01-01T00:00:00.000Z');
+  const charged = { ...seed, parties: seed.parties.map((party, index) => index === 0 ? { ...party, instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null } : party) } as GameState;
+  const played = applyApiV1Commit('commit/expedition/1/sortie', charged, {}, baseContext({ simulatedAt: at, chargeDurationScale: 1 })).state;
+  const party = played.parties[0];
+  const retained = party.lastExpeditionLog!;
+  assert.equal(retained.compactVersion, 1, 'a new expedition is a compact record');
+  assert.ok(retained.entries.some((entry) => entry.compactBattle), 'it retains compact battles');
+  const response = await buildApiV1ReadData('read/expedition/1/latestBattleLog', played, {}, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, revision: 1, inGameTime: at } as never) as never;
+  const view = buildExpeditionLogView(response)!;
+  const expected = renderExpeditionMetadata(retained);
+  assert.equal(view.entries.length, expected.entries.length);
+  expected.entries.forEach((entry, index) => {
+    const actual = view.entries[index];
+    assert.equal(actual.enemyName, entry.enemyName, `room ${entry.room} name`);
+    assert.equal(actual.gateInfo, entry.gateInfo, `room ${entry.room} gate`);
+    assert.equal(actual.reward, entry.reward, `room ${entry.room} reward`);
+    assert.equal(Boolean(actual.godsBattle), Boolean(entry.godsBattle));
+    assert.deepEqual(actual.enemySnapshot ?? null, entry.enemySnapshot ? publicEnemySnapshot(entry.enemySnapshot) : null, `room ${entry.room} snapshot`);
+    assert.deepEqual(renderDiaryBattle(actual, party.characters), renderDiaryBattle(entry, party.characters), `room ${entry.room} narration`);
+    assert.deepEqual(actual.endEvents ?? [], entry.endEvents ?? [], `room ${entry.room} end events`);
+  });
+  const text = JSON.stringify(response);
+  for (const banned of ['seedHex', 'replayMetadata', 'randomDrawCount']) assert.equal(text.includes(banned), false, `${banned} is not published`);
 }
 
 console.log('apiV1CommitOperations profile ok');

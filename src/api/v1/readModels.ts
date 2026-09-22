@@ -20,7 +20,7 @@ import { formatEquipmentEntry, formatItem, parseEquipmentChange, parseEvaluatedI
 import { isJewelAllowedForCategory, JEWEL_DEFS } from '../../game/jewel.ts';
 import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
 import { apiExpeditionOutcomeOrNull } from './expeditionOutcome.ts';
-import { buildBattleLogData, buildBattleRoomData } from './battleLogs.ts';
+import { buildBattleLogData, buildBattleRoomData, buildRoomResources } from './battleLogs.ts';
 import { buildSimulationRunData } from './simulationView.ts';
 import { EQUIPMENT_EVALUATION_LIMIT } from './requestLimits.ts';
 import { describeUiPreferenceCatalog, listUiPreferences } from './uiPreferenceCatalog.ts';
@@ -227,6 +227,7 @@ function expeditionProjection(state: GameState, context: ApiV1ReadContext) {
           // The revealed rooms in full (the same public room shape as `latestBattleLog`), so the pane renders the running
           // exploration without ever holding a room from the future.
           rooms: revealed.map(buildBattleRoomData),
+          resources: { rooms: revealed.map(buildRoomResources), compact: runningLog.compactVersion === 1 },
         } : null,
         currentHp: displayedHp,
         maximumHp,

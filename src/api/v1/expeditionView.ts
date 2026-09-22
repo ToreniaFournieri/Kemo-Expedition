@@ -2,7 +2,7 @@
 // The typed read model consumed by the Expedition pane. It intentionally contains only public projection facts;
 // retained battle-log narration remains a separate E3 adapter.
 
-import type { ApiBattleRoom } from './expeditionLogView';
+import type { ApiBattleRoom, ApiRoomResources } from './expeditionLogView';
 
 export type ExpeditionOutcome = 'Clear' | 'Return' | 'Draw' | 'Retreat' | 'Defeat';
 
@@ -54,6 +54,8 @@ export interface ExpeditionPartyProjection {
     nextRevealAt: string | null;
     /** Only the rooms revealed so far, in the public room shape of `latestBattleLog`. */
     rooms: ApiBattleRoom[];
+    /** The stored records the revealed rooms are rendered from (see `latestBattleLog`). */
+    resources: { rooms: ApiRoomResources[]; compact: boolean };
   } | null;
   currentHp: number;
   maximumHp: number;

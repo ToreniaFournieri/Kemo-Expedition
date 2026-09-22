@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 81. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 82. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -166,3 +166,5 @@ Slices, in order:
 - **E4 (done, Build 76): forecast.** The pane's forecast is `simulationRun` read through the in-process adapter and rebuilt losslessly (`parseSimulationRunData`); the running count is replaced by a plain "Simulating" label because the read reports no partial progress. The statistics Reset button now commits `resetStatistics` (Spec 9.1.3, 3-2-4, Build 75), so the Expedition tab is handed no reducer action.
 
 **E3 review fixes (Build 79).** Two defects were found in the first E3 adapter: an exploring party's pane showed the previous expedition's rooms (the tab sliced the disclosed log by the running exploration's revealed count), and retained narration was matched to projection rooms by room number alone. The Expedition projection's `exploration` now carries the revealed rooms in full, the pane renders those, and retained narration is used only for a room that matches on every shared fact (`retainedRoomMatches`). Narration still comes from the retained log held by the renderer, as recorded for E3; projecting a narratable form remains an open decision.
+
+**E3 closed (Build 82).** The narration gap is closed by design: Specification 9.1.3, 2-2-2 now returns `resources` (the stored language-neutral records, the enemy as met, and a legacy record's saved prose), and the Expedition projection's `exploration.resources` does the same for the revealed rooms. The pane's log view is rebuilt from API responses alone (`buildExpeditionLogView`); the game state's retained log is no longer an input, so the approximate fallback narration and the room-matching guard of Build 79 are gone. Rendering from the response is checked to be identical to rendering the retained record, for every room of a real save and for a freshly resolved compact expedition. `useApiReadMany` keeps its last result while disabled, so a hidden tab no longer comes back empty.

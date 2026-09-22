@@ -457,7 +457,8 @@ definitions in 9.1.3.
     public room shape as `latestBattleLog`, so a client renders the running exploration
     from this projection alone. A room, HP value, or outcome from the future is never
     sent, and the result, experience, and rewards are not disclosed until the exploration
-    ends. `nextRevealAt` says when to read again (`null` once every room is revealed).
+    ends. `exploration.resources` carries the same supporting `resources.rooms[]` for
+    exactly those revealed rooms. `nextRevealAt` says when to read again (`null` once every room is revealed).
     `currentHp` is the last revealed room's HP (the estimated starting HP before the
     first room), not the final HP of the running exploration. While a party explores,
     `latestBattleLog` still returns the log disclosed before the exploration began, so it
@@ -964,7 +965,7 @@ type DiaryEntry = {
   6.1.5): `Clear`, `Return`, `Draw`, `Retreat`, or `Defeat`. A finished log stores
   `Retreat` for both a draw and a retreat; a `Draw` is reported when the last room
   ended in a draw, as the game itself decides.
-* `latestBattleLog` returns `{battleLog: BattleLog | null, bottleneckEnemies}`.
+* `latestBattleLog` returns `{battleLog: BattleLog | null, resources: Resources | null, bottleneckEnemies}`.
   `BattleLog` is `{logId, partyNumber, dungeonId, difficultyOffset, finalOutcome
   ("Clear"|"Return"|"Draw"|"Retreat"|"Defeat"), totalExperience, completedRooms,
   totalRooms, remainingPartyHp, maximumPartyHp, rewards[], autoSell {count, gold},
@@ -978,7 +979,22 @@ type DiaryEntry = {
   rendered narration, flavor rows, or replay metadata (seeds, protocol and draw
   counts). `logId` is `latest` for the party's newest log or `diary:<diaryEntryId>`
   for the log retained by that Diary entry; an unknown `logId` is `not_found`, and a
-  party with no log yet returns `{battleLog: null, bottleneckEnemies: []}`.
+  party with no log yet returns `{battleLog: null, resources: null, bottleneckEnemies: []}`.
+  `resources` (Spec 9.1.3, 2-2-2) is what a client needs to render the log in its own
+  language from this response alone. `resources.rooms[]` has one entry per room: the
+  stored `battle` (`{format: "compact-v1", log}` with the compact battle envelope of
+  Spec 8.5, or `{format: "legacy", details}` with the legacy entries exactly as saved,
+  prose included), the `endEvents` as stored (their flavor facts select the narration
+  variant), `gateText` (a `[key, params?]` text), `rewardItems`, `postBattlePartyHp`,
+  `godsBattle`, `enemy` (the enemy as it was met, for the Bestiary bubble; only its
+  documented members are published), and, for a legacy record only, `legacyText` (its
+  saved enemy name, gate, and reward prose, which cannot be rebuilt from facts).
+  `resources.compact` says whether the record is compact, whose names and texts a client
+  renders from these facts, and `autoSellMultiplier` carries the auto-sell multiplier.
+  Nothing in `resources` is rendered text except a legacy record's own prose, and
+  replay seeds, draw counts, and random state are never published. A client renders
+  `battle` in the current language with no other source, so it never mixes the log with
+  another (a narration source that could be newer or older than the facts).
   A bottleneck is a room where the party took at least 35% of its maximum HP in
   damage (`reasons` includes `damage`) or that ended in a draw or a defeat
   (`outcome`); it reports `room`, `outcome`, `damageTakenPercent`, and `enemy`, the

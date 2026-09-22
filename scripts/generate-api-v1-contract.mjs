@@ -83,6 +83,58 @@ const battleRoom = Type.Union([
   }),
   strict({ ...battleRoomBase, eventFormat: Type.Literal('legacy-facts'), legacyIncomplete: Type.Literal(true), events: Type.Array(legacyEvent) }),
 ]);
+// Spec 9.1.3, 2-2-2 `resources`: the stored, language-neutral records a client renders a battle log from (see battleLogs.ts).
+const diaryItem = strict({ id: integerId, enhancement: Type.Integer({ minimum: 0, maximum: 6 }), superRare: Type.Integer({ minimum: 0 }), jewel: Type.Optional(Type.Union([strict({ key: stableKey, rank: Type.Integer({ minimum: 1, maximum: 8 }) }), Type.Null()])) });
+// DiaryText = [key, params?] where a param is a string, a number, or another DiaryText.
+const diaryText = Type.Recursive((self) => Type.Union([Type.Tuple([Type.String()]), Type.Tuple([Type.String(), Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), self]))])]));
+sampleOverrides.set(diaryText, ['gate.key']);
+const nullableString = Type.Union([Type.String(), Type.Null()]);
+const enemyBonus = strict({ type: Type.String(), value: Type.Number(), abilityId: Type.Optional(Type.String()), abilityLevel: Type.Optional(Type.Number()), unimplementedLabel: Type.Optional(Type.String()) });
+const enemySnapshot = strict({
+  id: Type.Integer(), type: literals('normal', 'elite', 'boss'), enemyType: Type.String(), spawnTier: Type.Number(), spawnPool: Type.Number(), poolId: Type.Number(), name: Type.String(), nameKey: Type.Optional(Type.String()),
+  enemyClass: stableKey, enemySubClass: Type.Optional(Type.String()), abilities: Type.Array(strict({ id: Type.String(), level: Type.Integer() })), bonuses: Type.Optional(Type.Array(enemyBonus)),
+  accuracyBonus: Type.Number(), evasionBonus: Type.Number(), hp: Type.Number(),
+  rangedAttack: Type.Number(), rangedNoA: Type.Number(), magicalAttack: Type.Number(), magicalNoA: Type.Number(), magicStyle: Type.Optional(literals('multi-hit', 'arc-magic', 'percentage_damage', 'debuff')),
+  meleeAttack: Type.Number(), meleeNoA: Type.Number(), rangedAttackAmplifier: Type.Number(), magicalAttackAmplifier: Type.Number(), meleeAttackAmplifier: Type.Number(),
+  physicalDefense: Type.Number(), magicalDefense: Type.Number(), elementalOffense: literals('none', 'fire', 'thunder', 'ice'), elementalOffenseValue: Type.Number(),
+  elementalResistance: strict({ fire: Type.Number(), thunder: Type.Number(), ice: Type.Number() }), physicalDefenseAmplifier: Type.Number(), magicalDefenseAmplifier: Type.Number(),
+  experience: Type.Number(), itemIds: Type.Optional(Type.Array(Type.Integer())), isGodEnemy: Type.Optional(Type.Boolean()), image_path: Type.Optional(Type.String()),
+});
+const compactBattleActor = strict({
+  id: Type.Integer(), kind: literals('character', 'enemy'), name: Type.String(), nameKey: Type.Optional(Type.String()),
+  appearance: Type.Optional(Type.Union([Type.Tuple([Type.String(), literals(0, 1)]), Type.Tuple([Type.String(), literals(0, 1), Type.Union([Type.String(), Type.Number()])])])),
+  elementalOffense: literals('none', 'fire', 'thunder', 'ice'), elementalOffenseValue: Type.Number(), magicStyle: Type.Optional(literals('multi-hit', 'arc-magic', 'percentage_damage', 'debuff')),
+  physicalDefense: Type.Number(), abilities: Type.Array(Type.Tuple([Type.String(), Type.Integer()])),
+});
+// The stored envelope: ordered numeric event rows whose meaning is fixed by the append-only tables of `compactBattleLog.ts`.
+const compactBattleLog = strict({ version: Type.Literal(1), actorSet: Type.Optional(Type.Array(Type.Integer())), actors: Type.Array(compactBattleActor), terrain: Type.Optional(nullableString), abilities: Type.Array(Type.String()), events: Type.Array(Type.Array(Type.Number())) });
+sampleOverrides.set(compactBattleLog, { version: 1, actors: [], abilities: [], events: [] });
+// A legacy record keeps the entries it was saved with, prose included.
+const legacyBattleEntry = strict({
+  semanticPresentation: Type.Optional(Type.Boolean()), actorDisplayName: Type.Optional(Type.String()), targetDisplayName: Type.Optional(Type.String()), isResurrection: Type.Optional(Type.Boolean()), actionIncludesActor: Type.Optional(Type.Boolean()),
+  phase: literals('start', 'combat', 'end'), attackType: Type.Optional(literals('ranged', 'magical', 'melee')), initiativeRoll: Type.Optional(Type.Number()),
+  actor: literals('party', 'enemy', 'character', 'effect', 'triggered', 'deity'), characterId: Type.Optional(Type.Integer()), effectKind: Type.Optional(literals('life_drain', 'stealth', 'terrain')),
+  effectSourceName: Type.Optional(Type.String()), effectTargetName: Type.Optional(Type.String()), effectHealAmount: Type.Optional(Type.Number()), isAggregated: Type.Optional(Type.Boolean()),
+  action: Type.String(), note: Type.Optional(Type.String()), noteTone: Type.Optional(literals('default', 'sub', 'muted')),
+  damage: Type.Optional(Type.Number()), damageTarget: Type.Optional(literals('party', 'enemy')), reflectedDamage: Type.Optional(Type.Number()), reflectedSourceDamage: Type.Optional(Type.Number()), reflectTarget: Type.Optional(literals('party', 'enemy')),
+  absorbedDamage: Type.Optional(Type.Number()), absorbTarget: Type.Optional(literals('party', 'enemy')), showZeroDamage: Type.Optional(Type.Boolean()), hits: Type.Optional(Type.Number()), totalAttempts: Type.Optional(Type.Number()),
+  specialAttack: Type.Optional(literals('gravity_well', 'armor_break', 'mana_break')), rageBonusPercent: Type.Optional(Type.Number()), momentumBonusPercent: Type.Optional(Type.Number()), ambushMultiplier: Type.Optional(Type.Number()),
+  overwatchMultiplier: Type.Optional(Type.Number()), executionMultiplier: Type.Optional(Type.Number()), swarmActorPenaltyPercent: Type.Optional(Type.Number()), swarmOpponentBonusPercent: Type.Optional(Type.Number()),
+  isFirstStrike: Type.Optional(Type.Boolean()), isCounter: Type.Optional(Type.Boolean()), isReAttack: Type.Optional(Type.Boolean()), isEnemyTargetHit: Type.Optional(Type.Boolean()), hideInitiativeLabel: Type.Optional(Type.Boolean()),
+  wasNegated: Type.Optional(Type.Boolean()), elementalOffense: Type.Optional(literals('none', 'fire', 'thunder', 'ice')),
+});
+// The end events as stored (flavor facts included: they select the narration variant).
+const storedEndEvent = Type.Union([Type.Tuple([Type.Literal(0), factMap]), Type.Tuple([Type.Literal(1), factMap]), Type.Tuple([Type.Literal(2), diaryItem]), Type.Tuple([Type.Literal(2), diaryItem, Type.Number()]), Type.Tuple([Type.Literal(3)]), Type.Tuple([Type.Literal(4)])]);
+sampleOverrides.set(storedEndEvent, [3]);
+const roomResources = strict({
+  room: Type.Integer({ minimum: 1 }), godsBattle: Type.Boolean(), gateText: Type.Union([diaryText, Type.Null()]), postBattlePartyHp: Type.Union([Type.Number(), Type.Null()]),
+  enemy: Type.Union([enemySnapshot, Type.Null()]), rewardItems: Type.Array(diaryItem),
+  battle: Type.Union([strict({ format: Type.Literal('compact-v1'), log: compactBattleLog }), strict({ format: Type.Literal('legacy'), details: Type.Array(legacyBattleEntry) })]),
+  endEvents: Type.Array(storedEndEvent),
+  legacyText: Type.Union([strict({ enemyName: Type.String(), gateInfo: nullableString, reward: nullableString, rewardRarity: nullableString, rewardIsSuperRare: Type.Union([Type.Boolean(), Type.Null()]) }), Type.Null()]),
+});
+const battleLogResources = strict({ rooms: Type.Array(roomResources), autoSellMultiplier: Type.Union([Type.Number(), Type.Null()]), compact: Type.Boolean() });
+const explorationResources = strict({ rooms: Type.Array(roomResources, { maxItems: 24 }), compact: Type.Boolean() });
 const battleLogSchema = strict({
   logId: stableKey, partyNumber, dungeonId: integerId, difficultyOffset: Type.Integer({ minimum: 0 }), finalOutcome: expeditionOutcome,
   totalExperience: Type.Number({ minimum: 0 }), completedRooms: Type.Integer({ minimum: 0 }), totalRooms: Type.Integer({ minimum: 0 }),
@@ -267,7 +319,7 @@ const expeditionProjectionSchema = strict({ parties: Type.Array(strict({
   partyNumber, name: Type.String({ minLength: 1 }), state: stableKey,
   stateStartedAt: Type.Union([isoTimestamp, Type.Null()]), stateDurationMs: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]), stateExpectedEndAt: Type.Union([isoTimestamp, Type.Null()]),
   progress: Type.Union([stepProgress, Type.Null()]),
-  exploration: Type.Union([strict({ dungeonId: integerId, difficultyOffset: Type.Integer({ minimum: 0 }), totalRooms: Type.Integer({ minimum: 0 }), revealedRoomCount: count, nextRevealAt: Type.Union([isoTimestamp, Type.Null()]), rooms: Type.Array(battleRoom, { maxItems: 24 }) }), Type.Null()]),
+  exploration: Type.Union([strict({ dungeonId: integerId, difficultyOffset: Type.Integer({ minimum: 0 }), totalRooms: Type.Integer({ minimum: 0 }), revealedRoomCount: count, nextRevealAt: Type.Union([isoTimestamp, Type.Null()]), rooms: Type.Array(battleRoom, { maxItems: 24 }), resources: explorationResources }), Type.Null()]),
   currentHp: Type.Number({ minimum: 0 }), maximumHp: Type.Number({ minimum: 0 }),
   disclosedFloor: Type.Union([Type.Integer(), Type.Null()]), disclosedOutcome: Type.Union([expeditionOutcome, Type.Null()]),
   destination: Type.Union([integerId, Type.Null()]), destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0 }),
@@ -312,7 +364,7 @@ const responseDataSchemas = {
   'read/observation/setting': strict({ settingInfo: settingProjectionSchema }),
   'read/observation/popupEventStream': popupStreamSchema,
   'read/expedition/{p}/setting': strict({ current: strict({ destination: integerId, destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0, maximum: 68, multipleOf: 2 }) }), validOptions: strict({ destination: Type.Array(integerId), depthLimit: Type.Array(Type.String()), difficultyOffset: range }) }),
-  'read/expedition/{p}/latestBattleLog': strict({ battleLog: Type.Union([battleLogSchema, Type.Null()]), bottleneckEnemies: Type.Array(bottleneckEnemy) }),
+  'read/expedition/{p}/latestBattleLog': strict({ battleLog: Type.Union([battleLogSchema, Type.Null()]), resources: Type.Union([battleLogResources, Type.Null()]), bottleneckEnemies: Type.Array(bottleneckEnemy) }),
   'read/expedition/{p}/simulationRun': strict({
     simulatedRevision: Type.Integer({ minimum: 0 }), seedDomain: stableKey, runs: Type.Integer({ minimum: 1 }),
     overview: Type.String(), counts: strict({ clear: count, return: count, draw: count, retreat: count, defeat: count }), overviewPercent: strict({ success: percentage, clear: percentage, return: percentage, draw: percentage, retreat: percentage, defeat: percentage }),

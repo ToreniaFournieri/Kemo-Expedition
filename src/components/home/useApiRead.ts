@@ -58,7 +58,10 @@ export function useApiReadMany<T>(
     return adapter.subscribe(() => setCommitted((count) => count + 1));
   }, [adapter]);
   useEffect(() => {
-    if (!adapter || !inputs || inputs.length === 0) { setData(null); return; }
+    // Disabled (`inputs` null): do no work and keep the last result, exactly like `useApiRead`, so a hidden tab shows its previous
+    // content when it is shown again instead of an empty pane while the new read is in flight.
+    if (!adapter || !inputs) return;
+    if (inputs.length === 0) { setData(null); return; }
     let cancelled = false;
     const timer = setTimeout(() => {
       void Promise.all(inputs.map((input) => adapter.read(operation, input))).then((responses) => {

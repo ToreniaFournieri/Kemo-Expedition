@@ -118,9 +118,19 @@ test('Expedition logs use the latestBattleLog projection and keep retained narra
   const start = home.indexOf('<ExpeditionTab');
   const jsx = home.slice(start, home.indexOf('\n        />', start));
   assert.match(home, /useApiReadMany<LatestBattleLogProjection>\([\s\S]*?'read\/expedition\/\{p\}\/latestBattleLog'/);
-  // An exploring party's rooms come from the Expedition projection's `exploration` (server-gated), never from the disclosed log.
-  assert.match(home, /buildPartyExpeditionLogView\(\{[\s\S]*?exploration,[\s\S]*?retained: party\.lastExpeditionLog/);
+  // An exploring party's rooms come from the Expedition projection's `exploration` (server-gated), never from the disclosed log,
+  // and the view is built from API responses alone: the game state's retained log is not an input.
+  assert.match(home, /buildPartyExpeditionLogView\(\{[\s\S]*?exploration,[\s\S]*?latestBattleLog: latestBattleLogProjections/);
+  const viewSection = home.slice(home.indexOf('const expeditionLogViews = useMemo'), home.indexOf('// SpecRef: 9.1.4.17 | UI state ownership | Retained selections'));
+  assert.doesNotMatch(viewSection, /lastExpeditionLog|retained/);
   assert.match(jsx, /expeditionLogViews=\{expeditionLogViews\}/);
   assert.doesNotMatch(tab, /party\.lastExpeditionLog/);
   assert.doesNotMatch(tab, /renderExpeditionMetadata/);
+});
+
+test('a disabled multi-read keeps its last result, so a hidden tab never returns empty', () => {
+  const hook = read('src/components/home/useApiRead.ts');
+  const many = hook.slice(hook.indexOf('export function useApiReadMany'));
+  assert.match(many, /if \(!adapter \|\| !inputs\) return;/);
+  assert.doesNotMatch(many, /if \(!adapter \|\| !inputs[^)]*\) \{ setData\(null\)/);
 });

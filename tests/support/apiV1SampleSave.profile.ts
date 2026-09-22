@@ -274,12 +274,59 @@ const before = { items: itemConservation(state), jewels: jewelConservation(state
         for (const fact of bottleneck.enemy!.stats) assert.equal(Number.isFinite(fact.value), true);
         assert.ok(bottleneck.enemy!.hp > 0);
       }
-    } else assert.deepEqual(latest, { battleLog: null, bottleneckEnemies: [] });
+    } else assert.deepEqual(latest, { battleLog: null, resources: null, bottleneckEnemies: [] });
   }
   assert.ok(logs > 0, 'the real save retains battle logs');
   await assert.rejects(() => read('read/expedition/1/latestBattleLog', { logId: 'diary:does-not-exist' }), /not_found/);
   await assert.rejects(() => read('read/expedition/1/latestBattleLog', { logId: 'latest' }), /not_found/);
   console.log(`latestBattleLog: ${logs} retained logs, ${bottlenecks} bottleneck rooms validated`);
+}
+
+// 5c-2. The pane renders a retained log from the API response alone: every room of every party's log and every Diary-retained
+// log renders exactly as the retained record itself would (names, gate and reward text, the Bestiary snapshot, and the whole
+// narration, including end events), without reading the game state.
+{
+  const { buildExpeditionLogView } = await import('../../src/api/v1/expeditionLogView.ts');
+  const { renderExpeditionMetadata, renderDiaryBattle } = await import('../../src/game/compactDiary.ts');
+  const { publicEnemySnapshot } = await import('../../src/api/v1/enemyStatus.ts');
+  const { setLanguage } = await import('../../src/i18n/index.ts');
+  const validateLog = validator('read/expedition/{p}/latestBattleLog');
+  let rooms = 0; let compact = 0; let legacy = 0;
+  for (const language of ['ja'] as const) {
+    setLanguage(language);
+    for (const party of state.parties) {
+      const targets = [
+        { logId: 'latest', log: party.lastExpeditionLog, parameters: {} as Record<string, unknown> },
+        ...party.diaryLogs.map((diary) => ({ logId: `diary:${diary.id}`, log: diary.expeditionLog, parameters: { logId: `diary:${diary.id}` } })),
+      ];
+      for (const target of targets) {
+        if (!target.log) continue;
+        const response = await read(`read/expedition/${party.id}/latestBattleLog`, target.parameters) as never;
+        assert.equal(validateLog(response), true, JSON.stringify(validateLog.errors?.slice(0, 2)));
+        const view = buildExpeditionLogView(response)!;
+        const expected = renderExpeditionMetadata(target.log);
+        assert.equal(view.entries.length, expected.entries.length);
+        expected.entries.forEach((entry, index) => {
+          const actual = view.entries[index];
+          const where = `${language} party ${party.id} ${target.logId} room ${entry.room}`;
+          assert.equal(actual.enemyName, entry.enemyName, `${where} enemy name`);
+          assert.equal(actual.gateInfo, entry.gateInfo, `${where} gate text`);
+          assert.equal(actual.reward, entry.reward, `${where} reward text`);
+          assert.equal(Boolean(actual.godsBattle), Boolean(entry.godsBattle), `${where} Gods Battle flag`);
+          assert.deepEqual(actual.enemySnapshot ?? null, entry.enemySnapshot ? publicEnemySnapshot(entry.enemySnapshot) : null, `${where} enemy snapshot`);
+          assert.equal(actual.postBattlePartyHP, entry.postBattlePartyHP, `${where} post-battle HP`);
+          assert.deepEqual(renderDiaryBattle(actual, party.characters), renderDiaryBattle(entry, party.characters), `${where} narration`);
+          rooms += 1;
+          if (entry.compactBattle) compact += 1; else legacy += 1;
+        });
+        assert.deepEqual(view.rewards.map((item) => [item.id, item.enhancement, item.superRare]), target.log.rewards.map((item) => [item.id, item.enhancement, item.superRare]), 'rewards');
+        assert.equal(view.autoSellMultiplier, target.log.autoSellMultiplier);
+      }
+    }
+  }
+  setLanguage('ja');
+  assert.ok(rooms > 0, 'the real save retains rooms');
+  console.log(`log rendering: ${rooms} rooms (${compact} compact, ${legacy} legacy) render identically from the response`);
 }
 
 // 5d. The old save's outcome names are upgraded on load: every log and count uses Clear, Return, Draw, Retreat, and Defeat.
