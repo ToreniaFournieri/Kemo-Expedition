@@ -1577,20 +1577,45 @@ Path Parameters
 * Return:
   * a back up file. 
 
+
 **3-6-5-2. `backup/import`**
 
-* Parameters: an imported file.
+* Parameters:
+  * `file`
+    * The backup file to import.
+  * `skipConfirmation`
+    * Boolean.
+    * Default: false.
+    * Optional.
+    * If `true`, skips the confirmation step.
 
 * Return:
-  * the result. 
+  * `result`
+    * The result of the import operation.
 
 **3-6-5-3. `backup/reset`**
 
-* Initial parameters: none.
+* Initial parameters:
+  * `skipConfirmation`
+    * Boolean.
+    * Optional.
+    * Default: `false`.
+    * If `true`, skips the confirmation step.
 
-* System reply `confirmationToken` with warning.
+* Initial return:
+  * `confirmationToken`
+    * Returned when confirmation is required.
+  * `warningMessage`
+    * Warning shown before reset execution.
 
-* Confirmation parameters: `confirmationToken`.
+* Confirmation parameters:
+  * `confirmationToken`
+    * Required when `isMuteConfirmation` is `false`.
+
+* Return:
+  * `result`
+    * The result of the reset operation.
+
 
 
 **3-6-6. `feedback`**
