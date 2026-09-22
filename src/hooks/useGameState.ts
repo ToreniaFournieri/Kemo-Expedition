@@ -5089,16 +5089,8 @@ export function useGameState() {
       dispatch({ type: 'UNLOCK_MIMORIAN_ENEMY', enemyId });
     }, []),
 
-    buyShopItem: useCallback((itemId: number, stockItemKey: string) => {
-      dispatch({ type: 'BUY_SHOP_ITEM', itemId, stockItemKey });
-    }, []),
-
     buyDebugStoreItem: useCallback((itemId: number) => {
       dispatch({ type: 'BUY_DEBUG_STORE_ITEM', itemId });
-    }, []),
-
-    refreshShopLineup: useCallback(() => {
-      dispatch({ type: 'REFRESH_SHOP_LINEUP' });
     }, []),
 
     setVariantStatus: useCallback((variantKey: string, status: 'notown') => {

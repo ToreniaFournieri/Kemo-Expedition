@@ -218,9 +218,7 @@ export interface HomeScreenProps {
     sellAllOwned: () => void;
     grantFeedbackReward: () => void;
     unlockMimorianEnemy: (enemyId: number) => void;
-    buyShopItem: (itemId: number, stockItemKey: string) => void;
     buyDebugStoreItem: (itemId: number) => void;
-    refreshShopLineup: () => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markItemsSeen: () => void;
     markDiaryLogSeen: (logId: string) => void;

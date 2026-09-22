@@ -101,6 +101,7 @@ import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIn
 import { parseInventoryStacks, parseJewelStacks, parseSavedEquipmentSet } from '../api/v1/itemFormat';
 import { buildPartySummaries, buildPartyView, type PartyProjection } from '../api/v1/partyView';
 import type { ExpeditionProjection } from '../api/v1/expeditionView';
+import type { BaseProjection } from '../api/v1/baseView';
 import { buildPartyExpeditionLogView, type ExpeditionLogView, type LatestBattleLogProjection } from '../api/v1/expeditionLogView';
 import { useApiRead, useApiReadMany } from './home/useApiRead';
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
@@ -2019,6 +2020,30 @@ export function HomeScreen({
     });
     return views;
   }, [expeditionProjection, latestBattleLogProjections, state.parties]);
+  // SpecRef: 8.4 | UI_BASE | The Base panes read the Base projection and commit through the Application API.
+  // The Shop lineup rotates with the clock, so the projection is re-read when the next scheduled refresh arrives.
+  const isBaseTabVisible = isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'base' : activeTab === 'base';
+  const [baseProjectionRefresh, setBaseProjectionRefresh] = useState(0);
+  const baseObservation = useApiRead<{ baseInfo: BaseProjection }>(
+    inProcessApiRef.current, 'read/observation/base', {}, [state.global, baseProjectionRefresh], isBaseTabVisible,
+  );
+  const baseProjection = baseObservation?.baseInfo ?? null;
+  useEffect(() => {
+    if (!isBaseTabVisible || !baseProjection) return;
+    const timer = window.setTimeout(() => setBaseProjectionRefresh((value) => value + 1), Math.max(1000, Date.parse(baseProjection.shop.refreshesAt) - Date.now() + 1000));
+    return () => window.clearTimeout(timer);
+  }, [baseProjection?.shop.refreshesAt, isBaseTabVisible]);
+  const baseCommandQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const commitBase = useCallback((operation: string, parameters: Record<string, unknown>) => {
+    baseCommandQueueRef.current = baseCommandQueueRef.current.then(async () => {
+      const adapter = inProcessApiRef.current;
+      if (!adapter) return;
+      const response = await adapter.commit(operation, { parameters });
+      if (response.error) console.error('[api-v1] Base command failed', operation, parameters, response.error);
+    });
+  }, []);
+  const buyShopItem = useCallback((shopItemId: number) => commitBase('commit/base/purchaseShopItems', { items: [{ shopItemId }] }), [commitBase]);
+  const refreshShop = useCallback(() => commitBase('commit/base/paidShopRefresh', {}), [commitBase]);
   // SpecRef: 9.1.4.17 | UI state ownership | Retained selections come from `read/observation/setting` (uiPreferences)
   const settingObservation = useApiRead<{ settingInfo: { uiPreferences: Array<{ key: string; value: string | number | boolean }> } }>(
     inProcessApiRef.current, 'read/observation/setting', {}, [state.global.uiPreferences], isPartyTabVisible,
@@ -5164,16 +5189,13 @@ export function HomeScreen({
           prana={state.global.prana}
           altarVictoriesByEnemyType={state.global.altarVictoriesByEnemyType}
           unlockedMimorianEnemyIds={state.global.unlockedMimorianEnemyIds}
-          shopPurchases={state.global.shopPurchases}
           debugStorePurchases={state.global.jewelShopPurchases}
-          shopRefreshCounts={state.global.shopRefreshCounts}
-          shopIntimacy={state.global.shopIntimacy}
-          shopIntimacyLastDecayAt={state.global.shopIntimacyLastDecayAt}
+          shop={baseProjection?.shop ?? null}
           onSellStack={actions.sellStack}
           onSetVariantStatus={actions.setVariantStatus}
-          onBuyShopItem={actions.buyShopItem}
+          onBuyShopItem={buyShopItem}
           onBuyDebugStoreItem={actions.buyDebugStoreItem}
-          onRefreshShopLineup={actions.refreshShopLineup}
+          onRefreshShopLineup={refreshShop}
           onUnlockMimorianEnemy={actions.unlockMimorianEnemy}
           onSetJewelAutoEquipPriorityParty={actions.setJewelAutoEquipPriorityParty}
           activeSubTab={activeBaseSubTab}

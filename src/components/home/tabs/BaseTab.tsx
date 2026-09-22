@@ -9,8 +9,8 @@ import { getItemDisplayName,getLocalizedItemName } from '../../../game/gameState
 import { getJewelNameByRank,getJewelOwnedCount,JEWEL_DEFS } from '../../../game/jewel';
 import { getAltarLevel,getAltarVictoriesForEnemyType,getEnemyFormPranaCost,getEnemyRequiredAltarLevel,getRequiredAltarVictories,getSuperRareItemPrana,MAX_ALTAR_LEVEL } from '../../../game/prana';
 import { calculateItemSellPrice } from '../../../game/pricing';
-import { buildShopLineup,countElapsedShopRefreshes,getNextShopRefreshDate,getShopHourKey,getShopRefreshPrice } from '../../../game/shop';
 import { t } from '../../../i18n';
+import type { ShopProjection } from '../../../api/v1/baseView';
 import { AbilityId,InventoryRecord,Item,JewelKey,Party } from '../../../types';
 
 
@@ -50,11 +50,8 @@ export default function BaseTab({
   prana,
   altarVictoriesByEnemyType,
   unlockedMimorianEnemyIds,
-  shopPurchases,
   debugStorePurchases,
-  shopRefreshCounts,
-  shopIntimacy,
-  shopIntimacyLastDecayAt,
+  shop,
   onSellStack,
   onSetVariantStatus,
   onBuyShopItem,
@@ -74,14 +71,11 @@ export default function BaseTab({
   prana: number;
   altarVictoriesByEnemyType?: Record<string, number>;
   unlockedMimorianEnemyIds: number[];
-  shopPurchases: Record<string, string[]>;
   debugStorePurchases: Record<string, number>;
-  shopRefreshCounts: Record<string, number>;
-  shopIntimacy: number;
-  shopIntimacyLastDecayAt: number;
+  shop: ShopProjection | null;
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
-  onBuyShopItem: (itemId: number, stockItemKey: string) => void;
+  onBuyShopItem: (shopItemId: number) => void;
   onBuyDebugStoreItem: (itemId: number) => void;
   onRefreshShopLineup: () => void;
   onUnlockMimorianEnemy: (enemyId: number) => void;
@@ -141,12 +135,7 @@ export default function BaseTab({
         />
       ) : activeSubTab === 'shop' ? (
         <ShopTab
-          gold={gold}
-          parties={parties}
-          shopPurchases={shopPurchases}
-          shopRefreshCounts={shopRefreshCounts}
-          shopIntimacy={shopIntimacy}
-          shopIntimacyLastDecayAt={shopIntimacyLastDecayAt}
+          shop={shop}
           onBuyShopItem={onBuyShopItem}
           onRefreshShopLineup={onRefreshShopLineup}
         />
@@ -351,77 +340,39 @@ function AltarTab({
 
 // SpecRef: 8.4.1 | Shop (お店) | Lineup
 function ShopTab({
-  gold,
-  parties,
-  shopPurchases,
-  shopRefreshCounts,
-  shopIntimacy,
-  shopIntimacyLastDecayAt,
+  shop,
   onBuyShopItem,
   onRefreshShopLineup,
 }: {
-  gold: number;
-  parties: Party[];
-  shopPurchases: Record<string, string[]>;
-  shopRefreshCounts: Record<string, number>;
-  shopIntimacy: number;
-  shopIntimacyLastDecayAt: number;
-  onBuyShopItem: (itemId: number, stockItemKey: string) => void;
+  shop: ShopProjection | null;
+  onBuyShopItem: (shopItemId: number) => void;
   onRefreshShopLineup: () => void;
 }) {
+  // SpecRef: 8.4.1 | Shop (お店)
+  // The pane draws the shop from the Base projection: the dialogue tier, the countdown, the refresh price, and each slot's
+  // price and availability are the API's facts. The item's name and stats are master data for the projected item ID.
   const mustelidRace = RACES.find((race) => race.id === 'mustelid');
-  const now = new Date();
-  const elapsedRefreshes = countElapsedShopRefreshes(shopIntimacyLastDecayAt, now);
-  const effectiveIntimacy = Math.max(0, Math.floor(shopIntimacy * (0.9 ** elapsedRefreshes)));
-  const nextRefreshDate = getNextShopRefreshDate(now);
-  const minutesToRefresh = Math.max(1, Math.ceil((nextRefreshDate.getTime() - now.getTime()) / 60000));
+  if (!mustelidRace || !shop) {
+    return <div className="text-sm text-gray-600">{t('home.shop.preparing')}</div>;
+  }
+  const minutesToRefresh = Math.max(1, Math.ceil((Date.parse(shop.refreshesAt) - Date.now()) / 60000));
   const countdownText = minutesToRefresh >= 60
     ? t('home.shop.countdown.hours', { count: Math.floor(minutesToRefresh / 60) })
     : t('home.shop.countdown.minutes', { count: minutesToRefresh });
-  const hourKey = getShopHourKey(now);
-  const refreshCount = shopRefreshCounts[hourKey] ?? 0;
-  const refreshPrice = getShopRefreshPrice(refreshCount);
-  const shopLineup = buildShopLineup({ parties, gold, shopPurchases, shopRefreshCounts, shopIntimacy, shopIntimacyLastDecayAt }, now);
 
-  if (!mustelidRace) {
-    return <div className="text-sm text-gray-600">{t('home.shop.preparing')}</div>;
-  }
-
-  const intimacyDialogue = effectiveIntimacy >= 80
-    ? t('home.shop.dialogue.intimacy80')
-    : effectiveIntimacy >= 40
-      ? t('home.shop.dialogue.intimacy40')
-      : effectiveIntimacy >= 20
-        ? t('home.shop.dialogue.intimacy20')
-        : t('home.shop.dialogue.default');
-
-  const shopItems = shopLineup.entries.map((entry) => {
-    const item = entry.item;
-    const baseItemId = entry.itemId;
-    const stockItemKey = entry.stockEntryId;
-    const isSoldOut = entry.soldOut;
-    const canBuy = entry.canPurchase;
-    const rarity = entry.rarity;
-    const rarityClass = isSoldOut
+  const shopItems = shop.entries.flatMap((entry) => {
+    const item = ITEMS.find((candidate) => candidate.id === entry.itemId);
+    if (!item) return [];
+    const rarityClass = entry.soldOut
       ? 'text-gray-400'
-      : rarity === 'bossRare'
+      : entry.rarity === 'bossRare'
         ? 'text-accent'
-        : rarity === 'eliteRare'
+        : entry.rarity === 'eliteRare'
           ? 'text-sub'
-          : rarity === 'uncommon'
+          : entry.rarity === 'uncommon'
             ? 'font-bold text-gray-900'
             : 'text-gray-900 font-normal';
-
-    return {
-      key: stockItemKey,
-      stockItemKey,
-      itemId: baseItemId,
-      item,
-      price: entry.price,
-      isSoldOut,
-      canBuy,
-      rarityClass,
-    };
+    return [{ key: `${entry.shopItemId}-${entry.itemId}`, shopItemId: entry.shopItemId, item: { ...item, enhancement: 0, superRare: 0 }, price: entry.price, isSoldOut: entry.soldOut, canBuy: entry.available, rarityClass }];
   });
 
   return (
@@ -443,7 +394,7 @@ function ShopTab({
             />
             <div className="shop-dialogue-pane__bubble space-y-1 rounded px-2 py-1">
               <p className="shop-dialogue-pane__line text-sm">
-                {intimacyDialogue}
+                {t(shop.dialogue.key)}
               </p>
               <p className="shop-dialogue-pane__countdown text-xs">
                 {t('home.shop.refreshCountdown', { time: countdownText.replace('後', '') })}
@@ -453,15 +404,15 @@ function ShopTab({
           <div className="shrink-0 text-right">
             <button
               onClick={onRefreshShopLineup}
-              disabled={gold < refreshPrice}
+              disabled={!shop.paidRefresh.available}
               className={`rounded px-3 py-1 text-xs font-semibold ${
-                gold >= refreshPrice
+                shop.paidRefresh.available
                   ? 'bg-accent text-white hover:bg-accent/90'
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500'
               }`}
             >
               <span className="block">{t('home.shop.paidRefresh')}</span>
-              <span className="block text-[11px]">{formatNumber(refreshPrice)}G</span>
+              <span className="block text-[11px]">{formatNumber(shop.paidRefreshPrice)}G</span>
             </button>
           </div>
         </div>
@@ -483,7 +434,7 @@ function ShopTab({
                 </div>
               </div>
               <button
-                onClick={() => onBuyShopItem(entry.itemId, entry.stockItemKey)}
+                onClick={() => onBuyShopItem(entry.shopItemId)}
                 disabled={!entry.canBuy}
                 className={`shrink-0 min-w-[3.25rem] whitespace-nowrap rounded px-3 py-1 text-xs font-medium ${
                   entry.isSoldOut

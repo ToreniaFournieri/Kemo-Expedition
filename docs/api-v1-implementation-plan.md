@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 84. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 85. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -99,7 +99,8 @@ Gate passed: no `actions.*` reducer call remains in `PartyTab.tsx` for these con
 - **B1 (done, Build 81): Shop.** Shared shop facts (`src/game/shopFacts.ts`); `shopInfo`, `shopItemsList`, and the `base` projection publish the real dialogue tier, countdown, effective intimacy, and refresh price (the projection had used intimacy as the refresh count); slots are integer positions; purchase and paid refresh validate atomically at the transaction's clock (the reducers gained an explicit `now`, so an API account no longer buys from the wall-clock lineup).
 - **B2 (done, Build 83): Altar and enemy forms.** Shared `src/game/altarFacts.ts`; `altarInfo`, `enemyFormList`, and the `base` projection publish real Alter levels, victories, costs, abilities, bonuses, and the reason a form is locked; `unlockForm` is validated with named reasons and returns the Prana spent.
 - **B3 (done, Build 84): Inventory reads.** The `base` projection carries per-stack `sale` (shared `getStackSale`, also used by the sale itself), held `jewels`, and every worn item with its owner (`equippedItems`); `markItemsAsSeen` is precise and atomic and `changeJewelPriorityParty` validates the party. The Vault has no API (Spec 8.4.3) and stays with the application.
-- Still to do: migrate the panes (B4): Shop, Inventory, Altar, then the Jewel priority and the Vault's exception in the migration guard. The Vault (debug store) has no API operation (Spec 8.4.3: no API), so it stays a reducer action.
+- **B4a (done, Build 85): Shop pane.** The Shop draws `read/observation/base` (`shop`) and buys and refreshes through `purchaseShopItems` and `paidShopRefresh`; the pane is handed none of the shop's state and imports none of its rules (typed read model in `src/api/v1/baseView.ts`).
+- Still to do: B4b Altar, B4c Inventory (highlight acknowledgement, sell, unlock, Jewel priority), and the Vault's reviewed exception in the migration guard. The Vault (debug store) has no API operation (Spec 8.4.3: no API), so it stays a reducer action.
 - Altar and enemy-form facts.
 - Stable variant-key highlighting with `markItemsAsSeen`.
 - Then migrate the Base panes (Shop, Inventory, Vault, Altar).

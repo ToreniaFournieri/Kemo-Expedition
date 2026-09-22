@@ -134,3 +134,18 @@ test('a disabled multi-read keeps its last result, so a hidden tab never returns
   assert.match(many, /if \(!adapter \|\| !inputs\) return;/);
   assert.doesNotMatch(many, /if \(!adapter \|\| !inputs[^)]*\) \{ setData\(null\)/);
 });
+
+test('the Shop pane draws the Base projection and buys and refreshes through the Application API (migration in progress)', () => {
+  const home = read('src/components/HomeScreen.tsx');
+  const tab = read('src/components/home/tabs/BaseTab.tsx');
+  const start = home.indexOf('<BaseTab');
+  const jsx = home.slice(start, home.indexOf('\n        />', start));
+  // The shop's state is no longer handed to the pane, and its rules are not imported into it.
+  for (const banned of ['shopPurchases', 'shopRefreshCounts', 'shopIntimacy']) assert.doesNotMatch(jsx, new RegExp(banned), `${banned} is not a BaseTab prop`);
+  assert.match(jsx, /shop=\{baseProjection\?\.shop \?\? null\}/);
+  assert.doesNotMatch(tab, /game\/shop['"]/);
+  assert.doesNotMatch(tab, /buildShopLineup|getShopRefreshPrice|countElapsedShopRefreshes/);
+  assert.match(home, /commit\/base\/purchaseShopItems/);
+  assert.match(home, /commit\/base\/paidShopRefresh/);
+  assert.doesNotMatch(jsx, /actions\.(buyShopItem|refreshShopLineup)/);
+});
