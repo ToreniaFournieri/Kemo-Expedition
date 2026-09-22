@@ -39,6 +39,7 @@ import { EXPLORING_PROGRESS_TOTAL_STEPS, getAutoSellStepCount, getExplorationVis
 export { EXPLORING_PROGRESS_TOTAL_STEPS, getAutoSellStepCount, getExplorationVisibleRoomCount, STEP_BASED_STATES };
 import { isEnemyTypeCBonusType } from '../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId } from '../../game/environment';
+import type { ApiV1DeliveryOutcome, ApiV1DeliveryRecord } from '../../api/v1/deliveries';
 import { getItemRarityById } from '../../game/itemRarity';
 import { getItemDisplayMultiplier } from '../../game/itemPower';
 import { getArcMagicAbilityLevel, getArcMagicOffenseAmplifier, getBaseDefenseScale, getBaseOffenseScale, getCharacterDisplayedMagicalAttackAmplifier, getEffectiveAccuracyBonus, getOffenseMultiplierSum } from '../../game/statusFacts';
@@ -1552,6 +1553,50 @@ export const BETA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_BETA_DISCORD_WEBHOO
 export const ORCA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_ORCA_DISCORD_WEBHOOK_URL;
 export const PROD_DISCORD_WEBHOOK_URL = import.meta.env.VITE_PROD_DISCORD_WEBHOOK_URL;
 export const FEEDBACK_DISCORD_WEBHOOK_URL = import.meta.env.VITE_FEEDBACK_DISCORD_WEBHOOK_URL;
+
+// SpecRef: 9.1.4.15 | External delivery and rewards | The Application API's `ApplicationApiPorts.delivery.send` port
+// Generalizes the same Discord-webhook POST pattern `postWebhookWithFiles` (HomeScreen's Report Progress button) and
+// `handleSendFeedback` (SettingTab's Send Feedback button) already use, for the API's own queued delivery jobs. The
+// content and attachment bytes are already frozen on `record.payload` at commit time (src/api/v1/deliveryContent.ts);
+// this only ever posts that frozen payload, never re-derives it, and is called at most once per claimed send attempt.
+export async function sendApiV1Delivery(record: ApiV1DeliveryRecord): Promise<ApiV1DeliveryOutcome> {
+  const environmentId = getEnvironmentId();
+  const webhookUrl = record.operation === 'commit/setting/feedback'
+    ? FEEDBACK_DISCORD_WEBHOOK_URL
+    : ({ dev: DEV_DISCORD_WEBHOOK_URL, beta: BETA_DISCORD_WEBHOOK_URL, orca: ORCA_DISCORD_WEBHOOK_URL }[environmentId as string] ?? PROD_DISCORD_WEBHOOK_URL);
+  // Still queued and accepted per spec's unconditional-acceptance rule; a missing webhook can never succeed, so it
+  // fails definitively instead of burning retry attempts that cannot help.
+  if (!webhookUrl) return { kind: 'rejected', reason: 'webhook_not_configured' };
+  const payload = record.payload;
+  if (!payload) return { kind: 'rejected', reason: 'missing_payload' };
+
+  const formData = new FormData();
+  formData.append('payload_json', JSON.stringify({ content: payload.content, username: payload.username }));
+  payload.attachments.forEach((attachment, index) => {
+    const bytes = Uint8Array.from(atob(attachment.contentBase64), (char) => char.charCodeAt(0));
+    formData.append(`files[${index}]`, new Blob([bytes], { type: attachment.mediaType }), attachment.name);
+  });
+
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 20_000);
+  try {
+    const response = await fetch(webhookUrl, { method: 'POST', body: formData, signal: controller.signal });
+    if (response.ok) return { kind: 'delivered' };
+    // 4xx: the recipient processed and definitively refused this exact payload (a network-level retry cannot help).
+    // 429/5xx: rate-limited or a transient server failure; safe to retry the same payload later.
+    return response.status === 429 || response.status >= 500
+      ? { kind: 'not_sent', reason: `http_${response.status}` }
+      : { kind: 'rejected', reason: `http_${response.status}` };
+  } catch (error) {
+    // Our own timeout: the request may already have reached Discord before we gave up waiting for a response, so
+    // this is genuinely ambiguous, never automatically resent. Any other failure (offline, DNS, connection refused)
+    // is treated as nothing having been sent at all, and is safe to retry.
+    if (error instanceof DOMException && error.name === 'AbortError') return { kind: 'ambiguous', reason: 'timeout_after_send' };
+    return { kind: 'not_sent', reason: 'network_error' };
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
 
 export function formatNumber(value: number): string {
   return numberFormatter.format(Math.trunc(value));

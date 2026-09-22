@@ -383,7 +383,7 @@ const diaryProjectionSchema = strict({
     settings: strict(diarySettingMembers), entries: Type.Array(diaryEntrySummary),
   })),
 });
-const settingProjectionSchema = strict({ language, environment: Type.String(), gameMode: modeKey, enemyLevelOffset: Type.Integer({ minimum: 0, maximum: 20 }), modeSelect: optional(strict(modeSelect)), debug: optional(strict(debug)), enemyEditPane: optional(strict(enemyEdit)), uiPreferences: Type.Array(strict({ key: stableKey, value: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), uiPreferenceCatalog: Type.Array(strict({ family: stableKey, subject: Type.Literal('characterId'), type: Type.Union([Type.Literal('string'), Type.Literal('number'), Type.Literal('boolean')]), options: Type.Array(Type.String()), defaultValue: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })) });
+const settingProjectionSchema = strict({ language, environment: Type.String(), gameMode: modeKey, enemyLevelOffset: Type.Integer({ minimum: 0, maximum: 20 }), modeSelect: optional(strict(modeSelect)), debug: optional(strict(debug)), enemyEditPane: optional(strict(enemyEdit)), uiPreferences: Type.Array(strict({ key: stableKey, value: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), uiPreferenceCatalog: Type.Array(strict({ family: stableKey, subject: Type.Literal('characterId'), type: Type.Union([Type.Literal('string'), Type.Literal('number'), Type.Literal('boolean')]), options: Type.Array(Type.String()), defaultValue: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), pendingDeliveryIds: Type.Array(stableKey) });
 const popupStreamSchema = strict({ events: Type.Array(popupEvent) });
 
 // SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視)

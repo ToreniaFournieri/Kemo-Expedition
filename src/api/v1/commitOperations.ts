@@ -1,4 +1,5 @@
 import type { ApiV1DeliveryRecord } from './deliveries';
+import { buildFeedbackDeliveryPayload, buildProgressReportDeliveryPayload } from './deliveryContent';
 import { DEVELOPER_NEWS_ITEMS } from '../../data/developerNews';
 import { getDeityId, getDeityNameFromId, isNoFaithDeity, normalizeDeityName } from '../../game/deity';
 import { isDebugModeEnabled } from '../../game/environment';
@@ -139,7 +140,12 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
   } else if (operation === 'commit/progress/progressReport' || operation === 'commit/setting/feedback') {
     const deliveryId = context.createDeliveryId();
     const deliveryTime = new Date(context.now()).toISOString();
-    delivery = { deliveryId, status: 'queued', createdAt: deliveryTime, updatedAt: deliveryTime, failureReason: null, rewardApplied: false, operation, parameters: structuredClone(parameters), files: context.canonicalFiles };
+    // SpecRef: 9.1.4.15 | Content is captured once, here, at admission; the sender never re-derives it from live
+    // state on retry (deliveryContent.ts).
+    const payload = operation === 'commit/progress/progressReport'
+      ? buildProgressReportDeliveryPayload(next, context.now())
+      : buildFeedbackDeliveryPayload(next, parameters, context.uploadedFiles, context.now());
+    delivery = { deliveryId, status: 'queued', createdAt: deliveryTime, updatedAt: deliveryTime, failureReason: null, rewardApplied: false, operation, parameters: structuredClone(parameters), files: context.canonicalFiles, payload };
     data = { deliveryId, status: 'queued' };
   } else if (partyMatch) {
     const partyNumber = Number(partyMatch[1]);

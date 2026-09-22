@@ -1,10 +1,12 @@
 import type { ExpeditionLog, GameState } from '../../types';
 import { buildApiV1ReadData, type ApiV1ReadContext } from './readModels';
-import { SerializedApplicationApiAuthority, type ApiV1CommitAuthorityDependencies, type ApiV1ControlMetadata } from './authority';
+import { SerializedApplicationApiAuthority, type ApiV1CommitAuthorityDependencies, type ApiV1ControlMetadata, type ApiV1InternalTransactionDependencies } from './authority';
 import { normalizeApiV1PopupEvents } from './popupEvents';
 import { serializeGameState } from '../../game/saveCodec';
 import { encodePersistedState } from '../../game/storageCompression';
 import { logInApiAccount, logOutApiAccount, signUpApiAccount, type ApiV1SessionPorts } from './sessionLifecycle';
+import { claimNextDelivery, settleDelivery, type ApiV1DeliveryOutcome, type ApiV1DeliveryRecord } from './deliveries';
+import { completeDeliveredBenefit } from './deliveryCompletion';
 
 // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | One transport-neutral Application API
 // SpecRef: 9.1.3 | API | React UI, Desktop, and AI/CUI HTTP adapters share these handlers
@@ -54,6 +56,8 @@ export interface ApplicationApiPorts {
   help: { requirements: string; detail: string };
   /** Notifies the UI that an exclusive API session started or ended (it disables state-mutating controls). */
   onSessionActive: (active: boolean) => void;
+  /** SpecRef: 9.1.4.15 | The actual network send for a claimed delivery job; never called more than once per claim. */
+  delivery: { send: (record: ApiV1DeliveryRecord) => Promise<ApiV1DeliveryOutcome> };
 }
 
 /** The trusted in-process adapter API: it supplies revision and idempotency metadata on the caller's behalf. */
@@ -76,6 +80,15 @@ export interface ApplicationApi {
   isSessionActive: () => boolean;
   authority: SerializedApplicationApiAuthority;
   createInProcessAdapter: () => InProcessApiAdapter;
+  /**
+   * SpecRef: 9.1.4.15 | Runs one claim/send/settle/(complete) cycle for the delivery sender; a safe no-op when
+   * there is nothing to do. Exposed directly (not only via the interval below) so a caller — or a test — can nudge
+   * it deterministically instead of waiting for the next poll tick.
+   */
+  pumpDeliveries: () => Promise<void>;
+  /** Starts the delivery sender's poll loop (a resilience backstop; pumps also run right after a commit that
+   *  queues a job). Idempotent to call more than once. Returns a stop function. */
+  startDeliveryPump: () => () => void;
 }
 
 const SERIALIZED_OPERATIONS = new Set(['fundamental/signUp', 'fundamental/logIn', 'fundamental/logOut']);
@@ -109,6 +122,98 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
   });
 
   const activeSession = () => activeIdentity ? { identity: activeIdentity, ...authority.getSnapshot() } : null;
+
+  // SpecRef: 9.1.4.15 | External delivery and rewards | Claim → send → settle → complete
+  // Runs entirely through `authority.runInternalTransaction`, so it is serialized against every client commit and
+  // against itself; the network send (`ports.delivery.send`) happens outside that lock, so it never blocks other
+  // commits, but nothing else can claim a second job while one is `sending` (the state machine itself enforces that).
+  let pumpingDeliveries = false;
+  let pendingDeliverySettlement: { deliveryId: string; outcome: ApiV1DeliveryOutcome } | null = null;
+
+  function deliveryTransactionDependencies(identity: DesktopApiAccountIdentity | null): ApiV1InternalTransactionDependencies & { now: () => number } {
+    return {
+      now: ports.runtime.now,
+      persist: async (snapshot, control) => {
+        if (identity) await ports.session.accounts.commit(identity, encodePersistedState(JSON.stringify(serializeGameState(snapshot))), control as DesktopApiControlMetadata);
+        else await ports.runtime.persistPlayer(snapshot);
+      },
+      publish: ports.runtime.publish,
+      onPublicationFailure: ports.runtime.onPublicationFailure,
+    };
+  }
+
+  /** Applies the delivered benefit exactly once; safe to call repeatedly (a no-op once `completionApplied`), which
+   *  is how a completion-persist failure is retried — simply by being reconsidered on the next pump tick. */
+  async function completeDeliveryBenefit(identity: DesktopApiAccountIdentity | null, deliveryId: string): Promise<void> {
+    const deps = deliveryTransactionDependencies(identity);
+    await authority.runInternalTransaction((state, control) => {
+      const record = (control.deliveries ?? []).find((entry) => entry.deliveryId === deliveryId);
+      if (!record || record.status !== 'delivered' || record.completionApplied) return null;
+      const feedbackReward = control.feedbackReward ?? { hasLegacySubmission: false, lastSuccessfulSubmissionAt: null };
+      const completion = completeDeliveredBenefit(state, control.deliveries ?? [], feedbackReward, deliveryId, deps.now());
+      return { state: completion.state, control: { ...control, deliveries: completion.deliveries, feedbackReward: completion.feedbackReward }, stateChanged: completion.stateChanged, controlChanged: true };
+    }, deps);
+  }
+
+  /** Persists an already-final network outcome. If persistence fails, the in-memory snapshot is left untouched (the
+   *  job still reads `sending`), so the caller remembers the outcome in `pendingDeliverySettlement` and retries
+   *  persisting it — never the send itself — on the next tick (9.1.4.15: "retry local completion, never the remote
+   *  send"). */
+  async function settleClaimedDelivery(identity: DesktopApiAccountIdentity | null, deliveryId: string, outcome: ApiV1DeliveryOutcome): Promise<void> {
+    const deps = deliveryTransactionDependencies(identity);
+    const after = await authority.runInternalTransaction((state, control) => {
+      const record = (control.deliveries ?? []).find((entry) => entry.deliveryId === deliveryId);
+      if (!record || record.status !== 'sending') return null;
+      const deliveries = settleDelivery(control.deliveries ?? [], deliveryId, outcome, deps.now());
+      return { state, control: { ...control, deliveries }, stateChanged: false, controlChanged: true };
+    }, deps);
+    const settled = after.control.deliveries?.find((entry) => entry.deliveryId === deliveryId);
+    if (settled && settled.status === 'sending') {
+      pendingDeliverySettlement = { deliveryId, outcome };
+      return;
+    }
+    pendingDeliverySettlement = null;
+    if (settled?.status === 'delivered') await completeDeliveryBenefit(identity, deliveryId);
+  }
+
+  async function pumpDeliveriesOnce(): Promise<void> {
+    if (pumpingDeliveries) return;
+    pumpingDeliveries = true;
+    try {
+      // Pinned for this whole tick: an identity change (logout) mid-send is a narrow edge case this does not fully
+      // solve, but every step of one tick stays internally consistent about which account it is acting for.
+      const identity = activeIdentity;
+      if (pendingDeliverySettlement) {
+        await settleClaimedDelivery(identity, pendingDeliverySettlement.deliveryId, pendingDeliverySettlement.outcome);
+        if (pendingDeliverySettlement) return;
+      }
+      const deliveredUnapplied = authority.getSnapshot().control.deliveries?.find((entry) => entry.status === 'delivered' && !entry.completionApplied);
+      if (deliveredUnapplied) await completeDeliveryBenefit(identity, deliveredUnapplied.deliveryId);
+
+      const deps = deliveryTransactionDependencies(identity);
+      const claimResult = await authority.runInternalTransaction((state, control) => {
+        const { deliveries, claimed } = claimNextDelivery(control.deliveries ?? [], deps.now());
+        if (!claimed) return null;
+        return { state, control: { ...control, deliveries }, stateChanged: false, controlChanged: true };
+      }, deps);
+      const claimed = claimResult.control.deliveries?.find((entry) => entry.status === 'sending');
+      if (!claimed) return;
+      if (!claimed.payload) {
+        await settleClaimedDelivery(identity, claimed.deliveryId, { kind: 'rejected', reason: 'missing_payload' });
+        return;
+      }
+      const outcome = await ports.delivery.send(claimed);
+      await settleClaimedDelivery(identity, claimed.deliveryId, outcome);
+    } finally {
+      pumpingDeliveries = false;
+    }
+  }
+
+  function startDeliveryPump(): () => void {
+    void pumpDeliveriesOnce();
+    const interval = setInterval(() => { void pumpDeliveriesOnce(); }, 5_000);
+    return () => clearInterval(interval);
+  }
 
   async function handleUnserialized(templateOperation: string, raw: unknown, trustedInProcess = false): Promise<ApiV1ApplicationResponse> {
     const request = asRecord(raw);
@@ -240,6 +345,9 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       const status = result.error.code === 'not_found' ? 404 : result.error.code === 'save_failed' ? 500 : CONFLICT_CODES.has(result.error.code) ? 409 : 400;
       return failure(status, result.error.code, result.error.message, result.error.details);
     }
+    // A successful progressReport/feedback commit may have just queued a job; nudge the sender immediately instead
+    // of waiting for the next poll tick. Fire-and-forget: the commit itself already returned `queued`, not delivered.
+    if (operation === 'commit/progress/progressReport' || operation === 'commit/setting/feedback') void pumpDeliveriesOnce();
     return result.response as unknown as ApiV1ApplicationResponse;
   }
 
@@ -292,5 +400,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
     isSessionActive: () => activeIdentity !== null,
     authority,
     createInProcessAdapter,
+    pumpDeliveries: pumpDeliveriesOnce,
+    startDeliveryPump,
   };
 }

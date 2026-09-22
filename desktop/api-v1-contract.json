@@ -12078,7 +12078,8 @@
                 "gameMode",
                 "enemyLevelOffset",
                 "uiPreferences",
-                "uiPreferenceCatalog"
+                "uiPreferenceCatalog",
+                "pendingDeliveryIds"
               ],
               "properties": {
                 "language": {
@@ -12513,6 +12514,14 @@
                       }
                     }
                   }
+                },
+                "pendingDeliveryIds": {
+                  "type": "array",
+                  "items": {
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -12566,7 +12575,8 @@
                     "gameMode",
                     "enemyLevelOffset",
                     "uiPreferences",
-                    "uiPreferenceCatalog"
+                    "uiPreferenceCatalog",
+                    "pendingDeliveryIds"
                   ],
                   "properties": {
                     "language": {
@@ -13001,6 +13011,14 @@
                           }
                         }
                       }
+                    },
+                    "pendingDeliveryIds": {
+                      "type": "array",
+                      "items": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      }
                     }
                   }
                 }
@@ -13057,6 +13075,9 @@
                   ],
                   "defaultValue": "xxxxxxx"
                 }
+              ],
+              "pendingDeliveryIds": [
+                "xxxxxxx"
               ]
             }
           }

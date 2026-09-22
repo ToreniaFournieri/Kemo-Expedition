@@ -635,7 +635,13 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   }
   if (operationId === 'read/observation/base') return { baseInfo: baseProjection(state, context) };
   if (operationId === 'read/observation/diary') return { diaryInfo: buildDiaryProjection(state, parameters) };
-  if (operationId === 'read/observation/setting') return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), uiPreferences: listUiPreferences(state.global.uiPreferences), uiPreferenceCatalog: describeUiPreferenceCatalog() } };
+  if (operationId === 'read/observation/setting') {
+    // SpecRef: 9.1.4.15 | "The setting/overview projection includes relevant pending IDs."
+    const pendingDeliveryIds = ((context.control?.deliveries as ApiV1DeliveryRecord[] | undefined) ?? [])
+      .filter((entry) => entry.status === 'queued' || entry.status === 'sending' || entry.status === 'unknown')
+      .map((entry) => entry.deliveryId);
+    return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), uiPreferences: listUiPreferences(state.global.uiPreferences), uiPreferenceCatalog: describeUiPreferenceCatalog(), pendingDeliveryIds } };
+  }
 
   const expedition = operationId.match(/^read\/expedition\/(\d+)\/(setting|latestBattleLog|simulationRun|chargeStock)$/);
   if (expedition) {

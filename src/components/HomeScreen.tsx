@@ -195,6 +195,7 @@ resolveSideQuestShortText,
 REST_HEAL_MAX_HP_RATIO,
 REST_HEAL_MIN_HP,
 rollPercentInclusive,
+sendApiV1Delivery,
 shouldAutoTriggerGodsBattle,
 SOUND_SLEEP_STEP_COUNT,
 SPEED_OF_TIME_BONUS_DURATION_MS,
@@ -599,11 +600,19 @@ export function HomeScreen({
       },
       help: { requirements: apiRequirementsDocument, detail: apiDetailDocument },
       onSessionActive: (active) => { apiControlActiveRef.current = active; setApiControlActive(active); },
+      delivery: { send: sendApiV1Delivery },
     }, state);
   }
   applicationApiRef.current.syncIdleState(state);
   const inProcessApiRef = useRef<InProcessApiAdapter | null>(null);
   if (inProcessApiRef.current === null) inProcessApiRef.current = applicationApiRef.current.createInProcessAdapter();
+
+  useEffect(() => {
+    // SpecRef: 9.1.4.15 | Resilience backstop for the delivery sender; pumps also fire immediately after a commit
+    // that queues a job (applicationApi.ts). Idempotent: starting it again would just add a second harmless timer,
+    // but the ref/mount contract here already guarantees one call per live ApplicationApi instance.
+    return applicationApiRef.current!.startDeliveryPump();
+  }, []);
 
   useEffect(() => {
     const desktop = window.bokemoDesktop;

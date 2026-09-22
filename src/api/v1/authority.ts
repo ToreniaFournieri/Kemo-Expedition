@@ -343,6 +343,19 @@ export interface ApiV1AuthoritySnapshot {
 
 export type ApiV1QueuedCommitInput = Omit<ApiV1CommitAuthorityInput, 'state' | 'control' | 'simulatedAt'>;
 
+export interface ApiV1InternalTransactionStep {
+  state: GameState;
+  control: ApiV1ControlMetadata;
+  stateChanged: boolean;
+  controlChanged: boolean;
+}
+
+export interface ApiV1InternalTransactionDependencies {
+  persist: (state: GameState, control: ApiV1ControlMetadata) => Promise<void>;
+  publish: (state: GameState) => Promise<void>;
+  onPublicationFailure?: (error: unknown) => void;
+}
+
 /** Owns one committed snapshot, serialized writes, and admitted-work duplicate detection. */
 export class SerializedApplicationApiAuthority {
   private snapshot: ApiV1AuthoritySnapshot;
@@ -386,6 +399,40 @@ export class SerializedApplicationApiAuthority {
     });
     return execution.finally(() => {
       if (this.admitted.get(input.idempotencyKey) === canonical) this.admitted.delete(input.idempotencyKey);
+    });
+  }
+
+  /**
+   * SpecRef: 9.1.4.15 | One serialized, server-internal transaction: never a client commit (no idempotency key, no
+   * confirmation, no receipt). The delivery sender uses this to claim, settle, and complete a job under the same
+   * persist/publish/revision discipline as an ordinary commit, so it can never race a concurrent client commit or
+   * another internal step. `step` returns `null` for "nothing to do" (skips persist/publish entirely). A persist
+   * failure never advances the in-memory snapshot, so the caller's next attempt recomputes and retries the same
+   * durable write — never a second network send for an already-claimed job.
+   */
+  runInternalTransaction(
+    step: (state: GameState, control: ApiV1ControlMetadata) => ApiV1InternalTransactionStep | null,
+    dependencies: ApiV1InternalTransactionDependencies,
+  ): Promise<Readonly<ApiV1AuthoritySnapshot>> {
+    return this.runExclusive(async () => {
+      const result = step(this.snapshot.state, this.snapshot.control);
+      if (!result) return this.snapshot;
+      const { state, control, stateChanged, controlChanged } = result;
+      if (stateChanged || controlChanged) control.revisionHighWater += 1;
+      try {
+        await dependencies.persist(state, control);
+      } catch {
+        return this.snapshot;
+      }
+      this.snapshot = { ...this.snapshot, state, control };
+      if (stateChanged) {
+        try {
+          await dependencies.publish(state);
+        } catch (error) {
+          dependencies.onPublicationFailure?.(error);
+        }
+      }
+      return this.snapshot;
     });
   }
 }
