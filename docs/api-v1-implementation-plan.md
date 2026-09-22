@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 85. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 87. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -100,10 +100,10 @@ Gate passed: no `actions.*` reducer call remains in `PartyTab.tsx` for these con
 - **B2 (done, Build 83): Altar and enemy forms.** Shared `src/game/altarFacts.ts`; `altarInfo`, `enemyFormList`, and the `base` projection publish real Alter levels, victories, costs, abilities, bonuses, and the reason a form is locked; `unlockForm` is validated with named reasons and returns the Prana spent.
 - **B3 (done, Build 84): Inventory reads.** The `base` projection carries per-stack `sale` (shared `getStackSale`, also used by the sale itself), held `jewels`, and every worn item with its owner (`equippedItems`); `markItemsAsSeen` is precise and atomic and `changeJewelPriorityParty` validates the party. The Vault has no API (Spec 8.4.3) and stays with the application.
 - **B4a (done, Build 85): Shop pane.** The Shop draws `read/observation/base` (`shop`) and buys and refreshes through `purchaseShopItems` and `paidShopRefresh`; the pane is handed none of the shop's state and imports none of its rules (typed read model in `src/api/v1/baseView.ts`).
-- Still to do: B4b Altar, B4c Inventory (highlight acknowledgement, sell, unlock, Jewel priority), and the Vault's reviewed exception in the migration guard. The Vault (debug store) has no API operation (Spec 8.4.3: no API), so it stays a reducer action.
-- Altar and enemy-form facts.
-- Stable variant-key highlighting with `markItemsAsSeen`.
-- Then migrate the Base panes (Shop, Inventory, Vault, Altar).
+- **B4b (done, Build 86): Altar pane.** The Altar draws `read/observation/base` (`altar`: Prana and each category's level and victories) and one `read/base/enemyFormList` read for every category (so switching category is instant), and unlocks through `unlockForm`; the pane imports none of the Alter-level, cost, or unlock rules. A form's name, abilities, and bonuses are still master data for the projected enemy ID (display helpers).
+- **B4c (done, Build 87): Inventory pane.** The Inventory draws `read/observation/base`'s inventory facts (`src/api/v1/inventoryView.ts` rebuilds items and worn-item owners from their Item Format and master data): every variant with its sale, held Jewels, and every worn item with its owner. Selling, unlocking a sold variant, and the Jewel Priority Party commit through `sellInventoryItems`, `unlockSoldItems`, and `changeJewelPriorityParty`; the new-item highlight is acknowledged through `markItemsAsSeen` for exactly the displayed new variants (no more blanket acknowledgement). The Vault (debug store) has no API operation (Spec 8.4.3: no API) and remains the migration guard's one reviewed reducer exception for the Base tab.
+
+**Stage 6 is complete.** All Base reads and commands (Shop, Altar, enemy forms, Inventory) are on the Application API, and the Shop, Altar, and Inventory panes are migrated. The Vault stays on the reducer by spec.
 
 ## Stage 7 — Diary and popup streaming
 

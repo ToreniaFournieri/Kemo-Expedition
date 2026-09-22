@@ -149,3 +149,34 @@ test('the Shop pane draws the Base projection and buys and refreshes through the
   assert.match(home, /commit\/base\/paidShopRefresh/);
   assert.doesNotMatch(jsx, /actions\.(buyShopItem|refreshShopLineup)/);
 });
+
+test('the Altar pane draws the Base projection and the enemy-form read and unlocks through the Application API', () => {
+  const home = read('src/components/HomeScreen.tsx');
+  const tab = read('src/components/home/tabs/BaseTab.tsx');
+  const start = home.indexOf('<BaseTab');
+  const jsx = home.slice(start, home.indexOf('\n        />', start));
+  for (const banned of ['altarVictoriesByEnemyType', 'unlockedMimorianEnemyIds', 'prana=']) assert.doesNotMatch(jsx, new RegExp(banned), `${banned} is not a BaseTab prop`);
+  assert.match(jsx, /altar=\{baseProjection\?\.altar \?\? null\}/);
+  assert.match(home, /'read\/base\/enemyFormList'/);
+  assert.match(home, /commit\/base\/unlockForm/);
+  // The pane's Alter levels, costs, and unlock rules come from the API, not from the game's own functions.
+  assert.doesNotMatch(tab, /getAltarLevel|getEnemyFormPranaCost|getEnemyRequiredAltarLevel|getRequiredAltarVictories|getAltarVictoriesForEnemyType/);
+  assert.doesNotMatch(jsx, /actions\.unlockMimorianEnemy/);
+});
+
+test('the Inventory pane draws the Base projection and sells, unlocks, acknowledges, and sets Jewel priority through the Application API', () => {
+  const home = read('src/components/HomeScreen.tsx');
+  const tab = read('src/components/home/tabs/BaseTab.tsx');
+  const start = home.indexOf('<BaseTab');
+  const jsx = home.slice(start, home.indexOf('\n        />', start));
+  assert.match(jsx, /inventory=\{inventoryView\}/);
+  assert.match(jsx, /jewelPriorityPartyNumbers=\{jewelPriorityPartyNumbers\}/);
+  assert.doesNotMatch(jsx, /inventory=\{state\.global\.inventory\}|jewels=\{state\.global\.jewels\}|jewelAutoEquipPriorityPartyId=\{state\.global/);
+  assert.match(home, /commit\/base\/sellInventoryItems/);
+  assert.match(home, /commit\/base\/unlockSoldItems/);
+  assert.match(home, /commit\/base\/markItemsAsSeen/);
+  assert.match(home, /commit\/base\/changeJewelPriorityParty/);
+  assert.doesNotMatch(jsx, /actions\.(sellStack|sellAllOwned|setVariantStatus|markItemsSeen|setJewelAutoEquipPriorityParty)/);
+  // The pane rebuilds items from the projected Item Format and master data; it holds no sell-price or Prana rule.
+  assert.doesNotMatch(tab, /calculateItemSellPrice|getSuperRareItemPrana/);
+});

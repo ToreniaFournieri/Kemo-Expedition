@@ -9235,6 +9235,7 @@
                       "characterId",
                       "partyNumber",
                       "member",
+                      "owner",
                       "slotIndex",
                       "item",
                       "jewel",
@@ -9254,6 +9255,66 @@
                         "minimum": 1,
                         "maximum": 6,
                         "type": "integer"
+                      },
+                      "owner": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "name",
+                          "raceId",
+                          "gender",
+                          "isUnique",
+                          "lineageId",
+                          "mimorianEnemyId"
+                        ],
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "raceId": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "gender": {
+                            "anyOf": [
+                              {
+                                "const": "male",
+                                "type": "string"
+                              },
+                              {
+                                "const": "female",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "isUnique": {
+                            "type": "boolean"
+                          },
+                          "lineageId": {
+                            "anyOf": [
+                              {
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "mimorianEnemyId": {
+                            "anyOf": [
+                              {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        }
                       },
                       "slotIndex": {
                         "minimum": 0,
@@ -9747,6 +9808,7 @@
                           "characterId",
                           "partyNumber",
                           "member",
+                          "owner",
                           "slotIndex",
                           "item",
                           "jewel",
@@ -9766,6 +9828,66 @@
                             "minimum": 1,
                             "maximum": 6,
                             "type": "integer"
+                          },
+                          "owner": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "name",
+                              "raceId",
+                              "gender",
+                              "isUnique",
+                              "lineageId",
+                              "mimorianEnemyId"
+                            ],
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "raceId": {
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              "gender": {
+                                "anyOf": [
+                                  {
+                                    "const": "male",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "female",
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              "isUnique": {
+                                "type": "boolean"
+                              },
+                              "lineageId": {
+                                "anyOf": [
+                                  {
+                                    "minLength": 1,
+                                    "maxLength": 200,
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "mimorianEnemyId": {
+                                "anyOf": [
+                                  {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
                           },
                           "slotIndex": {
                             "minimum": 0,
@@ -10115,6 +10237,14 @@
                   "characterId": 1,
                   "partyNumber": 1,
                   "member": 1,
+                  "owner": {
+                    "name": "xxxxxxx",
+                    "raceId": "xxxxxxx",
+                    "gender": "male",
+                    "isUnique": true,
+                    "lineageId": "xxxxxxx",
+                    "mimorianEnemyId": 0
+                  },
                   "slotIndex": 0,
                   "item": "0",
                   "jewel": null,

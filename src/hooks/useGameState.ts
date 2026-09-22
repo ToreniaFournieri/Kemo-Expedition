@@ -5073,10 +5073,6 @@ export function useGameState() {
       dispatch({ type: 'REORDER_PARTY_CHARACTER', fromIndex, toIndex, partyIndex });
     }, []),
 
-    sellStack: useCallback((variantKey: string) => {
-      dispatch({ type: 'SELL_STACK', variantKey });
-    }, []),
-
     sellAllOwned: useCallback(() => {
       dispatch({ type: 'SELL_ALL_OWNED' });
     }, []),
@@ -5085,20 +5081,8 @@ export function useGameState() {
       dispatch({ type: 'GRANT_FEEDBACK_REWARD' });
     }, []),
 
-    unlockMimorianEnemy: useCallback((enemyId: number) => {
-      dispatch({ type: 'UNLOCK_MIMORIAN_ENEMY', enemyId });
-    }, []),
-
     buyDebugStoreItem: useCallback((itemId: number) => {
       dispatch({ type: 'BUY_DEBUG_STORE_ITEM', itemId });
-    }, []),
-
-    setVariantStatus: useCallback((variantKey: string, status: 'notown') => {
-      dispatch({ type: 'SET_VARIANT_STATUS', variantKey, status });
-    }, []),
-
-    markItemsSeen: useCallback(() => {
-      dispatch({ type: 'MARK_ITEMS_SEEN' });
     }, []),
 
     markDiaryLogSeen: useCallback((logId: string) => {
@@ -5115,10 +5099,6 @@ export function useGameState() {
 
     updateDiarySettings: useCallback((partyIndex: number, settings: Partial<DiarySettings>) => {
       dispatch({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings });
-    }, []),
-
-    setJewelAutoEquipPriorityParty: useCallback((partyId: number | null) => {
-      dispatch({ type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY', partyId });
     }, []),
 
     simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode: RuntimeGameMode = 'mode.normal', simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice, enemyLevelOffset?: number) => {

@@ -148,12 +148,12 @@ export const CHARACTER_IMAGE_FILES = new Set(__PUBLIC_CHARACTER_IMAGE_FILES__);
 
 // SpecRef: 8.2.4 | Equipment management | Image of inventory pane transaction at equipment management
 // SpecRef: 8.4.2 | Inventory(所持品) | Item list
-export function getInventoryOwnerCharacterImageSrc(character: Character, partyId: number): string | null {
+export function getInventoryOwnerCharacterImageSrc(character: Pick<Character, 'raceId' | 'isUnique' | 'gender'> & { mimorianEnemyId?: number | null; lineageId: Character['lineageId'] | null }, partyId: number): string | null {
   // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Chibi character
   if (character.raceId === 'mimorian' && character.mimorianEnemyId != null) {
     return `${import.meta.env.BASE_URL}chibi/C_E_${character.mimorianEnemyId}.png`;
   }
-  const uniqueFileName = character.isUnique
+  const uniqueFileName = character.isUnique && character.lineageId
     ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId]
     : undefined;
   if (uniqueFileName) {
@@ -214,18 +214,13 @@ export interface HomeScreenProps {
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
     applyAutoEquipmentActions: (actions: AutoEquipmentProfileAction[]) => void;
     reorderPartyCharacter: (fromIndex: number, toIndex: number, partyIndex?: number) => void;
-    sellStack: (variantKey: string) => void;
     sellAllOwned: () => void;
     grantFeedbackReward: () => void;
-    unlockMimorianEnemy: (enemyId: number) => void;
     buyDebugStoreItem: (itemId: number) => void;
-    setVariantStatus: (variantKey: string, status: 'notown') => void;
-    markItemsSeen: () => void;
     markDiaryLogSeen: (logId: string) => void;
     markPartyDiaryLogsSeen: (partyIndex: number) => void;
     markDeveloperNewsRead: (itemIds: string[]) => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
-    setJewelAutoEquipPriorityParty: (partyId: number | null) => void;
     simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: RuntimeGameMode, simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice, enemyLevelOffset?: number) => void;
     commitAfkPartyChunk: (result: AfkPartyChunkResult) => void;
     commitAfkPartyTransaction: (

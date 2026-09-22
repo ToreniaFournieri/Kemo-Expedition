@@ -101,7 +101,8 @@ import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIn
 import { parseInventoryStacks, parseJewelStacks, parseSavedEquipmentSet } from '../api/v1/itemFormat';
 import { buildPartySummaries, buildPartyView, type PartyProjection } from '../api/v1/partyView';
 import type { ExpeditionProjection } from '../api/v1/expeditionView';
-import type { BaseProjection } from '../api/v1/baseView';
+import type { BaseProjection, EnemyFormProjection } from '../api/v1/baseView';
+import { buildInventoryView } from '../api/v1/inventoryView';
 import { buildPartyExpeditionLogView, type ExpeditionLogView, type LatestBattleLogProjection } from '../api/v1/expeditionLogView';
 import { useApiRead, useApiReadMany } from './home/useApiRead';
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
@@ -2025,7 +2026,7 @@ export function HomeScreen({
   const isBaseTabVisible = isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'base' : activeTab === 'base';
   const [baseProjectionRefresh, setBaseProjectionRefresh] = useState(0);
   const baseObservation = useApiRead<{ baseInfo: BaseProjection }>(
-    inProcessApiRef.current, 'read/observation/base', {}, [state.global, baseProjectionRefresh], isBaseTabVisible,
+    inProcessApiRef.current, 'read/observation/base', {}, [state.global, state.parties, baseProjectionRefresh], isBaseTabVisible,
   );
   const baseProjection = baseObservation?.baseInfo ?? null;
   useEffect(() => {
@@ -2044,6 +2045,22 @@ export function HomeScreen({
   }, []);
   const buyShopItem = useCallback((shopItemId: number) => commitBase('commit/base/purchaseShopItems', { items: [{ shopItemId }] }), [commitBase]);
   const refreshShop = useCallback(() => commitBase('commit/base/paidShopRefresh', {}), [commitBase]);
+  const sellInventoryItem = useCallback((itemFormat: string) => commitBase('commit/base/sellInventoryItems', { items: [itemFormat] }), [commitBase]);
+  const unlockSoldItem = useCallback((itemFormat: string) => commitBase('commit/base/unlockSoldItems', { items: [itemFormat] }), [commitBase]);
+  const changeJewelPriorityParty = useCallback((partyNumber: number | null) => commitBase('commit/base/changeJewelPriorityParty', { partyNumber: partyNumber ?? 'none' }), [commitBase]);
+  const inventoryView = useMemo(() => (baseProjection ? buildInventoryView(baseProjection) : null), [baseProjection]);
+  const jewelPriorityRead = useApiRead<{ validOptions: { partyNumber: (number | 'none')[] } }>(
+    inProcessApiRef.current, 'read/base/jewelPriorityParty', {}, [state.parties.length], isBaseTabVisible,
+  );
+  const jewelPriorityPartyNumbers = useMemo(() => (jewelPriorityRead?.validOptions.partyNumber ?? []).filter((value): value is number => value !== 'none'), [jewelPriorityRead]);
+  const unlockEnemyForm = useCallback((enemyId: number) => commitBase('commit/base/unlockForm', { enemyId }), [commitBase]);
+  // The Altar's forms are read once for every category, so switching category is instant; they are re-read after any commit
+  // (the reader subscribes) and when the Prana, the victories, or the unlocked forms change.
+  const enemyFormList = useApiRead<{ current: { enemyFormList: EnemyFormProjection[] } }>(
+    inProcessApiRef.current, 'read/base/enemyFormList', {},
+    [state.global.prana, state.global.altarVictoriesByEnemyType, state.global.unlockedMimorianEnemyIds],
+    isBaseTabVisible && activeBaseSubTab === 'altar',
+  );
   // SpecRef: 9.1.4.17 | UI state ownership | Retained selections come from `read/observation/setting` (uiPreferences)
   const settingObservation = useApiRead<{ settingInfo: { uiPreferences: Array<{ key: string; value: string | number | boolean }> } }>(
     inProcessApiRef.current, 'read/observation/setting', {}, [state.global.uiPreferences], isPartyTabVisible,
@@ -5010,12 +5027,13 @@ export function HomeScreen({
     prevSettingTabVisibleRef.current = isSettingTabVisible;
   }, [isSettingTabVisible, actions]);
 
+  // SpecRef: 9.1.4.17 | UI state ownership | Newly acquired inventory highlighting
+  // Once the Inventory pane has displayed the new variants, acknowledge exactly those with `markItemsAsSeen`.
+  const displayedNewVariantKeys = isBaseTabVisible && activeBaseSubTab === 'inventory' ? inventoryView?.newVariantKeys ?? [] : [];
   useEffect(() => {
-    if (activeTab !== 'base' || activeBaseSubTab !== 'inventory') return;
-    const hasNewInventoryItems = Object.values(state.global.inventory).some((variant) => variant.isNew);
-    if (!hasNewInventoryItems) return;
-    actions.markItemsSeen();
-  }, [activeTab, activeBaseSubTab, state.global.inventory, actions]);
+    if (displayedNewVariantKeys.length === 0) return;
+    commitBase('commit/base/markItemsAsSeen', { items: displayedNewVariantKeys });
+  }, [displayedNewVariantKeys, commitBase]);
 
   setLanguage(state.global.language);
   const tabs: { id: Tab; label: string }[] = MAIN_TAB_ORDER.map((id) => ({
@@ -5181,23 +5199,20 @@ export function HomeScreen({
     if (tab === 'base') {
       return (
         <BaseTab
-          inventory={state.global.inventory}
-          jewels={state.global.jewels}
-          jewelAutoEquipPriorityPartyId={state.global.jewelAutoEquipPriorityPartyId ?? null}
-          parties={state.parties}
+          inventory={inventoryView}
+          jewelPriorityPartyNumbers={jewelPriorityPartyNumbers}
           gold={state.global.gold}
-          prana={state.global.prana}
-          altarVictoriesByEnemyType={state.global.altarVictoriesByEnemyType}
-          unlockedMimorianEnemyIds={state.global.unlockedMimorianEnemyIds}
+          altar={baseProjection?.altar ?? null}
+          enemyForms={enemyFormList?.current.enemyFormList ?? null}
           debugStorePurchases={state.global.jewelShopPurchases}
           shop={baseProjection?.shop ?? null}
-          onSellStack={actions.sellStack}
-          onSetVariantStatus={actions.setVariantStatus}
+          onSellStack={sellInventoryItem}
+          onUnlockSold={unlockSoldItem}
           onBuyShopItem={buyShopItem}
           onBuyDebugStoreItem={actions.buyDebugStoreItem}
           onRefreshShopLineup={refreshShop}
-          onUnlockMimorianEnemy={actions.unlockMimorianEnemy}
-          onSetJewelAutoEquipPriorityParty={actions.setJewelAutoEquipPriorityParty}
+          onUnlockMimorianEnemy={unlockEnemyForm}
+          onSetJewelAutoEquipPriorityParty={changeJewelPriorityParty}
           activeSubTab={activeBaseSubTab}
           onSetActiveSubTab={setActiveBaseSubTab}
           debugSettings={debugSettings}

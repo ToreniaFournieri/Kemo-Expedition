@@ -442,6 +442,7 @@ function inventoryProjection(state: GameState) {
       characterId: character.id,
       partyNumber: party.id,
       member: memberIndex + 1,
+      owner: { name: character.name, raceId: character.raceId, gender: character.gender, isUnique: character.isUnique === true, lineageId: character.lineageId ?? null, mimorianEnemyId: character.mimorianEnemyId ?? null },
       slotIndex,
       item: itemFormat(item),
       jewel: item.jewel ? `${item.jewel.key}:${item.jewel.rank}` : null,

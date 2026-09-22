@@ -2,16 +2,15 @@ import { Fragment,useEffect,useMemo,useState,type MouseEvent,type ReactNode } fr
 import { ENEMIES,getEnemyIndividualBonuses,getEnemyTypeBonuses,getMimorianEnemyAbilities } from '../../../data/enemies';
 import { ITEMS } from '../../../data/items';
 import { RACES } from '../../../data/races';
-import { computeCharacterStats,getAbilityDescription } from '../../../game/characterComputation';
+import { getAbilityDescription } from '../../../game/characterComputation';
 import { DebugSettings } from '../../../game/debugSettings';
 import { formatEnemyFormName,getEnemyTypeShortName } from '../../../game/enemyDisplay';
 import { getItemDisplayName,getLocalizedItemName } from '../../../game/gameState';
-import { getJewelNameByRank,getJewelOwnedCount,JEWEL_DEFS } from '../../../game/jewel';
-import { getAltarLevel,getAltarVictoriesForEnemyType,getEnemyFormPranaCost,getEnemyRequiredAltarLevel,getRequiredAltarVictories,getSuperRareItemPrana,MAX_ALTAR_LEVEL } from '../../../game/prana';
-import { calculateItemSellPrice } from '../../../game/pricing';
+import { getJewelNameByRank } from '../../../game/jewel';
 import { t } from '../../../i18n';
-import type { ShopProjection } from '../../../api/v1/baseView';
-import { AbilityId,InventoryRecord,Item,JewelKey,Party } from '../../../types';
+import type { InventoryView } from '../../../api/v1/inventoryView';
+import type { AltarProjection, EnemyFormProjection, ShopProjection } from '../../../api/v1/baseView';
+import { AbilityId,InventoryRecord,Item } from '../../../types';
 
 
 import {
@@ -43,17 +42,14 @@ sortInventoryItems
 
 export default function BaseTab({
   inventory,
-  jewels,
-  jewelAutoEquipPriorityPartyId,
-  parties,
+  jewelPriorityPartyNumbers,
   gold,
-  prana,
-  altarVictoriesByEnemyType,
-  unlockedMimorianEnemyIds,
+  altar,
+  enemyForms,
   debugStorePurchases,
   shop,
   onSellStack,
-  onSetVariantStatus,
+  onUnlockSold,
   onBuyShopItem,
   onBuyDebugStoreItem,
   onRefreshShopLineup,
@@ -63,18 +59,15 @@ export default function BaseTab({
   onSetActiveSubTab,
   debugSettings,
 }: {
-  inventory: InventoryRecord;
-  jewels: Record<string, number>;
-  jewelAutoEquipPriorityPartyId: number | null;
-  parties: Party[];
+  inventory: InventoryView | null;
+  jewelPriorityPartyNumbers: number[];
   gold: number;
-  prana: number;
-  altarVictoriesByEnemyType?: Record<string, number>;
-  unlockedMimorianEnemyIds: number[];
+  altar: AltarProjection | null;
+  enemyForms: EnemyFormProjection[] | null;
   debugStorePurchases: Record<string, number>;
   shop: ShopProjection | null;
-  onSellStack: (variantKey: string) => void;
-  onSetVariantStatus: (variantKey: string, status: 'notown') => void;
+  onSellStack: (itemFormat: string) => void;
+  onUnlockSold: (itemFormat: string) => void;
   onBuyShopItem: (shopItemId: number) => void;
   onBuyDebugStoreItem: (itemId: number) => void;
   onRefreshShopLineup: () => void;
@@ -118,19 +111,16 @@ export default function BaseTab({
 
       {activeSubTab === 'inventory' ? (
         <InventoryTab
-          inventory={inventory}
-          jewels={jewels}
-          jewelAutoEquipPriorityPartyId={jewelAutoEquipPriorityPartyId}
-          parties={parties}
+          view={inventory}
+          jewelPriorityPartyNumbers={jewelPriorityPartyNumbers}
           onSellStack={onSellStack}
-          onSetVariantStatus={onSetVariantStatus}
+          onUnlockSold={onUnlockSold}
           onSetJewelAutoEquipPriorityParty={onSetJewelAutoEquipPriorityParty}
         />
       ) : activeSubTab === 'altar' ? (
         <AltarTab
-          prana={prana}
-          altarVictoriesByEnemyType={altarVictoriesByEnemyType}
-          unlockedEnemyIds={unlockedMimorianEnemyIds}
+          altar={altar}
+          forms={enemyForms}
           onUnlockEnemy={onUnlockMimorianEnemy}
         />
       ) : activeSubTab === 'shop' ? (
@@ -154,25 +144,29 @@ export default function BaseTab({
 
 // SpecRef: 8.4.5 | Altar (祭壇) | Enemy Form List
 function AltarTab({
-  prana,
-  altarVictoriesByEnemyType,
-  unlockedEnemyIds,
+  altar,
+  forms,
   onUnlockEnemy,
 }: {
-  prana: number;
-  altarVictoriesByEnemyType?: Record<string, number>;
-  unlockedEnemyIds: number[];
+  altar: AltarProjection | null;
+  forms: EnemyFormProjection[] | null;
   onUnlockEnemy: (enemyId: number) => void;
 }) {
-  const unlockedIds = new Set(unlockedEnemyIds);
-  const enemyTypes = Array.from(new Set(ENEMIES.map((enemy) => enemy.enemyType)));
-  const [selectedEnemyType, setSelectedEnemyType] = useState(enemyTypes[0] ?? '');
+  // SpecRef: 8.4.5 | Altar (祭壇)
+  // The Prana balance, each category's Alter level and victories, and every form's cost, unlock condition, and whether it can
+  // be unlocked are the API's facts. A form's name, abilities, and bonuses are master data for the projected enemy ID.
+  const enemyTypes = altar?.categories.map((category) => category.enemyType) ?? [];
+  const [selectedEnemyType, setSelectedEnemyType] = useState('');
+  const activeEnemyType = selectedEnemyType || enemyTypes[0] || '';
   const [activeHelp, setActiveHelp] = useState<{ key: string; title: string; description: string } | null>(null);
   const [activeHelpPosition, setActiveHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
-  const visibleEnemies = ENEMIES.filter((enemy) => enemy.enemyType === selectedEnemyType);
-  const altarVictories = getAltarVictoriesForEnemyType(selectedEnemyType, altarVictoriesByEnemyType);
-  const altarLevel = getAltarLevel(altarVictories);
-  const nextLevelVictories = getRequiredAltarVictories(Math.min(MAX_ALTAR_LEVEL, altarLevel + 1));
+  const enemiesById = useMemo(() => new Map(ENEMIES.map((enemy) => [enemy.id, enemy])), []);
+  const category = altar?.categories.find((entry) => entry.enemyType === activeEnemyType);
+  const visibleForms = (forms ?? []).filter((form) => form.enemyType === activeEnemyType);
+  const altarLevel = category?.altarLevel ?? 0;
+  const altarVictories = category?.victories ?? 0;
+  const nextLevelVictories = category?.nextLevelVictories ?? 0;
+  const prana = altar?.prana ?? 0;
 
   const handleHelpToggle = (key: string, title: string, description: string, event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -232,10 +226,10 @@ function AltarTab({
               role="tab"
               aria-label={enemyTypeLabel}
               title={enemyTypeLabel}
-              aria-selected={selectedEnemyType === enemyType}
+              aria-selected={activeEnemyType === enemyType}
               onClick={() => setSelectedEnemyType(enemyType)}
               className={`flex h-8 min-w-8 shrink-0 items-center justify-center rounded px-2 py-1 text-sm pane-button-shadow transition-colors ${
-                selectedEnemyType === enemyType
+                activeEnemyType === enemyType
                   ? 'bg-sub text-white'
                   : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
               }`}
@@ -255,13 +249,15 @@ function AltarTab({
         })}
       </div>
       <div className="max-h-[34rem] space-y-2 overflow-y-auto">
-        {visibleEnemies.map((enemy) => {
-          const cost = getEnemyFormPranaCost(enemy);
-          const unlocked = unlockedIds.has(enemy.id);
+        {visibleForms.flatMap((form) => {
+          const enemy = enemiesById.get(form.enemyId);
+          if (!enemy) return [];
+          const cost = form.unlockCost;
+          const unlocked = form.unlocked;
           const enemyFormName = formatEnemyFormName(enemy);
-          const requiredAltarLevel = getEnemyRequiredAltarLevel(enemy);
-          const meetsLevelRequirement = altarLevel >= requiredAltarLevel;
-          const canUnlock = !unlocked && meetsLevelRequirement && prana >= cost;
+          const requiredAltarLevel = form.unlockCondition.requiredAltarLevel;
+          const meetsLevelRequirement = form.unlockCondition.met;
+          const canUnlock = form.unlockable.available;
           const formAbilities = getMimorianEnemyAbilities(enemy);
           const formBonuses = [
             ...getEnemyTypeBonuses(enemy.enemyType),
@@ -280,7 +276,7 @@ function AltarTab({
           const bonusEntries = formBonuses
             .map((bonus, index) => buildInlineBonusEntry('altar-bonus', enemy.id.toString(), bonus, index))
             .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
-          return (
+          return [(
             <div key={enemy.id} className={`flex items-center gap-3 rounded-lg border bg-pane p-2 shadow-sm ${unlocked ? 'border-sub/40' : 'border-gray-200'}`}>
               <img
                 src={`${import.meta.env.BASE_URL}chibi/C_E_${enemy.id}.png`}
@@ -321,7 +317,7 @@ function AltarTab({
                 </div>
               </div>
             </div>
-          );
+          )];
         })}
       </div>
       {activeHelp && activeHelpPosition && (
@@ -584,22 +580,28 @@ function DebugStoreTab({
 }
 // SpecRef: 8.4.2 | Inventory(所持品) | Inventory(所持品)
 function InventoryTab({
-  inventory,
-  jewels,
-  jewelAutoEquipPriorityPartyId,
-  parties,
+  view,
+  jewelPriorityPartyNumbers,
   onSellStack,
-  onSetVariantStatus,
+  onUnlockSold,
   onSetJewelAutoEquipPriorityParty,
 }: {
-  inventory: InventoryRecord;
-  jewels: Record<string, number>;
-  jewelAutoEquipPriorityPartyId: number | null;
-  parties: Party[];
-  onSellStack: (variantKey: string) => void;
-  onSetVariantStatus: (variantKey: string, status: 'notown') => void;
+  view: InventoryView | null;
+  jewelPriorityPartyNumbers: number[];
+  onSellStack: (itemFormat: string) => void;
+  onUnlockSold: (itemFormat: string) => void;
   onSetJewelAutoEquipPriorityParty: (partyId: number | null) => void;
 }) {
+  // SpecRef: 8.4.2 | Inventory(所持品)
+  // The variants, the Jewels held, the worn items with their owners, what a sale pays, and the Jewel priority are the Base
+  // projection's facts; the pane keeps only its filters and sort. Items are rebuilt from their Item Format and master data.
+  const inventory = useMemo<InventoryRecord>(() => Object.fromEntries([
+    ...(view?.owned ?? []).map((variant) => [variant.variantKey, { item: variant.item, count: variant.count, status: 'owned' as const, isNew: variant.isNew }] as const),
+    ...(view?.sold ?? []).map((variant) => [variant.variantKey, { item: variant.item, count: 0, status: 'sold' as const, isNew: variant.isNew }] as const),
+  ]), [view]);
+  const variantByKey = useMemo(() => new Map([...(view?.owned ?? []), ...(view?.sold ?? [])].map((variant) => [variant.variantKey, variant])), [view]);
+  const jewels = view?.jewels ?? [];
+  const jewelAutoEquipPriorityPartyId = view?.jewelPriorityParty ?? null;
   const [showSold, setShowSold] = useState(false);
   const [activeInventoryOwnerBubble, setActiveInventoryOwnerBubble] = useState<{
     key: string;
@@ -615,16 +617,14 @@ function InventoryTab({
     left: number;
     width: number;
   } | null>(null);
-  const hasOwnedJewels = Object.values(jewels).some((count) => count > 0);
-  const hasEquippedJewels = parties.some((party) =>
-    party.characters.some((character) => character.equipment.some((item) => !!item?.jewel))
-  );
+  const hasOwnedJewels = jewels.length > 0;
+  const hasEquippedJewels = (view?.worn ?? []).some((entry) => entry.jewel !== null);
   const hasFirstJewel = hasOwnedJewels || hasEquippedJewels;
   const [selectedCategory, setSelectedCategory] = useState<InventoryCategory>(() => (hasFirstJewel ? 'jewel' : 'armor'));
   const [inventoryRarityFilter, setInventoryRarityFilter] = useState<RarityFilter>('all');
   const [inventorySuperRareOnly, setInventorySuperRareOnly] = useState(false);
   const [sellStackConfirmation, setSellStackConfirmation] = useState<{
-    variantKey: string;
+    itemFormat: string;
     itemName: string;
     count: number;
     sellPrice: number;
@@ -649,32 +649,28 @@ function InventoryTab({
       (!inventorySuperRareOnly || v.item.superRare >= 1)
     )
   );
-  const equippedItems = parties.flatMap((party, partyIndex) =>
-    party.characters.flatMap((character, rowIndex) =>
-      character.equipment.flatMap((item, slotIndex) => {
-        if (!item) return [];
-        if (
-          isJewelCategory ||
-          item.category !== selectedCategory ||
-          !matchesRarityFilter(item.id, inventoryRarityFilter) ||
-          (inventorySuperRareOnly && item.superRare < 1)
-        ) {
-          return [];
-        }
+  const equippedItems = (view?.worn ?? []).flatMap((worn) => {
+    const item = worn.item;
+    if (
+      isJewelCategory ||
+      item.category !== selectedCategory ||
+      !matchesRarityFilter(item.id, inventoryRarityFilter) ||
+      (inventorySuperRareOnly && item.superRare < 1)
+    ) {
+      return [];
+    }
 
-        return [{
-          key: `equipped-${party.id}-${character.id}-${rowIndex}-${slotIndex}-${item.id}-${item.enhancement}-${item.superRare}`,
-          item,
-          partyIndex,
-          rowIndex,
-          slotIndex,
-          characterName: character.name,
-          raceId: character.raceId,
-          characterImageSrc: getInventoryOwnerCharacterImageSrc(character, party.id),
-        }];
-      })
-    )
-  );
+    return [{
+      key: `equipped-${worn.partyNumber}-${worn.owner.name}-${worn.member}-${worn.slotIndex}-${item.id}-${item.enhancement}-${item.superRare}`,
+      item,
+      partyIndex: worn.partyNumber - 1,
+      rowIndex: worn.member - 1,
+      slotIndex: worn.slotIndex,
+      characterName: worn.owner.name,
+      raceId: worn.owner.raceId,
+      characterImageSrc: getInventoryOwnerCharacterImageSrc(worn.owner, worn.partyNumber),
+    }];
+  });
 
   const combinedDisplayItems = [
     ...filteredOwnedItems.map(([key, variant]) => ({
@@ -716,38 +712,24 @@ function InventoryTab({
     )
   );
 
-  const jewelEntries = (Object.keys(JEWEL_DEFS) as JewelKey[])
-    .flatMap((jewelKey) => Array.from({ length: 8 }, (_, i) => {
-      const rank = i + 1;
-      const count = getJewelOwnedCount(jewels, jewelKey, rank);
-      return { jewelKey, rank, count };
-    }))
-    .filter((entry) => entry.count > 0)
-    .sort((a, b) => {
-      if (a.jewelKey !== b.jewelKey) return a.jewelKey.localeCompare(b.jewelKey);
-      return a.rank - b.rank;
-    });
+  const jewelEntries = [...jewels].sort((a, b) => {
+    if (a.jewelKey !== b.jewelKey) return a.jewelKey.localeCompare(b.jewelKey);
+    return a.rank - b.rank;
+  });
 
-  const equippedJewels = parties.flatMap((party, partyIndex) =>
-    party.characters.flatMap((character) => {
-      const characterStats = computeCharacterStats(character, party.level);
-
-      return character.equipment.slice(0, characterStats.maxEquipSlots).flatMap((item, slotIndex) => {
-        if (!item?.jewel) return [];
-
-        return [{
-          key: `equipped-jewel-${party.id}-${character.id}-${slotIndex}-${item.id}-${item.enhancement}-${item.superRare}-${item.jewel.key}-${item.jewel.rank}`,
-          item,
-          partyIndex,
-          characterName: character.name,
-          raceId: character.raceId,
-          jewelKey: item.jewel.key,
-          rank: item.jewel.rank,
-          characterImageSrc: getInventoryOwnerCharacterImageSrc(character, party.id),
-        }];
-      });
-    })
-  );
+  const equippedJewels = (view?.worn ?? []).flatMap((worn) => {
+    if (!worn.jewel || !worn.active) return [];
+    return [{
+      key: `equipped-jewel-${worn.partyNumber}-${worn.owner.name}-${worn.slotIndex}-${worn.item.id}-${worn.item.enhancement}-${worn.item.superRare}-${worn.jewel.key}-${worn.jewel.rank}`,
+      item: worn.item,
+      partyIndex: worn.partyNumber - 1,
+      characterName: worn.owner.name,
+      raceId: worn.owner.raceId,
+      jewelKey: worn.jewel.key,
+      rank: worn.jewel.rank,
+      characterImageSrc: getInventoryOwnerCharacterImageSrc(worn.owner, worn.partyNumber),
+    }];
+  });
 
   const combinedJewelEntries = [
     ...jewelEntries.map((entry) => ({
@@ -773,9 +755,9 @@ function InventoryTab({
   const jewelPriorityOptions = useMemo(
     () => [
       { value: 'manual', label: t('home.inventory.jewelAuto.manual') },
-      ...parties.map((party) => ({ value: `${party.id}`, label: party.name })),
+      ...jewelPriorityPartyNumbers.map((partyNumber) => ({ value: `${partyNumber}`, label: `PT${partyNumber}` })),
     ],
-    [parties],
+    [jewelPriorityPartyNumbers],
   );
   const selectedJewelPriorityValue = jewelAutoEquipPriorityPartyId == null ? 'manual' : `${jewelAutoEquipPriorityPartyId}`;
   const getInventoryBubblePosition = (targetElement: HTMLElement, maxWidth: number = 220) => {
@@ -868,7 +850,7 @@ function InventoryTab({
   // SpecRef: 8.4.2 | Inventory(所持品) | Sell all button(全売却)
   const confirmSellStack = () => {
     if (!sellStackConfirmation) return;
-    onSellStack(sellStackConfirmation.variantKey);
+    onSellStack(sellStackConfirmation.itemFormat);
     window.alert(sellStackConfirmation.prana > 0
       ? t('home.inventory.sellResultPrana', { prana: formatNumber(sellStackConfirmation.prana) })
       : t('home.inventory.sellResultGold', { gold: formatNumber(sellStackConfirmation.sellPrice) }));
@@ -1038,8 +1020,10 @@ function InventoryTab({
           {!isJewelCategory && combinedDisplayItems.map((entry) => {
             if (entry.type === 'owned') {
               const { item, count } = entry.variant;
-              const sellPrice = calculateItemSellPrice(item) * count;
-              const pranaGranted = getSuperRareItemPrana(item) * count;
+              // What selling pays is the API's fact (a Super Rare item pays Prana only, never Gold).
+              const sale = variantByKey.get(entry.key)?.sale ?? { gold: 0, prana: 0 };
+              const sellPrice = sale.gold;
+              const pranaGranted = sale.prana;
 
               return (
                 <div
@@ -1056,7 +1040,7 @@ function InventoryTab({
                     <button
                       onClick={() => {
                         setSellStackConfirmation({
-                          variantKey: entry.key,
+                          itemFormat: variantByKey.get(entry.key)?.format ?? '',
                           itemName: getItemDisplayName(item),
                           count,
                           sellPrice,
@@ -1141,7 +1125,7 @@ function InventoryTab({
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm text-gray-500">{getItemDisplayName(variant.item)}</span>
                     <button
-                      onClick={() => onSetVariantStatus(key, 'notown')}
+                      onClick={() => onUnlockSold(variantByKey.get(key)?.format ?? '')}
                       className="text-xs text-sub px-2 py-1 border border-sub rounded"
                     >
                       {t('party.equipment.clearSelection')}
