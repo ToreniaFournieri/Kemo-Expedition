@@ -37789,7 +37789,12 @@
           "parameters": {
             "additionalProperties": false,
             "type": "object",
-            "properties": {}
+            "properties": {
+              "skipConfirmation": {
+                "type": "boolean",
+                "default": false
+              }
+            }
           },
           "confirmationToken": {
             "minLength": 1,
@@ -37997,7 +38002,12 @@
           "parameters": {
             "additionalProperties": false,
             "type": "object",
-            "properties": {}
+            "properties": {
+              "skipConfirmation": {
+                "type": "boolean",
+                "default": false
+              }
+            }
           },
           "confirmationToken": {
             "minLength": 1,

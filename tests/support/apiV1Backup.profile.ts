@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
 import { executeApiV1CommitTransaction, type ApiV1CommitAuthorityDependencies, type ApiV1ControlMetadata } from '../../src/api/v1/authority';
+import { resolveConfirmationPolicy } from '../../src/api/v1/confirmationPolicy';
 import type { ApiV1DeliveryRecord } from '../../src/api/v1/deliveries';
 import { API_V1_SCHEMA_VERSION, API_V1_VERSION } from '../../src/api/v1/contracts';
 import { createApplicationApi, type ApplicationApiPorts } from '../../src/api/v1/applicationApi';
@@ -249,6 +250,66 @@ function popupEvent(revision: number, sequence: number) {
   assert.deepEqual(snapshot.control.popupEvents, []);
   assert.deepEqual(snapshot.control.confirmations, []);
   assert.deepEqual(snapshot.control.deliveries?.map((entry) => entry.status), ['cancelled']);
+}
+
+// 6. `skipConfirmation` (Spec 9.1.3, 3-6-5-2/3-6-5-3): `true` bypasses only this request's own challenge and commits
+// immediately with no confirmationToken; omitted or `false` behaves exactly as before; a delivery in flight still
+// refuses the commit either way, since fencing is independent of the confirmation step it now skips.
+{
+  const freshState = createFreshGameState('en', t0);
+  assert.notEqual(resolveConfirmationPolicy('commit/setting/backup/reset', freshState, {}), null, 'omitted skipConfirmation still challenges');
+  assert.notEqual(resolveConfirmationPolicy('commit/setting/backup/reset', freshState, { skipConfirmation: false }), null, 'explicit false still challenges');
+  assert.equal(resolveConfirmationPolicy('commit/setting/backup/reset', freshState, { skipConfirmation: true }), null, 'true bypasses the challenge');
+  assert.notEqual(resolveConfirmationPolicy('commit/setting/backup/import', freshState, {}), null);
+  assert.equal(resolveConfirmationPolicy('commit/setting/backup/import', freshState, { skipConfirmation: true }), null);
+  // A non-boolean value is not `=== true`, so it is treated the same as omitted: still challenged. The metadata
+  // schema (`scripts/generate-api-v1-contract.mjs`) restricts the wire value to a real boolean before this runs.
+  assert.notEqual(resolveConfirmationPolicy('commit/setting/backup/reset', freshState, { skipConfirmation: 'true' }), null);
+
+  const persisted: ApiV1ControlMetadata[] = [];
+  const dependencies: ApiV1CommitAuthorityDependencies = {
+    gameMode: 'mode.normal', enemyLevelOffset: 0, cycleDurationScale: 1, applyAutoEquipment: (s) => s,
+    persist: async (_state, control) => { persisted.push(structuredClone(control)); },
+    publish: async () => undefined,
+    createOpaqueId: () => 'opaque-token-fixed', createRandomSeed: () => 1, now: () => t0,
+  };
+  const state = createFreshGameState('en', t0);
+  const otherState = createFreshGameState('ja', t0);
+  const backupPayload = encodePersistedState(JSON.stringify(serializeGameState(otherState)));
+  const control = (deliveries: ApiV1DeliveryRecord[]): ApiV1ControlMetadata => ({
+    revisionHighWater: 5, inGameTime: t0, receipts: [], tombstones: [], confirmations: [], popupEvents: [popupEvent(1, 1)], deliveries,
+  });
+  const skipInput = (operation: string, deliveries: ApiV1DeliveryRecord[], uploadedFiles: Record<string, Record<string, unknown>> = {}) => ({
+    operation, expectedRevision: 5, idempotencyKey: `${operation}-skip-key-0001`, confirmationToken: null,
+    requestId: 'request-fixed', parameters: { skipConfirmation: true }, uploadedFiles, state, simulatedAt: t0, control: control(deliveries),
+  });
+
+  const skippedReset = await executeApiV1CommitTransaction(skipInput('commit/setting/backup/reset', [job('a')]), dependencies);
+  assert.equal(skippedReset.ok, true, 'skipConfirmation commits in a single round trip, with no confirmation_required first');
+  if (!skippedReset.ok) throw new Error(skippedReset.error.code);
+  assert.equal(skippedReset.response.previousRevision, 5);
+  assert.equal(skippedReset.response.revision, 6, 'a skipped-confirmation commit still advances the revision like a normal commit');
+  assert.deepEqual(skippedReset.control.deliveries?.map((entry) => entry.status), ['cancelled']);
+
+  const skippedImport = await executeApiV1CommitTransaction(skipInput('commit/setting/backup/import', [job('a')], { backup: uploadedBackupFile(backupPayload) }), dependencies);
+  assert.equal(skippedImport.ok, true);
+  if (!skippedImport.ok) throw new Error(skippedImport.error.code);
+  assert.deepEqual(skippedImport.response.data, { imported: true });
+  assert.deepEqual(serializeGameState(skippedImport.state), serializeGameState(otherState));
+
+  const skippedButBlockedReset = await executeApiV1CommitTransaction(skipInput('commit/setting/backup/reset', [job('a', { status: 'sending' })]), dependencies);
+  assert.equal(skippedButBlockedReset.ok, false, 'delivery_in_flight still applies: skipping confirmation never skips fencing');
+  if (skippedButBlockedReset.ok) throw new Error('expected illegal_action');
+  assert.equal(skippedButBlockedReset.error.code, 'illegal_action');
+  assert.equal(skippedButBlockedReset.error.details?.reason, 'delivery_in_flight');
+
+  const skippedButBlockedImport = await executeApiV1CommitTransaction(skipInput('commit/setting/backup/import', [job('a', { status: 'sending' })], { backup: uploadedBackupFile(backupPayload) }), dependencies);
+  assert.equal(skippedButBlockedImport.ok, false);
+  if (skippedButBlockedImport.ok) throw new Error('expected illegal_action');
+  assert.equal(skippedButBlockedImport.error.code, 'illegal_action');
+  assert.equal(skippedButBlockedImport.error.details?.reason, 'delivery_in_flight');
+
+  assert.ok(persisted.length > 0);
 }
 
 console.log('apiV1Backup profile ok');

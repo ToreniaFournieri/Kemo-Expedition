@@ -20,8 +20,10 @@ const LOAD_SET = /^commit\/build\/character\/(\d+)\/loadEquipmentSet$/;
 export const PARTIAL_LOAD_CHOICES = ['equipSimilar', 'equipExactMatchesOnly'] as const;
 
 export function resolveConfirmationPolicy(operation: string, state: GameState, parameters: Record<string, unknown>): ApiV1ConfirmationPolicy | null {
-  if (operation === 'commit/setting/backup/reset') return { warningKey: 'api.warning.backupReset', warningArgs: {}, allowedChoices: [] };
-  if (operation === 'commit/setting/backup/import') return { warningKey: 'api.warning.backupImport', warningArgs: {}, allowedChoices: [] };
+  // SpecRef: 9.1.3, 3-6-5-2/3-6-5-3 | `skipConfirmation` (default false) bypasses this operation's own challenge only;
+  // it never affects any other operation's confirmation policy.
+  if (operation === 'commit/setting/backup/reset') return parameters.skipConfirmation === true ? null : { warningKey: 'api.warning.backupReset', warningArgs: {}, allowedChoices: [] };
+  if (operation === 'commit/setting/backup/import') return parameters.skipConfirmation === true ? null : { warningKey: 'api.warning.backupImport', warningArgs: {}, allowedChoices: [] };
   const load = operation.match(LOAD_SET);
   if (!load) return null;
 

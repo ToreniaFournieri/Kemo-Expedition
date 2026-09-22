@@ -250,6 +250,13 @@ confirmation (`backup/import`, `backup/reset`, and partial `loadEquipmentSet`).
 `changeBuild` is excluded: it confirms through its `simulation` and
 `confirmation` parameters (9.1.4.9).
 
+`backup/import` and `backup/reset` (9.1.3, 3-6-5-2/3-6-5-3) each accept an
+optional boolean `skipConfirmation` parameter (default `false`). When `true`,
+that request never returns `confirmation_required` and commits immediately, as
+if it already held a valid token; the operation's own mutation, idempotency,
+and revision rules are unchanged. `skipConfirmation` has no effect on any other
+operation, including `loadEquipmentSet`, which has no such parameter.
+
 An operation requiring confirmation first returns HTTP `409`:
 
 ```json
@@ -676,8 +683,9 @@ definitions in 9.1.3.
 * `backup/import` and `feedback` use `multipart/form-data`; all other Commit
   operations use JSON.
 * Multipart requests contain exactly one `metadata` part of media type
-  `application/json` with the same envelope as JSON commits. Import has
-  `parameters: {}` and exactly one binary part named `backup`. Feedback scalar
+  `application/json` with the same envelope as JSON commits. Import's
+  `parameters` carries only the optional `skipConfirmation` (9.1.4.5) and
+  exactly one binary part named `backup`. Feedback scalar
   fields are in `parameters`; `attachments` is an ordered array of file-part
   names (`attachment0` through `attachment3`). Omission means `[]`. Each listed
   part appears exactly once; unlisted, missing, or duplicate parts are invalid.

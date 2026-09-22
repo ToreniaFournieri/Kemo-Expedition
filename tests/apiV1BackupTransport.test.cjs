@@ -139,3 +139,44 @@ test('backup/import: a confirmed import closes every open popup stream synchrono
   const trailing = await reader.read();
   assert.equal(trailing.done, true, 'the stream ends after resyncRequired');
 });
+
+test('backup/import and backup/reset: the wire schema accepts skipConfirmation and passes it through to the authority untouched', async t => {
+  let revision = 0;
+  const received = [];
+  const { api, directory, endpoint, session } = await startServer(async (operationId, payload) => {
+    if (operationId === 'fundamental/status') return { data: { systemStatus: 'ready', versionBuild: '0.0.0 (0)', environment: 'desktop' } };
+    if (operationId === 'fundamental/logIn') return { revision, data: { userId: 'Taro', environment: 'desktop', gameMode: 'normal', levelOffsetForOrca: null }, identity: { userId: 'Taro' } };
+    if (operationId === 'commit/setting/backup/import' || operationId === 'commit/setting/backup/reset') {
+      received.push({ operationId, payload });
+      return { previousRevision: revision, revision: ++revision, data: operationId.endsWith('import') ? { imported: true } : {}, requestId: payload?.transport?.requestId };
+    }
+    throw new Error(`unexpected ${operationId}`);
+  });
+  t.after(async () => { api.shutdown(); fs.rmSync(directory, { recursive: true, force: true }); });
+
+  const resetResponse = await fetch(`${endpoint}/commit/setting/backup/reset`, {
+    method: 'POST', headers: { ...session, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ expectedRevision: revision, idempotencyKey: crypto.randomUUID(), parameters: { skipConfirmation: true } }),
+  });
+  const resetBody = await resetResponse.json();
+  assert.equal(resetResponse.status, 200, JSON.stringify(resetBody));
+
+  const importResponse = await fetch(`${endpoint}/commit/setting/backup/import`, {
+    method: 'POST', headers: session,
+    body: multipartBody({ expectedRevision: revision, idempotencyKey: crypto.randomUUID(), parameters: { skipConfirmation: true } }, { backup: Buffer.from('backup-bytes', 'utf8') }),
+  });
+  const importBody = await importResponse.json();
+  assert.equal(importResponse.status, 200, JSON.stringify(importBody));
+
+  assert.equal(received.length, 2);
+  assert.equal(received[0].payload.parameters.skipConfirmation, true);
+  assert.equal(received[1].payload.parameters.skipConfirmation, true);
+
+  // A stray extra parameter is still rejected: skipConfirmation did not loosen the schema in general.
+  const rejected = await fetch(`${endpoint}/commit/setting/backup/reset`, {
+    method: 'POST', headers: { ...session, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ expectedRevision: revision, idempotencyKey: crypto.randomUUID(), parameters: { skipConfirmation: true, somethingElse: 1 } }),
+  });
+  assert.equal(rejected.status, 400);
+  assert.equal((await rejected.json()).error.code, 'invalid_request');
+});

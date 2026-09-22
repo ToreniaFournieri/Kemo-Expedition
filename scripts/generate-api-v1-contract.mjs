@@ -232,7 +232,9 @@ const commitParameters = {
   'commit/setting/clairvoyanceReset': strict({ partyNumber, resetCommonRewards: Type.Boolean(), resetRewards: Type.Boolean(), resetSideQuest: Type.Boolean() }),
   'commit/setting/modeSelect': strict(modeSelect), 'commit/setting/enemyEditPane': strict(enemyEdit),
   'commit/setting/feedback': strict({ name: Type.String({ minLength: 1, maxLength: 100 }), category: literals('feedback', 'question', 'featureRequest', 'bugReport'), text: Type.String({ minLength: 1, maxLength: 20000 }), latestBattleLogParty: optional(Type.Union([partyNumber, Type.Literal('none')]), 1), includeBackup: optional(Type.Boolean(), false), attachments: optional(Type.Array(Type.String({ pattern: '^attachment[0-3]$' }), { maxItems: 4, uniqueItems: true }), []) }),
-  'commit/setting/backup/export': empty, 'commit/setting/backup/import': empty, 'commit/setting/backup/reset': empty,
+  'commit/setting/backup/export': empty,
+  'commit/setting/backup/import': strict({ skipConfirmation: optional(Type.Boolean(), false) }),
+  'commit/setting/backup/reset': strict({ skipConfirmation: optional(Type.Boolean(), false) }),
   'commit/setting/debug': strict(debug), 'commit/setting/markNewsAsRead': strict({ version: optional(Type.Union([stableKey, nonEmptyArray(stableKey, { uniqueItems: true })])) }),
   'commit/setting/uiPreferences': strict({ changes: nonEmptyArray(strict({ key: stableKey, value: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })) }),
 };
