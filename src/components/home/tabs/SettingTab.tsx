@@ -20,9 +20,6 @@ import { GLOSSARY_SECTIONS } from '../../../data/glossary';
 import { ITEMS,SUPER_RARE_TITLES } from '../../../data/items';
 import { RACES } from '../../../data/races';
 import { getAbilityDescription } from '../../../game/characterComputation';
-import {
-isDungeonEntryUnlocked
-} from '../../../game/clearGate';
 import { buildColosseumEnemy,ColosseumEnemySettings,getColosseumEnemySettings,normalizeColosseumEnemySettings,saveColosseumEnemySettings } from '../../../game/colosseum';
 import { DebugSettings } from '../../../game/debugSettings';
 import { RuntimeDiagnostics } from '../../MemoryDiagnostics';
@@ -40,7 +37,7 @@ import { computePartyStats } from '../../../game/partyComputation';
 import { hydrateGameState,serializeGameState } from '../../../game/saveCodec';
 import { decodePersistedState } from '../../../game/storageCompression';
 import { Language,SUPPORTED_LANGUAGES,t } from '../../../i18n';
-import { AbilityId,Character,Dungeon,EnemyDef,ExpeditionLogEntry,GameState,Item,NotificationCategory,NotificationStyle,Party,RaceId,TerrainEffectKey,type BattleLogEntry } from '../../../types';
+import { AbilityId,Character,Dungeon,EnemyDef,ExpeditionLogEntry,GameState,Item,NotificationCategory,NotificationStyle,Party,RaceId,type BattleLogEntry } from '../../../types';
 import { GAME_MODES, THEME_DEFINITIONS } from '../../../theme/theme';
 import { DesktopNotificationSettings } from '../../DesktopNotificationSettings';
 import { ApiV1Settings } from '../../ApiV1Settings';
@@ -99,6 +96,11 @@ export default function SettingTab({
   donationRows,
   clairvoyanceProjections,
   enemyEditValidOptions,
+  glossaryEntries,
+  itemCompendiumEntries,
+  characterRosterEntries,
+  bestiaryEntries,
+  superRareEntries,
   onResetGame,
   onImportGameState,
   getCompressedSavePayload,
@@ -138,6 +140,11 @@ export default function SettingTab({
   donationRows: Array<{ deityName: string; donationGold: number; rank: number; nextRankDonationRequirement: number | null }>;
   clairvoyanceProjections: ApiV1ClairvoyanceProjection[] | null;
   enemyEditValidOptions: { terrainEffect: string[]; enemyType: string[] } | null;
+  glossaryEntries: Array<{ glossaryId: string; category: string; label: string; description: string }> | null;
+  itemCompendiumEntries: Array<{ itemId: number; revealed: boolean }> | null;
+  characterRosterEntries: Array<{ raceId: string; status: { vitality: number; strength: number; intelligence: number; mind: number }; ability: string[]; cBonus: string[]; otherBonus: string[]; defaultAbility: string | null; unlockAbility: string | null }> | null;
+  bestiaryEntries: Array<{ enemyId: number; revealed: boolean; encounters: number; defeats: number }> | null;
+  superRareEntries: string[] | null;
   onResetGame: () => Promise<void>;
   onImportGameState: (state: GameState, runtimeSnapshot?: unknown) => Promise<{ state: GameState | null; errorLog: string | null }>;
   getCompressedSavePayload: () => Promise<string>;
@@ -849,9 +856,11 @@ export default function SettingTab({
     onConfirm();
   };
 
+  const compendiumEntryById = new Map((itemCompendiumEntries ?? []).map((entry) => [entry.itemId, entry]));
   const compendiumItems = ITEMS
     .filter(item =>
-      (debugSettings.displayAllCompendium || (gameState.global.revealedItemCompendiumItemIds ?? []).includes(item.id)) &&
+      (debugSettings.displayAllCompendium || compendiumEntryById.get(item.id)?.revealed === true) &&
+      compendiumEntryById.has(item.id) &&
       item.category === compendiumCategory &&
       matchesRarityFilter(item.id, compendiumRarityFilter)
     )
@@ -890,6 +899,7 @@ export default function SettingTab({
   };
   const selectedRosterParty = gameState.parties.find((party) => party.id === characterRosterPartyId) ?? gameState.parties[0];
   const selectedRosterRace = RACES.find((race) => race.id === characterRosterRaceId);
+  const selectedRosterEntry = characterRosterEntries?.find((race) => race.raceId === characterRosterRaceId) ?? null;
   const activeRosterCharacter = characterRosterGenderFilter === 'unique'
     ? (selectedRosterParty?.characters ?? []).find((character) => character.raceId === characterRosterRaceId && character.isUnique) ?? null
     : {
@@ -934,13 +944,13 @@ export default function SettingTab({
   }, [gameState.parties]);
   const visibleRosterRaceIds = useMemo(() => (
     CHARACTER_ROSTER_RACES
-      .filter((race) => gameState.parties.some((party) =>
+      .filter((race) => characterRosterEntries?.some((entry) => entry.raceId === race.id) && gameState.parties.some((party) =>
         hasRosterGenderImage(party.id, race.id, 'male')
         || hasRosterGenderImage(party.id, race.id, 'female')
         || hasRosterUniqueCharacter(party.id, race.id),
       ))
       .map((race) => race.id)
-  ), [CHARACTER_ROSTER_RACES, gameState.parties, hasRosterGenderImage, hasRosterUniqueCharacter]);
+  ), [CHARACTER_ROSTER_RACES, characterRosterEntries, gameState.parties, hasRosterGenderImage, hasRosterUniqueCharacter]);
   const visibleRosterGenders = useMemo(() => {
     const partyId = selectedRosterParty?.id ?? 1;
     const genders: Array<'male' | 'female' | 'unique'> = [];
@@ -996,13 +1006,13 @@ export default function SettingTab({
     });
   };
 
-  const revealedGlossaryAbilityIds = useMemo(
-    () => new Set(gameState.global.revealedGlossaryAbilityIds ?? []),
-    [gameState.global.revealedGlossaryAbilityIds],
+  const projectedGlossaryEntryById = useMemo(
+    () => new Map((glossaryEntries ?? []).map((entry) => [entry.glossaryId, entry])),
+    [glossaryEntries],
   );
-  const revealedGlossaryTerrainKeys = useMemo(
-    () => new Set(gameState.global.revealedGlossaryTerrainKeys ?? []),
-    [gameState.global.revealedGlossaryTerrainKeys],
+  const projectedGlossaryIds = useMemo(
+    () => new Set(projectedGlossaryEntryById.keys()),
+    [projectedGlossaryEntryById],
   );
 
   // SpecRef: 8.6 | UI_SETTING | Glossary (用語集)
@@ -1022,7 +1032,15 @@ export default function SettingTab({
     };
 
     return section.id === glossarySectionIdsByTab[glossaryTab];
-  });
+  }).map((section) => ({
+    ...section,
+    entries: section.entries
+      .filter((entry) => debugSettings.displayAllGlossary || projectedGlossaryEntryById.has(entry.key))
+      .map((entry) => {
+        const projected = projectedGlossaryEntryById.get(entry.key);
+        return projected ? { ...entry, label: projected.label, description: projected.description } : entry;
+      }),
+  }));
 
 
   type GlossaryTable = {
@@ -1072,11 +1090,12 @@ export default function SettingTab({
   const isColosseumBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM;
 
   // SpecRef: 8.6 | UI_SETTING | Bestiary (敵キャラクター図鑑)
+  const bestiaryEntryById = new Map((bestiaryEntries ?? []).map((entry) => [entry.enemyId, entry]));
   const unlockedBestiaryDungeonIds = new Set(
     DUNGEONS
       .filter((dungeon) => dungeon.id !== 99)
-      .filter((dungeon) => debugSettings.displayAllBestiary || gameState.parties.some((party) => (
-        isDungeonEntryUnlocked(party, dungeon.id)
+      .filter((dungeon) => debugSettings.displayAllBestiary || dungeon.id === 1 || ENEMIES.some((enemy) => (
+        enemy.poolId === dungeon.id && bestiaryEntryById.get(enemy.id)?.revealed === true
       )))
       .map((dungeon) => dungeon.id)
   );
@@ -1091,8 +1110,8 @@ export default function SettingTab({
   const getGodBestiaryDisplayEnemyId = (god: (typeof GOD_ENEMY_PROFILES)[number]): number => god.enemyId;
 
   const getGodBestiaryBattleStats = (god: (typeof GOD_ENEMY_PROFILES)[number]): { defeats: number; encounters: number } => {
-    const enemyBattleStats = gameState.global.enemyBattleStats ?? {};
-    return enemyBattleStats[god.enemyId] ?? { defeats: 0, encounters: 0 };
+    const entry = bestiaryEntryById.get(god.enemyId);
+    return entry ? { defeats: entry.defeats, encounters: entry.encounters } : { defeats: 0, encounters: 0 };
   };
 
   // SpecRef: 8.6 | UI_SETTING | Bestiary (敵キャラクター図鑑)
@@ -1321,7 +1340,7 @@ export default function SettingTab({
     rogue: t('setting.bestiary.enemyClass.rogue'),
   };
 
-  const getBestiaryEnemyBattleStats = (enemyId: number) => gameState.global.enemyBattleStats?.[enemyId] ?? { defeats: 0, encounters: 0 };
+  const getBestiaryEnemyBattleStats = (enemyId: number) => { const entry = bestiaryEntryById.get(enemyId); return entry ? { defeats: entry.defeats, encounters: entry.encounters } : { defeats: 0, encounters: 0 }; };
 
   const getBestiaryClassRows = (
     mainClassId: string,
@@ -1731,7 +1750,7 @@ export default function SettingTab({
                           // SpecRef: 1.0.3 | Glossary Reveal Rule | ability visibility
                           ? LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES
                             .filter((entry) => entry.subcategory === bonusAbilityGlossarySubcategory)
-                            .filter((entry) => debugSettings.displayAllGlossary || revealedGlossaryAbilityIds.has(entry.abilityId))
+                            .filter((entry) => debugSettings.displayAllGlossary || projectedGlossaryIds.has(entry.abilityId))
                             .map((entry, index) => {
                               const entryKey = `${section.id}-${entry.abilityId}-${index}`;
                               const displayLabel = getBonusAbilityGlossaryDisplayLabel(entry.abilityId);
@@ -1751,7 +1770,7 @@ export default function SettingTab({
                           : section.entries.map((entry, index) => {
                             // SpecRef: 1.0.3 | Glossary Reveal Rule | terrain visibility
                             const isTerrainGlossarySection = section.heading === '1.1.10 t. terrain effects';
-                            if (isTerrainGlossarySection && !debugSettings.displayAllGlossary && !revealedGlossaryTerrainKeys.has(entry.key as TerrainEffectKey)) {
+                            if (isTerrainGlossarySection && !debugSettings.displayAllGlossary && !projectedGlossaryIds.has(entry.key)) {
                               return null;
                             }
                             const isSideQuestGlossarySection = section.id === '2-1-9';
@@ -2007,12 +2026,12 @@ export default function SettingTab({
               <div className="relative z-10 rounded bg-white/25 px-2 py-1 inline-block text-xs text-gray-700">{t('setting.characterRoster.race', { race: selectedRosterRace?.name ?? activeRosterCharacter.raceId })}</div>
               <div className="relative z-10 mt-auto border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/25 rounded px-2 py-1 space-y-1">
                 <div className="font-semibold">{t('setting.characterRoster.raceStats')}</div>
-                <button type="button" className="w-full text-left" title={t('setting.characterRoster.raceBaseStatsHelp')} onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', t('setting.characterRoster.baseStats', { vitality: selectedRosterRace ? formatNumber(selectedRosterRace.stats.vitality) : '-', strength: selectedRosterRace ? formatNumber(selectedRosterRace.stats.strength) : '-', intelligence: selectedRosterRace ? formatNumber(selectedRosterRace.stats.intelligence) : '-', mind: selectedRosterRace ? formatNumber(selectedRosterRace.stats.mind) : '-' }), event.currentTarget); }}>
+                <button type="button" className="w-full text-left" title={t('setting.characterRoster.raceBaseStatsHelp')} onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', t('setting.characterRoster.baseStats', { vitality: selectedRosterEntry ? formatNumber(selectedRosterEntry.status.vitality) : '-', strength: selectedRosterEntry ? formatNumber(selectedRosterEntry.status.strength) : '-', intelligence: selectedRosterEntry ? formatNumber(selectedRosterEntry.status.intelligence) : '-', mind: selectedRosterEntry ? formatNumber(selectedRosterEntry.status.mind) : '-' }), event.currentTarget); }}>
                   <span className="grid grid-cols-4 gap-1">
-                    <span className="base-stat-chip">{t('common.stat.vitality')}:{selectedRosterRace ? formatNumber(selectedRosterRace.stats.vitality) : '-'}</span>
-                    <span className="base-stat-chip">{t('common.stat.strength')}:{selectedRosterRace ? formatNumber(selectedRosterRace.stats.strength) : '-'}</span>
-                    <span className="base-stat-chip">{t('common.stat.intelligence')}:{selectedRosterRace ? formatNumber(selectedRosterRace.stats.intelligence) : '-'}</span>
-                    <span className="base-stat-chip">{t('common.stat.mind')}:{selectedRosterRace ? formatNumber(selectedRosterRace.stats.mind) : '-'}</span>
+                    <span className="base-stat-chip">{t('common.stat.vitality')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.vitality) : '-'}</span>
+                    <span className="base-stat-chip">{t('common.stat.strength')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.strength) : '-'}</span>
+                    <span className="base-stat-chip">{t('common.stat.intelligence')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.intelligence) : '-'}</span>
+                    <span className="base-stat-chip">{t('common.stat.mind')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.mind) : '-'}</span>
                   </span>
                 </button>
                 <div className="text-xs text-gray-900 mt-1 leading-5">
@@ -2558,7 +2577,7 @@ export default function SettingTab({
         {settingPanelExpanded.superRare && <>
         <div className="text-xs text-gray-500 mt-3 mb-2">{t('setting.superRareListCaption')}</div>
         <div className="bg-white rounded p-2 text-sm space-y-1 max-h-72 overflow-y-auto pane-button-shadow">
-          {SUPER_RARE_TITLES.filter(title => title.value > 0).map(title => {
+          {(superRareEntries ?? []).map((entry) => Number(entry.split('/', 1)[0])).map((value) => SUPER_RARE_TITLES.find((title) => title.value === value)).filter((title): title is (typeof SUPER_RARE_TITLES)[number] => !!title && title.value > 0).map(title => {
             const uniqueBonus = formatBonuses(title.bonuses ?? [], { defenseMultiplierStyle: 'friendly' });
             return (
               <div key={title.value} className="grid grid-cols-[auto,1fr] gap-x-2 border-b border-gray-100 last:border-b-0 py-1">
