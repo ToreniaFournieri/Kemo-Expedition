@@ -5166,6 +5166,24 @@ export function HomeScreen({
     inProcessApiRef.current, 'read/setting/enemyEditPane', {}, [], isSettingTabVisible && isDebugModeEnabled(),
   );
 
+  // SpecRef: 8.6 | UI_SETTING | Large read-only reference panels. Fetch the complete resource once and let the
+  // resource's reveal flags/IDs be authoritative; presentation-only grouping, images, and localization stay local.
+  const glossaryResource = useApiRead<{ entries: Array<{ glossaryId: string; category: string; label: string; description: string }> }>(
+    inProcessApiRef.current, 'resources/glossary', {}, [], isSettingTabVisible,
+  );
+  const itemCompendiumResource = useApiRead<{ items: Array<{ itemId: number; revealed: boolean }> }>(
+    inProcessApiRef.current, 'resources/itemCompendium', {}, [], isSettingTabVisible,
+  );
+  const characterRosterResource = useApiRead<{ races: Array<{ raceId: string; status: { vitality: number; strength: number; intelligence: number; mind: number }; ability: string[]; cBonus: string[]; otherBonus: string[]; defaultAbility: string | null; unlockAbility: string | null }> }>(
+    inProcessApiRef.current, 'resources/characterRoster', {}, [], isSettingTabVisible,
+  );
+  const bestiaryResource = useApiRead<{ enemies: Array<{ enemyId: number; revealed: boolean; encounters: number; defeats: number }> }>(
+    inProcessApiRef.current, 'resources/bestiary', {}, [], isSettingTabVisible,
+  );
+  const superRareResource = useApiRead<{ superRare: string[] }>(
+    inProcessApiRef.current, 'resources/superRareList', {}, [], isSettingTabVisible,
+  );
+
   // SpecRef: 8.6 | UI_SETTING | Mode select — only `language` moves to the API: it is real `GameState.global.language`
   // (`commitOperations.ts` already handles `SET_LANGUAGE` there), unlike this panel's other fields (auto-repeat, dark
   // mode, game mode, runtime mode, orca offset), which stay local/device state, same precedent as the header's auto-repeat.
@@ -5425,6 +5443,11 @@ export function HomeScreen({
         donationRows={donationRows}
         clairvoyanceProjections={clairvoyanceProjections}
         enemyEditValidOptions={enemyEditPaneRead?.validOptions ?? null}
+        glossaryEntries={glossaryResource?.entries ?? null}
+        itemCompendiumEntries={itemCompendiumResource?.items ?? null}
+        characterRosterEntries={characterRosterResource?.races ?? null}
+        bestiaryEntries={bestiaryResource?.enemies ?? null}
+        superRareEntries={superRareResource?.superRare ?? null}
         onResetGame={handleResetGame}
         onImportGameState={handleImportGameState}
         getCompressedSavePayload={handleExportGameStatePayload}

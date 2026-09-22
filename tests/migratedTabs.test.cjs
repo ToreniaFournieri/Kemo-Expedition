@@ -222,12 +222,9 @@ test('the header renders only from the overview projection, importing no game mo
 });
 
 // SpecRef: 9.1.4.17 | UI state ownership | Settings UI migration (Stage 8's last item)
-// Unlike the tabs above, the Setting tab is only *partially* migrated: Glossary, Item Compendium, Character Roster,
-// Bestiary, Super Rare, Debug, and Send Feedback are explicitly deferred/reviewed exceptions and still read raw
-// `GameState` and dispatch reducer actions directly. These two guards are therefore narrower than the others on
-// purpose — they check that the specific migrated panels (Backup/Reset, News, Donation, Clairvoyance, and Enemy
-// Edit's option lists) no longer use their old direct entry points, not that the whole file is clean.
-test('the Setting tab reads News/Donation/Clairvoyance/Enemy-Edit-options from the Application API (migration in progress)', () => {
+// The Setting tab remains partially migrated only for Debug and Send Feedback. The five large read-only reference
+// panels now take their disclosure/content facts from the Application API while keeping local presentation state.
+test('the Setting tab reads migrated settings and reference panels from the Application API', () => {
   const tab = read('src/components/home/tabs/SettingTab.tsx');
   for (const banned of [/DEVELOPER_NEWS_ITEMS/, /getDeveloperNewsContent/, /\bdeityDonations\b/, /donationByDeity/, /onResetCommonBags/, /onResetUniqueBags/, /onResetSideQuestBag/]) {
     assert.doesNotMatch(tab, banned, `SettingTab must not reference ${banned}`);
@@ -237,12 +234,17 @@ test('the Setting tab reads News/Donation/Clairvoyance/Enemy-Edit-options from t
   assert.match(tab, /clairvoyanceProjections: ApiV1ClairvoyanceProjection\[\] \| null;/);
   assert.match(tab, /onClairvoyanceReset: \(partyIndex: number, changes:/);
   assert.match(tab, /enemyEditValidOptions\?\.enemyType/, 'Enemy Edit\'s type dropdown reads its option keys from the API, not only the hand-maintained label map');
+  for (const projection of ['glossaryEntries', 'itemCompendiumEntries', 'characterRosterEntries', 'bestiaryEntries', 'superRareEntries']) {
+    assert.match(tab, new RegExp(`${projection}:`), `SettingTab must receive ${projection}`);
+  }
+  assert.doesNotMatch(tab, /gameState\.global\.(revealedGlossaryAbilityIds|revealedGlossaryTerrainKeys|revealedItemCompendiumItemIds|enemyBattleStats)/);
 });
 
 test('HomeScreen wires the Setting tab\'s migrated panels through the Application API, not raw reducer actions', () => {
   const home = read('src/components/HomeScreen.tsx');
   for (const operation of [
     'resources/developerNewsNotification', 'resources/donationBox', "resources/clairvoyance/{p}'", "read/setting/enemyEditPane'",
+    "resources/glossary'", "resources/itemCompendium'", "resources/characterRoster'", "resources/bestiary'", "resources/superRareList'",
     'commit/setting/markNewsAsRead', 'commit/setting/clairvoyanceReset', 'commit/setting/modeSelect',
     'commit/setting/backup/export', 'commit/setting/backup/import', 'commit/setting/backup/reset',
   ]) assert.ok(home.includes(operation), `HomeScreen must call ${operation}`);
