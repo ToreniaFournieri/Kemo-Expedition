@@ -9077,7 +9077,8 @@
                 "currencies",
                 "inventory",
                 "jewelPriorityParty",
-                "shop"
+                "shop",
+                "altar"
               ],
               "properties": {
                 "currencies": {
@@ -9330,6 +9331,80 @@
                       }
                     }
                   }
+                },
+                "altar": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "prana",
+                    "maximumAltarLevel",
+                    "categories",
+                    "unlockedEnemyIds"
+                  ],
+                  "properties": {
+                    "prana": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maximumAltarLevel": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "categories": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "enemyType",
+                          "altarLevel",
+                          "victories",
+                          "nextLevelVictories",
+                          "maximumLevel",
+                          "formCount",
+                          "unlockedFormCount"
+                        ],
+                        "properties": {
+                          "enemyType": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "altarLevel": {
+                            "minimum": 0,
+                            "maximum": 20,
+                            "type": "integer"
+                          },
+                          "victories": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "nextLevelVictories": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "maximumLevel": {
+                            "type": "boolean"
+                          },
+                          "formCount": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "unlockedFormCount": {
+                            "minimum": 0,
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    },
+                    "unlockedEnemyIds": {
+                      "type": "array",
+                      "items": {
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -9381,7 +9456,8 @@
                     "currencies",
                     "inventory",
                     "jewelPriorityParty",
-                    "shop"
+                    "shop",
+                    "altar"
                   ],
                   "properties": {
                     "currencies": {
@@ -9634,6 +9710,80 @@
                           }
                         }
                       }
+                    },
+                    "altar": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "prana",
+                        "maximumAltarLevel",
+                        "categories",
+                        "unlockedEnemyIds"
+                      ],
+                      "properties": {
+                        "prana": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "maximumAltarLevel": {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        "categories": {
+                          "type": "array",
+                          "items": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "enemyType",
+                              "altarLevel",
+                              "victories",
+                              "nextLevelVictories",
+                              "maximumLevel",
+                              "formCount",
+                              "unlockedFormCount"
+                            ],
+                            "properties": {
+                              "enemyType": {
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              "altarLevel": {
+                                "minimum": 0,
+                                "maximum": 20,
+                                "type": "integer"
+                              },
+                              "victories": {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "nextLevelVictories": {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "maximumLevel": {
+                                "type": "boolean"
+                              },
+                              "formCount": {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "unlockedFormCount": {
+                                "minimum": 0,
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "unlockedEnemyIds": {
+                          "type": "array",
+                          "items": {
+                            "minimum": 0,
+                            "type": "integer"
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -9708,6 +9858,24 @@
                     "available": true,
                     "unavailableReason": "sold_out"
                   }
+                ]
+              },
+              "altar": {
+                "prana": 0,
+                "maximumAltarLevel": 1,
+                "categories": [
+                  {
+                    "enemyType": "xxxxxxx",
+                    "altarLevel": 0,
+                    "victories": 0,
+                    "nextLevelVictories": 0,
+                    "maximumLevel": true,
+                    "formCount": 0,
+                    "unlockedFormCount": 0
+                  }
+                ],
+                "unlockedEnemyIds": [
+                  0
                 ]
               }
             }
@@ -21278,12 +21446,74 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "donations",
-                "victories"
+                "prana",
+                "maximumAltarLevel",
+                "categories",
+                "unlockedEnemyIds"
               ],
               "properties": {
-                "donations": {},
-                "victories": {}
+                "prana": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "maximumAltarLevel": {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "enemyType",
+                      "altarLevel",
+                      "victories",
+                      "nextLevelVictories",
+                      "maximumLevel",
+                      "formCount",
+                      "unlockedFormCount"
+                    ],
+                    "properties": {
+                      "enemyType": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "altarLevel": {
+                        "minimum": 0,
+                        "maximum": 20,
+                        "type": "integer"
+                      },
+                      "victories": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "nextLevelVictories": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "maximumLevel": {
+                        "type": "boolean"
+                      },
+                      "formCount": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "unlockedFormCount": {
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    }
+                  }
+                },
+                "unlockedEnemyIds": {
+                  "type": "array",
+                  "items": {
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                }
               }
             }
           }
@@ -21331,12 +21561,74 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "donations",
-                    "victories"
+                    "prana",
+                    "maximumAltarLevel",
+                    "categories",
+                    "unlockedEnemyIds"
                   ],
                   "properties": {
-                    "donations": {},
-                    "victories": {}
+                    "prana": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maximumAltarLevel": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "categories": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "enemyType",
+                          "altarLevel",
+                          "victories",
+                          "nextLevelVictories",
+                          "maximumLevel",
+                          "formCount",
+                          "unlockedFormCount"
+                        ],
+                        "properties": {
+                          "enemyType": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "altarLevel": {
+                            "minimum": 0,
+                            "maximum": 20,
+                            "type": "integer"
+                          },
+                          "victories": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "nextLevelVictories": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "maximumLevel": {
+                            "type": "boolean"
+                          },
+                          "formCount": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "unlockedFormCount": {
+                            "minimum": 0,
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    },
+                    "unlockedEnemyIds": {
+                      "type": "array",
+                      "items": {
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    }
                   }
                 }
               }
@@ -21372,8 +21664,22 @@
         "response": {
           "data": {
             "altarOverview": {
-              "donations": null,
-              "victories": null
+              "prana": 0,
+              "maximumAltarLevel": 1,
+              "categories": [
+                {
+                  "enemyType": "xxxxxxx",
+                  "altarLevel": 0,
+                  "victories": 0,
+                  "nextLevelVictories": 0,
+                  "maximumLevel": true,
+                  "formCount": 0,
+                  "unlockedFormCount": 0
+                }
+              ],
+              "unlockedEnemyIds": [
+                0
+              ]
             }
           }
         }
@@ -21435,38 +21741,26 @@
                     "required": [
                       "enemyId",
                       "enemyName",
+                      "nameKey",
                       "enemyType",
+                      "enemyTier",
                       "enemyAbility",
                       "enemyBonus",
                       "unlockCost",
-                      "unlockCondition"
+                      "unlockCondition",
+                      "unlocked",
+                      "unlockable"
                     ],
                     "properties": {
                       "enemyId": {
-                        "minimum": 1,
-                        "type": "integer"
-                      },
-                      "enemyName": {
-                        "type": "string"
-                      },
-                      "enemyType": {
-                        "minLength": 1,
-                        "maxLength": 200,
-                        "type": "string"
-                      },
-                      "enemyAbility": {
-                        "type": "array",
-                        "items": {}
-                      },
-                      "enemyBonus": {
-                        "type": "array",
-                        "items": {}
-                      },
-                      "unlockCost": {
                         "minimum": 0,
                         "type": "integer"
                       },
-                      "unlockCondition": {
+                      "enemyName": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "nameKey": {
                         "anyOf": [
                           {
                             "type": "string"
@@ -21475,6 +21769,125 @@
                             "type": "null"
                           }
                         ]
+                      },
+                      "enemyType": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "enemyTier": {
+                        "anyOf": [
+                          {
+                            "const": "normal",
+                            "type": "string"
+                          },
+                          {
+                            "const": "elite",
+                            "type": "string"
+                          },
+                          {
+                            "const": "boss",
+                            "type": "string"
+                          },
+                          {
+                            "const": "divine",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "enemyAbility": {
+                        "type": "array",
+                        "items": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "abilityId",
+                            "level"
+                          ],
+                          "properties": {
+                            "abilityId": {
+                              "pattern": "^a\\.[a-z0-9-]+$",
+                              "type": "string"
+                            },
+                            "level": {
+                              "minimum": 1,
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      },
+                      "enemyBonus": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "unlockCost": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "unlockCondition": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "requiredAltarLevel",
+                          "currentAltarLevel",
+                          "met"
+                        ],
+                        "properties": {
+                          "requiredAltarLevel": {
+                            "minimum": 0,
+                            "maximum": 20,
+                            "type": "integer"
+                          },
+                          "currentAltarLevel": {
+                            "minimum": 0,
+                            "maximum": 20,
+                            "type": "integer"
+                          },
+                          "met": {
+                            "type": "boolean"
+                          }
+                        }
+                      },
+                      "unlocked": {
+                        "type": "boolean"
+                      },
+                      "unlockable": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "available",
+                          "unavailableReason"
+                        ],
+                        "properties": {
+                          "available": {
+                            "type": "boolean"
+                          },
+                          "unavailableReason": {
+                            "anyOf": [
+                              {
+                                "anyOf": [
+                                  {
+                                    "const": "already_unlocked",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "altar_level_too_low",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "insufficient_prana",
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        }
                       }
                     }
                   }
@@ -21491,7 +21904,7 @@
                 "enemyId": {
                   "type": "array",
                   "items": {
-                    "minimum": 1,
+                    "minimum": 0,
                     "type": "integer"
                   }
                 }
@@ -21554,38 +21967,26 @@
                         "required": [
                           "enemyId",
                           "enemyName",
+                          "nameKey",
                           "enemyType",
+                          "enemyTier",
                           "enemyAbility",
                           "enemyBonus",
                           "unlockCost",
-                          "unlockCondition"
+                          "unlockCondition",
+                          "unlocked",
+                          "unlockable"
                         ],
                         "properties": {
                           "enemyId": {
-                            "minimum": 1,
-                            "type": "integer"
-                          },
-                          "enemyName": {
-                            "type": "string"
-                          },
-                          "enemyType": {
-                            "minLength": 1,
-                            "maxLength": 200,
-                            "type": "string"
-                          },
-                          "enemyAbility": {
-                            "type": "array",
-                            "items": {}
-                          },
-                          "enemyBonus": {
-                            "type": "array",
-                            "items": {}
-                          },
-                          "unlockCost": {
                             "minimum": 0,
                             "type": "integer"
                           },
-                          "unlockCondition": {
+                          "enemyName": {
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "nameKey": {
                             "anyOf": [
                               {
                                 "type": "string"
@@ -21594,6 +21995,125 @@
                                 "type": "null"
                               }
                             ]
+                          },
+                          "enemyType": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "enemyTier": {
+                            "anyOf": [
+                              {
+                                "const": "normal",
+                                "type": "string"
+                              },
+                              {
+                                "const": "elite",
+                                "type": "string"
+                              },
+                              {
+                                "const": "boss",
+                                "type": "string"
+                              },
+                              {
+                                "const": "divine",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "enemyAbility": {
+                            "type": "array",
+                            "items": {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "abilityId",
+                                "level"
+                              ],
+                              "properties": {
+                                "abilityId": {
+                                  "pattern": "^a\\.[a-z0-9-]+$",
+                                  "type": "string"
+                                },
+                                "level": {
+                                  "minimum": 1,
+                                  "type": "integer"
+                                }
+                              }
+                            }
+                          },
+                          "enemyBonus": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "unlockCost": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "unlockCondition": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "requiredAltarLevel",
+                              "currentAltarLevel",
+                              "met"
+                            ],
+                            "properties": {
+                              "requiredAltarLevel": {
+                                "minimum": 0,
+                                "maximum": 20,
+                                "type": "integer"
+                              },
+                              "currentAltarLevel": {
+                                "minimum": 0,
+                                "maximum": 20,
+                                "type": "integer"
+                              },
+                              "met": {
+                                "type": "boolean"
+                              }
+                            }
+                          },
+                          "unlocked": {
+                            "type": "boolean"
+                          },
+                          "unlockable": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "available",
+                              "unavailableReason"
+                            ],
+                            "properties": {
+                              "available": {
+                                "type": "boolean"
+                              },
+                              "unavailableReason": {
+                                "anyOf": [
+                                  {
+                                    "anyOf": [
+                                      {
+                                        "const": "already_unlocked",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "altar_level_too_low",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "insufficient_prana",
+                                        "type": "string"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
                           }
                         }
                       }
@@ -21610,7 +22130,7 @@
                     "enemyId": {
                       "type": "array",
                       "items": {
-                        "minimum": 1,
+                        "minimum": 0,
                         "type": "integer"
                       }
                     }
@@ -21651,23 +22171,37 @@
             "current": {
               "enemyFormList": [
                 {
-                  "enemyId": 1,
+                  "enemyId": 0,
                   "enemyName": "xxxxxxx",
+                  "nameKey": "xxxxxxx",
                   "enemyType": "xxxxxxx",
+                  "enemyTier": "normal",
                   "enemyAbility": [
-                    null
+                    {
+                      "abilityId": "a.howl",
+                      "level": 1
+                    }
                   ],
                   "enemyBonus": [
-                    null
+                    "xxxxxxx"
                   ],
                   "unlockCost": 0,
-                  "unlockCondition": "xxxxxxx"
+                  "unlockCondition": {
+                    "requiredAltarLevel": 0,
+                    "currentAltarLevel": 0,
+                    "met": true
+                  },
+                  "unlocked": true,
+                  "unlockable": {
+                    "available": true,
+                    "unavailableReason": "already_unlocked"
+                  }
                 }
               ]
             },
             "validOptions": {
               "enemyId": [
-                1
+                0
               ]
             }
           }
@@ -32504,7 +33038,19 @@
         "data": {
           "additionalProperties": false,
           "type": "object",
-          "properties": {}
+          "required": [
+            "enemyId",
+            "pranaDelta"
+          ],
+          "properties": {
+            "enemyId": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "pranaDelta": {
+              "type": "integer"
+            }
+          }
         },
         "envelope": {
           "additionalProperties": false,
@@ -32549,7 +33095,19 @@
             "data": {
               "additionalProperties": false,
               "type": "object",
-              "properties": {}
+              "required": [
+                "enemyId",
+                "pranaDelta"
+              ],
+              "properties": {
+                "enemyId": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "pranaDelta": {
+                  "type": "integer"
+                }
+              }
             },
             "effects": {
               "type": "array",
@@ -32638,7 +33196,10 @@
           }
         },
         "response": {
-          "data": {}
+          "data": {
+            "enemyId": 0,
+            "pranaDelta": 1
+          }
         }
       }
     },

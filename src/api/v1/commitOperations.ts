@@ -11,6 +11,8 @@ import { getInstantExpeditionChargeState } from '../../game/instantExpedition';
 import { computePartyStats } from '../../game/partyComputation';
 import { hydrateGameState, serializeGameState } from '../../game/saveCodec';
 import { getShopFacts, shopLineupInputOf } from '../../game/shopFacts';
+import { getEnemyFormFacts } from '../../game/altarFacts';
+import { ENEMIES } from '../../data/enemies';
 import { describeEquipmentHistory } from './equipmentHistoryFacts';
 import { apiExpeditionOutcomeOrNull } from './expeditionOutcome';
 import { listUiPreferences, validateUiPreference, type UiPreferenceValue } from './uiPreferenceCatalog';
@@ -425,7 +427,19 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (after.lineupId === before.lineupId) throw new Error('illegal_action:refresh_rejected');
     data = { lineupId: after.lineupId, goldDelta: next.global.gold - goldBefore, paidRefreshPrice: after.paidRefreshPrice };
   } else if (operation === 'commit/base/unlockForm') {
-    reduce({ type: 'UNLOCK_MIMORIAN_ENEMY', enemyId: Number(parameters.enemyId) });
+    // SpecRef: 9.1.3 | Commit | 3-4-6 unlockForm
+    // SpecRef: 8.4.5 | Altar (祭壇) | Unlock Costs
+    // The reducer ignores a form that cannot be unlocked; the API names why: already unlocked, the category's Alter level is
+    // below the form's requirement, or the Prana is short.
+    const enemyId = Number(parameters.enemyId);
+    const enemy = ENEMIES.find((candidate) => candidate.id === enemyId);
+    if (!enemy) throw new Error('not_found');
+    const facts = getEnemyFormFacts({ prana: next.global.prana, altarVictoriesByEnemyType: next.global.altarVictoriesByEnemyType, unlockedMimorianEnemyIds: next.global.unlockedMimorianEnemyIds }, enemy);
+    if (facts.unavailableReason) throw new Error(`illegal_action:${facts.unavailableReason}`);
+    const pranaBefore = next.global.prana;
+    reduce({ type: 'UNLOCK_MIMORIAN_ENEMY', enemyId });
+    if (!next.global.unlockedMimorianEnemyIds.includes(enemyId)) throw new Error('illegal_action:unlock_rejected');
+    data = { enemyId, pranaDelta: next.global.prana - pranaBefore };
   } else if (operation === 'commit/base/markItemsAsSeen') {
     const keys = parameters.items as string[];
     if (!Array.isArray(keys) || keys.some((key) => !next.global.inventory[key])) throw new Error('invalid_items');

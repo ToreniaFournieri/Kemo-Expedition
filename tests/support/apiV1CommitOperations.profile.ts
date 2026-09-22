@@ -442,4 +442,54 @@ const seed: GameState = createFreshGameState('ja', Date.parse('2026-01-01T00:00:
   for (const banned of ['seedHex', 'replayMetadata', 'randomDrawCount']) assert.equal(text.includes(banned), false, `${banned} is not published`);
 }
 
+// The Altar: forms are unlocked with Prana once the category's Alter level reaches the form's requirement; the API names why
+// a form cannot be unlocked (the reducer ignores it), and the reads offer exactly the forms the commit accepts.
+{
+  const { ENEMIES } = await import('../../src/data/enemies');
+  const { getEnemyRequiredAltarLevel, getEnemyFormPranaCost, getRequiredAltarVictories } = await import('../../src/game/prana');
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
+  const open = ENEMIES.find((enemy) => getEnemyRequiredAltarLevel(enemy) === 0)!;
+  const gated = ENEMIES.find((enemy) => getEnemyRequiredAltarLevel(enemy) > 0 && enemy.type === 'normal') ?? ENEMIES.find((enemy) => getEnemyRequiredAltarLevel(enemy) > 0)!;
+  const cost = getEnemyFormPranaCost(open);
+  const withGlobal = (changes: Record<string, unknown>) => ({ ...seed, global: { ...seed.global, ...changes } }) as GameState;
+  const unlock = (state: GameState, enemyId: number) => applyApiV1Commit('commit/base/unlockForm', state, { enemyId }, baseContext());
+  const reason = (state: GameState, enemyId: number) => { try { unlock(state, enemyId); return ''; } catch (error) { return String(error); } };
+
+  assert.match(reason(seed, 999_999), /not_found/);
+  assert.match(reason(withGlobal({ prana: 0 }), open.id), /illegal_action:insufficient_prana/);
+  const unlocked = unlock(withGlobal({ prana: cost + 3 }), open.id);
+  assert.deepEqual(unlocked.data, { enemyId: open.id, pranaDelta: -cost });
+  assert.equal(unlocked.state.global.prana, 3);
+  assert.ok(unlocked.state.global.unlockedMimorianEnemyIds.includes(open.id));
+  assert.match(reason(unlocked.state, open.id), /illegal_action:already_unlocked/);
+  // A form above the category's Alter level needs the victories of that level in that category.
+  const needed = getEnemyRequiredAltarLevel(gated);
+  assert.match(reason(withGlobal({ prana: 1_000 }), gated.id), /illegal_action:altar_level_too_low/);
+  const earned = withGlobal({ prana: 1_000, altarVictoriesByEnemyType: { [gated.enemyType]: getRequiredAltarVictories(needed) } });
+  assert.equal(unlock(earned, gated.id).state.global.unlockedMimorianEnemyIds.includes(gated.id), true);
+  // Victories of another category do not count.
+  const other = ENEMIES.find((enemy) => enemy.enemyType !== gated.enemyType)!.enemyType;
+  assert.match(reason(withGlobal({ prana: 1_000, altarVictoriesByEnemyType: { [other]: getRequiredAltarVictories(needed) } }), gated.id), /altar_level_too_low/);
+
+  const read = (state: GameState, operation: string, parameters: Record<string, unknown> = {}) => buildApiV1ReadData(operation, state, parameters, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, revision: 1, inGameTime: 0 } as never) as Promise<any>;
+  const forms = await read(earned, 'read/base/enemyFormList');
+  assert.equal(forms.current.enemyFormList.length, ENEMIES.length);
+  for (const enemyId of forms.validOptions.enemyId as number[]) assert.doesNotThrow(() => unlock(earned, enemyId), `offered form ${enemyId} is accepted`);
+  const offered = new Set(forms.validOptions.enemyId as number[]);
+  for (const form of forms.current.enemyFormList as { enemyId: number; unlockable: { available: boolean; unavailableReason: string | null } }[]) {
+    assert.equal(offered.has(form.enemyId), form.unlockable.available);
+    if (!form.unlockable.available) assert.match(reason(earned, form.enemyId), new RegExp(`illegal_action:${form.unlockable.unavailableReason}`), `form ${form.enemyId}`);
+  }
+  const filtered = await read(earned, 'read/base/enemyFormList', { enemyType: gated.enemyType });
+  assert.ok(filtered.current.enemyFormList.every((form: { enemyType: string }) => form.enemyType === gated.enemyType));
+  await assert.rejects(() => read(earned, 'read/base/enemyFormList', { enemyId: 999_999 }), /not_found/);
+  const altar = (await read(earned, 'read/base/altarInfo')).altarOverview;
+  const category = altar.categories.find((entry: { enemyType: string }) => entry.enemyType === gated.enemyType);
+  assert.equal(category.altarLevel, needed);
+  assert.equal(category.victories, getRequiredAltarVictories(needed));
+  assert.equal(category.unlockedFormCount, 0);
+  assert.equal((await read(unlocked.state, 'read/base/altarInfo')).altarOverview.unlockedEnemyIds.includes(open.id), true);
+  assert.deepEqual((await read(earned, 'read/observation/base')).baseInfo.altar, altar);
+}
+
 console.log('apiV1CommitOperations profile ok');

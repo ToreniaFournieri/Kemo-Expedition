@@ -15,7 +15,7 @@ import { buildCalculatedStatus } from './calculatedStatus.ts';
 import { getItemBasePower } from '../../game/itemPower.ts';
 import { evaluateItemForCharacter } from '../../game/itemEvaluation.ts';
 import { getItemRarityById } from '../../game/itemRarity.ts';
-import { describeItem, describeJewel, formatItemDetails, type ItemDetails, type ItemDetailsMode } from './itemDetails.ts';
+import { describeBonuses, describeItem, describeJewel, formatItemDetails, type ItemDetails, type ItemDetailsMode } from './itemDetails.ts';
 import { formatEquipmentEntry, formatItem, parseEquipmentChange, parseEvaluatedItemFormat } from './itemFormat.ts';
 import { isJewelAllowedForCategory, JEWEL_DEFS } from '../../game/jewel.ts';
 import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
@@ -30,8 +30,11 @@ import { DIFFICULTY_OFFSET_STEP, EXPEDITION_DEPTH_LIMITS, getSelectableDestinati
 import { getSortieUnavailableReason } from './sortieAvailability.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { getShopFacts, shopLineupInputOf } from '../../game/shopFacts.ts';
+import { getAltarCategoryFacts, getAltarEnemyTypes, getEnemyFormFacts } from '../../game/altarFacts.ts';
+import { MAX_ALTAR_LEVEL } from '../../game/prana.ts';
+import { getEnemyIndividualBonuses, getEnemyTypeBonuses, getMimorianEnemyAbilities } from '../../data/enemies.ts';
 import type { ApiV1PartyCycleView } from './commitOperations.ts';
-import { MAX_LEVEL, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party } from '../../types/index.ts';
+import { MAX_LEVEL, type EnemyDef, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
 
@@ -387,12 +390,49 @@ function shopProjection(state: GameState, nowMs: number) {
   };
 }
 
+// SpecRef: 8.4.5 | Altar (祭壇)
+function altarGlobal(state: GameState) {
+  return { prana: state.global.prana, altarVictoriesByEnemyType: state.global.altarVictoriesByEnemyType, unlockedMimorianEnemyIds: state.global.unlockedMimorianEnemyIds };
+}
+
+/** The Alter level and victories of every enemy category; the individual forms are read through `enemyFormList`. */
+function altarProjection(state: GameState) {
+  const global = altarGlobal(state);
+  return {
+    prana: state.global.prana,
+    maximumAltarLevel: MAX_ALTAR_LEVEL,
+    categories: getAltarEnemyTypes().map((enemyType) => getAltarCategoryFacts(global, enemyType)),
+    unlockedEnemyIds: [...state.global.unlockedMimorianEnemyIds],
+  };
+}
+
+/** One enemy form: its abilities and bonuses as a Mimorian would copy them, its cost, and why it cannot be unlocked. */
+function enemyFormEntry(state: GameState, enemy: EnemyDef) {
+  const facts = getEnemyFormFacts(altarGlobal(state), enemy);
+  const abilities = getMimorianEnemyAbilities(enemy);
+  const bonuses = describeBonuses([...getEnemyTypeBonuses(enemy.enemyType), ...getEnemyIndividualBonuses(enemy.id)]);
+  return {
+    enemyId: enemy.id,
+    enemyName: enemy.name,
+    nameKey: enemy.nameKey ?? null,
+    enemyType: enemy.enemyType,
+    enemyTier: enemy.isGodEnemy ? 'divine' as const : enemy.type,
+    enemyAbility: abilities.map((ability) => ({ abilityId: `a.${ability.id.replace(/_/g, '-')}`, level: ability.level })),
+    enemyBonus: [...bonuses.cBonus, ...bonuses.otherBonus],
+    unlockCost: facts.unlockCost,
+    unlockCondition: { requiredAltarLevel: facts.requiredAltarLevel, currentAltarLevel: facts.currentAltarLevel, met: facts.currentAltarLevel >= facts.requiredAltarLevel },
+    unlocked: facts.unlocked,
+    unlockable: { available: facts.unavailableReason === null, unavailableReason: facts.unavailableReason },
+  };
+}
+
 function baseProjection(state: GameState, context: ApiV1ReadContext) {
   return {
     currencies: { gold: state.global.gold, prana: state.global.prana },
     inventory: Object.entries(state.global.inventory).map(([variantKey, variant]) => ({ variantKey, item: itemFormat(variant.item), quantity: variant.count, status: variant.status, isNew: variant.isNew === true })),
     jewelPriorityParty: state.global.jewelAutoEquipPriorityPartyId ?? 'none',
     shop: shopProjection(state, context.inGameTime),
+    altar: altarProjection(state),
   };
 }
 
@@ -594,8 +634,15 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       validOptions: { items: shop.entries.filter((entry) => entry.available).map((entry) => entry.shopItemId) },
     };
   }
-  if (operationId === 'read/base/altarInfo') return { altarOverview: { donations: state.global.deityDonations, victories: state.global.altarVictoriesByEnemyType } };
-  if (operationId === 'read/base/enemyFormList') return { current: { enemyFormList: ENEMIES.filter((enemy) => !parameters.enemyId || enemy.id === Number(parameters.enemyId)).map((enemy) => ({ enemyId: enemy.id, enemyName: enemy.name, enemyType: enemy.type, enemyAbility: enemy.abilities ?? [], enemyBonus: [], unlockCost: 0, unlockCondition: null })) }, validOptions: { enemyId: ENEMIES.map((enemy) => enemy.id) } };
+  if (operationId === 'read/base/altarInfo') return { altarOverview: altarProjection(state) };
+  if (operationId === 'read/base/enemyFormList') {
+    // Optional intersecting filters; omission lists every enemy form.
+    const enemyId = parameters.enemyId === undefined ? undefined : Number(parameters.enemyId);
+    const forms = ENEMIES.filter((enemy) => (enemyId === undefined || enemy.id === enemyId) && (parameters.enemyType === undefined || enemy.enemyType === parameters.enemyType));
+    if (enemyId !== undefined && forms.length === 0) throw new Error('not_found');
+    const entries = forms.map((enemy) => enemyFormEntry(state, enemy));
+    return { current: { enemyFormList: entries }, validOptions: { enemyId: entries.filter((entry) => entry.unlockable.available).map((entry) => entry.enemyId) } };
+  }
 
   const diarySetting = operationId.match(/^read\/diary\/(\d+)\/diarySetting$/);
   if (diarySetting) { const selected = partyByNumber(state, diarySetting[1]); if (!selected) throw new Error('not_found'); return { current: selected.party.diarySettings, validOptions: { superRareThreshold: ['all', 1, 2, 3, 4, 5, 6, 'none'], defeatNotificationMode: ['defeatOnly', 'defeatAndDraw', 'defeatDrawRetreat', 'all', 'none'] } }; }

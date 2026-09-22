@@ -337,7 +337,19 @@ sampleOverrides.set(shopItemString, '1/1104/60/true');
 const shopRarity = literals('common', 'uncommon', 'eliteRare', 'bossRare');
 const shopEntry = strict({ shopItemId: Type.Integer({ minimum: 1, maximum: 5 }), itemId: integerId, price: Type.Integer({ minimum: 0 }), rarity: shopRarity, soldOut: Type.Boolean(), available: Type.Boolean(), unavailableReason: Type.Union([literals('sold_out', 'insufficient_gold'), Type.Null()]) });
 const shopInfoMembers = { intimacy: Type.Integer({ minimum: 0, maximum: 99 }), dialogue: semanticText, paidRefreshCountdown: Type.Integer({ minimum: 1 }), paidRefreshPrice: Type.Integer({ minimum: 0 }), paidRefresh: strict({ available: Type.Boolean(), unavailableReason: Type.Union([Type.Literal('insufficient_gold'), Type.Null()]) }) };
-const baseProjectionSchema = strict({ currencies: strict({ gold: Type.Integer({ minimum: 0 }), prana: Type.Integer({ minimum: 0 }) }), inventory: Type.Array(strict({ variantKey: stableKey, item: itemFormat, quantity: Type.Integer({ minimum: 0 }), status: literals('owned', 'sold', 'notown'), isNew: Type.Boolean() })), jewelPriorityParty: Type.Union([partyNumber, Type.Literal('none')]), shop: strict({ lineupId: stableKey, ...shopInfoMembers, refreshesAt: isoTimestamp, entries: Type.Array(shopEntry, { maxItems: 5 }) }) });
+// Spec 8.4.5: an Alter level per enemy category, and one entry per enemy form.
+const altarCategory = strict({ enemyType: stableKey, altarLevel: Type.Integer({ minimum: 0, maximum: 20 }), victories: count, nextLevelVictories: count, maximumLevel: Type.Boolean(), formCount: count, unlockedFormCount: count });
+const altarOverview = strict({ prana: count, maximumAltarLevel: Type.Integer({ minimum: 1 }), categories: Type.Array(altarCategory), unlockedEnemyIds: Type.Array(Type.Integer({ minimum: 0 })) });
+const formAbilityId = Type.String({ pattern: '^a\\.[a-z0-9-]+$' });
+sampleOverrides.set(formAbilityId, 'a.howl');
+const formUnavailableReason = literals('already_unlocked', 'altar_level_too_low', 'insufficient_prana');
+const enemyForm = strict({
+  enemyId: Type.Integer({ minimum: 0 }), enemyName: Type.String({ minLength: 1 }), nameKey: Type.Union([Type.String(), Type.Null()]), enemyType: stableKey, enemyTier: literals('normal', 'elite', 'boss', 'divine'),
+  enemyAbility: Type.Array(strict({ abilityId: formAbilityId, level: Type.Integer({ minimum: 1 }) })), enemyBonus: Type.Array(Type.String()),
+  unlockCost: count, unlockCondition: strict({ requiredAltarLevel: Type.Integer({ minimum: 0, maximum: 20 }), currentAltarLevel: Type.Integer({ minimum: 0, maximum: 20 }), met: Type.Boolean() }),
+  unlocked: Type.Boolean(), unlockable: strict({ available: Type.Boolean(), unavailableReason: Type.Union([formUnavailableReason, Type.Null()]) }),
+});
+const baseProjectionSchema = strict({ currencies: strict({ gold: Type.Integer({ minimum: 0 }), prana: Type.Integer({ minimum: 0 }) }), inventory: Type.Array(strict({ variantKey: stableKey, item: itemFormat, quantity: Type.Integer({ minimum: 0 }), status: literals('owned', 'sold', 'notown'), isNew: Type.Boolean() })), jewelPriorityParty: Type.Union([partyNumber, Type.Literal('none')]), shop: strict({ lineupId: stableKey, ...shopInfoMembers, refreshesAt: isoTimestamp, entries: Type.Array(shopEntry, { maxItems: 5 }) }), altar: altarOverview });
 const diaryProjectionSchema = strict({ unreadTotal: Type.Integer({ minimum: 0 }), parties: Type.Array(strict({ partyNumber, settings: strict(diarySetting), entries: Type.Array(diaryEntrySummary) })) });
 const settingProjectionSchema = strict({ language, environment: Type.String(), gameMode: modeKey, enemyLevelOffset: Type.Integer({ minimum: 0, maximum: 20 }), modeSelect: optional(strict(modeSelect)), debug: optional(strict(debug)), enemyEditPane: optional(strict(enemyEdit)), uiPreferences: Type.Array(strict({ key: stableKey, value: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), uiPreferenceCatalog: Type.Array(strict({ family: stableKey, subject: Type.Literal('characterId'), type: Type.Union([Type.Literal('string'), Type.Literal('number'), Type.Literal('boolean')]), options: Type.Array(Type.String()), defaultValue: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })) });
 const popupStreamSchema = strict({ events: Type.Array(popupEvent) });
@@ -399,8 +411,8 @@ const responseDataSchemas = {
   'read/base/jewelPriorityParty': strict({ current: strict({ partyNumber: Type.Union([partyNumber, Type.Literal('none')]) }), validOptions: strict({ partyNumber: Type.Array(Type.Union([partyNumber, Type.Literal('none')])) }) }),
   'read/base/shopInfo': strict(shopInfoMembers),
   'read/base/shopItemsList': strict({ current: strict({ lineupId: stableKey, refreshesAt: isoTimestamp, items: Type.Array(shopItemString, { maxItems: 5 }), entries: Type.Array(shopEntry, { maxItems: 5 }) }), validOptions: strict({ items: Type.Array(Type.Integer({ minimum: 1, maximum: 5 })) }) }),
-  'read/base/altarInfo': strict({ altarOverview: strict({ donations: Type.Unknown(), victories: Type.Unknown() }) }),
-  'read/base/enemyFormList': strict({ current: strict({ enemyFormList: Type.Array(strict({ enemyId: integerId, enemyName: Type.String(), enemyType: stableKey, enemyAbility: Type.Array(Type.Unknown()), enemyBonus: Type.Array(Type.Unknown()), unlockCost: Type.Integer({ minimum: 0 }), unlockCondition: Type.Union([Type.String(), Type.Null()]) })) }), validOptions: strict({ enemyId: Type.Array(integerId) }) }),
+  'read/base/altarInfo': strict({ altarOverview }),
+  'read/base/enemyFormList': strict({ current: strict({ enemyFormList: Type.Array(enemyForm) }), validOptions: strict({ enemyId: Type.Array(Type.Integer({ minimum: 0 })) }) }),
   'read/diary/{p}/diarySetting': strict({ current: strict(diarySetting), validOptions: strict({ superRareThreshold: Type.Array(Type.Union([Type.String(), Type.Integer()])), defeatNotificationMode: Type.Array(Type.String()) }) }),
   'read/diary/diaryEntry/{diaryEntryId}': strict({ entry: diaryEntry }),
   'read/setting/enemyEditPane': strict({ current: strict(enemyEdit), validOptions: strict({ enemyLevel: range, terrainEffect: Type.Array(Type.String()), enemyType: Type.Array(Type.String()), mainClass: Type.Array(stableKey), subClass: Type.Array(Type.String()), addedAbilities: strict({ maximumEntries: Type.Integer({ minimum: 0 }), level: strict({ min: Type.Integer(), max: Type.Integer() }) }) }) }),
@@ -454,7 +466,7 @@ const responseDataSchemas = {
   'commit/base/purchaseShopItems': tradeResult,
   'commit/base/paidShopRefresh': strict({ lineupId: stableKey, goldDelta: Type.Integer(), paidRefreshPrice: Type.Integer({ minimum: 0 }) }),
   'commit/base/unlockSoldItems': strict({ items: Type.Array(itemFormat) }),
-  'commit/base/unlockForm': empty,
+  'commit/base/unlockForm': strict({ enemyId: Type.Integer({ minimum: 0 }), pranaDelta: Type.Integer() }),
   'commit/diary/{p}/diarySetting': strict({ current: strict(diarySetting) }),
   'commit/diary/diaryEntry/markAsRead': strict({ diaryEntryId: Type.Array(stableKey), unreadTotal: Type.Integer({ minimum: 0 }) }),
   'commit/setting/clairvoyanceReset': strict({ partyNumber, resetCommonRewards: Type.Boolean(), resetRewards: Type.Boolean(), resetSideQuest: Type.Boolean() }),

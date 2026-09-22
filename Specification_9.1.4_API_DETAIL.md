@@ -613,6 +613,23 @@ definitions in 9.1.3.
 * `paidShopRefresh` charges the displayed current price and replaces the lineup
   in the same transaction. Idempotent replay must neither charge twice nor
   generate a second lineup.
+* Altar facts come from one shared source (`src/game/altarFacts.ts`). `altarInfo`'s
+  `altarOverview` (also the `base` projection's `altar`) lists `prana`,
+  `maximumAltarLevel`, `unlockedEnemyIds`, and one entry per enemy category with its
+  `altarLevel`, `victories`, `nextLevelVictories` (the current level's own requirement
+  at the maximum), `maximumLevel`, and its total and unlocked form counts.
+  `enemyFormList` (optional intersecting `enemyType` and `enemyId` filters; an unknown
+  `enemyId` is `not_found`) returns one entry per enemy form with the canonical
+  `enemyName`, `nameKey`, `enemyType`, `enemyTier`, the abilities (`enemyAbility`) and
+  bonuses (`enemyBonus`, `c.` and other bonus IDs) a Mimorian copying the form gets,
+  `unlockCost` in Prana, `unlockCondition` (`requiredAltarLevel`, `currentAltarLevel`,
+  `met`), `unlocked`, and `unlockable` (`{available, unavailableReason}`). The reason is
+  the first failing check: `already_unlocked`, `altar_level_too_low`, or
+  `insufficient_prana`. `validOptions.enemyId` lists exactly the forms `unlockForm`
+  accepts now.
+* `unlockForm` refuses a form that cannot be unlocked with `illegal_action` and that
+  reason (the reducer would ignore it silently), `not_found` for an unknown enemy, and
+  otherwise spends the Prana and returns `{enemyId, pranaDelta}`.
 * `sellInventoryItems` sells the entire owned stack for each supplied variant.
   `unlockSoldItems` only changes `s.sold` to `s.notown`; it restores no quantity
   and refunds no currency. Duplicate variants in either request are invalid.
