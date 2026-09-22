@@ -122,7 +122,11 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
   } else if (operation === 'commit/setting/backup/import') {
     const backup = context.uploadedFiles.backup;
     if (!backup || typeof backup.contentBase64 !== 'string') throw new Error('invalid_backup');
-    const imported = decodeApiSavePayload(atob(backup.contentBase64));
+    // The uploaded bytes are the UTF-8 encoding of the compressed save string (desktop/api-v1.cjs's raw-binary
+    // export writes `Buffer.from(savePayload, 'utf8')`), and that string routinely contains code points above
+    // Latin1 range (LZ-string's UTF16 packing). Plain `atob` only reverses a Latin1 byte-for-character mapping, so
+    // it must be paired with a UTF-8 decode of the recovered bytes, not used on its own.
+    const imported = decodeApiSavePayload(new TextDecoder().decode(Uint8Array.from(atob(backup.contentBase64), (char) => char.charCodeAt(0))));
     next = imported;
     resetControlEvents = true;
     data = { imported: true };
