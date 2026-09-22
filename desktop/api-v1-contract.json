@@ -40385,39 +40385,39 @@
           "category": {
             "anyOf": [
               {
-                "const": "Ab.",
+                "const": "a.",
                 "type": "string"
               },
               {
-                "const": "Base.",
+                "const": "b.",
                 "type": "string"
               },
               {
-                "const": "Fixed.",
+                "const": "c.",
                 "type": "string"
               },
               {
-                "const": "Inc.",
+                "const": "d.",
                 "type": "string"
               },
               {
-                "const": "Mech.",
+                "const": "f.",
                 "type": "string"
               },
               {
-                "const": "Faith.",
+                "const": "g.",
                 "type": "string"
               },
               {
-                "const": "Magic.",
+                "const": "m.",
                 "type": "string"
               },
               {
-                "const": "Quest.",
+                "const": "q.",
                 "type": "string"
               },
               {
-                "const": "Terrain.",
+                "const": "t.",
                 "type": "string"
               }
             ]
@@ -40456,7 +40456,69 @@
           "properties": {
             "entries": {
               "type": "array",
-              "items": {}
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "glossaryId",
+                  "category",
+                  "label",
+                  "description"
+                ],
+                "properties": {
+                  "glossaryId": {
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "category": {
+                    "anyOf": [
+                      {
+                        "const": "a.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "b.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "c.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "d.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "f.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "g.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "m.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "q.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "t.",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                }
+              }
             },
             "validOptions": {
               "additionalProperties": false,
@@ -40468,7 +40530,44 @@
                 "category": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "anyOf": [
+                      {
+                        "const": "a.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "b.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "c.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "d.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "f.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "g.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "m.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "q.",
+                        "type": "string"
+                      },
+                      {
+                        "const": "t.",
+                        "type": "string"
+                      }
+                    ]
                   }
                 }
               }
@@ -40529,7 +40628,69 @@
               "properties": {
                 "entries": {
                   "type": "array",
-                  "items": {}
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "glossaryId",
+                      "category",
+                      "label",
+                      "description"
+                    ],
+                    "properties": {
+                      "glossaryId": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "category": {
+                        "anyOf": [
+                          {
+                            "const": "a.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "b.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "c.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "d.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "f.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "g.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "m.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "q.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "t.",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "label": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      }
+                    }
+                  }
                 },
                 "validOptions": {
                   "additionalProperties": false,
@@ -40541,7 +40702,44 @@
                     "category": {
                       "type": "array",
                       "items": {
-                        "type": "string"
+                        "anyOf": [
+                          {
+                            "const": "a.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "b.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "c.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "d.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "f.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "g.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "m.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "q.",
+                            "type": "string"
+                          },
+                          {
+                            "const": "t.",
+                            "type": "string"
+                          }
+                        ]
                       }
                     }
                   }
@@ -40583,7 +40781,7 @@
         "request": {
           "pathParameters": {},
           "query": {
-            "category": "Ab."
+            "category": "a."
           }
         },
         "invalidRequest": {
@@ -40594,11 +40792,16 @@
         "response": {
           "data": {
             "entries": [
-              null
+              {
+                "glossaryId": "xxxxxxx",
+                "category": "a.",
+                "label": "xxxxxxx",
+                "description": "xxxxxxx"
+              }
             ],
             "validOptions": {
               "category": [
-                "xxxxxxx"
+                "a."
               ]
             }
           }
@@ -40792,6 +40995,7 @@
                   "itemId",
                   "name",
                   "category",
+                  "revealed",
                   "ability",
                   "cBonus",
                   "otherBonus"
@@ -40809,17 +41013,26 @@
                     "maxLength": 200,
                     "type": "string"
                   },
+                  "revealed": {
+                    "type": "boolean"
+                  },
                   "ability": {
                     "type": "array",
-                    "items": {}
+                    "items": {
+                      "type": "string"
+                    }
                   },
                   "cBonus": {
                     "type": "array",
-                    "items": {}
+                    "items": {
+                      "type": "string"
+                    }
                   },
                   "otherBonus": {
                     "type": "array",
-                    "items": {}
+                    "items": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -40886,6 +41099,7 @@
                       "itemId",
                       "name",
                       "category",
+                      "revealed",
                       "ability",
                       "cBonus",
                       "otherBonus"
@@ -40903,17 +41117,26 @@
                         "maxLength": 200,
                         "type": "string"
                       },
+                      "revealed": {
+                        "type": "boolean"
+                      },
                       "ability": {
                         "type": "array",
-                        "items": {}
+                        "items": {
+                          "type": "string"
+                        }
                       },
                       "cBonus": {
                         "type": "array",
-                        "items": {}
+                        "items": {
+                          "type": "string"
+                        }
                       },
                       "otherBonus": {
                         "type": "array",
-                        "items": {}
+                        "items": {
+                          "type": "string"
+                        }
                       }
                     }
                   }
@@ -40970,14 +41193,15 @@
                 "itemId": 1,
                 "name": "xxxxxxx",
                 "category": "xxxxxxx",
+                "revealed": true,
                 "ability": [
-                  null
+                  "xxxxxxx"
                 ],
                 "cBonus": [
-                  null
+                  "xxxxxxx"
                 ],
                 "otherBonus": [
-                  null
+                  "xxxxxxx"
                 ]
               }
             ]
@@ -41306,7 +41530,209 @@
           "properties": {
             "enemies": {
               "type": "array",
-              "items": {}
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "enemyId",
+                  "name",
+                  "nameKey",
+                  "level",
+                  "enemyType",
+                  "tier",
+                  "mainClass",
+                  "subClass",
+                  "hp",
+                  "magicStyle",
+                  "stats",
+                  "abilities",
+                  "ability",
+                  "cBonus",
+                  "otherBonus",
+                  "dropItemIds",
+                  "revealed",
+                  "encounters",
+                  "defeats"
+                ],
+                "properties": {
+                  "enemyId": {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "nameKey": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "level": {
+                    "anyOf": [
+                      {
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "enemyType": {
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "tier": {
+                    "anyOf": [
+                      {
+                        "const": "normal",
+                        "type": "string"
+                      },
+                      {
+                        "const": "elite",
+                        "type": "string"
+                      },
+                      {
+                        "const": "boss",
+                        "type": "string"
+                      },
+                      {
+                        "const": "divine",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "mainClass": {
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "subClass": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "hp": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "magicStyle": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "stats": {
+                    "type": "array",
+                    "items": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "key",
+                        "value",
+                        "unit"
+                      ],
+                      "properties": {
+                        "key": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "number"
+                        },
+                        "unit": {
+                          "anyOf": [
+                            {
+                              "const": "number",
+                              "type": "string"
+                            },
+                            {
+                              "const": "ratio",
+                              "type": "string"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "abilities": {
+                    "type": "array",
+                    "items": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "abilityId",
+                        "level"
+                      ],
+                      "properties": {
+                        "abilityId": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "level": {
+                          "minimum": 1,
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "ability": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "cBonus": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "otherBonus": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "dropItemIds": {
+                    "type": "array",
+                    "items": {
+                      "minimum": 1,
+                      "type": "integer"
+                    }
+                  },
+                  "revealed": {
+                    "type": "boolean"
+                  },
+                  "encounters": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "defeats": {
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                }
+              }
             },
             "nextCursor": {
               "anyOf": [
@@ -41363,7 +41789,209 @@
               "properties": {
                 "enemies": {
                   "type": "array",
-                  "items": {}
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "enemyId",
+                      "name",
+                      "nameKey",
+                      "level",
+                      "enemyType",
+                      "tier",
+                      "mainClass",
+                      "subClass",
+                      "hp",
+                      "magicStyle",
+                      "stats",
+                      "abilities",
+                      "ability",
+                      "cBonus",
+                      "otherBonus",
+                      "dropItemIds",
+                      "revealed",
+                      "encounters",
+                      "defeats"
+                    ],
+                    "properties": {
+                      "enemyId": {
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "nameKey": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "level": {
+                        "anyOf": [
+                          {
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "enemyType": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "tier": {
+                        "anyOf": [
+                          {
+                            "const": "normal",
+                            "type": "string"
+                          },
+                          {
+                            "const": "elite",
+                            "type": "string"
+                          },
+                          {
+                            "const": "boss",
+                            "type": "string"
+                          },
+                          {
+                            "const": "divine",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "mainClass": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "subClass": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "hp": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "magicStyle": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "stats": {
+                        "type": "array",
+                        "items": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "key",
+                            "value",
+                            "unit"
+                          ],
+                          "properties": {
+                            "key": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "number"
+                            },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "const": "number",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "ratio",
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "abilities": {
+                        "type": "array",
+                        "items": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "abilityId",
+                            "level"
+                          ],
+                          "properties": {
+                            "abilityId": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "level": {
+                              "minimum": 1,
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      },
+                      "ability": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "cBonus": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "otherBonus": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "dropItemIds": {
+                        "type": "array",
+                        "items": {
+                          "minimum": 1,
+                          "type": "integer"
+                        }
+                      },
+                      "revealed": {
+                        "type": "boolean"
+                      },
+                      "encounters": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "defeats": {
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    }
+                  }
                 },
                 "nextCursor": {
                   "anyOf": [
@@ -41411,7 +42039,46 @@
         "response": {
           "data": {
             "enemies": [
-              null
+              {
+                "enemyId": 1,
+                "name": "xxxxxxx",
+                "nameKey": "xxxxxxx",
+                "level": 1,
+                "enemyType": "xxxxxxx",
+                "tier": "normal",
+                "mainClass": "xxxxxxx",
+                "subClass": "xxxxxxx",
+                "hp": 0,
+                "magicStyle": "xxxxxxx",
+                "stats": [
+                  {
+                    "key": "xxxxxxx",
+                    "value": 1,
+                    "unit": "number"
+                  }
+                ],
+                "abilities": [
+                  {
+                    "abilityId": "xxxxxxx",
+                    "level": 1
+                  }
+                ],
+                "ability": [
+                  "xxxxxxx"
+                ],
+                "cBonus": [
+                  "xxxxxxx"
+                ],
+                "otherBonus": [
+                  "xxxxxxx"
+                ],
+                "dropItemIds": [
+                  1
+                ],
+                "revealed": true,
+                "encounters": 0,
+                "defeats": 0
+              }
             ]
           }
         }

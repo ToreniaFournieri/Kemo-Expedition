@@ -35,6 +35,8 @@ import { getSuperRareItemPrana, MAX_ALTAR_LEVEL } from '../../game/prana.ts';
 import { getJewelOwnedCount } from '../../game/jewel.ts';
 import { getAltarCategoryFacts, getAltarEnemyTypes, getEnemyFormFacts } from '../../game/altarFacts.ts';
 import { getEnemyIndividualBonuses, getEnemyTypeBonuses, getMimorianEnemyAbilities } from '../../data/enemies.ts';
+import { buildEnemyStatus } from './enemyStatus.ts';
+import { GLOSSARY_SECTIONS, TERRAIN_EFFECT_GLOSSARY_SECTION } from '../../data/glossary.ts';
 import type { ApiV1PartyCycleView } from './commitOperations.ts';
 import { MAX_LEVEL, type EnemyDef, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party } from '../../types/index.ts';
 
@@ -372,6 +374,75 @@ function searchItems(state: GameState, parameters: Record<string, unknown>) {
   return { items: entries.slice(0, limit).map((entry) => entry.text) };
 }
 
+// SpecRef: 8.6 | UI_SETTING | Item Compendium (アイテム図鑑)
+// Shows every item, base level, regardless of ownership. `revealed` (Item Reveal Rule) tells the client whether to show
+// real details or a placeholder; unrevealed items are still returned, never omitted.
+function itemCompendium(state: GameState, parameters: Record<string, unknown>) {
+  const category = parameters.category === undefined ? null : String(parameters.category);
+  const rarity = parameters.rarity === undefined || parameters.rarity === 'all' ? null : String(parameters.rarity);
+  const itemId = parameters.itemId === undefined ? null : Number(parameters.itemId);
+  const revealed = new Set(state.global.revealedItemCompendiumItemIds);
+  const items = ITEMS.filter((item) => {
+    if (category !== null && item.category !== API_CATEGORY_TO_ITEM_CATEGORY[category]) return false;
+    if (rarity !== null && getItemRarityById(item.id) !== rarity) return false;
+    if (itemId !== null && item.id !== itemId) return false;
+    return true;
+  // The Compendium shows every item at base level (Spec 8.6: Enhancement = 0, SuperRare = 0), not an owned instance.
+  }).map((item) => ({ itemId: item.id, name: item.name, category: item.category, revealed: revealed.has(item.id), ...describeItem({ ...item, enhancement: 0, superRare: 0 }) }));
+  return { items };
+}
+
+// SpecRef: 8.6 | UI_SETTING | Bestiary (敵キャラクター図鑑)
+// `enemyBattleStats` is already shared/global (Spec 8.6: "total... across all parties"), not per-party.
+// `revealed` (encountered at least once) tells the client whether to show real details or a placeholder.
+function bestiary(state: GameState, parameters: Record<string, unknown>) {
+  const enemyId = parameters.enemyId === undefined ? null : Number(parameters.enemyId);
+  const enemyType = parameters.enemyType === undefined ? null : String(parameters.enemyType);
+  const expedition = parameters.expedition === undefined ? null : Number(parameters.expedition);
+  const enemies = ENEMIES.filter((enemy) => {
+    if (enemyId !== null && enemy.id !== enemyId) return false;
+    if (enemyType !== null && enemy.enemyType !== enemyType) return false;
+    if (expedition !== null && enemy.poolId !== expedition) return false;
+    return true;
+  }).map((enemy) => {
+    const stats = state.global.enemyBattleStats?.[enemy.id];
+    const encounters = stats?.encounters ?? 0;
+    const defeats = stats?.defeats ?? 0;
+    return { ...buildEnemyStatus(enemy, null), revealed: encounters > 0, encounters, defeats };
+  });
+  return { enemies };
+}
+
+const GLOSSARY_CATEGORY_KEYS = ['a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.'];
+// Each GLOSSARY_SECTIONS heading is numbered like "2.1.2 b. bonus" (Specification_1.1_CONSTANTS_GLOSSARY.md's own section
+// numbering); the single letter is the category, so it is parsed once here rather than hand-copied per section.
+function glossaryCategoryOf(heading: string): string | null {
+  const match = heading.match(/^\d+\.\d+\.\d+ (\w)\./);
+  return match ? `${match[1]}.` : null;
+}
+
+// SpecRef: 1.0.3 | CONSTANTS | Glossary Reveal Rule
+// SpecRef: 8.6 | UI_SETTING | Glossary (用語集)
+// Only `a.` (ability) and `t.` (terrain effect) entries are reveal-gated; the other 7 categories are always visible.
+function glossary(state: GameState, parameters: Record<string, unknown>) {
+  const category = parameters.category === undefined ? null : String(parameters.category);
+  const glossaryId = parameters.glossaryId === undefined ? null : String(parameters.glossaryId);
+  const revealedAbilities = new Set(state.global.revealedGlossaryAbilityIds);
+  const revealedTerrain = new Set<string>(state.global.revealedGlossaryTerrainKeys);
+  const entries: Array<{ glossaryId: string; category: string; label: string; description: string }> = [];
+  for (const section of GLOSSARY_SECTIONS) {
+    const sectionCategory = glossaryCategoryOf(section.heading);
+    if (!sectionCategory || (category !== null && sectionCategory !== category)) continue;
+    for (const entry of section.entries) {
+      if (glossaryId !== null && entry.key !== glossaryId) continue;
+      if (sectionCategory === 'a.' && !revealedAbilities.has(entry.key)) continue;
+      if (sectionCategory === 't.' && !revealedTerrain.has(entry.key)) continue;
+      entries.push({ glossaryId: entry.key, category: sectionCategory, label: entry.label, description: entry.description });
+    }
+  }
+  return { entries, validOptions: { category: GLOSSARY_CATEGORY_KEYS } };
+}
+
 export function buildApiV1PartyObservationForTesting(state: GameState) {
   return { parties: state.parties.map((party) => partyProjection(state, { partyNumber: party.id }).party) };
 }
@@ -681,7 +752,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   if (diaryEntry) return { entry: findDiaryEntryView(state, decodeURIComponent(diaryEntry[1])) };
 
   if (operationId === 'read/setting/modeSelect') return { current: { mode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: state.global.language, ...((context.control?.settings?.modeSelect as Record<string, unknown> | undefined) ?? {}) }, validOptions: { mode: ['mode.normal', 'mode.orca'], enemyLevelOffset: { min: 0, max: 20, step: 1 }, language: ['ja', 'en', 'zh-CN', 'zh-TW', 'ko'], darkMode: ['off', 'on', 'system'], theme: ['theme.kemo', 'theme.laika', 'theme.leonard', 'theme.orca', 'theme.nox', 'theme.luna', 'theme.mishka', 'theme.puchitsa', 'theme.hagakure', 'theme.souga-ha', 'theme.finn', 'theme.merle', 'theme.rosaria', 'theme.milly', 'theme.guabi', 'theme.nemea', 'theme.bernetta', 'theme.yone', 'theme.niv', 'theme.nave'] } };
-  if (operationId === 'read/setting/enemyEditPane') return { current: (context.control?.settings?.enemyEditPane as Record<string, unknown> | undefined) ?? {}, validOptions: { enemyLevel: { min: 1, max: 99, step: 1 }, terrainEffect: ['none'], enemyType: [], mainClass: CLASSES.map((entry) => entry.id), subClass: ['none', ...CLASSES.map((entry) => entry.id)], addedAbilities: { maximumEntries: 5, level: { min: 1, max: 5 } } } };
+  if (operationId === 'read/setting/enemyEditPane') return { current: (context.control?.settings?.enemyEditPane as Record<string, unknown> | undefined) ?? {}, validOptions: { enemyLevel: { min: 1, max: 99, step: 1 }, terrainEffect: ['none', ...(TERRAIN_EFFECT_GLOSSARY_SECTION?.entries.map((entry) => entry.key) ?? [])], enemyType: [...new Set(ENEMIES.map((enemy) => enemy.enemyType))], mainClass: CLASSES.map((entry) => entry.id), subClass: ['none', ...CLASSES.map((entry) => entry.id)], addedAbilities: { maximumEntries: 5, level: { min: 1, max: 5 } } } };
   if (operationId === 'read/setting/debug') return { current: (context.control?.settings?.debug as Record<string, unknown> | undefined) ?? {}, validOptions: { speedOfTime: ['real', 'x1.2', 'x5', 'x20', 'x100', 'unlimited'], godsBattleCondition: ['normal', 'simple'], godsStrength: ['normal', 'veryWeak'] } };
   if (operationId.startsWith('read/setting/delivery/')) { const deliveryId = operationId.split('/').at(-1); const delivery = (context.control?.deliveries as ApiV1DeliveryRecord[] | undefined)?.find((entry) => entry.deliveryId === deliveryId); if (!delivery) throw new Error('not_found'); return projectDelivery(delivery); }
 
@@ -697,10 +768,10 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     return { gods };
   }
   if (operationId.startsWith('resources/clairvoyance/')) return { reward: {}, enhancement: {}, superRare: {}, sideQuest: {}, sleepiness: {} };
-  if (operationId === 'resources/glossary') return { entries: [], validOptions: { category: ['Ab.', 'Base.', 'Fixed.', 'Inc.', 'Mech.', 'Faith.', 'Magic.', 'Quest.', 'Terrain.'] } };
-  if (operationId === 'resources/itemCompendium') return { items: ITEMS.filter((item) => !parameters.itemId || item.id === Number(parameters.itemId)).map((item) => ({ itemId: item.id, name: item.name, category: item.category, ability: [], cBonus: item.bonuses ?? [], otherBonus: [] })) };
+  if (operationId === 'resources/glossary') return glossary(state, parameters);
+  if (operationId === 'resources/itemCompendium') return itemCompendium(state, parameters);
   if (operationId === 'resources/characterRoster') return { races: RACES.map((race) => ({ raceId: race.id, status: race.stats, bonus: race.bonuses, defaultAbility: race.defaultAbility, unlockAbility: race.unlockAbility })) };
-  if (operationId === 'resources/bestiary') return { enemies: ENEMIES.filter((enemy) => !parameters.enemyId || enemy.id === Number(parameters.enemyId)) };
+  if (operationId === 'resources/bestiary') return bestiary(state, parameters);
   if (operationId === 'resources/superRareList') return { superRare: SUPER_RARE_TITLES.map((entry) => `${entry.value}/${entry.title}/${entry.multiplier}`) };
   return {};
 }

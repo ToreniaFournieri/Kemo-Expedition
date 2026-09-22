@@ -747,4 +747,78 @@ assert.deepEqual(state, before);
   const heavyFacts = deriveStatusFacts(heavy.characters[withCount], heavyStats);
   assert.ok(heavyFacts.penetration > heavyStats.penetMultiplier, 'Heavy Strike converts attack count into penetration');
 }
+
+// Item Compendium (8.6): every item at base level, `revealed` from `revealedItemCompendiumItemIds`, filtered by category.
+{
+  const { default: Ajv } = await import('ajv');
+  const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
+  const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'resources/itemCompendium')!.response.data);
+  const { ITEMS } = await import('../../src/data/items.ts');
+  const sword = ITEMS.find((item) => item.category === 'sword')!;
+  const armor = ITEMS.find((item) => item.category === 'armor')!;
+  const fresh = await buildApiV1ReadData('resources/itemCompendium', state, { category: 'sword' }, context) as { items: { itemId: number; category: string; revealed: boolean; ability: string[]; cBonus: string[]; otherBonus: string[] }[] };
+  assert.equal(validate(fresh), true, JSON.stringify(validate.errors));
+  assert.ok(fresh.items.length > 0);
+  for (const item of fresh.items) assert.equal(item.category, 'sword', 'the category filter excludes every other item category');
+  assert.ok(fresh.items.every((item) => item.revealed === false), 'nothing is revealed in a fresh save');
+  const revealed = { ...state, global: { ...state.global, revealedItemCompendiumItemIds: [sword.id] } };
+  const afterReveal = await buildApiV1ReadData('resources/itemCompendium', revealed, { category: 'sword' }, context) as { items: { itemId: number; revealed: boolean }[] };
+  assert.equal(afterReveal.items.find((item) => item.itemId === sword.id)?.revealed, true);
+  assert.ok(afterReveal.items.filter((item) => item.itemId !== sword.id).every((item) => item.revealed === false), 'revealing one item does not reveal the rest');
+  const armorSearch = await buildApiV1ReadData('resources/itemCompendium', state, { category: 'armor', itemId: armor.id }, context) as { items: { itemId: number }[] };
+  assert.deepEqual(armorSearch.items.map((item) => item.itemId), [armor.id], 'itemId narrows to exactly one item');
+}
+
+// Bestiary (8.6): every enemy at base level, shared encounter/defeat counts, `revealed` once encountered.
+{
+  const { default: Ajv } = await import('ajv');
+  const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
+  const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'resources/bestiary')!.response.data);
+  const { ENEMIES } = await import('../../src/data/enemies.ts');
+  const enemy = ENEMIES[0];
+  const fresh = await buildApiV1ReadData('resources/bestiary', state, {}, context) as { enemies: { enemyId: number; enemyType: string; revealed: boolean; encounters: number; defeats: number }[] };
+  assert.equal(validate(fresh), true, JSON.stringify(validate.errors));
+  assert.equal(fresh.enemies.length, ENEMIES.length, 'every enemy is returned, revealed or not');
+  const untouched = fresh.enemies.find((entry) => entry.enemyId === enemy.id)!;
+  assert.deepEqual([untouched.revealed, untouched.encounters, untouched.defeats], [false, 0, 0]);
+  const encountered = { ...state, global: { ...state.global, enemyBattleStats: { [enemy.id]: { encounters: 3, defeats: 1 } } } };
+  const met = await buildApiV1ReadData('resources/bestiary', encountered, { enemyId: enemy.id }, context) as { enemies: { enemyId: number; revealed: boolean; encounters: number; defeats: number }[] };
+  assert.deepEqual(met.enemies, [{ ...met.enemies[0], revealed: true, encounters: 3, defeats: 1 }]);
+  const byType = await buildApiV1ReadData('resources/bestiary', state, { enemyType: enemy.enemyType }, context) as { enemies: { enemyType: string }[] };
+  assert.ok(byType.enemies.length > 0);
+  for (const entry of byType.enemies) assert.equal(entry.enemyType, enemy.enemyType);
+}
+
+// Enemy Edit Pane: terrainEffect and enemyType valid options come from the real terrain glossary and enemy master data.
+{
+  const { TERRAIN_EFFECT_GLOSSARY_SECTION } = await import('../../src/data/glossary.ts');
+  const { ENEMIES } = await import('../../src/data/enemies.ts');
+  const read = await buildApiV1ReadData('read/setting/enemyEditPane', state, {}, context) as { validOptions: { terrainEffect: string[]; enemyType: string[] } };
+  assert.equal(read.validOptions.terrainEffect[0], 'none');
+  assert.deepEqual(read.validOptions.terrainEffect.slice(1), TERRAIN_EFFECT_GLOSSARY_SECTION!.entries.map((entry) => entry.key));
+  assert.deepEqual(new Set(read.validOptions.enemyType), new Set(ENEMIES.map((enemy) => enemy.enemyType)));
+}
+
+// Glossary (1.0.3, 8.6): real localized content per category; only ability/terrain entries are reveal-gated.
+{
+  const { default: Ajv } = await import('ajv');
+  const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
+  const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'resources/glossary')!.response.data);
+  const { GLOSSARY_SECTIONS } = await import('../../src/data/glossary.ts');
+  const terrainSection = GLOSSARY_SECTIONS.find((section) => section.heading === '1.1.10 t. terrain effects')!;
+  const someTerrain = terrainSection.entries[0];
+  const bonusSection = GLOSSARY_SECTIONS.find((section) => section.heading === '2.1.2 b. bonus')!;
+  const fresh = await buildApiV1ReadData('resources/glossary', state, { category: 't.' }, context) as { entries: { glossaryId: string; category: string }[]; validOptions: { category: string[] } };
+  assert.equal(validate(fresh), true, JSON.stringify(validate.errors));
+  assert.deepEqual(fresh.entries, [], 'no terrain effect is revealed in a fresh save');
+  assert.deepEqual(fresh.validOptions.category, ['a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.']);
+  const revealed = { ...state, global: { ...state.global, revealedGlossaryTerrainKeys: [someTerrain.key] } };
+  const afterReveal = await buildApiV1ReadData('resources/glossary', revealed, { category: 't.' }, context) as { entries: { glossaryId: string }[] };
+  assert.deepEqual(afterReveal.entries.map((entry) => entry.glossaryId), [someTerrain.key]);
+  const always = await buildApiV1ReadData('resources/glossary', state, { category: 'b.' }, context) as { entries: { glossaryId: string; label: string; description: string }[] };
+  assert.deepEqual(always.entries.map((entry) => entry.glossaryId), bonusSection.entries.map((entry) => entry.key), 'non-reveal-gated categories are always fully visible');
+  const narrowed = await buildApiV1ReadData('resources/glossary', state, { category: 'b.', glossaryId: bonusSection.entries[0].key }, context) as { entries: { glossaryId: string }[] };
+  assert.deepEqual(narrowed.entries.map((entry) => entry.glossaryId), [bonusSection.entries[0].key]);
+}
+
 assert.deepEqual(state, before);

@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 93. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 94. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -10,7 +10,7 @@ This document supersedes the earlier "Build 23" plan. Stages are numbered once, 
 
 | Stage | Area | State |
 |---|---|---|
-| 1 | Contract catalog | Mostly done; `Type.Unknown` remains only in five Stage 8 Resource operations (see Stage 1) |
+| 1 | Contract catalog | Mostly done; `Type.Unknown` remains only in `resources/characterRoster` and `resources/clairvoyance/{p}` (see Stage 1) |
 | 2 | Standalone Application API and authority | Done (foundation) |
 | 3 | HTTP transport and sessions | Implemented, test-only |
 | 4 | Expedition and shell | Complete |
@@ -40,7 +40,7 @@ All three closed in Build 65: `targetItems` and `equipmentChanges` are bounded a
 
 ## Stage 1 — Close the contract catalog
 
-`scripts/generate-api-v1-contract.mjs` has 14 `Type.Unknown` fields confined to five Stage 8 Resource operations, and several implementations remain placeholders. Inventory (each open row needs a concrete schema, an example, an implementation, and a parity-fixture case):
+`scripts/generate-api-v1-contract.mjs` has 9 `Type.Unknown` fields confined to two Stage 8 Resource operations, and several implementations remain placeholders. Inventory (each open row needs a concrete schema, an example, an implementation, and a parity-fixture case):
 
 | Operation | Gap |
 |---|---|
@@ -50,11 +50,12 @@ All three closed in Build 65: `targetItems` and `equipmentChanges` are bounded a
 | `read/observation/diary`, `diaryEntry/{id}` | Done in Build 88 (closed semantic/legacy summaries, stable opaque IDs, selection/filtering, exact settings, and retained-log references). |
 | `read/base/shopInfo` | Done in Build 81. |
 | `read/base/altarInfo`, `enemyFormList` | Done in Build 83. |
-| `resources/clairvoyance/{p}` | Returns empty objects although the bag state exists. |
-| `resources/glossary` | `entries` is always `[]`. |
-| `resources/itemCompendium` | `ability` and `otherBonus` are `[]`; `cBonus` is a raw bonus object. Reuse `describeItem`. |
-| `resources/characterRoster`, `resources/bestiary` | Raw master-data objects (`race.stats`, `ENEMIES`), not a public shape. Bestiary should reuse `EnemyStatus` (Build 67); add the encounter and defeat counts and the reveal rules of 8.6. |
-| `read/setting/enemyEditPane` | `terrainEffect` is `['none']` and `enemyType` is `[]`. |
+| `resources/glossary` | Done in Build 94 (real `GLOSSARY_SECTIONS` content; `category` enum replaced with the spec's own `a./b./c./d./f./g./m./q./t.` section letters; only `a.`/`t.` entries are reveal-gated per rule 1.0.3). |
+| `resources/itemCompendium` | Done in Build 94 (reuses `describeItem`; adds `category`/`rarity`/`itemId` filtering and a `revealed` flag from `revealedItemCompendiumItemIds`). |
+| `resources/bestiary` | Done in Build 94 (reuses `buildEnemyStatus`; adds shared `encounters`/`defeats` from `GlobalState.enemyBattleStats` and a `revealed` flag; `enemyId`/`enemyType`/`expedition` filters). |
+| `read/setting/enemyEditPane` | Done in Build 94 (`terrainEffect` from `TERRAIN_EFFECT_GLOSSARY_SECTION`, `enemyType` from `ENEMIES`). |
+| `resources/characterRoster` | Raw master-data objects (`race.stats`, ability definitions), not a public shape. Needs the Party-status-pane's combined bonus-line formatter, not yet located. |
+| `resources/clairvoyance/{p}` | Returns empty objects although the bag state exists. Needs the remaining/total shape for roughly 15 named bags (Spec 8.6). |
 
 Gate: no `Type.Unknown`, no `{}` or `[]` stand-in for real data, no raw master-data or save object in a response; `api:v1:check` reproducible; every operation has one in-process and one HTTP parity fixture.
 
@@ -120,13 +121,16 @@ Gate passed: no `actions.*` reducer call remains in `PartyTab.tsx` for these con
 
 ## Stage 8 — Settings, files, delivery, Help, Resources
 
-- Mode, theme, language, display, debug, and enemy-editor contracts.
-- Closed `uiPreferences` catalog with exact types and valid options, published in `settingInfo.uiPreferences`.
-- News acknowledgement and Clairvoyance reset operations.
-- Backup export, confirmed reset, and multipart import, with revision high-water preservation and cursor fencing. Import and reset refuse while a delivery send is in flight and cancel queued jobs.
-- Help returns the current 9.1.3 and 9.1.4 documents; Resource endpoints use stable IDs and raw numeric facts.
-- **Delivery sender:** wire the real network sender and the immutable attachment bytes (backup, retained log, images). Retry only confirmed pre-send failures; ambiguous outcomes stay `unknown`. Rewards only after confirmed delivery. Move this earlier if delivery blocks Settings work.
-- Then migrate Settings and the remaining retained UI preferences.
+Most of this stage's settings/backup machinery already exists and works, found while scoping Build 94:
+
+- Mode, theme, language, display, debug, and enemy-editor contracts (`read`/`commit` `setting/modeSelect`, `setting/debug`, `setting/enemyEditPane`) are built. Only `enemyEditPane`'s `terrainEffect`/`enemyType` valid-option lists were stubs — **done in Build 94** (see Stage 1).
+- The closed `uiPreferences` catalog (`src/api/v1/uiPreferenceCatalog.ts`), published in `settingInfo.uiPreferences`, is done as a mechanism; it currently has one registered family (`party.equipCategory`) and grows as each screen migrates.
+- News acknowledgement (`commit/setting/markNewsAsRead`) and Clairvoyance reset (`commit/setting/clairvoyanceReset`) are both done — real reducer dispatches, not stubs.
+- Backup export, confirmed reset, and multipart import are done, including revision high-water preservation and delivery fencing (`prepareSaveReplacement`, wired through the same `resetControlEvents` path the Stage 7 D4 SSE work also uses). The remaining gap here is test coverage, not implementation: `backup/export`/`backup/import` and the `delivery_in_flight` refusal path have no dedicated tests yet.
+- **Resources**: `resources/itemCompendium`, `resources/bestiary`, and `resources/glossary` are **done in Build 94** (see Stage 1). `resources/characterRoster` and `resources/clairvoyance/{p}` remain open.
+- Help returning the current 9.1.3 and 9.1.4 documents is **entirely unbuilt** — no operation serves spec document text today (`help/overview`/`help/endpoints` are meta-API endpoints, not this).
+- **Delivery sender** is **entirely unbuilt**: the `queued`/`sending`/`delivered`/`failed`/`unknown`/`cancelled` state machine (`src/api/v1/deliveries.ts`) and the reward-completion transaction (`deliveryCompletion.ts`) exist and are tested in isolation, but nothing ever moves a job past `queued` — no network call, no attachment-byte assembly, no claim/settle loop wired into production. The existing Discord webhook call in `HomeScreen.tsx` (`postWebhookWithFiles`, used by the header's reviewed-exception Report Progress button) is the pattern to generalize, not duplicate.
+- Then migrate Settings and the remaining retained UI preferences (depends on nothing above except the small enemy-editor gap, already closed).
 
 ## Stage 9 — Conformance hardening and public cutover
 
@@ -161,7 +165,7 @@ Add a mechanical check so this does not rely on review: a test that fails if a m
 
 1. ~~Stage 7 D4: complete the SSE lifecycle over the durable D3 event buffer.~~ (Done, Build 91.)
 2. ~~Finish the Stage 4 header UI migration.~~ (Done, Build 92.)
-3. Stage 8 (Settings, files, delivery sender, Help, Resources), including the remaining `Type.Unknown` rows.
+3. Stage 8: 4 of 6 `Type.Unknown` Resource rows closed (Build 94). Still open, roughly in order: `resources/characterRoster` and `resources/clairvoyance/{p}` (the remaining `Type.Unknown` rows); backup/import/reset test coverage; Help document-serving; the delivery sender; then Settings UI migration.
 4. Stage 9 (conformance matrix, ownership audit, cutover).
 
 ## Expedition tab migration (in progress)

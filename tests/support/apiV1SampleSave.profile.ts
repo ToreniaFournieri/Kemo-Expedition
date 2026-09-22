@@ -168,6 +168,40 @@ for (const party of state.parties) {
 const donations = await read('resources/donationBox');
 assert.equal(validateDonation(donations), true, JSON.stringify(validateDonation.errors?.slice(0, 2)));
 
+// The four Resource fixes (Stage 1 gate) validate against the real save's actual revealed/encounter facts, at scale.
+{
+  const { ENEMIES } = await import('../../src/data/enemies.ts');
+  const validateItemCompendium = validator('resources/itemCompendium');
+  const validateBestiary = validator('resources/bestiary');
+  const validateGlossary = validator('resources/glossary');
+  const validateEnemyEditPane = validator('read/setting/enemyEditPane');
+
+  const compendium = await read('resources/itemCompendium', { category: 'sword' }) as { items: { itemId: number; revealed: boolean }[] };
+  assert.equal(validateItemCompendium(compendium), true, JSON.stringify(validateItemCompendium.errors?.slice(0, 3)));
+  const revealedIds = new Set(state.global.revealedItemCompendiumItemIds);
+  for (const item of compendium.items) assert.equal(item.revealed, revealedIds.has(item.itemId), `item ${item.itemId} revealed flag`);
+  assert.ok(compendium.items.length > 0 && compendium.items.some((item) => item.revealed), 'a real save has revealed at least one sword');
+
+  const bestiary = await read('resources/bestiary') as { enemies: { enemyId: number; revealed: boolean; encounters: number; defeats: number }[] };
+  assert.equal(validateBestiary(bestiary), true, JSON.stringify(validateBestiary.errors?.slice(0, 3)));
+  assert.equal(bestiary.enemies.length, ENEMIES.length, 'every enemy is returned, revealed or not');
+  for (const entry of bestiary.enemies) {
+    const stats = state.global.enemyBattleStats?.[entry.enemyId];
+    assert.deepEqual([entry.encounters, entry.defeats, entry.revealed], [stats?.encounters ?? 0, stats?.defeats ?? 0, (stats?.encounters ?? 0) > 0], `enemy ${entry.enemyId} stats`);
+  }
+  assert.ok(bestiary.enemies.some((entry) => entry.revealed), 'a real six-party save has encountered at least one enemy');
+
+  const enemyEditPane = await read('read/setting/enemyEditPane') as { validOptions: { terrainEffect: string[]; enemyType: string[] } };
+  assert.equal(validateEnemyEditPane(enemyEditPane), true, JSON.stringify(validateEnemyEditPane.errors?.slice(0, 3)));
+  assert.ok(enemyEditPane.validOptions.terrainEffect.length > 1 && enemyEditPane.validOptions.enemyType.length > 0);
+
+  for (const category of ['a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.']) {
+    const glossary = await read('resources/glossary', { category }) as { entries: { glossaryId: string; category: string }[] };
+    assert.equal(validateGlossary(glossary), true, `${category}: ${JSON.stringify(validateGlossary.errors?.slice(0, 3))}`);
+    for (const entry of glossary.entries) assert.equal(entry.category, category);
+  }
+}
+
 // 4. Equipment commands on real gear conserve every item and Jewel, and Undo restores the exact equipment.
 const equipmentHistory: ApiV1CommitContext['equipmentHistory'] = {};
 const context = (): ApiV1CommitContext => ({

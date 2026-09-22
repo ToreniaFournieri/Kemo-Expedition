@@ -165,7 +165,8 @@ const querySchemas = {
   }),
   'read/base/searchItems': strict({ state: optional(literals('owned', 'equipped', 'sold', 'all'), 'owned'), category: optional(itemCategory), rarity: optional(rarity, 'all'), superRare: optional(Type.Boolean()), superRareId: optional(Type.Integer({ minimum: 0 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), limit: optional(Type.Integer({ minimum: 1, maximum: 5000 }), 10) }),
   'read/base/enemyFormList': strict({ enemyType: optional(stableKey), enemyId: optional(integerId) }),
-  'resources/glossary': strict({ category: literals('Ab.', 'Base.', 'Fixed.', 'Inc.', 'Mech.', 'Faith.', 'Magic.', 'Quest.', 'Terrain.'), glossaryId: optional(stableKey), ...page }),
+  // Category letters match Specification_1.1_CONSTANTS_GLOSSARY.md's own section numbering (1.1.1 a., 1.1.2 b., ...).
+  'resources/glossary': strict({ category: literals('a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.'), glossaryId: optional(stableKey), ...page }),
   'resources/itemCompendium': strict({ category: itemCategory, rarity: optional(rarity, 'all'), tier: optional(Type.Integer({ minimum: 1, maximum: 8 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), ...page }),
   'resources/characterRoster': strict({ race: literals('lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian', 'leporian', 'cervin', 'murid', 'kemoria', 'orcinian', 'avian', 'mimorian'), ...page }),
   'resources/bestiary': strict({ enemyId: optional(integerId), enemyType: optional(stableKey), expedition: optional(integerId), ...page }),
@@ -514,10 +515,14 @@ const responseDataSchemas = {
   'resources/developerNewsNotification': strict({ entries: Type.Array(strict({ version: stableKey, date: Type.String(), content: Type.String() })) }),
   'resources/donationBox': strict({ gods: Type.Array(Type.String()) }),
   'resources/clairvoyance/{p}': strict({ reward: Type.Unknown(), enhancement: Type.Unknown(), superRare: Type.Unknown(), sideQuest: Type.Unknown(), sleepiness: Type.Unknown() }),
-  'resources/glossary': strict({ entries: Type.Array(Type.Unknown()), validOptions: strict({ category: Type.Array(Type.String()) }), ...nextCursor }),
-  'resources/itemCompendium': strict({ items: Type.Array(strict({ itemId: integerId, name: Type.String(), category: stableKey, ability: Type.Array(Type.Unknown()), cBonus: Type.Array(Type.Unknown()), otherBonus: Type.Array(Type.Unknown()) })), ...nextCursor }),
+  'resources/glossary': strict({
+    entries: Type.Array(strict({ glossaryId: stableKey, category: literals('a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.'), label: Type.String(), description: Type.String() })),
+    validOptions: strict({ category: Type.Array(literals('a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.')) }),
+    ...nextCursor,
+  }),
+  'resources/itemCompendium': strict({ items: Type.Array(strict({ itemId: integerId, name: Type.String(), category: stableKey, revealed: Type.Boolean(), ability: Type.Array(Type.String()), cBonus: Type.Array(Type.String()), otherBonus: Type.Array(Type.String()) })), ...nextCursor }),
   'resources/characterRoster': strict({ races: Type.Array(strict({ raceId: stableKey, status: Type.Unknown(), bonus: Type.Unknown(), defaultAbility: Type.Unknown(), unlockAbility: Type.Unknown() })), ...nextCursor }),
-  'resources/bestiary': strict({ enemies: Type.Array(Type.Unknown()), ...nextCursor }),
+  'resources/bestiary': strict({ enemies: Type.Array(strict({ ...enemyStatus.properties, revealed: Type.Boolean(), encounters: Type.Integer({ minimum: 0 }), defeats: Type.Integer({ minimum: 0 }) })), ...nextCursor }),
   'resources/superRareList': strict({ superRare: Type.Array(Type.String()), ...nextCursor }),
 };
 
