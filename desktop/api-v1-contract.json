@@ -12363,6 +12363,7 @@
                 "enemyLevelOffset",
                 "modeSelect",
                 "debug",
+                "enemyEditPane",
                 "uiPreferences",
                 "uiPreferenceCatalog",
                 "pendingDeliveryIds"
@@ -12704,6 +12705,15 @@
                 "enemyEditPane": {
                   "additionalProperties": false,
                   "type": "object",
+                  "required": [
+                    "enemyLevel",
+                    "enemyName",
+                    "terrainEffect",
+                    "enemyType",
+                    "mainClass",
+                    "subClass",
+                    "addedAbilities"
+                  ],
                   "properties": {
                     "enemyLevel": {
                       "minimum": 1,
@@ -12753,7 +12763,7 @@
                           },
                           "level": {
                             "minimum": 1,
-                            "maximum": 10,
+                            "maximum": 5,
                             "type": "integer"
                           }
                         }
@@ -12936,6 +12946,7 @@
                     "enemyLevelOffset",
                     "modeSelect",
                     "debug",
+                    "enemyEditPane",
                     "uiPreferences",
                     "uiPreferenceCatalog",
                     "pendingDeliveryIds"
@@ -13277,6 +13288,15 @@
                     "enemyEditPane": {
                       "additionalProperties": false,
                       "type": "object",
+                      "required": [
+                        "enemyLevel",
+                        "enemyName",
+                        "terrainEffect",
+                        "enemyType",
+                        "mainClass",
+                        "subClass",
+                        "addedAbilities"
+                      ],
                       "properties": {
                         "enemyLevel": {
                           "minimum": 1,
@@ -13326,7 +13346,7 @@
                               },
                               "level": {
                                 "minimum": 1,
-                                "maximum": 10,
+                                "maximum": 5,
                                 "type": "integer"
                               }
                             }
@@ -13517,6 +13537,20 @@
                 "displayAllCompendium": true,
                 "displayAllGlossary": true,
                 "colosseumMode": true
+              },
+              "enemyEditPane": {
+                "enemyLevel": 1,
+                "enemyName": "xxxxxxx",
+                "terrainEffect": "xxxxxxx",
+                "enemyType": "xxxxxxx",
+                "mainClass": "xxxxxxx",
+                "subClass": "xxxxxxx",
+                "addedAbilities": [
+                  {
+                    "abilityId": "xxxxxxx",
+                    "level": 1
+                  }
+                ]
               },
               "uiPreferences": [
                 {
@@ -25974,6 +26008,15 @@
             "current": {
               "additionalProperties": false,
               "type": "object",
+              "required": [
+                "enemyLevel",
+                "enemyName",
+                "terrainEffect",
+                "enemyType",
+                "mainClass",
+                "subClass",
+                "addedAbilities"
+              ],
               "properties": {
                 "enemyLevel": {
                   "minimum": 1,
@@ -26023,7 +26066,7 @@
                       },
                       "level": {
                         "minimum": 1,
-                        "maximum": 10,
+                        "maximum": 5,
                         "type": "integer"
                       }
                     }
@@ -26093,12 +26136,21 @@
                   "type": "object",
                   "required": [
                     "maximumEntries",
+                    "abilityId",
                     "level"
                   ],
                   "properties": {
                     "maximumEntries": {
                       "minimum": 0,
                       "type": "integer"
+                    },
+                    "abilityId": {
+                      "type": "array",
+                      "items": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      }
                     },
                     "level": {
                       "additionalProperties": false,
@@ -26165,6 +26217,15 @@
                 "current": {
                   "additionalProperties": false,
                   "type": "object",
+                  "required": [
+                    "enemyLevel",
+                    "enemyName",
+                    "terrainEffect",
+                    "enemyType",
+                    "mainClass",
+                    "subClass",
+                    "addedAbilities"
+                  ],
                   "properties": {
                     "enemyLevel": {
                       "minimum": 1,
@@ -26214,7 +26275,7 @@
                           },
                           "level": {
                             "minimum": 1,
-                            "maximum": 10,
+                            "maximum": 5,
                             "type": "integer"
                           }
                         }
@@ -26284,12 +26345,21 @@
                       "type": "object",
                       "required": [
                         "maximumEntries",
+                        "abilityId",
                         "level"
                       ],
                       "properties": {
                         "maximumEntries": {
                           "minimum": 0,
                           "type": "integer"
+                        },
+                        "abilityId": {
+                          "type": "array",
+                          "items": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          }
                         },
                         "level": {
                           "additionalProperties": false,
@@ -26343,7 +26413,20 @@
         },
         "response": {
           "data": {
-            "current": {},
+            "current": {
+              "enemyLevel": 1,
+              "enemyName": "xxxxxxx",
+              "terrainEffect": "xxxxxxx",
+              "enemyType": "xxxxxxx",
+              "mainClass": "xxxxxxx",
+              "subClass": "xxxxxxx",
+              "addedAbilities": [
+                {
+                  "abilityId": "xxxxxxx",
+                  "level": 1
+                }
+              ]
+            },
             "validOptions": {
               "enemyLevel": {
                 "min": 1,
@@ -26363,6 +26446,9 @@
               ],
               "addedAbilities": {
                 "maximumEntries": 0,
+                "abilityId": [
+                  "xxxxxxx"
+                ],
                 "level": {
                   "min": 1,
                   "max": 1
@@ -35440,9 +35526,15 @@
             "additionalProperties": false,
             "type": "object",
             "required": [
+              "lineupId",
               "items"
             ],
             "properties": {
+              "lineupId": {
+                "minLength": 1,
+                "maxLength": 200,
+                "type": "string"
+              },
               "items": {
                 "minItems": 1,
                 "uniqueItems": true,
@@ -35664,6 +35756,7 @@
             "expectedRevision": 0,
             "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
             "parameters": {
+              "lineupId": "xxxxxxx",
               "items": [
                 {
                   "shopItemId": 1
@@ -38404,7 +38497,7 @@
                     },
                     "level": {
                       "minimum": 1,
-                      "maximum": 10,
+                      "maximum": 5,
                       "type": "integer"
                     }
                   }
@@ -38430,6 +38523,15 @@
             "current": {
               "additionalProperties": false,
               "type": "object",
+              "required": [
+                "enemyLevel",
+                "enemyName",
+                "terrainEffect",
+                "enemyType",
+                "mainClass",
+                "subClass",
+                "addedAbilities"
+              ],
               "properties": {
                 "enemyLevel": {
                   "minimum": 1,
@@ -38479,7 +38581,7 @@
                       },
                       "level": {
                         "minimum": 1,
-                        "maximum": 10,
+                        "maximum": 5,
                         "type": "integer"
                       }
                     }
@@ -38539,6 +38641,15 @@
                 "current": {
                   "additionalProperties": false,
                   "type": "object",
+                  "required": [
+                    "enemyLevel",
+                    "enemyName",
+                    "terrainEffect",
+                    "enemyType",
+                    "mainClass",
+                    "subClass",
+                    "addedAbilities"
+                  ],
                   "properties": {
                     "enemyLevel": {
                       "minimum": 1,
@@ -38588,7 +38699,7 @@
                           },
                           "level": {
                             "minimum": 1,
-                            "maximum": 10,
+                            "maximum": 5,
                             "type": "integer"
                           }
                         }
@@ -38686,7 +38797,20 @@
         },
         "response": {
           "data": {
-            "current": {}
+            "current": {
+              "enemyLevel": 1,
+              "enemyName": "xxxxxxx",
+              "terrainEffect": "xxxxxxx",
+              "enemyType": "xxxxxxx",
+              "mainClass": "xxxxxxx",
+              "subClass": "xxxxxxx",
+              "addedAbilities": [
+                {
+                  "abilityId": "xxxxxxx",
+                  "level": 1
+                }
+              ]
+            }
           }
         }
       }
@@ -43246,7 +43370,6 @@
                 "type": "object",
                 "required": [
                   "itemId",
-                  "name",
                   "category",
                   "rarity",
                   "tier",
@@ -43379,7 +43502,6 @@
                     "type": "object",
                     "required": [
                       "itemId",
-                      "name",
                       "category",
                       "rarity",
                       "tier",
@@ -43501,7 +43623,6 @@
             "items": [
               {
                 "itemId": 1,
-                "name": "xxxxxxx",
                 "category": "xxxxxxx",
                 "rarity": "common",
                 "tier": 1,
@@ -43992,266 +44113,8 @@
             "enemies": {
               "type": "array",
               "items": {
-                "additionalProperties": false,
-                "type": "object",
-                "required": [
-                  "enemyId",
-                  "name",
-                  "nameKey",
-                  "level",
-                  "enemyType",
-                  "tier",
-                  "mainClass",
-                  "subClass",
-                  "hp",
-                  "magicStyle",
-                  "stats",
-                  "abilities",
-                  "ability",
-                  "cBonus",
-                  "otherBonus",
-                  "dropItemIds",
-                  "revealed",
-                  "encounters",
-                  "defeats"
-                ],
-                "properties": {
-                  "enemyId": {
-                    "minimum": 1,
-                    "type": "integer"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "nameKey": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "level": {
-                    "anyOf": [
-                      {
-                        "minimum": 1,
-                        "type": "integer"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "enemyType": {
-                    "minLength": 1,
-                    "maxLength": 200,
-                    "type": "string"
-                  },
-                  "tier": {
-                    "anyOf": [
-                      {
-                        "const": "normal",
-                        "type": "string"
-                      },
-                      {
-                        "const": "elite",
-                        "type": "string"
-                      },
-                      {
-                        "const": "boss",
-                        "type": "string"
-                      },
-                      {
-                        "const": "divine",
-                        "type": "string"
-                      }
-                    ]
-                  },
-                  "mainClass": {
-                    "minLength": 1,
-                    "maxLength": 200,
-                    "type": "string"
-                  },
-                  "subClass": {
-                    "anyOf": [
-                      {
-                        "minLength": 1,
-                        "maxLength": 200,
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "hp": {
-                    "minimum": 0,
-                    "type": "integer"
-                  },
-                  "magicStyle": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "stats": {
-                    "type": "array",
-                    "items": {
-                      "additionalProperties": false,
-                      "type": "object",
-                      "required": [
-                        "key",
-                        "value",
-                        "unit"
-                      ],
-                      "properties": {
-                        "key": {
-                          "minLength": 1,
-                          "maxLength": 200,
-                          "type": "string"
-                        },
-                        "value": {
-                          "type": "number"
-                        },
-                        "unit": {
-                          "anyOf": [
-                            {
-                              "const": "number",
-                              "type": "string"
-                            },
-                            {
-                              "const": "ratio",
-                              "type": "string"
-                            }
-                          ]
-                        }
-                      }
-                    }
-                  },
-                  "abilities": {
-                    "type": "array",
-                    "items": {
-                      "additionalProperties": false,
-                      "type": "object",
-                      "required": [
-                        "abilityId",
-                        "level"
-                      ],
-                      "properties": {
-                        "abilityId": {
-                          "minLength": 1,
-                          "maxLength": 200,
-                          "type": "string"
-                        },
-                        "level": {
-                          "minimum": 1,
-                          "type": "integer"
-                        }
-                      }
-                    }
-                  },
-                  "ability": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "cBonus": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "otherBonus": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "dropItemIds": {
-                    "type": "array",
-                    "items": {
-                      "minimum": 1,
-                      "type": "integer"
-                    }
-                  },
-                  "revealed": {
-                    "type": "boolean"
-                  },
-                  "encounters": {
-                    "minimum": 0,
-                    "type": "integer"
-                  },
-                  "defeats": {
-                    "minimum": 0,
-                    "type": "integer"
-                  }
-                }
-              }
-            },
-            "nextCursor": {
-              "anyOf": [
-                {
-                  "minLength": 1,
-                  "maxLength": 200,
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            }
-          }
-        },
-        "envelope": {
-          "additionalProperties": false,
-          "type": "object",
-          "required": [
-            "apiVersion",
-            "schemaVersion",
-            "requestId",
-            "observedAt",
-            "data"
-          ],
-          "properties": {
-            "apiVersion": {
-              "const": "v1",
-              "type": "string"
-            },
-            "schemaVersion": {
-              "const": 1,
-              "type": "number"
-            },
-            "requestId": {
-              "minLength": 1,
-              "maxLength": 200,
-              "type": "string"
-            },
-            "revision": {
-              "minimum": 0,
-              "type": "integer"
-            },
-            "observedAt": {
-              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
-              "type": "string"
-            },
-            "data": {
-              "additionalProperties": false,
-              "type": "object",
-              "required": [
-                "enemies",
-                "nextCursor"
-              ],
-              "properties": {
-                "enemies": {
-                  "type": "array",
-                  "items": {
+                "anyOf": [
+                  {
                     "additionalProperties": false,
                     "type": "object",
                     "required": [
@@ -44442,6 +44305,7 @@
                         }
                       },
                       "revealed": {
+                        "const": true,
                         "type": "boolean"
                       },
                       "encounters": {
@@ -44453,6 +44317,329 @@
                         "type": "integer"
                       }
                     }
+                  },
+                  {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "enemyId",
+                      "revealed",
+                      "encounters",
+                      "defeats"
+                    ],
+                    "properties": {
+                      "enemyId": {
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "revealed": {
+                        "const": false,
+                        "type": "boolean"
+                      },
+                      "encounters": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "defeats": {
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "nextCursor": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "envelope": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "apiVersion",
+            "schemaVersion",
+            "requestId",
+            "observedAt",
+            "data"
+          ],
+          "properties": {
+            "apiVersion": {
+              "const": "v1",
+              "type": "string"
+            },
+            "schemaVersion": {
+              "const": 1,
+              "type": "number"
+            },
+            "requestId": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            },
+            "revision": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "observedAt": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "enemies",
+                "nextCursor"
+              ],
+              "properties": {
+                "enemies": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "enemyId",
+                          "name",
+                          "nameKey",
+                          "level",
+                          "enemyType",
+                          "tier",
+                          "mainClass",
+                          "subClass",
+                          "hp",
+                          "magicStyle",
+                          "stats",
+                          "abilities",
+                          "ability",
+                          "cBonus",
+                          "otherBonus",
+                          "dropItemIds",
+                          "revealed",
+                          "encounters",
+                          "defeats"
+                        ],
+                        "properties": {
+                          "enemyId": {
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "nameKey": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "level": {
+                            "anyOf": [
+                              {
+                                "minimum": 1,
+                                "type": "integer"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "enemyType": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "tier": {
+                            "anyOf": [
+                              {
+                                "const": "normal",
+                                "type": "string"
+                              },
+                              {
+                                "const": "elite",
+                                "type": "string"
+                              },
+                              {
+                                "const": "boss",
+                                "type": "string"
+                              },
+                              {
+                                "const": "divine",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "mainClass": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "subClass": {
+                            "anyOf": [
+                              {
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "hp": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "magicStyle": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "stats": {
+                            "type": "array",
+                            "items": {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "key",
+                                "value",
+                                "unit"
+                              ],
+                              "properties": {
+                                "key": {
+                                  "minLength": 1,
+                                  "maxLength": 200,
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "type": "number"
+                                },
+                                "unit": {
+                                  "anyOf": [
+                                    {
+                                      "const": "number",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "ratio",
+                                      "type": "string"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          },
+                          "abilities": {
+                            "type": "array",
+                            "items": {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "abilityId",
+                                "level"
+                              ],
+                              "properties": {
+                                "abilityId": {
+                                  "minLength": 1,
+                                  "maxLength": 200,
+                                  "type": "string"
+                                },
+                                "level": {
+                                  "minimum": 1,
+                                  "type": "integer"
+                                }
+                              }
+                            }
+                          },
+                          "ability": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "cBonus": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "otherBonus": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "dropItemIds": {
+                            "type": "array",
+                            "items": {
+                              "minimum": 1,
+                              "type": "integer"
+                            }
+                          },
+                          "revealed": {
+                            "const": true,
+                            "type": "boolean"
+                          },
+                          "encounters": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "defeats": {
+                            "minimum": 0,
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "enemyId",
+                          "revealed",
+                          "encounters",
+                          "defeats"
+                        ],
+                        "properties": {
+                          "enemyId": {
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "revealed": {
+                            "const": false,
+                            "type": "boolean"
+                          },
+                          "encounters": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "defeats": {
+                            "minimum": 0,
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    ]
                   }
                 },
                 "nextCursor": {

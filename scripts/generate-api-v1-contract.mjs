@@ -219,8 +219,10 @@ const debugCurrent = {
   displayAllGlossary: Type.Boolean(), colosseumMode: Type.Boolean(),
 };
 const booleanOptions = Type.Array(Type.Boolean());
-const addedAbility = strict({ abilityId: stableKey, level: Type.Integer({ minimum: 1, maximum: 10 }) });
-const enemyEdit = { enemyLevel: optional(Type.Integer({ minimum: 1, maximum: 99 })), enemyName: optional(Type.String({ minLength: 1, maxLength: 100 })), terrainEffect: optional(stableKey), enemyType: optional(stableKey), mainClass: optional(stableKey), subClass: optional(stableKey), addedAbilities: optional(Type.Array(addedAbility, { maxItems: 5 })) };
+const enemyEditAbility = strict({ abilityId: stableKey, level: Type.Integer({ minimum: 1, maximum: 5 }) });
+const enemyEdit = { enemyLevel: optional(Type.Integer({ minimum: 1, maximum: 99 })), enemyName: optional(Type.String({ minLength: 1, maxLength: 100 })), terrainEffect: optional(stableKey), enemyType: optional(stableKey), mainClass: optional(stableKey), subClass: optional(stableKey), addedAbilities: optional(Type.Array(enemyEditAbility, { maxItems: 5 })) };
+// Spec 9.1.3 2-6-1: the complete Enemy Edit pane a read or commit reports.
+const enemyEditCurrent = { enemyLevel: Type.Integer({ minimum: 1, maximum: 99 }), enemyName: Type.String({ minLength: 1, maxLength: 100 }), terrainEffect: stableKey, enemyType: stableKey, mainClass: stableKey, subClass: stableKey, addedAbilities: Type.Array(enemyEditAbility, { maxItems: 5 }) };
 
 const commitParameters = {
   'commit/progress/elapsed': strict({ calculateToRealTime: optional(Type.Boolean()), elapsedSeconds: optional(Type.Integer({ minimum: 60, maximum: 43200 })) }),
@@ -244,7 +246,8 @@ const commitParameters = {
   'commit/build/character/{characterId}/undoEquipment': empty, 'commit/build/character/{characterId}/redoEquipment': empty,
   'commit/base/changeJewelPriorityParty': strict({ partyNumber: Type.Union([partyNumber, Type.Literal('none')]) }),
   'commit/base/sellInventoryItems': strict({ items: nonEmptyArray(itemFormat, { uniqueItems: true }) }),
-  'commit/base/purchaseShopItems': strict({ items: nonEmptyArray(strict({ shopItemId: integerId }), { uniqueItems: true }) }),
+  // Spec 9.1.3 3-4-3: `lineupId` (from `shopItemsList` or the `base` projection) must name the current lineup.
+  'commit/base/purchaseShopItems': strict({ lineupId: stableKey, items: nonEmptyArray(strict({ shopItemId: integerId }), { uniqueItems: true }) }),
   'commit/base/paidShopRefresh': empty, 'commit/base/unlockSoldItems': strict({ items: nonEmptyArray(itemFormat, { uniqueItems: true }) }),
   'commit/base/unlockForm': strict({ enemyId: integerId }), 'commit/base/markItemsAsSeen': strict({ items: nonEmptyArray(stableKey, { uniqueItems: true }) }),
   'commit/diary/{p}/diarySetting': strict(diarySetting),
@@ -405,7 +408,7 @@ const diaryProjectionSchema = strict({
     settings: strict(diarySettingMembers), entries: Type.Array(diaryEntrySummary),
   })),
 });
-const settingProjectionSchema = strict({ language, environment: Type.String(), gameMode: modeKey, enemyLevelOffset: Type.Integer({ minimum: 0, maximum: 20 }), modeSelect: strict(modeSelectCurrent), debug: strict(debugCurrent), enemyEditPane: optional(strict(enemyEdit)), uiPreferences: Type.Array(strict({ key: stableKey, value: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), uiPreferenceCatalog: Type.Array(strict({ family: stableKey, subject: literals('characterId', 'settingPanel', 'partyNumber', 'none'), subjectOptions: Type.Array(Type.String()), type: Type.Union([Type.Literal('string'), Type.Literal('number'), Type.Literal('boolean')]), options: Type.Array(Type.String()), defaultValue: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), pendingDeliveryIds: Type.Array(stableKey) });
+const settingProjectionSchema = strict({ language, environment: Type.String(), gameMode: modeKey, enemyLevelOffset: Type.Integer({ minimum: 0, maximum: 20 }), modeSelect: strict(modeSelectCurrent), debug: strict(debugCurrent), enemyEditPane: strict(enemyEditCurrent), uiPreferences: Type.Array(strict({ key: stableKey, value: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), uiPreferenceCatalog: Type.Array(strict({ family: stableKey, subject: literals('characterId', 'settingPanel', 'partyNumber', 'none'), subjectOptions: Type.Array(Type.String()), type: Type.Union([Type.Literal('string'), Type.Literal('number'), Type.Literal('boolean')]), options: Type.Array(Type.String()), defaultValue: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), pendingDeliveryIds: Type.Array(stableKey) });
 const popupStreamSchema = strict({ events: Type.Array(popupEvent) });
 
 // SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視)
@@ -477,7 +480,7 @@ const responseDataSchemas = {
   'read/base/enemyFormList': strict({ current: strict({ enemyFormList: Type.Array(enemyForm) }), validOptions: strict({ enemyId: Type.Array(Type.Integer({ minimum: 0 })) }) }),
   'read/diary/{p}/diarySetting': strict({ current: strict(diarySettingMembers), validOptions: diarySettingValidOptions }),
   'read/diary/diaryEntry/{diaryEntryId}': strict({ entry: diaryEntry }),
-  'read/setting/enemyEditPane': strict({ current: strict(enemyEdit), validOptions: strict({ enemyLevel: range, terrainEffect: Type.Array(Type.String()), enemyType: Type.Array(Type.String()), mainClass: Type.Array(stableKey), subClass: Type.Array(Type.String()), addedAbilities: strict({ maximumEntries: Type.Integer({ minimum: 0 }), level: strict({ min: Type.Integer(), max: Type.Integer() }) }) }) }),
+  'read/setting/enemyEditPane': strict({ current: strict(enemyEditCurrent), validOptions: strict({ enemyLevel: range, terrainEffect: Type.Array(Type.String()), enemyType: Type.Array(Type.String()), mainClass: Type.Array(stableKey), subClass: Type.Array(Type.String()), addedAbilities: strict({ maximumEntries: Type.Integer({ minimum: 0 }), abilityId: Type.Array(stableKey), level: strict({ min: Type.Integer(), max: Type.Integer() }) }) }) }),
   'read/setting/modeSelect': strict({ current: strict(modeSelectCurrent), validOptions: strict({ mode: Type.Array(modeKey), enemyLevelOffset: range, language: Type.Array(language), darkMode: Type.Array(Type.String()), autoRepeat: Type.Array(Type.Boolean()), showExpeditionStats: Type.Array(Type.Boolean()), theme: Type.Array(themeKey) }) }),
   'read/setting/debug': strict({ current: strict(debugCurrent), validOptions: strict({ runtimeDiagnostics: booleanOptions, clairvoyance: booleanOptions, speedOfTime: Type.Array(Type.String()), godsBattleCondition: Type.Array(Type.String()), godsStrength: Type.Array(Type.String()), debugStoreOpen: booleanOptions, displayFlavorCondition: booleanOptions, displayAfkDuration: booleanOptions, displayAllBestiary: booleanOptions, displayAllCompendium: booleanOptions, displayAllGlossary: booleanOptions, colosseumMode: booleanOptions }) }),
   'commit/progress/elapsed': strict({ requestedElapsedSeconds: Type.Integer({ minimum: 0 }), acceptedElapsedSeconds: Type.Integer({ minimum: 0 }), cappedElapsedSeconds: Type.Integer({ minimum: 0 }), elapsedSeconds: Type.Integer({ minimum: 0 }), inGameTime: isoTimestamp }),
@@ -533,7 +536,7 @@ const responseDataSchemas = {
   'commit/diary/diaryEntry/markAsRead': strict({ diaryEntryId: Type.Array(stableKey), unreadTotal: Type.Integer({ minimum: 0 }) }),
   'commit/setting/clairvoyanceReset': strict({ partyNumber, resetCommonRewards: Type.Boolean(), resetRewards: Type.Boolean(), resetSideQuest: Type.Boolean() }),
   'commit/setting/modeSelect': strict({ current: strict(modeSelectCurrent) }),
-  'commit/setting/enemyEditPane': strict({ current: strict(enemyEdit) }),
+  'commit/setting/enemyEditPane': strict({ current: strict(enemyEditCurrent) }),
   'commit/setting/feedback': strict({ deliveryId: stableKey, status: Type.Literal('queued') }),
   'commit/setting/backup/export': strict({ savePayload: Type.String({ minLength: 1 }) }),
   'commit/setting/backup/import': strict({ imported: Type.Boolean() }),
@@ -567,9 +570,13 @@ const responseDataSchemas = {
     validOptions: strict({ category: Type.Array(literals('a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.')) }),
     ...nextCursor,
   }),
-  'resources/itemCompendium': strict({ items: Type.Array(strict({ itemId: integerId, name: Type.String(), category: stableKey, rarity: literals('common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRare'), tier: Type.Integer({ minimum: 1, maximum: 8 }), revealed: Type.Boolean(), ability: optional(Type.Array(Type.String())), cBonus: optional(Type.Array(Type.String())), otherBonus: optional(Type.Array(Type.String())) })), ...nextCursor }),
+  'resources/itemCompendium': strict({ items: Type.Array(strict({ itemId: integerId, name: optional(Type.String()), category: stableKey, rarity: literals('common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRare'), tier: Type.Integer({ minimum: 1, maximum: 8 }), revealed: Type.Boolean(), ability: optional(Type.Array(Type.String())), cBonus: optional(Type.Array(Type.String())), otherBonus: optional(Type.Array(Type.String())) })), ...nextCursor }),
   'resources/characterRoster': strict({ races: Type.Array(strict({ raceId: stableKey, status: baseStats, ability: Type.Array(Type.String()), cBonus: Type.Array(Type.String()), otherBonus: Type.Array(Type.String()), defaultAbility: Type.Union([stableKey, Type.Null()]), unlockAbility: Type.Union([stableKey, Type.Null()]) })), ...nextCursor }),
-  'resources/bestiary': strict({ enemies: Type.Array(strict({ ...enemyStatus.properties, revealed: Type.Boolean(), encounters: Type.Integer({ minimum: 0 }), defeats: Type.Integer({ minimum: 0 }) })), ...nextCursor }),
+  // Spec 9.1.4.7: an unrevealed enemy is a placeholder (ID and counts only), a revealed one carries its full status.
+  'resources/bestiary': strict({ enemies: Type.Array(Type.Union([
+    strict({ ...enemyStatus.properties, revealed: Type.Literal(true), encounters: Type.Integer({ minimum: 0 }), defeats: Type.Integer({ minimum: 0 }) }),
+    strict({ enemyId: integerId, revealed: Type.Literal(false), encounters: Type.Integer({ minimum: 0 }), defeats: Type.Integer({ minimum: 0 }) }),
+  ])), ...nextCursor }),
   'resources/superRareList': strict({ superRare: Type.Array(Type.String()), ...nextCursor }),
 };
 

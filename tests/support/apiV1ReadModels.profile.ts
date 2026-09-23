@@ -704,12 +704,15 @@ assert.deepEqual(
 {
   const { ITEMS } = await import('../../src/data/items.ts');
   type Compendium = { items: { itemId: number; rarity: string; tier: number; ability?: string[]; cBonus?: string[]; otherBonus?: string[] }[]; nextCursor: string | null };
-  const read = (parameters: Record<string, unknown>) => buildApiV1ReadData('resources/itemCompendium', state, { limit: 200, ...parameters }, context) as Promise<Compendium>;
+  // Every item revealed, so the detail filters and fields apply (an unrevealed item is only a placeholder).
+  const allRevealed = { ...state, global: { ...state.global, revealedItemCompendiumItemIds: ITEMS.map((item) => item.id) } };
+  const read = (parameters: Record<string, unknown>) => buildApiV1ReadData('resources/itemCompendium', allRevealed, { limit: 200, ...parameters }, context) as Promise<Compendium>;
   const tier2 = await read({ category: 'sword', tier: 2 });
   assert.ok(tier2.items.length > 0 && tier2.items.every((item) => item.tier === 2 && Math.floor(item.itemId / 1000) === 2));
   const common = await read({ category: 'sword', rarity: 'common' });
   assert.ok(common.items.length > 0 && common.items.every((item) => item.rarity === 'common'));
   const withAbility = (await read({ category: 'sword', details: 'all' })).items.find((item) => (item.ability ?? []).length > 0);
+  assert.ok(withAbility, 'some sword has an ability');
   if (withAbility) {
     const abilityId = withAbility.ability![0].split(':')[0];
     const found = await read({ category: 'sword', searchAbility: abilityId, details: 'ability' });
@@ -721,6 +724,12 @@ assert.deepEqual(
   const aliases = await read({ category: 'book' });
   assert.deepEqual(aliases.items.map((item) => item.itemId), (await read({ category: 'grimoire' })).items.map((item) => item.itemId));
   assert.equal((await read({ category: 'grimoire' })).items.length, ITEMS.filter((item) => item.category === 'grimoire').length);
+  // An unrevealed item is a placeholder: ID, category, rarity, and tier only; the detail searches never match it (9.1.4.7).
+  const hidden = await buildApiV1ReadData('resources/itemCompendium', state, { category: 'sword', details: 'all', limit: 200 }, context) as Compendium;
+  assert.ok(hidden.items.length > 0);
+  for (const item of hidden.items) assert.deepEqual(Object.keys(item).sort(), ['category', 'itemId', 'rarity', 'revealed', 'tier']);
+  const abilityId = withAbility!.ability![0].split(':')[0];
+  assert.deepEqual((await buildApiV1ReadData('resources/itemCompendium', state, { category: 'sword', searchAbility: abilityId }, context) as Compendium).items, []);
 }
 
 // Super Rare list (9.1.3 4-2-8): titles 1–N only, `<superRareId>/<name>/<bonus>`, the name in the current language.
@@ -910,9 +919,23 @@ assert.deepEqual(state, before);
   const encountered = { ...state, global: { ...state.global, enemyBattleStats: { [enemy.id]: { encounters: 3, defeats: 1 } } } };
   const met = await buildApiV1ReadData('resources/bestiary', encountered, { enemyId: enemy.id }, context) as { enemies: { enemyId: number; revealed: boolean; encounters: number; defeats: number }[] };
   assert.deepEqual(met.enemies, [{ ...met.enemies[0], revealed: true, encounters: 3, defeats: 1 }]);
-  const byType = await buildApiV1ReadData('resources/bestiary', state, { enemyType: enemy.enemyType }, context) as { enemies: { enemyType: string }[] };
-  assert.ok(byType.enemies.length > 0);
-  for (const entry of byType.enemies) assert.equal(entry.enemyType, enemy.enemyType);
+  // The type filter matches revealed enemies only: an unencountered enemy's type is undisclosed.
+  const byType = await buildApiV1ReadData('resources/bestiary', encountered, { enemyType: enemy.enemyType, limit: 200 }, context) as { enemies: { enemyId: number; enemyType: string }[] };
+  assert.deepEqual(byType.enemies.map((entry) => entry.enemyId), [enemy.id]);
+  // An unencountered enemy is a placeholder: its ID and counts, never its name, status, or drops (9.1.4.7).
+  const hidden = await buildApiV1ReadData('resources/bestiary', state, { enemyId: enemy.id }, context) as { enemies: Record<string, unknown>[] };
+  assert.deepEqual(hidden.enemies, [{ enemyId: enemy.id, revealed: false, encounters: 0, defeats: 0 }]);
+}
+
+// Enemy Edit Pane current (9.1.3 2-6-1): the ordinary player's real pane, an API account's own settings (defaults if unset).
+{
+  const { getDefaultColosseumEnemySettings } = await import('../../src/game/colosseum.ts');
+  const pane = { ...getDefaultColosseumEnemySettings(), level: 33, enemyMainClass: 'sage' as const, abilities: [{ id: 'first_strike' as const, level: 3 }] };
+  const player = await buildApiV1ReadData('read/setting/enemyEditPane', state, {}, { ...context, enemyEditSettings: () => pane }) as { current: Record<string, unknown> };
+  assert.deepEqual(player.current, { enemyLevel: 33, enemyName: pane.name, terrainEffect: 'none', enemyType: pane.enemyType, mainClass: 'sage', subClass: 'none', addedAbilities: [{ abilityId: 'a.first-strike', level: 3 }] });
+  const account = await buildApiV1ReadData('read/setting/enemyEditPane', state, {}, { ...context, control: { settings: { enemyEditPane: { enemyLevel: 12 } } } }) as { current: Record<string, unknown> };
+  assert.equal(account.current.enemyLevel, 12);
+  assert.equal(account.current.mainClass, getDefaultColosseumEnemySettings().enemyMainClass);
 }
 
 // Enemy Edit Pane: terrainEffect and enemyType valid options come from the real terrain glossary and enemy master data.

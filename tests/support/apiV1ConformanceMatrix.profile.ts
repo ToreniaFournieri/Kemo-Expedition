@@ -384,9 +384,9 @@ const commitFixtures: Record<string, CommitFixture> = {
   'commit/base/sellInventoryItems': { request: async (client) => ({ parameters: { items: [(await ownedItems(client))[0]] } }) },
   'commit/base/purchaseShopItems': {
     request: async (client) => {
-      const shop = await client.read('read/base/shopItemsList') as { current: { entries: Array<{ shopItemId: number; soldOut: boolean }> } };
+      const shop = await client.read('read/base/shopItemsList') as { current: { lineupId: string; entries: Array<{ shopItemId: number; soldOut: boolean }> } };
       const available = shop.current.entries.find((entry) => !entry.soldOut) ?? shop.current.entries[0];
-      return { parameters: { items: [{ shopItemId: available.shopItemId }] } };
+      return { parameters: { lineupId: shop.current.lineupId, items: [{ shopItemId: available.shopItemId }] } };
     },
   },
   'commit/base/paidShopRefresh': { request: async () => ({}) },

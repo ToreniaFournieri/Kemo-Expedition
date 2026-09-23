@@ -246,13 +246,16 @@ function diaryLog(id: string, isRead = false): DiaryLog {
 // 4. Purchase results report the exact drawn variants and the net currency delta; the request is atomic. A slot's ID is its
 // 1-based position in the lineup, and the transaction's own clock (not the wall clock) decides which lineup that is.
 {
-  const { getShopFacts, shopLineupInputOf } = await import('../../src/game/shopFacts');
+  const { getPublicShopLineupId, getShopFacts, shopLineupInputOf } = await import('../../src/game/shopFacts');
   const richState: GameState = { ...seed, global: { ...seed.global, gold: 1_000_000 } };
   const simulatedAt = Date.parse('2026-01-01T00:00:00.000Z');
   const facts = getShopFacts(shopLineupInputOf(richState), new Date(simulatedAt));
   assert.deepEqual(facts.entries.map((entry) => entry.shopItemId), [1, 2, 3, 4, 5], 'a slot is its 1-based position');
   const entry = facts.entries[0];
-  const bought = applyApiV1Commit('commit/base/purchaseShopItems', richState, { items: [{ shopItemId: entry.shopItemId }] }, baseContext({ simulatedAt }));
+  // The lineup ID is the five item IDs in slot order (Spec 9.1.3 2-4-4).
+  const lineupId = getPublicShopLineupId(facts);
+  assert.equal(lineupId, facts.entries.map((candidate) => candidate.itemId).join(''));
+  const bought = applyApiV1Commit('commit/base/purchaseShopItems', richState, { lineupId, items: [{ shopItemId: entry.shopItemId }] }, baseContext({ simulatedAt }));
   const data = bought.data as { items: { item: string; quantity: number }[]; goldDelta: number; pranaDelta: number };
   assert.equal(data.items.length, 1);
   assert.equal(data.items[0].quantity, 1);
@@ -263,7 +266,10 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   const after = getShopFacts(shopLineupInputOf(bought.state), new Date(simulatedAt));
   assert.equal(after.entries.find((candidate) => candidate.stockEntryId === entry.stockEntryId)?.soldOut, true);
 
-  const attempt = (state: GameState, items: unknown) => { try { applyApiV1Commit('commit/base/purchaseShopItems', state, { items }, baseContext({ simulatedAt })); return ''; } catch (error) { return String(error); } };
+  const attempt = (state: GameState, items: unknown, id: unknown = lineupId) => { try { applyApiV1Commit('commit/base/purchaseShopItems', state, { lineupId: id, items }, baseContext({ simulatedAt })); return ''; } catch (error) { return String(error); } };
+  // The purchase names the lineup it was chosen from; any other lineup (or none) buys nothing (Spec 9.1.3 3-4-3).
+  assert.ok(attempt(richState, [{ shopItemId: 1 }], '1101110211031104').includes('illegal_action:lineup_changed'));
+  assert.ok(attempt(richState, [{ shopItemId: 1 }], null).includes('invalid_request:lineupId'));
   assert.ok(attempt(richState, [{ shopItemId: 1 }, { shopItemId: 1 }]).includes('invalid_request'), 'a duplicate slot is invalid');
   assert.ok(attempt(richState, [{ shopItemId: 0 }]).includes('invalid_request'));
   assert.ok(attempt(richState, []).includes('invalid_request'));
@@ -274,7 +280,7 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   const twoPrices = facts.entries[0].price + facts.entries[1].price;
   const short = { ...richState, global: { ...richState.global, gold: twoPrices - 1 } } as GameState;
   assert.ok(attempt(short, [{ shopItemId: 1 }, { shopItemId: 2 }]).includes('insufficient_gold'));
-  const two = applyApiV1Commit('commit/base/purchaseShopItems', { ...richState, global: { ...richState.global, gold: twoPrices } } as GameState, { items: [{ shopItemId: 1 }, { shopItemId: 2 }] }, baseContext({ simulatedAt }));
+  const two = applyApiV1Commit('commit/base/purchaseShopItems', { ...richState, global: { ...richState.global, gold: twoPrices } } as GameState, { lineupId, items: [{ shopItemId: 1 }, { shopItemId: 2 }] }, baseContext({ simulatedAt }));
   assert.equal((two.data as { items: { quantity: number }[] }).items.reduce((sum, row) => sum + row.quantity, 0), 2);
 }
 
@@ -682,6 +688,52 @@ function diaryLog(id: string, isRead = false): DiaryLog {
     assert.equal((outcome.data.current as Record<string, unknown>).godsStrength, 'normal');
     assert.equal(Object.keys(outcome.data.current as object).length, 12);
     assert.deepEqual(settings.debug, { speedOfTime: 'x5' }, 'only the supplied fields are stored');
+  } finally {
+    location.location = previous;
+  }
+}
+
+// Clairvoyance reset (Spec 8.6; 9.1.3 3-6-1): the side-quest reset initializes only `t.side_quest_bag`, never the active side
+// quest's progress, and the reward reset leaves the common Super Rare bag to the common reset.
+{
+  const drawn = (bag: { entries: { id: number; tickets: number }[] }) => ({ entries: bag.entries.map((entry, index) => index === 0 ? { ...entry, tickets: Math.max(0, entry.tickets - 1) } : entry) });
+  const party = seed.parties[0];
+  const activeQuest = { id: 1, type: 'gold', target: 10, progress: 7 } as unknown as NonNullable<GameState['parties'][number]['sideQuest']>;
+  const used = { ...seed, parties: [{ ...party, sideQuest: activeQuest, bags: { ...party.bags, sideQuestBag: drawn(party.bags.sideQuestBag), commonSuperRareBag: drawn(party.bags.commonSuperRareBag), bossRareRewardBag: drawn(party.bags.bossRareRewardBag) } }, ...seed.parties.slice(1)] } as GameState;
+  const ctx = baseContext({ settings: { debug: { clairvoyance: true } } });
+  const sideQuest = applyApiV1Commit('commit/setting/clairvoyanceReset', used, { partyNumber: party.id, resetSideQuest: true }, ctx).state.parties[0];
+  assert.deepEqual(sideQuest.bags.sideQuestBag, seed.parties[0].bags.sideQuestBag, 'the side-quest bag is initialized');
+  assert.equal(sideQuest.sideQuest?.progress, 7, 'the side-quest progress is kept');
+  const rewards = applyApiV1Commit('commit/setting/clairvoyanceReset', used, { partyNumber: party.id, resetRewards: true }, ctx).state.parties[0];
+  assert.deepEqual(rewards.bags.bossRareRewardBag, seed.parties[0].bags.bossRareRewardBag, 'the party reward bags are initialized');
+  assert.deepEqual(rewards.bags.commonSuperRareBag, used.parties[0].bags.commonSuperRareBag, 'the common Super Rare bag is left to the common reset');
+}
+
+// Enemy Edit pane (Spec 9.1.3 2-6-1/3-6-3): the ordinary player's real pane is changed after the durable commit; an API
+// account keeps its own. Every field is validated first.
+{
+  const location = globalThis as { location?: { pathname: string } };
+  const previous = location.location;
+  location.location = { pathname: '/dev/' };
+  try {
+    const { getDefaultColosseumEnemySettings } = await import('../../src/game/colosseum');
+    const enemyEditSettings = getDefaultColosseumEnemySettings();
+    const player = applyApiV1Commit('commit/setting/enemyEditPane', seed, { enemyLevel: 42, mainClass: 'samurai', addedAbilities: [{ abilityId: 'a.iaigiri', level: 2 }] }, baseContext({ enemyEditSettings }));
+    assert.equal(player.enemyEditSettingWrite?.level, 42);
+    assert.equal(player.enemyEditSettingWrite?.enemyMainClass, 'samurai');
+    assert.deepEqual(player.enemyEditSettingWrite?.abilities, [{ id: 'iaigiri', level: 2 }]);
+    assert.deepEqual((player.data.current as { addedAbilities: unknown[] }).addedAbilities, [{ abilityId: 'a.iaigiri', level: 2 }]);
+    assert.equal(player.settings.enemyEditPane, undefined, 'the player pane is not copied into the control settings');
+    const unchanged = applyApiV1Commit('commit/setting/enemyEditPane', seed, { enemyLevel: enemyEditSettings.level }, baseContext({ enemyEditSettings }));
+    assert.equal(unchanged.enemyEditSettingWrite, undefined, 'an unchanged pane writes nothing');
+    for (const parameters of [{ enemyLevel: 100 }, { mainClass: 'nope' }, { terrainEffect: 'terrain.none' }, { addedAbilities: [{ abilityId: 'a.nope', level: 1 }] }, { enemyLevel: 5, subClass: 'x' }]) {
+      assert.throws(() => applyApiV1Commit('commit/setting/enemyEditPane', seed, parameters, baseContext({ enemyEditSettings })), /invalid_request/, JSON.stringify(parameters));
+    }
+    const settings: Record<string, unknown> = {};
+    const account = applyApiV1Commit('commit/setting/enemyEditPane', seed, { enemyName: 'Test' }, baseContext({ settings }));
+    assert.equal(account.enemyEditSettingWrite, undefined);
+    assert.equal((settings.enemyEditPane as { enemyName: string }).enemyName, 'Test');
+    assert.equal((account.data.current as { enemyLevel: number }).enemyLevel, enemyEditSettings.level, 'unset fields report their defaults');
   } finally {
     location.location = previous;
   }
