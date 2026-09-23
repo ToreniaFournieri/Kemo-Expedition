@@ -285,6 +285,7 @@ Path Parameters
 * While logged in:
   * Normal real-time progression is paused.
   * Only API operations from the logged-in user may control or modify the instance.
+  * The player may switch views in the UI, but cannot perform any commit operations.
   * Other state-mutating controls are restricted.
 * Note: This feature is available only for API control in this version.
 
@@ -309,7 +310,6 @@ Path Parameters
 **2-1-1. `compact`**
 
 * Provides a compact observation designed primarily for AI decision-making.
-* Do not call this endpoint frequently.
 
 * Behavior:
   * Each request performs a fresh, private 100-run simulation for every unlocked party.
