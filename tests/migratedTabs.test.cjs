@@ -330,9 +330,7 @@ const TAB_STORAGE_KEYS = {
   'SettingTab.tsx': {
     // Send Feedback (reviewed local exception): the previous name and the reward cooldown.
     FEEDBACK_NAME_STORAGE_KEY: 'sendFeedback', FEEDBACK_SUBMITTED_STORAGE_KEY: 'sendFeedback', FEEDBACK_LAST_SUBMITTED_AT_STORAGE_KEY: 'sendFeedback',
-    // Open audit findings (docs/api-v1-ui-ownership.md): 8.6 requires pane and per-party Clairvoyance expansion to be
-    // retained, which 9.1.4.17 places in `uiPreferences`; Glossary tab/expansion retention is not required by 8.6.
-    SETTING_PANEL_STORAGE_KEY: 'finding', CLAIRVOYANCE_PARTY_STORAGE_KEY: 'finding', GLOSSARY_TAB_STORAGE_KEY: 'finding', GLOSSARY_EXPANDED_STORAGE_KEY: 'finding',
+    // Pane expansion, per-party Clairvoyance expansion, and the Glossary tab are `uiPreferences` (Build 103), not keys here.
   },
 };
 
@@ -352,4 +350,12 @@ test('migrated tabs and the header never reach the desktop bridge directly', () 
   for (const file of ['tabs/PartyTab.tsx', 'tabs/ExpeditionTab.tsx', 'tabs/BaseTab.tsx', 'tabs/DiaryTab.tsx', 'tabs/SettingTab.tsx', 'HeaderBar.tsx']) {
     assert.doesNotMatch(read(`src/components/home/${file}`), /bokemoDesktop/, `${file} must use the trusted components or ports, not the bridge`);
   }
+});
+
+test('the Setting tab keeps retained pane, Clairvoyance, and Glossary-tab state in uiPreferences', () => {
+  const tab = read('src/components/home/tabs/SettingTab.tsx');
+  for (const name of ['settingPanelExpandedKey', 'clairvoyanceExpandedKey', 'SETTING_GLOSSARY_TAB_FAMILY']) assert.match(tab, new RegExp(`onSetUiPreference\\(${name}`));
+  const home = read('src/components/HomeScreen.tsx');
+  assert.match(home, /settingPreferences=\{settingTabPreferences\}/);
+  assert.match(home, /onSetUiPreference=\{handleSetUiPreference\}/);
 });

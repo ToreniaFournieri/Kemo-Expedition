@@ -4,6 +4,8 @@ import { DEVELOPER_NEWS_ITEMS } from '../../data/developerNews';
 import { getDeityId, getDeityNameFromId, isNoFaithDeity, normalizeDeityName } from '../../game/deity';
 import { getEnvironmentId, isDebugModeEnabled } from '../../game/environment';
 import { describeModeSelectCurrent, planDisplaySettingWrite, type ApiV1DisplaySettings, type ApiV1DisplaySettingWrite } from './modeSelect';
+import { describeDebugSettings, planDebugSettingWrite } from './debugSettings';
+import type { DebugSettings } from '../../game/debugSettings';
 import { canCharacterEquipCategory, createEquipmentSetSnapshot, evaluateEquipmentSet, evaluateEquipmentState, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
 import { recordEquipmentState, redoEquipmentState, undoEquipmentState } from '../../game/equipmentHistory';
 import { computeCharacterStats } from '../../game/characterComputation';
@@ -70,6 +72,8 @@ export interface ApiV1CommitContext {
   readonly restDurationMs?: (party: Party) => number;
   /** The ordinary player's display settings (dark mode, theme, statistics, auto-repeat); absent for an API account. */
   readonly displaySettings?: ApiV1DisplaySettings;
+  /** The ordinary player's real Debug settings; absent for an API account, whose debug settings are its own stored values. */
+  readonly debugSettings?: DebugSettings;
 }
 
 /** What a sortie needs to know about the live party cycle (Spec 5.1.1). */
@@ -103,6 +107,8 @@ export interface ApiV1CommitOutcome {
   partyCycleWrites?: ApiV1PartyCycleWrite[];
   /** Display-setting changes the caller applies to the runtime after the durable commit (`modeSelect` only). */
   displaySettingWrite?: ApiV1DisplaySettingWrite;
+  /** Debug-setting changes the caller applies to the runtime after the durable commit (`debug`, ordinary player only). */
+  debugSettingWrite?: Partial<DebugSettings>;
 }
 
 /**
@@ -120,6 +126,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
   let delivery: ApiV1DeliveryRecord | null = null;
   const partyCycleWrites: ApiV1PartyCycleWrite[] = [];
   let displaySettingWrite: ApiV1DisplaySettingWrite | undefined;
+  let debugSettingWrite: Partial<DebugSettings> | undefined;
   const reduce = (action: Parameters<typeof gameReducer>[1]) => { next = gameReducer(next, action); };
   const partyMatch = operation.match(/^commit\/expedition\/(\d+)\/(changeExpedition|sortie|godsBattle|resetStatistics)$/);
   const characterMatch = operation.match(/^commit\/build\/character\/(\d+)\/(.+)$/);
@@ -512,6 +519,11 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     delete settings.modeSelect;
     const display = context.displaySettings ? { ...context.displaySettings, ...displaySettingWrite } : undefined;
     data = { current: describeModeSelectCurrent({ gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: next.global.language }, display) };
+  } else if (operation === 'commit/setting/debug' && context.debugSettings) {
+    // SpecRef: 9.1.3 | Commit | 3-6-4 debug — the ordinary player's real Debug settings, applied after the durable commit.
+    if (!isDebugModeEnabled()) throw new Error('illegal_action');
+    debugSettingWrite = planDebugSettingWrite(parameters, context.debugSettings);
+    data = { current: describeDebugSettings({ ...context.debugSettings, ...debugSettingWrite }) };
   } else if (operation === 'commit/setting/enemyEditPane' || operation === 'commit/setting/debug') {
     if (!isDebugModeEnabled()) throw new Error('illegal_action');
     const key = operation.endsWith('/debug') ? 'debug' : 'enemyEditPane';
@@ -530,5 +542,5 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
   }
   else throw new Error('invalid_request');
 
-  return { state: next, data, simulatedAt, settings: context.settings, equipmentHistory: context.equipmentHistory, resetControlEvents, delivery, partyCycleWrites, displaySettingWrite };
+  return { state: next, data, simulatedAt, settings: context.settings, equipmentHistory: context.equipmentHistory, resetControlEvents, delivery, partyCycleWrites, displaySettingWrite, debugSettingWrite };
 }

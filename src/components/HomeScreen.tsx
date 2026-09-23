@@ -108,10 +108,10 @@ import { buildPartyExpeditionLogView, type ExpeditionLogView, type LatestBattleL
 import { buildDiaryTabView, type DiaryProjection } from '../api/v1/diaryTabView';
 import { type HeaderProjection } from '../api/v1/headerView';
 import { toThemeKey, type ApiV1DisplaySettings, type ApiV1DisplaySettingWrite } from '../api/v1/modeSelect';
+import { buildSettingTabPreferences, clairvoyanceExpandedKey, GLOSSARY_TABS, PARTY_EQUIP_CATEGORY_FAMILY, partyEquipCategoryKey, SETTING_GLOSSARY_TAB_FAMILY, SETTING_PANELS, settingPanelExpandedKey, type SettingPanel } from '../api/v1/uiPreferenceCatalog';
 import { HeaderBar } from './home/HeaderBar';
 import { useApiRead, useApiReadMany } from './home/useApiRead';
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
-import { PARTY_EQUIP_CATEGORY_FAMILY, partyEquipCategoryKey } from '../api/v1/uiPreferenceCatalog';
 import { parseSimulationRunData, type SimulationRunData } from '../api/v1/simulationView';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
 import type { ApiV1ClairvoyanceProjection } from '../api/v1/readModels';
@@ -216,6 +216,11 @@ const loadExpeditionTab = () => import('./home/tabs/ExpeditionTab');
 const loadBaseTab = () => import('./home/tabs/BaseTab');
 const ORCA_TIME_SPEED_OVERRIDE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.orca-time-speed-override');
 const API_PLAYER_RETURN_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.api-player-return');
+// Local keys the Setting tab used before its retained state moved to `uiPreferences` (Build 103); read once, then removed.
+const LEGACY_SETTING_PANEL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.panel-expanded');
+const LEGACY_CLAIRVOYANCE_PARTY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.clairvoyance-party-expanded');
+const LEGACY_GLOSSARY_TAB_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.glossary-tab');
+const LEGACY_GLOSSARY_EXPANDED_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.glossary-expanded-entries');
 const loadDiaryTab = () => import('./home/tabs/DiaryTab');
 const loadSettingTab = () => import('./home/tabs/SettingTab');
 
@@ -502,6 +507,9 @@ export function HomeScreen({
   // SpecRef: 9.1.3 | Read 2-6-2 / Commit 3-6-2 modeSelect: the display settings the runtime owns outside the save.
   const displaySettingsRef = useRef<ApiV1DisplaySettings>({ darkMode: 'system', theme: 'm.kemo', showExpeditionStats: false, autoRepeat: true });
   const applyDisplaySettingsRef = useRef<(write: ApiV1DisplaySettingWrite) => void>(() => undefined);
+  // SpecRef: 9.1.3 | Read 2-6-3 / Commit 3-6-4 debug: the Debug pane's real settings, reported and changed through ports.
+  const apiDebugSettingsRef = useRef<DebugSettings | null>(null);
+  const applyDebugSettingsRef = useRef<(write: Partial<DebugSettings>) => void>(() => undefined);
   apiActionsRef.current = actions;
   debugSettingsRef.current = debugSettings;
   const effectiveDebugSettings = useMemo<DebugSettings>(() => runtimeGameMode === 'mode.orca' && !hasOrcaTimeSpeedOverride
@@ -605,6 +613,8 @@ export function HomeScreen({
         headerRuntime: () => headerRuntimeRef.current,
         displaySettings: () => displaySettingsRef.current,
         applyDisplaySettings: (write) => applyDisplaySettingsRef.current(write),
+        debugSettings: () => apiDebugSettingsRef.current!,
+        applyDebugSettings: (write) => applyDebugSettingsRef.current(write),
         colosseumEnabled: () => colosseumEnabledRef.current,
       },
       help: { requirements: apiRequirementsDocument, detail: apiDetailDocument },
@@ -763,6 +773,12 @@ export function HomeScreen({
       return next;
     });
   }, [runtimeGameMode]);
+  apiDebugSettingsRef.current = effectiveDebugSettings;
+  applyDebugSettingsRef.current = (write) => {
+    // The ref is updated at once so a following commit validates against the new values before the next render.
+    if (apiDebugSettingsRef.current) apiDebugSettingsRef.current = { ...apiDebugSettingsRef.current, ...write };
+    updateDebugSettings(write);
+  };
   const updateRuntimeGameMode = useCallback((mode: RuntimeGameMode) => {
     // SpecRef: 9 | Environment | /orca/ mode.orca fixed
     if (getEnvironmentId() === 'orca') {
@@ -5158,6 +5174,60 @@ export function HomeScreen({
     void inProcessApiRef.current?.commit('commit/setting/markNewsAsRead', { parameters: versions ? { version: versions } : {} });
   }, []);
 
+  // SpecRef: 9.1.4.17 | UI state ownership | The Setting tab's retained pane expansion, per-party Clairvoyance
+  // expansion, and Glossary tab are per-save `uiPreferences` (Spec 8.6 retention rules).
+  const settingTabObservation = useApiRead<{ settingInfo: { uiPreferences: Array<{ key: string; value: string | number | boolean }> } }>(
+    inProcessApiRef.current, 'read/observation/setting', {}, [state.global.uiPreferences], isSettingTabVisible,
+  );
+  const settingTabPreferences = useMemo(
+    () => settingTabObservation ? buildSettingTabPreferences(settingTabObservation.settingInfo.uiPreferences) : null,
+    [settingTabObservation],
+  );
+  const handleSetUiPreference = useCallback((key: string, value: string | number | boolean) => {
+    void inProcessApiRef.current?.commit('commit/setting/uiPreferences', { parameters: { changes: [{ key, value }] } }).then((response) => {
+      if (response?.error) console.error('[api-v1] Setting preference change failed', response.error);
+    });
+  }, []);
+  // One-time migration of the values the Setting tab kept in local storage before Build 103. A value already stored as a
+  // preference wins; the local keys are removed once the commit succeeds (or when there is nothing to carry over).
+  const legacySettingMigrationDoneRef = useRef(false);
+  useEffect(() => {
+    if (!settingTabObservation || legacySettingMigrationDoneRef.current) return;
+    legacySettingMigrationDoneRef.current = true;
+    const stored = new Set(settingTabObservation.settingInfo.uiPreferences.map((entry) => entry.key));
+    const changes: Array<{ key: string; value: string | number | boolean }> = [];
+    const readJson = (key: string): Record<string, unknown> | null => {
+      try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) as Record<string, unknown> : null; } catch { return null; }
+    };
+    for (const [panel, expanded] of Object.entries(readJson(LEGACY_SETTING_PANEL_STORAGE_KEY) ?? {})) {
+      if ((SETTING_PANELS as readonly string[]).includes(panel) && typeof expanded === 'boolean') {
+        const key = settingPanelExpandedKey(panel as SettingPanel);
+        if (!stored.has(key)) changes.push({ key, value: expanded });
+      }
+    }
+    for (const [partyIndex, expanded] of Object.entries(readJson(LEGACY_CLAIRVOYANCE_PARTY_STORAGE_KEY) ?? {})) {
+      const partyNumber = Number(partyIndex) + 1;
+      if (Number.isInteger(partyNumber) && partyNumber >= 1 && partyNumber <= state.parties.length && typeof expanded === 'boolean') {
+        const key = clairvoyanceExpandedKey(partyNumber);
+        if (!stored.has(key)) changes.push({ key, value: expanded });
+      }
+    }
+    try {
+      const tab = localStorage.getItem(LEGACY_GLOSSARY_TAB_STORAGE_KEY);
+      if (tab && (GLOSSARY_TABS as readonly string[]).includes(tab) && !stored.has(SETTING_GLOSSARY_TAB_FAMILY)) changes.push({ key: SETTING_GLOSSARY_TAB_FAMILY, value: tab });
+    } catch { /* storage unavailable: nothing to carry over */ }
+    const removeLegacyKeys = () => {
+      try {
+        for (const key of [LEGACY_SETTING_PANEL_STORAGE_KEY, LEGACY_CLAIRVOYANCE_PARTY_STORAGE_KEY, LEGACY_GLOSSARY_TAB_STORAGE_KEY, LEGACY_GLOSSARY_EXPANDED_STORAGE_KEY]) localStorage.removeItem(key);
+      } catch { /* storage unavailable */ }
+    };
+    if (changes.length === 0) { removeLegacyKeys(); return; }
+    void inProcessApiRef.current?.commit('commit/setting/uiPreferences', { parameters: { changes } }).then((response) => {
+      if (response?.error) console.error('[api-v1] Setting preference migration failed', response.error);
+      else removeLegacyKeys();
+    });
+  }, [settingTabObservation, state.parties.length]);
+
   // SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視)
   const clairvoyanceInputs = useMemo(() => state.parties.map((party) => ({ pathParameters: { p: party.id } })), [state.parties]);
   const clairvoyanceProjections = useApiReadMany<ApiV1ClairvoyanceProjection>(
@@ -5504,6 +5574,8 @@ export function HomeScreen({
         onSetLanguage={handleSetLanguage}
         onMarkDeveloperNewsRead={handleMarkNewsRead}
         onNewsPaneExpandedChange={handleDeveloperNewsPaneExpandedChange}
+        settingPreferences={settingTabPreferences}
+        onSetUiPreference={handleSetUiPreference}
       />
     );
   };

@@ -1134,6 +1134,12 @@ type DiaryEntry = {
   change the save or its revision. An unselectable theme, or any of these fields
   from an API account, is `illegal_action`. `autoRepeat` is not controlled
   through the API (9.1.3, 3-6-2): supplying it is `invalid_request`.
+* `debug` (read 2-6-3, commit 3-6-4, `settingInfo.debug`): for the ordinary
+  player the values are the runtime's real Debug settings (8.6, stored on the
+  device), never an echo of an earlier request, and a commit applies the changed
+  fields to the runtime after it is durable without changing the save or its
+  revision. An API account has no Debug pane; its debug settings are its own
+  values kept with the account. The dev/beta restriction applies to both.
 * Feedback parameters are `name: string`, `category: feedback|question|
   featureRequest|bugReport`, `text: string`, `latestBattleLogParty?: number|"none"`
   (default 1), `includeBackup?: boolean` (default false), and
@@ -1269,7 +1275,8 @@ Preferences are stored per save (in the game state, so they survive restart and
 backup export) and are changed only by this operation; setting the value a key
 already has is a valid no-op. `settingInfo.uiPreferences` lists the stored
 `{key, value}` pairs and `settingInfo.uiPreferenceCatalog` publishes each family
-with its subject, value type, valid options, and default. The catalog is closed:
+with its subject, the closed subject list where one exists (`subjectOptions`),
+value type, valid options, and default. The catalog is closed:
 a key outside it, a key whose subject does not exist in the save, a duplicate key,
 a wrongly typed value, or a value outside the options rejects the whole update as
 `invalid_request`. Each screen adds its families when it migrates. Current
@@ -1278,6 +1285,11 @@ catalog:
 | Family | Subject | Type | Options | Default |
 | --- | --- | --- | --- | --- |
 | `party.equipCategory` | `characterId` (key `party.equipCategory.<characterId>`) | string | `armor`, `robe`, `shield`, `sword`, `katana`, `gauntlet`, `arrow`, `bolt`, `archery`, `wand`, `grimoire`, `catalyst` | `armor` |
+| `setting.panelExpanded` | `settingPanel` (key `setting.panelExpanded.<panel>`; panels `news`, `modeSelect`, `donation`, `clairvoyance`, `glossary`, `itemCompendium`, `characterRoster`, `bestiary`, `superRare`, `feedback`, `gameSetting`, `debug`) | boolean | — | `false` |
+| `setting.clairvoyanceExpanded` | `partyNumber` (key `setting.clairvoyanceExpanded.<partyNumber>`, an existing party) | boolean | — | `false` |
+| `setting.glossaryTab` | `none` (key `setting.glossaryTab`) | string | `能`, `基`, `固`, `増`, `機`, `信`, `魔`, `地`, `求` | `能` (only until a tab is stored) |
+
+Expanded Glossary entries are local view state and are not retained.
 
 The selected party (`selectedPartyIndex`) remains part of the game state that the
 Expedition, Party, and Diary tabs share, and is not a preference.

@@ -341,6 +341,36 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   rejects([], 'invalid_request:changes');
   // Atomic: one bad entry applies nothing.
   assert.throws(() => commit(seed, [{ key, value: 'wand' }, { key: 'nope', value: 'x' }]));
+
+  // Setting-tab retention (Spec 8.6; 9.1.4.17): pane expansion per panel, Clairvoyance expansion per existing party number,
+  // and the single Glossary tab preference.
+  const setting = commit(seed, [
+    { key: 'setting.panelExpanded.glossary', value: true },
+    { key: 'setting.clairvoyanceExpanded.1', value: true },
+    { key: 'setting.glossaryTab', value: '機' },
+  ]);
+  assert.equal(setting.state.global.uiPreferences?.['setting.glossaryTab'], '機');
+  const settingRead = await buildApiV1ReadData('read/observation/setting', setting.state, {}, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0 } as never) as { settingInfo: { uiPreferenceCatalog: Array<{ family: string; subject: string; subjectOptions: string[] }> } };
+  const panelFamily = settingRead.settingInfo.uiPreferenceCatalog.find((entry) => entry.family === 'setting.panelExpanded');
+  assert.equal(panelFamily?.subject, 'settingPanel');
+  assert.ok(panelFamily?.subjectOptions.includes('clairvoyance'));
+  rejects([{ key: 'setting.panelExpanded.unknownPane', value: true }], 'invalid_request:key');
+  rejects([{ key: 'setting.panelExpanded.glossary', value: 'yes' }], 'invalid_request:value');
+  rejects([{ key: `setting.clairvoyanceExpanded.${seed.parties.length + 1}`, value: true }], 'invalid_request:key');
+  rejects([{ key: 'setting.clairvoyanceExpanded.0', value: true }], 'invalid_request:key');
+  rejects([{ key: 'setting.glossaryTab', value: 'unknown' }], 'invalid_request:value');
+  rejects([{ key: 'setting.glossaryTab.1', value: '能' }], 'invalid_request:key');
+}
+
+// 9b. Setting-tab preferences are rebuilt from the published list, and the Glossary default applies only until a tab is stored.
+{
+  const { buildSettingTabPreferences } = await import('../../src/api/v1/uiPreferenceCatalog');
+  assert.deepEqual(buildSettingTabPreferences([]), { panelExpanded: {}, clairvoyanceExpanded: {}, glossaryTab: null });
+  assert.deepEqual(buildSettingTabPreferences([
+    { key: 'setting.clairvoyanceExpanded.2', value: true },
+    { key: 'setting.glossaryTab', value: '信' },
+    { key: 'setting.panelExpanded.news', value: true },
+  ]), { panelExpanded: { news: true }, clairvoyanceExpanded: { 2: true }, glossaryTab: '信' });
 }
 
 // 10. Sortie (Spec 9.1.3, 3-2-2): the same refusals and reducer sequence as pressing the Sortie button, and a party-cycle reset

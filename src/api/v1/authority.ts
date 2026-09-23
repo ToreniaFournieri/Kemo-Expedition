@@ -3,6 +3,7 @@ import { serializeGameState } from '../../game/saveCodec';
 import { createApiRandom, withGameplayRandomSource } from '../../game/gameplayRandom';
 import { applyApiV1Commit, type ApiV1CommitContext, type ApiV1PartyCycleWrite } from './commitOperations';
 import type { ApiV1DisplaySettings, ApiV1DisplaySettingWrite } from './modeSelect';
+import type { DebugSettings } from '../../game/debugSettings';
 import { stageApiV1ElapsedProgression } from './elapsedProgression';
 import { resolveConfirmationPolicy } from './confirmationPolicy';
 import { prepareSaveReplacement, type ApiV1DeliveryRecord } from './deliveries';
@@ -98,6 +99,10 @@ export interface ApiV1CommitAuthorityDependencies {
   displaySettings?: () => ApiV1DisplaySettings;
   /** Applies a `modeSelect` display-setting change to the runtime (after the commit is durable). */
   applyDisplaySettings?: (write: ApiV1DisplaySettingWrite) => void;
+  /** The ordinary player's real Debug settings; omitted for an API account, which keeps its own in control settings. */
+  debugSettings?: () => DebugSettings;
+  /** Applies a `commit/setting/debug` change to the runtime (after the commit is durable). */
+  applyDebugSettings?: (write: Partial<DebugSettings>) => void;
   createOpaqueId: () => string;
   createRandomSeed: () => number;
   now: () => number;
@@ -269,6 +274,7 @@ export async function executeApiV1CommitTransaction(
         partyCycle: dependencies.partyCycle,
         restDurationMs: dependencies.restDurationMs,
         displaySettings: dependencies.displaySettings?.(),
+        debugSettings: dependencies.debugSettings?.(),
       }));
     }
   } catch (error) {
@@ -328,6 +334,7 @@ export async function executeApiV1CommitTransaction(
   if (changed) dependencies.notifyPopupActivity?.();
   // Display settings are runtime state, not save state, so they apply whether or not the save changed.
   if (outcome.displaySettingWrite && Object.keys(outcome.displaySettingWrite).length > 0) dependencies.applyDisplaySettings?.(outcome.displaySettingWrite);
+  if (outcome.debugSettingWrite && Object.keys(outcome.debugSettingWrite).length > 0) dependencies.applyDebugSettings?.(outcome.debugSettingWrite);
 
   let published = !stateChanged;
   if (stateChanged) {

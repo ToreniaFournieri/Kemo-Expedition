@@ -1,5 +1,6 @@
 import { renderDiaryBattle, renderExpeditionMetadata } from '../../../game/compactDiary.ts';
 import type { ApiV1ClairvoyanceProjection } from '../../../api/v1/readModels';
+import { clairvoyanceExpandedKey, GLOSSARY_TABS, SETTING_GLOSSARY_TAB_FAMILY, settingPanelExpandedKey, type GlossaryTab, type SettingPanel, type SettingTabPreferences } from '../../../api/v1/uiPreferenceCatalog';
 import { Fragment,useCallback,useEffect,useMemo,useRef,useState,type ChangeEvent,type Dispatch,type MouseEvent,type ReactNode,type SetStateAction } from 'react';
 import {
 BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID,
@@ -134,6 +135,8 @@ export default function SettingTab({
   onSetLanguage,
   onMarkDeveloperNewsRead,
   onNewsPaneExpandedChange,
+  settingPreferences,
+  onSetUiPreference,
 }: {
   gameState: GameState;
   developerNewsEntries: Array<{ version: string; date: string; content: string }>;
@@ -183,15 +186,13 @@ export default function SettingTab({
   onSetLanguage: (language: Language) => void;
   onMarkDeveloperNewsRead: (itemIds: string[]) => void;
   onNewsPaneExpandedChange: (expanded: boolean) => void;
+  /** Retained Setting-tab preferences from `read/observation/setting` (`null` until the first read arrives). */
+  settingPreferences: SettingTabPreferences | null;
+  /** Commits one retained preference through `commit/setting/uiPreferences`. */
+  onSetUiPreference: (key: string, value: string | number | boolean) => void;
 }) {
-  type SettingPanelKey = 'news' | 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
-  type GlossaryTabKey = '能' | '基' | '固' | '増' | '機' | '信' | '魔' | '地' | '求';
-  // SpecRef: 9 | Environment | Save Data Isolation
-  const SETTING_PANEL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.panel-expanded');
-  const CLAIRVOYANCE_PARTY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.clairvoyance-party-expanded');
-  const GLOSSARY_TAB_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.glossary-tab');
-  const GLOSSARY_EXPANDED_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.glossary-expanded-entries');
-  const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['能', '基', '固', '増', '機', '信', '魔', '地', '求'];
+  type SettingPanelKey = SettingPanel;
+  type GlossaryTabKey = GlossaryTab;
   const GLOSSARY_TAB_LABELS: Record<GlossaryTabKey, string> = {
     能: t('setting.glossary.tab.abilities'),
     基: t('setting.glossary.tab.baseStats'),
@@ -217,56 +218,6 @@ export default function SettingTab({
     gameSetting: false,
     debug: true,
   };
-
-  const getStoredSettingPanelState = (): Record<SettingPanelKey, boolean> => {
-    try {
-      const saved = localStorage.getItem(SETTING_PANEL_STORAGE_KEY);
-      if (!saved) return defaultSettingPanelState;
-      const parsed = JSON.parse(saved) as Partial<Record<SettingPanelKey, boolean>>;
-      return {
-        news: parsed.news === true,
-        modeSelect: parsed.modeSelect === true,
-        donation: parsed.donation === true,
-        clairvoyance: parsed.clairvoyance === true,
-        glossary: parsed.glossary === true,
-        itemCompendium: parsed.itemCompendium === true,
-        characterRoster: parsed.characterRoster === true,
-        bestiary: parsed.bestiary === true,
-        superRare: parsed.superRare === true,
-        feedback: parsed.feedback === true,
-        gameSetting: parsed.gameSetting === true,
-        debug: parsed.debug === true,
-      };
-    } catch (error) {
-      console.error('Failed to load Setting panel state:', error);
-      return defaultSettingPanelState;
-    }
-  };
-
-  const getStoredGlossaryTab = (): GlossaryTabKey => {
-    try {
-      const savedGlossaryTab = localStorage.getItem(GLOSSARY_TAB_STORAGE_KEY);
-      if (savedGlossaryTab && GLOSSARY_TABS.includes(savedGlossaryTab as GlossaryTabKey)) {
-        return savedGlossaryTab as GlossaryTabKey;
-      }
-    } catch (error) {
-      console.error('Failed to load glossary tab state:', error);
-    }
-    return '能';
-  };
-
-  const getStoredExpandedGlossaryEntries = (): Record<string, boolean> => {
-    try {
-      const savedExpandedEntries = localStorage.getItem(GLOSSARY_EXPANDED_STORAGE_KEY);
-      if (savedExpandedEntries) {
-        return JSON.parse(savedExpandedEntries) as Record<string, boolean>;
-      }
-    } catch (error) {
-      console.error('Failed to load glossary expanded entries:', error);
-    }
-    return {};
-  };
-
 
   const FEEDBACK_NAME_STORAGE_KEY = createEnvironmentStorageKey('settingFeedbackName');
   const FEEDBACK_SUBMITTED_STORAGE_KEY = createEnvironmentStorageKey('settingFeedbackSubmitted');
@@ -459,28 +410,36 @@ export default function SettingTab({
   };
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [settingPanelExpanded, setSettingPanelExpanded] = useState<Record<SettingPanelKey, boolean>>(() => getStoredSettingPanelState());
-  const [clairvoyancePartyExpanded, setClairvoyancePartyExpanded] = useState<Record<number, boolean>>(() => {
-    try {
-      const saved = localStorage.getItem(CLAIRVOYANCE_PARTY_STORAGE_KEY);
-      if (!saved) return {};
-      const parsed = JSON.parse(saved) as Record<string, boolean>;
-      return Object.entries(parsed).reduce<Record<number, boolean>>((acc, [key, value]) => {
-        const index = Number(key);
-        if (Number.isFinite(index)) acc[index] = value === true;
-        return acc;
-      }, {});
-    } catch {
-      return {};
-    }
-  });
+  // SpecRef: 9.1.4.17 | UI state ownership | Retained pane expansion, per-party Clairvoyance expansion, and the Glossary
+  // tab are per-save `uiPreferences`. A click updates the view at once (local overlay) and commits the preference.
+  const [panelOverrides, setPanelOverrides] = useState<Partial<Record<SettingPanelKey, boolean>>>({});
+  const settingPanelExpanded = useMemo<Record<SettingPanelKey, boolean>>(
+    () => ({ ...defaultSettingPanelState, ...settingPreferences?.panelExpanded, ...panelOverrides }),
+    [settingPreferences, panelOverrides],
+  );
+  const [clairvoyanceOverrides, setClairvoyanceOverrides] = useState<Record<number, boolean>>({});
+  /** Keyed by party number (1-based). */
+  const clairvoyancePartyExpanded = useMemo<Record<number, boolean>>(
+    () => ({ ...settingPreferences?.clairvoyanceExpanded, ...clairvoyanceOverrides }),
+    [settingPreferences, clairvoyanceOverrides],
+  );
+  const toggleClairvoyanceParty = (partyNumber: number, expanded: boolean) => {
+    setClairvoyanceOverrides((prev) => ({ ...prev, [partyNumber]: expanded }));
+    onSetUiPreference(clairvoyanceExpandedKey(partyNumber), expanded);
+  };
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
   const [colosseumEnemySettings, setColosseumEnemySettings] = useState<ColosseumEnemySettings>(() => getColosseumEnemySettings());
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
-  const [glossaryTab, setGlossaryTab] = useState<GlossaryTabKey>(() => getStoredGlossaryTab());
+  const [glossaryTabOverride, setGlossaryTabOverride] = useState<GlossaryTabKey | null>(null);
+  const glossaryTab: GlossaryTabKey = glossaryTabOverride ?? settingPreferences?.glossaryTab ?? '能';
+  const setGlossaryTab = (tab: GlossaryTabKey) => {
+    setGlossaryTabOverride(tab);
+    onSetUiPreference(SETTING_GLOSSARY_TAB_FAMILY, tab);
+  };
   const [bonusAbilityGlossarySubcategory, setBonusAbilityGlossarySubcategory] = useState<BonusAbilityGlossarySubcategoryId>('passive');
-  const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>(() => getStoredExpandedGlossaryEntries());
+  // Expanded Glossary entries are local view state (8.6 retains only the tab).
+  const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>({});
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const [isEnemyEditExpanded, setIsEnemyEditExpanded] = useState(true);
   const [activeAbilityHelp, setActiveAbilityHelp] = useState<{ key: string; title: string; description: string } | null>(null);
@@ -524,32 +483,6 @@ export default function SettingTab({
   const isOrcaEnvironment = currentEnv === 'orca';
   const debugModeEnabled = isDebugModeEnabled();
   const modeSelectionLocked = isBetaEnvironment || runtimeGameMode === 'mode.orca';
-  useEffect(() => {
-    try {
-      localStorage.setItem(SETTING_PANEL_STORAGE_KEY, JSON.stringify(settingPanelExpanded));
-    } catch (error) {
-      console.error('Failed to persist Setting panel state:', error);
-    }
-  }, [settingPanelExpanded]);
-  useEffect(() => {
-    localStorage.setItem(CLAIRVOYANCE_PARTY_STORAGE_KEY, JSON.stringify(clairvoyancePartyExpanded));
-  }, [clairvoyancePartyExpanded]);
-  useEffect(() => {
-    try {
-      localStorage.setItem(GLOSSARY_TAB_STORAGE_KEY, glossaryTab);
-    } catch (error) {
-      console.error('Failed to persist glossary tab state:', error);
-    }
-  }, [glossaryTab]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(GLOSSARY_EXPANDED_STORAGE_KEY, JSON.stringify(expandedGlossaryEntries));
-    } catch (error) {
-      console.error('Failed to persist glossary expanded entries:', error);
-    }
-  }, [expandedGlossaryEntries]);
-
   const unreadDeveloperNewsItems = developerNewsEntries.filter((item) => !(gameState.global.readDeveloperNewsItemIds ?? []).includes(item.version));
   const hasUnreadDeveloperNews = unreadDeveloperNewsItems.length > 0;
 
@@ -559,7 +492,9 @@ export default function SettingTab({
   }, [settingPanelExpanded.news, onNewsPaneExpandedChange]);
 
   const toggleSettingPanel = (panelKey: SettingPanelKey) => {
-    setSettingPanelExpanded((prev) => ({ ...prev, [panelKey]: !prev[panelKey] }));
+    const expanded = !settingPanelExpanded[panelKey];
+    setPanelOverrides((prev) => ({ ...prev, [panelKey]: expanded }));
+    onSetUiPreference(settingPanelExpandedKey(panelKey), expanded);
   };
 
   // SpecRef: 8.6 | UI_SETTING | Setting (設定)
@@ -1597,9 +1532,9 @@ export default function SettingTab({
             }
 
             const clairvoyance = clairvoyanceProjections?.[partyIndex];
-            const isExpanded = clairvoyancePartyExpanded[partyIndex] === true;
+            const isExpanded = clairvoyancePartyExpanded[partyIndex + 1] === true;
             return <div key={`clairvoyance-${party.id}`} className="rounded border border-gray-200 bg-white p-2 pane-button-shadow">
-              <button type="button" className="flex w-full items-center justify-between text-left font-semibold" onClick={() => setClairvoyancePartyExpanded((prev) => ({ ...prev, [partyIndex]: !isExpanded }))}>
+              <button type="button" className="flex w-full items-center justify-between text-left font-semibold" onClick={() => toggleClairvoyanceParty(partyIndex + 1, !isExpanded)}>
                 <span>PT{partyIndex + 1} {isExpanded ? '▲' : '▼'}</span>
               </button>
               {isExpanded && (!clairvoyance ? null : <div className="mt-2 space-y-3 text-sm">

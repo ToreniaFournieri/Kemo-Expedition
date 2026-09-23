@@ -12501,6 +12501,7 @@
                     "required": [
                       "family",
                       "subject",
+                      "subjectOptions",
                       "type",
                       "options",
                       "defaultValue"
@@ -12512,8 +12513,30 @@
                         "type": "string"
                       },
                       "subject": {
-                        "const": "characterId",
-                        "type": "string"
+                        "anyOf": [
+                          {
+                            "const": "characterId",
+                            "type": "string"
+                          },
+                          {
+                            "const": "settingPanel",
+                            "type": "string"
+                          },
+                          {
+                            "const": "partyNumber",
+                            "type": "string"
+                          },
+                          {
+                            "const": "none",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "subjectOptions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
                       },
                       "type": {
                         "anyOf": [
@@ -13036,6 +13059,7 @@
                         "required": [
                           "family",
                           "subject",
+                          "subjectOptions",
                           "type",
                           "options",
                           "defaultValue"
@@ -13047,8 +13071,30 @@
                             "type": "string"
                           },
                           "subject": {
-                            "const": "characterId",
-                            "type": "string"
+                            "anyOf": [
+                              {
+                                "const": "characterId",
+                                "type": "string"
+                              },
+                              {
+                                "const": "settingPanel",
+                                "type": "string"
+                              },
+                              {
+                                "const": "partyNumber",
+                                "type": "string"
+                              },
+                              {
+                                "const": "none",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "subjectOptions": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
                           },
                           "type": {
                             "anyOf": [
@@ -13154,6 +13200,9 @@
                 {
                   "family": "xxxxxxx",
                   "subject": "characterId",
+                  "subjectOptions": [
+                    "xxxxxxx"
+                  ],
                   "type": "string",
                   "options": [
                     "xxxxxxx"

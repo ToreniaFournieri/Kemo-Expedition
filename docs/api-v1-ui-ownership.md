@@ -1,6 +1,6 @@
 # `/api/v1` UI ownership audit (Stage 9.5)
 
-Status as of v0.9.7 Build 102. Contract: `Specification_9.1.4_API_DETAIL.md` §9.1.4.17 (UI state ownership). Mechanical checks: `tests/migratedTabs.test.cjs`.
+Status as of v0.9.7 Build 103. Contract: `Specification_9.1.4_API_DETAIL.md` §9.1.4.17 (UI state ownership). Mechanical checks: `tests/migratedTabs.test.cjs`.
 
 Every screen control and state value is classified as one of:
 
@@ -49,15 +49,19 @@ All of them are classified in `HOMESCREEN_REDUCER_ACTIONS`. A new call fails the
 - `RUNTIME_GAME_MODE_STORAGE_KEY`, `ORCA_ENEMY_LEVEL_OFFSET_STORAGE_KEY`, `ORCA_TIME_SPEED_OVERRIDE_STORAGE_KEY`, `SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY`
 - `AUTO_EQUIPMENT_STORAGE_KEY`
 - `API_PLAYER_RETURN_STORAGE_KEY` (the player save held while an API account is logged in)
+- `LEGACY_SETTING_*` / `LEGACY_GLOSSARY_*`: read once to migrate the Setting tab's old local values, then removed (Build 103)
 
-The tabs and header use only these keys; any new key fails the guard.
+The tabs may use only the reviewed keys below, and the header uses none; any new key fails the guard.
 
 | Key (Setting tab) | 8.6 requirement | Status |
 |---|---|---|
 | `FEEDBACK_NAME_STORAGE_KEY`, `FEEDBACK_SUBMITTED_STORAGE_KEY`, `FEEDBACK_LAST_SUBMITTED_AT_STORAGE_KEY` | Previous name retained (8.6 Feedback) | Part of the Send Feedback local exception |
-| `SETTING_PANEL_STORAGE_KEY` | "The expanded/collapsed state is persisted and saved" | **Finding A**: §9.1.4.17 places retained pane expansion in `uiPreferences` (per save) |
-| `CLAIRVOYANCE_PARTY_STORAGE_KEY` | "The expand/collapse state is preserved per party" | **Finding A**: §9.1.4.17 names per-party Clairvoyance expansion explicitly |
-| `GLOSSARY_TAB_STORAGE_KEY`, `GLOSSARY_EXPANDED_STORAGE_KEY` | Only "Default: 能"; no retention requirement | **Finding B**: persisted with no spec requirement |
+| Setting pane expansion (was `SETTING_PANEL_STORAGE_KEY`) | "The expanded/collapsed state is persisted and saved" | Fixed in Build 103: `setting.panelExpanded.<panel>` in `uiPreferences` |
+| Clairvoyance expansion (was `CLAIRVOYANCE_PARTY_STORAGE_KEY`) | "The expand/collapse state is preserved per party" | Fixed in Build 103: `setting.clairvoyanceExpanded.<partyNumber>` |
+| Glossary tab (was `GLOSSARY_TAB_STORAGE_KEY`) | Keep the last tab; the default applies only the first time (owner decision) | Fixed in Build 103: `setting.glossaryTab` |
+| Expanded Glossary entries (was `GLOSSARY_EXPANDED_STORAGE_KEY`) | Not retained | Local view state since Build 103 |
+
+`HomeScreen` reads the four old keys once, carries the values into `uiPreferences` (a stored preference wins), and removes them.
 
 ## Desktop bridge
 
@@ -65,10 +69,13 @@ No tab and not the header touches `window.bokemoDesktop` (guarded). Only the tru
 
 ## Findings
 
-- **A (to fix)**: Setting pane expansion and per-party Clairvoyance expansion move to `uiPreferences` catalog families. Proposed families:
-  - `setting.panelExpanded.<panel>`: boolean, per panel key
-  - `setting.clairvoyanceExpanded.<partyNumber>`: boolean
+- **A (fixed, Build 103)**: Setting pane expansion and per-party Clairvoyance expansion are `uiPreferences` catalog families. The tab reads them from `settingInfo.uiPreferences` and commits changes through `commit/setting/uiPreferences`; existing local values are migrated once.
+- **B (fixed, Build 103)**: the Glossary tab is retained by owner decision (`setting.glossaryTab`; the default `能` applies only until a tab is stored). Expanded entries are local view state.
+- **C (fixed, Build 103)**: for the ordinary player, `read/setting/debug` and `settingInfo.debug` report the Debug pane's real settings, and `commit/setting/debug` applies to them after the durable commit (the pattern used for `modeSelect`). An API account keeps its own stored debug settings. `commit/setting/enemyEditPane` still stores its values in control settings (the Enemy Edit pane keeps its own local settings by design, Build 99).
+- **D (open, found while fixing A)**: the Setting tab still receives the complete `GameState` (`gameState` prop). It uses it for:
+  - the News unread check (`global.readDeveloperNewsItemIds`);
+  - the Character Roster and Clairvoyance party lists (`parties`);
+  - the feedback content (`parties`, `buildNumber`, `global.userId`; inside the Send Feedback exception);
+  - the language link (`global.language`).
 
-  The tab reads them from `settingInfo.uiPreferences` and commits changes through `commit/setting/uiPreferences`, like `party.equipCategory`. Existing local values are migrated once.
-- **B (owner decision)**: Glossary tab and expanded entries are persisted locally, but 8.6 does not ask for it. Either 8.6 adds a retention rule (then they join A), or they become local view state that resets on reload.
-- **C (to verify)**: For the ordinary player, `commit/setting/debug` and `commit/setting/enemyEditPane` store their values in API control settings, while the Debug pane uses its own runtime settings. For API accounts the stored values are the account's own settings. Confirm which debug fields should take effect for an API account and whether the ordinary player's reads should report the runtime's real Debug settings (the same echo problem fixed for `modeSelect` in Build 102).
+  This matches the audit's first blocker ("reads the complete persisted save directly"). Replace each use with a projection (the News entries' read state, the Party summaries, `settingInfo.language`) or confine it to the Send Feedback exception, then forbid the prop in the guard.

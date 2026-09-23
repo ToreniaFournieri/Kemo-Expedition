@@ -44,6 +44,8 @@ import {
 } from '../../game/bags.ts';
 import type { ApiV1PartyCycleView } from './commitOperations.ts';
 import { describeModeSelectCurrent, selectableThemes, toThemeKey, type ApiV1DisplaySettings } from './modeSelect.ts';
+import { describeDebugSettings } from './debugSettings.ts';
+import type { DebugSettings } from '../../game/debugSettings.ts';
 import { MAX_LEVEL, type EnemyDef, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party, type RandomBag } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
@@ -82,6 +84,8 @@ export interface ApiV1ReadContext {
   readonly headerRuntime?: () => ApiV1HeaderRuntime;
   /** The ordinary player's display settings (Mode Select); absent for an API account, which reports them as `null`. */
   readonly displaySettings?: () => ApiV1DisplaySettings;
+  /** The ordinary player's real Debug settings; absent for an API account, which reports its own stored values. */
+  readonly debugSettings?: () => DebugSettings;
   /** The Instant Expedition charge clock scale (the current Speed of Time); 1 when omitted. */
   readonly chargeDurationScale?: number;
   readonly control?: { settings?: Record<string, unknown>; deliveries?: unknown[]; equipmentHistory?: Record<string, EquipmentHistoryBag> };
@@ -655,7 +659,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     const pendingDeliveryIds = ((context.control?.deliveries as ApiV1DeliveryRecord[] | undefined) ?? [])
       .filter((entry) => entry.status === 'queued' || entry.status === 'sending' || entry.status === 'unknown')
       .map((entry) => entry.deliveryId);
-    return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), modeSelect: describeModeSelectCurrent({ gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: state.global.language }, context.displaySettings?.()), uiPreferences: listUiPreferences(state.global.uiPreferences), uiPreferenceCatalog: describeUiPreferenceCatalog(), pendingDeliveryIds } };
+    return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), modeSelect: describeModeSelectCurrent({ gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: state.global.language }, context.displaySettings?.()), ...(context.debugSettings ? { debug: describeDebugSettings(context.debugSettings()) } : {}), uiPreferences: listUiPreferences(state.global.uiPreferences), uiPreferenceCatalog: describeUiPreferenceCatalog(), pendingDeliveryIds } };
   }
 
   const expedition = operationId.match(/^read\/expedition\/(\d+)\/(setting|latestBattleLog|simulationRun|chargeStock)$/);
@@ -849,7 +853,8 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     };
   }
   if (operationId === 'read/setting/enemyEditPane') return { current: (context.control?.settings?.enemyEditPane as Record<string, unknown> | undefined) ?? {}, validOptions: { enemyLevel: { min: 1, max: 99, step: 1 }, terrainEffect: ['none', ...(TERRAIN_EFFECT_GLOSSARY_SECTION?.entries.map((entry) => entry.key) ?? [])], enemyType: [...new Set(ENEMIES.map((enemy) => enemy.enemyType))], mainClass: CLASSES.map((entry) => entry.id), subClass: ['none', ...CLASSES.map((entry) => entry.id)], addedAbilities: { maximumEntries: 5, level: { min: 1, max: 5 } } } };
-  if (operationId === 'read/setting/debug') return { current: (context.control?.settings?.debug as Record<string, unknown> | undefined) ?? {}, validOptions: { speedOfTime: ['real', 'x1.2', 'x5', 'x20', 'x100', 'unlimited'], godsBattleCondition: ['normal', 'simple'], godsStrength: ['normal', 'veryWeak'] } };
+  // SpecRef: 9.1.3 | Read | 2-6-3 debug — the ordinary player's real Debug settings; an API account's own stored values.
+  if (operationId === 'read/setting/debug') return { current: context.debugSettings ? describeDebugSettings(context.debugSettings()) : (context.control?.settings?.debug as Record<string, unknown> | undefined) ?? {}, validOptions: { speedOfTime: ['real', 'x1.2', 'x5', 'x20', 'x100', 'unlimited'], godsBattleCondition: ['normal', 'simple'], godsStrength: ['normal', 'veryWeak'] } };
   if (operationId.startsWith('read/setting/delivery/')) { const deliveryId = operationId.split('/').at(-1); const delivery = (context.control?.deliveries as ApiV1DeliveryRecord[] | undefined)?.find((entry) => entry.deliveryId === deliveryId); if (!delivery) throw new Error('not_found'); return projectDelivery(delivery); }
 
   // SpecRef: 9.1.3, 4-2-1 | "content is returned in the currently selected language."

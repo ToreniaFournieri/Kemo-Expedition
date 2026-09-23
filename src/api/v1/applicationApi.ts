@@ -61,6 +61,10 @@ export interface ApplicationApiPorts {
     displaySettings?: ApiV1CommitAuthorityDependencies['displaySettings'];
     /** Applies a `commit/setting/modeSelect` display-setting change to the running runtime (after the commit is durable). */
     applyDisplaySettings?: ApiV1CommitAuthorityDependencies['applyDisplaySettings'];
+    /** The ordinary player's real Debug settings (Debug pane), stored outside the save. */
+    debugSettings?: ApiV1CommitAuthorityDependencies['debugSettings'];
+    /** Applies a `commit/setting/debug` change to the running runtime (after the commit is durable). */
+    applyDebugSettings?: ApiV1CommitAuthorityDependencies['applyDebugSettings'];
   };
   help: { requirements: string; detail: string };
   /** Notifies the UI that an exclusive API session started or ended (it disables state-mutating controls). */
@@ -304,6 +308,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
             disclosedLog: ports.runtime.disclosedExpeditionLog,
             headerRuntime: ports.runtime.headerRuntime,
             displaySettings: ports.runtime.displaySettings,
+            debugSettings: ports.runtime.debugSettings,
             colosseumEnabled: ports.runtime.colosseumEnabled?.(),
             chargeDurationScale: ports.runtime.cycleDurationScale(),
           }),
@@ -352,6 +357,8 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
         applyPartyCycleWrites: ports.runtime.applyPartyCycleWrites,
         displaySettings: ports.runtime.displaySettings,
         applyDisplaySettings: ports.runtime.applyDisplaySettings,
+        debugSettings: ports.runtime.debugSettings,
+        applyDebugSettings: ports.runtime.applyDebugSettings,
       }),
       onPublicationFailure: ports.runtime.onPublicationFailure,
       yieldBetweenChunks: ports.runtime.yieldBetweenChunks,

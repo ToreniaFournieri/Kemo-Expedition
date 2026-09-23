@@ -20,6 +20,7 @@ interface Harness {
   playerCommitEvents: string[];
   cycleWrites: unknown[];
   displayWrites: unknown[];
+  debugWrites: unknown[];
   sessionEvents: boolean[];
   idleState: GameState;
   /** Moves the runtime's wall clock (the ordinary player's in-game time). */
@@ -45,6 +46,11 @@ function harness(): Harness {
   const playerCommitEvents: string[] = [];
   const cycleWrites: unknown[] = [];
   const displayWrites: unknown[] = [];
+  const debugWrites: unknown[] = [];
+  let debug = {
+    runtimeDiagnosticsEnabled: false, clairvoyanceEnabled: false, timeSpeed: 'x1_2', godsBattleCondition: 'normal', godStrength: 'normal', jewelShopOpen: false,
+    displayCondition: false, displayAfkDuration: false, colosseumEnabled: false, displayAllBestiary: false, displayAllCompendium: false, displayAllGlossary: false,
+  } as NonNullable<ReturnType<NonNullable<ApplicationApiPorts['runtime']['debugSettings']>>>;
   let display = { darkMode: 'off', theme: 'm.kemo', showExpeditionStats: false, autoRepeat: true } as NonNullable<ReturnType<NonNullable<ApplicationApiPorts['runtime']['displaySettings']>>>;
   const sessionEvents: boolean[] = [];
   let counter = 0;
@@ -88,6 +94,8 @@ function harness(): Harness {
       applyPartyCycleWrites: (writes) => { playerCommitEvents.push('cycle'); cycleWrites.push(...writes); },
       displaySettings: () => display,
       applyDisplaySettings: (write) => { playerCommitEvents.push('display'); displayWrites.push(write); display = { ...display, ...write }; },
+      debugSettings: () => debug,
+      applyDebugSettings: (write) => { playerCommitEvents.push('debug'); debugWrites.push(write); debug = { ...debug, ...write }; },
       yieldBetweenChunks: async () => undefined,
       createOpaqueId: () => `opaque-id-${String(++counter).padStart(16, '0')}`,
       createRandomSeed: () => 12345,
@@ -96,7 +104,7 @@ function harness(): Harness {
     help: { requirements: 'REQUIREMENTS', detail: 'DETAIL' },
     onSessionActive: (active) => { sessionEvents.push(active); },
   };
-  return { cycleWrites, displayWrites, api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, idleState, setNow: (value) => { runtimeNow = value; } };
+  return { cycleWrites, displayWrites, debugWrites, api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, idleState, setNow: (value) => { runtimeNow = value; } };
 }
 
 type Step = { operation: string; pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown>; mutating: boolean };
@@ -252,6 +260,40 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
   const refused = await h.api.handle('commit/setting/modeSelect', { expectedRevision: 0, idempotencyKey: 'mode-select-account-0001', parameters: { darkMode: 'on' } }) as ModeSelect;
   assert.equal(refused.error?.code, 'illegal_action');
   assert.equal(h.displayWrites.length, 1, 'an API account never changes the player runtime');
+}
+
+// 1a-quinquies. Debug settings (Spec 9.1.3 2-6-3 / 3-6-4): the ordinary player's reads report the Debug pane's real settings
+// in the API vocabulary, and a commit applies to the runtime after persistence; an API account keeps its own stored values.
+{
+  const location = globalThis as { location?: { pathname: string } };
+  const previous = location.location;
+  location.location = { pathname: '/dev/' };
+  try {
+    const h = harness();
+    const local = h.api.createInProcessAdapter();
+    type Debug = { data: { current: Record<string, unknown> }; error?: { code: string } };
+    const before = await local.read('read/setting/debug', {}) as Debug;
+    assert.equal(before.data.current.speedOfTime, 'x1.2', 'the real runtime value, translated');
+    assert.equal(before.data.current.colosseumMode, false);
+    const changed = await local.commit('commit/setting/debug', { parameters: { speedOfTime: 'x20', godsStrength: 'veryWeak', colosseumMode: false } }) as Debug;
+    assert.equal(changed.error, undefined);
+    assert.deepEqual(h.debugWrites, [{ timeSpeed: 'x20', godStrength: 'debug' }], 'only the changed fields, in runtime vocabulary');
+    assert.deepEqual(h.playerCommitEvents, ['persist', 'debug']);
+    const after = await local.read('read/setting/debug', {}) as Debug;
+    assert.equal(after.data.current.speedOfTime, 'x20');
+    assert.equal(after.data.current.godsStrength, 'veryWeak');
+    const setting = await local.read('read/observation/setting', {}) as { data: { settingInfo: { debug?: Record<string, unknown> } } };
+    assert.equal(setting.data.settingInfo.debug?.speedOfTime, 'x20', 'settingInfo reports the real settings too');
+
+    await h.api.handle('fundamental/logIn', { ...identity });
+    const account = await h.api.handle('commit/setting/debug', { expectedRevision: 0, idempotencyKey: 'debug-account-key-0001', parameters: { speedOfTime: 'x5' } }) as Debug;
+    assert.equal(account.error, undefined);
+    const accountRead = await h.api.handle('read/setting/debug', {}) as Debug;
+    assert.equal(accountRead.data.current.speedOfTime, 'x5', 'an API account reads its own stored value');
+    assert.equal(h.debugWrites.length, 1, 'an API account never changes the player runtime');
+  } finally {
+    location.location = previous;
+  }
 }
 
 // 1b. A UI-confirmed trusted command still traverses the shared challenge/token policy with one idempotency key.
