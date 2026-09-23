@@ -1690,6 +1690,7 @@ Path Parameters
       * Treat this value as the entry ID.
     * `date`
     * `content`
+    * `isRead`
 
 * `content` is returned in the currently selected language.
 
@@ -1726,6 +1727,8 @@ Path Parameters
       * `noSleep`
       * `nap`
       * `soundSleep`
+  * `available`
+  * `canReset`
 
 * If Clairvoyance is unavailable for the specified party, return `unavailable`.
 
