@@ -204,10 +204,10 @@ export default function DiaryTab({
 
   const getGodsBattleOutcomeLabel = (expeditionLog: ExpeditionLogView) => {
     const hasGodsBattleEntry = expeditionLog.entries.some((entry) => (entry.godsBattle || entry.enemyName.includes('(神魔戦)')));
-    if (!hasGodsBattleEntry) return t('diary.outcome.notReached');
-    if (expeditionLog.finalOutcome === 'Clear') return t('diary.outcome.victory');
-    if (expeditionLog.finalOutcome === 'Defeat') return t('diary.outcome.defeat');
-    return t('diary.outcome.draw');
+    if (!hasGodsBattleEntry) return t('expedition.outcome.unreached');
+    if (expeditionLog.finalOutcome === 'Clear') return t('expedition.outcome.victory');
+    if (expeditionLog.finalOutcome === 'Defeat') return t('expedition.outcome.defeat');
+    return t('expedition.outcome.draw');
   };
 
 
@@ -703,9 +703,9 @@ export default function DiaryTab({
                                 entry.outcome === 'victory' ? 'text-sub font-medium' :
                                 entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-accent font-medium'
                               }>
-                                {entry.gateInfo ? t('diary.outcome.notReached') :
-                                 entry.outcome === 'victory' ? t('diary.outcome.victory') :
-                                 entry.outcome === 'defeat' ? t('diary.outcome.defeat') : t('diary.outcome.draw')}
+                                {entry.gateInfo ? t('expedition.outcome.unreached') :
+                                 entry.outcome === 'victory' ? t('expedition.outcome.victory') :
+                                 entry.outcome === 'defeat' ? t('expedition.outcome.defeat') : t('expedition.outcome.draw')}
                               </span>
                               <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
                             </span>

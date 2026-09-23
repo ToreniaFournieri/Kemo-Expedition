@@ -168,7 +168,7 @@
   },
   "en": {
     "normal-domain-breaker-counter": {
-      "digest": "ce9d9201b53010d95080bf35aac9306c4a6c1883bf7ef17c6c2ff21570a23f1e",
+      "digest": "cce1a367a9fe54f7bbd0a9cbe5f72304c7ebef9b0e0be96c33a18a9ede53a652",
       "randomDrawCount": 141,
       "outcome": "victory",
       "partyHp": 34266,
@@ -198,7 +198,7 @@
       }
     },
     "oblivion-and-reanimate": {
-      "digest": "9ce35106de599f3487c5a2fcc33d29feb477bc9dab93ffe014c0b1089f38d360",
+      "digest": "c0ca022517de7f61d8946c457de30b87709f1062855c9bc6d735f459b05a375f",
       "randomDrawCount": 155,
       "outcome": "draw",
       "partyHp": 20756,
@@ -228,7 +228,7 @@
       }
     },
     "first-strike-defeat": {
-      "digest": "630541a21eca27d3e13c297102cc51d8dbbad3d11744d17fb6edbbc9f60611ff",
+      "digest": "398632d1d5b4ac98675ca4441c52c5037b640799caf64aa56f67a9f2a69f9f87",
       "randomDrawCount": 44,
       "outcome": "defeat",
       "partyHp": 0,

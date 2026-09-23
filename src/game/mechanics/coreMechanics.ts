@@ -95,10 +95,6 @@ const EXPEDITION_ABILITY_IDS = new Set<AbilityId>([
   'unlock',
 ]);
 
-const ABILITIES_WITHOUT_GLOSSARY_LABEL = new Set<AbilityId>([
-  'true_sight', 'output_stabilizer', 'pursuit', 'illusion_breaker', 'bulwark_breaker', 'unlock',
-]);
-
 const EXPEDITION_TERRAIN_IDS = new Set<TerrainEffectKey>([
   'terrain.rejuvenation', 'terrain.chill', 'terrain.rotwood', 'terrain.abundant',
   'terrain.looping-path', 'terrain.heatwave', 'terrain.leakage', 'terrain.decay', 'terrain.gehenna',
@@ -387,19 +383,11 @@ function createAbilityDefinition(runtimeId: AbilityId, wireId: number): CoreAbil
     maxLevel: ABILITY_MAX_LEVELS[runtimeId] ?? 1,
     ...(timing ? { timing: Object.freeze({ ...timing }) } : {}),
     presentation: Object.freeze({
-      nameKey: `masterData.ability.${runtimeId}.name`,
-      ...(!ABILITIES_WITHOUT_GLOSSARY_LABEL.has(runtimeId)
-        ? { labelKey: `ability.${runtimeId}.label` }
-        : {}),
+      labelKey: `ability.${runtimeId}.label`,
       descriptionKey: `ability.${runtimeId}.description`,
     }),
     bindings: abilityBindings(runtimeId),
   });
-}
-
-function terrainPresentationKeys(wireId: number): { labelKey: string; descriptionKey: string } {
-  const prefix = wireId === 1 ? 'data.glossary.2_1_10' : `data.glossary.${137 + wireId}`;
-  return { labelKey: `${prefix}.label`, descriptionKey: `${prefix}.description` };
 }
 
 function createTerrainDefinition(runtimeId: TerrainEffectKey, wireId: number): CoreTerrainMechanicDefinition {
@@ -408,7 +396,10 @@ function createTerrainDefinition(runtimeId: TerrainEffectKey, wireId: number): C
     kind: 'terrain',
     runtimeId,
     wireId,
-    presentation: Object.freeze(terrainPresentationKeys(wireId)),
+    presentation: Object.freeze({
+      labelKey: `terrainEffect.${runtimeId}.label`,
+      descriptionKey: `terrainEffect.${runtimeId}.description`,
+    }),
     bindings: terrainBindings(runtimeId),
   });
 }

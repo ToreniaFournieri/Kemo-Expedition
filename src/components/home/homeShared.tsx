@@ -465,8 +465,8 @@ export function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: n
       return entry.description
         .replace(/xN/g, `x${multiplier}`)
         .replace(/xM/g, `x${multiplier}`)
-        .replace(/N/g, threshold)
-        .replace(/M/g, multiplier)
+        .replace(/\bN\b/g, threshold)
+        .replace(/\bM\b/g, multiplier)
         .replace(new RegExp(`${escapeRegExp(t('home.grammar.objectParticle'))}\\s+x`, 'g'), t('home.grammar.objectParticleX'))
         .replace(new RegExp(`${escapeRegExp(t('home.grammar.subjectParticle'))}\\s+x`, 'g'), t('home.grammar.subjectParticleX'))
         .replace(new RegExp(`${escapeRegExp(t('home.grammar.possessiveParticle'))}\\s+x`, 'g'), t('home.grammar.possessiveParticleX'));
@@ -485,7 +485,7 @@ export function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: n
   const { timing, value } = parseBonusAbilityLevelScale(levelScale);
   let description = entry.description;
 
-  if (abilityId.endsWith('_reflect') && value && value.includes(t('home.abilityScale.reflect')) && value.includes(t('home.abilityScale.damageTaken'))) {
+  if (abilityId.endsWith('_reflect') && value && value.includes(t('home.abilityScale.reflect')) && value.includes(t('home.abilityScale.damageTaken')) && entry.description.includes(t('home.abilityDescription.reflectTemplate'))) {
     return entry.description
       .replace(t('home.abilityDescription.reflectTemplate'), t('home.abilityDescription.reflectDistributed', { value }))
       .replace(new RegExp(`${escapeRegExp(t('home.grammar.objectParticle'))}\\s+x`, 'g'), t('home.grammar.objectParticleX'))
@@ -508,7 +508,7 @@ export function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: n
       .replace(/-N%/g, negativePercentValue)
       .replace(/N%/g, normalizedValue)
       .replace(/xN/g, value.startsWith('x') ? value : `x${value}`)
-      .replace(/N/g, normalizedValue);
+      .replace(/\bN\b/g, normalizedValue);
   }
 
   return description
@@ -538,21 +538,21 @@ export const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
 export function toPartyCycleState(value: unknown): PartyCycleState {
   if (typeof value !== 'string') return 'idle';
   const legacyJapaneseStateEntries: Array<[string, PartyCycleState]> = [
-    [t('home.legacyCycle.rest'), 'rest'],
-    [t('home.legacyCycle.sell'), 'sell'],
-    [t('home.legacyCycle.feast'), 'free_action'],
-    [t('home.legacyCycle.slump'), 'free_action'],
-    [t('home.legacyCycle.freeAction'), 'free_action'],
-    [t('home.legacyCycle.sleep'), 'sound_sleep'],
-    [t('home.legacyCycle.soundSleep'), 'sound_sleep'],
-    [t('home.legacyCycle.nap'), 'move'],
-    [t('home.legacyCycle.outfit'), 'move'],
-    [t('home.legacyCycle.pray'), 'pray'],
-    [t('home.legacyCycle.idle'), 'idle'],
-    [t('home.legacyCycle.move'), 'move'],
-    [t('home.legacyCycle.explore'), 'explore'],
-    [t('home.legacyCycle.return'), 'return'],
-    [t('home.legacyCycle.reactivate'), 'reactivate'],
+    [t('expedition.cycle.rest'), 'rest'],
+    [t('expedition.cycle.sell'), 'sell'],
+    [t('expedition.cycle.feast'), 'free_action'],
+    [t('expedition.cycle.slump'), 'free_action'],
+    [t('expedition.cycle.freeAction'), 'free_action'],
+    [t('expedition.cycle.sleep'), 'sound_sleep'],
+    [t('expedition.cycle.soundSleep'), 'sound_sleep'],
+    [t('expedition.cycle.nap'), 'move'],
+    [t('expedition.cycle.outfit'), 'move'],
+    [t('expedition.cycle.pray'), 'pray'],
+    [t('expedition.cycle.idle'), 'idle'],
+    [t('expedition.cycle.move'), 'move'],
+    [t('expedition.cycle.explore'), 'explore'],
+    [t('expedition.cycle.return'), 'return'],
+    [t('expedition.cycle.reactivate'), 'reactivate'],
   ];
   return LEGACY_PARTY_CYCLE_STATE_MAP[value]
     ?? legacyJapaneseStateEntries.find(([label]) => label === value)?.[1]
@@ -835,7 +835,7 @@ export function getBestiaryEnemyFromLogEntry(entry: ExpeditionLogEntry): EnemyDe
     return ENEMIES.find((enemy) => enemy.id === entry.enemyId) ?? null;
   }
 
-  const normalizedEnemyName = entry.enemyName.replace(new RegExp(`\\s+\\((ELITE|BOSS|${escapeRegExp(t('home.godsBattle.label'))})\\)\\s*$`, 'u'), '').trim();
+  const normalizedEnemyName = entry.enemyName.replace(new RegExp(`\\s+\\((ELITE|BOSS|${escapeRegExp(t('party.expedition.godsBattle'))})\\)\\s*$`, 'u'), '').trim();
   if (!normalizedEnemyName) return null;
   return ENEMIES.find((enemy) => formatEnemyDefName(enemy) === normalizedEnemyName) ?? null;
 }
@@ -1019,7 +1019,7 @@ export function getBattleLogEnemyNameCandidates(entry: ExpeditionLogEntry): stri
   ];
 
   return Array.from(new Set(names.flatMap((name) => {
-    const normalizedName = name.replace(new RegExp(escapeRegExp(t('home.godsBattle.parenthetical')), 'g'), '').trim();
+    const normalizedName = name.replace(new RegExp(escapeRegExp(t('game.log.godsBattleSuffix')), 'g'), '').trim();
     if (!normalizedName) return [];
 
     const withoutTrailingMetadata = normalizedName.replace(/(?:\s*\([^()]+\))+\s*$/u, '').trim();
@@ -1359,7 +1359,16 @@ export const RARITY_FILTER_LABELS: Record<RarityFilter, string> = {
   mythicRare: 'M',
 };
 
-export const getRarityFilterNote = (filter: RarityFilter): string => t(`party.rarity.${filter}`);
+const RARITY_FILTER_NOTE_KEYS: Record<RarityFilter, string> = {
+  all: 'party.rarity.all',
+  common: 'party.rarity.common',
+  uncommon: 'party.rarity.uncommon',
+  eliteRare: 'diary.reward.eliteRare',
+  bossRare: 'diary.reward.bossRare',
+  mythicRare: 'diary.reward.mythicRare',
+};
+
+export const getRarityFilterNote = (filter: RarityFilter): string => t(RARITY_FILTER_NOTE_KEYS[filter]);
 
 export const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRare'];
 
@@ -1397,13 +1406,13 @@ export const DIARY_DEFEAT_NOTIFICATION_OPTIONS: Array<{ value: DiaryDefeatNotifi
 
 export function getExpeditionDepthOptions(dungeonId: number): Array<{ value: ExpeditionDepthLimit; label: string }> {
   // SpecRef: 8.3 | UI_EXPEDITION | Expedition Depth Limit (探索深度)
-  const beforeBossConcept = getLocalizedExpeditionFloorConcept(dungeonId, 6) ?? t('home.floorConcept.fallback', { floor: 6 });
+  const beforeBossConcept = getLocalizedExpeditionFloorConcept(dungeonId, 6) ?? t('expedition.floor', { floor: 6 });
   const floorConceptByFloor: Record<number, string> = {
-    1: getLocalizedExpeditionFloorConcept(dungeonId, 1) ?? t('home.floorConcept.fallback', { floor: 1 }),
-    2: getLocalizedExpeditionFloorConcept(dungeonId, 2) ?? t('home.floorConcept.fallback', { floor: 2 }),
-    3: getLocalizedExpeditionFloorConcept(dungeonId, 3) ?? t('home.floorConcept.fallback', { floor: 3 }),
-    4: getLocalizedExpeditionFloorConcept(dungeonId, 4) ?? t('home.floorConcept.fallback', { floor: 4 }),
-    5: getLocalizedExpeditionFloorConcept(dungeonId, 5) ?? t('home.floorConcept.fallback', { floor: 5 }),
+    1: getLocalizedExpeditionFloorConcept(dungeonId, 1) ?? t('expedition.floor', { floor: 1 }),
+    2: getLocalizedExpeditionFloorConcept(dungeonId, 2) ?? t('expedition.floor', { floor: 2 }),
+    3: getLocalizedExpeditionFloorConcept(dungeonId, 3) ?? t('expedition.floor', { floor: 3 }),
+    4: getLocalizedExpeditionFloorConcept(dungeonId, 4) ?? t('expedition.floor', { floor: 4 }),
+    5: getLocalizedExpeditionFloorConcept(dungeonId, 5) ?? t('expedition.floor', { floor: 5 }),
   };
 
   return [
@@ -2264,7 +2273,7 @@ export function getItemStats(item: Item, categoryMultiplier: number = 1, hpScale
   if (item.mindBonus) bParts.push(t('home.itemStat.mindFlat', { value: item.mindBonus }));
   if (item.penetBonus) cParts.push(`${t('party.bonus.penet')}+${Math.round(item.penetBonus * 100)}`);
   if (item.elementalOffense && item.elementalOffense !== 'none') {
-    const elem = { fire: t('common.element.fire.short'), ice: t('common.element.ice.short'), thunder: t('common.element.thunder.short') }[item.elementalOffense];
+    const elem = { fire: t('element.fire.short'), ice: t('element.ice.short'), thunder: t('element.thunder.short') }[item.elementalOffense];
     const elementalPercent = Math.round((item.elementalOffenseBonus ?? 0) * 100);
     eParts.push(t('home.itemStat.elementalOffensePercent', { element: elem, value: elementalPercent }));
   }
@@ -2407,18 +2416,18 @@ export function getElementalOffenseHelpLines(character: Character, stats: Pick<C
 }
 
 export const MULTIPLIER_LABEL_KEYS: Record<string, string> = {
-  sword_multiplier: 'party.bonus.sword',
-  katana_multiplier: 'party.bonus.katana',
-  archery_multiplier: 'party.bonus.archery',
-  armor_multiplier: 'party.bonus.armor',
-  gauntlet_multiplier: 'party.bonus.gauntlet',
-  wand_multiplier: 'party.bonus.wand',
-  robe_multiplier: 'party.bonus.robe',
-  shield_multiplier: 'party.bonus.shield',
-  bolt_multiplier: 'party.bonus.bolt',
-  grimoire_multiplier: 'party.bonus.grimoire',
-  catalyst_multiplier: 'party.bonus.catalyst',
-  arrow_multiplier: 'party.bonus.arrow',
+  sword_multiplier: 'party.categoryShort.sword',
+  katana_multiplier: 'party.categoryShort.katana',
+  archery_multiplier: 'party.categoryShort.archery',
+  armor_multiplier: 'party.categoryShort.armor',
+  gauntlet_multiplier: 'party.categoryShort.gauntlet',
+  wand_multiplier: 'party.categoryShort.wand',
+  robe_multiplier: 'party.categoryShort.robe',
+  shield_multiplier: 'party.categoryShort.shield',
+  bolt_multiplier: 'party.categoryShort.bolt',
+  grimoire_multiplier: 'party.categoryShort.grimoire',
+  catalyst_multiplier: 'party.categoryShort.catalyst',
+  arrow_multiplier: 'party.categoryShort.arrow',
 };
 
 // Keep the translation-backed proxy intact so item ability labels resolve in the
@@ -2478,8 +2487,8 @@ export const ABILITY_HELP_TEXT_KEYS: Record<string, string> = {
   rage: 'home.abilityHelp.rage',
   re_counter: 'home.abilityHelp.re_counter',
   pursuit: 'home.abilityHelp.pursuit',
-  illusion_breaker: 'home.abilityHelp.illusion_breaker',
-  bulwark_breaker: 'home.abilityHelp.bulwark_breaker',
+  illusion_breaker: 'home.abilityHelp.illusion-breaker',
+  bulwark_breaker: 'home.abilityHelp.bulwark-breaker',
   'illusion-breaker': 'home.abilityHelp.illusion-breaker',
   'bulwark-breaker': 'home.abilityHelp.bulwark-breaker',
   momentum: 'home.abilityHelp.momentum',
