@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld('bokemoDesktop', {
   updatePartyProgressPane: (snapshot) => ipcRenderer.invoke('desktop:update-party-progress-pane', snapshot),
   getApiV1Settings: () => ipcRenderer.invoke('desktop:get-api-v1-settings'),
   setApiV1Enabled: (enabled) => ipcRenderer.invoke('desktop:set-api-v1-enabled', enabled === true),
+  setApiV1PersistSecretToken: (persist) => ipcRenderer.invoke('desktop:set-api-v1-persist-secret-token', persist === true),
+  revealApiV1SecretToken: () => ipcRenderer.invoke('desktop:reveal-api-v1-secret-token'),
   createApiAccount: (identity, savePayload) => ipcRenderer.invoke('desktop:api-account-create', identity, savePayload),
   loadApiAccount: (identity) => ipcRenderer.invoke('desktop:api-account-load', identity),
   commitApiAccount: (identity, savePayload, control) => ipcRenderer.invoke('desktop:api-account-commit', identity, savePayload, control),

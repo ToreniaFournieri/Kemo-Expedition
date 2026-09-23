@@ -427,11 +427,45 @@ function createApiV1(options) {
     descriptorPath = null;
   }
 
+  // SpecRef: 8.6 | UI_SETTING | API option; 9.1.4.6 | explicit enablement and the bootstrap token
+  // `Application API v1`, `secretToken`, and `persistSecretToken` are trusted desktop settings: an owner-only file in
+  // the profile directory, never the game save, a backup, or renderer storage.
+  const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43,}$/;
+  function settingsPath() { return path.join(options.connectionDirectory, 'api-v1-settings.json'); }
+  function readStoredSettings() {
+    const stored = { enabled: false, persistSecretToken: true, secretToken: null };
+    try {
+      const parsed = JSON.parse(fs.readFileSync(settingsPath(), 'utf8'));
+      if (typeof parsed.enabled === 'boolean') stored.enabled = parsed.enabled;
+      if (typeof parsed.persistSecretToken === 'boolean') stored.persistSecretToken = parsed.persistSecretToken;
+      if (stored.persistSecretToken && typeof parsed.secretToken === 'string' && TOKEN_PATTERN.test(parsed.secretToken)) stored.secretToken = parsed.secretToken;
+    } catch (error) {
+      if (error?.code !== 'ENOENT') console.error('api-v1: the API settings could not be read; using defaults');
+    }
+    return stored;
+  }
+  function writeStoredSettings(next) {
+    const directory = options.connectionDirectory;
+    fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+    fs.chmodSync(directory, 0o700);
+    const target = settingsPath();
+    const temporary = `${target}.tmp-${process.pid}`;
+    const record = { enabled: next.enabled, persistSecretToken: next.persistSecretToken, ...(next.persistSecretToken && next.secretToken ? { secretToken: next.secretToken } : {}) };
+    fs.writeFileSync(temporary, JSON.stringify(record), { mode: 0o600 });
+    fs.renameSync(temporary, target);
+    fs.chmodSync(target, 0o600);
+  }
+  let stored = null;
+  function storedSettings() { if (!stored) stored = readStoredSettings(); return stored; }
+  function saveStoredSettings(changes) { stored = { ...storedSettings(), ...changes }; writeStoredSettings(stored); }
+
   async function enable() {
     if (options.allowEnable !== true) throw new Error('api_v1_not_public');
     if (enabled) return getSettings();
     admissionClosed = false;
-    bearerToken = crypto.randomBytes(32).toString('base64url');
+    const current = storedSettings();
+    // A kept token is reused across launches; otherwise each enable (and each launch) creates a new one.
+    bearerToken = current.persistSecretToken && current.secretToken ? current.secretToken : crypto.randomBytes(32).toString('base64url');
     server = http.createServer((request, response) => void handle(request, response).catch(() => {
       if (!response.headersSent) sendJson(response, 500, errorEnvelope(requestId(), 'internal_error', 'The API request failed.'));
     }));
@@ -439,10 +473,34 @@ function createApiV1(options) {
     port = server.address().port;
     writeDescriptor();
     enabled = true;
+    saveStoredSettings({ enabled: true, secretToken: current.persistSecretToken ? bearerToken : null });
     return getSettings();
   }
 
+  /** Turning the option off stops the listener and resets the token (8.6); the choice is remembered. */
   async function disable() {
+    await stop();
+    saveStoredSettings({ enabled: false, secretToken: null });
+    return getSettings();
+  }
+
+  /** Starts the listener at launch when the option was left on; no confirmation, since the player already confirmed. */
+  async function restore() {
+    if (options.allowEnable !== true || !storedSettings().enabled) return getSettings();
+    return enable();
+  }
+
+  /** `true` keeps the current token for later launches; `false` deletes the stored copy now (the current one stays valid). */
+  function setPersistSecretToken(value) {
+    const persist = value === true;
+    saveStoredSettings({ persistSecretToken: persist, secretToken: persist && enabled ? bearerToken : null });
+    return getSettings();
+  }
+
+  /** Only for an explicit reveal in the Setting tab through the trusted bridge (9.1.4.6). */
+  function revealSecretToken() { return enabled ? bearerToken : null; }
+
+  async function stop() {
     admissionClosed = true;
     const activeServer = server;
     server = null;
@@ -457,14 +515,14 @@ function createApiV1(options) {
     port = null;
     if (expiryTimer) clearTimeout(expiryTimer);
     removeDescriptor();
-    return getSettings();
   }
 
   function getSettings() {
-    return { supported: options.allowEnable === true, enabled, host: '127.0.0.1', port, apiVersion: API_VERSION, connectionFile: descriptorPath };
+    return { supported: options.allowEnable === true, enabled, persistSecretToken: storedSettings().persistSecretToken, host: '127.0.0.1', port, apiVersion: API_VERSION, connectionFile: descriptorPath };
   }
 
-  async function shutdown() { shuttingDown = true; await disable(); }
+  /** Quitting stops the listener but keeps the remembered option and token for the next launch. */
+  async function shutdown() { shuttingDown = true; await stop(); }
 
   // SpecRef: 9.1.4.16 | Renderer loss or process death reloads the last durable state; session tokens are reacquired.
   // The renderer owns the Application API session, so when it is lost or starts reloading the lease is released here
@@ -482,7 +540,7 @@ function createApiV1(options) {
     for (const stream of streams) void stream.tick();
   }
 
-  return { enable, disable, shutdown, getSettings, notifyPopupActivity, releaseForRendererLoss, get isShuttingDown() { return shuttingDown; }, get activeOperations() { return activeOperations; } };
+  return { enable, disable, restore, setPersistSecretToken, revealSecretToken, shutdown, getSettings, notifyPopupActivity, releaseForRendererLoss, get isShuttingDown() { return shuttingDown; }, get activeOperations() { return activeOperations; } };
 }
 
 module.exports = { createApiV1, API_PREFIX, API_VERSION, SCHEMA_VERSION, LEASE_IDLE_TIMEOUT_MS };

@@ -112,6 +112,9 @@ interface Window {
     updatePartyProgressPane: (snapshot: DesktopPartyProgressSnapshot) => Promise<boolean>;
     getApiV1Settings: () => Promise<DesktopApiV1Settings>;
     setApiV1Enabled: (enabled: boolean) => Promise<DesktopApiV1Settings>;
+    setApiV1PersistSecretToken: (persist: boolean) => Promise<DesktopApiV1Settings>;
+    /** The bootstrap token, only for an explicit reveal in the Setting tab; `null` while the API is off. */
+    revealApiV1SecretToken: () => Promise<string | null>;
     createApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string) => Promise<DesktopApiAccountIdentity>;
     loadApiAccount: (identity: DesktopApiAccountIdentity) => Promise<DesktopApiAccountRecord | null>;
     commitApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string, control: DesktopApiControlMetadata) => Promise<boolean>;
@@ -143,6 +146,7 @@ interface DesktopProcessMemoryMetrics {
 interface DesktopApiV1Settings {
   supported: boolean;
   enabled: boolean;
+  persistSecretToken: boolean;
   host: string;
   port: number | null;
   connectionFile: string | null;

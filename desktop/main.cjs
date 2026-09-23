@@ -428,10 +428,20 @@ ipcMain.handle('desktop:select-party-from-pane', (_event, partyId) => {
   selectPartyInMainWindow(partyId);
   return true;
 });
+// SpecRef: 8.6 | UI_SETTING | API option — only the game window may change the option or reveal the secret token.
 ipcMain.handle('desktop:get-api-v1-settings', () => apiV1.getSettings());
-ipcMain.handle('desktop:set-api-v1-enabled', async (_event, enabled) => (
-  enabled === true ? apiV1.enable() : apiV1.disable()
-));
+ipcMain.handle('desktop:set-api-v1-enabled', async (event, enabled) => {
+  if (event.sender !== mainWindow?.webContents) throw new Error('invalid_request');
+  return enabled === true ? apiV1.enable() : apiV1.disable();
+});
+ipcMain.handle('desktop:set-api-v1-persist-secret-token', (event, persist) => {
+  if (event.sender !== mainWindow?.webContents) throw new Error('invalid_request');
+  return apiV1.setPersistSecretToken(persist === true);
+});
+ipcMain.handle('desktop:reveal-api-v1-secret-token', (event) => {
+  if (event.sender !== mainWindow?.webContents) throw new Error('invalid_request');
+  return apiV1.revealSecretToken();
+});
 ipcMain.handle('desktop:api-v1-popup-activity', (event) => {
   if (event.sender !== mainWindow?.webContents) return;
   apiV1.notifyPopupActivity();
@@ -479,6 +489,8 @@ app.whenReady().then(() => {
   createPartyProgressWindow();
   const shouldStartHidden = process.argv.includes(START_HIDDEN_ARG) && process.platform === 'darwin';
   createWindow({ show: !shouldStartHidden });
+  // SpecRef: 8.6 | UI_SETTING | API option — a remembered "on" starts the listener at launch without asking again.
+  void apiV1.restore().catch(() => console.error('api-v1: the API could not be started at launch'));
   app.on('activate', () => {
     showMainWindow();
   });
