@@ -146,3 +146,14 @@ test('only the API panel and the desktop bridge touch the token; no retired endp
   const offenders = tracked.filter((file) => /\.(ts|tsx|cjs|mjs|js|json|html)$/.test(file) && retired.some((needle) => read(file).includes(needle)));
   assert.deepEqual(offenders, [], `retired endpoint references: ${offenders.join(', ')}`);
 });
+
+test('every desktop build offers the API option, and it stays off until the player enables it (Stage 9.7 cutover)', async t => {
+  const main = fs.readFileSync(path.resolve('desktop/main.cjs'), 'utf8');
+  assert.match(main, /allowEnable: true,/);
+  assert.doesNotMatch(main, /api-v1-test/, 'no test-only launch flag gates the API');
+  const directory = tempDirectory(t);
+  const api = create(directory);
+  const settings = await api.restore();
+  assert.deepEqual([settings.supported, settings.enabled], [true, false], 'offered, but off on a fresh profile');
+  assert.equal(fs.existsSync(path.join(directory, 'api-v1-connection.json')), false, 'no connection file until enabled');
+});

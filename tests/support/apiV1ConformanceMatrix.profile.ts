@@ -8,6 +8,7 @@ import { createFreshGameState } from '../../src/hooks/useGameState';
 import { serializeGameState } from '../../src/game/saveCodec';
 import { encodePersistedState } from '../../src/game/storageCompression';
 import { decodeApiSavePayload } from '../../src/api/v1/commitOperations';
+import { resetBattleSeedSourceForTesting } from '../../src/game/battleSeedSource';
 import { createHash } from 'node:crypto';
 import type { GameState } from '../../src/types';
 
@@ -823,6 +824,13 @@ async function httpObservation(client: Client, extraVolatile: readonly string[] 
   return normalize(observation.body.data, extraVolatile);
 }
 
+// Battle seeds are fresh Web Crypto entropy for every battle (as in the UI), not part of the API's seeded random state, so
+// a Sortie or Gods Battle can resolve differently on two runs. Each side of a parity cell replays the same seed sequence.
+function replayBattleSeeds() {
+  let next = 0x9e3779b97f4a7c15n;
+  resetBattleSeedSourceForTesting(() => { next = (next * 6364136223846793005n + 1442695040888963407n) & 0xffffffffffffffffn; return next === 0n ? 1n : next; });
+}
+
 async function runParity(filter: RegExp | null) {
   for (const operation of contract.operations) {
     const id = operation.operationId;
@@ -832,6 +840,7 @@ async function runParity(filter: RegExp | null) {
       if (id.startsWith('commit/')) {
         const fixture = commitFixtures[id];
         const environment = fixture.environment ?? 'prod';
+        replayBattleSeeds();
         const http = await withSession({ environment, save: fixture.save }, async (client) => {
           await fixture.prepare?.(client);
           const request = await fixture.request(client);
@@ -840,6 +849,7 @@ async function runParity(filter: RegExp | null) {
           return { result: commandResult(result), observation: await httpObservation(client, ACTOR_CLOCK_KEYS[id]) };
         });
         setEnvironment(environment);
+        replayBattleSeeds();
         try {
           const local = new InProcessActor(inProcessApplication(fixture.save));
           await fixture.prepare?.(local);
@@ -850,6 +860,7 @@ async function runParity(filter: RegExp | null) {
           assert.deepEqual(normalize((await local.raw('read/observation')).data, ACTOR_CLOCK_KEYS[id]), http.observation, 'the state afterwards differs between adapters');
         } finally {
           setEnvironment('prod');
+          resetBattleSeedSourceForTesting(null);
         }
       } else {
         const fixture = readFixtures[id] ?? {};

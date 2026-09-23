@@ -41,7 +41,7 @@
     "desktop:build": "npm run build && electron-builder --mac --x64 --arm64 --publish never",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:api:desktop": "npm run build && electron scripts/run-api-desktop-smoke.cjs --environment=orca --api-v1-test",
+    "test:api:desktop": "npm run build && electron scripts/run-api-desktop-smoke.cjs --environment=orca",
     "test": "node --experimental-strip-types --test --test-concurrency=1 tests/*.test.ts tests/*.test.cjs"
   },
   "dependencies": {

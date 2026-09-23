@@ -16,7 +16,6 @@ const PARTY_PROGRESS_SCHEMA_VERSION = 1;
 const DESKTOP_ENVIRONMENT_ARG_PREFIX = '--environment=';
 const DESKTOP_ENVIRONMENTS = new Set(['dev', 'beta', 'orca', 'prod']);
 const desktopEnvironment = resolveDesktopEnvironment(process.argv);
-const apiV1TestEnabled = process.argv.includes('--api-v1-test');
 const desktopEnvironmentPath = desktopEnvironment === 'prod' ? '/' : `/${desktopEnvironment}/`;
 let mainWindow = null;
 let partyProgressWindow = null;
@@ -51,7 +50,9 @@ function invokeApiV1Renderer(operation, payload) {
 }
 
 const apiV1 = createApiV1({
-  allowEnable: apiV1TestEnabled,
+  // SpecRef: 9.1.4.6 | Public cutover (Stage 9.7): every desktop build offers the API option; it stays off until the
+  // player enables it (8.6), and the listener binds only to loopback.
+  allowEnable: true,
   allowedOrigin: APP_ORIGIN,
   connectionDirectory: path.join(app.getPath('userData'), 'api'),
   invokeApplication: invokeApiV1Renderer,
