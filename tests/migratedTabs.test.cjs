@@ -281,3 +281,75 @@ test('HomeScreen gives the header the overview projection, not raw game state or
   const handler = home.slice(home.indexOf('const handleReportProgress = '), home.indexOf('const planAutoEquipment = '));
   assert.match(handler, /actions\.addNotification/);
 });
+
+// SpecRef: 9.1.4.17 | UI state ownership (Stage 9.5 audit; docs/api-v1-ui-ownership.md)
+// Every reducer action HomeScreen still calls is classified. A new call fails here until it is either routed through
+// the Application API or added to this map with its category and reason.
+const HOMESCREEN_REDUCER_ACTIONS = {
+  // The live runtime engine (party cycle, AFK recovery, side quests, save flushing). Stage 4 kept it in HomeScreen and
+  // the reducer by decision; none of these is wired to a player control.
+  runtimeEngine: [
+    'advanceSideQuest', 'applyAutoEquipmentActions', 'autoSelectDungeon', 'cancelSideQuest', 'commitAfkPartyChunk',
+    'commitAfkPartyTransaction', 'commitAfkPartyTransactionAuthoritatively', 'finalizeDiaryLog', 'flushSave',
+    'getAuthoritativeState', 'healPartyHp', 'processPendingProfit', 'publishAuthoritativeState', 'rollPartySleepiness',
+    'rollSideQuest', 'runExpedition', 'setSideQuestProgress', 'spendPendingProfit',
+  ],
+  // Local toasts: no game state, no save.
+  localNotification: ['addNotification', 'addStatNotifications'],
+  // The selected party stays in the shared game state (decided, Stage 5 4e).
+  sharedSelection: ['selectParty'],
+  // Debug pane only (dev/beta): the Vault has no API by Spec 8.4.3; the Party-unlock button has no API operation.
+  debugOnly: ['buyDebugStoreItem', 'unlockPartySlot'],
+  // Send Feedback stays a reviewed local exception by user decision.
+  sendFeedback: ['grantFeedbackReward'],
+};
+
+test('HomeScreen calls only classified reducer actions', () => {
+  const home = read('src/components/HomeScreen.tsx');
+  const used = new Set([...home.matchAll(/\bactions\.([A-Za-z]+)\b/g)].map((match) => match[1]));
+  // `plan.actions.length` and `profile.actions.push` are arrays named `actions`, not the reducer.
+  for (const arrayMember of ['length', 'push']) used.delete(arrayMember);
+  const classified = new Set(Object.values(HOMESCREEN_REDUCER_ACTIONS).flat());
+  const unclassified = [...used].filter((name) => !classified.has(name)).sort();
+  assert.deepEqual(unclassified, [], `unclassified reducer actions in HomeScreen: ${unclassified.join(', ')}`);
+  const stale = [...classified].filter((name) => !used.has(name)).sort();
+  assert.deepEqual(stale, [], `classified actions no longer used (remove them from the map): ${stale.join(', ')}`);
+});
+
+test('runtime-engine reducer actions are never handed to a tab or the header as a control', () => {
+  const home = read('src/components/HomeScreen.tsx');
+  const props = [...home.matchAll(/^\s+on[A-Z][A-Za-z]*=\{actions\.([A-Za-z]+)\}/gm)].map((match) => match[1]);
+  const allowedAsProps = new Set([...HOMESCREEN_REDUCER_ACTIONS.localNotification, ...HOMESCREEN_REDUCER_ACTIONS.sharedSelection, ...HOMESCREEN_REDUCER_ACTIONS.debugOnly, ...HOMESCREEN_REDUCER_ACTIONS.sendFeedback]);
+  const leaked = props.filter((name) => !allowedAsProps.has(name));
+  assert.deepEqual(leaked, [], `engine actions passed to a component: ${leaked.join(', ')}`);
+});
+
+// Browser-storage keys a migrated tab may use. 9.1.4.17: state 8.x requires to be retained belongs in `uiPreferences`
+// (per save); only reviewed keys may stay in local storage.
+const TAB_STORAGE_KEYS = {
+  'SettingTab.tsx': {
+    // Send Feedback (reviewed local exception): the previous name and the reward cooldown.
+    FEEDBACK_NAME_STORAGE_KEY: 'sendFeedback', FEEDBACK_SUBMITTED_STORAGE_KEY: 'sendFeedback', FEEDBACK_LAST_SUBMITTED_AT_STORAGE_KEY: 'sendFeedback',
+    // Open audit findings (docs/api-v1-ui-ownership.md): 8.6 requires pane and per-party Clairvoyance expansion to be
+    // retained, which 9.1.4.17 places in `uiPreferences`; Glossary tab/expansion retention is not required by 8.6.
+    SETTING_PANEL_STORAGE_KEY: 'finding', CLAIRVOYANCE_PARTY_STORAGE_KEY: 'finding', GLOSSARY_TAB_STORAGE_KEY: 'finding', GLOSSARY_EXPANDED_STORAGE_KEY: 'finding',
+  },
+};
+
+test('migrated tabs and the header use only reviewed browser-storage keys', () => {
+  const files = ['PartyTab.tsx', 'ExpeditionTab.tsx', 'BaseTab.tsx', 'DiaryTab.tsx', 'SettingTab.tsx'];
+  for (const file of files) {
+    const source = read(`src/components/home/tabs/${file}`);
+    const keys = new Set([...source.matchAll(/(?:local|session)Storage\.(?:getItem|setItem|removeItem)\(\s*([A-Za-z_][A-Za-z0-9_.]*|'[^']*'|`[^`]*`)/g)].map((match) => match[1]));
+    const allowed = new Set(Object.keys(TAB_STORAGE_KEYS[file] ?? {}));
+    const unreviewed = [...keys].filter((key) => !allowed.has(key)).sort();
+    assert.deepEqual(unreviewed, [], `${file} persists UI state under unreviewed keys: ${unreviewed.join(', ')}`);
+  }
+  assert.doesNotMatch(read('src/components/home/HeaderBar.tsx'), /(?:local|session)Storage\./);
+});
+
+test('migrated tabs and the header never reach the desktop bridge directly', () => {
+  for (const file of ['tabs/PartyTab.tsx', 'tabs/ExpeditionTab.tsx', 'tabs/BaseTab.tsx', 'tabs/DiaryTab.tsx', 'tabs/SettingTab.tsx', 'HeaderBar.tsx']) {
+    assert.doesNotMatch(read(`src/components/home/${file}`), /bokemoDesktop/, `${file} must use the trusted components or ports, not the bridge`);
+  }
+});
