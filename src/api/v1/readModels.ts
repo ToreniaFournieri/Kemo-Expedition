@@ -36,14 +36,14 @@ import { getEstimatedStartHp, getPartyStateProgress } from '../../game/partyStat
 import { DIFFICULTY_OFFSET_STEP, EXPEDITION_DEPTH_LIMITS, getSelectableDestinationIds, getSelectableDifficultyOffsetMax } from '../../game/expeditionSettings.ts';
 import { getSortieUnavailableReason } from './sortieAvailability.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
-import { getShopFacts, shopLineupInputOf } from '../../game/shopFacts.ts';
+import { getPublicShopLineupId, getShopFacts, shopLineupInputOf } from '../../game/shopFacts.ts';
 import { getStackSale } from '../../game/inventoryMutation.ts';
 import { getSuperRareItemPrana, MAX_ALTAR_LEVEL } from '../../game/prana.ts';
 import { getJewelOwnedCount } from '../../game/jewel.ts';
 import { getAltarCategoryFacts, getAltarEnemyTypes, getEnemyFormFacts } from '../../game/altarFacts.ts';
 import { getEnemyIndividualBonuses, getEnemyTypeBonuses, getMimorianEnemyAbilities } from '../../data/enemies.ts';
 import { buildEnemyStatus } from './enemyStatus.ts';
-import { GLOSSARY_SECTIONS, TERRAIN_EFFECT_GLOSSARY_SECTION } from '../../data/glossary.ts';
+import { GLOSSARY_SECTIONS } from '../../data/glossary.ts';
 import {
   createCommonEnhancementBag, createCommonRewardBag, createCommonSuperRareBag, createEliteRareRewardBag, createEnhancementBag,
   createBossRareRewardBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag,
@@ -54,6 +54,8 @@ import { describeModeSelectCurrent, selectableThemes, toThemeKey, type ApiV1Disp
 import { accountDebugSettingsOf, describeDebugSettings } from './debugSettings.ts';
 import { getPartyClairvoyanceAccess } from '../../game/clairvoyanceAccess.ts';
 import type { DebugSettings } from '../../game/debugSettings.ts';
+import type { ColosseumEnemySettings } from '../../game/colosseum.ts';
+import { accountEnemyEditSettingsOf, describeEnemyEditPane, enemyEditPaneValidOptions } from './enemyEditPane.ts';
 import { MAX_LEVEL, type DiaryLog, type EnemyDef, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party, type RandomBag } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
@@ -94,6 +96,8 @@ export interface ApiV1ReadContext {
   readonly displaySettings?: () => ApiV1DisplaySettings;
   /** The ordinary player's real Debug settings; absent for an API account, which reports its own stored values. */
   readonly debugSettings?: () => DebugSettings;
+  /** The ordinary player's real Enemy Edit pane settings; absent for an API account, which reports its own stored values. */
+  readonly enemyEditSettings?: () => ColosseumEnemySettings;
   /** The Instant Expedition charge clock scale (the current Speed of Time); 1 when omitted. */
   readonly chargeDurationScale?: number;
   readonly control?: { settings?: Record<string, unknown>; deliveries?: unknown[]; equipmentHistory?: Record<string, EquipmentHistoryBag> };
@@ -427,6 +431,11 @@ function effectiveDebugSettings(context: ApiV1ReadContext): DebugSettings {
   return context.debugSettings ? context.debugSettings() : accountDebugSettingsOf(context.control?.settings);
 }
 
+/** The Enemy Edit pane in force for this read: the ordinary player's real pane, or an API account's own settings. */
+function effectiveEnemyEditSettings(context: ApiV1ReadContext): ColosseumEnemySettings {
+  return context.enemyEditSettings ? context.enemyEditSettings() : accountEnemyEditSettingsOf(context.control?.settings);
+}
+
 /** Whether an item's details match the `searchAbility` and `searchBonus` filters (the same matching as `searchItems`). */
 function matchesDetailFilters(details: ItemDetails, parameters: Record<string, unknown>): boolean {
   const searchAbility = parameters.searchAbility === undefined ? null : String(parameters.searchAbility);
@@ -437,9 +446,10 @@ function matchesDetailFilters(details: ItemDetails, parameters: Record<string, u
 
 // SpecRef: 9.1.3 | 4-2-5 itemCompendium
 // SpecRef: 8.6 | UI_SETTING | Item Compendium (アイテム図鑑)
-// Shows every item, base level, regardless of ownership. `revealed` (Item Reveal Rule, or the Debug "Display all
-// Compendium" setting) tells the client whether to show real details or a placeholder; unrevealed items are still returned.
-// `details` selects which of `ability`, `cBonus`, and `otherBonus` are included, like `searchItems`.
+// Lists every item, base level, regardless of ownership. `revealed` follows the Item Reveal Rule (or the Debug "Display all
+// Compendium" setting). An unrevealed item is still listed, as a placeholder: only its ID, category, rarity, and tier, never
+// its name or details, and the ability and bonus searches never match it (9.1.4.7: no undisclosed content).
+// `details` selects which of `ability`, `cBonus`, and `otherBonus` a revealed item includes, like `searchItems`.
 function itemCompendium(state: GameState, parameters: Record<string, unknown>, context: ApiV1ReadContext) {
   const category = parameters.category === undefined ? null : String(parameters.category);
   const rarity = parameters.rarity === undefined || parameters.rarity === 'all' ? null : String(parameters.rarity);
@@ -457,16 +467,16 @@ function itemCompendium(state: GameState, parameters: Record<string, unknown>, c
     if (rarity !== null && itemRarity !== rarity) return [];
     if (tier !== null && getItemTier(item.id) !== tier) return [];
     if (itemId !== null && item.id !== itemId) return [];
+    const isRevealed = revealAll || revealed.has(item.id);
+    const placeholder = { itemId: item.id, category: item.category, rarity: itemRarity, tier: getItemTier(item.id), revealed: isRevealed };
+    const searchesDetails = parameters.searchAbility !== undefined || parameters.searchBonus !== undefined;
+    if (!isRevealed) return searchesDetails ? [] : [placeholder];
     // The Compendium shows every item at base level (Spec 8.6: Enhancement = 0, SuperRare = 0), not an owned instance.
     const details = describeItem({ ...item, enhancement: 0, superRare: 0 });
     if (!matchesDetailFilters(details, parameters)) return [];
     return [{
-      itemId: item.id,
+      ...placeholder,
       name: getLocalizedItemName(item),
-      category: item.category,
-      rarity: itemRarity,
-      tier: getItemTier(item.id),
-      revealed: revealAll || revealed.has(item.id),
       ...(wantsAbility ? { ability: details.ability } : {}),
       ...(wantsCBonus ? { cBonus: details.cBonus } : {}),
       ...(wantsOtherBonus ? { otherBonus: details.otherBonus } : {}),
@@ -484,16 +494,20 @@ function bestiary(state: GameState, parameters: Record<string, unknown>, context
   const enemyType = parameters.enemyType === undefined ? null : String(parameters.enemyType);
   const expedition = parameters.expedition === undefined ? null : Number(parameters.expedition);
   const revealAll = effectiveDebugSettings(context).displayAllBestiary;
-  const enemies = ENEMIES.filter((enemy) => {
-    if (enemyId !== null && enemy.id !== enemyId) return false;
-    if (enemyType !== null && enemy.enemyType !== enemyType) return false;
-    if (expedition !== null && enemy.poolId !== expedition) return false;
-    return true;
-  }).map((enemy) => {
+  // An enemy not yet encountered (and not revealed by the Debug "Display all Bestiary" setting) is listed only as a
+  // placeholder, its ID and zero counts, never its name, status, or drops; the type filter never matches it
+  // (9.1.4.7: no undisclosed content).
+  const enemies = ENEMIES.flatMap((enemy) => {
+    if (enemyId !== null && enemy.id !== enemyId) return [];
+    if (expedition !== null && enemy.poolId !== expedition) return [];
     const stats = state.global.enemyBattleStats?.[enemy.id];
     const encounters = stats?.encounters ?? 0;
     const defeats = stats?.defeats ?? 0;
-    return { ...buildEnemyStatus(enemy, null), revealed: revealAll || encounters > 0, encounters, defeats };
+    const isRevealed = revealAll || encounters > 0;
+    if (enemyType !== null && (!isRevealed || enemy.enemyType !== enemyType)) return [];
+    return [isRevealed
+      ? { ...buildEnemyStatus(enemy, null), revealed: true, encounters, defeats }
+      : { enemyId: enemy.id, revealed: false, encounters, defeats }];
   });
   const { page, nextCursor } = paginate('resources/bestiary', enemies, parameters, context.revision);
   return { enemies: page, nextCursor };
@@ -637,7 +651,7 @@ export function buildApiV1PartyObservationForTesting(state: GameState) {
 function shopProjection(state: GameState, nowMs: number) {
   const facts = getShopFacts(shopLineupInputOf(state), new Date(nowMs));
   return {
-    lineupId: facts.lineupId,
+    lineupId: getPublicShopLineupId(facts),
     intimacy: facts.intimacy,
     dialogue: { key: facts.dialogueKey, args: {} },
     paidRefreshCountdown: facts.refreshCountdownSeconds,
@@ -760,7 +774,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     const pendingDeliveryIds = ((context.control?.deliveries as ApiV1DeliveryRecord[] | undefined) ?? [])
       .filter((entry) => entry.status === 'queued' || entry.status === 'sending' || entry.status === 'unknown')
       .map((entry) => entry.deliveryId);
-    return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), modeSelect: describeModeSelectCurrent({ gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: state.global.language }, context.displaySettings?.()), debug: describeDebugSettings(effectiveDebugSettings(context)), uiPreferences: listUiPreferences(state.global.uiPreferences), uiPreferenceCatalog: describeUiPreferenceCatalog(), pendingDeliveryIds } };
+    return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), modeSelect: describeModeSelectCurrent({ gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: state.global.language }, context.displaySettings?.()), debug: describeDebugSettings(effectiveDebugSettings(context)), enemyEditPane: describeEnemyEditPane(effectiveEnemyEditSettings(context)), uiPreferences: listUiPreferences(state.global.uiPreferences), uiPreferenceCatalog: describeUiPreferenceCatalog(), pendingDeliveryIds } };
   }
 
   const expedition = operationId.match(/^read\/expedition\/(\d+)\/(setting|latestBattleLog|simulationRun|chargeStock)$/);
@@ -955,7 +969,8 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       },
     };
   }
-  if (operationId === 'read/setting/enemyEditPane') return { current: (context.control?.settings?.enemyEditPane as Record<string, unknown> | undefined) ?? {}, validOptions: { enemyLevel: { min: 1, max: 99, step: 1 }, terrainEffect: ['none', ...(TERRAIN_EFFECT_GLOSSARY_SECTION?.entries.map((entry) => entry.key) ?? [])], enemyType: [...new Set(ENEMIES.map((enemy) => enemy.enemyType))], mainClass: CLASSES.map((entry) => entry.id), subClass: ['none', ...CLASSES.map((entry) => entry.id)], addedAbilities: { maximumEntries: 5, level: { min: 1, max: 5 } } } };
+  // SpecRef: 9.1.3 | Read | 2-6-1 enemyEditPane — the ordinary player's real Enemy Edit pane; an API account's own settings.
+  if (operationId === 'read/setting/enemyEditPane') return { current: describeEnemyEditPane(effectiveEnemyEditSettings(context)), validOptions: enemyEditPaneValidOptions() };
   // SpecRef: 9.1.3 | Read | 2-6-3 debug — the ordinary player's real Debug settings; an API account's own stored values.
   // An API account's settings not stored yet report their defaults, never an empty object.
   if (operationId === 'read/setting/debug') {

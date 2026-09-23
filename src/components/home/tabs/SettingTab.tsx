@@ -20,7 +20,7 @@ import { GLOSSARY_SECTIONS } from '../../../data/glossary';
 import { ITEMS,SUPER_RARE_TITLES } from '../../../data/items';
 import { RACES } from '../../../data/races';
 import { getAbilityDescription } from '../../../game/characterComputation';
-import { buildColosseumEnemy,ColosseumEnemySettings,getColosseumEnemySettings,normalizeColosseumEnemySettings,saveColosseumEnemySettings } from '../../../game/colosseum';
+import { buildColosseumEnemy,COLOSSEUM_ENEMY_CLASS_OPTIONS,ColosseumEnemySettings,getStoredColosseumEnemySettings,normalizeColosseumEnemySettings,saveColosseumEnemySettings,subscribeColosseumEnemySettings } from '../../../game/colosseum';
 import { DebugSettings } from '../../../game/debugSettings';
 import { RuntimeDiagnostics } from '../../MemoryDiagnostics';
 import { addOrcaEnemyAbilities, ORCA_ENEMY_LEVEL_OFFSET_MAX, ORCA_ENEMY_LEVEL_OFFSET_MIN, RUNTIME_GAME_MODES, type RuntimeGameMode } from '../../../game/runtimeGameMode';
@@ -396,7 +396,8 @@ export default function SettingTab({
   };
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
-  const [colosseumEnemySettings, setColosseumEnemySettings] = useState<ColosseumEnemySettings>(() => getColosseumEnemySettings());
+  const [colosseumEnemySettings, setColosseumEnemySettings] = useState<ColosseumEnemySettings>(() => getStoredColosseumEnemySettings());
+  const colosseumEnemySettingsRef = useRef(colosseumEnemySettings);
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
   const [glossaryTabOverride, setGlossaryTabOverride] = useState<GlossaryTabKey | null>(null);
   const glossaryTab: GlossaryTabKey = glossaryTabOverride ?? settingPreferences?.glossaryTab ?? '能';
@@ -412,14 +413,18 @@ export default function SettingTab({
   const [abilityHelpPosition, setAbilityHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
   // SpecRef: 8.6 | UI_SETTING | Enemy Edit Pane
+  // The pane follows the device settings, including a change committed through the Application API
+  // (`commit/setting/enemyEditPane`), which saves them and notifies this subscription.
+  useEffect(() => subscribeColosseumEnemySettings((settings) => {
+    colosseumEnemySettingsRef.current = settings;
+    setColosseumEnemySettings(settings);
+  }), []);
   const updateColosseumEnemySettings = useCallback((updates: Partial<ColosseumEnemySettings>) => {
-    setColosseumEnemySettings((prev) => {
-      const nextSettings = normalizeColosseumEnemySettings({ ...prev, ...updates });
-      // Persist immediately so battle execution (which reads storage) uses the latest setting
-      // even when the player changes Enemy Edit values and starts a battle right away.
-      saveColosseumEnemySettings(nextSettings);
-      return nextSettings;
-    });
+    const nextSettings = normalizeColosseumEnemySettings({ ...colosseumEnemySettingsRef.current, ...updates });
+    // Persist immediately so battle execution (which reads storage) uses the latest setting
+    // even when the player changes Enemy Edit values and starts a battle right away. Saving notifies the
+    // subscription above, which updates this pane's state.
+    saveColosseumEnemySettings(nextSettings);
   }, []);
 
   useEffect(() => {
@@ -1256,12 +1261,7 @@ export default function SettingTab({
     ];
   };
 
-  const ENEMY_EDIT_CLASS_OPTIONS = [
-    'duelist', 'samurai', 'sword-saint',
-    'ranger', 'striker', 'ninja',
-    'wizard', 'sage', 'alchemist',
-    'guardian', 'pilgrim', 'lord',
-  ] as const;
+  const ENEMY_EDIT_CLASS_OPTIONS = COLOSSEUM_ENEMY_CLASS_OPTIONS;
 
   const getDisplayEnemy = (
     enemy: EnemyDef,

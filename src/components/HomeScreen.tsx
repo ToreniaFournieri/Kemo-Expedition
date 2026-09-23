@@ -23,6 +23,7 @@ import { gameplayRandom } from '../game/gameplayRandom';
 import {
 isDungeonEntryUnlocked
 } from '../game/clearGate';
+import { getStoredColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { DebugSettings,getDebugSettings,getTimeSpeedScale,isUnlimitedTimeSpeed,saveDebugSettings } from '../game/debugSettings';
 import { getDeityDepositMultiplier,getDeityId,getDeityNameFromId,getDeityStateDurationMultiplier,isNoFaithDeity,normalizeDeityName } from '../game/deity';
 import { getDesktopNotificationRewardItems } from '../game/desktopNotificationRewards';
@@ -614,6 +615,9 @@ export function HomeScreen({
         applyDisplaySettings: (write) => applyDisplaySettingsRef.current(write),
         debugSettings: () => apiDebugSettingsRef.current!,
         applyDebugSettings: (write) => applyDebugSettingsRef.current(write),
+        // SpecRef: 9.1.3 | 2-6-1/3-6-3 enemyEditPane: the Enemy Edit pane's real (device) settings; saving notifies the pane.
+        enemyEditSettings: () => getStoredColosseumEnemySettings(),
+        applyEnemyEditSettings: (settings) => saveColosseumEnemySettings(settings),
         colosseumEnabled: () => colosseumEnabledRef.current,
       },
       help: { requirements: apiRequirementsDocument, detail: apiDetailDocument },
@@ -2098,7 +2102,10 @@ export function HomeScreen({
       if (response.error) console.error('[api-v1] Base command failed', operation, parameters, response.error);
     });
   }, []);
-  const buyShopItem = useCallback((shopItemId: number) => commitBase('commit/base/purchaseShopItems', { items: [{ shopItemId }] }), [commitBase]);
+  // SpecRef: 9.1.3 | 3-4-3 purchaseShopItems | The purchase names the lineup the player saw, so a rotation in between is refused.
+  const shopLineupIdRef = useRef<string | null>(null);
+  shopLineupIdRef.current = baseProjection?.shop.lineupId ?? null;
+  const buyShopItem = useCallback((shopItemId: number) => commitBase('commit/base/purchaseShopItems', { lineupId: shopLineupIdRef.current ?? '', items: [{ shopItemId }] }), [commitBase]);
   const refreshShop = useCallback(() => commitBase('commit/base/paidShopRefresh', {}), [commitBase]);
   const sellInventoryItem = useCallback((itemFormat: string) => commitBase('commit/base/sellInventoryItems', { items: [itemFormat] }), [commitBase]);
   const unlockSoldItem = useCallback((itemFormat: string) => commitBase('commit/base/unlockSoldItems', { items: [itemFormat] }), [commitBase]);

@@ -7,6 +7,8 @@ import { describeModeSelectCurrent, planDisplaySettingWrite, type ApiV1DisplaySe
 import { accountDebugSettings, describeDebugSettings, planDebugSettingWrite } from './debugSettings';
 import { getPartyClairvoyanceAccess } from '../../game/clairvoyanceAccess';
 import type { DebugSettings } from '../../game/debugSettings';
+import type { ColosseumEnemySettings } from '../../game/colosseum';
+import { accountEnemyEditSettingsOf, describeEnemyEditPane, planEnemyEditPaneWrite } from './enemyEditPane';
 import { canCharacterEquipCategory, createDefaultEquipmentSetName, createEquipmentSetSnapshot, evaluateEquipmentSet, evaluateEquipmentState, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
 import { recordEquipmentState, redoEquipmentState, undoEquipmentState } from '../../game/equipmentHistory';
 import { computeCharacterStats } from '../../game/characterComputation';
@@ -15,7 +17,7 @@ import { getExpeditionChangeRejection } from '../../game/expeditionSettings';
 import { getInstantExpeditionChargeState } from '../../game/instantExpedition';
 import { computePartyStats } from '../../game/partyComputation';
 import { hydrateGameState, serializeGameState } from '../../game/saveCodec';
-import { getShopFacts, shopLineupInputOf } from '../../game/shopFacts';
+import { getPublicShopLineupId, getShopFacts, shopLineupInputOf } from '../../game/shopFacts';
 import { getEnemyFormFacts } from '../../game/altarFacts';
 import { ENEMIES } from '../../data/enemies';
 import { describeEquipmentHistory } from './equipmentHistoryFacts';
@@ -76,6 +78,8 @@ export interface ApiV1CommitContext {
   readonly displaySettings?: ApiV1DisplaySettings;
   /** The ordinary player's real Debug settings; absent for an API account, whose debug settings are its own stored values. */
   readonly debugSettings?: DebugSettings;
+  /** The ordinary player's real Enemy Edit pane settings; absent for an API account, whose settings are its own stored values. */
+  readonly enemyEditSettings?: ColosseumEnemySettings;
 }
 
 /** What a sortie needs to know about the live party cycle (Spec 5.1.1). */
@@ -111,6 +115,8 @@ export interface ApiV1CommitOutcome {
   displaySettingWrite?: ApiV1DisplaySettingWrite;
   /** Debug-setting changes the caller applies to the runtime after the durable commit (`debug`, ordinary player only). */
   debugSettingWrite?: Partial<DebugSettings>;
+  /** The new Enemy Edit pane settings the caller applies to the runtime after the durable commit (ordinary player only). */
+  enemyEditSettingWrite?: ColosseumEnemySettings;
 }
 
 /**
@@ -129,6 +135,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
   const partyCycleWrites: ApiV1PartyCycleWrite[] = [];
   let displaySettingWrite: ApiV1DisplaySettingWrite | undefined;
   let debugSettingWrite: Partial<DebugSettings> | undefined;
+  let enemyEditSettingWrite: ColosseumEnemySettings | undefined;
   const reduce = (action: Parameters<typeof gameReducer>[1]) => { next = gameReducer(next, action); };
   const partyMatch = operation.match(/^commit\/expedition\/(\d+)\/(changeExpedition|sortie|godsBattle|resetStatistics)$/);
   const characterMatch = operation.match(/^commit\/build\/character\/(\d+)\/(.+)$/);
@@ -257,7 +264,9 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const action = characterMatch[2];
     const characterBefore = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
     // SpecRef: 8.2.4 | Equipment management | three-state toggle(手動/補助/一任)
-    // A manual equipment change made while FULL demotes the character to SEMI, exactly as the UI path does.
+    // SpecRef: 9.1.3 | 3-3-3/3-3-4/3-3-5/3-3-9/3-3-10/3-3-12/3-3-15/3-3-16 | If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
+    // A manual equipment change (equip, remove one or all, Jewel attach or remove, loading a set, Undo, Redo) made while
+    // FULL demotes the character to SEMI. The Party pane makes these changes through the same commands.
     const demoteFullAutoEquipment = () => { if (characterBefore.autoEquipmentMode === 2) reduce({ type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: { autoEquipmentMode: 1 } }); };
     const history = context.equipmentHistory;
     const historyKey = String(characterId);
@@ -291,11 +300,14 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       const characterAfter = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
       data = { current: describeCharacterBuildCurrent(characterAfter), confirmationRequired: plan.requiresConfirmation, warnings: plan.warnings, applied };
     }
-    else if (action === 'removeAllEquipment') reduce({ type: 'REMOVE_ALL_EQUIPMENT', partyIndex, characterId });
+    else if (action === 'removeAllEquipment') {
+      reduce({ type: 'REMOVE_ALL_EQUIPMENT', partyIndex, characterId });
+      demoteFullAutoEquipment();
+    }
     else if (isEquipmentSlotAction(action)) {
       const character = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
       for (const step of planEquipmentSlotOperation(action, character, next.global.jewels, parameters)) reduce({ ...step, partyIndex, characterId });
-      if (action === 'removeEquipment') demoteFullAutoEquipment();
+      if (action === 'removeEquipment' || action === 'jewelAttach' || action === 'jewelRemove') demoteFullAutoEquipment();
     }
     else if (action === 'saveEquipmentSet') {
       // The set is captured from the character's current equipment into the lowest empty saved slot.
@@ -319,6 +331,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       // `equipSet` promises every stored item; a partial set must be loaded through an explicit confirmed choice.
       if (loadMode === 'equipSet' && !evaluateEquipmentSet(set, characterBefore, next.global.inventory, maxSlots).allAvailable) throw new Error('illegal_action:partial_load_requires_choice');
       reduce({ type: 'LOAD_EQUIPMENT_SET', partyIndex, characterId, slot: set.slot, mode: loadMode === 'equipSimilar' ? 'similar' : 'exact' });
+      demoteFullAutoEquipment();
       const loaded = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
       data = { loadReport: { loadMode, entries: set.equipment.map((entry, index) => {
         const slotIndex = getSavedEquipmentSlot(entry, index);
@@ -371,6 +384,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       if (!evaluateEquipmentState(transition.target, current, next.global.inventory, next.global.jewels, maxSlots).allAvailable) throw new Error('illegal_action');
       reduce({ type: 'RESTORE_EQUIPMENT_STATE', partyIndex, characterId, set: transition.target });
       history[historyKey] = transition.history;
+      demoteFullAutoEquipment();
     }
     if (recordsEquipmentHistory) {
       const characterAfter = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
@@ -424,6 +438,9 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const requested = items.map((item) => Number(item && typeof item === 'object' ? (item as Record<string, unknown>).shopItemId : NaN));
     if (requested.length === 0 || requested.some((id) => !Number.isSafeInteger(id) || id < 1) || new Set(requested).size !== requested.length) throw new Error('invalid_request:items');
     const facts = getShopFacts(shopLineupInputOf(next), new Date(simulatedAt));
+    // SpecRef: 9.1.3 | 3-4-3 purchaseShopItems | `lineupId` must match the current lineup, or nothing is bought.
+    if (typeof parameters.lineupId !== 'string' || parameters.lineupId.length === 0) throw new Error('invalid_request:lineupId');
+    if (parameters.lineupId !== getPublicShopLineupId(facts)) throw new Error('illegal_action:lineup_changed');
     const entries = requested.map((id) => {
       const entry = facts.entries.find((candidate) => candidate.shopItemId === id);
       if (!entry) throw new Error('not_found');
@@ -458,7 +475,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     reduce({ type: 'REFRESH_SHOP_LINEUP', now: simulatedAt });
     const after = getShopFacts(shopLineupInputOf(next), now);
     if (after.lineupId === before.lineupId) throw new Error('illegal_action:refresh_rejected');
-    data = { lineupId: after.lineupId, goldDelta: next.global.gold - goldBefore, paidRefreshPrice: after.paidRefreshPrice };
+    data = { lineupId: getPublicShopLineupId(after), goldDelta: next.global.gold - goldBefore, paidRefreshPrice: after.paidRefreshPrice };
   } else if (operation === 'commit/base/unlockForm') {
     // SpecRef: 9.1.3 | Commit | 3-4-6 unlockForm
     // SpecRef: 8.4.5 | Altar (祭壇) | Unlock Costs
@@ -519,8 +536,11 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const debugOverride = context.debugSettings ? context.debugSettings.clairvoyanceEnabled : (settings.debug as { clairvoyance?: unknown } | undefined)?.clairvoyance === true;
     if (!getPartyClairvoyanceAccess(next.parties[partyIndex], debugOverride).canResetBags) throw new Error('illegal_action:clairvoyance_reset_unavailable');
     if (parameters.resetCommonRewards === true) reduce({ type: 'RESET_COMMON_BAGS', partyIndex });
-    if (parameters.resetRewards === true) { reduce({ type: 'RESET_UNIQUE_BAGS', partyIndex }); reduce({ type: 'RESET_COMMON_SUPER_RARE_BAG', partyIndex }); reduce({ type: 'RESET_RARE_SUPER_RARE_BAG', partyIndex }); }
-    if (parameters.resetSideQuest === true) { reduce({ type: 'RESET_SIDE_QUEST_BAG', partyIndex }); reduce({ type: 'SET_SIDE_QUEST_PROGRESS', partyIndex, progress: 0 }); }
+    // SpecRef: 8.6 | Clairvoyance | 報酬初期化 initializes the party's reward bags, `t.enhancement_bag`, and
+    // `t.rare_superRare_bag` (the common Super Rare bag belongs to コモン報酬初期化); サイドクエスト初期化 initializes only
+    // `t.side_quest_bag` (9.1.3 3-6-1), never the progress of the active side quest.
+    if (parameters.resetRewards === true) reduce({ type: 'RESET_UNIQUE_BAGS', partyIndex });
+    if (parameters.resetSideQuest === true) reduce({ type: 'RESET_SIDE_QUEST_BAG', partyIndex });
     data = { partyNumber, resetCommonRewards: parameters.resetCommonRewards === true, resetRewards: parameters.resetRewards === true, resetSideQuest: parameters.resetSideQuest === true };
   } else if (operation === 'commit/setting/backup/reset') {
     next = createFreshGameState(next.global.language); resetControlEvents = true; data = {};
@@ -542,13 +562,25 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (!isDebugModeEnabled()) throw new Error('illegal_action');
     debugSettingWrite = planDebugSettingWrite(parameters, context.debugSettings);
     data = { current: describeDebugSettings({ ...context.debugSettings, ...debugSettingWrite }) };
-  } else if (operation === 'commit/setting/enemyEditPane' || operation === 'commit/setting/debug') {
+  } else if (operation === 'commit/setting/enemyEditPane') {
+    // SpecRef: 9.1.3 | Commit | 3-6-3 enemyEditPane — the ordinary player's real Enemy Edit pane, applied after the durable
+    // commit; an API account's own stored settings. Partial update; every field is validated first.
     if (!isDebugModeEnabled()) throw new Error('illegal_action');
-    const key = operation.endsWith('/debug') ? 'debug' : 'enemyEditPane';
-    const current = { ...((settings[key] as Record<string, unknown> | undefined) ?? {}), ...parameters };
-    if (Object.keys(parameters).length > 0) settings[key] = current;
+    const before = context.enemyEditSettings ?? accountEnemyEditSettingsOf(settings);
+    const after = planEnemyEditPaneWrite(parameters, before);
+    const changed = JSON.stringify(after) !== JSON.stringify(before);
+    if (context.enemyEditSettings) {
+      if (changed) enemyEditSettingWrite = after;
+    } else if (Object.keys(parameters).length > 0) {
+      settings.enemyEditPane = describeEnemyEditPane(after);
+    }
+    data = { current: describeEnemyEditPane(after) };
+  } else if (operation === 'commit/setting/debug') {
+    if (!isDebugModeEnabled()) throw new Error('illegal_action');
+    const current = { ...((settings.debug as Record<string, unknown> | undefined) ?? {}), ...parameters };
+    if (Object.keys(parameters).length > 0) settings.debug = current;
     // An API account's debug settings report every field, with defaults for the ones never set (Spec 9.1.4.14).
-    data = { current: key === 'debug' ? describeDebugSettings(accountDebugSettings(current)) : current };
+    data = { current: describeDebugSettings(accountDebugSettings(current)) };
   } else if (operation === 'commit/setting/uiPreferences') {
     // SpecRef: 9.1.4.17 | UI state ownership | uiPreferences closed catalog
     // Unknown or duplicate keys and wrongly typed values reject the whole update; the preferences live in the save.
@@ -561,5 +593,5 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
   }
   else throw new Error('invalid_request');
 
-  return { state: next, data, simulatedAt, settings: context.settings, equipmentHistory: context.equipmentHistory, resetControlEvents, delivery, partyCycleWrites, displaySettingWrite, debugSettingWrite };
+  return { state: next, data, simulatedAt, settings: context.settings, equipmentHistory: context.equipmentHistory, resetControlEvents, delivery, partyCycleWrites, displaySettingWrite, debugSettingWrite, enemyEditSettingWrite };
 }

@@ -7,6 +7,8 @@ import { encodePersistedState } from '../../game/storageCompression';
 import { logInApiAccount, logOutApiAccount, signUpApiAccount, type ApiV1SessionPorts } from './sessionLifecycle';
 import { accountDebugSettingsOf, accountTimeScale } from './debugSettings';
 import { setGameplayDebugOverride } from '../../game/debugSettings';
+import { setColosseumEnemySettingsOverride } from '../../game/colosseum';
+import { accountEnemyEditSettingsOf } from './enemyEditPane';
 import { claimNextDelivery, settleDelivery, type ApiV1DeliveryOutcome, type ApiV1DeliveryRecord } from './deliveries';
 import { completeDeliveredBenefit } from './deliveryCompletion';
 
@@ -67,6 +69,10 @@ export interface ApplicationApiPorts {
     debugSettings?: ApiV1CommitAuthorityDependencies['debugSettings'];
     /** Applies a `commit/setting/debug` change to the running runtime (after the commit is durable). */
     applyDebugSettings?: ApiV1CommitAuthorityDependencies['applyDebugSettings'];
+    /** The ordinary player's real Enemy Edit pane settings (stored on the device). */
+    enemyEditSettings?: ApiV1CommitAuthorityDependencies['enemyEditSettings'];
+    /** Applies a `commit/setting/enemyEditPane` change to the running runtime (after the commit is durable). */
+    applyEnemyEditSettings?: ApiV1CommitAuthorityDependencies['applyEnemyEditSettings'];
   };
   help: { requirements: string; detail: string };
   /** Notifies the UI that an exclusive API session started or ended (it disables state-mutating controls). */
@@ -142,8 +148,11 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
 
   // SpecRef: 9.1.4.14 | debug | An API account's own debug settings take effect while it holds control: its Speed of Time
   // scales its own clocks, and the gameplay rules that read Debug settings follow its values, not the device's Debug pane.
+  // Its own Enemy Edit pane defines the Colosseum enemy in the same way.
   const syncAccountDebugOverride = () => {
-    setGameplayDebugOverride(activeIdentity ? accountDebugSettingsOf(authority.getSnapshot().control.settings) : null);
+    const settings = authority.getSnapshot().control.settings;
+    setGameplayDebugOverride(activeIdentity ? accountDebugSettingsOf(settings) : null);
+    setColosseumEnemySettingsOverride(activeIdentity ? accountEnemyEditSettingsOf(settings) : null);
   };
 
   // SpecRef: 9.1.4.15 | External delivery and rewards | Claim → send → settle → complete
@@ -320,6 +329,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
             headerRuntime: ports.runtime.headerRuntime,
             displaySettings: ports.runtime.displaySettings,
             debugSettings: ports.runtime.debugSettings,
+            enemyEditSettings: ports.runtime.enemyEditSettings,
             colosseumEnabled: ports.runtime.colosseumEnabled?.(),
             chargeDurationScale: ports.runtime.cycleDurationScale(),
           }),
@@ -374,6 +384,8 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
         applyDisplaySettings: ports.runtime.applyDisplaySettings,
         debugSettings: ports.runtime.debugSettings,
         applyDebugSettings: ports.runtime.applyDebugSettings,
+        enemyEditSettings: ports.runtime.enemyEditSettings,
+        applyEnemyEditSettings: ports.runtime.applyEnemyEditSettings,
       }),
       onPublicationFailure: ports.runtime.onPublicationFailure,
       yieldBetweenChunks: ports.runtime.yieldBetweenChunks,

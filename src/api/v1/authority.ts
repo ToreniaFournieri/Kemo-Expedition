@@ -4,6 +4,7 @@ import { createApiRandom, withGameplayRandomSource } from '../../game/gameplayRa
 import { applyApiV1Commit, type ApiV1CommitContext, type ApiV1PartyCycleWrite } from './commitOperations';
 import type { ApiV1DisplaySettings, ApiV1DisplaySettingWrite } from './modeSelect';
 import type { DebugSettings } from '../../game/debugSettings';
+import type { ColosseumEnemySettings } from '../../game/colosseum';
 import { stageApiV1ElapsedProgression } from './elapsedProgression';
 import { resolveConfirmationPolicy } from './confirmationPolicy';
 import { prepareSaveReplacement, type ApiV1DeliveryRecord } from './deliveries';
@@ -103,6 +104,10 @@ export interface ApiV1CommitAuthorityDependencies {
   debugSettings?: () => DebugSettings;
   /** Applies a `commit/setting/debug` change to the runtime (after the commit is durable). */
   applyDebugSettings?: (write: Partial<DebugSettings>) => void;
+  /** The ordinary player's real Enemy Edit pane settings; omitted for an API account, which keeps its own. */
+  enemyEditSettings?: () => ColosseumEnemySettings;
+  /** Applies a `commit/setting/enemyEditPane` change to the runtime (after the commit is durable). */
+  applyEnemyEditSettings?: (settings: ColosseumEnemySettings) => void;
   createOpaqueId: () => string;
   createRandomSeed: () => number;
   now: () => number;
@@ -275,6 +280,7 @@ export async function executeApiV1CommitTransaction(
         restDurationMs: dependencies.restDurationMs,
         displaySettings: dependencies.displaySettings?.(),
         debugSettings: dependencies.debugSettings?.(),
+        enemyEditSettings: dependencies.enemyEditSettings?.(),
       }));
     }
   } catch (error) {
@@ -335,6 +341,7 @@ export async function executeApiV1CommitTransaction(
   // Display settings are runtime state, not save state, so they apply whether or not the save changed.
   if (outcome.displaySettingWrite && Object.keys(outcome.displaySettingWrite).length > 0) dependencies.applyDisplaySettings?.(outcome.displaySettingWrite);
   if (outcome.debugSettingWrite && Object.keys(outcome.debugSettingWrite).length > 0) dependencies.applyDebugSettings?.(outcome.debugSettingWrite);
+  if (outcome.enemyEditSettingWrite) dependencies.applyEnemyEditSettings?.(outcome.enemyEditSettingWrite);
 
   let published = !stateChanged;
   if (stateChanged) {
