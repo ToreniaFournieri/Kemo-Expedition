@@ -408,11 +408,15 @@ HP: 312                 タイプ: 神魔
 
 - macOS通知
 
-- API
-  - Application API v1 checkbox
-    - Boolean.
-    - Before turning on, a dialog warns that local programs will be able to control this game.
-
+* API option
+  * `Application API v1`
+    * Boolean.
+    * Before enabling, display a confirmation dialog warning that local programs will be able to control the game through the API.
+    * This setting is persisted.
+  * `secretToken`
+    * Secret token used to authenticate Application API v1 requests.
+    * Generated when Application API v1 is enabled.
+    * Keep this token confidential.
 
 
 **Feedback フィードバック**
