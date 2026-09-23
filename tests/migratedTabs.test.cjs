@@ -257,6 +257,12 @@ test('HomeScreen wires the Setting tab\'s migrated panels through the Applicatio
     /actions\.(setLanguage|markDeveloperNewsRead|resetCommonBags|resetUniqueBags|resetSideQuestBag|resetGame|importGameState|getCompressedSavePayload)\b/,
     'a migrated Setting panel must not be wired to a raw reducer action',
   );
+  // Mode Select display settings commit through `modeSelect`, never straight to the runtime state setters; auto-repeat
+  // stays local by Spec 9.1.3, 3-6-2.
+  assert.match(jsx, /onSetGameMode=\{\(mode\) => commitDisplaySetting\(/);
+  assert.match(jsx, /onSetDarkModeSetting=\{\(setting\) => commitDisplaySetting\(/);
+  assert.match(jsx, /onSetExpeditionStatsDisplayEnabled=\{\(enabled\) => commitDisplaySetting\(/);
+  assert.doesNotMatch(jsx, /=\{(setGameMode|setDarkModeSetting|setIsExpeditionStatsDisplayEnabled)\}/);
 });
 
 test('HomeScreen gives the header the overview projection, not raw game state or reducer actions', () => {

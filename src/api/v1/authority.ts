@@ -2,6 +2,7 @@ import type { GameState, SavedEquipmentSet } from '../../types';
 import { serializeGameState } from '../../game/saveCodec';
 import { createApiRandom, withGameplayRandomSource } from '../../game/gameplayRandom';
 import { applyApiV1Commit, type ApiV1CommitContext, type ApiV1PartyCycleWrite } from './commitOperations';
+import type { ApiV1DisplaySettings, ApiV1DisplaySettingWrite } from './modeSelect';
 import { stageApiV1ElapsedProgression } from './elapsedProgression';
 import { resolveConfirmationPolicy } from './confirmationPolicy';
 import { prepareSaveReplacement, type ApiV1DeliveryRecord } from './deliveries';
@@ -93,6 +94,10 @@ export interface ApiV1CommitAuthorityDependencies {
   restDurationMs?: ApiV1CommitContext['restDurationMs'];
   /** Applies live party-cycle changes right before the committed state is published (after it is durable). */
   applyPartyCycleWrites?: (writes: ApiV1PartyCycleWrite[]) => void;
+  /** The ordinary player's display settings; omitted for an API account, which has none. */
+  displaySettings?: () => ApiV1DisplaySettings;
+  /** Applies a `modeSelect` display-setting change to the runtime (after the commit is durable). */
+  applyDisplaySettings?: (write: ApiV1DisplaySettingWrite) => void;
   createOpaqueId: () => string;
   createRandomSeed: () => number;
   now: () => number;
@@ -263,6 +268,7 @@ export async function executeApiV1CommitTransaction(
         colosseumEnabled: dependencies.colosseumEnabled?.(),
         partyCycle: dependencies.partyCycle,
         restDurationMs: dependencies.restDurationMs,
+        displaySettings: dependencies.displaySettings?.(),
       }));
     }
   } catch (error) {
@@ -320,6 +326,8 @@ export async function executeApiV1CommitTransaction(
     return failure('save_failed', 'The previous account manifest remains authoritative.');
   }
   if (changed) dependencies.notifyPopupActivity?.();
+  // Display settings are runtime state, not save state, so they apply whether or not the save changed.
+  if (outcome.displaySettingWrite && Object.keys(outcome.displaySettingWrite).length > 0) dependencies.applyDisplaySettings?.(outcome.displaySettingWrite);
 
   let published = !stateChanged;
   if (stateChanged) {

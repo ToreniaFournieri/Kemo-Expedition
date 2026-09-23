@@ -57,6 +57,10 @@ export interface ApplicationApiPorts {
     restDurationMs?: ApiV1CommitAuthorityDependencies['restDurationMs'];
     /** Applies a sortie's party-cycle reset to the running runtime (called after the commit is durable). */
     applyPartyCycleWrites?: ApiV1CommitAuthorityDependencies['applyPartyCycleWrites'];
+    /** The ordinary player's display settings (dark mode, theme, statistics, auto-repeat), stored outside the save. */
+    displaySettings?: ApiV1CommitAuthorityDependencies['displaySettings'];
+    /** Applies a `commit/setting/modeSelect` display-setting change to the running runtime (after the commit is durable). */
+    applyDisplaySettings?: ApiV1CommitAuthorityDependencies['applyDisplaySettings'];
   };
   help: { requirements: string; detail: string };
   /** Notifies the UI that an exclusive API session started or ended (it disables state-mutating controls). */
@@ -299,6 +303,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
             partyCycle: ports.runtime.partyCycle,
             disclosedLog: ports.runtime.disclosedExpeditionLog,
             headerRuntime: ports.runtime.headerRuntime,
+            displaySettings: ports.runtime.displaySettings,
             colosseumEnabled: ports.runtime.colosseumEnabled?.(),
             chargeDurationScale: ports.runtime.cycleDurationScale(),
           }),
@@ -345,6 +350,8 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
         partyCycle: ports.runtime.partyCycle,
         restDurationMs: ports.runtime.restDurationMs,
         applyPartyCycleWrites: ports.runtime.applyPartyCycleWrites,
+        displaySettings: ports.runtime.displaySettings,
+        applyDisplaySettings: ports.runtime.applyDisplaySettings,
       }),
       onPublicationFailure: ports.runtime.onPublicationFailure,
       yieldBetweenChunks: ports.runtime.yieldBetweenChunks,

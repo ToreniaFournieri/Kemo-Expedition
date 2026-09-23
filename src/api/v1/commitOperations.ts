@@ -2,7 +2,8 @@ import type { ApiV1DeliveryRecord } from './deliveries';
 import { buildFeedbackDeliveryPayload, buildProgressReportDeliveryPayload } from './deliveryContent';
 import { DEVELOPER_NEWS_ITEMS } from '../../data/developerNews';
 import { getDeityId, getDeityNameFromId, isNoFaithDeity, normalizeDeityName } from '../../game/deity';
-import { isDebugModeEnabled } from '../../game/environment';
+import { getEnvironmentId, isDebugModeEnabled } from '../../game/environment';
+import { describeModeSelectCurrent, planDisplaySettingWrite, type ApiV1DisplaySettings, type ApiV1DisplaySettingWrite } from './modeSelect';
 import { canCharacterEquipCategory, createEquipmentSetSnapshot, evaluateEquipmentSet, evaluateEquipmentState, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
 import { recordEquipmentState, redoEquipmentState, undoEquipmentState } from '../../game/equipmentHistory';
 import { computeCharacterStats } from '../../game/characterComputation';
@@ -67,6 +68,8 @@ export interface ApiV1CommitContext {
   readonly partyCycle?: (partyIndex: number) => ApiV1PartyCycleView | undefined;
   /** Duration of `state.rest` for a party under the current Speed of Time, deity, and modifiers (the UI's own rule). */
   readonly restDurationMs?: (party: Party) => number;
+  /** The ordinary player's display settings (dark mode, theme, statistics, auto-repeat); absent for an API account. */
+  readonly displaySettings?: ApiV1DisplaySettings;
 }
 
 /** What a sortie needs to know about the live party cycle (Spec 5.1.1). */
@@ -98,6 +101,8 @@ export interface ApiV1CommitOutcome {
   delivery: ApiV1DeliveryRecord | null;
   /** Live party-cycle changes the caller applies after the durable commit (empty for every operation but a sortie). */
   partyCycleWrites?: ApiV1PartyCycleWrite[];
+  /** Display-setting changes the caller applies to the runtime after the durable commit (`modeSelect` only). */
+  displaySettingWrite?: ApiV1DisplaySettingWrite;
 }
 
 /**
@@ -114,6 +119,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
   let resetControlEvents = false;
   let delivery: ApiV1DeliveryRecord | null = null;
   const partyCycleWrites: ApiV1PartyCycleWrite[] = [];
+  let displaySettingWrite: ApiV1DisplaySettingWrite | undefined;
   const reduce = (action: Parameters<typeof gameReducer>[1]) => { next = gameReducer(next, action); };
   const partyMatch = operation.match(/^commit\/expedition\/(\d+)\/(changeExpedition|sortie|godsBattle|resetStatistics)$/);
   const characterMatch = operation.match(/^commit\/build\/character\/(\d+)\/(.+)$/);
@@ -496,10 +502,16 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
   } else if (operation === 'commit/setting/modeSelect') {
     if (parameters.mode !== undefined && parameters.mode !== context.gameMode) throw new Error('illegal_action');
     if (parameters.enemyLevelOffset !== undefined && Number(parameters.enemyLevelOffset) !== context.enemyLevelOffset) throw new Error('illegal_action');
+    // SpecRef: 9.1.3 | Commit | 3-6-2 modeSelect — `autoRepeat` is not controlled through the API (the schema rejects it).
+    // Display settings live in the ordinary player's runtime, not in the save: validate them here and let the caller
+    // apply them after the durable commit, so the Setting tab and the API always report the same values.
+    if (parameters.autoRepeat !== undefined) throw new Error('invalid_request');
+    displaySettingWrite = planDisplaySettingWrite(parameters, context.displaySettings, getEnvironmentId(), context.gameMode);
     if (parameters.language !== undefined) reduce({ type: 'SET_LANGUAGE', language: String(parameters.language) as GameState['global']['language'] });
-    const current = { ...((settings.modeSelect as Record<string, unknown> | undefined) ?? {}), ...parameters, mode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: next.global.language };
-    if (Object.keys(parameters).length > 0) settings.modeSelect = current;
-    data = { current };
+    // Earlier builds echoed requested values into the control settings; drop that stale copy.
+    delete settings.modeSelect;
+    const display = context.displaySettings ? { ...context.displaySettings, ...displaySettingWrite } : undefined;
+    data = { current: describeModeSelectCurrent({ gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: next.global.language }, display) };
   } else if (operation === 'commit/setting/enemyEditPane' || operation === 'commit/setting/debug') {
     if (!isDebugModeEnabled()) throw new Error('illegal_action');
     const key = operation.endsWith('/debug') ? 'debug' : 'enemyEditPane';
@@ -518,5 +530,5 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
   }
   else throw new Error('invalid_request');
 
-  return { state: next, data, simulatedAt, settings: context.settings, equipmentHistory: context.equipmentHistory, resetControlEvents, delivery, partyCycleWrites };
+  return { state: next, data, simulatedAt, settings: context.settings, equipmentHistory: context.equipmentHistory, resetControlEvents, delivery, partyCycleWrites, displaySettingWrite };
 }

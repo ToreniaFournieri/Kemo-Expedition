@@ -43,6 +43,7 @@ import {
   createUncommonRewardBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag,
 } from '../../game/bags.ts';
 import type { ApiV1PartyCycleView } from './commitOperations.ts';
+import { describeModeSelectCurrent, selectableThemes, toThemeKey, type ApiV1DisplaySettings } from './modeSelect.ts';
 import { MAX_LEVEL, type EnemyDef, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party, type RandomBag } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
@@ -79,6 +80,8 @@ export interface ApiV1ReadContext {
   /** The Colosseum Debug setting of the ordinary player's runtime; absent for an API account. */
   readonly colosseumEnabled?: boolean;
   readonly headerRuntime?: () => ApiV1HeaderRuntime;
+  /** The ordinary player's display settings (Mode Select); absent for an API account, which reports them as `null`. */
+  readonly displaySettings?: () => ApiV1DisplaySettings;
   /** The Instant Expedition charge clock scale (the current Speed of Time); 1 when omitted. */
   readonly chargeDurationScale?: number;
   readonly control?: { settings?: Record<string, unknown>; deliveries?: unknown[]; equipmentHistory?: Record<string, EquipmentHistoryBag> };
@@ -652,7 +655,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     const pendingDeliveryIds = ((context.control?.deliveries as ApiV1DeliveryRecord[] | undefined) ?? [])
       .filter((entry) => entry.status === 'queued' || entry.status === 'sending' || entry.status === 'unknown')
       .map((entry) => entry.deliveryId);
-    return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), uiPreferences: listUiPreferences(state.global.uiPreferences), uiPreferenceCatalog: describeUiPreferenceCatalog(), pendingDeliveryIds } };
+    return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), modeSelect: describeModeSelectCurrent({ gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: state.global.language }, context.displaySettings?.()), uiPreferences: listUiPreferences(state.global.uiPreferences), uiPreferenceCatalog: describeUiPreferenceCatalog(), pendingDeliveryIds } };
   }
 
   const expedition = operationId.match(/^read\/expedition\/(\d+)\/(setting|latestBattleLog|simulationRun|chargeStock)$/);
@@ -834,7 +837,17 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   const diaryEntry = operationId.match(/^read\/diary\/diaryEntry\/(.+)$/);
   if (diaryEntry) return { entry: findDiaryEntryView(state, decodeURIComponent(diaryEntry[1])) };
 
-  if (operationId === 'read/setting/modeSelect') return { current: { mode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: state.global.language, ...((context.control?.settings?.modeSelect as Record<string, unknown> | undefined) ?? {}) }, validOptions: { mode: ['mode.normal', 'mode.orca'], enemyLevelOffset: { min: 0, max: 20, step: 1 }, language: ['ja', 'en', 'zh-CN', 'zh-TW', 'ko'], darkMode: ['off', 'on', 'system'], theme: ['theme.kemo', 'theme.laika', 'theme.leonard', 'theme.orca', 'theme.nox', 'theme.luna', 'theme.mishka', 'theme.puchitsa', 'theme.hagakure', 'theme.souga-ha', 'theme.finn', 'theme.merle', 'theme.rosaria', 'theme.milly', 'theme.guabi', 'theme.nemea', 'theme.bernetta', 'theme.yone', 'theme.niv', 'theme.nave'] } };
+  if (operationId === 'read/setting/modeSelect') {
+    // SpecRef: 9.1.3 | Read | 2-6-2 modeSelect — the real runtime values, never an echo of an earlier request.
+    const display = context.displaySettings?.();
+    return {
+      current: describeModeSelectCurrent({ gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: state.global.language }, display),
+      validOptions: {
+        mode: ['mode.normal', 'mode.orca'], enemyLevelOffset: { min: 0, max: 20, step: 1 }, language: ['ja', 'en', 'zh-CN', 'zh-TW', 'ko'], darkMode: ['off', 'on', 'system'],
+        theme: display ? selectableThemes(context.environment, context.gameMode, display.theme).map(toThemeKey) : [],
+      },
+    };
+  }
   if (operationId === 'read/setting/enemyEditPane') return { current: (context.control?.settings?.enemyEditPane as Record<string, unknown> | undefined) ?? {}, validOptions: { enemyLevel: { min: 1, max: 99, step: 1 }, terrainEffect: ['none', ...(TERRAIN_EFFECT_GLOSSARY_SECTION?.entries.map((entry) => entry.key) ?? [])], enemyType: [...new Set(ENEMIES.map((enemy) => enemy.enemyType))], mainClass: CLASSES.map((entry) => entry.id), subClass: ['none', ...CLASSES.map((entry) => entry.id)], addedAbilities: { maximumEntries: 5, level: { min: 1, max: 5 } } } };
   if (operationId === 'read/setting/debug') return { current: (context.control?.settings?.debug as Record<string, unknown> | undefined) ?? {}, validOptions: { speedOfTime: ['real', 'x1.2', 'x5', 'x20', 'x100', 'unlimited'], godsBattleCondition: ['normal', 'simple'], godsStrength: ['normal', 'veryWeak'] } };
   if (operationId.startsWith('read/setting/delivery/')) { const deliveryId = operationId.split('/').at(-1); const delivery = (context.control?.deliveries as ApiV1DeliveryRecord[] | undefined)?.find((entry) => entry.deliveryId === deliveryId); if (!delivery) throw new Error('not_found'); return projectDelivery(delivery); }

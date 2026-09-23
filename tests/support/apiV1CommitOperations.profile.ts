@@ -57,17 +57,40 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.ok(threw, 'expected a not_found error for an unknown party number');
 }
 
-// 3. commit/setting/modeSelect: matching mode/offset is accepted, and the (possibly mutated) settings bag passed in
-// via context is the exact object echoed back for the caller to persist.
+// 3. commit/setting/modeSelect: the language commits to the save, and the reply reports real values rather than an echo
+// of the request. An API account (no display settings) reports the runtime-owned fields as null. A stale echoed copy
+// left in the control settings by an earlier build is dropped.
 // Use 'ja' rather than 'en' here: SET_LANGUAGE synchronously requires its dictionary to already be
 // loaded, and only 'ja' ships as the eagerly-bundled fallback outside the real lazy-loading UI runtime.
 {
-  const settings: Record<string, unknown> = {};
+  const settings: Record<string, unknown> = { modeSelect: { theme: 'theme.nox', autoRepeat: false } };
   const outcome = applyApiV1Commit('commit/setting/modeSelect', seed, { language: 'ja' }, baseContext({ settings }));
   assert.equal(outcome.state.global.language, 'ja');
-  assert.equal((outcome.data.current as { language: string }).language, 'ja');
+  assert.deepEqual(outcome.data.current, { mode: 'mode.normal', enemyLevelOffset: 0, language: 'ja', darkMode: null, autoRepeat: null, showExpeditionStats: null, theme: null });
   assert.equal(outcome.settings, settings, 'the exact injected settings object is echoed back, not a copy');
-  assert.equal((outcome.settings.modeSelect as { language: string }).language, 'ja');
+  assert.equal(outcome.settings.modeSelect, undefined, 'the stale echoed copy is removed');
+  assert.deepEqual(outcome.displaySettingWrite, {});
+}
+
+// 3b. commit/setting/modeSelect display settings (Spec 9.1.3 3-6-2; 8.6): validated against the runtime's real values,
+// returned as a write for the caller to apply after the durable commit, and reported in `current`.
+{
+  const displaySettings = { darkMode: 'off', theme: 'm.kemo', showExpeditionStats: false, autoRepeat: false } as const;
+  const outcome = applyApiV1Commit('commit/setting/modeSelect', seed, { darkMode: 'on', theme: 'theme.laika', showExpeditionStats: true }, baseContext({ displaySettings }));
+  assert.deepEqual(outcome.displaySettingWrite, { darkMode: 'on', theme: 'm.laika', showExpeditionStats: true });
+  assert.deepEqual(outcome.data.current, { mode: 'mode.normal', enemyLevelOffset: 0, language: seed.global.language, darkMode: 'on', autoRepeat: false, showExpeditionStats: true, theme: 'theme.laika' });
+  // Setting a value the runtime already has is a valid no-op.
+  const same = applyApiV1Commit('commit/setting/modeSelect', seed, { darkMode: 'off', theme: 'theme.kemo' }, baseContext({ displaySettings }));
+  assert.deepEqual(same.displaySettingWrite, {});
+  const rejects = (parameters: Record<string, unknown>, context: Partial<ApiV1CommitContext>, why: string) => {
+    let code = '';
+    try { applyApiV1Commit('commit/setting/modeSelect', seed, parameters, baseContext(context)); } catch (error) { code = String(error); }
+    assert.ok(code.includes('illegal_action'), `${why}: ${code}`);
+  };
+  // The Node test environment resolves to `prod`, where Nox is not available in production (Spec 8.6 theme table).
+  rejects({ theme: 'theme.nox' }, { displaySettings }, 'a theme unavailable in this environment');
+  rejects({ theme: 'theme.laika' }, { displaySettings, gameMode: 'mode.orca' }, 'mode.orca locks the theme');
+  rejects({ darkMode: 'on' }, {}, 'an API account has no display settings');
 }
 
 // 4. commit/setting/modeSelect: a mismatched mode is illegal_action, not silently accepted.

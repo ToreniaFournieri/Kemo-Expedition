@@ -19,6 +19,7 @@ interface Harness {
   published: GameState[];
   playerCommitEvents: string[];
   cycleWrites: unknown[];
+  displayWrites: unknown[];
   sessionEvents: boolean[];
   idleState: GameState;
   /** Moves the runtime's wall clock (the ordinary player's in-game time). */
@@ -43,6 +44,8 @@ function harness(): Harness {
   const persistedPlayers: GameState[] = [];
   const playerCommitEvents: string[] = [];
   const cycleWrites: unknown[] = [];
+  const displayWrites: unknown[] = [];
+  let display = { darkMode: 'off', theme: 'm.kemo', showExpeditionStats: false, autoRepeat: true } as NonNullable<ReturnType<NonNullable<ApplicationApiPorts['runtime']['displaySettings']>>>;
   const sessionEvents: boolean[] = [];
   let counter = 0;
   let returnPayload: string | null = null;
@@ -83,6 +86,8 @@ function harness(): Harness {
       partyCycle: () => ({ state: 'explore' }),
       restDurationMs: () => 9_999,
       applyPartyCycleWrites: (writes) => { playerCommitEvents.push('cycle'); cycleWrites.push(...writes); },
+      displaySettings: () => display,
+      applyDisplaySettings: (write) => { playerCommitEvents.push('display'); displayWrites.push(write); display = { ...display, ...write }; },
       yieldBetweenChunks: async () => undefined,
       createOpaqueId: () => `opaque-id-${String(++counter).padStart(16, '0')}`,
       createRandomSeed: () => 12345,
@@ -91,7 +96,7 @@ function harness(): Harness {
     help: { requirements: 'REQUIREMENTS', detail: 'DETAIL' },
     onSessionActive: (active) => { sessionEvents.push(active); },
   };
-  return { cycleWrites, api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, idleState, setNow: (value) => { runtimeNow = value; } };
+  return { cycleWrites, displayWrites, api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, idleState, setNow: (value) => { runtimeNow = value; } };
 }
 
 type Step = { operation: string; pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown>; mutating: boolean };
@@ -218,6 +223,35 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
   assert.equal(header.data.headerInfo.inGameTime, new Date(threeHours).toISOString(), 'reads report the current time');
   const spent = await local.commit('commit/expedition/{p}/sortie', { pathParameters: { p: 1 }, parameters: {} }) as { error?: unknown };
   assert.equal(spent.error, undefined, 'the charge that recharged in three hours is available');
+}
+
+// 1a-quater. Mode Select reports and changes the ordinary player's real display settings (Spec 9.1.3 2-6-2 / 3-6-2; 8.6):
+// the change is applied to the runtime after persistence, `autoRepeat` cannot be commanded, and an API account, which has
+// no display settings, reads them as null and cannot change them.
+{
+  const h = harness();
+  const local = h.api.createInProcessAdapter();
+  type ModeSelect = { data: { current: Record<string, unknown>; validOptions: { theme: string[] } }; error?: { code: string } };
+  const before = await local.read('read/setting/modeSelect', {}) as ModeSelect;
+  assert.deepEqual(before.data.current, { mode: 'mode.normal', enemyLevelOffset: 0, language: 'ja', darkMode: 'off', autoRepeat: true, showExpeditionStats: false, theme: 'theme.kemo' });
+  assert.ok(before.data.validOptions.theme.includes('theme.laika') && !before.data.validOptions.theme.includes('theme.nox'), 'only themes selectable in production');
+  const changed = await local.commit('commit/setting/modeSelect', { parameters: { darkMode: 'on', theme: 'theme.laika' } }) as ModeSelect;
+  assert.equal(changed.error, undefined);
+  assert.deepEqual(h.displayWrites, [{ darkMode: 'on', theme: 'm.laika' }]);
+  assert.deepEqual(h.playerCommitEvents, ['persist', 'display'], 'applied after persistence; the save itself did not change');
+  const after = await local.read('read/setting/modeSelect', {}) as ModeSelect;
+  assert.equal(after.data.current.darkMode, 'on');
+  assert.equal(after.data.current.theme, 'theme.laika');
+  const autoRepeat = await local.commit('commit/setting/modeSelect', { parameters: { autoRepeat: false } }) as ModeSelect;
+  assert.equal(autoRepeat.error?.code, 'invalid_request', 'autoRepeat is not controlled through the API');
+  assert.equal(h.displayWrites.length, 1);
+
+  await h.api.handle('fundamental/logIn', { ...identity });
+  const account = await h.api.handle('read/setting/modeSelect', {}) as ModeSelect;
+  assert.deepEqual(account.data.current, { mode: 'mode.normal', enemyLevelOffset: 0, language: 'ja', darkMode: null, autoRepeat: null, showExpeditionStats: null, theme: null });
+  const refused = await h.api.handle('commit/setting/modeSelect', { expectedRevision: 0, idempotencyKey: 'mode-select-account-0001', parameters: { darkMode: 'on' } }) as ModeSelect;
+  assert.equal(refused.error?.code, 'illegal_action');
+  assert.equal(h.displayWrites.length, 1, 'an API account never changes the player runtime');
 }
 
 // 1b. A UI-confirmed trusted command still traverses the shared challenge/token policy with one idempotency key.

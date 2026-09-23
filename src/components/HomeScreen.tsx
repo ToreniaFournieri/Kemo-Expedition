@@ -107,6 +107,7 @@ import { buildInventoryView } from '../api/v1/inventoryView';
 import { buildPartyExpeditionLogView, type ExpeditionLogView, type LatestBattleLogProjection } from '../api/v1/expeditionLogView';
 import { buildDiaryTabView, type DiaryProjection } from '../api/v1/diaryTabView';
 import { type HeaderProjection } from '../api/v1/headerView';
+import { toThemeKey, type ApiV1DisplaySettings, type ApiV1DisplaySettingWrite } from '../api/v1/modeSelect';
 import { HeaderBar } from './home/HeaderBar';
 import { useApiRead, useApiReadMany } from './home/useApiRead';
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
@@ -498,6 +499,9 @@ export function HomeScreen({
   const disclosedExpeditionLogsRef = useRef<Array<Party['lastExpeditionLog'] | null>>([]);
   const restDurationMsRef = useRef<(party: Party) => number>(() => 1000);
   const sortieCycleWritesRef = useRef<(writes: ApiV1PartyCycleWrite[]) => void>(() => undefined);
+  // SpecRef: 9.1.3 | Read 2-6-2 / Commit 3-6-2 modeSelect: the display settings the runtime owns outside the save.
+  const displaySettingsRef = useRef<ApiV1DisplaySettings>({ darkMode: 'system', theme: 'm.kemo', showExpeditionStats: false, autoRepeat: true });
+  const applyDisplaySettingsRef = useRef<(write: ApiV1DisplaySettingWrite) => void>(() => undefined);
   apiActionsRef.current = actions;
   debugSettingsRef.current = debugSettings;
   const effectiveDebugSettings = useMemo<DebugSettings>(() => runtimeGameMode === 'mode.orca' && !hasOrcaTimeSpeedOverride
@@ -599,6 +603,8 @@ export function HomeScreen({
         applyPartyCycleWrites: (writes) => sortieCycleWritesRef.current(writes),
         disclosedExpeditionLog: (partyIndex) => disclosedExpeditionLogsRef.current[partyIndex],
         headerRuntime: () => headerRuntimeRef.current,
+        displaySettings: () => displaySettingsRef.current,
+        applyDisplaySettings: (write) => applyDisplaySettingsRef.current(write),
         colosseumEnabled: () => colosseumEnabledRef.current,
       },
       help: { requirements: apiRequirementsDocument, detail: apiDetailDocument },
@@ -799,6 +805,14 @@ export function HomeScreen({
     bonusUntilMs: timeSpeedBonusUntilMs,
     autoRepeat: isAutoRepeatEnabled,
     progressReportConfigured: Boolean({ dev: DEV_DISCORD_WEBHOOK_URL, beta: BETA_DISCORD_WEBHOOK_URL, orca: ORCA_DISCORD_WEBHOOK_URL }[getEnvironmentId() as string] ?? PROD_DISCORD_WEBHOOK_URL),
+  };
+  displaySettingsRef.current = { darkMode: darkModeSetting, theme: gameMode, showExpeditionStats: isExpeditionStatsDisplayEnabled, autoRepeat: isAutoRepeatEnabled };
+  applyDisplaySettingsRef.current = (write) => {
+    // The ref is updated at once so a following commit validates against the new values before the next render.
+    displaySettingsRef.current = { ...displaySettingsRef.current, ...write };
+    if (write.darkMode !== undefined) setDarkModeSetting(write.darkMode);
+    if (write.theme !== undefined) setGameMode(write.theme);
+    if (write.showExpeditionStats !== undefined) setIsExpeditionStatsDisplayEnabled(write.showExpeditionStats);
   };
 
   useEffect(() => {
@@ -5193,6 +5207,13 @@ export function HomeScreen({
     await ensureLanguageLoaded(nextLanguage);
     await inProcessApiRef.current?.commit('commit/setting/modeSelect', { parameters: { language: nextLanguage } });
   }, []);
+  // Dark mode, the theme color, and the statistics switch commit through `modeSelect`, which validates them and applies
+  // them to the runtime, so the Setting tab and the API always agree. Auto-repeat stays local (Spec 9.1.3, 3-6-2 note).
+  const commitDisplaySetting = useCallback((parameters: Record<string, unknown>) => {
+    void inProcessApiRef.current?.commit('commit/setting/modeSelect', { parameters }).then((response) => {
+      if (response?.error) console.error('[api-v1] Mode Select change failed', response.error);
+    });
+  }, []);
 
   // SpecRef: 8.6 | UI_SETTING | 5.1 Backup (Export) — the export byte source, not the platform-specific
   // share/download/file-picker logic around it, which stays exactly as it is in SettingTab.tsx.
@@ -5464,17 +5485,17 @@ export function HomeScreen({
         bestiaryScrollTop={bestiaryScrollTop}
         onSetBestiaryScrollTop={setBestiaryScrollTop}
         gameMode={gameMode}
-        onSetGameMode={setGameMode}
+        onSetGameMode={(mode) => commitDisplaySetting({ theme: toThemeKey(mode) })}
         runtimeGameMode={runtimeGameMode}
         onSetRuntimeGameMode={updateRuntimeGameMode}
         orcaEnemyLevelOffset={effectiveOrcaEnemyLevelOffset}
         onSetOrcaEnemyLevelOffset={updateOrcaEnemyLevelOffset}
         darkModeSetting={darkModeSetting}
-        onSetDarkModeSetting={setDarkModeSetting}
+        onSetDarkModeSetting={(setting) => commitDisplaySetting({ darkMode: setting })}
         isAutoRepeatEnabled={isAutoRepeatEnabled}
         onSetAutoRepeatEnabled={setAutoRepeatEnabled}
         isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
-        onSetExpeditionStatsDisplayEnabled={setIsExpeditionStatsDisplayEnabled}
+        onSetExpeditionStatsDisplayEnabled={(enabled) => commitDisplaySetting({ showExpeditionStats: enabled })}
         debugSettings={effectiveDebugSettings}
         onUpdateDebugSettings={updateDebugSettings}
         partyCount={state.parties.length}

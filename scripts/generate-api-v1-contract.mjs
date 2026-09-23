@@ -188,10 +188,17 @@ const diarySettingValidOptions = strict({
   sideQuestThreshold: Type.Array(sideQuestThreshold), notifyGodsBattle: Type.Array(Type.Boolean()), defeatNotificationMode: Type.Array(defeatNotificationMode),
   notifyCyclePopup: Type.Array(Type.Boolean()), notifyItemDropPopup: Type.Array(Type.Boolean()), notifyAutoEquipmentPopup: Type.Array(Type.Boolean()), notifySideQuestPopup: Type.Array(Type.Boolean()),
 });
+// SpecRef: 9.1.3 | Commit | 3-6-2 modeSelect — `autoRepeat` is read-only (not controlled through the API).
+const themeKey = literals('theme.kemo', 'theme.laika', 'theme.leonard', 'theme.orca', 'theme.nox', 'theme.luna', 'theme.mishka', 'theme.puchitsa', 'theme.hagakure', 'theme.souga-ha', 'theme.finn', 'theme.merle', 'theme.rosaria', 'theme.milly', 'theme.guabi', 'theme.nemea', 'theme.bernetta', 'theme.yone', 'theme.niv', 'theme.nave');
 const modeSelect = {
   mode: optional(modeKey), enemyLevelOffset: optional(Type.Integer({ minimum: 0, maximum: 20 })), language: optional(language), darkMode: optional(literals('off', 'on', 'system')),
-  autoRepeat: optional(Type.Boolean()), showExpeditionStats: optional(Type.Boolean()),
-  theme: optional(literals('theme.kemo', 'theme.laika', 'theme.leonard', 'theme.orca', 'theme.nox', 'theme.luna', 'theme.mishka', 'theme.puchitsa', 'theme.hagakure', 'theme.souga-ha', 'theme.finn', 'theme.merle', 'theme.rosaria', 'theme.milly', 'theme.guabi', 'theme.nemea', 'theme.bernetta', 'theme.yone', 'theme.niv', 'theme.nave')),
+  showExpeditionStats: optional(Type.Boolean()), theme: optional(themeKey),
+};
+// Display settings belong to the ordinary player's runtime and are `null` for an API account.
+const modeSelectCurrent = {
+  mode: modeKey, enemyLevelOffset: Type.Integer({ minimum: 0, maximum: 20 }), language,
+  darkMode: Type.Union([literals('off', 'on', 'system'), Type.Null()]), autoRepeat: Type.Union([Type.Boolean(), Type.Null()]),
+  showExpeditionStats: Type.Union([Type.Boolean(), Type.Null()]), theme: Type.Union([themeKey, Type.Null()]),
 };
 const debug = {
   runtimeDiagnostics: optional(Type.Boolean()), clairvoyance: optional(Type.Boolean()), speedOfTime: optional(literals('real', 'x1.2', 'x5', 'x20', 'x100', 'unlimited')),
@@ -383,7 +390,7 @@ const diaryProjectionSchema = strict({
     settings: strict(diarySettingMembers), entries: Type.Array(diaryEntrySummary),
   })),
 });
-const settingProjectionSchema = strict({ language, environment: Type.String(), gameMode: modeKey, enemyLevelOffset: Type.Integer({ minimum: 0, maximum: 20 }), modeSelect: optional(strict(modeSelect)), debug: optional(strict(debug)), enemyEditPane: optional(strict(enemyEdit)), uiPreferences: Type.Array(strict({ key: stableKey, value: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), uiPreferenceCatalog: Type.Array(strict({ family: stableKey, subject: Type.Literal('characterId'), type: Type.Union([Type.Literal('string'), Type.Literal('number'), Type.Literal('boolean')]), options: Type.Array(Type.String()), defaultValue: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), pendingDeliveryIds: Type.Array(stableKey) });
+const settingProjectionSchema = strict({ language, environment: Type.String(), gameMode: modeKey, enemyLevelOffset: Type.Integer({ minimum: 0, maximum: 20 }), modeSelect: strict(modeSelectCurrent), debug: optional(strict(debug)), enemyEditPane: optional(strict(enemyEdit)), uiPreferences: Type.Array(strict({ key: stableKey, value: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), uiPreferenceCatalog: Type.Array(strict({ family: stableKey, subject: Type.Literal('characterId'), type: Type.Union([Type.Literal('string'), Type.Literal('number'), Type.Literal('boolean')]), options: Type.Array(Type.String()), defaultValue: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })), pendingDeliveryIds: Type.Array(stableKey) });
 const popupStreamSchema = strict({ events: Type.Array(popupEvent) });
 
 // SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視)
@@ -456,7 +463,7 @@ const responseDataSchemas = {
   'read/diary/{p}/diarySetting': strict({ current: strict(diarySettingMembers), validOptions: diarySettingValidOptions }),
   'read/diary/diaryEntry/{diaryEntryId}': strict({ entry: diaryEntry }),
   'read/setting/enemyEditPane': strict({ current: strict(enemyEdit), validOptions: strict({ enemyLevel: range, terrainEffect: Type.Array(Type.String()), enemyType: Type.Array(Type.String()), mainClass: Type.Array(stableKey), subClass: Type.Array(Type.String()), addedAbilities: strict({ maximumEntries: Type.Integer({ minimum: 0 }), level: strict({ min: Type.Integer(), max: Type.Integer() }) }) }) }),
-  'read/setting/modeSelect': strict({ current: strict(modeSelect), validOptions: strict({ mode: Type.Array(modeKey), enemyLevelOffset: range, language: Type.Array(language), darkMode: Type.Array(Type.String()), theme: Type.Array(Type.String()) }) }),
+  'read/setting/modeSelect': strict({ current: strict(modeSelectCurrent), validOptions: strict({ mode: Type.Array(modeKey), enemyLevelOffset: range, language: Type.Array(language), darkMode: Type.Array(Type.String()), theme: Type.Array(themeKey) }) }),
   'read/setting/debug': strict({ current: strict(debug), validOptions: strict({ speedOfTime: Type.Array(Type.String()), godsBattleCondition: Type.Array(Type.String()), godsStrength: Type.Array(Type.String()) }) }),
   'commit/progress/elapsed': strict({ requestedElapsedSeconds: Type.Integer({ minimum: 0 }), acceptedElapsedSeconds: Type.Integer({ minimum: 0 }), cappedElapsedSeconds: Type.Integer({ minimum: 0 }), elapsedSeconds: Type.Integer({ minimum: 0 }), inGameTime: isoTimestamp }),
   'commit/progress/progressReport': strict({ deliveryId: stableKey, status: Type.Literal('queued') }),
@@ -510,7 +517,7 @@ const responseDataSchemas = {
   'commit/diary/{p}/diarySetting': strict({ current: strict(diarySettingMembers) }),
   'commit/diary/diaryEntry/markAsRead': strict({ diaryEntryId: Type.Array(stableKey), unreadTotal: Type.Integer({ minimum: 0 }) }),
   'commit/setting/clairvoyanceReset': strict({ partyNumber, resetCommonRewards: Type.Boolean(), resetRewards: Type.Boolean(), resetSideQuest: Type.Boolean() }),
-  'commit/setting/modeSelect': strict({ current: strict(modeSelect) }),
+  'commit/setting/modeSelect': strict({ current: strict(modeSelectCurrent) }),
   'commit/setting/enemyEditPane': strict({ current: strict(enemyEdit) }),
   'commit/setting/feedback': strict({ deliveryId: stableKey, status: Type.Literal('queued') }),
   'commit/setting/backup/export': strict({ savePayload: Type.String({ minLength: 1 }) }),

@@ -12077,6 +12077,7 @@
                 "environment",
                 "gameMode",
                 "enemyLevelOffset",
+                "modeSelect",
                 "uiPreferences",
                 "uiPreferenceCatalog",
                 "pendingDeliveryIds"
@@ -12129,6 +12130,15 @@
                 "modeSelect": {
                   "additionalProperties": false,
                   "type": "object",
+                  "required": [
+                    "mode",
+                    "enemyLevelOffset",
+                    "language",
+                    "darkMode",
+                    "autoRepeat",
+                    "showExpeditionStats",
+                    "theme"
+                  ],
                   "properties": {
                     "mode": {
                       "anyOf": [
@@ -12174,106 +12184,134 @@
                     "darkMode": {
                       "anyOf": [
                         {
-                          "const": "off",
-                          "type": "string"
+                          "anyOf": [
+                            {
+                              "const": "off",
+                              "type": "string"
+                            },
+                            {
+                              "const": "on",
+                              "type": "string"
+                            },
+                            {
+                              "const": "system",
+                              "type": "string"
+                            }
+                          ]
                         },
                         {
-                          "const": "on",
-                          "type": "string"
-                        },
-                        {
-                          "const": "system",
-                          "type": "string"
+                          "type": "null"
                         }
                       ]
                     },
                     "autoRepeat": {
-                      "type": "boolean"
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "showExpeditionStats": {
-                      "type": "boolean"
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "theme": {
                       "anyOf": [
                         {
-                          "const": "theme.kemo",
-                          "type": "string"
+                          "anyOf": [
+                            {
+                              "const": "theme.kemo",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.laika",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.leonard",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.orca",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.nox",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.luna",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.mishka",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.puchitsa",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.hagakure",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.souga-ha",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.finn",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.merle",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.rosaria",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.milly",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.guabi",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.nemea",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.bernetta",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.yone",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.niv",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.nave",
+                              "type": "string"
+                            }
+                          ]
                         },
                         {
-                          "const": "theme.laika",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.leonard",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.orca",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.nox",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.luna",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.mishka",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.puchitsa",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.hagakure",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.souga-ha",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.finn",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.merle",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.rosaria",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.milly",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.guabi",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.nemea",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.bernetta",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.yone",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.niv",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.nave",
-                          "type": "string"
+                          "type": "null"
                         }
                       ]
                     }
@@ -12574,6 +12612,7 @@
                     "environment",
                     "gameMode",
                     "enemyLevelOffset",
+                    "modeSelect",
                     "uiPreferences",
                     "uiPreferenceCatalog",
                     "pendingDeliveryIds"
@@ -12626,6 +12665,15 @@
                     "modeSelect": {
                       "additionalProperties": false,
                       "type": "object",
+                      "required": [
+                        "mode",
+                        "enemyLevelOffset",
+                        "language",
+                        "darkMode",
+                        "autoRepeat",
+                        "showExpeditionStats",
+                        "theme"
+                      ],
                       "properties": {
                         "mode": {
                           "anyOf": [
@@ -12671,106 +12719,134 @@
                         "darkMode": {
                           "anyOf": [
                             {
-                              "const": "off",
-                              "type": "string"
+                              "anyOf": [
+                                {
+                                  "const": "off",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "on",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "system",
+                                  "type": "string"
+                                }
+                              ]
                             },
                             {
-                              "const": "on",
-                              "type": "string"
-                            },
-                            {
-                              "const": "system",
-                              "type": "string"
+                              "type": "null"
                             }
                           ]
                         },
                         "autoRepeat": {
-                          "type": "boolean"
+                          "anyOf": [
+                            {
+                              "type": "boolean"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         },
                         "showExpeditionStats": {
-                          "type": "boolean"
+                          "anyOf": [
+                            {
+                              "type": "boolean"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         },
                         "theme": {
                           "anyOf": [
                             {
-                              "const": "theme.kemo",
-                              "type": "string"
+                              "anyOf": [
+                                {
+                                  "const": "theme.kemo",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.laika",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.leonard",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.orca",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.nox",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.luna",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.mishka",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.puchitsa",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.hagakure",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.souga-ha",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.finn",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.merle",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.rosaria",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.milly",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.guabi",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.nemea",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.bernetta",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.yone",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.niv",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "theme.nave",
+                                  "type": "string"
+                                }
+                              ]
                             },
                             {
-                              "const": "theme.laika",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.leonard",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.orca",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.nox",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.luna",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.mishka",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.puchitsa",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.hagakure",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.souga-ha",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.finn",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.merle",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.rosaria",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.milly",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.guabi",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.nemea",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.bernetta",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.yone",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.niv",
-                              "type": "string"
-                            },
-                            {
-                              "const": "theme.nave",
-                              "type": "string"
+                              "type": "null"
                             }
                           ]
                         }
@@ -13059,6 +13135,15 @@
               "environment": "xxxxxxx",
               "gameMode": "mode.normal",
               "enemyLevelOffset": 0,
+              "modeSelect": {
+                "mode": "mode.normal",
+                "enemyLevelOffset": 0,
+                "language": "ja",
+                "darkMode": "off",
+                "autoRepeat": true,
+                "showExpeditionStats": true,
+                "theme": "theme.kemo"
+              },
               "uiPreferences": [
                 {
                   "key": "xxxxxxx",
@@ -25681,6 +25766,15 @@
             "current": {
               "additionalProperties": false,
               "type": "object",
+              "required": [
+                "mode",
+                "enemyLevelOffset",
+                "language",
+                "darkMode",
+                "autoRepeat",
+                "showExpeditionStats",
+                "theme"
+              ],
               "properties": {
                 "mode": {
                   "anyOf": [
@@ -25726,106 +25820,134 @@
                 "darkMode": {
                   "anyOf": [
                     {
-                      "const": "off",
-                      "type": "string"
+                      "anyOf": [
+                        {
+                          "const": "off",
+                          "type": "string"
+                        },
+                        {
+                          "const": "on",
+                          "type": "string"
+                        },
+                        {
+                          "const": "system",
+                          "type": "string"
+                        }
+                      ]
                     },
                     {
-                      "const": "on",
-                      "type": "string"
-                    },
-                    {
-                      "const": "system",
-                      "type": "string"
+                      "type": "null"
                     }
                   ]
                 },
                 "autoRepeat": {
-                  "type": "boolean"
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
                 "showExpeditionStats": {
-                  "type": "boolean"
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
                 "theme": {
                   "anyOf": [
                     {
-                      "const": "theme.kemo",
-                      "type": "string"
+                      "anyOf": [
+                        {
+                          "const": "theme.kemo",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.laika",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.leonard",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.orca",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.nox",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.luna",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.mishka",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.puchitsa",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.hagakure",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.souga-ha",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.finn",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.merle",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.rosaria",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.milly",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.guabi",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.nemea",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.bernetta",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.yone",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.niv",
+                          "type": "string"
+                        },
+                        {
+                          "const": "theme.nave",
+                          "type": "string"
+                        }
+                      ]
                     },
                     {
-                      "const": "theme.laika",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.leonard",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.orca",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.nox",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.luna",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.mishka",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.puchitsa",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.hagakure",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.souga-ha",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.finn",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.merle",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.rosaria",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.milly",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.guabi",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.nemea",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.bernetta",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.yone",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.niv",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.nave",
-                      "type": "string"
+                      "type": "null"
                     }
                   ]
                 }
@@ -25912,7 +26034,88 @@
                 "theme": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "anyOf": [
+                      {
+                        "const": "theme.kemo",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.laika",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.leonard",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.orca",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.nox",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.luna",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.mishka",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.puchitsa",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.hagakure",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.souga-ha",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.finn",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.merle",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.rosaria",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.milly",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.guabi",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.nemea",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.bernetta",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.yone",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.niv",
+                        "type": "string"
+                      },
+                      {
+                        "const": "theme.nave",
+                        "type": "string"
+                      }
+                    ]
                   }
                 }
               }
@@ -25962,6 +26165,15 @@
                 "current": {
                   "additionalProperties": false,
                   "type": "object",
+                  "required": [
+                    "mode",
+                    "enemyLevelOffset",
+                    "language",
+                    "darkMode",
+                    "autoRepeat",
+                    "showExpeditionStats",
+                    "theme"
+                  ],
                   "properties": {
                     "mode": {
                       "anyOf": [
@@ -26007,106 +26219,134 @@
                     "darkMode": {
                       "anyOf": [
                         {
-                          "const": "off",
-                          "type": "string"
+                          "anyOf": [
+                            {
+                              "const": "off",
+                              "type": "string"
+                            },
+                            {
+                              "const": "on",
+                              "type": "string"
+                            },
+                            {
+                              "const": "system",
+                              "type": "string"
+                            }
+                          ]
                         },
                         {
-                          "const": "on",
-                          "type": "string"
-                        },
-                        {
-                          "const": "system",
-                          "type": "string"
+                          "type": "null"
                         }
                       ]
                     },
                     "autoRepeat": {
-                      "type": "boolean"
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "showExpeditionStats": {
-                      "type": "boolean"
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "theme": {
                       "anyOf": [
                         {
-                          "const": "theme.kemo",
-                          "type": "string"
+                          "anyOf": [
+                            {
+                              "const": "theme.kemo",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.laika",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.leonard",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.orca",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.nox",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.luna",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.mishka",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.puchitsa",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.hagakure",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.souga-ha",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.finn",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.merle",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.rosaria",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.milly",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.guabi",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.nemea",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.bernetta",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.yone",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.niv",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.nave",
+                              "type": "string"
+                            }
+                          ]
                         },
                         {
-                          "const": "theme.laika",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.leonard",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.orca",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.nox",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.luna",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.mishka",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.puchitsa",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.hagakure",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.souga-ha",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.finn",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.merle",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.rosaria",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.milly",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.guabi",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.nemea",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.bernetta",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.yone",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.niv",
-                          "type": "string"
-                        },
-                        {
-                          "const": "theme.nave",
-                          "type": "string"
+                          "type": "null"
                         }
                       ]
                     }
@@ -26193,7 +26433,88 @@
                     "theme": {
                       "type": "array",
                       "items": {
-                        "type": "string"
+                        "anyOf": [
+                          {
+                            "const": "theme.kemo",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.laika",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.leonard",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.orca",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.nox",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.luna",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.mishka",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.puchitsa",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.hagakure",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.souga-ha",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.finn",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.merle",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.rosaria",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.milly",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.guabi",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.nemea",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.bernetta",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.yone",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.niv",
+                            "type": "string"
+                          },
+                          {
+                            "const": "theme.nave",
+                            "type": "string"
+                          }
+                        ]
                       }
                     }
                   }
@@ -26230,7 +26551,15 @@
         },
         "response": {
           "data": {
-            "current": {},
+            "current": {
+              "mode": "mode.normal",
+              "enemyLevelOffset": 0,
+              "language": "ja",
+              "darkMode": "off",
+              "autoRepeat": true,
+              "showExpeditionStats": true,
+              "theme": "theme.kemo"
+            },
             "validOptions": {
               "mode": [
                 "mode.normal"
@@ -26246,7 +26575,7 @@
                 "xxxxxxx"
               ],
               "theme": [
-                "xxxxxxx"
+                "theme.kemo"
               ]
             }
           }
@@ -36444,9 +36773,6 @@
                   }
                 ]
               },
-              "autoRepeat": {
-                "type": "boolean"
-              },
               "showExpeditionStats": {
                 "type": "boolean"
               },
@@ -36554,6 +36880,15 @@
             "current": {
               "additionalProperties": false,
               "type": "object",
+              "required": [
+                "mode",
+                "enemyLevelOffset",
+                "language",
+                "darkMode",
+                "autoRepeat",
+                "showExpeditionStats",
+                "theme"
+              ],
               "properties": {
                 "mode": {
                   "anyOf": [
@@ -36599,206 +36934,6 @@
                 "darkMode": {
                   "anyOf": [
                     {
-                      "const": "off",
-                      "type": "string"
-                    },
-                    {
-                      "const": "on",
-                      "type": "string"
-                    },
-                    {
-                      "const": "system",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "autoRepeat": {
-                  "type": "boolean"
-                },
-                "showExpeditionStats": {
-                  "type": "boolean"
-                },
-                "theme": {
-                  "anyOf": [
-                    {
-                      "const": "theme.kemo",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.laika",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.leonard",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.orca",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.nox",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.luna",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.mishka",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.puchitsa",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.hagakure",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.souga-ha",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.finn",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.merle",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.rosaria",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.milly",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.guabi",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.nemea",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.bernetta",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.yone",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.niv",
-                      "type": "string"
-                    },
-                    {
-                      "const": "theme.nave",
-                      "type": "string"
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "envelope": {
-          "additionalProperties": false,
-          "type": "object",
-          "required": [
-            "apiVersion",
-            "schemaVersion",
-            "requestId",
-            "previousRevision",
-            "revision",
-            "committedAt",
-            "data",
-            "effects",
-            "changedResources"
-          ],
-          "properties": {
-            "apiVersion": {
-              "const": "v1",
-              "type": "string"
-            },
-            "schemaVersion": {
-              "const": 1,
-              "type": "number"
-            },
-            "requestId": {
-              "minLength": 1,
-              "maxLength": 200,
-              "type": "string"
-            },
-            "previousRevision": {
-              "minimum": 0,
-              "type": "integer"
-            },
-            "revision": {
-              "minimum": 0,
-              "type": "integer"
-            },
-            "committedAt": {
-              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
-              "type": "string"
-            },
-            "data": {
-              "additionalProperties": false,
-              "type": "object",
-              "required": [
-                "current"
-              ],
-              "properties": {
-                "current": {
-                  "additionalProperties": false,
-                  "type": "object",
-                  "properties": {
-                    "mode": {
-                      "anyOf": [
-                        {
-                          "const": "mode.normal",
-                          "type": "string"
-                        },
-                        {
-                          "const": "mode.orca",
-                          "type": "string"
-                        }
-                      ]
-                    },
-                    "enemyLevelOffset": {
-                      "minimum": 0,
-                      "maximum": 20,
-                      "type": "integer"
-                    },
-                    "language": {
-                      "anyOf": [
-                        {
-                          "const": "ja",
-                          "type": "string"
-                        },
-                        {
-                          "const": "en",
-                          "type": "string"
-                        },
-                        {
-                          "const": "zh-CN",
-                          "type": "string"
-                        },
-                        {
-                          "const": "zh-TW",
-                          "type": "string"
-                        },
-                        {
-                          "const": "ko",
-                          "type": "string"
-                        }
-                      ]
-                    },
-                    "darkMode": {
                       "anyOf": [
                         {
                           "const": "off",
@@ -36814,13 +36949,34 @@
                         }
                       ]
                     },
-                    "autoRepeat": {
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "autoRepeat": {
+                  "anyOf": [
+                    {
                       "type": "boolean"
                     },
-                    "showExpeditionStats": {
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "showExpeditionStats": {
+                  "anyOf": [
+                    {
                       "type": "boolean"
                     },
-                    "theme": {
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "theme": {
+                  "anyOf": [
+                    {
                       "anyOf": [
                         {
                           "const": "theme.kemo",
@@ -36901,6 +37057,250 @@
                         {
                           "const": "theme.nave",
                           "type": "string"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "envelope": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "apiVersion",
+            "schemaVersion",
+            "requestId",
+            "previousRevision",
+            "revision",
+            "committedAt",
+            "data",
+            "effects",
+            "changedResources"
+          ],
+          "properties": {
+            "apiVersion": {
+              "const": "v1",
+              "type": "string"
+            },
+            "schemaVersion": {
+              "const": 1,
+              "type": "number"
+            },
+            "requestId": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            },
+            "previousRevision": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "revision": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "committedAt": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "current"
+              ],
+              "properties": {
+                "current": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "mode",
+                    "enemyLevelOffset",
+                    "language",
+                    "darkMode",
+                    "autoRepeat",
+                    "showExpeditionStats",
+                    "theme"
+                  ],
+                  "properties": {
+                    "mode": {
+                      "anyOf": [
+                        {
+                          "const": "mode.normal",
+                          "type": "string"
+                        },
+                        {
+                          "const": "mode.orca",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "enemyLevelOffset": {
+                      "minimum": 0,
+                      "maximum": 20,
+                      "type": "integer"
+                    },
+                    "language": {
+                      "anyOf": [
+                        {
+                          "const": "ja",
+                          "type": "string"
+                        },
+                        {
+                          "const": "en",
+                          "type": "string"
+                        },
+                        {
+                          "const": "zh-CN",
+                          "type": "string"
+                        },
+                        {
+                          "const": "zh-TW",
+                          "type": "string"
+                        },
+                        {
+                          "const": "ko",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "darkMode": {
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "const": "off",
+                              "type": "string"
+                            },
+                            {
+                              "const": "on",
+                              "type": "string"
+                            },
+                            {
+                              "const": "system",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "autoRepeat": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "showExpeditionStats": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "theme": {
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "const": "theme.kemo",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.laika",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.leonard",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.orca",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.nox",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.luna",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.mishka",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.puchitsa",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.hagakure",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.souga-ha",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.finn",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.merle",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.rosaria",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.milly",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.guabi",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.nemea",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.bernetta",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.yone",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.niv",
+                              "type": "string"
+                            },
+                            {
+                              "const": "theme.nave",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "null"
                         }
                       ]
                     }
@@ -36993,7 +37393,15 @@
         },
         "response": {
           "data": {
-            "current": {}
+            "current": {
+              "mode": "mode.normal",
+              "enemyLevelOffset": 0,
+              "language": "ja",
+              "darkMode": "off",
+              "autoRepeat": true,
+              "showExpeditionStats": true,
+              "theme": "theme.kemo"
+            }
           }
         }
       }

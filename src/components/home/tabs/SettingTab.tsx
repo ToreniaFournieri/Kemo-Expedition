@@ -164,13 +164,13 @@ export default function SettingTab({
   bestiaryScrollTop: number;
   onSetBestiaryScrollTop: Dispatch<SetStateAction<number>>;
   gameMode: GameMode;
-  onSetGameMode: Dispatch<SetStateAction<GameMode>>;
+  onSetGameMode: (mode: GameMode) => void;
   runtimeGameMode: RuntimeGameMode;
   onSetRuntimeGameMode: (mode: RuntimeGameMode) => void;
   orcaEnemyLevelOffset: number;
   onSetOrcaEnemyLevelOffset: (offset: number) => void;
   darkModeSetting: DarkModeSetting;
-  onSetDarkModeSetting: Dispatch<SetStateAction<DarkModeSetting>>;
+  onSetDarkModeSetting: (setting: DarkModeSetting) => void;
   isAutoRepeatEnabled: boolean;
   onSetAutoRepeatEnabled: (enabled: boolean) => void;
   isExpeditionStatsDisplayEnabled: boolean;

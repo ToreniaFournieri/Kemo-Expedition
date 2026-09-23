@@ -327,10 +327,10 @@ request with the same base parameters and key when no receipt exists.
     stores the current token.
 * While the listener runs, the desktop process writes an owner-only connection
   file in its profile directory with the host, port, API version, and token, and
-  removes it when the listener stops. The Setting tab shows the token masked; it
-  reaches the renderer only through the trusted desktop bridge when the player
-  explicitly reveals or copies it, and is never kept in renderer state
-  afterwards. The token never appears in a URL, log, help response, save,
+  removes it when the listener stops. The Setting tab hides the token by default
+  (8.6); it reaches the renderer only through the trusted desktop bridge when the
+  player clicks to reveal it, and is dropped from renderer state when hidden
+  again or the pane closes. The token never appears in a URL, log, help response, save,
   backup, delivery payload, or HTTP response.
 * All HTTP operations except `fundamental/status`, `help/overview`, and
   `help/endpoints` require `Authorization: Bearer <bootstrapToken>`.
@@ -1122,6 +1122,18 @@ type DiaryEntry = {
 * `modeSelect` is a partial update. `autoEquipment.immediateAutoEquipment`
   defaults to false. All other defaults and environment restrictions remain
   those explicitly defined in 9.1.3 and the UI specifications.
+* `darkMode`, `theme`, `showExpeditionStats`, and `autoRepeat` belong to the
+  ordinary player's runtime (8.6 device settings, not the save). `modeSelect`
+  reads and `settingInfo.modeSelect` report their real current values, never an
+  echo of an earlier request, and report `null` for an API account.
+  `validOptions.theme` lists only the themes the player can select in the
+  current environment (8.6), or only the current theme while `mode.orca` or the
+  beta environment fixes it; it is empty for an API account.
+* A `modeSelect` commit applies `darkMode`, `theme`, and `showExpeditionStats`
+  to the runtime after the commit is durable; a change to them alone does not
+  change the save or its revision. An unselectable theme, or any of these fields
+  from an API account, is `illegal_action`. `autoRepeat` is not controlled
+  through the API (9.1.3, 3-6-2): supplying it is `invalid_request`.
 * Feedback parameters are `name: string`, `category: feedback|question|
   featureRequest|bugReport`, `text: string`, `latestBattleLogParty?: number|"none"`
   (default 1), `includeBackup?: boolean` (default false), and

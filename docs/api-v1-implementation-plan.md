@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 101. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 102. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -18,7 +18,7 @@ This document supersedes the earlier "Build 23" plan. Stages are numbered once, 
 | 6 | Base, inventory, shop, Altar | Done (UI projection complete) |
 | 7 | Diary and popup streaming | Complete |
 | 8 | Settings, files, delivery, Help, Resources | Complete (Build 100) |
-| 9 | Conformance hardening and public cutover | In progress (9.0 done, Build 101) |
+| 9 | Conformance hardening and public cutover | In progress (9.0 Build 101; 9.1a/9.1b Build 102) |
 
 ## Done so far
 
@@ -152,13 +152,13 @@ Most of this stage's settings/backup machinery already exists and works, found w
 ### Slices
 
 1. **9.0 (done, Build 101): cleanup.** Real SpecRefs, the unused `getExperimentalDiaryTitle` removed, a localized notification for a rejected character edit, stale test names.
-2. **9.1a: Mode Select settings.** `theme`, `darkMode`, and `showExpeditionStats` read and commit the real values, through runtime ports where they live outside the save (the sortie precedent), so the Settings UI and the API cannot disagree. The Settings panel commits through `commit/setting/modeSelect`.
-3. **9.1b: auto-repeat exception.** Remove `autoRepeat` from `commit/setting/modeSelect`'s parameters (rejected by schema); `read/setting/modeSelect` reports the real runtime value (`null` for an API account, matching `overview`). Record it as a reviewed exception in the ownership audit.
+2. **9.1a (done, Build 102): Mode Select settings.** `theme`, `darkMode`, and `showExpeditionStats` read and commit the real values, through runtime ports where they live outside the save (the sortie precedent), so the Settings UI and the API cannot disagree. The Settings panel commits through `commit/setting/modeSelect`.
+3. **9.1b (done, Build 102): auto-repeat exception.** Remove `autoRepeat` from `commit/setting/modeSelect`'s parameters (rejected by schema); `read/setting/modeSelect` reports the real runtime value (`null` for an API account, matching `overview`). Record it as a reviewed exception in the ownership audit.
 4. **9.2: conformance matrix harness.** One table-driven test that reads the catalog (including per-operation error lists), derives which cases apply, and fails on a missing cell: success, invalid input, stale revision, receipt replay, idempotency conflict, tombstone rejection, persistence rollback, confirmation expiry and replay, environment and unlock restrictions, no partial mutation. Commits first.
 5. **9.3: dual-adapter parity.** Canonical fixtures through the in-process and HTTP adapters, compared after excluding transport metadata; extend `tests/apiV1SampleSave.test.cjs` to both adapters. Closes the Stage 1 gate.
 6. **9.4: lifecycle coverage.** Simultaneous duplicates, lost responses, receipt eviction, login catch-up, account switching and crash recovery, renderer loss, lease expiry, shutdown draining. SSE reconnect/resync, import/reset fencing, and external-delivery ambiguity already have suites; fold them into the matrix.
 7. **9.5: UI ownership audit.** Classify every control and state value in `HomeScreen.tsx` and each tab as projection-owned, explicit-commit-owned, local-only, or trusted-desktop-only. Record the reviewed exceptions (Vault, Send Feedback, Report Progress, auto-repeat, `selectParty`, `runtimeSnapshot`, and whatever the audit finds) and extend the guard so an unlisted `actions.` use in `HomeScreen.tsx` fails. Cutover is blocked if a migrated screen reads the complete persisted save directly, mutates the reducer outside the Application API, persists UI state under an undocumented key, or receives privileged desktop data through a generic bridge.
-8. **9.6: API option and security.** Implement the 8.6 API option per §9.1.4.6: the enable state, `secretToken`, and `persistSecretToken` in owner-only desktop profile storage (never the save, backup, or renderer web storage, so an imported save never turns the API on); the confirmation dialog on enable from the Setting tab, none when a persisted enabled state starts the listener at launch; the token discarded on disable and regenerated on enable; the masked token with explicit reveal/copy through the trusted bridge; the connection file as today. Tests: persistence across a simulated restart for both `persistSecretToken` values, the switch in both directions, and that the token never appears in logs, URLs, help, saves, backups, delivery payloads, or HTTP responses; loopback-only binding; the retired-endpoint search (excluding `AI_play_report/` and `playing_guide/`).
+8. **9.6: API option and security.** Implement the 8.6 API option per §9.1.4.6: the enable state, `secretToken`, and `persistSecretToken` in owner-only desktop profile storage (never the save, backup, or renderer web storage, so an imported save never turns the API on); the confirmation dialog on enable from the Setting tab, none when a persisted enabled state starts the listener at launch; the token discarded on disable and regenerated on enable; the token hidden by default and revealed on click through the trusted bridge; the connection file as today. Tests: persistence across a simulated restart for both `persistSecretToken` values, the switch in both directions, and that the token never appears in logs, URLs, help, saves, backups, delivery payloads, or HTTP responses; loopback-only binding; the retired-endpoint search (excluding `AI_play_report/` and `playing_guide/`).
 9. **9.7: cutover.** Remove the `--api-v1-test` gate (`desktop/main.cjs` `allowEnable`), show the API option in packaged desktop builds, run `npm test`, `npm run build`, `npm run api:v1:check`, `npm run test:api:desktop`, the persistence-failure suites, and the relevant AFK/performance suites. The cutover build gets its own changelog entry.
 
 ## Test data
@@ -178,7 +178,7 @@ Most of this stage's settings/backup machinery already exists and works, found w
 1. ~~Stage 7 D4: complete the SSE lifecycle over the durable D3 event buffer.~~ (Done, Build 91.)
 2. ~~Finish the Stage 4 header UI migration.~~ (Done, Build 92.)
 3. ~~Stage 8.~~ Complete in Build 100: all Resource contracts, backup/import/reset, Help, the delivery sender, the small/high-value Settings panels, and the five large reference panels are implemented. Send Feedback remains an intentionally reviewed local exception by user decision.
-4. Stage 9, in the slice order above: 9.1a/9.1b (Mode Select), then 9.2 and 9.5 (their results size 9.3 and 9.4), then 9.6, then 9.7.
+4. Stage 9, in the slice order above: 9.2 and 9.5 (their results size 9.3 and 9.4), then 9.6, then 9.7.
 
 ## Expedition tab migration (complete)
 
