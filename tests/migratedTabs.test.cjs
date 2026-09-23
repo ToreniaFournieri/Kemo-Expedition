@@ -27,7 +27,8 @@ const REVIEWED_EXCEPTIONS = {
   // Default name chosen when the race changes (Spec 8.2.3): an unsaved draft, chosen before any commit exists.
   gameplayRandom: ['gameplayRandom'],
   // Constants and transport-facing UI types; saved-set availability itself is projected by the Application API.
-  equipmentSets: ['MAX_SAVED_EQUIPMENT_SETS', 'type EquipmentSetLoadMode'],
+  // `createDefaultEquipmentSetName` is the display-only default set name (Spec 8.2.4), shared with `saveEquipmentSet`.
+  equipmentSets: ['createDefaultEquipmentSetName', 'MAX_SAVED_EQUIPMENT_SETS', 'type EquipmentSetLoadMode'],
 };
 
 function importedGameModules(source) {

@@ -48,6 +48,20 @@ function currentRaceAndGender(character: Character): string {
     : `${character.raceId}/${character.gender}`;
 }
 
+// SpecRef: 9.1.3 | 2-3-2 character/{characterId}/status `current`; 9.1.4.9 | changeBuild returns the complete new `current`
+/** A character's public build facts: the `current` of `read/build/character/{characterId}/status` and of `changeBuild`. */
+export function describeCharacterBuildCurrent(character: Character) {
+  return {
+    unique: character.isUnique === true,
+    name: character.name,
+    racesAndGender: currentRaceAndGender(character),
+    mainClassId: character.mainClassId,
+    subClassId: character.subClassId,
+    lineage: character.lineageId,
+    predisposition: character.predispositionId,
+  };
+}
+
 function parseRaceAndGender(state: GameState, character: Character, value: unknown): Pick<Character, 'raceId' | 'gender'> & Partial<Pick<Character, 'mimorianEnemyId'>> {
   if (typeof value !== 'string') invalid('races_and_gender');
   const parts = value.split('/');

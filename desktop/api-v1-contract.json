@@ -1109,9 +1109,8 @@
                         "type": "integer"
                       },
                       "condition": {
-                        "minimum": -400,
-                        "maximum": 400,
-                        "type": "integer"
+                        "pattern": "^(?:terrible|poor|low|cautious|normal|steady|good|great|excellent)/-?[0-9]+$",
+                        "type": "string"
                       }
                     }
                   },
@@ -1343,9 +1342,8 @@
                             "type": "integer"
                           },
                           "condition": {
-                            "minimum": -400,
-                            "maximum": 400,
-                            "type": "integer"
+                            "pattern": "^(?:terrible|poor|low|cautious|normal|steady|good|great|excellent)/-?[0-9]+$",
+                            "type": "string"
                           }
                         }
                       },
@@ -1497,7 +1495,7 @@
                   "experiencePoint": "xxxxxxx",
                   "deity": "xxxxxxx",
                   "deityRank": 0,
-                  "condition": -400
+                  "condition": "steady/55"
                 },
                 "state": "xxxxxxx",
                 "lastDestination": 1,
@@ -1640,9 +1638,8 @@
                         "type": "integer"
                       },
                       "condition": {
-                        "minimum": -400,
-                        "maximum": 400,
-                        "type": "integer"
+                        "pattern": "^(?:terrible|poor|low|cautious|normal|steady|good|great|excellent)/-?[0-9]+$",
+                        "type": "string"
                       }
                     }
                   },
@@ -1874,9 +1871,8 @@
                             "type": "integer"
                           },
                           "condition": {
-                            "minimum": -400,
-                            "maximum": 400,
-                            "type": "integer"
+                            "pattern": "^(?:terrible|poor|low|cautious|normal|steady|good|great|excellent)/-?[0-9]+$",
+                            "type": "string"
                           }
                         }
                       },
@@ -2028,7 +2024,7 @@
                   "experiencePoint": "xxxxxxx",
                   "deity": "xxxxxxx",
                   "deityRank": 0,
-                  "condition": -400
+                  "condition": "steady/55"
                 },
                 "state": "xxxxxxx",
                 "lastDestination": 1,
@@ -12366,6 +12362,7 @@
                 "gameMode",
                 "enemyLevelOffset",
                 "modeSelect",
+                "debug",
                 "uiPreferences",
                 "uiPreferenceCatalog",
                 "pendingDeliveryIds"
@@ -12608,6 +12605,20 @@
                 "debug": {
                   "additionalProperties": false,
                   "type": "object",
+                  "required": [
+                    "runtimeDiagnostics",
+                    "clairvoyance",
+                    "speedOfTime",
+                    "godsBattleCondition",
+                    "godsStrength",
+                    "debugStoreOpen",
+                    "displayFlavorCondition",
+                    "displayAfkDuration",
+                    "displayAllBestiary",
+                    "displayAllCompendium",
+                    "displayAllGlossary",
+                    "colosseumMode"
+                  ],
                   "properties": {
                     "runtimeDiagnostics": {
                       "type": "boolean"
@@ -12924,6 +12935,7 @@
                     "gameMode",
                     "enemyLevelOffset",
                     "modeSelect",
+                    "debug",
                     "uiPreferences",
                     "uiPreferenceCatalog",
                     "pendingDeliveryIds"
@@ -13166,6 +13178,20 @@
                     "debug": {
                       "additionalProperties": false,
                       "type": "object",
+                      "required": [
+                        "runtimeDiagnostics",
+                        "clairvoyance",
+                        "speedOfTime",
+                        "godsBattleCondition",
+                        "godsStrength",
+                        "debugStoreOpen",
+                        "displayFlavorCondition",
+                        "displayAfkDuration",
+                        "displayAllBestiary",
+                        "displayAllCompendium",
+                        "displayAllGlossary",
+                        "colosseumMode"
+                      ],
                       "properties": {
                         "runtimeDiagnostics": {
                           "type": "boolean"
@@ -13477,6 +13503,20 @@
                 "autoRepeat": true,
                 "showExpeditionStats": true,
                 "theme": "theme.kemo"
+              },
+              "debug": {
+                "runtimeDiagnostics": true,
+                "clairvoyance": true,
+                "speedOfTime": "real",
+                "godsBattleCondition": "normal",
+                "godsStrength": "normal",
+                "debugStoreOpen": true,
+                "displayFlavorCondition": true,
+                "displayAfkDuration": true,
+                "displayAllBestiary": true,
+                "displayAllCompendium": true,
+                "displayAllGlossary": true,
+                "colosseumMode": true
               },
               "uiPreferences": [
                 {
@@ -22522,7 +22562,7 @@
                 "type": "string"
               },
               {
-                "const": "bow",
+                "const": "archery",
                 "type": "string"
               },
               {
@@ -22530,7 +22570,7 @@
                 "type": "string"
               },
               {
-                "const": "glove",
+                "const": "gauntlet",
                 "type": "string"
               },
               {
@@ -22550,7 +22590,7 @@
                 "type": "string"
               },
               {
-                "const": "book",
+                "const": "grimoire",
                 "type": "string"
               },
               {
@@ -22563,6 +22603,18 @@
               },
               {
                 "const": "jewel",
+                "type": "string"
+              },
+              {
+                "const": "bow",
+                "type": "string"
+              },
+              {
+                "const": "glove",
+                "type": "string"
+              },
+              {
+                "const": "book",
                 "type": "string"
               }
             ]
@@ -26550,6 +26602,8 @@
                 "enemyLevelOffset",
                 "language",
                 "darkMode",
+                "autoRepeat",
+                "showExpeditionStats",
                 "theme"
               ],
               "properties": {
@@ -26618,6 +26672,18 @@
                   "type": "array",
                   "items": {
                     "type": "string"
+                  }
+                },
+                "autoRepeat": {
+                  "type": "array",
+                  "items": {
+                    "type": "boolean"
+                  }
+                },
+                "showExpeditionStats": {
+                  "type": "array",
+                  "items": {
+                    "type": "boolean"
                   }
                 },
                 "theme": {
@@ -26949,6 +27015,8 @@
                     "enemyLevelOffset",
                     "language",
                     "darkMode",
+                    "autoRepeat",
+                    "showExpeditionStats",
                     "theme"
                   ],
                   "properties": {
@@ -27017,6 +27085,18 @@
                       "type": "array",
                       "items": {
                         "type": "string"
+                      }
+                    },
+                    "autoRepeat": {
+                      "type": "array",
+                      "items": {
+                        "type": "boolean"
+                      }
+                    },
+                    "showExpeditionStats": {
+                      "type": "array",
+                      "items": {
+                        "type": "boolean"
                       }
                     },
                     "theme": {
@@ -27163,6 +27243,12 @@
               "darkMode": [
                 "xxxxxxx"
               ],
+              "autoRepeat": [
+                true
+              ],
+              "showExpeditionStats": [
+                true
+              ],
               "theme": [
                 "theme.kemo"
               ]
@@ -27205,6 +27291,20 @@
             "current": {
               "additionalProperties": false,
               "type": "object",
+              "required": [
+                "runtimeDiagnostics",
+                "clairvoyance",
+                "speedOfTime",
+                "godsBattleCondition",
+                "godsStrength",
+                "debugStoreOpen",
+                "displayFlavorCondition",
+                "displayAfkDuration",
+                "displayAllBestiary",
+                "displayAllCompendium",
+                "displayAllGlossary",
+                "colosseumMode"
+              ],
               "properties": {
                 "runtimeDiagnostics": {
                   "type": "boolean"
@@ -27291,11 +27391,32 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
+                "runtimeDiagnostics",
+                "clairvoyance",
                 "speedOfTime",
                 "godsBattleCondition",
-                "godsStrength"
+                "godsStrength",
+                "debugStoreOpen",
+                "displayFlavorCondition",
+                "displayAfkDuration",
+                "displayAllBestiary",
+                "displayAllCompendium",
+                "displayAllGlossary",
+                "colosseumMode"
               ],
               "properties": {
+                "runtimeDiagnostics": {
+                  "type": "array",
+                  "items": {
+                    "type": "boolean"
+                  }
+                },
+                "clairvoyance": {
+                  "type": "array",
+                  "items": {
+                    "type": "boolean"
+                  }
+                },
                 "speedOfTime": {
                   "type": "array",
                   "items": {
@@ -27312,6 +27433,48 @@
                   "type": "array",
                   "items": {
                     "type": "string"
+                  }
+                },
+                "debugStoreOpen": {
+                  "type": "array",
+                  "items": {
+                    "type": "boolean"
+                  }
+                },
+                "displayFlavorCondition": {
+                  "type": "array",
+                  "items": {
+                    "type": "boolean"
+                  }
+                },
+                "displayAfkDuration": {
+                  "type": "array",
+                  "items": {
+                    "type": "boolean"
+                  }
+                },
+                "displayAllBestiary": {
+                  "type": "array",
+                  "items": {
+                    "type": "boolean"
+                  }
+                },
+                "displayAllCompendium": {
+                  "type": "array",
+                  "items": {
+                    "type": "boolean"
+                  }
+                },
+                "displayAllGlossary": {
+                  "type": "array",
+                  "items": {
+                    "type": "boolean"
+                  }
+                },
+                "colosseumMode": {
+                  "type": "array",
+                  "items": {
+                    "type": "boolean"
                   }
                 }
               }
@@ -27361,6 +27524,20 @@
                 "current": {
                   "additionalProperties": false,
                   "type": "object",
+                  "required": [
+                    "runtimeDiagnostics",
+                    "clairvoyance",
+                    "speedOfTime",
+                    "godsBattleCondition",
+                    "godsStrength",
+                    "debugStoreOpen",
+                    "displayFlavorCondition",
+                    "displayAfkDuration",
+                    "displayAllBestiary",
+                    "displayAllCompendium",
+                    "displayAllGlossary",
+                    "colosseumMode"
+                  ],
                   "properties": {
                     "runtimeDiagnostics": {
                       "type": "boolean"
@@ -27447,11 +27624,32 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
+                    "runtimeDiagnostics",
+                    "clairvoyance",
                     "speedOfTime",
                     "godsBattleCondition",
-                    "godsStrength"
+                    "godsStrength",
+                    "debugStoreOpen",
+                    "displayFlavorCondition",
+                    "displayAfkDuration",
+                    "displayAllBestiary",
+                    "displayAllCompendium",
+                    "displayAllGlossary",
+                    "colosseumMode"
                   ],
                   "properties": {
+                    "runtimeDiagnostics": {
+                      "type": "array",
+                      "items": {
+                        "type": "boolean"
+                      }
+                    },
+                    "clairvoyance": {
+                      "type": "array",
+                      "items": {
+                        "type": "boolean"
+                      }
+                    },
                     "speedOfTime": {
                       "type": "array",
                       "items": {
@@ -27468,6 +27666,48 @@
                       "type": "array",
                       "items": {
                         "type": "string"
+                      }
+                    },
+                    "debugStoreOpen": {
+                      "type": "array",
+                      "items": {
+                        "type": "boolean"
+                      }
+                    },
+                    "displayFlavorCondition": {
+                      "type": "array",
+                      "items": {
+                        "type": "boolean"
+                      }
+                    },
+                    "displayAfkDuration": {
+                      "type": "array",
+                      "items": {
+                        "type": "boolean"
+                      }
+                    },
+                    "displayAllBestiary": {
+                      "type": "array",
+                      "items": {
+                        "type": "boolean"
+                      }
+                    },
+                    "displayAllCompendium": {
+                      "type": "array",
+                      "items": {
+                        "type": "boolean"
+                      }
+                    },
+                    "displayAllGlossary": {
+                      "type": "array",
+                      "items": {
+                        "type": "boolean"
+                      }
+                    },
+                    "colosseumMode": {
+                      "type": "array",
+                      "items": {
+                        "type": "boolean"
                       }
                     }
                   }
@@ -27504,8 +27744,27 @@
         },
         "response": {
           "data": {
-            "current": {},
+            "current": {
+              "runtimeDiagnostics": true,
+              "clairvoyance": true,
+              "speedOfTime": "real",
+              "godsBattleCondition": "normal",
+              "godsStrength": "normal",
+              "debugStoreOpen": true,
+              "displayFlavorCondition": true,
+              "displayAfkDuration": true,
+              "displayAllBestiary": true,
+              "displayAllCompendium": true,
+              "displayAllGlossary": true,
+              "colosseumMode": true
+            },
             "validOptions": {
+              "runtimeDiagnostics": [
+                true
+              ],
+              "clairvoyance": [
+                true
+              ],
               "speedOfTime": [
                 "xxxxxxx"
               ],
@@ -27514,6 +27773,27 @@
               ],
               "godsStrength": [
                 "xxxxxxx"
+              ],
+              "debugStoreOpen": [
+                true
+              ],
+              "displayFlavorCondition": [
+                true
+              ],
+              "displayAfkDuration": [
+                true
+              ],
+              "displayAllBestiary": [
+                true
+              ],
+              "displayAllCompendium": [
+                true
+              ],
+              "displayAllGlossary": [
+                true
+              ],
+              "colosseumMode": [
+                true
               ]
             }
           }
@@ -29588,40 +29868,60 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "mode",
-                "equipment",
-                "undoAvailable",
-                "redoAvailable"
+                "unique",
+                "name",
+                "racesAndGender",
+                "mainClassId",
+                "subClassId",
+                "lineage",
+                "predisposition"
               ],
               "properties": {
-                "mode": {
+                "unique": {
+                  "type": "boolean"
+                },
+                "name": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "racesAndGender": {
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                "mainClassId": {
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                "subClassId": {
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                "lineage": {
                   "anyOf": [
                     {
-                      "const": "FULL",
+                      "minLength": 1,
+                      "maxLength": 200,
                       "type": "string"
                     },
                     {
-                      "const": "SEMI",
-                      "type": "string"
-                    },
-                    {
-                      "const": "OFF",
-                      "type": "string"
+                      "type": "null"
                     }
                   ]
                 },
-                "equipment": {
-                  "type": "array",
-                  "items": {
-                    "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
-                    "type": "string"
-                  }
-                },
-                "undoAvailable": {
-                  "type": "boolean"
-                },
-                "redoAvailable": {
-                  "type": "boolean"
+                "predisposition": {
+                  "anyOf": [
+                    {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               }
             },
@@ -29723,40 +30023,60 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "mode",
-                    "equipment",
-                    "undoAvailable",
-                    "redoAvailable"
+                    "unique",
+                    "name",
+                    "racesAndGender",
+                    "mainClassId",
+                    "subClassId",
+                    "lineage",
+                    "predisposition"
                   ],
                   "properties": {
-                    "mode": {
+                    "unique": {
+                      "type": "boolean"
+                    },
+                    "name": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "racesAndGender": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "mainClassId": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "subClassId": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "lineage": {
                       "anyOf": [
                         {
-                          "const": "FULL",
+                          "minLength": 1,
+                          "maxLength": 200,
                           "type": "string"
                         },
                         {
-                          "const": "SEMI",
-                          "type": "string"
-                        },
-                        {
-                          "const": "OFF",
-                          "type": "string"
+                          "type": "null"
                         }
                       ]
                     },
-                    "equipment": {
-                      "type": "array",
-                      "items": {
-                        "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
-                        "type": "string"
-                      }
-                    },
-                    "undoAvailable": {
-                      "type": "boolean"
-                    },
-                    "redoAvailable": {
-                      "type": "boolean"
+                    "predisposition": {
+                      "anyOf": [
+                        {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   }
                 },
@@ -29895,12 +30215,13 @@
         "response": {
           "data": {
             "current": {
-              "mode": "FULL",
-              "equipment": [
-                "0"
-              ],
-              "undoAvailable": true,
-              "redoAvailable": true
+              "unique": true,
+              "name": "xxxxxxx",
+              "racesAndGender": "xxxxxxx",
+              "mainClassId": "xxxxxxx",
+              "subClassId": "xxxxxxx",
+              "lineage": "xxxxxxx",
+              "predisposition": "xxxxxxx"
             },
             "confirmationRequired": true,
             "warnings": [
@@ -39314,6 +39635,20 @@
             "current": {
               "additionalProperties": false,
               "type": "object",
+              "required": [
+                "runtimeDiagnostics",
+                "clairvoyance",
+                "speedOfTime",
+                "godsBattleCondition",
+                "godsStrength",
+                "debugStoreOpen",
+                "displayFlavorCondition",
+                "displayAfkDuration",
+                "displayAllBestiary",
+                "displayAllCompendium",
+                "displayAllGlossary",
+                "colosseumMode"
+              ],
               "properties": {
                 "runtimeDiagnostics": {
                   "type": "boolean"
@@ -39448,6 +39783,20 @@
                 "current": {
                   "additionalProperties": false,
                   "type": "object",
+                  "required": [
+                    "runtimeDiagnostics",
+                    "clairvoyance",
+                    "speedOfTime",
+                    "godsBattleCondition",
+                    "godsStrength",
+                    "debugStoreOpen",
+                    "displayFlavorCondition",
+                    "displayAfkDuration",
+                    "displayAllBestiary",
+                    "displayAllCompendium",
+                    "displayAllGlossary",
+                    "colosseumMode"
+                  ],
                   "properties": {
                     "runtimeDiagnostics": {
                       "type": "boolean"
@@ -39620,7 +39969,20 @@
         },
         "response": {
           "data": {
-            "current": {}
+            "current": {
+              "runtimeDiagnostics": true,
+              "clairvoyance": true,
+              "speedOfTime": "real",
+              "godsBattleCondition": "normal",
+              "godsStrength": "normal",
+              "debugStoreOpen": true,
+              "displayFlavorCondition": true,
+              "displayAfkDuration": true,
+              "displayAllBestiary": true,
+              "displayAllCompendium": true,
+              "displayAllGlossary": true,
+              "colosseumMode": true
+            }
           }
         }
       }
@@ -42326,7 +42688,8 @@
           "type": "object",
           "required": [
             "entries",
-            "validOptions"
+            "validOptions",
+            "nextCursor"
           ],
           "properties": {
             "entries": {
@@ -42498,7 +42861,8 @@
               "type": "object",
               "required": [
                 "entries",
-                "validOptions"
+                "validOptions",
+                "nextCursor"
               ],
               "properties": {
                 "entries": {
@@ -42678,7 +43042,8 @@
               "category": [
                 "a."
               ]
-            }
+            },
+            "nextCursor": "xxxxxxx"
           }
         }
       }
@@ -42713,7 +43078,7 @@
                 "type": "string"
               },
               {
-                "const": "bow",
+                "const": "archery",
                 "type": "string"
               },
               {
@@ -42721,7 +43086,7 @@
                 "type": "string"
               },
               {
-                "const": "glove",
+                "const": "gauntlet",
                 "type": "string"
               },
               {
@@ -42741,7 +43106,7 @@
                 "type": "string"
               },
               {
-                "const": "book",
+                "const": "grimoire",
                 "type": "string"
               },
               {
@@ -42754,6 +43119,18 @@
               },
               {
                 "const": "jewel",
+                "type": "string"
+              },
+              {
+                "const": "bow",
+                "type": "string"
+              },
+              {
+                "const": "glove",
+                "type": "string"
+              },
+              {
+                "const": "book",
                 "type": "string"
               }
             ]
@@ -42858,7 +43235,8 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "items"
+            "items",
+            "nextCursor"
           ],
           "properties": {
             "items": {
@@ -42870,10 +43248,9 @@
                   "itemId",
                   "name",
                   "category",
-                  "revealed",
-                  "ability",
-                  "cBonus",
-                  "otherBonus"
+                  "rarity",
+                  "tier",
+                  "revealed"
                 ],
                 "properties": {
                   "itemId": {
@@ -42887,6 +43264,35 @@
                     "minLength": 1,
                     "maxLength": 200,
                     "type": "string"
+                  },
+                  "rarity": {
+                    "anyOf": [
+                      {
+                        "const": "common",
+                        "type": "string"
+                      },
+                      {
+                        "const": "uncommon",
+                        "type": "string"
+                      },
+                      {
+                        "const": "eliteRare",
+                        "type": "string"
+                      },
+                      {
+                        "const": "bossRare",
+                        "type": "string"
+                      },
+                      {
+                        "const": "mythicRare",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "tier": {
+                    "minimum": 1,
+                    "maximum": 8,
+                    "type": "integer"
                   },
                   "revealed": {
                     "type": "boolean"
@@ -42962,7 +43368,8 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "items"
+                "items",
+                "nextCursor"
               ],
               "properties": {
                 "items": {
@@ -42974,10 +43381,9 @@
                       "itemId",
                       "name",
                       "category",
-                      "revealed",
-                      "ability",
-                      "cBonus",
-                      "otherBonus"
+                      "rarity",
+                      "tier",
+                      "revealed"
                     ],
                     "properties": {
                       "itemId": {
@@ -42991,6 +43397,35 @@
                         "minLength": 1,
                         "maxLength": 200,
                         "type": "string"
+                      },
+                      "rarity": {
+                        "anyOf": [
+                          {
+                            "const": "common",
+                            "type": "string"
+                          },
+                          {
+                            "const": "uncommon",
+                            "type": "string"
+                          },
+                          {
+                            "const": "eliteRare",
+                            "type": "string"
+                          },
+                          {
+                            "const": "bossRare",
+                            "type": "string"
+                          },
+                          {
+                            "const": "mythicRare",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "tier": {
+                        "minimum": 1,
+                        "maximum": 8,
+                        "type": "integer"
                       },
                       "revealed": {
                         "type": "boolean"
@@ -43068,18 +43503,12 @@
                 "itemId": 1,
                 "name": "xxxxxxx",
                 "category": "xxxxxxx",
-                "revealed": true,
-                "ability": [
-                  "xxxxxxx"
-                ],
-                "cBonus": [
-                  "xxxxxxx"
-                ],
-                "otherBonus": [
-                  "xxxxxxx"
-                ]
+                "rarity": "common",
+                "tier": 1,
+                "revealed": true
               }
-            ]
+            ],
+            "nextCursor": "xxxxxxx"
           }
         }
       }
@@ -43186,7 +43615,8 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "races"
+            "races",
+            "nextCursor"
           ],
           "properties": {
             "races": {
@@ -43332,7 +43762,8 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "races"
+                "races",
+                "nextCursor"
               ],
               "properties": {
                 "races": {
@@ -43496,7 +43927,8 @@
                 "defaultAbility": "xxxxxxx",
                 "unlockAbility": "xxxxxxx"
               }
-            ]
+            ],
+            "nextCursor": "xxxxxxx"
           }
         }
       }
@@ -43553,7 +43985,8 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "enemies"
+            "enemies",
+            "nextCursor"
           ],
           "properties": {
             "enemies": {
@@ -43812,7 +44245,8 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "enemies"
+                "enemies",
+                "nextCursor"
               ],
               "properties": {
                 "enemies": {
@@ -44107,7 +44541,8 @@
                 "encounters": 0,
                 "defeats": 0
               }
-            ]
+            ],
+            "nextCursor": "xxxxxxx"
           }
         }
       }
@@ -44155,7 +44590,8 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "superRare"
+            "superRare",
+            "nextCursor"
           ],
           "properties": {
             "superRare": {
@@ -44214,7 +44650,8 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "superRare"
+                "superRare",
+                "nextCursor"
               ],
               "properties": {
                 "superRare": {
@@ -44270,7 +44707,8 @@
           "data": {
             "superRare": [
               "xxxxxxx"
-            ]
+            ],
+            "nextCursor": "xxxxxxx"
           }
         }
       }

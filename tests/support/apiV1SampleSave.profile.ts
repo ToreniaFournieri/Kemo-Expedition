@@ -182,8 +182,15 @@ assert.equal(validateDonation(donations), true, JSON.stringify(validateDonation.
   for (const item of compendium.items) assert.equal(item.revealed, revealedIds.has(item.itemId), `item ${item.itemId} revealed flag`);
   assert.ok(compendium.items.length > 0 && compendium.items.some((item) => item.revealed), 'a real save has revealed at least one sword');
 
-  const bestiary = await read('resources/bestiary') as { enemies: { enemyId: number; revealed: boolean; encounters: number; defeats: number }[] };
-  assert.equal(validateBestiary(bestiary), true, JSON.stringify(validateBestiary.errors?.slice(0, 3)));
+  type BestiaryPage = { enemies: { enemyId: number; revealed: boolean; encounters: number; defeats: number }[]; nextCursor: string | null };
+  const bestiary: BestiaryPage = { enemies: [], nextCursor: null };
+  let cursor: string | null = null;
+  do {
+    const page = await read('resources/bestiary', { limit: 200, ...(cursor ? { cursor } : {}) }) as BestiaryPage;
+    assert.equal(validateBestiary(page), true, JSON.stringify(validateBestiary.errors?.slice(0, 3)));
+    bestiary.enemies.push(...page.enemies);
+    cursor = page.nextCursor;
+  } while (cursor);
   assert.equal(bestiary.enemies.length, ENEMIES.length, 'every enemy is returned, revealed or not');
   for (const entry of bestiary.enemies) {
     const stats = state.global.enemyBattleStats?.[entry.enemyId];
@@ -368,7 +375,8 @@ const before = { items: itemConservation(state), jewels: jewelConservation(state
   }
   assert.ok(logs > 0, 'the real save retains battle logs');
   await assert.rejects(() => read('read/expedition/1/latestBattleLog', { logId: 'diary:does-not-exist' }), /not_found/);
-  await assert.rejects(() => read('read/expedition/1/latestBattleLog', { logId: 'latest' }), /not_found/);
+  // `latest` (the `logId` a sortie without a Diary entry returns) selects the party's newest log, like an omitted `logId`.
+  assert.deepEqual(await read('read/expedition/1/latestBattleLog', { logId: 'latest' }), await read('read/expedition/1/latestBattleLog'));
   console.log(`latestBattleLog: ${logs} retained logs, ${bottlenecks} bottleneck rooms validated`);
 }
 

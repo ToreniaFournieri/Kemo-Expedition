@@ -1,4 +1,5 @@
 import { upgradeLegacyOutcomeKeys } from '../../game/legacyOutcomeKeys';
+import { getConditionState } from '../../game/partyCondition';
 import { Fragment,useEffect,useState,type CSSProperties,type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ABILITY_BASE_NAMES } from '../../data/abilityNames';
@@ -2027,15 +2028,8 @@ export function isGodsBattleAvailable(party: Party, dungeonId: number): boolean 
 }
 
 export function getConditionLabel(condition: number, showValue: boolean): string {
-  let label = t('condition.excellent');
-  if (condition <= -350) label = t('condition.awful');
-  else if (condition <= -250) label = t('condition.bad');
-  else if (condition <= -150) label = t('condition.low');
-  else if (condition <= -50) label = t('condition.cautious');
-  else if (condition <= 50) label = t('condition.normal');
-  else if (condition <= 150) label = t('condition.steady');
-  else if (condition <= 250) label = t('condition.brisk');
-  else if (condition <= 350) label = t('condition.good');
+  // SpecRef: 7.2 | AUTO progress logic | condition key table (the same keys as the reducer and the API)
+  const label = t(getConditionState(condition));
   // SpecRef: 8.6 | UI_SETTING | Display `condition` OFF/ON
   if (!showValue) return label;
   return `${label}(${condition >= 0 ? '+' : ''}${formatNumber(condition)})`;

@@ -1,4 +1,4 @@
-import type { DebugSettings } from '../../game/debugSettings.ts';
+import { getDefaultDebugSettings, getTimeSpeedScale, normalizeDebugSettingsValue, type DebugSettings } from '../../game/debugSettings.ts';
 
 // SpecRef: 9.1.3 | Read | 2-6-3 debug; Commit | 3-6-4 debug
 // SpecRef: 8.6 | UI_SETTING | Debug
@@ -62,4 +62,27 @@ export function planDebugSettingWrite(parameters: Record<string, unknown>, setti
   if (changed('displayAllGlossary')) write.displayAllGlossary = parameters.displayAllGlossary === true;
   if (changed('colosseumMode')) write.colosseumEnabled = parameters.colosseumMode === true;
   return write;
+}
+
+/**
+ * An API account's own debug settings (stored in its control settings in the API's vocabulary) as runtime Debug settings:
+ * every field not stored yet takes its default, and the environment's Debug policy applies (Spec 9.1.4.14, `debug`).
+ */
+export function accountDebugSettings(stored: unknown): DebugSettings {
+  const defaults = getDefaultDebugSettings();
+  const parameters = stored && typeof stored === 'object' && !Array.isArray(stored) ? stored as Record<string, unknown> : {};
+  return normalizeDebugSettingsValue({ ...defaults, ...planDebugSettingWrite(parameters, defaults) });
+}
+
+/** The account's debug settings from its control settings bag (`control.settings.debug`). */
+export function accountDebugSettingsOf(settings: Record<string, unknown> | undefined): DebugSettings {
+  return accountDebugSettings(settings?.debug);
+}
+
+/**
+ * The cycle and Instant Expedition charge clock scale of an API account: its own debug Speed of Time. The progress-report
+ * bonus belongs to the ordinary player's runtime and never applies to an account.
+ */
+export function accountTimeScale(settings: Record<string, unknown> | undefined): number {
+  return Math.max(0.001, getTimeSpeedScale(accountDebugSettingsOf(settings)));
 }

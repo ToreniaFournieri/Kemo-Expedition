@@ -76,3 +76,48 @@ export function useApiReadMany<T>(
   }, [adapter, operation, committed, ...dependencies]);
   return data;
 }
+
+/**
+ * Reads every page of a paginated resource (Spec 9.1.4.3: `limit` and `cursor`, `nextCursor` until `null`) and returns the
+ * first page's data with the `listKey` array holding the entries of all pages. Otherwise it behaves like `useApiRead`.
+ */
+export function useApiReadAllPages<T extends Record<string, unknown>>(
+  adapter: InProcessApiAdapter | null,
+  operation: string,
+  listKey: keyof T & string,
+  dependencies: readonly unknown[],
+  enabled = true,
+): T | null {
+  const [data, setData] = useState<T | null>(null);
+  const [committed, setCommitted] = useState(0);
+  useEffect(() => {
+    if (!adapter) return;
+    return adapter.subscribe(() => setCommitted((count) => count + 1));
+  }, [adapter]);
+  useEffect(() => {
+    if (!enabled) return;
+    if (!adapter) { setData(null); return; }
+    let cancelled = false;
+    void (async () => {
+      let merged = null as T | null;
+      let cursor: string | null = null;
+      do {
+        const response = await adapter.read(operation, { parameters: { limit: 200, ...(cursor ? { cursor } : {}) } });
+        if (cancelled) return;
+        if (response.error) {
+          // A commit between two pages retires the cursor; the re-read that commit triggers replaces this one.
+          if ((response.error as { code?: unknown }).code === 'invalid_cursor') return;
+          console.error('[api-v1] Projection read failed', operation, response.error); setData(null); return;
+        }
+        const page = response.data as T & { nextCursor?: string | null };
+        const previous: T | null = merged;
+        merged = previous ? { ...previous, [listKey]: [...(previous[listKey] as unknown[]), ...(page[listKey] as unknown[])] } : page;
+        cursor = page.nextCursor ?? null;
+      } while (cursor);
+      if (!cancelled) setData(merged);
+    })();
+    return () => { cancelled = true; };
+    // The caller owns the dependency list: the resource is re-read when any listed fact changes.
+  }, [adapter, operation, listKey, enabled, committed, ...dependencies]);
+  return data;
+}

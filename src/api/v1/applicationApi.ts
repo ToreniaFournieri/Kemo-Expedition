@@ -5,6 +5,8 @@ import { normalizeApiV1PopupEvents } from './popupEvents';
 import { serializeGameState } from '../../game/saveCodec';
 import { encodePersistedState } from '../../game/storageCompression';
 import { logInApiAccount, logOutApiAccount, signUpApiAccount, type ApiV1SessionPorts } from './sessionLifecycle';
+import { accountDebugSettingsOf, accountTimeScale } from './debugSettings';
+import { setGameplayDebugOverride } from '../../game/debugSettings';
 import { claimNextDelivery, settleDelivery, type ApiV1DeliveryOutcome, type ApiV1DeliveryRecord } from './deliveries';
 import { completeDeliveredBenefit } from './deliveryCompletion';
 
@@ -138,6 +140,12 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
 
   const activeSession = () => activeIdentity ? { identity: activeIdentity, ...authority.getSnapshot() } : null;
 
+  // SpecRef: 9.1.4.14 | debug | An API account's own debug settings take effect while it holds control: its Speed of Time
+  // scales its own clocks, and the gameplay rules that read Debug settings follow its values, not the device's Debug pane.
+  const syncAccountDebugOverride = () => {
+    setGameplayDebugOverride(activeIdentity ? accountDebugSettingsOf(authority.getSnapshot().control.settings) : null);
+  };
+
   // SpecRef: 9.1.4.15 | External delivery and rewards | Claim → send → settle → complete
   // Runs entirely through `authority.runInternalTransaction`, so it is serialized against every client commit and
   // against itself; the network send (`ports.delivery.send`) happens outside that lock, so it never blocks other
@@ -257,6 +265,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       const { session } = login;
       activeIdentity = session.identity;
       authority.replaceSnapshot({ state: session.state, control: session.control as ApiV1ControlMetadata, simulatedAt: session.simulatedAt });
+      syncAccountDebugOverride();
       ports.onSessionActive(true);
       return { revision: session.control.revisionHighWater, identity: session.identity, data: { ...session.identity } };
     }
@@ -268,6 +277,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       activeIdentity = null;
       idleSimulatedAt = ports.runtime.now();
       authority.replaceSnapshot({ state: logout.restoredState, control: emptyControl(), simulatedAt: idleSimulatedAt });
+      syncAccountDebugOverride();
       ports.onSessionActive(false);
       return { revision: logout.finalRevision, data: { finalPersistedRevision: logout.finalRevision } };
     }
@@ -302,8 +312,9 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
           inGameTime: activeIdentity ? snapshot.simulatedAt : ports.runtime.now(),
           simulation: (partyIndex, count) => ports.runtime.simulate(snapshot.state, partyIndex, count),
           control: snapshot.control,
-          // The live cycle and the disclosed logs belong to the ordinary player's runtime; an API account has neither.
-          ...(activeIdentity ? {} : {
+          // The live cycle and the disclosed logs belong to the ordinary player's runtime; an API account has neither, and its
+          // charge clock runs at its own debug Speed of Time.
+          ...(activeIdentity ? { chargeDurationScale: accountTimeScale(snapshot.control.settings) } : {
             partyCycle: ports.runtime.partyCycle,
             disclosedLog: ports.runtime.disclosedExpeditionLog,
             headerRuntime: ports.runtime.headerRuntime,
@@ -316,6 +327,8 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
         return { revision: snapshot.control.revisionHighWater, data };
       } catch (error) {
         const missing = String(error).includes('not_found');
+        // SpecRef: 9.1.4.3 | A cursor from another route, filter set, or revision is `invalid_cursor`.
+        if (!missing && /\binvalid_cursor\b/.test(String(error))) return failure(400, 'invalid_cursor', 'The cursor does not match this list.');
         return failure(missing ? 404 : 400, missing ? 'not_found' : 'invalid_request', 'The requested projection is unavailable.');
       }
     }
@@ -334,7 +347,9 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
     }, {
       gameMode: ports.runtime.gameMode(),
       enemyLevelOffset: ports.runtime.enemyLevelOffset(),
-      cycleDurationScale: ports.runtime.cycleDurationScale(),
+      // An API account's clocks run at its own debug Speed of Time; the player's runtime speed never leaks into it.
+      cycleDurationScale: identity ? accountTimeScale(authority.getSnapshot().control.settings) : ports.runtime.cycleDurationScale(),
+      ...(identity ? { chargeDurationScale: accountTimeScale(authority.getSnapshot().control.settings) } : {}),
       applyAutoEquipment: ports.runtime.applyAutoEquipment,
       createOpaqueId: ports.runtime.createOpaqueId,
       createRandomSeed: ports.runtime.createRandomSeed,
@@ -363,6 +378,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       onPublicationFailure: ports.runtime.onPublicationFailure,
       yieldBetweenChunks: ports.runtime.yieldBetweenChunks,
     });
+    if (identity) syncAccountDebugOverride();
     if (!result.ok) {
       const status = result.error.code === 'not_found' ? 404 : result.error.code === 'save_failed' ? 500 : CONFLICT_CODES.has(result.error.code) ? 409 : 400;
       return failure(status, result.error.code, result.error.message, result.error.details);

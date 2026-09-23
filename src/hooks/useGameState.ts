@@ -1,4 +1,5 @@
 import { hasNewAvailability } from '../game/inventoryAvailability';
+import { getConditionState, type PartyConditionState } from '../game/partyCondition';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import type { RuntimeGameMode } from '../game/runtimeGameMode';
 import {
@@ -549,17 +550,6 @@ function shouldAutoAdvanceExpeditionDestination(party: Party): { shouldAdvance: 
   };
 }
 
-type PartyConditionState =
-  | 'condition.terrible'
-  | 'condition.poor'
-  | 'condition.low'
-  | 'condition.cautious'
-  | 'condition.normal'
-  | 'condition.steady'
-  | 'condition.good'
-  | 'condition.great'
-  | 'condition.excellent';
-
 type ConditionOutcomeKey = 'Clear' | 'Return' | 'Draw' | 'Retreat' | 'Defeat';
 
 const CONDITION_ADJUSTMENTS: Record<PartyConditionState, Record<ConditionOutcomeKey, number>> = {
@@ -573,19 +563,6 @@ const CONDITION_ADJUSTMENTS: Record<PartyConditionState, Record<ConditionOutcome
   'condition.great': { Clear: 1, Return: 0, Draw: -5, Retreat: -14, Defeat: -68 },
   'condition.excellent': { Clear: 1, Return: 0, Draw: -6, Retreat: -16, Defeat: -70 },
 };
-
-// SpecRef: 7.1.2 | AUTO progress logic | condition state classification
-function getConditionState(condition: number): PartyConditionState {
-  if (condition <= -350) return 'condition.terrible';
-  if (condition <= -250) return 'condition.poor';
-  if (condition <= -150) return 'condition.low';
-  if (condition <= -50) return 'condition.cautious';
-  if (condition <= 50) return 'condition.normal';
-  if (condition <= 150) return 'condition.steady';
-  if (condition <= 250) return 'condition.good';
-  if (condition <= 350) return 'condition.great';
-  return 'condition.excellent';
-}
 
 function getConditionOutcomeKey(finalOutcome: ExpeditionLog['finalOutcome'], endedWithDrawRetreat: boolean): ConditionOutcomeKey {
   if (finalOutcome === 'Clear') return 'Clear';

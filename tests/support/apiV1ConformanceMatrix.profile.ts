@@ -104,7 +104,7 @@ const ports: ApplicationApiPorts = {
     importGameState: async (state) => ({ state, errorLog: null }),
     exportActiveAccountPayload: async () => savePayload,
     now: () => runtimeNow,
-    catchUp: { maximumElapsedMs: 3_600_000, cycleDurationScale: () => 1, applyAutoEquipment: (state) => state, yieldBetweenChunks: async () => undefined, randomSeed: () => 7 },
+    catchUp: { maximumElapsedMs: 3_600_000, applyAutoEquipment: (state) => state, yieldBetweenChunks: async () => undefined, randomSeed: () => 7 },
   },
   desktopAvailable: () => true,
   runtime: {

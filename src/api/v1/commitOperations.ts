@@ -4,10 +4,10 @@ import { DEVELOPER_NEWS_ITEMS } from '../../data/developerNews';
 import { getDeityId, getDeityNameFromId, isNoFaithDeity, normalizeDeityName } from '../../game/deity';
 import { getEnvironmentId, isDebugModeEnabled } from '../../game/environment';
 import { describeModeSelectCurrent, planDisplaySettingWrite, type ApiV1DisplaySettings, type ApiV1DisplaySettingWrite } from './modeSelect';
-import { describeDebugSettings, planDebugSettingWrite } from './debugSettings';
+import { accountDebugSettings, describeDebugSettings, planDebugSettingWrite } from './debugSettings';
 import { getPartyClairvoyanceAccess } from '../../game/clairvoyanceAccess';
 import type { DebugSettings } from '../../game/debugSettings';
-import { canCharacterEquipCategory, createEquipmentSetSnapshot, evaluateEquipmentSet, evaluateEquipmentState, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
+import { canCharacterEquipCategory, createDefaultEquipmentSetName, createEquipmentSetSnapshot, evaluateEquipmentSet, evaluateEquipmentState, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
 import { recordEquipmentState, redoEquipmentState, undoEquipmentState } from '../../game/equipmentHistory';
 import { computeCharacterStats } from '../../game/characterComputation';
 import { getSortieUnavailableReason } from './sortieAvailability';
@@ -22,12 +22,13 @@ import { describeEquipmentHistory } from './equipmentHistoryFacts';
 import { apiExpeditionOutcomeOrNull } from './expeditionOutcome';
 import { listUiPreferences, validateUiPreference, type UiPreferenceValue } from './uiPreferenceCatalog';
 import { isEquipmentSlotAction, planEquipOperation, planEquipmentSlotOperation } from './equipmentSlots';
-import { planCharacterBuildChange } from './buildChange';
+import { describeCharacterBuildCurrent, planCharacterBuildChange } from './buildChange';
 import { decodePersistedState, encodePersistedState } from '../../game/storageCompression';
 import { createFreshGameState, gameReducer } from '../../hooks/useGameState';
 import type { Character, GameState, Party, SavedEquipmentSet } from '../../types';
 import { getVariantKey } from '../../types';
 import { diarySettingsView } from './diaryView';
+import { formatItem } from './itemFormat';
 
 // SpecRef: 9.1 | Desktop distribution | Application API
 // This is the transport-neutral gameplay-mutation slice of the `/api/v1` commit dispatcher. It owns exactly the
@@ -222,7 +223,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       const resolved = next.parties[partyIndex];
       // Only an outcome the party's Diary settings record creates an entry; otherwise the result is the party's latest log.
       const newDiaryEntry = resolved.diaryLogs.find((entry) => !previousDiaryIds.has(entry.id));
-      data = { outcome: apiExpeditionOutcomeOrNull(resolved.lastExpeditionLog), rewards: resolved.lastExpeditionLog?.rewards.map((item) => getVariantKey(item)) ?? [], diaryEntryId: newDiaryEntry?.id ?? null, logId: newDiaryEntry ? `diary:${newDiaryEntry.id}` : 'latest' };
+      data = { outcome: apiExpeditionOutcomeOrNull(resolved.lastExpeditionLog), rewards: resolved.lastExpeditionLog?.rewards.map((item) => formatItem(item, item.isLocked === true)) ?? [], diaryEntryId: newDiaryEntry?.id ?? null, logId: newDiaryEntry ? `diary:${newDiaryEntry.id}` : 'latest' };
     }
   } else if (operation.match(/^commit\/build\/party\/(\d+)$/)) {
     const partyNumber = Number(operation.split('/').at(-1));
@@ -286,7 +287,9 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
           applied = true;
         }
       }
-      data = { confirmationRequired: plan.requiresConfirmation, warnings: plan.warnings, applied };
+      // SpecRef: 9.1.4.9 | changeBuild returns the complete new build `current` (unchanged after a simulation or `no`).
+      const characterAfter = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
+      data = { current: describeCharacterBuildCurrent(characterAfter), confirmationRequired: plan.requiresConfirmation, warnings: plan.warnings, applied };
     }
     else if (action === 'removeAllEquipment') reduce({ type: 'REMOVE_ALL_EQUIPMENT', partyIndex, characterId });
     else if (isEquipmentSlotAction(action)) {
@@ -301,7 +304,8 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       if (requestedName !== undefined && (typeof requestedName !== 'string' || requestedName.trim().length === 0 || requestedName.length > 100)) throw new Error('invalid_request:name');
       if (next.global.savedEquipmentSets.length >= MAX_SAVED_EQUIPMENT_SETS) throw new Error('illegal_action:saved_sets_full');
       const occupied = new Set(next.global.savedEquipmentSets.map((entry) => entry.slot));
-      reduce({ type: 'SAVE_EQUIPMENT_SET', partyIndex, characterId, name: requestedName ?? `Set ${next.global.savedEquipmentSets.length + 1}`, createdAt: context.simulatedAt });
+      // An omitted name uses the Party pane's default name (Spec 8.2.4), dated by the transaction's in-game clock.
+      reduce({ type: 'SAVE_EQUIPMENT_SET', partyIndex, characterId, name: requestedName ?? createDefaultEquipmentSetName(characterBefore, context.simulatedAt), createdAt: context.simulatedAt });
       // Sets are ordered by slot, so the new set is the one that was not there before, not the last element.
       const created = next.global.savedEquipmentSets.find((entry) => !occupied.has(entry.slot));
       if (!created) throw new Error('illegal_action:saved_sets_full');
@@ -374,7 +378,9 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
         history[historyKey] = recordEquipmentState(characterHistory, equipmentBefore);
       }
     }
-    if (!data.equipmentSetId) {
+    // Equipment commands return the complete equipment/mode plus Undo/Redo availability (9.1.4.14); `changeBuild` returns
+    // its own build `current` and `saveEquipmentSet` the new set's ID.
+    if (action !== 'changeBuild' && !data.equipmentSetId) {
       const currentCharacter = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
       const historyFacts = describeEquipmentHistory(next, characterId, history);
       data = {
@@ -492,11 +498,19 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (new Set(ids).size !== ids.length) throw new Error('invalid_request:duplicate_diaryEntryId');
     const applicableIds = new Set(selectedParties.flatMap((party) => party.diaryLogs.map((entry) => entry.id)));
     if (ids.some((id) => !applicableIds.has(id))) throw new Error('not_found');
-    for (const id of ids) reduce({ type: 'MARK_DIARY_LOG_SEEN', logId: id });
-    data = { diaryEntryId: ids, unreadTotal: next.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0) };
+    // Only the entries that were unread are affected; already-read entries are a no-op.
+    const unreadIds = new Set(selectedParties.flatMap((party) => party.diaryLogs.filter((entry) => !entry.isRead).map((entry) => entry.id)));
+    const affected = ids.filter((id) => unreadIds.has(id));
+    for (const id of affected) reduce({ type: 'MARK_DIARY_LOG_SEEN', logId: id });
+    data = { diaryEntryId: affected, unreadTotal: next.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0) };
   } else if (operation === 'commit/setting/markNewsAsRead') {
-    const versions = parameters.version === undefined ? DEVELOPER_NEWS_ITEMS.map((entry) => entry.id) : (Array.isArray(parameters.version) ? parameters.version : [parameters.version]).map(String);
-    reduce({ type: 'MARK_DEVELOPER_NEWS_READ', itemIds: versions }); data = { versions, unreadCount: DEVELOPER_NEWS_ITEMS.filter((entry) => !next.global.readDeveloperNewsItemIds.includes(entry.id)).length };
+    // An unknown version rejects the whole request; only the versions that were unread are affected and returned.
+    const requested = parameters.version === undefined ? DEVELOPER_NEWS_ITEMS.map((entry) => entry.id) : (Array.isArray(parameters.version) ? parameters.version : [parameters.version]).map(String);
+    if (requested.some((version) => !DEVELOPER_NEWS_ITEMS.some((entry) => entry.id === version))) throw new Error('not_found');
+    const readBefore = new Set(next.global.readDeveloperNewsItemIds ?? []);
+    const versions = requested.filter((version) => !readBefore.has(version));
+    if (versions.length > 0) reduce({ type: 'MARK_DEVELOPER_NEWS_READ', itemIds: versions });
+    data = { versions, unreadCount: DEVELOPER_NEWS_ITEMS.filter((entry) => !(next.global.readDeveloperNewsItemIds ?? []).includes(entry.id)).length };
   } else if (operation === 'commit/setting/clairvoyanceReset') {
     const partyNumber = Number(parameters.partyNumber);
     const partyIndex = next.parties.findIndex((entry) => entry.id === partyNumber);
@@ -533,7 +547,8 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const key = operation.endsWith('/debug') ? 'debug' : 'enemyEditPane';
     const current = { ...((settings[key] as Record<string, unknown> | undefined) ?? {}), ...parameters };
     if (Object.keys(parameters).length > 0) settings[key] = current;
-    data = { current };
+    // An API account's debug settings report every field, with defaults for the ones never set (Spec 9.1.4.14).
+    data = { current: key === 'debug' ? describeDebugSettings(accountDebugSettings(current)) : current };
   } else if (operation === 'commit/setting/uiPreferences') {
     // SpecRef: 9.1.4.17 | UI state ownership | uiPreferences closed catalog
     // Unknown or duplicate keys and wrongly typed values reject the whole update; the preferences live in the save.

@@ -171,6 +171,10 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.equal(all.state.parties[1].diaryLogs[0].isRead, true);
   assert.deepEqual(all.data, { diaryEntryId: [second.id], unreadTotal: 1 });
 
+  // Only entries that were unread are affected; acknowledging an already-read entry reports nothing.
+  const again = applyApiV1Commit('commit/diary/diaryEntry/markAsRead', one.state, { diaryEntryId: [first.id, second.id] }, baseContext());
+  assert.deepEqual(again.data, { diaryEntryId: [second.id], unreadTotal: 0 });
+
   for (const parameters of [{ diaryEntryId: 'missing' }, { diaryEntryId: second.id, partyNumber: 1 }, { diaryEntryId: [first.id, first.id] }]) {
     assert.throws(() => applyApiV1Commit('commit/diary/diaryEntry/markAsRead', diarySeed, parameters, baseContext()), /not_found|invalid_request/);
     assert.equal(diarySeed.parties[0].diaryLogs[0].isRead, false, 'a rejected acknowledgement does not mutate its input');
@@ -395,6 +399,10 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.match(String((ok.data as { logId: string }).logId), /^(latest|diary:.+)$/);
   assert.ok(['Clear', 'Return', 'Draw', 'Retreat', 'Defeat'].includes(String((ok.data as { outcome: string }).outcome)));
   assert.equal(charged.parties[0].instantExpeditionStock, 3, 'the input snapshot is untouched');
+  // Rewards use the Item Format of the rest of the API (`<lock>/<itemId>/<enhancement>/<superRare>`), not variant keys.
+  const rewards = (ok.data as { rewards: string[] }).rewards;
+  assert.equal(rewards.length, ok.state.parties[0].lastExpeditionLog?.rewards.length ?? 0);
+  for (const reward of rewards) assert.match(reward, /^[01]\/[1-9][0-9]*\/[0-6]\/[0-9]+$/);
 
   // No charge, no expedition (the button refuses too).
   refuses(withParty(seed, { instantExpeditionStock: 0, instantExpeditionChargeStartedAt: at }), 'charge_insufficient');
@@ -625,6 +633,58 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.match(String(priority(6)), /not_found/, 'a party that does not exist is refused, not quietly replaced by PT1');
   assert.equal((priority(1) as ReturnType<typeof applyApiV1Commit>).state.global.jewelAutoEquipPriorityPartyId, 1);
   assert.equal((priority('none') as ReturnType<typeof applyApiV1Commit>).state.global.jewelAutoEquipPriorityPartyId, null);
+}
+
+// News acknowledgement (9.1.4.9): an unknown version rejects the whole request, and only unread versions are affected.
+{
+  const { DEVELOPER_NEWS_ITEMS } = await import('../../src/data/developerNews');
+  const [first, second] = DEVELOPER_NEWS_ITEMS;
+  assert.throws(() => applyApiV1Commit('commit/setting/markNewsAsRead', seed, { version: [first.id, 'no-such-version'] }, baseContext()), /not_found/);
+  const one = applyApiV1Commit('commit/setting/markNewsAsRead', seed, { version: first.id }, baseContext());
+  assert.deepEqual(one.data.versions, [first.id]);
+  const both = applyApiV1Commit('commit/setting/markNewsAsRead', one.state, { version: [first.id, second.id] }, baseContext());
+  assert.deepEqual(both.data.versions, [second.id], 'an already-read version is not affected');
+  const noop = applyApiV1Commit('commit/setting/markNewsAsRead', both.state, { version: first.id }, baseContext());
+  assert.deepEqual(noop.data.versions, []);
+  assert.equal(noop.state, both.state, 'acknowledging only read news changes nothing');
+}
+
+// changeBuild (9.1.4.9) returns the character's complete new build `current`, not the equipment facts.
+{
+  const character = seed.parties[0].characters.find((entry) => entry.isUnique !== true)!;
+  const renamed = applyApiV1Commit(`commit/build/character/${character.id}/changeBuild`, seed, { name: 'Renamed', simulation: false }, baseContext());
+  assert.deepEqual(Object.keys(renamed.data.current as object).sort(), ['lineage', 'mainClassId', 'name', 'predisposition', 'racesAndGender', 'subClassId', 'unique']);
+  assert.equal((renamed.data.current as { name: string }).name, 'Renamed');
+  const simulated = applyApiV1Commit(`commit/build/character/${character.id}/changeBuild`, seed, { name: 'Renamed', simulation: true }, baseContext());
+  assert.equal((simulated.data.current as { name: string }).name, character.name, 'a simulation reports the unchanged build');
+}
+
+// saveEquipmentSet without a name uses the Party pane's default name (Spec 8.2.4), dated by the transaction clock.
+{
+  const { createDefaultEquipmentSetName } = await import('../../src/game/equipmentSets');
+  const character = seed.parties[0].characters[0];
+  const context = baseContext();
+  const saved = applyApiV1Commit(`commit/build/character/${character.id}/saveEquipmentSet`, seed, { equipmentSet: {} }, context);
+  const set = saved.state.global.savedEquipmentSets.find((entry) => entry.slot === saved.data.equipmentSetId)!;
+  assert.equal(set.name, createDefaultEquipmentSetName(character, context.simulatedAt));
+  assert.match(set.name, new RegExp(`^${character.name} .+\\(.+\\), .+/.+ \\d{2}/\\d{2}$`));
+}
+
+// commit/setting/debug for an API account reports every field, with defaults for the ones never set.
+{
+  const location = globalThis as { location?: { pathname: string } };
+  const previous = location.location;
+  location.location = { pathname: '/dev/' };
+  try {
+    const settings: Record<string, unknown> = {};
+    const outcome = applyApiV1Commit('commit/setting/debug', seed, { speedOfTime: 'x5' }, baseContext({ settings }));
+    assert.equal((outcome.data.current as Record<string, unknown>).speedOfTime, 'x5');
+    assert.equal((outcome.data.current as Record<string, unknown>).godsStrength, 'normal');
+    assert.equal(Object.keys(outcome.data.current as object).length, 12);
+    assert.deepEqual(settings.debug, { speedOfTime: 'x5' }, 'only the supplied fields are stored');
+  } finally {
+    location.location = previous;
+  }
 }
 
 console.log('apiV1CommitOperations profile ok');

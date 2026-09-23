@@ -1,4 +1,4 @@
-import { CLASSES } from '../data/classes';
+import { CLASS_SHORT_NAMES, CLASSES } from '../data/classes';
 import { LINEAGES } from '../data/lineages';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { RACES } from '../data/races';
@@ -333,4 +333,21 @@ export function normalizeSavedEquipmentSets(value: unknown): SavedEquipmentSet[]
     occupied.add(candidate.slot!);
     return [{ slot: candidate.slot!, name: candidate.name.slice(0, 80), createdAt: Number(candidate.createdAt) || Date.now(), equipment }];
   }).sort((a, b) => a.slot - b.slot);
+}
+
+// SpecRef: 8.2.4 | Equipment management | Saved equipment slots: default name
+// The default name of a saved set: character name, main and sub class abbreviations, lineage and predisposition
+// abbreviations, and the creation date (`MM/DD`), e.g. `リタ 剣(巡), 砂/好 09/05`. The Party pane and the API's
+// `saveEquipmentSet` without a name both use it.
+export function createDefaultEquipmentSetName(character: Pick<Character, 'name' | 'mainClassId' | 'subClassId' | 'lineageId' | 'predispositionId'>, createdAt: number): string {
+  const date = new Date(createdAt);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const lineage = LINEAGES.find((entry) => entry.id === character.lineageId) ?? LINEAGES[0];
+  const predisposition = PREDISPOSITIONS.find((entry) => entry.id === character.predispositionId) ?? PREDISPOSITIONS[0];
+  const mainShort = CLASS_SHORT_NAMES[character.mainClassId] ?? character.mainClassId;
+  const subShort = CLASS_SHORT_NAMES[character.subClassId] ?? character.subClassId;
+  const lineageShort = lineage.shortName ?? lineage.name;
+  const predispositionShort = predisposition.shortName ?? predisposition.name;
+  return `${character.name} ${mainShort}(${subShort}), ${lineageShort}/${predispositionShort} ${month}/${day}`;
 }
