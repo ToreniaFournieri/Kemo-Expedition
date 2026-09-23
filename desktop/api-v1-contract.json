@@ -2981,6 +2981,69 @@
                                                         ]
                                                       }
                                                     }
+                                                  }
+                                                ],
+                                                "additionalItems": false,
+                                                "minItems": 2,
+                                                "maxItems": 2
+                                              },
+                                              {
+                                                "type": "array",
+                                                "items": [
+                                                  {
+                                                    "const": 2,
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "additionalProperties": false,
+                                                    "type": "object",
+                                                    "required": [
+                                                      "id",
+                                                      "enhancement",
+                                                      "superRare"
+                                                    ],
+                                                    "properties": {
+                                                      "id": {
+                                                        "minimum": 1,
+                                                        "type": "integer"
+                                                      },
+                                                      "enhancement": {
+                                                        "minimum": 0,
+                                                        "maximum": 6,
+                                                        "type": "integer"
+                                                      },
+                                                      "superRare": {
+                                                        "minimum": 0,
+                                                        "type": "integer"
+                                                      },
+                                                      "jewel": {
+                                                        "anyOf": [
+                                                          {
+                                                            "additionalProperties": false,
+                                                            "type": "object",
+                                                            "required": [
+                                                              "key",
+                                                              "rank"
+                                                            ],
+                                                            "properties": {
+                                                              "key": {
+                                                                "minLength": 1,
+                                                                "maxLength": 200,
+                                                                "type": "string"
+                                                              },
+                                                              "rank": {
+                                                                "minimum": 1,
+                                                                "maximum": 8,
+                                                                "type": "integer"
+                                                              }
+                                                            }
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
                                                   },
                                                   {
                                                     "type": "number"
@@ -3338,6 +3401,69 @@
                                                           },
                                                           {
                                                             "type": "boolean"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "additionalItems": false,
+                                                "minItems": 2,
+                                                "maxItems": 2
+                                              },
+                                              {
+                                                "type": "array",
+                                                "items": [
+                                                  {
+                                                    "const": 2,
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "additionalProperties": false,
+                                                    "type": "object",
+                                                    "required": [
+                                                      "id",
+                                                      "enhancement",
+                                                      "superRare"
+                                                    ],
+                                                    "properties": {
+                                                      "id": {
+                                                        "minimum": 1,
+                                                        "type": "integer"
+                                                      },
+                                                      "enhancement": {
+                                                        "minimum": 0,
+                                                        "maximum": 6,
+                                                        "type": "integer"
+                                                      },
+                                                      "superRare": {
+                                                        "minimum": 0,
+                                                        "type": "integer"
+                                                      },
+                                                      "jewel": {
+                                                        "anyOf": [
+                                                          {
+                                                            "additionalProperties": false,
+                                                            "type": "object",
+                                                            "required": [
+                                                              "key",
+                                                              "rank"
+                                                            ],
+                                                            "properties": {
+                                                              "key": {
+                                                                "minLength": 1,
+                                                                "maxLength": 200,
+                                                                "type": "string"
+                                                              },
+                                                              "rank": {
+                                                                "minimum": 1,
+                                                                "maximum": 8,
+                                                                "type": "integer"
+                                                              }
+                                                            }
                                                           },
                                                           {
                                                             "type": "null"
@@ -5562,6 +5688,69 @@
                                                             ]
                                                           }
                                                         }
+                                                      }
+                                                    ],
+                                                    "additionalItems": false,
+                                                    "minItems": 2,
+                                                    "maxItems": 2
+                                                  },
+                                                  {
+                                                    "type": "array",
+                                                    "items": [
+                                                      {
+                                                        "const": 2,
+                                                        "type": "number"
+                                                      },
+                                                      {
+                                                        "additionalProperties": false,
+                                                        "type": "object",
+                                                        "required": [
+                                                          "id",
+                                                          "enhancement",
+                                                          "superRare"
+                                                        ],
+                                                        "properties": {
+                                                          "id": {
+                                                            "minimum": 1,
+                                                            "type": "integer"
+                                                          },
+                                                          "enhancement": {
+                                                            "minimum": 0,
+                                                            "maximum": 6,
+                                                            "type": "integer"
+                                                          },
+                                                          "superRare": {
+                                                            "minimum": 0,
+                                                            "type": "integer"
+                                                          },
+                                                          "jewel": {
+                                                            "anyOf": [
+                                                              {
+                                                                "additionalProperties": false,
+                                                                "type": "object",
+                                                                "required": [
+                                                                  "key",
+                                                                  "rank"
+                                                                ],
+                                                                "properties": {
+                                                                  "key": {
+                                                                    "minLength": 1,
+                                                                    "maxLength": 200,
+                                                                    "type": "string"
+                                                                  },
+                                                                  "rank": {
+                                                                    "minimum": 1,
+                                                                    "maximum": 8,
+                                                                    "type": "integer"
+                                                                  }
+                                                                }
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        }
                                                       },
                                                       {
                                                         "type": "number"
@@ -5919,6 +6108,69 @@
                                                               },
                                                               {
                                                                 "type": "boolean"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        }
+                                                      }
+                                                    ],
+                                                    "additionalItems": false,
+                                                    "minItems": 2,
+                                                    "maxItems": 2
+                                                  },
+                                                  {
+                                                    "type": "array",
+                                                    "items": [
+                                                      {
+                                                        "const": 2,
+                                                        "type": "number"
+                                                      },
+                                                      {
+                                                        "additionalProperties": false,
+                                                        "type": "object",
+                                                        "required": [
+                                                          "id",
+                                                          "enhancement",
+                                                          "superRare"
+                                                        ],
+                                                        "properties": {
+                                                          "id": {
+                                                            "minimum": 1,
+                                                            "type": "integer"
+                                                          },
+                                                          "enhancement": {
+                                                            "minimum": 0,
+                                                            "maximum": 6,
+                                                            "type": "integer"
+                                                          },
+                                                          "superRare": {
+                                                            "minimum": 0,
+                                                            "type": "integer"
+                                                          },
+                                                          "jewel": {
+                                                            "anyOf": [
+                                                              {
+                                                                "additionalProperties": false,
+                                                                "type": "object",
+                                                                "required": [
+                                                                  "key",
+                                                                  "rank"
+                                                                ],
+                                                                "properties": {
+                                                                  "key": {
+                                                                    "minLength": 1,
+                                                                    "maxLength": 200,
+                                                                    "type": "string"
+                                                                  },
+                                                                  "rank": {
+                                                                    "minimum": 1,
+                                                                    "maximum": 8,
+                                                                    "type": "integer"
+                                                                  }
+                                                                }
                                                               },
                                                               {
                                                                 "type": "null"
@@ -14198,6 +14450,69 @@
                                               ]
                                             }
                                           }
+                                        }
+                                      ],
+                                      "additionalItems": false,
+                                      "minItems": 2,
+                                      "maxItems": 2
+                                    },
+                                    {
+                                      "type": "array",
+                                      "items": [
+                                        {
+                                          "const": 2,
+                                          "type": "number"
+                                        },
+                                        {
+                                          "additionalProperties": false,
+                                          "type": "object",
+                                          "required": [
+                                            "id",
+                                            "enhancement",
+                                            "superRare"
+                                          ],
+                                          "properties": {
+                                            "id": {
+                                              "minimum": 1,
+                                              "type": "integer"
+                                            },
+                                            "enhancement": {
+                                              "minimum": 0,
+                                              "maximum": 6,
+                                              "type": "integer"
+                                            },
+                                            "superRare": {
+                                              "minimum": 0,
+                                              "type": "integer"
+                                            },
+                                            "jewel": {
+                                              "anyOf": [
+                                                {
+                                                  "additionalProperties": false,
+                                                  "type": "object",
+                                                  "required": [
+                                                    "key",
+                                                    "rank"
+                                                  ],
+                                                  "properties": {
+                                                    "key": {
+                                                      "minLength": 1,
+                                                      "maxLength": 200,
+                                                      "type": "string"
+                                                    },
+                                                    "rank": {
+                                                      "minimum": 1,
+                                                      "maximum": 8,
+                                                      "type": "integer"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
                                         },
                                         {
                                           "type": "number"
@@ -14555,6 +14870,69 @@
                                                 },
                                                 {
                                                   "type": "boolean"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "additionalItems": false,
+                                      "minItems": 2,
+                                      "maxItems": 2
+                                    },
+                                    {
+                                      "type": "array",
+                                      "items": [
+                                        {
+                                          "const": 2,
+                                          "type": "number"
+                                        },
+                                        {
+                                          "additionalProperties": false,
+                                          "type": "object",
+                                          "required": [
+                                            "id",
+                                            "enhancement",
+                                            "superRare"
+                                          ],
+                                          "properties": {
+                                            "id": {
+                                              "minimum": 1,
+                                              "type": "integer"
+                                            },
+                                            "enhancement": {
+                                              "minimum": 0,
+                                              "maximum": 6,
+                                              "type": "integer"
+                                            },
+                                            "superRare": {
+                                              "minimum": 0,
+                                              "type": "integer"
+                                            },
+                                            "jewel": {
+                                              "anyOf": [
+                                                {
+                                                  "additionalProperties": false,
+                                                  "type": "object",
+                                                  "required": [
+                                                    "key",
+                                                    "rank"
+                                                  ],
+                                                  "properties": {
+                                                    "key": {
+                                                      "minLength": 1,
+                                                      "maxLength": 200,
+                                                      "type": "string"
+                                                    },
+                                                    "rank": {
+                                                      "minimum": 1,
+                                                      "maximum": 8,
+                                                      "type": "integer"
+                                                    }
+                                                  }
                                                 },
                                                 {
                                                   "type": "null"
@@ -16665,6 +17043,69 @@
                                                   ]
                                                 }
                                               }
+                                            }
+                                          ],
+                                          "additionalItems": false,
+                                          "minItems": 2,
+                                          "maxItems": 2
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": [
+                                            {
+                                              "const": 2,
+                                              "type": "number"
+                                            },
+                                            {
+                                              "additionalProperties": false,
+                                              "type": "object",
+                                              "required": [
+                                                "id",
+                                                "enhancement",
+                                                "superRare"
+                                              ],
+                                              "properties": {
+                                                "id": {
+                                                  "minimum": 1,
+                                                  "type": "integer"
+                                                },
+                                                "enhancement": {
+                                                  "minimum": 0,
+                                                  "maximum": 6,
+                                                  "type": "integer"
+                                                },
+                                                "superRare": {
+                                                  "minimum": 0,
+                                                  "type": "integer"
+                                                },
+                                                "jewel": {
+                                                  "anyOf": [
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "type": "object",
+                                                      "required": [
+                                                        "key",
+                                                        "rank"
+                                                      ],
+                                                      "properties": {
+                                                        "key": {
+                                                          "minLength": 1,
+                                                          "maxLength": 200,
+                                                          "type": "string"
+                                                        },
+                                                        "rank": {
+                                                          "minimum": 1,
+                                                          "maximum": 8,
+                                                          "type": "integer"
+                                                        }
+                                                      }
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              }
                                             },
                                             {
                                               "type": "number"
@@ -17022,6 +17463,69 @@
                                                     },
                                                     {
                                                       "type": "boolean"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "additionalItems": false,
+                                          "minItems": 2,
+                                          "maxItems": 2
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": [
+                                            {
+                                              "const": 2,
+                                              "type": "number"
+                                            },
+                                            {
+                                              "additionalProperties": false,
+                                              "type": "object",
+                                              "required": [
+                                                "id",
+                                                "enhancement",
+                                                "superRare"
+                                              ],
+                                              "properties": {
+                                                "id": {
+                                                  "minimum": 1,
+                                                  "type": "integer"
+                                                },
+                                                "enhancement": {
+                                                  "minimum": 0,
+                                                  "maximum": 6,
+                                                  "type": "integer"
+                                                },
+                                                "superRare": {
+                                                  "minimum": 0,
+                                                  "type": "integer"
+                                                },
+                                                "jewel": {
+                                                  "anyOf": [
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "type": "object",
+                                                      "required": [
+                                                        "key",
+                                                        "rank"
+                                                      ],
+                                                      "properties": {
+                                                        "key": {
+                                                          "minLength": 1,
+                                                          "maxLength": 200,
+                                                          "type": "string"
+                                                        },
+                                                        "rank": {
+                                                          "minimum": 1,
+                                                          "maximum": 8,
+                                                          "type": "integer"
+                                                        }
+                                                      }
                                                     },
                                                     {
                                                       "type": "null"

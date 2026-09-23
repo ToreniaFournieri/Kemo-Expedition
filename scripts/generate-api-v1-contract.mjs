@@ -65,7 +65,8 @@ const bottleneckEnemy = strict({
 // A compact event row: [category, timing, actorId, opcode, targetId, element, hits, attempts, value, facts].
 const compactEvent = Type.Tuple([Type.Integer(), Type.Integer(), Type.Integer(), Type.Integer(), Type.Integer(), Type.String(), Type.Integer(), Type.Integer(), Type.Number(), factMap]);
 const legacyEvent = Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), Type.Boolean(), Type.Record(Type.String(), Type.Union([Type.Number(), Type.Boolean()]))]));
-const endEvent = Type.Union([Type.Tuple([Type.Literal(0), factMap]), Type.Tuple([Type.Literal(1), factMap]), Type.Tuple([Type.Literal(2), strict({ id: integerId, enhancement: Type.Integer({ minimum: 0, maximum: 6 }), superRare: Type.Integer({ minimum: 0 }), jewel: Type.Optional(Type.Union([strict({ key: stableKey, rank: Type.Integer({ minimum: 1, maximum: 8 }) }), Type.Null()])) }), Type.Optional(Type.Number())]), Type.Tuple([Type.Literal(3)]), Type.Tuple([Type.Literal(4)])]);
+const rewardEndEventItem = strict({ id: integerId, enhancement: Type.Integer({ minimum: 0, maximum: 6 }), superRare: Type.Integer({ minimum: 0 }), jewel: Type.Optional(Type.Union([strict({ key: stableKey, rank: Type.Integer({ minimum: 1, maximum: 8 }) }), Type.Null()])) });
+const endEvent = Type.Union([Type.Tuple([Type.Literal(0), factMap]), Type.Tuple([Type.Literal(1), factMap]), Type.Tuple([Type.Literal(2), rewardEndEventItem]), Type.Tuple([Type.Literal(2), rewardEndEventItem, Type.Number()]), Type.Tuple([Type.Literal(3)]), Type.Tuple([Type.Literal(4)])]);
 sampleOverrides.set(endEvent, [3]);
 sampleOverrides.set(compactEvent, [2, 49, 1, 1, 2147483649, 'none', 1, 1, 10, {}]);
 const nullableInteger = Type.Union([Type.Integer(), Type.Null()]);

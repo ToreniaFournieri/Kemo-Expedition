@@ -516,6 +516,12 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.equal(retained.compactVersion, 1, 'a new expedition is a compact record');
   assert.ok(retained.entries.some((entry) => entry.compactBattle), 'it retains compact battles');
   const response = await buildApiV1ReadData('read/expedition/1/latestBattleLog', played, {}, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, revision: 1, inGameTime: at } as never) as never;
+  const { default: Ajv } = await import('ajv');
+  const { readFileSync } = await import('node:fs');
+  const catalog = JSON.parse(readFileSync('desktop/api-v1-contract.json', 'utf8')) as { operations: { operationId: string; response: { data: object } }[] };
+  const validate = new Ajv({ strict: false, allErrors: true }).compile(catalog.operations.find((operation) => operation.operationId === 'read/expedition/{p}/latestBattleLog')!.response.data);
+  assert.ok((response as { battleLog: { rooms: { endEvents: unknown[][] }[] } }).battleLog.rooms.some(room => room.endEvents.some(event => event[0] === 2 && event.length === 2)), 'a reward without auto-sell gold exercises the optional end-event value');
+  assert.equal(validate(response), true, JSON.stringify(validate.errors?.slice(0, 5)));
   const view = buildExpeditionLogView(response)!;
   const expected = renderExpeditionMetadata(retained);
   assert.equal(view.entries.length, expected.entries.length);
