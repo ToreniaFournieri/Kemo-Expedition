@@ -4,7 +4,8 @@ function clampTier(tier: number): number {
   return Math.max(1, Math.min(8, Math.floor(tier)));
 }
 
-function getItemTier(itemId: number): number {
+// SpecRef: 3.2 | ITEM_MASTER_DATA | `x.item_tier` is the thousands digit of the item ID (1–8)
+export function getItemTier(itemId: number): number {
   return clampTier(itemId / 1000);
 }
 

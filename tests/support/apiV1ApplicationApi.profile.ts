@@ -75,7 +75,7 @@ function harness(): Harness {
       importGameState: async (state) => ({ state, errorLog: null }),
       exportActiveAccountPayload: async () => encodePersistedState(JSON.stringify(serializeGameState(accountState))),
       now: () => t0,
-      catchUp: { maximumElapsedMs: 3_600_000, cycleDurationScale: () => 1, applyAutoEquipment: (state) => state, yieldBetweenChunks: async () => undefined, randomSeed: () => 7 },
+      catchUp: { maximumElapsedMs: 3_600_000, applyAutoEquipment: (state) => state, yieldBetweenChunks: async () => undefined, randomSeed: () => 7 },
     },
     desktopAvailable: () => true,
     runtime: {
@@ -290,7 +290,17 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
     assert.equal(account.error, undefined);
     const accountRead = await h.api.handle('read/setting/debug', {}) as Debug;
     assert.equal(accountRead.data.current.speedOfTime, 'x5', 'an API account reads its own stored value');
+    assert.equal(accountRead.data.current.godsStrength, 'normal', 'an unset field reports its default');
     assert.equal(h.debugWrites.length, 1, 'an API account never changes the player runtime');
+    // The account's own gameplay Debug rules take effect while it holds control, and never outlive the session.
+    const { getDebugSettings, getGameplayDebugOverride } = await import('../../src/game/debugSettings.ts');
+    assert.deepEqual(getGameplayDebugOverride(), { godsBattleCondition: 'normal', godStrength: 'normal' });
+    const weak = await h.api.handle('commit/setting/debug', { expectedRevision: 1, idempotencyKey: 'debug-account-key-0002', parameters: { godsStrength: 'veryWeak', godsBattleCondition: 'simple' } }) as Debug;
+    assert.equal(weak.error, undefined);
+    assert.equal(getDebugSettings().godStrength, 'debug', 'gameplay reads the account setting');
+    assert.equal(getDebugSettings().godsBattleCondition, 'simple1');
+    await h.api.handle('fundamental/logOut', {});
+    assert.equal(getGameplayDebugOverride(), null, 'logout restores the device Debug settings');
   } finally {
     location.location = previous;
   }

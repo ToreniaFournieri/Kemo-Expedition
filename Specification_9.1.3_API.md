@@ -48,14 +48,14 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * Allowed values:
   * `sword`
   * `katana`
-  * `bow`
+  * `archery`
   * `armor`
-  * `glove`
+  * `gauntlet`
   * `wand`
   * `robe`
   * `shield`
   * `bolt`
-  * `book`
+  * `grimoire`
   * `catalyst`
   * `arrow`
   * `jewel`
@@ -339,9 +339,9 @@ Path Parameters
         * `deityRank`
         * `condition`
           * Format: `<conditionKey>/<conditionValue>`
-            * `conditionKey`: `poor`, `low`, `cautious`, `normal`, `steady`, `good`, `great`, and `excellent`
+            * `conditionKey`: `terrible`, `poor`, `low`, `cautious`, `normal`, `steady`, `good`, `great`, and `excellent`
             * `conditionValue`:
-              * Integer range: `-349` to `400`.
+              * Integer range: `-400` to `400`.
               * For condition thresholds and calculation logic, see section 7.2.2 AUTO progress logic.
           * Example: `steady/55`
           * Example: `low/-188`
@@ -1611,7 +1611,7 @@ Path Parameters
 
 * Confirmation parameters:
   * `confirmationToken`
-    * Required when `isMuteConfirmation` is `false`.
+    * Required when `skipConfirmation` is `false`.
 
 * Return:
   * `result`

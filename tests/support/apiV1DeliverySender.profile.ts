@@ -125,7 +125,7 @@ function harness(sendImpl: (record: ApiV1DeliveryRecord, callIndex: number) => P
       importGameState: async (state) => ({ state, errorLog: null }),
       exportActiveAccountPayload: async () => encodePersistedState(JSON.stringify(serializeGameState(accountState))),
       now: () => t0,
-      catchUp: { maximumElapsedMs: 3_600_000, cycleDurationScale: () => 1, applyAutoEquipment: (state) => state, yieldBetweenChunks: async () => undefined, randomSeed: () => 7 },
+      catchUp: { maximumElapsedMs: 3_600_000, applyAutoEquipment: (state) => state, yieldBetweenChunks: async () => undefined, randomSeed: () => 7 },
     },
     desktopAvailable: () => true,
     runtime: {

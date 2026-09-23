@@ -110,7 +110,7 @@ import { type HeaderProjection } from '../api/v1/headerView';
 import { toThemeKey, type ApiV1DisplaySettings, type ApiV1DisplaySettingWrite } from '../api/v1/modeSelect';
 import { buildSettingTabPreferences, clairvoyanceExpandedKey, GLOSSARY_TABS, PARTY_EQUIP_CATEGORY_FAMILY, partyEquipCategoryKey, SETTING_GLOSSARY_TAB_FAMILY, SETTING_PANELS, settingPanelExpandedKey, type SettingPanel } from '../api/v1/uiPreferenceCatalog';
 import { HeaderBar } from './home/HeaderBar';
-import { useApiRead, useApiReadMany } from './home/useApiRead';
+import { useApiRead, useApiReadAllPages, useApiReadMany } from './home/useApiRead';
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
 import { parseSimulationRunData, type SimulationRunData } from '../api/v1/simulationView';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
@@ -580,7 +580,6 @@ export function HomeScreen({
         now: () => Date.now(),
         catchUp: {
           maximumElapsedMs: AFK_MAX_ELAPSED_MS,
-          cycleDurationScale: () => apiCycleDurationScaleRef.current,
           applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
           yieldBetweenChunks: () => new Promise<void>((resolve) => window.setTimeout(resolve, 0)),
           randomSeed: () => crypto.getRandomValues(new Uint32Array(1))[0],
@@ -5285,20 +5284,20 @@ export function HomeScreen({
 
   // SpecRef: 8.6 | UI_SETTING | Large read-only reference panels. Fetch the complete resource once and let the
   // resource's reveal flags/IDs be authoritative; presentation-only grouping, images, and localization stay local.
-  const glossaryResource = useApiRead<{ entries: Array<{ glossaryId: string; category: string; label: string; description: string }> }>(
-    inProcessApiRef.current, 'resources/glossary', {}, [], isSettingTabVisible,
+  const glossaryResource = useApiReadAllPages<{ entries: Array<{ glossaryId: string; category: string; label: string; description: string }> }>(
+    inProcessApiRef.current, 'resources/glossary', 'entries', [], isSettingTabVisible,
   );
-  const itemCompendiumResource = useApiRead<{ items: Array<{ itemId: number; revealed: boolean }> }>(
-    inProcessApiRef.current, 'resources/itemCompendium', {}, [], isSettingTabVisible,
+  const itemCompendiumResource = useApiReadAllPages<{ items: Array<{ itemId: number; revealed: boolean }> }>(
+    inProcessApiRef.current, 'resources/itemCompendium', 'items', [], isSettingTabVisible,
   );
-  const characterRosterResource = useApiRead<{ races: Array<{ raceId: string; status: { vitality: number; strength: number; intelligence: number; mind: number }; ability: string[]; cBonus: string[]; otherBonus: string[]; defaultAbility: string | null; unlockAbility: string | null }> }>(
-    inProcessApiRef.current, 'resources/characterRoster', {}, [], isSettingTabVisible,
+  const characterRosterResource = useApiReadAllPages<{ races: Array<{ raceId: string; status: { vitality: number; strength: number; intelligence: number; mind: number }; ability: string[]; cBonus: string[]; otherBonus: string[]; defaultAbility: string | null; unlockAbility: string | null }> }>(
+    inProcessApiRef.current, 'resources/characterRoster', 'races', [], isSettingTabVisible,
   );
-  const bestiaryResource = useApiRead<{ enemies: Array<{ enemyId: number; revealed: boolean; encounters: number; defeats: number }> }>(
-    inProcessApiRef.current, 'resources/bestiary', {}, [], isSettingTabVisible,
+  const bestiaryResource = useApiReadAllPages<{ enemies: Array<{ enemyId: number; revealed: boolean; encounters: number; defeats: number }> }>(
+    inProcessApiRef.current, 'resources/bestiary', 'enemies', [], isSettingTabVisible,
   );
-  const superRareResource = useApiRead<{ superRare: string[] }>(
-    inProcessApiRef.current, 'resources/superRareList', {}, [], isSettingTabVisible,
+  const superRareResource = useApiReadAllPages<{ superRare: string[] }>(
+    inProcessApiRef.current, 'resources/superRareList', 'superRare', [], isSettingTabVisible,
   );
 
   // SpecRef: 8.6 | UI_SETTING | Mode select — only `language` moves to the API: it is real `GameState.global.language`

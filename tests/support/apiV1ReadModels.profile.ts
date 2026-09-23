@@ -297,8 +297,9 @@ calls.length = 0;
 
   const first = owned[0].item;
   assert.equal((await search({ itemId: first.id })).every((stack) => idOf(stack) === first.id), true);
-  const categoryOf = (api: string) => ({ bow: 'archery', glove: 'gauntlet', book: 'grimoire', sword: 'sword' } as Record<string, string>)[api];
-  for (const api of ['sword', 'bow', 'glove', 'book']) {
+  // The category keys are the item categories themselves; `bow`, `glove`, and `book` remain accepted aliases.
+  const categoryOf = (api: string) => ({ bow: 'archery', glove: 'gauntlet', book: 'grimoire', sword: 'sword', archery: 'archery', gauntlet: 'gauntlet', grimoire: 'grimoire' } as Record<string, string>)[api];
+  for (const api of ['sword', 'archery', 'gauntlet', 'grimoire', 'bow', 'glove', 'book']) {
     for (const stack of await search({ category: api })) assert.equal(Object.values(parseInventoryStacks([stack]))[0].item.category, categoryOf(api));
   }
   assert.equal((await search({ rarity: 'bossRare' })).length, 0, 'a fresh state owns no boss rare items');
@@ -647,6 +648,112 @@ calls.length = 0;
   assert.deepEqual(data.counts, { clear: 411, return: 37, draw: 29, retreat: 173, defeat: 350 });
 }
 
+// Compact observation (9.1.3 2-1-1): `<conditionKey>/<conditionValue>` with the Spec 7.2 keys, and unread Diary titles as
+// `<diaryEntryId>/<diaryTitle>/<diarySubtitle>/<YYYYMMDD HH:MM>` with the free-text parts percent-encoded.
+{
+  const { ensureLanguageLoaded, setLanguage } = await import('../../src/i18n/index.ts');
+  await ensureLanguageLoaded('en');
+  const { getDungeonById } = await import('../../src/data/dungeons.ts');
+  setLanguage('en');
+  const createdAt = new Date(2026, 8, 16, 22, 4).getTime();
+  const log = { ...(state.parties[0].lastExpeditionLog ?? {}), dungeonId: 1, dungeonName: 'stale/name', difficultyOffset: 0, rewards: [], entries: [] } as unknown as ExpeditionLog;
+  const unreadEntry = { id: '120', createdAt, isRead: false, triggers: ['defeat'], expeditionLog: log } as unknown as DiaryLog;
+  const readEntry = { ...unreadEntry, id: '121', isRead: true } as DiaryLog;
+  const withDiary = { ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, condition: -360, diaryLogs: [unreadEntry, readEntry] } : party) };
+  const compact = await buildApiV1ReadData('read/observation/compact', withDiary, {}, context) as { partyInfo: { party: { condition: string } }[]; attention: { notification: { unreadDiary: number; unreadDiaryTitle: string[] }[] } };
+  assert.equal(compact.partyInfo[0].party.condition, 'terrible/-360');
+  const steady = await buildApiV1ReadData('read/observation/compact', { ...state, parties: state.parties.map((party) => ({ ...party, condition: 55 })) }, {}, context) as typeof compact;
+  assert.equal(steady.partyInfo[0].party.condition, 'steady/55');
+  assert.equal(compact.attention.notification[0].unreadDiary, 1);
+  const dungeonName = getDungeonById(1)!.name;
+  assert.deepEqual(compact.attention.notification[0].unreadDiaryTitle, [`120/${encodeURIComponent('Defeat Record')}/${encodeURIComponent(dungeonName)}/20260916 22:04`]);
+  calls.length = 0;
+}
+
+// latestBattleLog (9.1.4.14): `logId=latest` is the party's newest log, exactly like an omitted `logId`.
+assert.deepEqual(
+  await buildApiV1ReadData('read/expedition/1/latestBattleLog', state, { logId: 'latest' }, context),
+  await buildApiV1ReadData('read/expedition/1/latestBattleLog', state, {}, context),
+);
+
+// Party projection (9.1.4.17): an explicitly invalid party or a character outside the selected party is rejected.
+{
+  const party = state.parties[0];
+  const selected = await buildApiV1ReadData('read/observation/party', state, { partyNumber: party.id, characterId: party.characters[1].id }, context) as { partyInfo: { effectiveSelection: { partyNumber: number; characterId: number } } };
+  assert.deepEqual(selected.partyInfo.effectiveSelection, { partyNumber: party.id, characterId: party.characters[1].id });
+  await assert.rejects(buildApiV1ReadData('read/observation/party', state, { partyNumber: 6 }, context), /not_found/);
+  await assert.rejects(buildApiV1ReadData('read/observation/party', state, { characterId: 999_999 }, context), /not_found/);
+}
+
+// Pagination (9.1.4.3): a cursor is bound to its route, filters, and revision; garbage is an invalid request.
+{
+  const first = await buildApiV1ReadData('resources/bestiary', state, { limit: 50 }, context) as { enemies: unknown[]; nextCursor: string };
+  assert.equal(first.enemies.length, 50);
+  const second = await buildApiV1ReadData('resources/bestiary', state, { limit: 50, cursor: first.nextCursor }, context) as { enemies: { enemyId: number }[] };
+  assert.equal(second.enemies.length, 50);
+  await assert.rejects(buildApiV1ReadData('resources/bestiary', state, { limit: 50, cursor: first.nextCursor }, { ...context, revision: 8 }), /invalid_cursor/, 'another revision');
+  await assert.rejects(buildApiV1ReadData('resources/bestiary', state, { limit: 50, enemyType: 'Beast', cursor: first.nextCursor }, context), /invalid_cursor/, 'other filters');
+  await assert.rejects(buildApiV1ReadData('resources/itemCompendium', state, { limit: 50, cursor: first.nextCursor }, context), /invalid_cursor/, 'another route');
+  await assert.rejects(buildApiV1ReadData('resources/bestiary', state, { cursor: '%%%' }, context), /invalid_request/);
+  await assert.rejects(buildApiV1ReadData('resources/bestiary', state, { limit: 201 }, context), /invalid_request/);
+  const last = await buildApiV1ReadData('resources/superRareList', state, {}, context) as { nextCursor: string | null };
+  assert.equal(last.nextCursor, null, 'a complete list reports a null cursor');
+}
+
+// Item Compendium filters (9.1.3 4-2-5): tier, rarity, ability/bonus search, and `details`; rarity and tier are reported.
+{
+  const { ITEMS } = await import('../../src/data/items.ts');
+  type Compendium = { items: { itemId: number; rarity: string; tier: number; ability?: string[]; cBonus?: string[]; otherBonus?: string[] }[]; nextCursor: string | null };
+  const read = (parameters: Record<string, unknown>) => buildApiV1ReadData('resources/itemCompendium', state, { limit: 200, ...parameters }, context) as Promise<Compendium>;
+  const tier2 = await read({ category: 'sword', tier: 2 });
+  assert.ok(tier2.items.length > 0 && tier2.items.every((item) => item.tier === 2 && Math.floor(item.itemId / 1000) === 2));
+  const common = await read({ category: 'sword', rarity: 'common' });
+  assert.ok(common.items.length > 0 && common.items.every((item) => item.rarity === 'common'));
+  const withAbility = (await read({ category: 'sword', details: 'all' })).items.find((item) => (item.ability ?? []).length > 0);
+  if (withAbility) {
+    const abilityId = withAbility.ability![0].split(':')[0];
+    const found = await read({ category: 'sword', searchAbility: abilityId, details: 'ability' });
+    assert.ok(found.items.length > 0 && found.items.every((item) => item.ability!.some((entry) => entry.split(':')[0] === abilityId)));
+    assert.ok(found.items.every((item) => item.cBonus === undefined && item.otherBonus === undefined), '`details=ability` returns only abilities');
+  }
+  const none = await read({ category: 'sword', details: 'none' });
+  assert.ok(none.items.every((item) => item.ability === undefined && item.cBonus === undefined && item.otherBonus === undefined));
+  const aliases = await read({ category: 'book' });
+  assert.deepEqual(aliases.items.map((item) => item.itemId), (await read({ category: 'grimoire' })).items.map((item) => item.itemId));
+  assert.equal((await read({ category: 'grimoire' })).items.length, ITEMS.filter((item) => item.category === 'grimoire').length);
+}
+
+// Super Rare list (9.1.3 4-2-8): titles 1–N only, `<superRareId>/<name>/<bonus>`, the name in the current language.
+{
+  const { ensureLanguageLoaded, setLanguage } = await import('../../src/i18n/index.ts');
+  await ensureLanguageLoaded('en');
+  const { SUPER_RARE_TITLES } = await import('../../src/data/items.ts');
+  setLanguage('en');
+  const list = await buildApiV1ReadData('resources/superRareList', state, {}, context) as { superRare: string[] };
+  assert.equal(list.superRare.length, SUPER_RARE_TITLES.filter((title) => title.value > 0).length);
+  assert.ok(!list.superRare.some((entry) => entry.startsWith('0/')), 'title 0 ("no title") is not listed');
+  const [id, name, bonus] = list.superRare[0].split('/').map(decodeURIComponent);
+  assert.equal(id, '1');
+  assert.equal(name, 'World-Conquering');
+  assert.equal(bonus, 'c.growth_x1.6, c.evasion-0.005');
+  const one = await buildApiV1ReadData('resources/superRareList', state, { superRareId: 2 }, context) as { superRare: string[] };
+  assert.deepEqual(one.superRare.map((entry) => entry.split('/')[0]), ['2']);
+}
+
+// Debug and Mode Select reads (9.1.3 2-6-2/2-6-3): an API account's unset debug fields report their defaults, and every
+// documented field has its valid options.
+{
+  const debug = await buildApiV1ReadData('read/setting/debug', state, {}, { ...context, control: { settings: { debug: { colosseumMode: true } } } }) as { current: Record<string, unknown>; validOptions: Record<string, unknown[]> };
+  assert.equal(debug.current.speedOfTime, 'real');
+  assert.equal(debug.current.godsStrength, 'normal');
+  assert.equal(Object.keys(debug.current).length, 12, 'every debug field is reported');
+  assert.equal(Object.keys(debug.validOptions).length, 12);
+  assert.deepEqual(debug.validOptions.displayAllBestiary, [true, false]);
+  const modeSelect = await buildApiV1ReadData('read/setting/modeSelect', state, {}, context) as { validOptions: Record<string, unknown[]> };
+  assert.deepEqual(modeSelect.validOptions.autoRepeat, [], 'auto-repeat is never controlled through the API');
+  assert.deepEqual(modeSelect.validOptions.showExpeditionStats, [], 'an API account has no display settings');
+}
+
 assert.deepEqual(state, before);
 
 // calculatedStatus is the public fact model (9.1.4.14), not the internal computed-stats object.
@@ -785,9 +892,19 @@ assert.deepEqual(state, before);
   const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'resources/bestiary')!.response.data);
   const { ENEMIES } = await import('../../src/data/enemies.ts');
   const enemy = ENEMIES[0];
-  const fresh = await buildApiV1ReadData('resources/bestiary', state, {}, context) as { enemies: { enemyId: number; enemyType: string; revealed: boolean; encounters: number; defeats: number }[] };
-  assert.equal(validate(fresh), true, JSON.stringify(validate.errors));
+  // The list is paginated (Spec 9.1.4.3): follow `nextCursor` through every page.
+  type BestiaryPage = { enemies: { enemyId: number; enemyType: string; revealed: boolean; encounters: number; defeats: number }[]; nextCursor: string | null };
+  const firstPage = await buildApiV1ReadData('resources/bestiary', state, {}, context) as BestiaryPage;
+  assert.equal(validate(firstPage), true, JSON.stringify(validate.errors));
+  assert.equal(firstPage.enemies.length, 100, 'the default page size is 100');
+  const fresh: BestiaryPage = { enemies: [...firstPage.enemies], nextCursor: firstPage.nextCursor };
+  for (let cursor = firstPage.nextCursor; cursor;) {
+    const page = await buildApiV1ReadData('resources/bestiary', state, { cursor }, context) as BestiaryPage;
+    fresh.enemies.push(...page.enemies);
+    cursor = page.nextCursor;
+  }
   assert.equal(fresh.enemies.length, ENEMIES.length, 'every enemy is returned, revealed or not');
+  assert.deepEqual(fresh.enemies.map((entry) => entry.enemyId), ENEMIES.map((entry) => entry.id), 'pages keep the Bestiary order without gaps or repeats');
   const untouched = fresh.enemies.find((entry) => entry.enemyId === enemy.id)!;
   assert.deepEqual([untouched.revealed, untouched.encounters, untouched.defeats], [false, 0, 0]);
   const encountered = { ...state, global: { ...state.global, enemyBattleStats: { [enemy.id]: { encounters: 3, defeats: 1 } } } };

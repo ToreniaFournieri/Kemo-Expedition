@@ -136,7 +136,11 @@ after the response has been prepared. Fundamental responses use
 * List operations that can exceed 200 entries accept `limit` (`1–200`, default
   `100`) and an opaque `cursor`. Their `data` includes `nextCursor`, or `null`
   when complete. A cursor is bound to its route, filters, ordering, and revision;
-  otherwise return `invalid_cursor`.
+  otherwise return `invalid_cursor`. A cursor that cannot be decoded is
+  `invalid_request`. The paginated lists are `resources/glossary` (`entries`),
+  `resources/itemCompendium` (`items`), `resources/characterRoster` (`races`),
+  `resources/bestiary` (`enemies`), and `resources/superRareList` (`superRare`).
+  A client that needs a whole list follows `nextCursor` until it is `null`.
 * Lists have a documented deterministic order. If 9.1.3 does not prescribe one,
   use stable ID ascending, with stable ID as the final tie-breaker.
 
@@ -528,9 +532,10 @@ definitions in 9.1.3.
   live party cycle, applied after the commit is durable and in the same tick as the
   published state; an API account has no live cycle, so it neither reads nor writes
   one. The result is `{outcome, rewards, diaryEntryId, logId}`: `outcome` uses the
-  outcome names above, `diaryEntryId` is the Diary entry this sortie created (or
-  `null`), and `logId` is `diary:<diaryEntryId>` for that entry or `latest` for the
-  party's newest retained log.
+  outcome names above, `rewards` lists the dropped items in `Item Format`,
+  `diaryEntryId` is the Diary entry this sortie created (or `null`), and `logId` is
+  `diary:<diaryEntryId>` for that entry or `latest` for the party's newest retained
+  log; both values are accepted by `latestBattleLog`.
 
 **Party build and equipment**
 
@@ -686,7 +691,10 @@ definitions in 9.1.3.
 * Diary/settings commits documented as partial updates preserve omitted fields
   and return the complete resulting `current` object.
 * `markAsRead` returns affected Diary-entry IDs and the resulting unread totals.
-* `markNewsAsRead` returns affected news versions and the resulting unread count.
+* `markNewsAsRead` returns affected news versions (those that were unread) and the
+  resulting unread count. An unknown version rejects the whole request as
+  `not_found`; acknowledging only already-read news is a valid no-op.
+* `markAsRead` reports as affected only the entries that were unread.
   Each `resources/developerNewsNotification` entry carries `isRead`, the save's
   read state that this operation changes.
 * `clairvoyanceReset` returns the party number and which of common rewards,
@@ -1151,7 +1159,35 @@ type DiaryEntry = {
   device), never an echo of an earlier request, and a commit applies the changed
   fields to the runtime after it is durable without changing the save or its
   revision. An API account has no Debug pane; its debug settings are its own
-  values kept with the account. The dev/beta restriction applies to both.
+  values kept with the account. The dev/beta restriction applies to both. Reads
+  and commits always report all twelve fields; a field an account never set
+  reports its default. While an account holds control its own settings take
+  effect: `speedOfTime` scales its clocks (elapsed progression, login catch-up,
+  and the Instant Expedition charge; the ordinary player's speed and
+  progress-report bonus never apply), `godsBattleCondition` and `godsStrength`
+  apply to its gameplay, and `displayAllBestiary`, `displayAllCompendium`, and
+  `displayAllGlossary` mark every entry of the matching resource revealed. The
+  remaining fields only affect the ordinary player's UI. `validOptions` lists every
+  field (booleans as `[true, false]`).
+* `modeSelect.validOptions.autoRepeat` is always `[]` (auto-repeat is reported but
+  never controlled through the API); `showExpeditionStats` is `[true, false]` for
+  the ordinary player and `[]` for an API account.
+* `Item category` keys are the item categories themselves (`archery`, `gauntlet`,
+  `grimoire`, ...). The earlier names `bow`, `glove`, and `book` remain accepted as
+  aliases of the same categories in `searchItems` and `itemCompendium`.
+* The compact `condition` is `<conditionKey>/<conditionValue>` with the Spec 7.2
+  keys, for example `steady/55`. Each `unreadDiaryTitle` is
+  `<diaryEntryId>/<diaryTitle>/<diarySubtitle>/<YYYYMMDD HH:MM>`: the title and
+  subtitle are the Diary tab's (current language; the subtitle is the expedition
+  name for an ordinary entry) and are percent-encoded free text.
+* `itemCompendium` applies every documented filter (`category`, `rarity`, `tier`,
+  `itemId`, `searchAbility`, `searchBonus`). Each item carries `itemId`, the
+  localized `name`, `category`, `rarity`, `tier` (the thousands digit of the item
+  ID), and `revealed`, plus the `ability`, `cBonus`, and `otherBonus` arrays
+  selected by `details` (omitted when not selected).
+* `superRareList` lists titles `1–N` only (optional `superRareId` filter) as
+  `<superRareId>/<name>/<bonus>`: `name` is the title in the current language and
+  `bonus` the title's bonus IDs joined by `, `, both percent-encoded.
 * Feedback parameters are `name: string`, `category: feedback|question|
   featureRequest|bugReport`, `text: string`, `latestBattleLogParty?: number|"none"`
   (default 1), `includeBackup?: boolean` (default false), and

@@ -56,7 +56,6 @@ function ports(overrides: Partial<ApiV1SessionPorts> = {}): {
     now: () => fixedNow,
     catchUp: {
       maximumElapsedMs: 12 * 3_600_000,
-      cycleDurationScale: () => 1,
       applyAutoEquipment: (state) => state,
       yieldBetweenChunks: async () => undefined,
       randomSeed: () => 0xa91f_0028,
@@ -135,10 +134,10 @@ function ports(overrides: Partial<ApiV1SessionPorts> = {}): {
   const account: DesktopApiAccountRecord = {
     identity: { userId: 'Taro', environment: 'desktop', gameMode: 'normal' },
     savePayload: accountPayload(catchUpState),
-    control: { revisionHighWater: 5, inGameTime: fixedNow - 180_000, receipts: [], tombstones: [], popupEvents: [], deliveries: [] },
+    // The catch-up runs at the account's own debug Speed of Time (x100), never the player's runtime speed.
+    control: { revisionHighWater: 5, inGameTime: fixedNow - 180_000, receipts: [], tombstones: [], popupEvents: [], deliveries: [], settings: { debug: { speedOfTime: 'x100' } } },
   };
   p.value.accounts.load = async () => account;
-  p.value.catchUp.cycleDurationScale = () => 0.01;
   p.value.catchUp.applyAutoEquipment = (state, partyIndex) => ({
     ...state,
     parties: state.parties.map((party, index) => index === partyIndex ? {
@@ -146,7 +145,15 @@ function ports(overrides: Partial<ApiV1SessionPorts> = {}): {
       expeditionStats: { ...party.expeditionStats, Clear: party.expeditionStats.Clear + 1 },
     } : party),
   });
-  const result = await logInApiAccount({ userId: 'Taro', environment: 'desktop', gameMode: 'normal' }, null, p.value);
+  const location = globalThis as { location?: { pathname: string } };
+  const previousLocation = location.location;
+  location.location = { pathname: '/dev/' };
+  let result;
+  try {
+    result = await logInApiAccount({ userId: 'Taro', environment: 'desktop', gameMode: 'normal' }, null, p.value);
+  } finally {
+    location.location = previousLocation;
+  }
   assert.equal(result.ok, true, result.ok ? '' : JSON.stringify(result));
   if (!result.ok) throw new Error(result.code);
   assert.equal(result.session.control.revisionHighWater, 6);

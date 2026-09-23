@@ -18,7 +18,7 @@ import { formatEquipmentChange, type SavedEquipmentSetView } from '../../../api/
 import { formatAttackSpeedHelp } from '../../../game/attackProfile';
 import { gameplayRandom } from '../../../game/gameplayRandom';
 import { DEITY_OPTIONS,getDeityDisplayName,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity } from '../../../game/deity';
-import { MAX_SAVED_EQUIPMENT_SETS,type EquipmentSetLoadMode } from '../../../game/equipmentSets';
+import { createDefaultEquipmentSetName,MAX_SAVED_EQUIPMENT_SETS,type EquipmentSetLoadMode } from '../../../game/equipmentSets';
 import { replaceFlatItemStat } from '../../../game/equipmentDisplay';
 import { getItemDisplayName } from '../../../game/gameState';
 import { getJewelDisplayName,getJewelOwnedCount,JEWELS_BY_ITEM_CATEGORY } from '../../../game/jewel';
@@ -685,21 +685,10 @@ export default function PartyTab({
     onRunAutoEquipmentForCharacter(char.id);
   };
 
-  const createDefaultEquipmentSetName = (createdAt: number): string => {
-    const date = new Date(createdAt);
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const mainShort = CLASS_SHORT_NAMES[char.mainClassId] ?? char.mainClassId;
-    const subShort = CLASS_SHORT_NAMES[char.subClassId] ?? char.subClassId;
-    const lineageShort = lineage.shortName ?? lineage.name;
-    const predispositionShort = predisposition.shortName ?? predisposition.name;
-    return `${char.name} ${mainShort}(${subShort}), ${lineageShort}/${predispositionShort} ${month}/${day}`;
-  };
-
   const handleSaveEquipmentSet = () => {
     if (savedEquipmentSets.length >= MAX_SAVED_EQUIPMENT_SETS) return;
     const createdAt = Date.now();
-    onSaveEquipmentSet(char.id, createDefaultEquipmentSetName(createdAt));
+    onSaveEquipmentSet(char.id, createDefaultEquipmentSetName(char, createdAt));
     setShowSavedEquipmentSets(true);
   };
 

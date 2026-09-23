@@ -6,7 +6,10 @@ import { ENHANCEMENT_TITLES, ITEMS, SUPER_RARE_TITLES } from '../../data/items.t
 import { LINEAGES } from '../../data/lineages.ts';
 import { PREDISPOSITIONS } from '../../data/predispositions.ts';
 import { RACES } from '../../data/races.ts';
-import { buildDiaryProjection, DIARY_SETTING_VALID_OPTIONS, diarySettingsView, findDiaryEntryView } from './diaryView.ts';
+import { buildDiaryProjection, DIARY_SETTING_VALID_OPTIONS, diaryEntryContent, diarySettingsView, findDiaryEntryView } from './diaryView.ts';
+import { getConditionState } from '../../game/partyCondition.ts';
+import { getDungeonById } from '../../data/dungeons.ts';
+import { t } from '../../i18n/index.ts';
 import { getDeityId, getDeityRank, getNextRankDonationRequirement, isNoFaithDeity, normalizeDeityName } from '../../game/deity.ts';
 import { getInstantExpeditionChargeState } from '../../game/instantExpedition.ts';
 import { evaluateEquipmentSet, getSavedEquipmentSlot } from '../../game/equipmentSets.ts';
@@ -22,7 +25,11 @@ import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentH
 import { apiExpeditionOutcomeOrNull } from './expeditionOutcome.ts';
 import { buildBattleLogData, buildBattleRoomData, buildRoomResources } from './battleLogs.ts';
 import { buildSimulationRunData } from './simulationView.ts';
+import { describeCharacterBuildCurrent } from './buildChange.ts';
 import { EQUIPMENT_EVALUATION_LIMIT } from './requestLimits.ts';
+import { paginate } from './pagination.ts';
+import { getItemTier } from '../../game/pricing.ts';
+import { getLocalizedItemName, getLocalizedSuperRareTitle } from '../../game/gameState.ts';
 import { describeUiPreferenceCatalog, listUiPreferences } from './uiPreferenceCatalog.ts';
 import { getExpeditionGoals, getSideQuestFacts } from '../../game/expeditionGoals.ts';
 import { getEstimatedStartHp, getPartyStateProgress } from '../../game/partyStateProgress.ts';
@@ -44,10 +51,10 @@ import {
 } from '../../game/bags.ts';
 import type { ApiV1PartyCycleView } from './commitOperations.ts';
 import { describeModeSelectCurrent, selectableThemes, toThemeKey, type ApiV1DisplaySettings } from './modeSelect.ts';
-import { describeDebugSettings } from './debugSettings.ts';
+import { accountDebugSettingsOf, describeDebugSettings } from './debugSettings.ts';
 import { getPartyClairvoyanceAccess } from '../../game/clairvoyanceAccess.ts';
 import type { DebugSettings } from '../../game/debugSettings.ts';
-import { MAX_LEVEL, type EnemyDef, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party, type RandomBag } from '../../types/index.ts';
+import { MAX_LEVEL, type DiaryLog, type EnemyDef, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party, type RandomBag } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
 
@@ -150,7 +157,8 @@ function compactObservation(state: GameState, context: ApiV1ReadContext, simulat
         experiencePoint: `${Math.floor((party.experience / Math.max(1, getXpToNextLevel(party.level))) * 100)}%/${party.experience}/${getXpToNextLevel(party.level)}`,
         deity: getDeityId(party.deity.name),
         deityRank: getDeityRank(state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0),
-        condition: party.condition,
+        // SpecRef: 9.1.3 | 2-1-1 compact | `<conditionKey>/<conditionValue>` with the Spec 7.2 keys
+        condition: `${getConditionState(party.condition).slice('condition.'.length)}/${party.condition}`,
       },
       state: partyStateKey(party, computePartyStats(party).partyStats.hp, context.partyCycle?.(partyIndex)),
       lastDestination: disclosedLogOf(state, context, partyIndex)?.dungeonId ?? party.selectedDungeonId,
@@ -165,10 +173,28 @@ function compactObservation(state: GameState, context: ApiV1ReadContext, simulat
       notification: state.parties.map((party) => ({
         partyNumber: party.id,
         unreadDiary: party.diaryLogs.filter((entry) => !entry.isRead).length,
-        unreadDiaryTitle: party.diaryLogs.filter((entry) => !entry.isRead).map((entry) => `${entry.id}/${entry.triggers.join('+')}/${entry.expeditionLog.dungeonName}/${new Date(entry.createdAt).toISOString()}`),
+        unreadDiaryTitle: party.diaryLogs.filter((entry) => !entry.isRead).map(compactDiaryTitle),
       })),
     },
   };
+}
+
+/** `YYYYMMDD HH:MM` in the game clock's display timezone (the device's local time, as the Diary tab shows it). */
+function compactDiaryTimestamp(epochMs: number): string {
+  const date = new Date(epochMs);
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+// SpecRef: 9.1.3 | 2-1-1 compact | unreadDiaryTitle `<diaryEntryId>/<diaryTitle>/<diarySubtitle>/<timeStamp>`
+// The title and subtitle are the Diary tab's own (current language); as free text they are percent-encoded (9.1.4.14).
+function compactDiaryTitle(entry: DiaryLog): string {
+  const content = diaryEntryContent(entry);
+  const title = content.format === 'semantic' ? t(content.title.key) : content.title;
+  const subtitle = content.format === 'semantic'
+    ? getDungeonById(entry.expeditionLog.dungeonId)?.name ?? String(entry.expeditionLog.dungeonId)
+    : content.subtitle;
+  return `${encodeURIComponent(entry.id)}/${encodeURIComponent(title)}/${encodeURIComponent(subtitle)}/${compactDiaryTimestamp(entry.createdAt)}`;
 }
 
 /** The log a client may see for a party: the disclosed log while the runtime hides a running exploration, else the newest one. */
@@ -275,13 +301,19 @@ function expeditionProjection(state: GameState, context: ApiV1ReadContext) {
   };
 }
 
+// SpecRef: 9.1.4.17 | Focused projection query context | party: an explicitly invalid selection is rejected
 function partyProjection(state: GameState, parameters: Record<string, unknown>) {
-  const selected = partyByNumber(state, parameters.partyNumber) ?? { party: state.parties[state.selectedPartyIndex] ?? state.parties[0], index: state.selectedPartyIndex };
+  const explicit = parameters.partyNumber === undefined ? null : partyByNumber(state, parameters.partyNumber);
+  if (parameters.partyNumber !== undefined && !explicit) throw new Error('not_found');
+  const selected = explicit ?? { party: state.parties[state.selectedPartyIndex] ?? state.parties[0], index: state.selectedPartyIndex };
   const party = selected.party;
+  // An explicit character must belong to the selected party; otherwise the first member is the default.
+  const characterId = parameters.characterId === undefined ? null : Number(parameters.characterId);
+  if (characterId !== null && !party.characters.some((character) => character.id === characterId)) throw new Error('not_found');
   const partyStatus = computePartyStats(party);
   const computed = partyStatus.characterStats;
   return {
-    effectiveSelection: { partyNumber: party.id, characterId: Number(parameters.characterId) || party.characters[0]?.id || null },
+    effectiveSelection: { partyNumber: party.id, characterId: characterId ?? party.characters[0]?.id ?? null },
     party: {
       partyNumber: party.id,
       name: party.name,
@@ -312,8 +344,12 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>) 
   };
 }
 
-// SpecRef: 9.1.3 | 2-4-1 searchItems | Item category filter
-const API_CATEGORY_TO_ITEM_CATEGORY: Record<string, string> = { sword: 'sword', katana: 'katana', bow: 'archery', armor: 'armor', glove: 'gauntlet', wand: 'wand', robe: 'robe', shield: 'shield', bolt: 'bolt', book: 'grimoire', catalyst: 'catalyst', arrow: 'arrow' };
+// SpecRef: 9.1.3 | Item category | The API's category keys are the item categories themselves (`gauntlet`, `archery`,
+// `grimoire`, ...). The earlier names `glove`, `bow`, and `book` are still accepted as aliases of the same categories.
+const API_CATEGORY_TO_ITEM_CATEGORY: Record<string, string> = {
+  sword: 'sword', katana: 'katana', archery: 'archery', armor: 'armor', gauntlet: 'gauntlet', wand: 'wand', robe: 'robe', shield: 'shield',
+  bolt: 'bolt', grimoire: 'grimoire', catalyst: 'catalyst', arrow: 'arrow', bow: 'archery', glove: 'gauntlet', book: 'grimoire',
+};
 
 /**
  * Searches the items known to the player (9.1.3, 2-4-1). Every result is one string in `items`:
@@ -335,8 +371,6 @@ function searchItems(state: GameState, parameters: Record<string, unknown>) {
   const mode = String(parameters.details ?? 'abilityAndCBonus') as ItemDetailsMode;
   const limit = parameters.limit === undefined ? SEARCH_ITEMS_DEFAULT_LIMIT : Number(parameters.limit);
   if (!Number.isInteger(limit) || limit < 1 || limit > SEARCH_ITEMS_MAX_LIMIT) throw new Error('invalid_request:limit');
-  const searchAbility = parameters.searchAbility === undefined ? null : String(parameters.searchAbility);
-  const searchBonus = parameters.searchBonus === undefined ? null : String(parameters.searchBonus);
   const includesState = (name: 'owned' | 'sold' | 'equipped') => wantedState === 'all' || wantedState === name;
   const itemFilterGiven = (parameters.rarity !== undefined && parameters.rarity !== 'all') || parameters.superRare !== undefined
     || parameters.superRareId !== undefined || parameters.itemId !== undefined;
@@ -349,8 +383,7 @@ function searchItems(state: GameState, parameters: Record<string, unknown>) {
     if (parameters.itemId !== undefined && item.id !== Number(parameters.itemId)) return false;
     return true;
   };
-  const matchesDetails = (details: ItemDetails): boolean => (searchAbility === null || details.ability.some((entry) => entry.split(':')[0] === searchAbility))
-    && (searchBonus === null || details.cBonus.includes(searchBonus) || details.otherBonus.includes(searchBonus));
+  const matchesDetails = (details: ItemDetails): boolean => matchesDetailFilters(details, parameters);
   const withDetails = (base: string, details: ItemDetails) => [base, ...formatItemDetails(details, mode)].join('/');
 
   // Sort keys are compared ascending, so "higher first" values are negated.
@@ -389,31 +422,68 @@ function searchItems(state: GameState, parameters: Record<string, unknown>) {
   return { items: entries.slice(0, limit).map((entry) => entry.text) };
 }
 
+/** The Debug settings in force for this read: the ordinary player's Debug pane, or an API account's own debug settings. */
+function effectiveDebugSettings(context: ApiV1ReadContext): DebugSettings {
+  return context.debugSettings ? context.debugSettings() : accountDebugSettingsOf(context.control?.settings);
+}
+
+/** Whether an item's details match the `searchAbility` and `searchBonus` filters (the same matching as `searchItems`). */
+function matchesDetailFilters(details: ItemDetails, parameters: Record<string, unknown>): boolean {
+  const searchAbility = parameters.searchAbility === undefined ? null : String(parameters.searchAbility);
+  const searchBonus = parameters.searchBonus === undefined ? null : String(parameters.searchBonus);
+  return (searchAbility === null || details.ability.some((entry) => entry.split(':')[0] === searchAbility))
+    && (searchBonus === null || details.cBonus.includes(searchBonus) || details.otherBonus.includes(searchBonus));
+}
+
+// SpecRef: 9.1.3 | 4-2-5 itemCompendium
 // SpecRef: 8.6 | UI_SETTING | Item Compendium (アイテム図鑑)
-// Shows every item, base level, regardless of ownership. `revealed` (Item Reveal Rule) tells the client whether to show
-// real details or a placeholder; unrevealed items are still returned, never omitted.
-function itemCompendium(state: GameState, parameters: Record<string, unknown>) {
+// Shows every item, base level, regardless of ownership. `revealed` (Item Reveal Rule, or the Debug "Display all
+// Compendium" setting) tells the client whether to show real details or a placeholder; unrevealed items are still returned.
+// `details` selects which of `ability`, `cBonus`, and `otherBonus` are included, like `searchItems`.
+function itemCompendium(state: GameState, parameters: Record<string, unknown>, context: ApiV1ReadContext) {
   const category = parameters.category === undefined ? null : String(parameters.category);
   const rarity = parameters.rarity === undefined || parameters.rarity === 'all' ? null : String(parameters.rarity);
+  const tier = parameters.tier === undefined ? null : Number(parameters.tier);
   const itemId = parameters.itemId === undefined ? null : Number(parameters.itemId);
+  const mode = String(parameters.details ?? 'abilityAndCBonus') as ItemDetailsMode;
+  const wantsAbility = mode === 'ability' || mode === 'abilityAndCBonus' || mode === 'all';
+  const wantsCBonus = mode === 'cBonus' || mode === 'abilityAndCBonus' || mode === 'all';
+  const wantsOtherBonus = mode === 'otherBonus' || mode === 'all';
+  const revealAll = effectiveDebugSettings(context).displayAllCompendium;
   const revealed = new Set(state.global.revealedItemCompendiumItemIds);
-  const items = ITEMS.filter((item) => {
-    if (category !== null && item.category !== API_CATEGORY_TO_ITEM_CATEGORY[category]) return false;
-    if (rarity !== null && getItemRarityById(item.id) !== rarity) return false;
-    if (itemId !== null && item.id !== itemId) return false;
-    return true;
-  // The Compendium shows every item at base level (Spec 8.6: Enhancement = 0, SuperRare = 0), not an owned instance.
-  }).map((item) => ({ itemId: item.id, name: item.name, category: item.category, revealed: revealed.has(item.id), ...describeItem({ ...item, enhancement: 0, superRare: 0 }) }));
-  return { items };
+  const items = ITEMS.flatMap((item) => {
+    if (category !== null && item.category !== API_CATEGORY_TO_ITEM_CATEGORY[category]) return [];
+    const itemRarity = getItemRarityById(item.id);
+    if (rarity !== null && itemRarity !== rarity) return [];
+    if (tier !== null && getItemTier(item.id) !== tier) return [];
+    if (itemId !== null && item.id !== itemId) return [];
+    // The Compendium shows every item at base level (Spec 8.6: Enhancement = 0, SuperRare = 0), not an owned instance.
+    const details = describeItem({ ...item, enhancement: 0, superRare: 0 });
+    if (!matchesDetailFilters(details, parameters)) return [];
+    return [{
+      itemId: item.id,
+      name: getLocalizedItemName(item),
+      category: item.category,
+      rarity: itemRarity,
+      tier: getItemTier(item.id),
+      revealed: revealAll || revealed.has(item.id),
+      ...(wantsAbility ? { ability: details.ability } : {}),
+      ...(wantsCBonus ? { cBonus: details.cBonus } : {}),
+      ...(wantsOtherBonus ? { otherBonus: details.otherBonus } : {}),
+    }];
+  });
+  const { page, nextCursor } = paginate('resources/itemCompendium', items, parameters, context.revision);
+  return { items: page, nextCursor };
 }
 
 // SpecRef: 8.6 | UI_SETTING | Bestiary (敵キャラクター図鑑)
 // `enemyBattleStats` is already shared/global (Spec 8.6: "total... across all parties"), not per-party.
 // `revealed` (encountered at least once) tells the client whether to show real details or a placeholder.
-function bestiary(state: GameState, parameters: Record<string, unknown>) {
+function bestiary(state: GameState, parameters: Record<string, unknown>, context: ApiV1ReadContext) {
   const enemyId = parameters.enemyId === undefined ? null : Number(parameters.enemyId);
   const enemyType = parameters.enemyType === undefined ? null : String(parameters.enemyType);
   const expedition = parameters.expedition === undefined ? null : Number(parameters.expedition);
+  const revealAll = effectiveDebugSettings(context).displayAllBestiary;
   const enemies = ENEMIES.filter((enemy) => {
     if (enemyId !== null && enemy.id !== enemyId) return false;
     if (enemyType !== null && enemy.enemyType !== enemyType) return false;
@@ -423,9 +493,10 @@ function bestiary(state: GameState, parameters: Record<string, unknown>) {
     const stats = state.global.enemyBattleStats?.[enemy.id];
     const encounters = stats?.encounters ?? 0;
     const defeats = stats?.defeats ?? 0;
-    return { ...buildEnemyStatus(enemy, null), revealed: encounters > 0, encounters, defeats };
+    return { ...buildEnemyStatus(enemy, null), revealed: revealAll || encounters > 0, encounters, defeats };
   });
-  return { enemies };
+  const { page, nextCursor } = paginate('resources/bestiary', enemies, parameters, context.revision);
+  return { enemies: page, nextCursor };
 }
 
 const GLOSSARY_CATEGORY_KEYS = ['a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.'];
@@ -439,9 +510,11 @@ function glossaryCategoryOf(heading: string): string | null {
 // SpecRef: 1.0.3 | CONSTANTS | Glossary Reveal Rule
 // SpecRef: 8.6 | UI_SETTING | Glossary (用語集)
 // Only `a.` (ability) and `t.` (terrain effect) entries are reveal-gated; the other 7 categories are always visible.
-function glossary(state: GameState, parameters: Record<string, unknown>) {
+function glossary(state: GameState, parameters: Record<string, unknown>, context: ApiV1ReadContext) {
   const category = parameters.category === undefined ? null : String(parameters.category);
   const glossaryId = parameters.glossaryId === undefined ? null : String(parameters.glossaryId);
+  // The Debug "Display all Glossary" setting reveals every entry, as it does in the Glossary pane.
+  const revealAll = effectiveDebugSettings(context).displayAllGlossary;
   const revealedAbilities = new Set(state.global.revealedGlossaryAbilityIds);
   const revealedTerrain = new Set<string>(state.global.revealedGlossaryTerrainKeys);
   const entries: Array<{ glossaryId: string; category: string; label: string; description: string }> = [];
@@ -450,18 +523,19 @@ function glossary(state: GameState, parameters: Record<string, unknown>) {
     if (!sectionCategory || (category !== null && sectionCategory !== category)) continue;
     for (const entry of section.entries) {
       if (glossaryId !== null && entry.key !== glossaryId) continue;
-      if (sectionCategory === 'a.' && !revealedAbilities.has(entry.key)) continue;
-      if (sectionCategory === 't.' && !revealedTerrain.has(entry.key)) continue;
+      if (!revealAll && sectionCategory === 'a.' && !revealedAbilities.has(entry.key)) continue;
+      if (!revealAll && sectionCategory === 't.' && !revealedTerrain.has(entry.key)) continue;
       entries.push({ glossaryId: entry.key, category: sectionCategory, label: entry.label, description: entry.description });
     }
   }
-  return { entries, validOptions: { category: GLOSSARY_CATEGORY_KEYS } };
+  const { page, nextCursor } = paginate('resources/glossary', entries, parameters, context.revision);
+  return { entries: page, validOptions: { category: GLOSSARY_CATEGORY_KEYS }, nextCursor };
 }
 
 // SpecRef: 8.6 | UI_SETTING | Character Roster (味方キャラクター図鑑)
 // `status` is already a public shape (BaseStats). Ability-type bonuses are excluded from the bonus vocabulary: they are
 // redundant with `defaultAbility`/`unlockAbility`, which already carry the same stable ability IDs.
-function characterRoster(parameters: Record<string, unknown>) {
+function characterRoster(parameters: Record<string, unknown>, context: ApiV1ReadContext) {
   const raceId = parameters.race === undefined ? null : String(parameters.race);
   const races = RACES.filter((race) => raceId === null || race.id === raceId).map((race) => ({
     raceId: race.id,
@@ -470,7 +544,22 @@ function characterRoster(parameters: Record<string, unknown>) {
     defaultAbility: race.defaultAbility.id === 'none' ? null : race.defaultAbility.id,
     unlockAbility: race.unlockAbility ? race.unlockAbility.id : null,
   }));
-  return { races };
+  const { page, nextCursor } = paginate('resources/characterRoster', races, parameters, context.revision);
+  return { races: page, nextCursor };
+}
+
+// SpecRef: 9.1.3 | 4-2-8 superRareList | `<superRareId>/<name>/<bonus>`, the name in the current language
+// Every Super Rare title (1–N; 0 is "no title", not a title). The name and the bonus IDs are free text, so each is
+// percent-encoded (9.1.4.14); the bonus IDs are joined by `, ` like the `searchItems` detail fields.
+function superRareList(parameters: Record<string, unknown>, context: ApiV1ReadContext) {
+  const superRareId = parameters.superRareId === undefined ? null : Number(parameters.superRareId);
+  const entries = SUPER_RARE_TITLES.filter((title) => title.value > 0 && (superRareId === null || title.value === superRareId)).map((title) => {
+    const bonuses = describeBonuses(title.bonuses ?? []);
+    const bonusIds = [...bonuses.ability, ...bonuses.cBonus, ...bonuses.otherBonus].join(', ');
+    return `${title.value}/${encodeURIComponent(getLocalizedSuperRareTitle(title.value).trim())}/${encodeURIComponent(bonusIds)}`;
+  });
+  const { page, nextCursor } = paginate('resources/superRareList', entries, parameters, context.revision);
+  return { superRare: page, nextCursor };
 }
 
 // SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視)
@@ -671,7 +760,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     const pendingDeliveryIds = ((context.control?.deliveries as ApiV1DeliveryRecord[] | undefined) ?? [])
       .filter((entry) => entry.status === 'queued' || entry.status === 'sending' || entry.status === 'unknown')
       .map((entry) => entry.deliveryId);
-    return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), modeSelect: describeModeSelectCurrent({ gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: state.global.language }, context.displaySettings?.()), ...(context.debugSettings ? { debug: describeDebugSettings(context.debugSettings()) } : {}), uiPreferences: listUiPreferences(state.global.uiPreferences), uiPreferenceCatalog: describeUiPreferenceCatalog(), pendingDeliveryIds } };
+    return { settingInfo: { language: state.global.language, environment: context.environment, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, ...(context.control?.settings ?? {}), modeSelect: describeModeSelectCurrent({ gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: state.global.language }, context.displaySettings?.()), debug: describeDebugSettings(effectiveDebugSettings(context)), uiPreferences: listUiPreferences(state.global.uiPreferences), uiPreferenceCatalog: describeUiPreferenceCatalog(), pendingDeliveryIds } };
   }
 
   const expedition = operationId.match(/^read\/expedition\/(\d+)\/(setting|latestBattleLog|simulationRun|chargeStock)$/);
@@ -694,8 +783,9 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       };
     }
     if (expedition[2] === 'latestBattleLog') {
-      // Omitted `logId` selects the party's latest retained log; `diary:<id>` selects the log of one retained Diary entry.
-      if (parameters.logId === undefined) return buildBattleLogData(disclosedLogOf(state, context, index), party.id, 'latest');
+      // Omitted `logId` or `latest` selects the party's latest retained log (the `logId` a sortie without a Diary entry
+      // returns); `diary:<id>` selects the log of one retained Diary entry.
+      if (parameters.logId === undefined || parameters.logId === 'latest') return buildBattleLogData(disclosedLogOf(state, context, index), party.id, 'latest');
       const diaryId = /^diary:(.+)$/.exec(String(parameters.logId))?.[1];
       const diary = diaryId === undefined ? undefined : party.diaryLogs.find((entry) => String(entry.id) === diaryId);
       if (!diary) throw new Error('not_found');
@@ -725,9 +815,6 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     if (!found) throw new Error('not_found');
     const { party, character, characterIndex } = found;
     if (characterRead[2] === 'status') {
-      const racesAndGender = character.raceId === 'mimorian' && character.mimorianEnemyId != null
-        ? `${character.raceId}/${character.gender}/${character.mimorianEnemyId}`
-        : `${character.raceId}/${character.gender}`;
       const editableRaceIds = new Set(['lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian', 'leporian', 'cervin', 'murid']);
       const normalRaceOptions = RACES.filter((race) => editableRaceIds.has(race.id)).flatMap((race) => (['male', 'female'] as const)
         .filter((gender) => !party.characters.some((candidate) => candidate.id !== character.id && candidate.isUnique !== true && candidate.raceId === race.id && candidate.gender === gender))
@@ -740,7 +827,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
         .map((enemyId) => `mimorian/female/${enemyId}`);
       return {
         calculatedStatus: buildCalculatedStatus(party.characters[characterIndex], computePartyStats(party).characterStats[characterIndex], party.level),
-        current: { unique: character.isUnique === true, name: character.name, racesAndGender, mainClassId: character.mainClassId, subClassId: character.subClassId, lineage: character.lineageId, predisposition: character.predispositionId },
+        current: describeCharacterBuildCurrent(character),
         editableFields: { name: character.isUnique !== true, unique: character.isUnique === true },
         validOptions: {
           racesAndGender: character.isUnique ? ['none'] : [...normalRaceOptions, ...mimorianOptions],
@@ -860,13 +947,28 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       current: describeModeSelectCurrent({ gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: state.global.language }, display),
       validOptions: {
         mode: ['mode.normal', 'mode.orca'], enemyLevelOffset: { min: 0, max: 20, step: 1 }, language: ['ja', 'en', 'zh-CN', 'zh-TW', 'ko'], darkMode: ['off', 'on', 'system'],
+        // Auto-repeat is reported but never controlled through the API (9.1.3, 3-6-2), so no value is accepted. The display
+        // settings belong to the ordinary player's runtime, so an API account can select none of them.
+        autoRepeat: [],
+        showExpeditionStats: display ? [true, false] : [],
         theme: display ? selectableThemes(context.environment, context.gameMode, display.theme).map(toThemeKey) : [],
       },
     };
   }
   if (operationId === 'read/setting/enemyEditPane') return { current: (context.control?.settings?.enemyEditPane as Record<string, unknown> | undefined) ?? {}, validOptions: { enemyLevel: { min: 1, max: 99, step: 1 }, terrainEffect: ['none', ...(TERRAIN_EFFECT_GLOSSARY_SECTION?.entries.map((entry) => entry.key) ?? [])], enemyType: [...new Set(ENEMIES.map((enemy) => enemy.enemyType))], mainClass: CLASSES.map((entry) => entry.id), subClass: ['none', ...CLASSES.map((entry) => entry.id)], addedAbilities: { maximumEntries: 5, level: { min: 1, max: 5 } } } };
   // SpecRef: 9.1.3 | Read | 2-6-3 debug — the ordinary player's real Debug settings; an API account's own stored values.
-  if (operationId === 'read/setting/debug') return { current: context.debugSettings ? describeDebugSettings(context.debugSettings()) : (context.control?.settings?.debug as Record<string, unknown> | undefined) ?? {}, validOptions: { speedOfTime: ['real', 'x1.2', 'x5', 'x20', 'x100', 'unlimited'], godsBattleCondition: ['normal', 'simple'], godsStrength: ['normal', 'veryWeak'] } };
+  // An API account's settings not stored yet report their defaults, never an empty object.
+  if (operationId === 'read/setting/debug') {
+    const booleans = [true, false];
+    return {
+      current: describeDebugSettings(effectiveDebugSettings(context)),
+      validOptions: {
+        runtimeDiagnostics: booleans, clairvoyance: booleans, speedOfTime: ['real', 'x1.2', 'x5', 'x20', 'x100', 'unlimited'],
+        godsBattleCondition: ['normal', 'simple'], godsStrength: ['normal', 'veryWeak'], debugStoreOpen: booleans, displayFlavorCondition: booleans,
+        displayAfkDuration: booleans, displayAllBestiary: booleans, displayAllCompendium: booleans, displayAllGlossary: booleans, colosseumMode: booleans,
+      },
+    };
+  }
   if (operationId.startsWith('read/setting/delivery/')) { const deliveryId = operationId.split('/').at(-1); const delivery = (context.control?.deliveries as ApiV1DeliveryRecord[] | undefined)?.find((entry) => entry.deliveryId === deliveryId); if (!delivery) throw new Error('not_found'); return projectDelivery(delivery); }
 
   // SpecRef: 9.1.3, 4-2-1 | "content is returned in the currently selected language."
@@ -890,10 +992,10 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     if (!access.isVisible) return { available: false };
     return { available: true, canReset: access.canResetBags, ...clairvoyance(selected.party) };
   }
-  if (operationId === 'resources/glossary') return glossary(state, parameters);
-  if (operationId === 'resources/itemCompendium') return itemCompendium(state, parameters);
-  if (operationId === 'resources/characterRoster') return characterRoster(parameters);
-  if (operationId === 'resources/bestiary') return bestiary(state, parameters);
-  if (operationId === 'resources/superRareList') return { superRare: SUPER_RARE_TITLES.map((entry) => `${entry.value}/${entry.title}/${entry.multiplier}`) };
+  if (operationId === 'resources/glossary') return glossary(state, parameters, context);
+  if (operationId === 'resources/itemCompendium') return itemCompendium(state, parameters, context);
+  if (operationId === 'resources/characterRoster') return characterRoster(parameters, context);
+  if (operationId === 'resources/bestiary') return bestiary(state, parameters, context);
+  if (operationId === 'resources/superRareList') return superRareList(parameters, context);
   return {};
 }

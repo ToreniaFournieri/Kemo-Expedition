@@ -6,6 +6,8 @@ import { createFreshGameState } from '../../hooks/useGameState';
 import { decodeApiSavePayload } from './commitOperations';
 import { stageApiV1ElapsedProgression } from './elapsedProgression';
 import { recoverInterruptedDeliveries } from './deliveries';
+import { accountDebugSettingsOf, accountTimeScale } from './debugSettings';
+import { getGameplayDebugOverride, setGameplayDebugOverride } from '../../game/debugSettings';
 import { appendApiV1PopupEvents, normalizeApiV1PopupEvents, planApiV1PopupCandidates } from './popupEvents';
 
 // SpecRef: 9.1.3.2 | API requirement fundamental | signUp / logIn / logOut
@@ -34,7 +36,6 @@ export interface ApiV1SessionPorts {
   /** Catch-up collaborators; none of them may read React state directly. */
   catchUp: {
     maximumElapsedMs: number;
-    cycleDurationScale: () => number;
     applyAutoEquipment: (state: GameState, partyIndex: number, characterId: number | undefined, forceFull: boolean) => GameState;
     yieldBetweenChunks: () => Promise<void>;
     randomSeed: () => number;
@@ -108,18 +109,26 @@ export async function logInApiAccount(request: Record<string, unknown>, activeSe
       const beforeCatchUp = accountState;
       const apiRandom = createApiRandom(control.rngState ?? ports.catchUp.randomSeed());
       let randomDrawCount = 0;
-      const catchUp = await stageApiV1ElapsedProgression(accountState, { calculateToRealTime: true }, {
-        simulatedAt: previousInGameTime,
-        realNow,
-        gameMode: identity.gameMode === 'orca' ? 'mode.orca' : 'mode.normal',
-        enemyLevelOffset: identity.levelOffsetForOrca ?? 5,
-        cycleDurationScale: ports.catchUp.cycleDurationScale(),
-        applyAutoEquipment: ports.catchUp.applyAutoEquipment,
-        runWithRandom: operation => withGameplayRandomSource(() => { randomDrawCount += 1; return apiRandom.next(); }, operation),
-        yieldBetweenChunks: ports.catchUp.yieldBetweenChunks,
-        maximumElapsedSeconds: Math.floor(ports.catchUp.maximumElapsedMs / 1_000),
-        allowExtendedElapsedSeconds: true,
-      });
+      // The catch-up runs under the account's own debug settings: its Speed of Time and its gameplay Debug rules.
+      const previousOverride = getGameplayDebugOverride();
+      setGameplayDebugOverride(accountDebugSettingsOf(control.settings));
+      let catchUp;
+      try {
+        catchUp = await stageApiV1ElapsedProgression(accountState, { calculateToRealTime: true }, {
+          simulatedAt: previousInGameTime,
+          realNow,
+          gameMode: identity.gameMode === 'orca' ? 'mode.orca' : 'mode.normal',
+          enemyLevelOffset: identity.levelOffsetForOrca ?? 5,
+          cycleDurationScale: accountTimeScale(control.settings),
+          applyAutoEquipment: ports.catchUp.applyAutoEquipment,
+          runWithRandom: operation => withGameplayRandomSource(() => { randomDrawCount += 1; return apiRandom.next(); }, operation),
+          yieldBetweenChunks: ports.catchUp.yieldBetweenChunks,
+          maximumElapsedSeconds: Math.floor(ports.catchUp.maximumElapsedMs / 1_000),
+          allowExtendedElapsedSeconds: true,
+        });
+      } finally {
+        setGameplayDebugOverride(previousOverride);
+      }
       accountState = catchUp.state;
       if (randomDrawCount > 0) control.rngState = apiRandom.state;
       const revision = control.revisionHighWater + 1;
