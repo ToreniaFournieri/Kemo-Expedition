@@ -500,7 +500,7 @@ calls.length = 0;
   const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'read/observation/expedition')!.response.data);
   type Info = { expeditionInfo: { parties: Record<string, any>[] } };
   const read = async (source: typeof state, cycle: Record<string, unknown> | undefined, extra: Record<string, unknown> = {}) => {
-    const result = await buildApiV1ReadData('read/observation/expedition', source, {}, { ...context, ...(cycle ? { partyCycle: () => cycle } : {}), chargeDurationScale: 1, ...extra } as never) as unknown as Info;
+    const result = await buildApiV1ReadData('read/observation/expedition', source, {}, { ...context, inGameTime: now, ...(cycle ? { partyCycle: () => cycle } : {}), chargeDurationScale: 1, ...extra } as never) as unknown as Info;
     assert.equal(validate(result), true, JSON.stringify(validate.errors));
     return result.expeditionInfo.parties[0];
   };
@@ -559,6 +559,15 @@ calls.length = 0;
   const noCharge = await read(withParty({ instantExpeditionStock: 0, instantExpeditionChargeStartedAt: now }), undefined);
   assert.equal(noCharge.controls.sortie.unavailableReason, 'charge_insufficient');
   assert.equal(noCharge.controls.godsBattle.unavailableReason, 'gods_battle_unavailable', 'a Gods Battle without its gate reports the gate first');
+  // An API account's charge follows its own in-game clock, the instant its sortie commit decides with, never the wall clock
+  // (Build 111 regression: the projection showed charge the commit refused as `charge_insufficient`).
+  const accountClock = now - 3 * 86_400_000;
+  const behindWallClock = withParty({ instantExpeditionStock: 0, instantExpeditionChargeStartedAt: accountClock });
+  const lagging = await read(behindWallClock, undefined, { inGameTime: accountClock });
+  assert.deepEqual([lagging.chargeStock, lagging.controls.sortie.unavailableReason], [0, 'charge_insufficient']);
+  const laggingStock = await buildApiV1ReadData('read/expedition/1/chargeStock', behindWallClock, {}, { ...context, inGameTime: accountClock, chargeDurationScale: 1 }) as { chargeStock: number };
+  assert.equal(laggingStock.chargeStock, 0);
+  assert.ok((await read(behindWallClock, undefined)).chargeStock > 0, 'the same party has recharged by the frozen wall clock');
   const locked = await read(withParty({ selectedDungeonId: 2, instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null }), undefined);
   assert.equal(locked.controls.sortie.unavailableReason, 'entry_gate_locked');
   const colosseum = await read(withParty({ selectedDungeonId: 99, currentHp: 0, instantExpeditionStock: 0, instantExpeditionChargeStartedAt: now }), undefined);
@@ -574,7 +583,7 @@ calls.length = 0;
     const running = { ...(log as object), entries: (log as { entries: { enemyName: string }[] }).entries.map((row) => ({ ...row, enemyName: 'running' })) } as never;
     const exploringState = withParty({ lastExpeditionLog: running, currentHp: 0, instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null });
     const cycle = { state: 'explore', stateStartedAt: now - 1500, durationMs: 4000 };
-    const context2 = { ...context, partyCycle: () => cycle, disclosedLog: () => previous, chargeDurationScale: 1 } as never;
+    const context2 = { ...context, inGameTime: now, partyCycle: () => cycle, disclosedLog: () => previous, chargeDurationScale: 1 } as never;
     const exp = (await buildApiV1ReadData('read/observation/expedition', exploringState, {}, context2) as unknown as Info).expeditionInfo.parties[0];
     const api = await buildApiV1ReadData('read/expedition/1/latestBattleLog', exploringState, {}, context2) as never;
     const shown = buildPartyExpeditionLogView({ exploration: exp.exploration as never, latestBattleLog: api })!;

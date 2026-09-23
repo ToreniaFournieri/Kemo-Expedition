@@ -192,7 +192,9 @@ function partyStateKey(party: Party, maximumHp: number, cycle: ApiV1PartyCycleVi
 // rooms of the running log are revealed only as the exploration clock reaches them (server-gated): a client never receives a
 // room, an HP value, or an outcome from the future, and `nextRevealAt` says when to read again.
 function expeditionProjection(state: GameState, context: ApiV1ReadContext) {
-  const nowMs = Date.now();
+  // The request's in-game clock, the same instant a sortie commit decides with: an API account's own clock, or the player's
+  // real time. The wall clock here would show charge an API account's commit cannot yet spend.
+  const nowMs = context.inGameTime;
   const chargeScale = context.chargeDurationScale ?? 1;
   return {
     parties: state.parties.map((party, partyIndex) => {
@@ -703,7 +705,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       if (!context.simulation) throw new Error('runtime_unavailable');
       return buildSimulationRunData(await context.simulation(index, 1_000) as ExpeditionSimulationResult, context.revision, crypto.randomUUID());
     }
-    const charge = getInstantExpeditionChargeState(party, Date.now(), context.chargeDurationScale ?? 1);
+    const charge = getInstantExpeditionChargeState(party, context.inGameTime, context.chargeDurationScale ?? 1);
     return { chargeStock: charge.stock, chargeDuration: charge.remainingMs <= 0 ? 0 : Math.ceil(charge.remainingMs / 1000) };
   }
 
