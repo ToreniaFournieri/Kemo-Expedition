@@ -889,6 +889,10 @@ Path Parameters
 
 * Return:
   * `current`:
+    * `lineupid`
+      * Format: `<1stItemId><2ndItemId><3rdItemId><4thItemId><5thItemId>`
+        * Example: `11041102111011111111`
+      * Used to verify that the shop lineup has not changed before the player purchases items.
     * `items`
       * Current shop item list.
       * Format:
@@ -1285,6 +1289,8 @@ Path Parameters
 * Parameters: none.
 * Remove all equipment.
 
+* If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
+
 **3-3-4. `character/{characterId}/removeEquipment`**
 
 * Parameters:
@@ -1295,6 +1301,9 @@ Path Parameters
       `0`
     * Example:
       `[0, 1]`
+
+* If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
+
 
 **3-3-5. `character/{characterId}/equip`**
 
@@ -1344,10 +1353,16 @@ Path Parameters
     * Only one jewel may be attached to each target equipment.
     * Must satisfy the compatibility rules defined in `3.1.7 Jewel (結晶)`, under `Item Type → Available Jewel`.
 
+* If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
+
+
 **3-3-10. `character/{characterId}/jewelRemove`**
 
 * Parameters:
   * `targetEquipment`
+
+* If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
+
 
 **3-3-11. `character/{characterId}/saveEquipmentSet`**
 
@@ -1386,6 +1401,8 @@ Path Parameters
 * Return:
   * `equipmentSet`
 
+* If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
+
 
 **3-3-13. `character/{characterId}/deleteEquipmentSet`**
 
@@ -1402,10 +1419,14 @@ Path Parameters
 
 * Parameters: none.
 
+* If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
+
 
 **3-3-16. `character/{characterId}/redoEquipment`**
 
 * Parameters: none.
+
+* If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
 
 
 **3-4. `commit/base`**
@@ -1433,6 +1454,9 @@ Path Parameters
 **3-4-3. `purchaseShopItems`**
 
 * Parameters:
+  * `lineupid`
+    * Must match the current shop lineupId.
+    * If the supplied lineupId does not match the current shop lineup, reject the request.
   * `items` 
     * Array of items to buy. One or more entries may be specified in a single request.
     * Each Entry:
@@ -1517,7 +1541,7 @@ Path Parameters
     * If `true`, resets the party-specific rewards.
   * `resetSideQuest`
     * Boolean.
-    * If `true`, resets the side quest progress.
+    * If `true`, resets the side quest (`t.side_quest_bag` ).
 
 **3-6-2. `modeSelect`**
 
