@@ -285,7 +285,7 @@ Path Parameters
 * While logged in:
   * Normal real-time progression is paused.
   * Only API operations from the logged-in user may control or modify the instance.
-  * The player may switch views in the UI, but cannot perform any commit operations.
+  * The player may control the game through the UI, except for commit operations.
   * Other state-mutating controls are restricted.
 * Note: This feature is available only for API control in this version.
 

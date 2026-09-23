@@ -625,6 +625,12 @@ export function HomeScreen({
   applicationApiRef.current.syncIdleState(state);
   const inProcessApiRef = useRef<InProcessApiAdapter | null>(null);
   if (inProcessApiRef.current === null) inProcessApiRef.current = applicationApiRef.current.createInProcessAdapter({ restrictDuringSession: true });
+  // SpecRef: 9.1.3 | 1-3 fundamental/logIn | While logged in, the player may control the UI except commit operations.
+  // The adapter refuses UI commits during the session; handlers that mutate game or runtime state directly are no-ops.
+  const guardUiCommit = <A extends unknown[]>(handler: (...args: A) => void) => (...args: A) => {
+    if (apiControlActiveRef.current) return;
+    handler(...args);
+  };
 
   useEffect(() => {
     // SpecRef: 9.1.4.15 | Resilience backstop for the delivery sender; pumps also fire immediately after a commit
@@ -1098,6 +1104,7 @@ export function HomeScreen({
   // its own webhook directly; only the header's *display* of the resulting bonus is projected. Revisit once Stage 8
   // wires a real network sender for `commit/progress/progressReport`.
   const handleReportProgress = useCallback(async () => {
+    if (apiControlActiveRef.current) return;
     const confirmed = window.confirm(t('home.debug.reportProgressConfirm'));
     if (!confirmed) return;
     try {
@@ -5501,7 +5508,7 @@ export function HomeScreen({
           afkRecoveryProgressPercent={afkRecoveryProgressPercent}
           afkRecoveryCompletedMs={afkRecoveryCompletedMs}
           afkRecoveryTotalMs={afkRecoveryTotalMs}
-          onTriggerSortie={handleTriggerSortie}
+          onTriggerSortie={guardUiCommit(handleTriggerSortie)}
           expandedLogParty={expeditionExpandedLogParty}
           setExpandedLogParty={setExpeditionExpandedLogParty}
           expandedRoom={expeditionExpandedRoom}
@@ -5526,7 +5533,7 @@ export function HomeScreen({
           onSellStack={sellInventoryItem}
           onUnlockSold={unlockSoldItem}
           onBuyShopItem={buyShopItem}
-          onBuyDebugStoreItem={actions.buyDebugStoreItem}
+          onBuyDebugStoreItem={guardUiCommit(actions.buyDebugStoreItem)}
           onRefreshShopLineup={refreshShop}
           onUnlockMimorianEnemy={unlockEnemyForm}
           onSetJewelAutoEquipPriorityParty={changeJewelPriorityParty}
@@ -5573,7 +5580,7 @@ export function HomeScreen({
         getCompressedSavePayload={handleExportGameStatePayload}
         getRuntimeSnapshot={getRuntimeSnapshot}
         onAddNotification={actions.addNotification}
-        onGrantFeedbackReward={actions.grantFeedbackReward}
+        onGrantFeedbackReward={guardUiCommit(actions.grantFeedbackReward)}
         onClairvoyanceReset={handleClairvoyanceReset}
         selectedBestiaryDungeonId={selectedBestiaryDungeonId}
         onSetSelectedBestiaryDungeonId={setSelectedBestiaryDungeonId}
@@ -5584,19 +5591,19 @@ export function HomeScreen({
         gameMode={gameMode}
         onSetGameMode={(mode) => commitDisplaySetting({ theme: toThemeKey(mode) })}
         runtimeGameMode={runtimeGameMode}
-        onSetRuntimeGameMode={updateRuntimeGameMode}
+        onSetRuntimeGameMode={guardUiCommit(updateRuntimeGameMode)}
         orcaEnemyLevelOffset={effectiveOrcaEnemyLevelOffset}
-        onSetOrcaEnemyLevelOffset={updateOrcaEnemyLevelOffset}
+        onSetOrcaEnemyLevelOffset={guardUiCommit(updateOrcaEnemyLevelOffset)}
         darkModeSetting={darkModeSetting}
         onSetDarkModeSetting={(setting) => commitDisplaySetting({ darkMode: setting })}
         isAutoRepeatEnabled={isAutoRepeatEnabled}
-        onSetAutoRepeatEnabled={setAutoRepeatEnabled}
+        onSetAutoRepeatEnabled={guardUiCommit(setAutoRepeatEnabled)}
         isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
         onSetExpeditionStatsDisplayEnabled={(enabled) => commitDisplaySetting({ showExpeditionStats: enabled })}
         debugSettings={effectiveDebugSettings}
-        onUpdateDebugSettings={updateDebugSettings}
+        onUpdateDebugSettings={guardUiCommit(updateDebugSettings)}
         partyCount={state.parties.length}
-        onPartyUnlock={actions.unlockPartySlot}
+        onPartyUnlock={guardUiCommit(actions.unlockPartySlot)}
         language={state.global.language}
         onSetLanguage={handleSetLanguage}
         onMarkDeveloperNewsRead={handleMarkNewsRead}
@@ -5698,16 +5705,14 @@ export function HomeScreen({
         </div>
       )}
       <div className="contents">
-        <div className="contents" {...(apiControlActive ? { inert: '' } : {})}>
-          <HeaderBar
-            header={overview?.headerInfo ?? null}
-            nowMs={timeSpeedNowMs}
-            gameTitle={gameTitle}
-            versionLabel={versionLabel}
-            onReportProgress={handleReportProgress}
-            onEnableAutoRepeat={() => setAutoRepeatEnabled(true)}
-          />
-        </div>
+        <HeaderBar
+          header={overview?.headerInfo ?? null}
+          nowMs={timeSpeedNowMs}
+          gameTitle={gameTitle}
+          versionLabel={versionLabel}
+          onReportProgress={handleReportProgress}
+          onEnableAutoRepeat={guardUiCommit(() => setAutoRepeatEnabled(true))}
+        />
 
       {/* Bottom Tabs */}
       <nav
@@ -5756,7 +5761,6 @@ export function HomeScreen({
       {/* Tab Content */}
       <div
         ref={tabContentRef}
-        {...(apiControlActive ? { inert: '' } : {})}
         className={prefersDocumentScroll ? `px-4 ${CHROME_CONTENT_PADDING_CLASS}` : `flex-1 px-4 ${CHROME_CONTENT_PADDING_CLASS} ${isPartyExpeditionSplitViewEnabled ? 'overflow-hidden' : 'overflow-y-auto'}`}
         onScroll={() => {
           if (prefersDocumentScroll || isPartyExpeditionSplitViewEnabled) return;
