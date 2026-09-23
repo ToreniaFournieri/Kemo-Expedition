@@ -624,7 +624,7 @@ export function HomeScreen({
   }
   applicationApiRef.current.syncIdleState(state);
   const inProcessApiRef = useRef<InProcessApiAdapter | null>(null);
-  if (inProcessApiRef.current === null) inProcessApiRef.current = applicationApiRef.current.createInProcessAdapter();
+  if (inProcessApiRef.current === null) inProcessApiRef.current = applicationApiRef.current.createInProcessAdapter({ restrictDuringSession: true });
 
   useEffect(() => {
     // SpecRef: 9.1.4.15 | Resilience backstop for the delivery sender; pumps also fire immediately after a commit
@@ -5687,25 +5687,27 @@ export function HomeScreen({
       }}
     >
       {apiControlActive && (
-        <div className="fixed inset-0 z-[100] cursor-wait bg-transparent" aria-label="API control active">
+        <div className="fixed right-3 top-[calc(env(safe-area-inset-top)+0.75rem)] z-50" aria-label="API control active">
           <button
             type="button"
-            className="absolute right-3 top-[calc(env(safe-area-inset-top)+0.75rem)] cursor-pointer rounded border border-status-error-border bg-surface-card px-3 py-2 text-xs text-status-error shadow"
+            className="cursor-pointer rounded border border-status-error-border bg-surface-card px-3 py-2 text-xs text-status-error shadow"
             onClick={() => void window.bokemoDesktop?.setApiV1Enabled(false)}
           >
             {t('setting.apiV1.disableControl')}
           </button>
         </div>
       )}
-      <div className="contents" {...(apiControlActive ? { inert: '' } : {})}>
-        <HeaderBar
-          header={overview?.headerInfo ?? null}
-          nowMs={timeSpeedNowMs}
-          gameTitle={gameTitle}
-          versionLabel={versionLabel}
-          onReportProgress={handleReportProgress}
-          onEnableAutoRepeat={() => setAutoRepeatEnabled(true)}
-        />
+      <div className="contents">
+        <div className="contents" {...(apiControlActive ? { inert: '' } : {})}>
+          <HeaderBar
+            header={overview?.headerInfo ?? null}
+            nowMs={timeSpeedNowMs}
+            gameTitle={gameTitle}
+            versionLabel={versionLabel}
+            onReportProgress={handleReportProgress}
+            onEnableAutoRepeat={() => setAutoRepeatEnabled(true)}
+          />
+        </div>
 
       {/* Bottom Tabs */}
       <nav
@@ -5754,6 +5756,7 @@ export function HomeScreen({
       {/* Tab Content */}
       <div
         ref={tabContentRef}
+        {...(apiControlActive ? { inert: '' } : {})}
         className={prefersDocumentScroll ? `px-4 ${CHROME_CONTENT_PADDING_CLASS}` : `flex-1 px-4 ${CHROME_CONTENT_PADDING_CLASS} ${isPartyExpeditionSplitViewEnabled ? 'overflow-hidden' : 'overflow-y-auto'}`}
         onScroll={() => {
           if (prefersDocumentScroll || isPartyExpeditionSplitViewEnabled) return;

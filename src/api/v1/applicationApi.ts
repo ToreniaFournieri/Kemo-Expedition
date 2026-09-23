@@ -94,7 +94,7 @@ export interface ApplicationApi {
   syncIdleState: (state: GameState) => void;
   isSessionActive: () => boolean;
   authority: SerializedApplicationApiAuthority;
-  createInProcessAdapter: () => InProcessApiAdapter;
+  createInProcessAdapter: (options?: { restrictDuringSession?: boolean }) => InProcessApiAdapter;
   /**
    * SpecRef: 9.1.4.15 | Runs one claim/send/settle/(complete) cycle for the delivery sender; a safe no-op when
    * there is nothing to do. Exposed directly (not only via the interval below) so a caller — or a test — can nudge
@@ -379,7 +379,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       : handleUnserialized(templateOperation, raw);
   }
 
-  function createInProcessAdapter(): InProcessApiAdapter {
+  function createInProcessAdapter(options?: { restrictDuringSession?: boolean }): InProcessApiAdapter {
     const listeners = new Set<() => void>();
     const notifyCommitted = (response: ApiV1ApplicationResponse) => {
       if (response.error) return;
@@ -389,6 +389,11 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       pathParameters: input?.pathParameters ?? {}, parameters: input?.parameters ?? {}, uploadedFiles: {}, transport: { requestId: ports.runtime.createOpaqueId() },
     }, true);
     const commit: InProcessApiAdapter['commit'] = async (operation, input) => {
+      // The renderer may keep reading and navigating while an external API client owns the save.
+      // Guard effects as well as clicks: some views acknowledge displayed items when mounted.
+      if (options?.restrictDuringSession && activeIdentity) {
+        return failure(409, 'apiControlActive', 'API control is active.');
+      }
       const request = {
         pathParameters: input?.pathParameters ?? {}, parameters: input?.parameters ?? {}, uploadedFiles: input?.uploadedFiles ?? {},
         transport: { requestId: ports.runtime.createOpaqueId() },

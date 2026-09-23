@@ -363,6 +363,25 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
   assert.deepEqual(h.sessionEvents, [true, false]);
 }
 
+// The UI adapter stays readable during an external lease, but neither clicks nor view-mount effects may commit.
+{
+  const h = harness();
+  const ui = h.api.createInProcessAdapter({ restrictDuringSession: true });
+  await h.api.handle('fundamental/logIn', { ...identity });
+  const overview = await ui.read('read/observation/overview') as { data?: unknown; error?: unknown };
+  assert.ok(overview.data, 'the UI can read the account while it is externally controlled');
+  const revision = h.api.authority.getSnapshot().control.revisionHighWater;
+  const persisted = h.persisted.length;
+  const refused = await ui.commit('commit/base/changeJewelPriorityParty', { parameters: { partyNumber: 'none' } }) as { status: number; error: { code: string } };
+  assert.equal(refused.status, 409);
+  assert.equal(refused.error.code, 'apiControlActive');
+  assert.equal(h.api.authority.getSnapshot().control.revisionHighWater, revision);
+  assert.equal(h.persisted.length, persisted, 'a refused UI commit never reaches persistence');
+  await h.api.handle('fundamental/logOut', {});
+  const resumed = await ui.commit('commit/base/changeJewelPriorityParty', { parameters: { partyNumber: 'none' } }) as { error?: unknown };
+  assert.equal(resumed.error, undefined, 'ordinary UI commits resume after logout');
+}
+
 // 3. HTTP-shaped and in-process adapters produce identical semantic results, persisted state, and publications.
 {
   const http = harness();

@@ -39,7 +39,7 @@ test('HomeScreen supplies runtime ports only and no longer owns the API dispatch
     assert.equal(source.includes(forbidden), false, `HomeScreen must not reference ${forbidden}`);
   }
   assert.match(source, /createApplicationApi\(/);
-  assert.match(source, /createInProcessAdapter\(\)/);
+  assert.match(source, /createInProcessAdapter\(\{ restrictDuringSession: true \}\)/);
   assert.match(source, /commit\('commit\/build\/party\/\{p\}'/);
   assert.doesNotMatch(source, /onReorderPartyCharacter=\{actions\.reorderPartyCharacter\}/);
   assert.doesNotMatch(source, /onUpdatePartyDeity=\{actions\.updatePartyDeity\}/);
