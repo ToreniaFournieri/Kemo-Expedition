@@ -280,4 +280,28 @@ assert.equal(undoHistory[String(characterId)].redo.length, 0);
   assert.equal(history[String(characterId)].redo.length, 0);
 }
 
+// Every manual equipment change demotes FULL to SEMI (Spec 9.1.3 3-3-3/3-3-4/3-3-9/3-3-10/3-3-12/3-3-15/3-3-16); the
+// Party pane makes these changes through the same commands. Lock/unlock only mark items and keep FULL.
+{
+  assert.equal(character(seeded).autoEquipmentMode, 2, 'the fixture is in FULL mode');
+  const mode = (state: GameState) => character(state).autoEquipmentMode;
+  const history: ApiV1CommitContext['equipmentHistory'] = {};
+  const commit = (state: GameState, action: string, parameters: Record<string, unknown> = {}) => applyApiV1Commit(path(action), state, parameters, context(history)).state;
+  const full = (state: GameState) => gameReducer(state, { type: 'UPDATE_CHARACTER', partyIndex: 0, characterId, updates: { autoEquipmentMode: 2 } });
+  assert.equal(mode(commit(seeded, 'removeAllEquipment')), 1, 'removeAllEquipment');
+  const withJewel = commit(seeded, 'jewelAttach', { targetEquipment: armor, jewelToSet: 'fort:3' });
+  assert.equal(mode(withJewel), 1, 'jewelAttach');
+  assert.equal(mode(commit(full(withJewel), 'jewelRemove', { targetEquipment: armor })), 1, 'jewelRemove');
+  assert.equal(mode(commit(seeded, 'lockEquipment', { targetEquipment: armor })), 2, 'lockEquipment keeps FULL');
+  // Undo and Redo restore a recorded state, which is a manual change too.
+  const changed = full(commit(seeded, 'removeEquipment', { targetEquipment: armor }));
+  const undone = commit(changed, 'undoEquipment');
+  assert.equal(mode(undone), 1, 'undoEquipment');
+  assert.equal(mode(commit(full(undone), 'redoEquipment')), 1, 'redoEquipment');
+  // Loading a saved set.
+  const saved = applyApiV1Commit(path('saveEquipmentSet'), seeded, { equipmentSet: { name: 'Set' } }, context());
+  const slot = (saved.data as { equipmentSetId: number }).equipmentSetId;
+  assert.equal(mode(commit(saved.state, 'loadEquipmentSet', { equipmentSetId: slot, loadMode: 'equipSet' })), 1, 'loadEquipmentSet');
+}
+
 console.log('apiV1EquipmentSlots profile ok');

@@ -590,6 +590,12 @@ definitions in 9.1.3.
 * For `removeEquipment`, `lockEquipment`, `unlockEquipment`, `jewelAttach`, and
   `jewelRemove`, `targetEquipment` is one slot index or an array of slot indices.
   Duplicate indices are invalid.
+* A manual equipment change made while `autoEquipment.mode` is `FULL` sets it to
+  `SEMI` (9.1.3 3-3-3 to 3-3-16; 8.2.4): `equip`, `removeEquipment`,
+  `removeAllEquipment`, `jewelAttach`, `jewelRemove`, `loadEquipmentSet`,
+  `undoEquipment`, and `redoEquipment`. `lockEquipment` and `unlockEquipment` only
+  mark items and keep the mode. The Party pane makes these changes through the same
+  commands, so it follows the same rule.
 * `jewelAttach.jewelToSet` uses `Jewel Format`. The exact owned Jewel instance is
   reserved during validation and consumed only by the successful transaction.
 * Saved equipment sets and Undo/Redo states differ in what they carry:
@@ -624,8 +630,12 @@ definitions in 9.1.3.
   slot in the lineup (1 to 5), at the transaction's own time. The lineup rotates with
   the clock (02:00, 10:00, and 18:00 local time) and with paid refreshes and purchases
   (which raise intimacy and can change the rarity mix), none of which change the
-  revision, so a client reads `lineupId` from `shopItemsList` or the `base` projection
-  and buys promptly. The request is validated whole against one snapshot: a malformed,
+  revision. So the request names the lineup it was chosen from: `lineupId` (required)
+  is the value `shopItemsList` or the `base` projection published, the five item IDs
+  of the lineup in slot order, concatenated (for example `11041102111011111111`). A
+  missing `lineupId` is `invalid_request`; one that differs from the current lineup is
+  `illegal_action:lineup_changed`, and nothing is bought. The request is validated whole
+  against one snapshot: a malformed,
   non-positive, or duplicate ID is `invalid_request`; an ID that is not in the lineup is
   `not_found`; a sold slot is `illegal_action:sold_out`; a total above the Gold held is
   `illegal_action:insufficient_gold`. Nothing is bought unless every entry passes. The
@@ -698,7 +708,11 @@ definitions in 9.1.3.
   Each `resources/developerNewsNotification` entry carries `isRead`, the save's
   read state that this operation changes.
 * `clairvoyanceReset` returns the party number and which of common rewards,
-  party rewards, and side-quest progress were reset. It requires a member with
+  party rewards, and the side quest were reset. They are the three 8.6 buttons:
+  `resetCommonRewards` initializes the common reward, enhancement, and Super Rare
+  bags; `resetRewards` the party's reward bags, `t.enhancement_bag`, and
+  `t.rare_superRare_bag`; and `resetSideQuest` only `t.side_quest_bag`, never the
+  active side quest's progress. It requires a member with
   `a.prophecy`2 in that party or the Debug Clairvoyance override (8.6);
   otherwise it is `illegal_action` (`clairvoyance_reset_unavailable`).
 * `resources/clairvoyance/{p}` (9.1.3 4-2-3) returns `{available: false}` when
@@ -1169,6 +1183,23 @@ type DiaryEntry = {
   `displayAllGlossary` mark every entry of the matching resource revealed. The
   remaining fields only affect the ordinary player's UI. `validOptions` lists every
   field (booleans as `[true, false]`).
+* `modeSelect` never changes `mode` or `enemyLevelOffset` (by design): they identify
+  the save being played (an API account is created per game mode and Orca level
+  offset, and the Orca environment fixes `mode.orca`). Supplying the current value is
+  accepted; a different value is `illegal_action`. `validOptions` still lists the
+  documented values.
+* `enemyEditPane` (read 2-6-1, commit 3-6-3, `settingInfo.enemyEditPane`) defines the
+  Colosseum enemy. For the ordinary player the values are the Enemy Edit pane's real
+  settings (8.6, stored on the device), and a commit applies them to the pane after it
+  is durable without changing the save or its revision. An API account's settings are
+  its own, kept with the account and in force for its Colosseum while it holds
+  control. Reads and commits report every field (unset fields report their
+  defaults). `mainClass` and `subClass` use the enemy class IDs of
+  `validOptions` (`subClass` also `none`), `terrainEffect` is `none` or a terrain key,
+  and `addedAbilities` (replaced as a whole) holds at most five distinct
+  `{abilityId, level}` entries with `abilityId` from `validOptions.addedAbilities.abilityId`
+  and `level` 1–5. Any invalid field rejects the request as `invalid_request`. The
+  dev/beta restriction applies to the commit.
 * `modeSelect.validOptions.autoRepeat` is always `[]` (auto-repeat is reported but
   never controlled through the API); `showExpeditionStats` is `[true, false]` for
   the ordinary player and `[]` for an API account.
@@ -1181,10 +1212,17 @@ type DiaryEntry = {
   subtitle are the Diary tab's (current language; the subtitle is the expedition
   name for an ordinary entry) and are percent-encoded free text.
 * `itemCompendium` applies every documented filter (`category`, `rarity`, `tier`,
-  `itemId`, `searchAbility`, `searchBonus`). Each item carries `itemId`, the
-  localized `name`, `category`, `rarity`, `tier` (the thousands digit of the item
-  ID), and `revealed`, plus the `ability`, `cBonus`, and `otherBonus` arrays
-  selected by `details` (omitted when not selected).
+  `itemId`, `searchAbility`, `searchBonus`). Each item carries `itemId`, `category`,
+  `rarity`, `tier` (the thousands digit of the item ID), and `revealed`. A revealed
+  item also carries its localized `name` and the `ability`, `cBonus`, and
+  `otherBonus` arrays selected by `details` (omitted when not selected). An
+  unrevealed item (8.6 Item Reveal Rule) is a placeholder without name or details,
+  and `searchAbility`/`searchBonus` never match it.
+* `bestiary` lists an enemy not yet encountered as a placeholder,
+  `{enemyId, revealed: false, encounters: 0, defeats: 0}`, never its name, status,
+  or drops; the `enemyType` filter never matches it. An encountered enemy carries
+  its full `EnemyStatus` with `revealed: true`. The Debug display-all settings
+  reveal every entry.
 * `superRareList` lists titles `1–N` only (optional `superRareId` filter) as
   `<superRareId>/<name>/<bonus>`: `name` is the title in the current language and
   `bonus` the title's bonus IDs joined by `, `, both percent-encoded.

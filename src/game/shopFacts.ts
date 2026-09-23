@@ -49,6 +49,15 @@ export interface ShopFacts {
   entries: ShopEntryFacts[];
 }
 
+// SpecRef: 9.1.3 | 2-4-4 shopItemsList / 3-4-3 purchaseShopItems | lineupId
+/**
+ * The public ID of a lineup: its five item IDs in slot order, concatenated (e.g. `11041102111011111111`). A purchase names
+ * the lineup it was chosen from, so a rotation or refresh in between is refused instead of buying a different item.
+ */
+export function getPublicShopLineupId(facts: Pick<ShopFacts, 'entries'>): string {
+  return facts.entries.map((entry) => String(entry.itemId)).join('');
+}
+
 export function getShopFacts(input: ShopLineupInput, now: Date): ShopFacts {
   const lineup = buildShopLineup(input, now);
   const refreshCount = input.shopRefreshCounts[getShopHourKey(now)] ?? 0;

@@ -8,6 +8,8 @@ import { stageApiV1ElapsedProgression } from './elapsedProgression';
 import { recoverInterruptedDeliveries } from './deliveries';
 import { accountDebugSettingsOf, accountTimeScale } from './debugSettings';
 import { getGameplayDebugOverride, setGameplayDebugOverride } from '../../game/debugSettings';
+import { setColosseumEnemySettingsOverride } from '../../game/colosseum';
+import { accountEnemyEditSettingsOf } from './enemyEditPane';
 import { appendApiV1PopupEvents, normalizeApiV1PopupEvents, planApiV1PopupCandidates } from './popupEvents';
 
 // SpecRef: 9.1.3.2 | API requirement fundamental | signUp / logIn / logOut
@@ -112,6 +114,7 @@ export async function logInApiAccount(request: Record<string, unknown>, activeSe
       // The catch-up runs under the account's own debug settings: its Speed of Time and its gameplay Debug rules.
       const previousOverride = getGameplayDebugOverride();
       setGameplayDebugOverride(accountDebugSettingsOf(control.settings));
+      setColosseumEnemySettingsOverride(accountEnemyEditSettingsOf(control.settings));
       let catchUp;
       try {
         catchUp = await stageApiV1ElapsedProgression(accountState, { calculateToRealTime: true }, {
@@ -127,7 +130,9 @@ export async function logInApiAccount(request: Record<string, unknown>, activeSe
           allowExtendedElapsedSeconds: true,
         });
       } finally {
+        // The application API installs the account's overrides for the session once the login succeeds.
         setGameplayDebugOverride(previousOverride);
+        setColosseumEnemySettingsOverride(null);
       }
       accountState = catchUp.state;
       if (randomDrawCount > 0) control.rngState = apiRandom.state;

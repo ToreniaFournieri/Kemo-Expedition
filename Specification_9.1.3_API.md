@@ -889,7 +889,7 @@ Path Parameters
 
 * Return:
   * `current`:
-    * `lineupid`
+    * `lineupId`
       * Format: `<1stItemId><2ndItemId><3rdItemId><4thItemId><5thItemId>`
         * Example: `11041102111011111111`
       * Used to verify that the shop lineup has not changed before the player purchases items.
@@ -1454,7 +1454,7 @@ Path Parameters
 **3-4-3. `purchaseShopItems`**
 
 * Parameters:
-  * `lineupid`
+  * `lineupId`
     * Must match the current shop lineupId.
     * If the supplied lineupId does not match the current shop lineup, reject the request.
   * `items` 
