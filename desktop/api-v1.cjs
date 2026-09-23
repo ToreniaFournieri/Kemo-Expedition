@@ -64,6 +64,8 @@ function createApiV1(options) {
   const streams = new Set();
 
   const nowMonotonic = () => Number(process.hrtime.bigint() / 1_000_000n);
+  // Tests shorten the idle lease; the desktop app always uses the specified five minutes (9.1.4.6).
+  const leaseIdleTimeoutMs = Number.isInteger(options.leaseIdleTimeoutMs) && options.leaseIdleTimeoutMs > 0 ? options.leaseIdleTimeoutMs : LEASE_IDLE_TIMEOUT_MS;
 
   function requestId() { return crypto.randomUUID(); }
   function baseEnvelope(id) { return { apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, requestId: id }; }
@@ -133,8 +135,8 @@ function createApiV1(options) {
 
   function renewLease() {
     if (!lease) return;
-    lease.deadline = nowMonotonic() + LEASE_IDLE_TIMEOUT_MS;
-    lease.expiresAt = Date.now() + LEASE_IDLE_TIMEOUT_MS;
+    lease.deadline = nowMonotonic() + leaseIdleTimeoutMs;
+    lease.expiresAt = Date.now() + leaseIdleTimeoutMs;
     scheduleExpiry();
   }
   function scheduleExpiry() {
@@ -354,8 +356,8 @@ function createApiV1(options) {
         identity: result.identity ?? result.data,
         sessionToken: crypto.randomBytes(32).toString('base64url'),
         controlLeaseToken: crypto.randomBytes(32).toString('base64url'),
-        deadline: nowMonotonic() + LEASE_IDLE_TIMEOUT_MS,
-        expiresAt: now + LEASE_IDLE_TIMEOUT_MS,
+        deadline: nowMonotonic() + leaseIdleTimeoutMs,
+        expiresAt: now + leaseIdleTimeoutMs,
         pins: 0,
       };
       scheduleExpiry();
@@ -464,12 +466,23 @@ function createApiV1(options) {
 
   async function shutdown() { shuttingDown = true; await disable(); }
 
+  // SpecRef: 9.1.4.16 | Renderer loss or process death reloads the last durable state; session tokens are reacquired.
+  // The renderer owns the Application API session, so when it is lost or starts reloading the lease is released here
+  // (without a logOut round trip, which could not reach it). The client's old tokens then get `login_required`, and a new
+  // `logIn` succeeds at once instead of waiting for the idle lease to expire.
+  function releaseForRendererLoss() {
+    if (!lease) return;
+    lease = null;
+    if (expiryTimer) clearTimeout(expiryTimer);
+    closeStreams();
+  }
+
   // The renderer's push signal: re-check every open popup-event stream now instead of waiting for its next poll tick.
   function notifyPopupActivity() {
     for (const stream of streams) void stream.tick();
   }
 
-  return { enable, disable, shutdown, getSettings, notifyPopupActivity, get isShuttingDown() { return shuttingDown; }, get activeOperations() { return activeOperations; } };
+  return { enable, disable, shutdown, getSettings, notifyPopupActivity, releaseForRendererLoss, get isShuttingDown() { return shuttingDown; }, get activeOperations() { return activeOperations; } };
 }
 
 module.exports = { createApiV1, API_PREFIX, API_VERSION, SCHEMA_VERSION, LEASE_IDLE_TIMEOUT_MS };

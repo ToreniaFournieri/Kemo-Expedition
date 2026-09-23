@@ -118,9 +118,10 @@ function createWindow(options = {}) {
   });
 
   mainWindow = window;
-  window.webContents.on('did-start-loading', () => { apiV1RendererReady = false; });
+  window.webContents.on('did-start-loading', () => { apiV1RendererReady = false; apiV1.releaseForRendererLoss(); });
   window.webContents.on('render-process-gone', () => {
     apiV1RendererReady = false;
+    apiV1.releaseForRendererLoss();
     for (const pending of apiV1PendingRequests.values()) { clearTimeout(pending.timeout); pending.reject(new Error('Renderer stopped')); }
     apiV1PendingRequests.clear();
   });

@@ -1254,7 +1254,10 @@ Feedback `metadata`, accompanied by one verified image part named `attachment0`:
   or process death reloads the last durable state and receipts; uncommitted
   staging is discarded. Session and control-lease tokens must be reacquired on
   restart; the bootstrap token survives a restart only when `persistSecretToken`
-  is `true`.
+  is `true`. When the renderer is lost or starts reloading, the desktop process
+  releases the control lease at once (and closes its popup streams), so the old
+  tokens are rejected and a new `logIn` succeeds without waiting for the idle
+  lease to expire.
 * Import/reset invalidates snapshots still computing and closes their streams.
   An affected read returns `stale_revision` rather than publishing a pre-reset
   result. It never cancels a previously committed operation or deletes its receipt.

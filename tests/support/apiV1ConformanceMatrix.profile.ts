@@ -7,6 +7,8 @@ import { createApplicationApi, type ApplicationApiPorts } from '../../src/api/v1
 import { createFreshGameState } from '../../src/hooks/useGameState';
 import { serializeGameState } from '../../src/game/saveCodec';
 import { encodePersistedState } from '../../src/game/storageCompression';
+import { decodeApiSavePayload } from '../../src/api/v1/commitOperations';
+import { createHash } from 'node:crypto';
 import type { GameState } from '../../src/types';
 
 // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | conformance matrix
@@ -37,6 +39,7 @@ const identity = { userId: 'Matrix', environment: 'desktop', gameMode: 'normal',
 
 function matrixSave(variant?: (state: GameState) => void): GameState {
   const state = createFreshGameState('ja', t0);
+  state.global.userId = 'matrix-user';
   state.global.gold = 1_000_000;
   state.global.prana = 10_000;
   state.global.jewels = { 'fort:1': 3 } as GameState['global']['jewels'];
@@ -155,7 +158,9 @@ function routeFor(operationId: string, pathParameters: Record<string, unknown> =
 
 class Client {
   revision = 0;
-  private headers: Record<string, string> = { Authorization: `Bearer ${descriptor.token}` };
+  // A fresh connection per request: on this platform a reused loopback connection that sat idle makes Node's `fetch` wait
+  // about 300 ms (a plain Node server shows the same), which would dominate the run.
+  private headers: Record<string, string> = { Authorization: `Bearer ${descriptor.token}`, Connection: 'close' };
   private keySequence = 0;
 
   async send(operationId: string, init: { path?: Record<string, unknown>; query?: Record<string, unknown>; body?: Record<string, unknown>; files?: Record<string, { bytes: Uint8Array; type: string }> } = {}): Promise<HttpResult> {
@@ -240,6 +245,12 @@ class Client {
   }
 }
 
+/** What a fixture needs from a caller: the HTTP client or the trusted in-process adapter (9.3 parity). */
+interface Actor {
+  read: (operationId: string, path?: Record<string, unknown>, query?: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  commitOk: (operationId: string, request: CommitRequest, key?: string) => Promise<HttpResult>;
+}
+
 interface CommitRequest {
   path?: Record<string, unknown>;
   parameters?: Record<string, unknown>;
@@ -258,39 +269,39 @@ function withChoice(request: CommitRequest, challenge: HttpResult): CommitReques
 
 interface CommitFixture {
   /** Commits needed before the request is valid (for example a saved set before renaming it). */
-  prepare?: (client: Client) => Promise<void>;
-  request: (client: Client) => Promise<CommitRequest>;
+  prepare?: (client: Actor) => Promise<void>;
+  request: (client: Actor) => Promise<CommitRequest>;
   /** Environment in which the operation is available when it is restricted to debug mode. */
   environment?: 'dev';
   /** A save variant the success path needs (the default save is used for the restriction cell). */
   save?: (state: GameState) => void;
   /** A request refused by an unlock or availability rule, with the expected stable code. */
-  locked?: (client: Client) => Promise<{ request: CommitRequest; code: string }>;
+  locked?: (client: Actor) => Promise<{ request: CommitRequest; code: string }>;
 }
 
 interface ReadFixture {
-  path?: (client: Client) => Promise<Record<string, unknown>>;
+  path?: (client: Actor) => Promise<Record<string, unknown>>;
   query?: Record<string, unknown>;
   missingPath?: Record<string, unknown>;
-  prepare?: (client: Client) => Promise<void>;
+  prepare?: (client: Actor) => Promise<void>;
   environment?: 'dev';
 }
 
-async function firstCharacterId(client: Client): Promise<number> {
+async function firstCharacterId(client: Actor): Promise<number> {
   const party = await client.read('read/build/party/{p}', { p: 1 }) as { current: { order: number[] } };
   return party.current.order[0];
 }
-async function characterPath(client: Client) { return { characterId: await firstCharacterId(client) }; }
+async function characterPath(client: Actor) { return { characterId: await firstCharacterId(client) }; }
 async function ownedItems(client: Client, category?: string): Promise<string[]> {
   const data = await client.read('read/base/searchItems', {}, { state: 'owned', ...(category ? { category } : {}) }) as { items: string[] };
   return data.items.map((entry) => entry.split('/').slice(0, 4).join('/'));
 }
-async function exportedBackup(client: Client): Promise<Uint8Array> {
+async function exportedBackup(client: Actor): Promise<Uint8Array> {
   const exported = await client.commitOk('commit/setting/backup/export', {});
   assert.ok(exported.bytes && exported.bytes.length > 0);
   return exported.bytes;
 }
-async function saveSet(client: Client): Promise<number> {
+async function saveSet(client: Actor): Promise<number> {
   const result = await client.commitOk('commit/build/character/{characterId}/saveEquipmentSet', { path: await characterPath(client), parameters: { equipmentSet: { name: 'Matrix' } } });
   return Number((result.body.data as { equipmentSetId?: number }).equipmentSetId ?? 1);
 }
@@ -471,9 +482,9 @@ const coveredElsewhere: Record<string, string> = {
 // Matrix execution.
 
 type Cell = 'success' | 'invalidInput' | 'staleRevision' | 'receiptReplay' | 'idempotencyConflict' | 'tombstone' | 'persistenceRollback'
-  | 'confirmationExpiry' | 'confirmationReplay' | 'restriction' | 'notFound' | 'readOnly';
-const COMMIT_CELLS: Cell[] = ['success', 'invalidInput', 'staleRevision', 'receiptReplay', 'idempotencyConflict', 'tombstone', 'persistenceRollback', 'confirmationExpiry', 'confirmationReplay', 'restriction'];
-const READ_CELLS: Cell[] = ['success', 'invalidInput', 'readOnly', 'notFound'];
+  | 'confirmationExpiry' | 'confirmationReplay' | 'restriction' | 'notFound' | 'readOnly' | 'parity';
+const COMMIT_CELLS: Cell[] = ['success', 'invalidInput', 'staleRevision', 'receiptReplay', 'idempotencyConflict', 'tombstone', 'persistenceRollback', 'confirmationExpiry', 'confirmationReplay', 'restriction', 'parity'];
+const READ_CELLS: Cell[] = ['success', 'invalidInput', 'readOnly', 'notFound', 'parity'];
 
 const results = new Map<string, Map<Cell, string>>();
 const failures: string[] = [];
@@ -727,8 +738,147 @@ async function runRead(operation: CatalogOperation) {
   }
 }
 
+// ---------------------------------------------------------------------------------------------------------------------
+// Stage 9.3: dual-adapter parity (Spec 9.1.4.13). Every operation with a fixture runs from the same save and clock through
+// the HTTP transport (an API account) and through the trusted in-process adapter (a fresh Application API whose runtime
+// has none of the ordinary player's live-only ports, so both describe the same actor). The command's result and the
+// complete observation afterwards must match after removing transport metadata and per-run random identifiers.
+
+class InProcessActor implements Actor {
+  private readonly adapter;
+  constructor(readonly api: ReturnType<typeof createApplicationApi>) { this.adapter = api.createInProcessAdapter(); }
+
+  async read(operationId: string, path: Record<string, unknown> = {}, query: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
+    const result = await this.adapter.read(operationId, { pathParameters: path, parameters: { ...path, ...query } }) as HttpResult['body'];
+    assert.equal(result.error, undefined, `${operationId}: ${JSON.stringify(result.error)}`);
+    return result.data as Record<string, unknown>;
+  }
+
+  async raw(operationId: string, path: Record<string, unknown> = {}, query: Record<string, unknown> = {}): Promise<HttpResult['body']> {
+    return await this.adapter.read(operationId, { pathParameters: path, parameters: { ...path, ...query } }) as HttpResult['body'];
+  }
+
+  async commitOk(operationId: string, request: CommitRequest): Promise<HttpResult> {
+    const uploadedFiles = Object.fromEntries(Object.entries(request.files ?? {}).map(([name, file]) => [name, {
+      mediaType: file.type, byteLength: file.bytes.length, sha256: createHash('sha256').update(file.bytes).digest('hex'),
+      contentBase64: Buffer.from(file.bytes).toString('base64'), validImageSignature: true,
+    }]));
+    let sent = request;
+    let body = await this.adapter.commit(operationId, { pathParameters: request.path, parameters: request.parameters ?? {}, uploadedFiles }) as HttpResult['body'];
+    if (body.error?.code === 'confirmation_required') {
+      sent = withChoice(request, { status: 409, body });
+      body = await this.adapter.commit(operationId, { pathParameters: request.path, parameters: sent.parameters ?? {}, uploadedFiles, confirmed: true }) as HttpResult['body'];
+    }
+    assert.equal(body.error, undefined, `${operationId}: ${JSON.stringify(body.error)}`);
+    const savePayload = (body.data as { savePayload?: unknown } | undefined)?.savePayload;
+    const bytes = operationId === 'commit/setting/backup/export' && typeof savePayload === 'string' ? new TextEncoder().encode(savePayload) : undefined;
+    return { status: 200, body, bytes, sent };
+  }
+}
+
+function inProcessApplication(variant?: (state: GameState) => void) {
+  const state = decodeApiSavePayload(encodeSave(variant));
+  let opaque = 0;
+  const localPorts: ApplicationApiPorts = {
+    ...ports,
+    runtime: {
+      ...ports.runtime,
+      createOpaqueId: () => `matrix-inprocess-${String(++opaque).padStart(16, '0')}`,
+      persistPlayer: async () => { if (failPersist) throw new Error('simulated disk failure'); },
+    },
+  };
+  return createApplicationApi(localPorts, state);
+}
+
+// Transport metadata and per-run random identifiers (opaque IDs, confirmation tokens, forecast seeds) are excluded.
+const VOLATILE_KEYS = new Set(['requestId', 'observedAt', 'committedAt', 'seedDomain', 'confirmationToken', 'expiresAt', 'leaseExpiresAt']);
+function normalize(value: unknown, extraVolatile: readonly string[] = []): unknown {
+  return JSON.parse(JSON.stringify(value, (key, entry) => {
+    if (VOLATILE_KEYS.has(key) || extraVolatile.includes(key)) return undefined;
+    if (typeof entry === 'string' && /^matrix-(opaque|inprocess)-\d+$/.test(entry)) return '<opaque-id>';
+    return entry;
+  }));
+}
+
+// The ordinary player's in-game time is the wall clock, while an API account's clock is advanced by its own elapsed
+// progression (Spec 9.1.4.4); for `commit/progress/elapsed` that difference is the actor's, not the adapter's.
+const ACTOR_CLOCK_KEYS: Record<string, readonly string[]> = { 'commit/progress/elapsed': ['inGameTime'] };
+
+/** A backup is compared by the save it contains, not by its encoded bytes. */
+function commandResult(result: HttpResult): unknown {
+  if (result.bytes) return normalize(JSON.parse(JSON.stringify(serializeGameState(decodeApiSavePayload(new TextDecoder().decode(result.bytes))))));
+  return normalize({ revision: result.body.revision, data: result.body.data });
+}
+
+/** Runs the delivery sender to completion so a queued report or feedback is settled on both sides before comparing. */
+async function settleDeliveries(api: ReturnType<typeof createApplicationApi>) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await api.pumpDeliveries();
+    await new Promise((resolve) => setImmediate(resolve));
+  }
+}
+
+async function httpObservation(client: Client, extraVolatile: readonly string[] = []) {
+  const observation = await client.send('read/observation');
+  return normalize(observation.body.data, extraVolatile);
+}
+
+async function runParity(filter: RegExp | null) {
+  for (const operation of contract.operations) {
+    const id = operation.operationId;
+    if (filter && !filter.test(id)) continue;
+    if (coveredElsewhere[id] || operation.access !== 'session') { record(id, 'parity', coveredElsewhere[id] ? `elsewhere: ${coveredElsewhere[id]}` : 'n/a: public operation without a save'); continue; }
+    await cell(id, 'parity', async () => {
+      if (id.startsWith('commit/')) {
+        const fixture = commitFixtures[id];
+        const environment = fixture.environment ?? 'prod';
+        const http = await withSession({ environment, save: fixture.save }, async (client) => {
+          await fixture.prepare?.(client);
+          const request = await fixture.request(client);
+          const result = await client.commitOk(id, request);
+          await settleDeliveries(application);
+          return { result: commandResult(result), observation: await httpObservation(client, ACTOR_CLOCK_KEYS[id]) };
+        });
+        setEnvironment(environment);
+        try {
+          const local = new InProcessActor(inProcessApplication(fixture.save));
+          await fixture.prepare?.(local);
+          const request = await fixture.request(local);
+          const result = await local.commitOk(id, request);
+          await settleDeliveries(local.api);
+          assert.deepEqual(commandResult(result), http.result, 'the command result differs between adapters');
+          assert.deepEqual(normalize((await local.raw('read/observation')).data, ACTOR_CLOCK_KEYS[id]), http.observation, 'the state afterwards differs between adapters');
+        } finally {
+          setEnvironment('prod');
+        }
+      } else {
+        const fixture = readFixtures[id] ?? {};
+        const environment = fixture.environment ?? 'prod';
+        const http = await withSession({ environment }, async (client) => {
+          const path = (await fixture.path?.(client)) ?? {};
+          await settleDeliveries(application);
+          const result = await client.send(id, { path, query: fixture.query });
+          assert.equal(result.status, 200, JSON.stringify(result.body));
+          return normalize({ revision: result.body.revision, data: result.body.data });
+        });
+        setEnvironment(environment);
+        try {
+          const local = new InProcessActor(inProcessApplication());
+          const path = (await fixture.path?.(local)) ?? {};
+          await settleDeliveries(local.api);
+          const result = await local.raw(id, path, fixture.query ?? {});
+          assert.equal(result.error, undefined, JSON.stringify(result.error));
+          assert.deepEqual(normalize({ revision: result.revision, data: result.data }), http, 'the read differs between adapters');
+        } finally {
+          setEnvironment('prod');
+        }
+      }
+    });
+  }
+}
+
+const only = process.env.MATRIX_ONLY ? new RegExp(process.env.MATRIX_ONLY) : null;
 try {
-  const only = process.env.MATRIX_ONLY ? new RegExp(process.env.MATRIX_ONLY) : null;
   for (const operation of contract.operations) {
     const id = operation.operationId;
     if (only && !only.test(id)) continue;
@@ -739,10 +889,12 @@ try {
     if (id.startsWith('commit/')) await runCommit(operation);
     else await runRead(operation);
   }
+  await runParity(only);
 } finally {
   await http.shutdown();
   fs.rmSync(connectionDirectory, { recursive: true, force: true });
 }
+
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Report: every applicable cell has an outcome, and no cell failed.
