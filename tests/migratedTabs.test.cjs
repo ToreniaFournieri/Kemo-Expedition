@@ -16,6 +16,7 @@ const DISPLAY_IMPORTS = {
   abilityLevelScales: ['abilityLevelValue'],
   attackProfile: ['formatAttackSpeedHelp'],
   deity: ['DEITY_OPTIONS', 'getDeityDisplayName', 'getDeityEffectDescription', 'getDeityKey', 'getDeityRank', 'isNoFaithDeity'],
+  enemyDisplay: ['getEnemyTypeShortName'],
   equipmentDisplay: ['replaceFlatItemStat'],
   gameState: ['getItemDisplayName'],
   jewel: ['getJewelDisplayName', 'getJewelOwnedCount', 'JEWELS_BY_ITEM_CATEGORY'],

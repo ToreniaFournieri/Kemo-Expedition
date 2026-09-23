@@ -1221,20 +1221,20 @@ export default function SettingTab({
   };
 
   const ENEMY_CLASS_LABELS: Record<string, string> = {
-    guardian: t('setting.bestiary.enemyClass.guardian'),
-    duelist: t('setting.bestiary.enemyClass.duelist'),
-    samurai: t('setting.bestiary.enemyClass.samurai'),
-    'sword-saint': t('setting.bestiary.enemyClass.sword-saint'),
-    ranger: t('setting.bestiary.enemyClass.ranger'),
-    striker: t('setting.bestiary.enemyClass.striker'),
-    ninja: t('setting.bestiary.enemyClass.ninja'),
-    wizard: t('setting.bestiary.enemyClass.wizard'),
-    sage: t('setting.bestiary.enemyClass.sage'),
-    alchemist: t('setting.bestiary.enemyClass.alchemist'),
-    pilgrim: t('setting.bestiary.enemyClass.pilgrim'),
-    lord: t('setting.bestiary.enemyClass.lord'),
-    fighter: t('setting.bestiary.enemyClass.fighter'),
-    rogue: t('setting.bestiary.enemyClass.rogue'),
+    guardian: t('masterData.class.guardian.name'),
+    duelist: t('masterData.class.duelist.name'),
+    samurai: t('masterData.class.samurai.name'),
+    'sword-saint': t('masterData.class.sword-saint.name'),
+    ranger: t('masterData.class.ranger.name'),
+    striker: t('masterData.class.striker.name'),
+    ninja: t('masterData.class.ninja.name'),
+    wizard: t('masterData.class.wizard.name'),
+    sage: t('masterData.class.sage.name'),
+    alchemist: t('masterData.class.alchemist.name'),
+    pilgrim: t('masterData.class.pilgrim.name'),
+    lord: t('masterData.class.lord.name'),
+    fighter: t('masterData.class.fighter.name'),
+    rogue: t('masterData.class.rogue.name'),
   };
 
   const getBestiaryEnemyBattleStats = (enemyId: number) => { const entry = bestiaryEntryById.get(enemyId); return entry ? { defeats: entry.defeats, encounters: entry.encounters } : { defeats: 0, encounters: 0 }; };
@@ -1912,10 +1912,10 @@ export default function SettingTab({
                 <div className="font-semibold">{t('setting.characterRoster.raceStats')}</div>
                 <button type="button" className="w-full text-left" title={t('setting.characterRoster.raceBaseStatsHelp')} onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', t('setting.characterRoster.baseStats', { vitality: selectedRosterEntry ? formatNumber(selectedRosterEntry.status.vitality) : '-', strength: selectedRosterEntry ? formatNumber(selectedRosterEntry.status.strength) : '-', intelligence: selectedRosterEntry ? formatNumber(selectedRosterEntry.status.intelligence) : '-', mind: selectedRosterEntry ? formatNumber(selectedRosterEntry.status.mind) : '-' }), event.currentTarget); }}>
                   <span className="grid grid-cols-4 gap-1">
-                    <span className="base-stat-chip">{t('common.stat.vitality')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.vitality) : '-'}</span>
-                    <span className="base-stat-chip">{t('common.stat.strength')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.strength) : '-'}</span>
-                    <span className="base-stat-chip">{t('common.stat.intelligence')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.intelligence) : '-'}</span>
-                    <span className="base-stat-chip">{t('common.stat.mind')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.mind) : '-'}</span>
+                    <span className="base-stat-chip">{t('stat.vitality')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.vitality) : '-'}</span>
+                    <span className="base-stat-chip">{t('stat.strength')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.strength) : '-'}</span>
+                    <span className="base-stat-chip">{t('stat.intelligence')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.intelligence) : '-'}</span>
+                    <span className="base-stat-chip">{t('stat.mind')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.mind) : '-'}</span>
                   </span>
                 </button>
                 <div className="text-xs text-gray-900 mt-1 leading-5">

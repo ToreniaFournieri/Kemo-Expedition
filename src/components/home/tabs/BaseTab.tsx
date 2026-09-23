@@ -892,7 +892,7 @@ function InventoryTab({
               {RARITY_FILTER_LABELS[filter]}
             </button>
           ))}
-          <span className="text-xs text-gray-500"> {t('party.equipment.superRare')}</span>
+          <span className="text-xs text-gray-500"> {t('diary.reward.superRare')}</span>
           <button
             onClick={() => setInventorySuperRareOnly(prev => !prev)}
             className={`text-xs px-1.5 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${

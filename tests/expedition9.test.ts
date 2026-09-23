@@ -5,7 +5,7 @@ import test from 'node:test';
 const dungeonSource = readFileSync(new URL('../src/data/dungeons.ts', import.meta.url), 'utf8');
 
 test('Expedition 9 uses the specified tier, enemy level, floors, and terrain effects', () => {
-  assert.match(dungeonSource, /9: \['Across the trenches', 'Military Road', 'Darden Field', 'Federation Encampment', 'Defensive line', 'Caninian Capital'\]/);
+  assert.match(dungeonSource, /9: \['Across the trenches', 'Military Road', 'Darsen Field', 'Federation Encampment', 'Defensive line', 'Caninian Capital'\]/);
   assert.match(dungeonSource, /9: \['terrain\.duelist-domain', 'terrain\.heavy-wind', 'terrain\.sniper-domain', 'terrain\.enemy-high-ground', 'terrain\.predation', 'terrain\.rejuvenation'\]/);
   assert.match(dungeonSource, /id: 9,\s+tier: 1,\s+expLevel: 44,[\s\S]*?enemyPoolIds: \[9\],\s+bossId: 135,[\s\S]*?floors: createFloors\(9, 135\)/);
 });

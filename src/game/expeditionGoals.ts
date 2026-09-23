@@ -32,7 +32,7 @@ export function shouldDelayNextSpecialGoal(party: Party, cycleState?: string): b
   const log = party.lastExpeditionLog;
   if (!log || log.finalOutcome !== 'Clear') return false;
   const lastEntry = log.entries[log.entries.length - 1];
-  return lastEntry?.roomType === 'battle_Boss' && (lastEntry.godsBattle || lastEntry.enemyName.includes(t('home.godsBattle.parenthetical')));
+  return lastEntry?.roomType === 'battle_Boss' && (lastEntry.godsBattle || lastEntry.enemyName.includes(t('game.log.godsBattleSuffix')));
 }
 
 /**

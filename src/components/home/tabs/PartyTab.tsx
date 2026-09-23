@@ -20,6 +20,7 @@ import { gameplayRandom } from '../../../game/gameplayRandom';
 import { DEITY_OPTIONS,getDeityDisplayName,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity } from '../../../game/deity';
 import { createDefaultEquipmentSetName,MAX_SAVED_EQUIPMENT_SETS,type EquipmentSetLoadMode } from '../../../game/equipmentSets';
 import { replaceFlatItemStat } from '../../../game/equipmentDisplay';
+import { getEnemyTypeShortName } from '../../../game/enemyDisplay';
 import { getItemDisplayName } from '../../../game/gameState';
 import { getJewelDisplayName,getJewelOwnedCount,JEWELS_BY_ITEM_CATEGORY } from '../../../game/jewel';
 import { resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../../game/magic';
@@ -270,19 +271,19 @@ export default function PartyTab({
 
       if (combatTotals.vitality !== prev.vitality) {
         const isPositive = combatTotals.vitality > prev.vitality;
-        changes.push({ message: formatStatChange('common.stat.vitality', formatNumber(prev.vitality), formatNumber(combatTotals.vitality)), isPositive });
+        changes.push({ message: formatStatChange('stat.vitality', formatNumber(prev.vitality), formatNumber(combatTotals.vitality)), isPositive });
       }
       if (combatTotals.strength !== prev.strength) {
         const isPositive = combatTotals.strength > prev.strength;
-        changes.push({ message: formatStatChange('common.stat.strength', formatNumber(prev.strength), formatNumber(combatTotals.strength)), isPositive });
+        changes.push({ message: formatStatChange('stat.strength', formatNumber(prev.strength), formatNumber(combatTotals.strength)), isPositive });
       }
       if (combatTotals.intelligence !== prev.intelligence) {
         const isPositive = combatTotals.intelligence > prev.intelligence;
-        changes.push({ message: formatStatChange('common.stat.intelligence', formatNumber(prev.intelligence), formatNumber(combatTotals.intelligence)), isPositive });
+        changes.push({ message: formatStatChange('stat.intelligence', formatNumber(prev.intelligence), formatNumber(combatTotals.intelligence)), isPositive });
       }
       if (combatTotals.mind !== prev.mind) {
         const isPositive = combatTotals.mind > prev.mind;
-        changes.push({ message: formatStatChange('common.stat.mind', formatNumber(prev.mind), formatNumber(combatTotals.mind)), isPositive });
+        changes.push({ message: formatStatChange('stat.mind', formatNumber(prev.mind), formatNumber(combatTotals.mind)), isPositive });
       }
 
       // Check all stat changes and collect them
@@ -382,9 +383,9 @@ export default function PartyTab({
         changes.push({ message: `${t('party.bonus.penet')} ${formatNumber(prev.penet)} → ${formatNumber(combatTotals.penet)}`, isPositive });
       }
       const elementalLabels: Record<Exclude<ElementalOffense, 'none'>, string> = {
-        fire: t('common.element.fire.short'),
-        ice: t('common.element.ice.short'),
-        thunder: t('common.element.thunder.short'),
+        fire: t('element.fire.short'),
+        ice: t('element.ice.short'),
+        thunder: t('element.thunder.short'),
       };
       const prevElementPercents: Record<Exclude<ElementalOffense, 'none'>, number> = {
         fire: 0,
@@ -764,10 +765,10 @@ export default function PartyTab({
   };
 
   const baseStatMultiplierRows = [
-    { label: t('common.stat.vitality'), value: stats.baseStats.vitality, note: t('home.party.physicalResistance'), ratio: getBaseDefenseScale(stats.baseStats.vitality) },
-    { label: t('common.stat.strength'), value: stats.baseStats.strength, note: t('home.party.physicalAttackMultiplier'), ratio: getBaseOffenseScale(stats.baseStats.strength) },
-    { label: t('common.stat.intelligence'), value: stats.baseStats.intelligence, note: t('home.party.magicalAttackMultiplier'), ratio: getBaseOffenseScale(stats.baseStats.intelligence) },
-    { label: t('common.stat.mind'), value: stats.baseStats.mind, note: t('home.party.magicalResistance'), ratio: getBaseDefenseScale(stats.baseStats.mind) },
+    { label: t('stat.vitality'), value: stats.baseStats.vitality, note: t('home.party.physicalResistance'), ratio: getBaseDefenseScale(stats.baseStats.vitality) },
+    { label: t('stat.strength'), value: stats.baseStats.strength, note: t('home.party.physicalAttackMultiplier'), ratio: getBaseOffenseScale(stats.baseStats.strength) },
+    { label: t('stat.intelligence'), value: stats.baseStats.intelligence, note: t('home.party.magicalAttackMultiplier'), ratio: getBaseOffenseScale(stats.baseStats.intelligence) },
+    { label: t('stat.mind'), value: stats.baseStats.mind, note: t('home.party.magicalResistance'), ratio: getBaseDefenseScale(stats.baseStats.mind) },
   ];
 
   const hpBaseIncrease = stats.hpBaseIncrease;
@@ -1143,7 +1144,7 @@ export default function PartyTab({
             : undefined;
           const mimorianEnemyRank = mimorianEnemy?.type === 'boss' ? 'B' : mimorianEnemy?.type === 'elite' ? 'E' : 'N';
           const mimorianListDescriptor = mimorianEnemy
-            ? `${t(`masterData.enemyType.${mimorianEnemy.enemyType}.short`)}/${mimorianEnemyRank}`
+            ? `${getEnemyTypeShortName(mimorianEnemy.enemyType)}/${mimorianEnemyRank}`
             : '-/N';
           const uniquePreviewImageFileName = c.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[c.lineageId] : undefined;
           const previewMimorianEnemyImageSrc = c.raceId === 'mimorian' && c.mimorianEnemyId != null
@@ -1514,7 +1515,7 @@ export default function PartyTab({
                   <>
                     <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">{t('home.party.mainClass')}</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? t('party.class.masterFull') : ''} |{' '}
+                        <span className="font-bold">{t('home.party.mainClass')}</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? t('party.class.master') : ''} |{' '}
                         {selectedMainBonusEntries.map((entry, index) => (
                           <Fragment key={entry.key}>
                             {index > 0 && ', '}
@@ -2233,10 +2234,11 @@ export default function PartyTab({
               const bonusDisplayEntries: BonusDisplayEntry[] = [];
               const helpRows: Array<{ label: string; description: string }> = [];
               const bonusLabel = (key: string): string => t(`party.bonus.${key}`);
+              const categoryLabel = (key: string): string => t(`party.categoryShort.${key}`);
               const mulNames: Record<string, string> = {
-                sword: bonusLabel('sword'), katana: bonusLabel('katana'), archery: bonusLabel('archery'), armor: bonusLabel('armor'),
-                gauntlet: bonusLabel('gauntlet'), wand: bonusLabel('wand'), robe: bonusLabel('robe'), shield: bonusLabel('shield'),
-                bolt: bonusLabel('bolt'), grimoire: bonusLabel('grimoire'), catalyst: bonusLabel('catalyst'), arrow: bonusLabel('arrow'),
+                sword: categoryLabel('sword'), katana: categoryLabel('katana'), archery: categoryLabel('archery'), armor: categoryLabel('armor'),
+                gauntlet: categoryLabel('gauntlet'), wand: categoryLabel('wand'), robe: categoryLabel('robe'), shield: categoryLabel('shield'),
+                bolt: categoryLabel('bolt'), grimoire: categoryLabel('grimoire'), catalyst: categoryLabel('catalyst'), arrow: categoryLabel('arrow'),
                 physical_offense_multiplier_xV: bonusLabel('physical_offense_multiplier_xV'), magical_offense_multiplier_xV: bonusLabel('magical_offense_multiplier_xV'),
                 physical_defense_multiplier_xV: bonusLabel('physical_defense_multiplier_xV'), magical_defense_multiplier_xV: bonusLabel('magical_defense_multiplier_xV'),
                 fire_defense_multiplier_xV: bonusLabel('fire_defense_multiplier_xV'), ice_defense_multiplier_xV: bonusLabel('ice_defense_multiplier_xV'), thunder_defense_multiplier_xV: bonusLabel('thunder_defense_multiplier_xV')
@@ -2842,7 +2844,7 @@ export default function PartyTab({
                     {RARITY_FILTER_LABELS[filter]}
                   </button>
                 ))}
-                <span className="text-xs text-gray-500"> {t('party.equipment.superRare')}</span>
+                <span className="text-xs text-gray-500"> {t('diary.reward.superRare')}</span>
                 <button
                   onClick={() => setPartySuperRareOnly(prev => !prev)}
                   className={`text-xs px-1.5 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${

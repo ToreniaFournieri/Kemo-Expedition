@@ -156,6 +156,30 @@ export function getBonusAbilityDescription(abilityId: AbilityId): string {
   return t(bonusAbilityTranslationKey(abilityId, 'description'));
 }
 
+// The level scales above are the canonical Spec 1.1 text (Japanese). Each rule maps one Japanese
+// pattern onto a localized template; the Japanese templates reproduce the canonical text exactly.
+const LEVEL_SCALE_VALUE_RULES: Array<[RegExp, (match: RegExpMatchArray) => string]> = [
+  [/^反射(\S+?)・被弾(\S+)$/u, ([, reflect, taken]) => t('ability.levelScale.reflectTaken', { reflect, taken })],
+  [/^命中(\S+?)・回避(\S+)$/u, ([, accuracy, evasion]) => t('ability.levelScale.accuracyEvasion', { accuracy, evasion })],
+  [/^(\S+)\/回$/u, ([, value]) => t('ability.levelScale.perHit', { value })],
+  [/^失ったHP1%につき(\S+)$/u, ([, value]) => t('ability.levelScale.perHpLost', { value })],
+  [/^可視化＋リセット$/u, () => t('ability.levelScale.revealReset')],
+  [/^可視化$/u, () => t('ability.levelScale.reveal')],
+  [/^遠距離＋近距離$/u, () => t('ability.levelScale.rangedMelee')],
+  [/^遠距離$/u, () => t('ability.levelScale.ranged')],
+];
+
+export function localizeLevelScale(levelScale: string): string {
+  const match = /^(Lv\d+:\s*)(.*)$/u.exec(levelScale);
+  if (!match) return levelScale;
+  const [, prefix, value] = match;
+  for (const [pattern, format] of LEVEL_SCALE_VALUE_RULES) {
+    const valueMatch = pattern.exec(value);
+    if (valueMatch) return `${prefix}${format(valueMatch)}`;
+  }
+  return levelScale;
+}
+
 function getBonusAbilityLevelScale(entry: BonusAbilityGlossaryEntry): string[] {
   if (entry.abilityId === 'illusion') {
     return [t('ability.illusion.levelScale.1'), t('ability.illusion.levelScale.2')];
@@ -167,7 +191,7 @@ function getBonusAbilityLevelScale(entry: BonusAbilityGlossaryEntry): string[] {
       t('ability.first_strike.levelScale.3'),
     ];
   }
-  return entry.levelScale;
+  return entry.levelScale.map(localizeLevelScale);
 }
 
 export const LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES: LocalizedBonusAbilityGlossaryEntry[] = BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => ({
