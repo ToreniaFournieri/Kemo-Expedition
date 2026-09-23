@@ -125,7 +125,7 @@ export class PersistenceCoordinator {
     this.persistedLogKeys = getPersistedDiaryLogKeys(options.storage.getItem(options.storageKey));
   }
 
-  // SpecRef: 9.1.3 | Experimental AI API | Evaluation transactions
+  // SpecRef: 9.1.4.4 | Commit, revision, and idempotency contract | one serialized transaction
   // API transactions need immediate failure, not background retry of an uncommitted state.
   commitAtomic(state: GameState): void {
     if (this.stopped) throw new PersistenceShutdownError();

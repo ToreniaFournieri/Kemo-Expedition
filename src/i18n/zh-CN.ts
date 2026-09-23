@@ -108,6 +108,7 @@ const zhCN = {
 'home.notification.shopBought': '从商店购买了{item}！',
 'home.notification.shopPurchasedItemFallback': '{item} x1',
 'home.notification.characterRefusedExpedition': '{character}已疲惫不堪，拒绝出击',
+  'home.notification.characterEditFailed': '{character}：无法应用编辑（{reason}）',
 'home.notification.partyAlreadyMovingToGodBattle': '{party}已经正在向神魔战移动',
 'home.notification.instantExpeditionChargeInsufficient': '{party}的即时出击充能不足',
 'home.notification.instantExpeditionWithStolenGold': '{party}对神的紧急动员感到愤怒，卷走{gold}G后即时出击',

@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 100. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 101. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -18,7 +18,7 @@ This document supersedes the earlier "Build 23" plan. Stages are numbered once, 
 | 6 | Base, inventory, shop, Altar | Done (UI projection complete) |
 | 7 | Diary and popup streaming | Complete |
 | 8 | Settings, files, delivery, Help, Resources | Complete (Build 100) |
-| 9 | Conformance hardening and public cutover | Not started |
+| 9 | Conformance hardening and public cutover | In progress (9.0 done, Build 101) |
 
 ## Done so far
 
@@ -72,7 +72,7 @@ What the API still cannot see is the live party cycle (`partyCycles`: `state`, `
 
 The runtime port now serves the projections too (Build 71): real `state`, its clock, and the no-spoiler rule are done for `expedition`, `compact`, and the default `latestBattleLog`. Build 72 added step counts and sub-progress, server-gated exploration (`exploration.rooms`, `nextRevealAt`), Clear-Gate and side-quest facts from shared `src/game/expeditionGoals.ts`, and the sortie and Gods Battle controls with unavailable reasons (`src/api/v1/sortieAvailability.ts`, shared with the commit, which now also refuses `entry_gate_locked`). Build 73 added the `overview` header facts (Speed of Time, auto-repeat, progress-report state) through a runtime `headerRuntime` port. Build 77 migrated the Expedition pane rows and their timed refresh to the projection. Build 78 completed E3: the tab reads each party's `latestBattleLog` projection through the trusted adapter, and `src/api/v1/expeditionLogView.ts` rebuilds the renderer view from projected summary/room facts while retaining only the language-neutral/legacy narration details needed for display.
 
-**Header migration (done, Build 92).** `src/components/home/HeaderBar.tsx` renders the fixed top bar from `read/observation/overview`'s `headerInfo` through a pure view builder (`src/api/v1/headerView.ts`); the existing Speed-of-Time symbol/label logic (including the orca-mode `x5`→`x6` bonus case) is ported unchanged, re-keyed to the projected `speedOfTime`/`gameMode` facts instead of local debug-settings refs, and gold reads `headerInfo.gold` instead of `state.global.gold`. Two controls stay reviewed local exceptions, each with its reason recorded: Report Progress still performs its own webhook call directly (`commit/progress/progressReport` exists but has no real network sender until Stage 8's delivery-sender work), and auto-repeat stays local/runtime state (it is one field of the spec's bundled `commit/setting/modeSelect`, §2-6-2/§3-6-2 of `Specification_9.1.3_API.md` — explicit Stage 8 scope, not a header-only concern). Both reviewed calls live in a named `handleReportProgress` handler outside the guarded JSX, matching the Expedition/Diary precedent. `tests/migratedTabs.test.cjs` covers the header the same way as every other migrated area.
+**Header migration (done, Build 92).** `src/components/home/HeaderBar.tsx` renders the fixed top bar from `read/observation/overview`'s `headerInfo` through a pure view builder (`src/api/v1/headerView.ts`); the existing Speed-of-Time symbol/label logic (including the orca-mode `x5`→`x6` bonus case) is ported unchanged, re-keyed to the projected `speedOfTime`/`gameMode` facts instead of local debug-settings refs, and gold reads `headerInfo.gold` instead of `state.global.gold`. Two controls stay reviewed local exceptions, each with its reason recorded: Report Progress still performs its own webhook call directly (kept by decision after Build 100: progress reports cannot be submitted from the desktop version or through the API, so there is nothing to migrate), and auto-repeat stays local/runtime state (by decision after Build 100, `Specification_9.1.3_API.md` §3-6-2 now says `autoRepeat` is an exception and is not controlled through the API; see Stage 9.1b). Both reviewed calls live in a named `handleReportProgress` handler outside the guarded JSX, matching the Expedition/Diary precedent. `tests/migratedTabs.test.cjs` covers the header the same way as every other migrated area.
 
 **Stage 4 is complete.**
 
@@ -91,7 +91,7 @@ Next, in order:
      - 4c-1. (Done, Build 49) Party pane, party selector, member list, and deity rules render from `read/observation/party` through `PartyView` and `PartySummary`.
      - 4c-2. (Done, Build 51) Offense and defense amplifiers, effective accuracy and decay, and total penetration come from one shared game function (`src/game/statusFacts.ts`), are published as `calculatedStatus` facts, and the tab reads them for its offense and defense lines and for the status-change notifications. Lossless round-trip test against the old formulas.
      - 4c-3. (Done, Build 54) The tab receives no `ComputedCharacterStats`: every character number it reads is rebuilt from `calculatedStatus` (`buildPartyStatsView`), and the edit warnings come from `changeBuild`'s simulation (Build 53). Its remaining game-logic calls are pure functions on the projected display objects (bonus list, HP breakdown, item stat text, and the equipped-item defense preview).
-   - Open question for the spec: the defense preview when hovering or tapping an item recomputes one hypothetical equipment change locally. If it should be API-owned, `equip` would need a `simulation` parameter like `changeBuild`.
+   - (Resolved, Build 64) The defense preview when hovering or tapping an item uses `2-3-5 equipmentEvaluation` (`equipmentChanges`); the tab only formats the returned deltas. No `simulation` parameter on `equip` is needed.
    - 4d. (Done, Build 49) The equipment slot list renders from the party projection's equipment entries; mode and Undo/Redo come from the `equipment` projection.
    - 4e. (Done, Build 59) The inventory category is a per-character `uiPreferences` entry (`party.equipCategory.<characterId>`), stored per save and published with the closed catalog in `settingInfo`. `selectedPartyIndex` stays in the shared game state (decided). The selected character and the rarity and Super Rare filters remain local view context; add catalog entries if 8.2 requires retaining them.
    - 4f. (Done, Builds 60, 63–64) The tab receives only projected views (`PartyView`, `PartySummary`, projected inventory and Jewel counts, `CalculatedStatus`) and no raw game state. `tests/migratedTabs.test.cjs` is the mechanical check (reviewed imports, no reducer or `GameState`, no `state.` props, only `addStatNotifications` and `selectParty` actions). Build 63 moved saved-set availability and stable per-entry reasons into `equipmentSet`. Build 64 added independent slot-aware replacement/removal previews to the read-only `equipmentEvaluation`; the tab now formats returned defense deltas instead of importing `computeCharacterStats` or `replaceCharacterEquipment`. The localized random default name on a race change remains intentionally at the presentation boundary as an unsaved Spec 8.2.3 draft behavior, not an Application API gameplay calculation. Apply the same check to each tab as it migrates.
@@ -135,20 +135,32 @@ Most of this stage's settings/backup machinery already exists and works, found w
 
 ## Stage 9 — Conformance hardening and public cutover
 
-Conformance matrix, for every applicable operation: success, invalid input, stale revision, receipt replay, idempotency conflict, tombstone rejection, persistence rollback, confirmation expiry and replay, environment and unlock restrictions, no partial mutation.
+### Decisions (after Build 100)
 
-Lifecycle coverage: simultaneous duplicates, lost responses, receipt eviction, login catch-up, account switching and crash recovery, renderer loss, lease expiry, SSE reconnect and resync, import/reset fencing, shutdown draining, external-delivery ambiguity. Run canonical fixtures through both adapters and compare after excluding transport metadata.
+- **Report Progress** (header button) stays a reviewed local exception. Progress reports cannot be submitted from the desktop version or through the API.
+- **Auto-repeat** is not controlled through the API (`Specification_9.1.3_API.md` §3-6-2 note). It stays `HomeScreen` runtime state.
+- **Mode Select echo bug.** `commit/setting/modeSelect` merges `theme`, `darkMode`, `showExpeditionStats`, and `autoRepeat` into `control.settings` and `read/setting/modeSelect` echoes them back, so a read can disagree with the real game (`commitOperations.ts` `commit/setting/modeSelect`, `readModels.ts` `read/setting/modeSelect`). `theme`, `darkMode`, and `showExpeditionStats` must be fixed (9.1a); `autoRepeat` must stop being accepted (9.1b).
+- **API option** (`Specification_8.6_UI_SETTING.md`, API option): `Application API v1` is a persisted boolean with a confirmation dialog before enabling, and a `secretToken` generated on enable. See the open question in 9.6.
+- **Defense preview** is already API-owned (Stage 5, resolved).
 
-**UI ownership audit.** For every screen control and state value, classify it as projection-owned, explicit-commit-owned, local-only, or trusted-desktop-only. Cutover is blocked if a migrated screen reads the complete persisted save directly, mutates the reducer outside the Application API, persists UI state under an undocumented key, or receives privileged desktop data through a generic bridge.
+### Known gaps found while planning
 
-Add a mechanical check so this does not rely on review: a test that fails if a migrated tab file imports reducer actions or the full `GameState` for an area marked migrated. `HomeScreen.tsx` (about 5,200 lines) and `useGameState.ts` (about 5,300 lines) make manual audits easy to miss.
+- Stage 1's gate ("every operation has one in-process and one HTTP parity fixture") is not met: only a few operations have a parity check.
+- A text search finds no test naming `stale_revision` or confirmation expiry; the conformance matrix probably starts with real gaps.
+- `tests/migratedTabs.test.cjs` covers every migrated tab and the header, but not `HomeScreen.tsx` itself (82 `actions.` references at Build 100).
 
-**Cutover.**
-- Change the production `allowEnable` gate to a public opt-in and show the API settings panel in packaged desktop builds.
-- Keep loopback-only binding and the secure connection file. Confirm the bootstrap token never appears in the DOM, logs, URLs, help, or saves.
-- Search-verify that no runtime route, alias, script, or test references the retired endpoint.
-- Run `npm test`, `npm run build`, `npm run api:v1:check`, `npm run test:api:desktop`, the persistence-failure suites, and the relevant AFK/performance suites.
-- Per AGENTS.md the build number increments after every runtime change; the cutover build gets its own changelog entry.
+### Slices
+
+1. **9.0 (done, Build 101): cleanup.** Real SpecRefs, the unused `getExperimentalDiaryTitle` removed, a localized notification for a rejected character edit, stale test names.
+2. **9.1a: Mode Select settings.** `theme`, `darkMode`, and `showExpeditionStats` read and commit the real values, through runtime ports where they live outside the save (the sortie precedent), so the Settings UI and the API cannot disagree. The Settings panel commits through `commit/setting/modeSelect`.
+3. **9.1b: auto-repeat exception.** Remove `autoRepeat` from `commit/setting/modeSelect`'s parameters (rejected by schema); `read/setting/modeSelect` reports the real runtime value (`null` for an API account, matching `overview`). Record it as a reviewed exception in the ownership audit.
+4. **9.2: conformance matrix harness.** One table-driven test that reads the catalog (including per-operation error lists), derives which cases apply, and fails on a missing cell: success, invalid input, stale revision, receipt replay, idempotency conflict, tombstone rejection, persistence rollback, confirmation expiry and replay, environment and unlock restrictions, no partial mutation. Commits first.
+5. **9.3: dual-adapter parity.** Canonical fixtures through the in-process and HTTP adapters, compared after excluding transport metadata; extend `tests/apiV1SampleSave.test.cjs` to both adapters. Closes the Stage 1 gate.
+6. **9.4: lifecycle coverage.** Simultaneous duplicates, lost responses, receipt eviction, login catch-up, account switching and crash recovery, renderer loss, lease expiry, shutdown draining. SSE reconnect/resync, import/reset fencing, and external-delivery ambiguity already have suites; fold them into the matrix.
+7. **9.5: UI ownership audit.** Classify every control and state value in `HomeScreen.tsx` and each tab as projection-owned, explicit-commit-owned, local-only, or trusted-desktop-only. Record the reviewed exceptions (Vault, Send Feedback, Report Progress, auto-repeat, `selectParty`, `runtimeSnapshot`, and whatever the audit finds) and extend the guard so an unlisted `actions.` use in `HomeScreen.tsx` fails. Cutover is blocked if a migrated screen reads the complete persisted save directly, mutates the reducer outside the Application API, persists UI state under an undocumented key, or receives privileged desktop data through a generic bridge.
+8. **9.6: API option and security.** Implement the 8.6 API option: persisted enable state (stored by the desktop main process, not in the game save, so an imported save never turns the API on), the confirmation dialog, and the `secretToken`. Tests that the token never appears in logs, URLs, help, or saves; loopback-only binding; the retired-endpoint search (excluding `AI_play_report/`).
+   - Open question: `Specification_9.1.4_API_DETAIL.md` §9.1.4.6 says the bootstrap token is created per process launch and never appears in the UI DOM, while 8.6 lists `secretToken` as a Setting item generated on enable. Whether the token is displayed in the Setting tab, and whether it survives a restart, must be decided before 9.6; 9.1.4.6 is then updated to follow.
+9. **9.7: cutover.** Remove the `--api-v1-test` gate (`desktop/main.cjs` `allowEnable`), show the API option in packaged desktop builds, run `npm test`, `npm run build`, `npm run api:v1:check`, `npm run test:api:desktop`, the persistence-failure suites, and the relevant AFK/performance suites. The cutover build gets its own changelog entry.
 
 ## Test data
 
@@ -156,20 +168,20 @@ Add a mechanical check so this does not rely on review: a test that fails if a m
 
 ## Cleanup to schedule
 
-- `src/api/v1/battleLogs.ts` lines 88 and 150 carry `SpecRef: 9.1.3 | Experimental AI API`, a title that does not exist in the spec (violates section 10.3). Point them at real 9.1.3 / 9.1.4 sections.
-- Rename `getExperimentalDiaryTitle` in `src/components/home/homeShared.tsx`.
-- `playing_guide/Playing_Guide_Recommended_Opening_Build.md` is still titled "Experimental API".
+- (Done, Build 101) The `SpecRef: 9.1.3 | Experimental AI API` comments were in `shop.ts`, `savePersistence.ts`, `battleSeedSource.ts`, and `gameplayRandom.ts` (not `battleLogs.ts`); they now point at real sections. `Specification_6.1_BATTLE.md` and `Specification_8.3_UI_EXPEDITION.md` still mention the old title (human-owned).
+- (Done, Build 101) `getExperimentalDiaryTitle` had no callers and was removed.
+- `playing_guide/Playing_Guide_Recommended_Opening_Build.md` is still titled "Experimental API", and its body describes the retired API (`_legalActions`, Specification 12.2). Retitling alone would mislead; it needs a rewrite for `/api/v1` or retirement (owner decision).
 - `AI_play_report/` holds retired evaluation reports; section 12 says they are inert. The cutover retired-endpoint search should exclude the directory explicitly.
-- Show a user-facing message when a rejected character edit fails (currently console-only).
+- (Done, Build 101) A rejected character edit shows a localized notification.
 
 ## Recommended order
 
 1. ~~Stage 7 D4: complete the SSE lifecycle over the durable D3 event buffer.~~ (Done, Build 91.)
 2. ~~Finish the Stage 4 header UI migration.~~ (Done, Build 92.)
 3. ~~Stage 8.~~ Complete in Build 100: all Resource contracts, backup/import/reset, Help, the delivery sender, the small/high-value Settings panels, and the five large reference panels are implemented. Send Feedback remains an intentionally reviewed local exception by user decision.
-4. Stage 9 (conformance matrix, ownership audit, cutover).
+4. Stage 9, in the slice order above: 9.1a/9.1b (Mode Select), then 9.2 and 9.5 (their results size 9.3 and 9.4), then 9.6 once the `secretToken` question is decided, then 9.7.
 
-## Expedition tab migration (in progress)
+## Expedition tab migration (complete)
 
 Slices, in order:
 - **E1 (done, Build 74): commands.** Destination, mode, depth limit, and difficulty offset changes are `changeExpedition` commits, now validated against the same shared choices that `read/expedition/{p}/setting` publishes (`src/game/expeditionSettings.ts`). The Sortie and Gods Battle buttons commit through the API (`triggerSortie` keeps only its popups).

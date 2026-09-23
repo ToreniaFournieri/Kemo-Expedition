@@ -108,6 +108,7 @@ const en = {
   'home.notification.shopBought': 'Bought {item} from the shop!',
   'home.notification.shopPurchasedItemFallback': '{item} x1',
   'home.notification.characterRefusedExpedition': '{character} is exhausted and refused to sortie',
+  'home.notification.characterEditFailed': '{character}: the edit could not be applied ({reason})',
   'home.notification.partyAlreadyMovingToGodBattle': '{party} is already moving toward a God Battle',
   'home.notification.instantExpeditionChargeInsufficient': '{party} does not have enough instant expedition charge',
   'home.notification.instantExpeditionWithStolenGold': '{party} resented the god’s emergency mobilization, ran off with {gold}G, and started an instant expedition',

@@ -108,6 +108,7 @@ const ja = {
   'home.notification.shopBought': '店から {item} を購入した！',
   'home.notification.shopPurchasedItemFallback': '{item} x1',
   'home.notification.characterRefusedExpedition': '{character} は疲弊しており出撃を拒否した',
+  'home.notification.characterEditFailed': '{character}：編集を適用できませんでした（{reason}）',
   'home.notification.partyAlreadyMovingToGodBattle': '{party} は既に神魔戦へ向けて移動中だ',
   'home.notification.instantExpeditionChargeInsufficient': '{party} の即時出撃チャージが不足している',
   'home.notification.instantExpeditionWithStolenGold': '{party}は神の緊急動員に憤り、{gold}Gを持ち逃げして即時出撃した',

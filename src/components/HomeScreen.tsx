@@ -5309,6 +5309,8 @@ export function HomeScreen({
             });
             if (response.error) {
               console.error('[api-v1] Character build change failed', response.error);
+              const reason = (response.error as { code?: unknown }).code;
+              actions.addNotification(t('home.notification.characterEditFailed', { character: target.name, reason: String(reason ?? 'error') }), 'normal', 'stat', false);
               return failed;
             }
             const data = response.data as { confirmationRequired: boolean; warnings: CharacterBuildOutcome['warnings']; applied: boolean };

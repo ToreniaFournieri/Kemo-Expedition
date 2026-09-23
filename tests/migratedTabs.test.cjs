@@ -64,9 +64,10 @@ test('HomeScreen gives the Party tab projections and commits, not raw game state
   // A prop whose value is a direct read of the save (`prop={state.…}`) bypasses the projections.
   const rawReads = [...jsx.matchAll(/^\s+([A-Za-z]+)=\{state\./gm)].map((match) => match[1]);
   assert.deepEqual(rawReads, [], `Party tab props read the game state directly: ${rawReads.join(', ')}`);
-  // Reducer actions passed to the tab: only a local toast and the shared party selection remain (the selected party stays in the game state).
+  // Reducer actions passed to the tab: only local toasts (stat changes, a rejected character edit) and the shared party
+  // selection remain (the selected party stays in the game state).
   const actions = [...jsx.matchAll(/actions\.([A-Za-z]+)/g)].map((match) => match[1]);
-  assert.deepEqual([...new Set(actions)].sort(), ['addStatNotifications', 'selectParty'], 'only the reviewed reducer actions may be passed to the Party tab');
+  assert.deepEqual([...new Set(actions)].sort(), ['addNotification', 'addStatNotifications', 'selectParty'], 'only the reviewed reducer actions may be passed to the Party tab');
 });
 
 test('the Party tab takes no character-stat, inventory, or party game objects other than projected views', () => {
@@ -80,7 +81,7 @@ test('the Party tab takes no character-stat, inventory, or party game objects ot
   assert.match(source, /stats\.raceUnlockActive/, 'the race unlock state is a projected fact');
 });
 
-test('Expedition controls are Application API commits, not reducer actions (migration in progress)', () => {
+test('Expedition controls are Application API commits, not reducer actions', () => {
   const home = read('src/components/HomeScreen.tsx');
   const start = home.indexOf('<ExpeditionTab');
   const jsx = home.slice(start, home.indexOf('\n        />', start));
@@ -166,7 +167,7 @@ test('a disabled multi-read keeps its last result, so a hidden tab never returns
   assert.doesNotMatch(many, /if \(!adapter \|\| !inputs[^)]*\) \{ setData\(null\)/);
 });
 
-test('the Shop pane draws the Base projection and buys and refreshes through the Application API (migration in progress)', () => {
+test('the Shop pane draws the Base projection and buys and refreshes through the Application API', () => {
   const home = read('src/components/HomeScreen.tsx');
   const tab = read('src/components/home/tabs/BaseTab.tsx');
   const start = home.indexOf('<BaseTab');

@@ -30,7 +30,7 @@ export function resetGameplayRandomForTesting(testSource: GameplayRandomSource =
   source = testSource;
 }
 
-// SpecRef: 9.1.3 | Experimental AI API | Evaluation transactions
+// SpecRef: 9.1.4.4 | Commit, revision, and idempotency contract | one serialized transaction
 export const withGameplayRandomSource = withGameplayRandomSourceForTesting;
 export function createApiRandom(seed: number) {
   let state = seed >>> 0;

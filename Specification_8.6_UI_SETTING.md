@@ -407,7 +407,6 @@ HP: 312                 タイプ: 神魔
 
 
 - macOS通知
-
 * API option
   * `Application API v1`
     * Boolean.
@@ -417,6 +416,12 @@ HP: 312                 タイプ: 神魔
     * Secret token used to authenticate Application API v1 requests.
     * Generated when Application API v1 is enabled.
     * Keep this token confidential.
+  * `persistSecretToken`
+    * Boolean.
+    * Dedfault: `true`
+    * If `true`, persist the current secret token across application launches.
+    * If `false`, generate a new secret token on every application launch.
+
 
 
 **Feedback フィードバック**

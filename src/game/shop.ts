@@ -107,7 +107,7 @@ function getShopItemRarity(itemId: number): ShopLineupEntry['rarity'] {
 }
 
 // SpecRef: 8.4.1 | Shop (お店) | Lineup
-// SpecRef: 9.1.3 | Experimental AI API | Shop observation
+// SpecRef: 9.1.3 | Read | 2-4-3 shopInfo
 export function buildShopLineup(input: ShopLineupInput, now: Date) {
   const elapsedRefreshes = countElapsedShopRefreshes(input.shopIntimacyLastDecayAt, now);
   const effectiveIntimacy = Math.max(0, Math.floor(input.shopIntimacy * (0.9 ** elapsedRefreshes)));

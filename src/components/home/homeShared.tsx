@@ -1,5 +1,4 @@
 import { upgradeLegacyOutcomeKeys } from '../../game/legacyOutcomeKeys';
-import { renderDiaryMetadata } from '../../game/compactDiary.ts';
 import { Fragment,useEffect,useState,type CSSProperties,type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ABILITY_BASE_NAMES } from '../../data/abilityNames';
@@ -63,7 +62,7 @@ REST_HEAL_MIN_HP,
 } from '../../game/restHealing';
 import { Language,t } from '../../i18n';
 import type { AfkPartyTransactionAttribution,AfkPartyTransactionPlanner } from '../../hooks/useGameState';
-import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type BattleLogEntry } from '../../types';
+import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type BattleLogEntry } from '../../types';
 
 export function resolvePublicAssetPath(path?: string): string | null {
   if (!path) return null;
@@ -814,31 +813,6 @@ export function getReturnedExpeditionOutcome(log: ExpeditionLog | null | undefin
   if (log.finalOutcome === 'Retreat') return 'Retreat';
   return 'Clear';
 }
-
-export function getExperimentalDiaryTitle(party: Party, diaryLog: DiaryLog): string {
-  diaryLog = renderDiaryMetadata(diaryLog);
-  const { triggers } = diaryLog;
-  if (triggers.includes('unlock')) {
-    return diaryLog.unlockHeadline
-      ? t('diary.headline.unlockNamed', { party: party.name, headline: diaryLog.unlockHeadline })
-      : t('diary.headline.unlock', { party: party.name });
-  }
-  if (triggers.includes('sideQuest')) {
-    return diaryLog.sideQuestLabel
-      ? t('diary.headline.sideQuestNamed', { party: party.name, quest: diaryLog.sideQuestLabel })
-      : t('diary.headline.sideQuest', { party: party.name });
-  }
-  if (triggers.length === 1 && triggers[0] === 'defeat') return t('diary.headline.defeat', { party: party.name });
-  if (triggers.length === 1 && triggers[0] === 'draw') return t('diary.headline.draw', { party: party.name });
-  const titleKey = triggers.includes('godsBattle') ? 'diary.title.godsBattle'
-    : triggers.includes('superRare') ? 'diary.title.superRare'
-      : triggers.includes('mythicRare') ? 'diary.title.mythicRare'
-        : triggers.includes('bossRare') ? 'diary.title.bossRare'
-          : triggers.includes('eliteRare') ? 'diary.title.eliteRare'
-            : 'diary.title.special';
-  return t('diary.headline.title', { party: party.name, title: t(titleKey) });
-}
-
 
 export function renderEnemyNameWithMutedClass(enemyName: string) {
   const classSuffixMatch = enemyName.match(/^(.*?)(\([^()]+\))(.*)$/);

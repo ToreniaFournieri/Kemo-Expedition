@@ -110,6 +110,7 @@ const ko = {
   'home.notification.shopBought': '상점에서 {item}을(를) 구매했다!',
   'home.notification.shopPurchasedItemFallback': '{item} x1',
   'home.notification.characterRefusedExpedition': '{character}은(는) 지쳐서 출격을 거부했다',
+  'home.notification.characterEditFailed': '{character}: 편집을 적용하지 못했습니다 ({reason})',
   'home.notification.partyAlreadyMovingToGodBattle': '{party}는 이미 신마전을 향해 이동 중이다',
   'home.notification.instantExpeditionChargeInsufficient': '{party}의 즉시 출격 차지가 부족하다',
   'home.notification.instantExpeditionWithStolenGold': '{party}는 신의 긴급 동원에 분노해 {gold}G를 들고 달아나 즉시 출격했다',

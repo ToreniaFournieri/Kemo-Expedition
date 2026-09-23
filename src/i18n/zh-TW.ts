@@ -108,6 +108,7 @@ const zhTW = {
   'home.notification.shopBought': '從商店購買了{item}！',
   'home.notification.shopPurchasedItemFallback': '{item} x1',
   'home.notification.characterRefusedExpedition': '{character}已疲憊不堪，拒絕出擊',
+  'home.notification.characterEditFailed': '{character}：無法套用編輯（{reason}）',
   'home.notification.partyAlreadyMovingToGodBattle': '{party}已經正在向神魔戰移動',
   'home.notification.instantExpeditionChargeInsufficient': '{party}的即時出擊充能不足',
   'home.notification.instantExpeditionWithStolenGold': '{party}對神的緊急動員感到憤怒，捲走{gold}G後即時出擊',
