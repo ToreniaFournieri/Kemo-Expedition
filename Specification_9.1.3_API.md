@@ -1526,9 +1526,10 @@ Path Parameters
   * `enemyLevelOffset`
   * `language`
   * `darkMode`
-  * `autoRepeat`
   * `showExpeditionStats`
   * `theme`
+
+* Note: `autoRepeat` is an exception and is not controlled through the API.
 
 * Partial updates are allowed; omitted fields retain their current values.
 

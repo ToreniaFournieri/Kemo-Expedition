@@ -354,6 +354,25 @@ HP: 312                 タイプ: 神魔
 - Switch to 統計情報表示: ON/OFF (Default:OFF)
   - If ON, Show statistic line of Party pane in Expedition tab.
 
+- Game mode
+  - Default: `mode.normal`
+
+| Mode | concept |
+|--|--|
+| `mode.normal` | same spec. |
+| `mode.orca` | All enemies have `a.first-strike`0, `a.upgrade-all-abilities`1, +`N` level. `Speed of time` is `x5 boost`, theme color is set to `theme.orca`. |
+
+- `Speed of Time`:
+  - Speed of time can still be changed through the Debug Pane.
+  - The Progress Report bonus multiplies the current Speed of time by x1.2.
+  - Example: if the current speed is `x5 boost`, the effective speed becomes x6.
+
+- Enemy Level Offset
+  - `N` is configurable using a level-offset bar.
+  - Range: 0 to +20. Default 5.
+  - The Enemy Level Offset can be changed only when Debug Mode is enabled.
+  - The selected `N` value is added to the level of all enemies in `mode.orca`.
+
 - Theme color
 
 | theme color | label (i18n) | Available in production |
@@ -386,24 +405,15 @@ HP: 312                 タイプ: 神魔
   - If Available in production is true, the theme color can be selected in the production environment.
   - All theme colors are always selectable in the development environment.
 
-- Game mode
-  - Default: `mode.normal`
 
-| Mode | concept |
-|--|--|
-| `mode.normal` | same spec. |
-| `mode.orca` | All enemies have `a.first-strike`0, `a.upgrade-all-abilities`1, +`N` level. `Speed of time` is `x5 boost`, theme color is set to `theme.orca`. |
+- macOS通知
 
-- `Speed of Time`:
-  - Speed of time can still be changed through the Debug Pane.
-  - The Progress Report bonus multiplies the current Speed of time by x1.2.
-  - Example: if the current speed is `x5 boost`, the effective speed becomes x6.
+- API
+  - Application API v1 checkbox
+    - Boolean.
+    - Before turning on, a dialog warns that local programs will be able to control this game.
 
-- Enemy Level Offset
-  - `N` is configurable using a level-offset bar.
-  - Range: 0 to +20. Default 5.
-  - The Enemy Level Offset can be changed only when Debug Mode is enabled.
-  - The selected `N` value is added to the level of all enemies in `mode.orca`.
+
 
 **Feedback フィードバック**
   - Send feedback to the development team.
