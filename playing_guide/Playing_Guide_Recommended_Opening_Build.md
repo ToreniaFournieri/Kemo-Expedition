@@ -1,258 +1,129 @@
-# Recommended Opening Build — Experimental API
+# Recommended Opening Build — Application API v1
 
-Version: v0.9.6 (20)
+This is a target opening build for a fresh `mode.orca` save with enemy level offset `+5` and Debug Mode off. Adjust it to the characters, unlocks, shop stock, and inventory in the active save. The retired AI Play evaluation protocol does not apply.
 
-Environment: Desktop Orca; `mode.orca`; enemy offset `+5`; Debug Mode OFF.
+Use [Specification 9.1.3](../Specification_9.1.3_API.md) for operations and game rules, and [Specification 9.1.4](../Specification_9.1.4_API_DETAIL.md) for HTTP, authentication, revisions, and errors.
 
-This is an API-only opening strategy for a fresh AI Play evaluation. It uses only public observations and supported strategic commands, including current-lineup shop purchases and atomic ordered equipment configuration by base item ID.
+## 1. Connect and inspect the save
 
-Follow [Specification 12.2](../Specification_12.2_AI_PLAY_OPERATOR_GUIDE.md) for launch, lease, revision, accounting, recovery, and shutdown rules. Every action below must use IDs and choices present in the current observation and `_legalActions`.
+Enable **Application API v1** in the desktop Setting tab and obtain the loopback connection details and bootstrap token through the application. For a new API-controlled save, call `POST /api/v1/fundamental/signUp`, then `POST /api/v1/fundamental/logIn`. Login returns `sessionToken` and `controlLeaseToken`. Session requests require:
 
-## 1. Observe and validate the candidate
-
-Start the reference client, then observe the fresh state:
-
-```json
-{"action":"observe"}
+```text
+Authorization: Bearer <bootstrapToken>
+X-BoKemo-Session: <sessionToken>
+X-BoKemo-Control-Lease: <controlLeaseToken>
 ```
 
-Confirm PT1 is party `1`, record its current revision, and verify the character IDs below. Use `build-options` for any non-unique character whose race, gender, lineage, or predisposition differs from the observed value. Unique characters must not be sent immutable fields.
+Read `GET /api/v1/read/observation/compact` once for an opening overview. It runs a fresh private 100-run simulation for every unlocked party, so use focused reads for later checks:
 
-Save the following **configuration object** as `/tmp/bokemo-opening-build.json`. It deliberately contains only writable configuration fields.
-
-```json
-{
-  "characters": [
-    {
-      "characterId": 1,
-      "changes": {"mainClassId": "guardian", "subClassId": "sword-saint"},
-      "autoEquipmentMode": 2
-    },
-    {
-      "characterId": 5,
-      "changes": {
-        "name": "Selfin",
-        "gender": "female",
-        "raceId": "cervin",
-        "lineageId": "adaptation",
-        "predispositionId": "introspective",
-        "mainClassId": "pilgrim",
-        "subClassId": "wizard"
-      },
-      "autoEquipmentMode": 1
-    },
-    {
-      "characterId": 6,
-      "changes": {"mainClassId": "lord", "subClassId": "alchemist"},
-      "autoEquipmentMode": 1
-    },
-    {
-      "characterId": 3,
-      "changes": {
-        "name": "Lop",
-        "gender": "female",
-        "raceId": "leporian",
-        "lineageId": "adaptation",
-        "predispositionId": "resourceful",
-        "mainClassId": "ranger",
-        "subClassId": "pilgrim"
-      },
-      "autoEquipmentMode": 1
-    },
-    {
-      "characterId": 2,
-      "changes": {
-        "name": "Borg",
-        "gender": "female",
-        "raceId": "ursan",
-        "lineageId": "adaptation",
-        "predispositionId": "serene",
-        "mainClassId": "sage",
-        "subClassId": "alchemist"
-      },
-      "autoEquipmentMode": 1
-    },
-    {
-      "characterId": 4,
-      "changes": {
-        "name": "Grun",
-        "gender": "male",
-        "raceId": "ursan",
-        "lineageId": "adaptation",
-        "predispositionId": "introspective",
-        "mainClassId": "wizard",
-        "subClassId": "alchemist"
-      },
-      "autoEquipmentMode": 1
-    }
-  ],
-  "order": [1, 5, 6, 3, 2, 4],
-  "deityId": "fortification",
-  "destination": {"mode": "fixed", "dungeonId": 1},
-  "depthLimit": "1f-3",
-  "difficultyOffset": 0
-}
+```text
+GET /api/v1/read/build/party/1
+GET /api/v1/read/build/character/{characterId}/status
+GET /api/v1/read/build/character/{characterId}/equipment
+GET /api/v1/read/expedition/1/setting
+GET /api/v1/read/base/shopItemsList
 ```
 
-Preview and simulate the unchanged file before committing it:
+Confirm PT1 is party `1`, its six character IDs match the table below, and the desired choices appear in the relevant `current`, `validOptions`, and `editableFields`. Character IDs are stable IDs, not party positions.
 
-```json
-{"action":"preview","partyId":1,"configurationFile":"/tmp/bokemo-opening-build.json"}
-{"action":"simulate","partyId":1,"configurationFile":"/tmp/bokemo-opening-build.json"}
-{"action":"configure","partyId":1,"configurationFile":"/tmp/bokemo-opening-build.json"}
-```
-
-If validation rejects the candidate, inspect `error.details.violations`, correct only the rejected fields using current `build-options`, then preview and simulate the revised candidate again. Do not continue with a partially assumed build.
-
-
-## 2. Purchase items from the shop
-
-* Purchase a sword, wand, and grimoire if available.
-* The expected total cost is approximately `180G`.
-* Shop-purchased items are always enhanced by at least `+1`, making them stronger than equivalent initial equipment.
-
-Read `observation.shop`. For each desired category that appears and has `canPurchase: true`, send the observed lineup and stock-entry IDs. Reuse neither value after a lineup refresh.
-
-```json
-{"action":"buy-shop-item","partyId":1,"lineupId":"<observed-lineupId>","stockEntryId":"<observed-sword-stockEntryId>"}
-{"action":"buy-shop-item","partyId":1,"lineupId":"<observed-lineupId>","stockEntryId":"<observed-wand-stockEntryId>"}
-{"action":"buy-shop-item","partyId":1,"lineupId":"<observed-lineupId>","stockEntryId":"<observed-grimoire-stockEntryId>"}
-```
-
-Each successful purchase returns a new revision and complete observation. Use the returned current `lineupId` and remaining `stockEntryId` values for the next purchase. Skip a category that is not present rather than guessing an item or stock ID.
-
-
-## 3. Equip the party
-
-* Remove all equipment from all six characters as part of the atomic configuration below.
-
-* Equip items to each character like this.
-
-Save this configuration object as `/tmp/bokemo-opening-equipment.json`:
+Every HTTP commit below uses this envelope. Substitute the latest returned `revision`, generate a **new** `idempotencyKey` for each distinct commit, and put only that operation's fields in `parameters`:
 
 ```json
 {
-  "characters": [
-    {
-      "characterId": 1,
-      "autoEquipmentMode": 1,
-      "equipment": {
-        "mode": "replace_all",
-        "itemIds": [1101, 1104, 1104, 1104, 1104, 1106, 1211]
-      }
-    },
-    {
-      "characterId": 4,
-      "autoEquipmentMode": 1,
-      "equipment": {
-        "mode": "replace_all",
-        "itemIds": [1110, 1110, 1112, 1112]
-      }
-    },
-    {
-      "characterId": 2,
-      "autoEquipmentMode": 1,
-      "equipment": {
-        "mode": "replace_all",
-        "itemIds": [1102, 1111, 1111, 1112]
-      }
-    },
-    {
-      "characterId": 5,
-      "autoEquipmentMode": 1,
-      "equipment": {
-        "mode": "replace_all",
-        "itemIds": [1101, 1102, 1110]
-      }
-    },
-    {
-      "characterId": 3,
-      "autoEquipmentMode": 1,
-      "equipment": {
-        "mode": "replace_all",
-        "itemIds": [1107, 1107, 1109, 1109]
-      }
-    },
-    {
-      "characterId": 6,
-      "autoEquipmentMode": 2,
-      "equipment": {
-        "mode": "replace_all",
-        "itemIds": []
-      }
-    }
-  ],
-  "autoEquipCharacterIds": [6]
+  "expectedRevision": 42,
+  "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+  "parameters": {}
 }
 ```
 
-The server first removes equipment from every listed character, then allocates items by character request order and `itemIds` order. For each base item ID it selects the available copy with the highest enhancement, so Kemo, Grun, and Borg receive the purchased enhanced sword, wand, and grimoire before later characters consume remaining copies. Laika's configured FULL Auto Equipment runs only after all manual assignments are complete.
+Read each result before the next request. If a response is lost, retry the **same** request with the same key. If the revision is stale, reread affected state before deciding on a new request. Commit responses do not include a complete replacement observation.
 
-Preview and simulate the exact equipment candidate before committing it:
+## 2. Build and order PT1
 
-```json
-{"action":"preview","partyId":1,"configurationFile":"/tmp/bokemo-opening-equipment.json"}
-{"action":"simulate","partyId":1,"configurationFile":"/tmp/bokemo-opening-equipment.json"}
-{"action":"configure","partyId":1,"configurationFile":"/tmp/bokemo-opening-equipment.json"}
+| Character ID | Character | Target `changeBuild` fields | Initial Auto Equipment |
+| --- | --- | --- | --- |
+| 1 | Kemo | `{"mainClassId":"guardian","subClassId":"sword-saint"}` | `FULL`; set `SEMI` before manual equipment |
+| 5 | Selfin | `{"name":"Selfin","racesAndGender":"cervin/female","lineage":"adaptation","predisposition":"introspective","mainClassId":"pilgrim","subClassId":"wizard"}` | `SEMI` |
+| 6 | Laika | `{"mainClassId":"lord","subClassId":"alchemist"}` | `SEMI`; use `FULL` for the final automatic run |
+| 3 | Lop | `{"name":"Lop","racesAndGender":"leporian/female","lineage":"adaptation","predisposition":"resourceful","mainClassId":"ranger","subClassId":"pilgrim"}` | `SEMI` |
+| 2 | Borg | `{"name":"Borg","racesAndGender":"ursan/female","lineage":"adaptation","predisposition":"serene","mainClassId":"sage","subClassId":"alchemist"}` | `SEMI` |
+| 4 | Grun | `{"name":"Grun","racesAndGender":"ursan/male","lineage":"adaptation","predisposition":"introspective","mainClassId":"wizard","subClassId":"alchemist"}` | `SEMI` |
+
+For each character, compare `GET /api/v1/read/build/character/{characterId}/status` with the target. Send only changed, valid fields. Omit immutable identity fields for a unique character. Submit `POST /api/v1/commit/build/character/{characterId}/changeBuild` first with the desired fields and `"simulation":true`. This validates without applying. Inspect `data.confirmationRequired` and `data.warnings`, then submit the same desired fields with `"simulation":false`. Include `"confirmation":"yes"` only if the simulation required it and you accept its effects. Each request needs its own key and the latest revision. For example:
+
+```text
+POST /api/v1/commit/build/character/1/changeBuild
 ```
 
-Note:
-`1`: Kemo (Kemoria): One sword `1104` would have +1 or more enhancement
-`4`: Grun (Ursan, Wizard): One wand `1110` would have +1 or more enhancement
-`2`: Borg (Ursan, Sage): One grimorie `1111` must have +1 or more enhancement
-`5`: Selfin (Cervin, Pilgrim)
-`3`: Lop (Leporian, Ranger)
-`6`: Laika (Caninian)
-
-
-
-### Intention
-
-Enemies in the first area have approximately **16–26 Defense**. High per-hit damage is important because sufficiently strong attacks can kill an enemy immediately. If damage per hit is too low, the party may fail to defeat enemies at all.
-
-For this reason, offensive resources should initially be concentrated on a small number of attackers rather than distributed evenly across the party.
-
-**Kemo (Kemoria)** is particularly suitable as the main melee attacker because he has many equipment slots, allowing multiple offensive items to be stacked on a single character.
-
-
-## 4. Verify productive farming
-
-Save `{}` as `/tmp/bokemo-current-state.json` and simulate the committed state:
-
 ```json
-{"action":"simulate","partyId":1,"configurationFile":"/tmp/bokemo-current-state.json"}
+{
+  "expectedRevision": 42,
+  "idempotencyKey": "550e8400-e29b-41d4-a716-446655440001",
+  "parameters": {
+    "mainClassId": "guardian",
+    "subClassId": "sword-saint",
+    "simulation": true
+  }
+}
 ```
 
-Forecast percentages are evidence for this exact state, not guaranteed live results. Record the current build, equipment, attack values/counts, and simulation outcomes rather than relying on a historical fixed percentage.
+The target party order is `[1,5,6,3,2,4]`, with deity `fortification`. Check `GET /api/v1/read/build/party/1`, then send `POST /api/v1/commit/build/party/1` with `parameters` of `{"deityId":"fortification","order":[1,5,6,3,2,4]}`. Omit either field if it already matches.
 
-Run exactly one diagnostic sortie:
+Check `GET /api/v1/read/expedition/1/setting`, then set the target with `POST /api/v1/commit/expedition/1/changeExpedition` and `parameters` of `{"destination":1,"destinationMode":"fixed","depthLimit":"1f-3","difficultyOffset":0}`. This operation permits partial updates.
 
-```json
-{"action":"sortie","partyId":1,"count":1}
+## 3. Buy opening items
+
+Look for a sword, wand, and grimoire in `GET /api/v1/read/base/shopItemsList`. The historical budget was about `180G`; use current prices and Gold. Buy only available entries. The numeric `shopItemId` values identify lineup slots, not base item IDs or old stock-entry strings.
+
+For example, if slots `2` and `4` are available:
+
+```text
+POST /api/v1/commit/base/purchaseShopItems
 ```
 
-Check room progress, total XP, items, and `returnReason`. If the party draws in room one without gains, inspect the retained battle log and revise the build or targeted equipment order:
-
 ```json
-{"action":"read","path":"/parties/1/battle-log/latest"}
+{
+  "expectedRevision": 43,
+  "idempotencyKey": "550e8400-e29b-41d4-a716-446655440002",
+  "parameters": {"items":[{"shopItemId":2},{"shopItemId":4}]}
+}
 ```
 
-Do not start a large batch until the simulation or diagnostic sortie demonstrates productive early-room progress.
+Replace those IDs with observed choices. The whole purchase succeeds or fails together. A lineup can rotate without a revision change, so buy promptly and reread `shopItemsList` after purchases or refreshes. Inspect the purchased item variants before equipping. Skip unavailable categories instead of guessing.
 
-## 5. Farm and improve
+## 4. Equip the party
 
-Once productivity is established, increase sortie batches gradually. Each accepted request runs exactly its requested `count` from 1 through 100, even if a winning result occurs before the batch ends.
+The original allocation target is below. These are **base item IDs**, not the `Item Format` strings accepted by `equip`. Match each target to an owned, compatible item in current inventory. Prefer the strongest available enhancement for Kemo's sword, Grun's wand, and Borg's grimoire.
 
-```json
-{"action":"sortie","partyId":1,"count":20}
-```
+| Assignment order | Character ID | Target base item IDs | Mode afterward |
+| --- | --- | --- | --- |
+| 1 | 1 (Kemo) | `1101, 1104, 1104, 1104, 1104, 1106, 1211` | `SEMI` |
+| 2 | 4 (Grun) | `1110, 1110, 1112, 1112` | `SEMI` |
+| 3 | 2 (Borg) | `1102, 1111, 1111, 1112` | `SEMI` |
+| 4 | 5 (Selfin) | `1101, 1102, 1110` | `SEMI` |
+| 5 | 3 (Lop) | `1107, 1107, 1109, 1109` | `SEMI` |
+| 6 | 6 (Laika) | Leave for a `FULL` automatic run | `FULL` |
 
-After farming produces enhanced copies, run targeted SEMI automatic equipment for characters that already hold the categories you want to preserve:
+Inspect current equipment and party inventory with `GET /api/v1/read/observation/party`. Set the manual characters to `SEMI` using `POST /api/v1/commit/build/character/{characterId}/autoEquipment` with `parameters` of `{"mode":"SEMI","immediateAutoEquipment":false}`. Remove equipment from affected characters with their `removeAllEquipment` commits, then equip characters in the table's order using `POST /api/v1/commit/build/character/{characterId}/equip`. Supply owned **Item Format** values in `parameters.targetEquipment`, such as `"0/1104/1/0"`; verify the exact format and quantity in current inventory. Use `targetSlot` only for a deliberate single-slot replacement.
 
-```json
-{"action":"run-auto-equipment","partyId":1,"characterId":1}
-```
+Every removal, equip, and mode change is a separate commit. There is no v1 operation that removes and reallocates all six characters' equipment atomically. Check equipment and revision after each character before assigning the next one's items. If an item is missing or incompatible, revise the target from current inventory rather than assuming partial success.
 
-SEMI upgrades compatible equipped categories; it does not fill empty slots. Use a deliberate FULL run only when you accept category and attack-count changes, and inspect the resulting observation before continuing.
+Finally, run Laika's automatic equipment with `POST /api/v1/commit/build/character/6/autoEquipment` and `parameters` of `{"mode":"FULL","immediateAutoEquipment":true}`. Inspect its `autoEquipmentReport` and resulting equipment.
 
-Re-simulate after meaningful build or equipment changes, use single sorties near a likely boss clear, and stop gameplay immediately when `evaluation.status` becomes `succeeded` or `failed`. Retrieve the final report and quit according to the operator guide.
+This concentrates offensive items on Kemo, Grun, and Borg. Early enemies can have roughly 16–26 Defense, so per-hit damage matters. Treat those figures and this allocation as starting points, then check current attack values and simulation results.
+
+## 5. Verify productive farming
+
+Run `POST /api/v1/read/expedition/1/simulationRun` with an empty JSON object or an optional `expectedRevision` for a private 1,000-run forecast. This is a Read operation: it does not commit progression, consume charge, or return rewards. Forecast percentages describe the simulated snapshot, not guaranteed live results.
+
+If promising, check `GET /api/v1/read/expedition/1/chargeStock` and the Sortie control in `GET /api/v1/read/observation/expedition`, then send one `POST /api/v1/commit/expedition/1/sortie` with the standard commit envelope and empty `parameters`. One accepted request consumes one charge stock and resolves one sortie. Inspect its `outcome`, `rewards`, `diaryEntryId`, and `logId` before another.
+
+For battle detail, read `GET /api/v1/read/expedition/1/latestBattleLog`; use the returned `logId` as that endpoint's optional query parameter when you need the retained log from a particular sortie. If the party draws in room one without gains, adjust the build or allocation and simulate again before spending more charge.
+
+## 6. Farm and improve
+
+Continue with individual sortie commits while charge is available and results remain useful. There is no `count` parameter or 20-sortie batch in `/api/v1`. Refresh the relevant reads and revision between commits, and use single sorties near a likely boss clear.
+
+After farming yields stronger copies, use `POST /api/v1/commit/build/character/{characterId}/autoEquipment` with `{"mode":"SEMI","immediateAutoEquipment":true}` for a character whose equipped categories you want to preserve. `SEMI` can upgrade compatible equipped categories but does not fill empty slots. Use `FULL` only when category and attack-count changes are acceptable. Inspect `autoEquipmentReport`, character status, and a new simulation after meaningful changes.
+
+When finished, call `POST /api/v1/fundamental/logOut` to persist and release API control.
