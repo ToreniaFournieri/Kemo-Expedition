@@ -34,7 +34,7 @@ export const PARTY_EQUIP_CATEGORY_FAMILY = 'party.equipCategory';
 
 // SpecRef: 8.6 | UI_SETTING | All panes are collapsed by default; the expanded/collapsed state is persisted and saved.
 export const SETTING_PANEL_EXPANDED_FAMILY = 'setting.panelExpanded';
-export const SETTING_PANELS = ['news', 'modeSelect', 'donation', 'clairvoyance', 'glossary', 'itemCompendium', 'characterRoster', 'bestiary', 'superRare', 'feedback', 'gameSetting', 'debug'] as const;
+export const SETTING_PANELS = ['news', 'modeSelect', 'donation', 'clairvoyance', 'glossary', 'itemCompendium', 'characterRoster', 'bestiary', 'superRare', 'feedback', 'gameSetting', 'debug', 'enemyEdit'] as const;
 export type SettingPanel = typeof SETTING_PANELS[number];
 
 // SpecRef: 8.6 | UI_SETTING | Clairvoyance: the expand/collapse state is preserved per party.

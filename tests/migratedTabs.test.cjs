@@ -355,6 +355,9 @@ test('migrated tabs and the header never reach the desktop bridge directly', () 
 test('the Setting tab keeps retained pane, Clairvoyance, and Glossary-tab state in uiPreferences', () => {
   const tab = read('src/components/home/tabs/SettingTab.tsx');
   for (const name of ['settingPanelExpandedKey', 'clairvoyanceExpandedKey', 'SETTING_GLOSSARY_TAB_FAMILY']) assert.match(tab, new RegExp(`onSetUiPreference\\(${name}`));
+  // Every Setting pane, the Enemy Edit pane included, opens and closes through the retained pane state.
+  assert.doesNotMatch(tab, /isEnemyEditExpanded/);
+  assert.match(tab, /toggleSettingPanel\('enemyEdit'\)/);
   const home = read('src/components/HomeScreen.tsx');
   assert.match(home, /settingPreferences=\{settingTabPreferences\}/);
   assert.match(home, /onSetUiPreference=\{handleSetUiPreference\}/);

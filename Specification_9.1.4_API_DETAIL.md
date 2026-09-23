@@ -1300,7 +1300,7 @@ catalog:
 | Family | Subject | Type | Options | Default |
 | --- | --- | --- | --- | --- |
 | `party.equipCategory` | `characterId` (key `party.equipCategory.<characterId>`) | string | `armor`, `robe`, `shield`, `sword`, `katana`, `gauntlet`, `arrow`, `bolt`, `archery`, `wand`, `grimoire`, `catalyst` | `armor` |
-| `setting.panelExpanded` | `settingPanel` (key `setting.panelExpanded.<panel>`; panels `news`, `modeSelect`, `donation`, `clairvoyance`, `glossary`, `itemCompendium`, `characterRoster`, `bestiary`, `superRare`, `feedback`, `gameSetting`, `debug`) | boolean | — | `false` |
+| `setting.panelExpanded` | `settingPanel` (key `setting.panelExpanded.<panel>`; panels `news`, `modeSelect`, `donation`, `clairvoyance`, `glossary`, `itemCompendium`, `characterRoster`, `bestiary`, `superRare`, `feedback`, `gameSetting`, `debug`, `enemyEdit`) | boolean | — | `false` (the Debug and Enemy Edit panes open by default) |
 | `setting.clairvoyanceExpanded` | `partyNumber` (key `setting.clairvoyanceExpanded.<partyNumber>`, an existing party) | boolean | — | `false` |
 | `setting.glossaryTab` | `none` (key `setting.glossaryTab`) | string | `能`, `基`, `固`, `増`, `機`, `信`, `魔`, `地`, `求` | `能` (only until a tab is stored) |
 

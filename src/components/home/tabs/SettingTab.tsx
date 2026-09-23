@@ -218,6 +218,7 @@ export default function SettingTab({
     feedback: false,
     gameSetting: false,
     debug: true,
+    enemyEdit: true,
   };
 
   const FEEDBACK_NAME_STORAGE_KEY = createEnvironmentStorageKey('settingFeedbackName');
@@ -407,7 +408,6 @@ export default function SettingTab({
   // Expanded Glossary entries are local view state (8.6 retains only the tab).
   const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>({});
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
-  const [isEnemyEditExpanded, setIsEnemyEditExpanded] = useState(true);
   const [activeAbilityHelp, setActiveAbilityHelp] = useState<{ key: string; title: string; description: string } | null>(null);
   const [abilityHelpPosition, setAbilityHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
@@ -2377,13 +2377,13 @@ export default function SettingTab({
       {debugSettings.colosseumEnabled && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         <button
           type="button"
-          onClick={() => setIsEnemyEditExpanded((prev) => !prev)}
+          onClick={() => toggleSettingPanel('enemyEdit')}
           className="w-full flex items-center justify-between text-left"
         >
           <div className="text-sm font-semibold">Enemy Edit</div>
-          <span className="text-gray-500 text-xs" aria-hidden="true">{isEnemyEditExpanded ? '▲' : '▼'}</span>
+          <span className="text-gray-500 text-xs" aria-hidden="true">{settingPanelExpanded.enemyEdit ? '▲' : '▼'}</span>
         </button>
-        {isEnemyEditExpanded && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mt-3">
+        {settingPanelExpanded.enemyEdit && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mt-3">
           {/* SpecRef: 8.6 | UI_SETTING | Enemy Edit Pane */}
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {formatNumber(colosseumEnemySettings.level)}</div><input className={IOS_GLASS_SLIDER_CLASS} type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} style={getSliderProgressStyle(colosseumEnemySettings.level, 1, 99)} /></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy name</div><input className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.name} onChange={(e) => updateColosseumEnemySettings({ name: e.target.value })} /></label>

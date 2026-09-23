@@ -346,10 +346,12 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   // and the single Glossary tab preference.
   const setting = commit(seed, [
     { key: 'setting.panelExpanded.glossary', value: true },
+    { key: 'setting.panelExpanded.enemyEdit', value: false },
     { key: 'setting.clairvoyanceExpanded.1', value: true },
     { key: 'setting.glossaryTab', value: '機' },
   ]);
   assert.equal(setting.state.global.uiPreferences?.['setting.glossaryTab'], '機');
+  assert.equal(setting.state.global.uiPreferences?.['setting.panelExpanded.enemyEdit'], false, 'the Enemy Edit pane is retained like the others');
   const settingRead = await buildApiV1ReadData('read/observation/setting', setting.state, {}, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0 } as never) as { settingInfo: { uiPreferenceCatalog: Array<{ family: string; subject: string; subjectOptions: string[] }> } };
   const panelFamily = settingRead.settingInfo.uiPreferenceCatalog.find((entry) => entry.family === 'setting.panelExpanded');
   assert.equal(panelFamily?.subject, 'settingPanel');
