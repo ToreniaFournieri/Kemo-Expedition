@@ -307,9 +307,31 @@ request with the same base parameters and key when no receipt exists.
 * A request containing `Origin` is accepted only from the packaged application
   origin configured for that process; all other origins are rejected. Tokens
   must not be stored in renderer web storage.
-* Each process launch creates a high-entropy bootstrap bearer token and exposes
-  it only through the authorized desktop launch/automation channel, never in a
-  URL, log, help response, save, or UI DOM.
+* The listener runs only while the 8.6 `Application API v1` option is enabled.
+  Enabling it from the Setting tab first shows the 8.6 confirmation dialog.
+  The option is persisted, so a later launch with the option enabled starts the
+  listener without asking again. The option, `secretToken`, and
+  `persistSecretToken` are trusted desktop settings: they are stored by the
+  desktop process in its own owner-only profile storage, never in the game save,
+  a backup, or renderer web storage, and no Application API operation reads or
+  changes them. Importing a save therefore never enables the API.
+* The bootstrap bearer token is the 8.6 `secretToken`: at least 256 bits from a
+  cryptographically secure generator, created when the option is enabled.
+  Disabling the option discards it; enabling again creates a new one.
+  * `persistSecretToken: true` (default): the token is kept in the trusted
+    desktop storage and reused on later launches while the option stays enabled.
+  * `persistSecretToken: false`: the token is never written to that storage, and
+    each launch with the option enabled creates a new token.
+  * Changing `persistSecretToken` to `false` deletes the stored token at once;
+    the current token stays valid until process exit. Changing it to `true`
+    stores the current token.
+* While the listener runs, the desktop process writes an owner-only connection
+  file in its profile directory with the host, port, API version, and token, and
+  removes it when the listener stops. The Setting tab shows the token masked; it
+  reaches the renderer only through the trusted desktop bridge when the player
+  explicitly reveals or copies it, and is never kept in renderer state
+  afterwards. The token never appears in a URL, log, help response, save,
+  backup, delivery payload, or HTTP response.
 * All HTTP operations except `fundamental/status`, `help/overview`, and
   `help/endpoints` require `Authorization: Bearer <bootstrapToken>`.
 * `fundamental/signUp` initializes the named API-controlled save but does not
@@ -763,7 +785,7 @@ user/resource exists.
 
 ##### 9.1.4.12 HTTP endpoint index
 
-`Bootstrap` requires the process bootstrap bearer. `Session` additionally
+`Bootstrap` requires the bootstrap bearer (the 8.6 `secretToken`, 9.1.4.6). `Session` additionally
 requires the API session and control-lease headers. Trusted React/Desktop calls
 use the same operation without HTTP authentication headers.
 
@@ -1200,7 +1222,9 @@ Feedback `metadata`, accompanied by one verified image part named `attachment0`:
   admitted work before releasing authority. Reads may be cancelled. Do not
   resume normal progression while staged work could still commit. Renderer loss
   or process death reloads the last durable state and receipts; uncommitted
-  staging is discarded. Bootstrap/session tokens must be reacquired on restart.
+  staging is discarded. Session and control-lease tokens must be reacquired on
+  restart; the bootstrap token survives a restart only when `persistSecretToken`
+  is `true`.
 * Import/reset invalidates snapshots still computing and closes their streams.
   An affected read returns `stale_revision` rather than publishing a pre-reset
   result. It never cancels a previously committed operation or deletes its receipt.
@@ -1219,6 +1243,7 @@ Feedback `metadata`, accompanied by one verified image part named `attachment0`:
 | Newly acquired inventory highlighting | Read supplies stable variant keys and `isNew`; `markItemsAsSeen` explicitly acknowledges displayed variants. |
 | Diary/news read state, language/theme, gameplay settings | Existing specific Commit operations; never a side effect of projection. |
 | Desktop login-at-startup and notification delivery preferences | Trusted desktop Application API operations with platform availability, not arbitrary save fields or privileged HTTP passthrough. |
+| `Application API v1`, `secretToken`, `persistSecretToken` (8.6) | Trusted desktop settings stored outside the save and backup (9.1.4.6); no Application API operation and no HTTP access. |
 
 `uiPreferences.parameters.changes` is a nonempty array of
 `{key: string, value: string|number|boolean}`. Keys are an explicit shared catalog

@@ -140,7 +140,7 @@ Most of this stage's settings/backup machinery already exists and works, found w
 - **Report Progress** (header button) stays a reviewed local exception. Progress reports cannot be submitted from the desktop version or through the API.
 - **Auto-repeat** is not controlled through the API (`Specification_9.1.3_API.md` §3-6-2 note). It stays `HomeScreen` runtime state.
 - **Mode Select echo bug.** `commit/setting/modeSelect` merges `theme`, `darkMode`, `showExpeditionStats`, and `autoRepeat` into `control.settings` and `read/setting/modeSelect` echoes them back, so a read can disagree with the real game (`commitOperations.ts` `commit/setting/modeSelect`, `readModels.ts` `read/setting/modeSelect`). `theme`, `darkMode`, and `showExpeditionStats` must be fixed (9.1a); `autoRepeat` must stop being accepted (9.1b).
-- **API option** (`Specification_8.6_UI_SETTING.md`, API option): `Application API v1` is a persisted boolean with a confirmation dialog before enabling, and a `secretToken` generated on enable. See the open question in 9.6.
+- **API option** (`Specification_8.6_UI_SETTING.md`, API option): `Application API v1` is a persisted boolean with a confirmation dialog before enabling; `secretToken` is generated on enable; `persistSecretToken` (default `true`) keeps it across launches. `Specification_9.1.4_API_DETAIL.md` §9.1.4.6, §9.1.4.12, §9.1.4.16, and §9.1.4.17 were updated to match.
 - **Defense preview** is already API-owned (Stage 5, resolved).
 
 ### Known gaps found while planning
@@ -158,8 +158,7 @@ Most of this stage's settings/backup machinery already exists and works, found w
 5. **9.3: dual-adapter parity.** Canonical fixtures through the in-process and HTTP adapters, compared after excluding transport metadata; extend `tests/apiV1SampleSave.test.cjs` to both adapters. Closes the Stage 1 gate.
 6. **9.4: lifecycle coverage.** Simultaneous duplicates, lost responses, receipt eviction, login catch-up, account switching and crash recovery, renderer loss, lease expiry, shutdown draining. SSE reconnect/resync, import/reset fencing, and external-delivery ambiguity already have suites; fold them into the matrix.
 7. **9.5: UI ownership audit.** Classify every control and state value in `HomeScreen.tsx` and each tab as projection-owned, explicit-commit-owned, local-only, or trusted-desktop-only. Record the reviewed exceptions (Vault, Send Feedback, Report Progress, auto-repeat, `selectParty`, `runtimeSnapshot`, and whatever the audit finds) and extend the guard so an unlisted `actions.` use in `HomeScreen.tsx` fails. Cutover is blocked if a migrated screen reads the complete persisted save directly, mutates the reducer outside the Application API, persists UI state under an undocumented key, or receives privileged desktop data through a generic bridge.
-8. **9.6: API option and security.** Implement the 8.6 API option: persisted enable state (stored by the desktop main process, not in the game save, so an imported save never turns the API on), the confirmation dialog, and the `secretToken`. Tests that the token never appears in logs, URLs, help, or saves; loopback-only binding; the retired-endpoint search (excluding `AI_play_report/`).
-   - Open question: `Specification_9.1.4_API_DETAIL.md` §9.1.4.6 says the bootstrap token is created per process launch and never appears in the UI DOM, while 8.6 lists `secretToken` as a Setting item generated on enable. Whether the token is displayed in the Setting tab, and whether it survives a restart, must be decided before 9.6; 9.1.4.6 is then updated to follow.
+8. **9.6: API option and security.** Implement the 8.6 API option per §9.1.4.6: the enable state, `secretToken`, and `persistSecretToken` in owner-only desktop profile storage (never the save, backup, or renderer web storage, so an imported save never turns the API on); the confirmation dialog on enable from the Setting tab, none when a persisted enabled state starts the listener at launch; the token discarded on disable and regenerated on enable; the masked token with explicit reveal/copy through the trusted bridge; the connection file as today. Tests: persistence across a simulated restart for both `persistSecretToken` values, the switch in both directions, and that the token never appears in logs, URLs, help, saves, backups, delivery payloads, or HTTP responses; loopback-only binding; the retired-endpoint search (excluding `AI_play_report/` and `playing_guide/`).
 9. **9.7: cutover.** Remove the `--api-v1-test` gate (`desktop/main.cjs` `allowEnable`), show the API option in packaged desktop builds, run `npm test`, `npm run build`, `npm run api:v1:check`, `npm run test:api:desktop`, the persistence-failure suites, and the relevant AFK/performance suites. The cutover build gets its own changelog entry.
 
 ## Test data
@@ -170,7 +169,7 @@ Most of this stage's settings/backup machinery already exists and works, found w
 
 - (Done, Build 101) The `SpecRef: 9.1.3 | Experimental AI API` comments were in `shop.ts`, `savePersistence.ts`, `battleSeedSource.ts`, and `gameplayRandom.ts` (not `battleLogs.ts`); they now point at real sections. `Specification_6.1_BATTLE.md` and `Specification_8.3_UI_EXPEDITION.md` still mention the old title (human-owned).
 - (Done, Build 101) `getExperimentalDiaryTitle` had no callers and was removed.
-- `playing_guide/Playing_Guide_Recommended_Opening_Build.md` is still titled "Experimental API", and its body describes the retired API (`_legalActions`, Specification 12.2). Retitling alone would mislead; it needs a rewrite for `/api/v1` or retirement (owner decision).
+- `playing_guide/Playing_Guide_Recommended_Opening_Build.md` describes the retired Experimental API. It is an outdated document and is ignored by decision (no rewrite; excluded from the retired-endpoint search).
 - `AI_play_report/` holds retired evaluation reports; section 12 says they are inert. The cutover retired-endpoint search should exclude the directory explicitly.
 - (Done, Build 101) A rejected character edit shows a localized notification.
 
@@ -179,7 +178,7 @@ Most of this stage's settings/backup machinery already exists and works, found w
 1. ~~Stage 7 D4: complete the SSE lifecycle over the durable D3 event buffer.~~ (Done, Build 91.)
 2. ~~Finish the Stage 4 header UI migration.~~ (Done, Build 92.)
 3. ~~Stage 8.~~ Complete in Build 100: all Resource contracts, backup/import/reset, Help, the delivery sender, the small/high-value Settings panels, and the five large reference panels are implemented. Send Feedback remains an intentionally reviewed local exception by user decision.
-4. Stage 9, in the slice order above: 9.1a/9.1b (Mode Select), then 9.2 and 9.5 (their results size 9.3 and 9.4), then 9.6 once the `secretToken` question is decided, then 9.7.
+4. Stage 9, in the slice order above: 9.1a/9.1b (Mode Select), then 9.2 and 9.5 (their results size 9.3 and 9.4), then 9.6, then 9.7.
 
 ## Expedition tab migration (complete)
 

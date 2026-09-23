@@ -412,10 +412,13 @@ HP: 312                 タイプ: 神魔
     * Boolean.
     * Before enabling, display a confirmation dialog warning that local programs will be able to control the game through the API.
     * This setting is persisted.
+    * Disabling this option resets the secret token.
   * `secretToken`
     * Secret token used to authenticate Application API v1 requests.
     * Generated when Application API v1 is enabled.
     * Keep this token confidential.
+    * Hidden by default.
+    * Click to reveal the secret token.
   * `persistSecretToken`
     * Boolean.
     * Dedfault: `true`
