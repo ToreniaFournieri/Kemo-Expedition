@@ -27,6 +27,9 @@ test('presentation components delegate Peddler and Prophecy policy formulas', ()
   const settingSource = readFileSync(resolve(process.cwd(), 'src/components/home/tabs/SettingTab.tsx'), 'utf8');
   assert.match(homeSource, /getPeddlerTravelDurationMs\(baseDurationMs, peddlerLevel\)/);
   assert.doesNotMatch(homeSource, /peddlerLevel >= [12]/);
-  assert.match(settingSource, /getProphecyControlAccess\(/);
+  // Clairvoyance access is decided by the shared rule the Application API uses; the Setting tab only renders it.
+  const clairvoyanceAccessSource = readFileSync(resolve(process.cwd(), 'src/game/clairvoyanceAccess.ts'), 'utf8');
+  assert.match(clairvoyanceAccessSource, /getProphecyControlAccess\(/);
   assert.doesNotMatch(settingSource, /prophecyLevel >= [12]/);
+  assert.doesNotMatch(settingSource, /getProphecyControlAccess\(/);
 });

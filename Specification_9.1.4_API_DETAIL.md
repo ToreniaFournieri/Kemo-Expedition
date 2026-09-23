@@ -687,8 +687,20 @@ definitions in 9.1.3.
   and return the complete resulting `current` object.
 * `markAsRead` returns affected Diary-entry IDs and the resulting unread totals.
 * `markNewsAsRead` returns affected news versions and the resulting unread count.
+  Each `resources/developerNewsNotification` entry carries `isRead`, the save's
+  read state that this operation changes.
 * `clairvoyanceReset` returns the party number and which of common rewards,
-  party rewards, and side-quest progress were reset.
+  party rewards, and side-quest progress were reset. It requires a member with
+  `a.prophecy`2 in that party or the Debug Clairvoyance override (8.6);
+  otherwise it is `illegal_action` (`clairvoyance_reset_unavailable`).
+* `resources/clairvoyance/{p}` (9.1.3 4-2-3) returns `{available: false}` when
+  no member of the party has `a.prophecy` and the Debug Clairvoyance override is
+  off. Otherwise it returns `available: true`, `canReset` (the reset rule above),
+  and the bag facts. The override is the Debug pane's setting for the ordinary
+  player and the account's own debug `clairvoyance` for an API account.
+* `read/observation/party`'s `parties` list gives each member's `characterId`,
+  `name`, `raceId`, `gender`, `isUnique`, and `mimorianEnemyId`, for screens that
+  list every party's members (the Character Roster).
 * `commit/progress/elapsed` reports requested, accepted, and capped elapsed
   seconds plus resulting progression effects. Existing AFK caps and FIFO rules
   remain authoritative. All Chunks form one staged transaction under 9.1.4.4;

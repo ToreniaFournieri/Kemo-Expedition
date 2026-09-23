@@ -114,7 +114,7 @@ import { useApiRead, useApiReadMany } from './home/useApiRead';
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
 import { parseSimulationRunData, type SimulationRunData } from '../api/v1/simulationView';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
-import type { ApiV1ClairvoyanceProjection } from '../api/v1/readModels';
+import type { ApiV1ClairvoyanceResource } from '../api/v1/readModels';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
 import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
 import {
@@ -122,7 +122,7 @@ applyAutoEquipmentProfileActions,
 applyAutoEquipmentProfileActionsSequentially,
 type AfkPartyTransactionAttribution,
 } from '../hooks/useGameState';
-import { Bonus,Character,DiarySettings,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry } from '../types';
+import { Bonus,Character,DiarySettings,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry,type RaceId } from '../types';
 import { NotificationToast } from './NotificationToast';
 import { getBrowserChromeColor, getDesktopTheme, getThemeClassName, isGameModeAvailable, THEME_CLASS_NAMES } from '../theme/theme';
 
@@ -2006,7 +2006,7 @@ export function HomeScreen({
   // SpecRef: 8.2 | UI_PARTY | The party pane, member list, and deity pane render from `read/observation/party`.
   // Re-read only when a displayed fact changes: the selected party's members, level, experience, and deity, or any party's
   // deity and member identities (the deity assignment, naming, and Mimorian rules read every party).
-  const partiesSignature = state.parties.map((party) => `${party.id}:${party.deity.name}:${party.characters.map((character) => `${character.id}/${character.name}/${character.raceId}/${character.mimorianEnemyId ?? ''}`).join(',')}`).join('|');
+  const partiesSignature = state.parties.map((party) => `${party.id}:${party.deity.name}:${party.characters.map((character) => `${character.id}/${character.name}/${character.raceId}/${character.gender}/${character.mimorianEnemyId ?? ''}`).join(',')}`).join('|');
   const partyObservation = useApiRead<{ partyInfo: PartyProjection }>(
     inProcessApiRef.current, 'read/observation/party', { parameters: { partyNumber: currentParty.id } },
     [currentParty.id, currentParty.characters, currentParty.level, currentParty.experience, currentParty.deity.name, partiesSignature, state.global.unlockedMimorianEnemyIds],
@@ -5165,8 +5165,8 @@ export function HomeScreen({
   const prevSettingTabVisibleRef = useRef(isSettingTabVisible);
 
   // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
-  const developerNewsObservation = useApiRead<{ entries: Array<{ version: string; date: string; content: string }> }>(
-    inProcessApiRef.current, 'resources/developerNewsNotification', {}, [state.global.language], isSettingTabVisible,
+  const developerNewsObservation = useApiRead<{ entries: Array<{ version: string; date: string; content: string; isRead: boolean }> }>(
+    inProcessApiRef.current, 'resources/developerNewsNotification', {}, [state.global.language, state.global.readDeveloperNewsItemIds], isSettingTabVisible,
   );
   const developerNewsEntries = developerNewsObservation?.entries ?? [];
   // `version` omitted marks every article read, matching `commitOperations.ts`'s own default.
@@ -5230,10 +5230,36 @@ export function HomeScreen({
 
   // SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視)
   const clairvoyanceInputs = useMemo(() => state.parties.map((party) => ({ pathParameters: { p: party.id } })), [state.parties]);
-  const clairvoyanceProjections = useApiReadMany<ApiV1ClairvoyanceProjection>(
+  // Availability and reset access depend on the members' a.prophecy (their build and equipment) and the Debug override.
+  const clairvoyanceProjections = useApiReadMany<ApiV1ClairvoyanceResource>(
     inProcessApiRef.current, 'resources/clairvoyance/{p}', isSettingTabVisible ? clairvoyanceInputs : null,
-    [state.parties.map((party) => party.bags), state.parties.map((party) => party.sleepinessOfPartyBag)],
+    [state.parties.map((party) => party.bags), state.parties.map((party) => party.sleepinessOfPartyBag), state.parties.map((party) => party.characters), effectiveDebugSettings.clairvoyanceEnabled],
   );
+
+  // SpecRef: 8.6 | UI_SETTING | 味方キャラクター図鑑 — every party's members, from the party observation's `parties` list.
+  const rosterObservation = useApiRead<{ partyInfo: PartyProjection }>(
+    inProcessApiRef.current, 'read/observation/party', {}, [partiesSignature], isSettingTabVisible,
+  );
+  const rosterParties = useMemo(() => (rosterObservation?.partyInfo.parties ?? []).map((party) => ({
+    id: party.partyNumber,
+    characters: party.characters.map((character) => ({ raceId: character.raceId as RaceId, gender: character.gender, isUnique: character.isUnique, name: character.name })),
+  })), [rosterObservation]);
+
+  // SpecRef: 8.6 | UI_SETTING | フィードバック — Send Feedback is a reviewed local exception. Its save-derived report lines and
+  // attachments (latest battle log and status table of the selected party) are built here, so the Setting tab receives
+  // no save object; the battle-log builder is the one Report Progress already uses.
+  const handleBuildFeedbackReport = async (latestBattleLogParty: number | null) => {
+    const files: File[] = [];
+    if (latestBattleLogParty !== null) {
+      const label = `PT${latestBattleLogParty}` as 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6';
+      const battleLog = buildLatestBattleLogHtml(label);
+      if (battleLog) files.push(battleLog);
+      const now = new Date();
+      const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+      files.push(buildStatusTableHtmlFile(buildStatusTableRows(state.parties, [latestBattleLogParty - 1]), `status-table-${label}-${timestamp}.html`, `Status table (${label})`));
+    }
+    return { versionBuild: `${APP_VERSION} (${formatNumber(state.buildNumber)})`, userId: state.global.userId, files };
+  };
   const handleClairvoyanceReset = useCallback((partyIndex: number, changes: { resetCommonRewards?: boolean; resetRewards?: boolean; resetSideQuest?: boolean }) => {
     const party = state.parties[partyIndex];
     if (!party) return;
@@ -5531,8 +5557,9 @@ export function HomeScreen({
 
     return (
       <SettingTab
-        gameState={state}
         developerNewsEntries={developerNewsEntries}
+        rosterParties={rosterParties}
+        onBuildFeedbackReport={handleBuildFeedbackReport}
         donationRows={donationRows}
         clairvoyanceProjections={clairvoyanceProjections}
         enemyEditValidOptions={enemyEditPaneRead?.validOptions ?? null}

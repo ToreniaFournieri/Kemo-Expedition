@@ -1,6 +1,6 @@
 # `/api/v1` implementation plan
 
-Status as of v0.9.7 Build 103. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
+Status as of v0.9.7 Build 104. `/api/v1` stays **test-only** (`allowEnable` is set only by the desktop `--api-v1-test` flag) until every public-cutover gate in Stage 9 passes.
 
 Contracts: `Specification_9.1.3_API.md` (product intent) and `Specification_9.1.4_API_DETAIL.md` (transport, consistency, security). Gameplay and UI sections take precedence over both.
 
@@ -161,7 +161,8 @@ Most of this stage's settings/backup machinery already exists and works, found w
    - **9.5a (done, Build 103):** Setting pane expansion and per-party Clairvoyance expansion are `uiPreferences` (`setting.panelExpanded.<panel>`, `setting.clairvoyanceExpanded.<partyNumber>`), with a one-time migration of the old local values.
    - **9.5b (done, Build 103):** the Glossary tab is retained (`setting.glossaryTab`; default only until a tab is stored) by owner decision; expanded entries are local view state.
    - **9.5c (done, Build 103):** `read/setting/debug`, `settingInfo.debug`, and `commit/setting/debug` use the ordinary player's real Debug settings through runtime ports; an API account keeps its own stored values.
-   - **9.5d (open):** the Setting tab still receives the complete `GameState`; see `docs/api-v1-ui-ownership.md` finding D.
+   - **9.5d (done, Build 104):** the Setting tab no longer receives the complete `GameState` (News `isRead`, Clairvoyance `available`/`canReset`, the party list with `gender`/`isUnique`, and Send Feedback attachments built by `HomeScreen`).
+   - **9.5e (done, Build 104):** Clairvoyance availability (9.1.3 4-2-3) and the a.prophecy2 reset rule are enforced by the API.
 8. **9.6: API option and security.** Implement the 8.6 API option per §9.1.4.6: the enable state, `secretToken`, and `persistSecretToken` in owner-only desktop profile storage (never the save, backup, or renderer web storage, so an imported save never turns the API on); the confirmation dialog on enable from the Setting tab, none when a persisted enabled state starts the listener at launch; the token discarded on disable and regenerated on enable; the token hidden by default and revealed on click through the trusted bridge; the connection file as today. Tests: persistence across a simulated restart for both `persistSecretToken` values, the switch in both directions, and that the token never appears in logs, URLs, help, saves, backups, delivery payloads, or HTTP responses; loopback-only binding; the retired-endpoint search (excluding `AI_play_report/` and `playing_guide/`).
 9. **9.7: cutover.** Remove the `--api-v1-test` gate (`desktop/main.cjs` `allowEnable`), show the API option in packaged desktop builds, run `npm test`, `npm run build`, `npm run api:v1:check`, `npm run test:api:desktop`, the persistence-failure suites, and the relevant AFK/performance suites. The cutover build gets its own changelog entry.
 
@@ -182,7 +183,7 @@ Most of this stage's settings/backup machinery already exists and works, found w
 1. ~~Stage 7 D4: complete the SSE lifecycle over the durable D3 event buffer.~~ (Done, Build 91.)
 2. ~~Finish the Stage 4 header UI migration.~~ (Done, Build 92.)
 3. ~~Stage 8.~~ Complete in Build 100: all Resource contracts, backup/import/reset, Help, the delivery sender, the small/high-value Settings panels, and the five large reference panels are implemented. Send Feedback remains an intentionally reviewed local exception by user decision.
-4. Stage 9, in the slice order above: 9.5d (their results size 9.3 and 9.4), then 9.6, then 9.7.
+4. Stage 9, in the slice order above: 9.3 and 9.4 (dual-adapter parity, lifecycle), then 9.6, then 9.7 (their results size 9.3 and 9.4), then 9.6, then 9.7.
 
 ## Expedition tab migration (complete)
 

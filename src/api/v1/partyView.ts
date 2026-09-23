@@ -18,7 +18,7 @@ export interface PartyProjection {
   };
   /** The Mimorian enemy forms unlocked at the Altar (the character editor's form choices). */
   unlockedMimorianEnemyIds: number[];
-  parties: { partyNumber: number; deityId: string; characters: { characterId: number; name: string; raceId: string; mimorianEnemyId: number | null }[] }[];
+  parties: { partyNumber: number; deityId: string; characters: { characterId: number; name: string; raceId: string; gender: 'male' | 'female'; isUnique: boolean; mimorianEnemyId: number | null }[] }[];
 }
 
 export interface PartyView {

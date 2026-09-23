@@ -8333,6 +8333,8 @@
                             "characterId",
                             "name",
                             "raceId",
+                            "gender",
+                            "isUnique",
                             "mimorianEnemyId"
                           ],
                           "properties": {
@@ -8348,6 +8350,21 @@
                               "minLength": 1,
                               "maxLength": 200,
                               "type": "string"
+                            },
+                            "gender": {
+                              "anyOf": [
+                                {
+                                  "const": "male",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "female",
+                                  "type": "string"
+                                }
+                              ]
+                            },
+                            "isUnique": {
+                              "type": "boolean"
                             },
                             "mimorianEnemyId": {
                               "anyOf": [
@@ -8854,6 +8871,8 @@
                                 "characterId",
                                 "name",
                                 "raceId",
+                                "gender",
+                                "isUnique",
                                 "mimorianEnemyId"
                               ],
                               "properties": {
@@ -8869,6 +8888,21 @@
                                   "minLength": 1,
                                   "maxLength": 200,
                                   "type": "string"
+                                },
+                                "gender": {
+                                  "anyOf": [
+                                    {
+                                      "const": "male",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "female",
+                                      "type": "string"
+                                    }
+                                  ]
+                                },
+                                "isUnique": {
+                                  "type": "boolean"
                                 },
                                 "mimorianEnemyId": {
                                   "anyOf": [
@@ -9005,6 +9039,8 @@
                       "characterId": 1,
                       "name": "xxxxxxx",
                       "raceId": "xxxxxxx",
+                      "gender": "male",
+                      "isUnique": true,
                       "mimorianEnemyId": 1
                     }
                   ]
@@ -40461,7 +40497,8 @@
                 "required": [
                   "version",
                   "date",
-                  "content"
+                  "content",
+                  "isRead"
                 ],
                 "properties": {
                   "version": {
@@ -40474,6 +40511,9 @@
                   },
                   "content": {
                     "type": "string"
+                  },
+                  "isRead": {
+                    "type": "boolean"
                   }
                 }
               }
@@ -40527,7 +40567,8 @@
                     "required": [
                       "version",
                       "date",
-                      "content"
+                      "content",
+                      "isRead"
                     ],
                     "properties": {
                       "version": {
@@ -40540,6 +40581,9 @@
                       },
                       "content": {
                         "type": "string"
+                      },
+                      "isRead": {
+                        "type": "boolean"
                       }
                     }
                   }
@@ -40580,7 +40624,8 @@
               {
                 "version": "xxxxxxx",
                 "date": "xxxxxxx",
-                "content": "xxxxxxx"
+                "content": "xxxxxxx",
+                "isRead": true
               }
             ]
           }
@@ -40745,13 +40790,15 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "reward",
-            "enhancement",
-            "superRare",
-            "sideQuest",
-            "sleepiness"
+            "available"
           ],
           "properties": {
+            "available": {
+              "type": "boolean"
+            },
+            "canReset": {
+              "type": "boolean"
+            },
             "reward": {
               "additionalProperties": false,
               "type": "object",
@@ -41214,13 +41261,15 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "reward",
-                "enhancement",
-                "superRare",
-                "sideQuest",
-                "sleepiness"
+                "available"
               ],
               "properties": {
+                "available": {
+                  "type": "boolean"
+                },
+                "canReset": {
+                  "type": "boolean"
+                },
                 "reward": {
                   "additionalProperties": false,
                   "type": "object",
@@ -41680,98 +41729,7 @@
         },
         "response": {
           "data": {
-            "reward": {
-              "common": {
-                "remaining": 0,
-                "total": 0,
-                "hitsRemaining": 0,
-                "hitsTotal": 0
-              },
-              "uncommon": {
-                "remaining": 0,
-                "total": 0,
-                "hitsRemaining": 0,
-                "hitsTotal": 0
-              },
-              "eliteRare": {
-                "remaining": 0,
-                "total": 0,
-                "hitsRemaining": 0,
-                "hitsTotal": 0
-              },
-              "bossRare": {
-                "remaining": 0,
-                "total": 0,
-                "hitsRemaining": 0,
-                "hitsTotal": 0
-              },
-              "mythicRare": {
-                "remaining": 0,
-                "total": 0,
-                "hitsRemaining": 0,
-                "hitsTotal": 0
-              }
-            },
-            "enhancement": {
-              "common": {
-                "remaining": 0,
-                "total": 0,
-                "tiers": [
-                  {
-                    "tier": 1,
-                    "remaining": 0,
-                    "total": 0
-                  }
-                ]
-              },
-              "general": {
-                "remaining": 0,
-                "total": 0,
-                "tiers": [
-                  {
-                    "tier": 1,
-                    "remaining": 0,
-                    "total": 0
-                  }
-                ]
-              }
-            },
-            "superRare": {
-              "common": {
-                "remaining": 0,
-                "total": 0,
-                "hitsRemaining": 0,
-                "hitsTotal": 0
-              },
-              "rare": {
-                "remaining": 0,
-                "total": 0,
-                "hitsRemaining": 0,
-                "hitsTotal": 0
-              }
-            },
-            "sideQuest": {
-              "remaining": 0,
-              "total": 0,
-              "hitsRemaining": 0,
-              "hitsTotal": 0
-            },
-            "sleepiness": {
-              "remaining": 0,
-              "total": 0,
-              "awake": {
-                "remaining": 0,
-                "total": 0
-              },
-              "nap": {
-                "remaining": 0,
-                "total": 0
-              },
-              "deepSleep": {
-                "remaining": 0,
-                "total": 0
-              }
-            }
+            "available": true
           }
         }
       }

@@ -417,7 +417,7 @@ const responseDataSchemas = {
     progressReportInfo: strict({ available: Type.Boolean(), bonusActive: Type.Boolean() }),
   }) }),
   'read/observation/expedition': strict({ expeditionInfo: expeditionProjectionSchema }),
-  'read/observation/party': strict({ partyInfo: strict({ ...partyProjectionSchema.properties, unlockedMimorianEnemyIds: Type.Array(integerId), parties: Type.Array(strict({ partyNumber, deityId: stableKey, characters: Type.Array(strict({ characterId: integerId, name: Type.String({ minLength: 1 }), raceId: stableKey, mimorianEnemyId: Type.Union([integerId, Type.Null()]) })) })) }) }),
+  'read/observation/party': strict({ partyInfo: strict({ ...partyProjectionSchema.properties, unlockedMimorianEnemyIds: Type.Array(integerId), parties: Type.Array(strict({ partyNumber, deityId: stableKey, characters: Type.Array(strict({ characterId: integerId, name: Type.String({ minLength: 1 }), raceId: stableKey, gender: literals('male', 'female'), isUnique: Type.Boolean(), mimorianEnemyId: Type.Union([integerId, Type.Null()]) })) })) }) }),
   'read/observation/base': strict({ baseInfo: baseProjectionSchema }),
   'read/observation/diary': strict({ diaryInfo: diaryProjectionSchema }),
   'read/observation/setting': strict({ settingInfo: settingProjectionSchema }),
@@ -530,19 +530,22 @@ const responseDataSchemas = {
   'read/setting/delivery/{deliveryId}': deliveryRecord,
   'help/overview': strict({ endpoints: Type.Array(strict({ method: literals('GET', 'POST'), path: Type.String(), access: Type.String(), purpose: Type.String() })) }),
   'help/endpoints': strict({ requirements: Type.String(), detail: Type.String(), schemaVersion: Type.Integer() }),
-  'resources/developerNewsNotification': strict({ entries: Type.Array(strict({ version: stableKey, date: Type.String(), content: Type.String() })) }),
+  'resources/developerNewsNotification': strict({ entries: Type.Array(strict({ version: stableKey, date: Type.String(), content: Type.String(), isRead: Type.Boolean() })) }),
   'resources/donationBox': strict({ gods: Type.Array(Type.String()) }),
+  // Spec 9.1.3 4-2-3: `available: false` alone when no member has a.prophecy (and the Debug override is off); otherwise
+  // `canReset` (a.prophecy2) and the bag facts.
   'resources/clairvoyance/{p}': strict({
-    reward: strict({ common: clairvoyanceBagFacts, uncommon: clairvoyanceBagFacts, eliteRare: clairvoyanceBagFacts, bossRare: clairvoyanceBagFacts, mythicRare: clairvoyanceBagFacts }),
-    enhancement: strict({ common: clairvoyanceEnhancementFacts, general: clairvoyanceEnhancementFacts }),
-    superRare: strict({ common: clairvoyanceBagFacts, rare: clairvoyanceBagFacts }),
-    sideQuest: clairvoyanceBagFacts,
-    sleepiness: strict({
+    available: Type.Boolean(), canReset: optional(Type.Boolean()),
+    reward: optional(strict({ common: clairvoyanceBagFacts, uncommon: clairvoyanceBagFacts, eliteRare: clairvoyanceBagFacts, bossRare: clairvoyanceBagFacts, mythicRare: clairvoyanceBagFacts })),
+    enhancement: optional(strict({ common: clairvoyanceEnhancementFacts, general: clairvoyanceEnhancementFacts })),
+    superRare: optional(strict({ common: clairvoyanceBagFacts, rare: clairvoyanceBagFacts })),
+    sideQuest: optional(clairvoyanceBagFacts),
+    sleepiness: optional(strict({
       remaining: Type.Integer({ minimum: 0 }), total: Type.Integer({ minimum: 0 }),
       awake: strict({ remaining: Type.Integer({ minimum: 0 }), total: Type.Integer({ minimum: 0 }) }),
       nap: strict({ remaining: Type.Integer({ minimum: 0 }), total: Type.Integer({ minimum: 0 }) }),
       deepSleep: strict({ remaining: Type.Integer({ minimum: 0 }), total: Type.Integer({ minimum: 0 }) }),
-    }),
+    })),
   }),
   'resources/glossary': strict({
     entries: Type.Array(strict({ glossaryId: stableKey, category: literals('a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.'), label: Type.String(), description: Type.String() })),

@@ -395,7 +395,14 @@ const commitFixtures: Record<string, CommitFixture> = {
   },
   'commit/diary/{p}/diarySetting': { request: async () => ({ path: { p: 1 }, parameters: { notifyGodsBattle: false } }) },
   'commit/diary/diaryEntry/markAsRead': { request: async () => ({ parameters: { diaryEntryId: 'ALL', partyNumber: 1 } }) },
-  'commit/setting/clairvoyanceReset': { request: async () => ({ parameters: { partyNumber: 1, resetCommonRewards: true, resetRewards: false, resetSideQuest: false } }) },
+  'commit/setting/clairvoyanceReset': {
+    // A reset needs a.prophecy2 in the party or the Debug Clairvoyance override (Spec 8.6); the matrix party has no
+    // a.prophecy, so the success path turns on the account's own override (dev/beta only) and the restriction cell is the refusal.
+    environment: 'dev',
+    prepare: async (client) => { await client.commitOk('commit/setting/debug', { parameters: { clairvoyance: true } }); },
+    request: async () => ({ parameters: { partyNumber: 1, resetCommonRewards: true, resetRewards: false, resetSideQuest: false } }),
+    locked: async () => ({ request: { parameters: { partyNumber: 1, resetCommonRewards: true, resetRewards: false, resetSideQuest: false } }, code: 'illegal_action' }),
+  },
   'commit/setting/modeSelect': { request: async () => ({ parameters: { language: 'ja' } }) },
   'commit/setting/enemyEditPane': { environment: 'dev', request: async () => ({ parameters: { enemyLevel: 10 } }) },
   'commit/setting/feedback': { request: async () => ({ parameters: { name: 'Matrix', category: 'feedback', text: 'Conformance matrix feedback.' } }) },

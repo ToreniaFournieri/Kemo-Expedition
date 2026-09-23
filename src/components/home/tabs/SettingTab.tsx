@@ -1,5 +1,4 @@
-import { renderDiaryBattle, renderExpeditionMetadata } from '../../../game/compactDiary.ts';
-import type { ApiV1ClairvoyanceProjection } from '../../../api/v1/readModels';
+import type { ApiV1ClairvoyanceResource } from '../../../api/v1/readModels';
 import { clairvoyanceExpandedKey, GLOSSARY_TABS, SETTING_GLOSSARY_TAB_FAMILY, settingPanelExpandedKey, type GlossaryTab, type SettingPanel, type SettingTabPreferences } from '../../../api/v1/uiPreferenceCatalog';
 import { Fragment,useCallback,useEffect,useMemo,useRef,useState,type ChangeEvent,type Dispatch,type MouseEvent,type ReactNode,type SetStateAction } from 'react';
 import {
@@ -30,15 +29,13 @@ import { formatEnemyDefName } from '../../../game/enemyDisplay';
 import { getEncounterEnemyWithScaling } from '../../../game/enemyScaling';
 import { resolveEnemyPassiveAbilities } from '../../../game/enemyPassiveAbilities';
 import { createEnvironmentStorageKey,getEnvironmentId,isDebugModeEnabled } from '../../../game/environment';
-import { getProphecyControlAccess } from '../../../game/expeditionAbilityPolicies';
 import { completeFeedbackSubmission,FEEDBACK_REWARD_COOLDOWN_MS,getFeedbackRewardEligibility,parseFeedbackSubmissionTimestamp,type FeedbackRewardState } from '../../../game/feedbackRewards';
 import { getLocalizedEnhancementTitle,getLocalizedItemName,getLocalizedSuperRareTitle } from '../../../game/gameState';
 import { buildGodRuntimeEnemy } from '../../../game/godEnemy';
-import { computePartyStats } from '../../../game/partyComputation';
 import { hydrateGameState,serializeGameState } from '../../../game/saveCodec';
 import { decodePersistedState } from '../../../game/storageCompression';
 import { Language,SUPPORTED_LANGUAGES,t } from '../../../i18n';
-import { AbilityId,Character,Dungeon,EnemyDef,ExpeditionLogEntry,GameState,Item,NotificationCategory,NotificationStyle,Party,RaceId,type BattleLogEntry } from '../../../types';
+import { AbilityId,Dungeon,EnemyDef,GameState,Item,NotificationCategory,NotificationStyle,RaceId } from '../../../types';
 import { GAME_MODES, THEME_DEFINITIONS } from '../../../theme/theme';
 import { DesktopNotificationSettings } from '../../DesktopNotificationSettings';
 import { ApiV1Settings } from '../../ApiV1Settings';
@@ -50,15 +47,11 @@ ABILITY_NAMES,
 APP_VERSION,
 BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META,
 buildInlineBonusEntry,
-buildStatusTableHtmlFile,
-buildStatusTableRows,
 CATEGORY_GROUPS,
 CHARACTER_IMAGE_FILES,
 DarkModeSetting,
-escapeExportHtml,
 FEEDBACK_DISCORD_WEBHOOK_URL,
 FloatingBubblePortal,
-formatBattleLogHitDisplay,
 formatBonusAbilityHelpDescription,
 formatBonusAbilityPhaseDisplay,
 formatBonuses,
@@ -91,9 +84,14 @@ TERRAIN_EFFECT_OPTIONS,
 UiIconKey
 } from '../homeShared';
 
+/** A party's members as the Character Roster needs them (`read/observation/party` → `partyInfo.parties`). */
+export interface SettingRosterCharacter { raceId: RaceId; gender: 'male' | 'female'; isUnique: boolean; name: string }
+export interface SettingRosterParty { id: number; characters: SettingRosterCharacter[] }
+
 export default function SettingTab({
-  gameState,
   developerNewsEntries,
+  rosterParties,
+  onBuildFeedbackReport,
   donationRows,
   clairvoyanceProjections,
   enemyEditValidOptions,
@@ -138,10 +136,13 @@ export default function SettingTab({
   settingPreferences,
   onSetUiPreference,
 }: {
-  gameState: GameState;
-  developerNewsEntries: Array<{ version: string; date: string; content: string }>;
+  developerNewsEntries: Array<{ version: string; date: string; content: string; isRead: boolean }>;
+  /** Every party's members for the Character Roster, from `read/observation/party` (`partyInfo.parties`). */
+  rosterParties: SettingRosterParty[];
+  /** Send Feedback (reviewed local exception): the save-derived report lines and attachments, built by HomeScreen. */
+  onBuildFeedbackReport: (latestBattleLogParty: number | null) => Promise<{ versionBuild: string; userId: string; files: File[] }>;
   donationRows: Array<{ deityName: string; donationGold: number; rank: number; nextRankDonationRequirement: number | null }>;
-  clairvoyanceProjections: ApiV1ClairvoyanceProjection[] | null;
+  clairvoyanceProjections: ApiV1ClairvoyanceResource[] | null;
   enemyEditValidOptions: { terrainEffect: string[]; enemyType: string[] } | null;
   glossaryEntries: Array<{ glossaryId: string; category: string; label: string; description: string }> | null;
   itemCompendiumEntries: Array<{ itemId: number; revealed: boolean }> | null;
@@ -280,27 +281,6 @@ export default function SettingTab({
     return `${year}/${month}/${day} ${hour}:${minute} (${timezone})`;
   };
 
-  const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
-    const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
-    const party = gameState.parties[partyIndex];
-    const latestLog = party?.lastExpeditionLog ? renderExpeditionMetadata(party.lastExpeditionLog) : null;
-    if (!party || !latestLog) return null;
-    const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
-      const detailItems = renderDiaryBattle(entry, party.characters).map((detail: BattleLogEntry) => {
-        const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
-        const hitDisplay = formatBattleLogHitDisplay(detail);
-        const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
-        const noteDisplay = detail.note ? `(${detail.note})` : '';
-        return `<li>${escapeExportHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
-      }).join('');
-      return `<section><h3>Room ${escapeExportHtml(String(entry.floor ?? '-'))}-${escapeExportHtml(String(entry.roomInFloor ?? entry.room))} / ${escapeExportHtml(entry.enemyName)}</h3><p>Outcome: ${escapeExportHtml(entry.outcome)} / Damage dealt: ${escapeExportHtml(String(entry.damageDealt))} / Damage taken: ${escapeExportHtml(String(entry.damageTaken))}</p><ul>${detailItems || '<li>(No detail)</li>'}</ul></section>`;
-    }).join('\n');
-    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>KEMO EXPEDITION Latest Battle Log - ${partyLabel}</title></head><body><h1>KEMO EXPEDITION Latest Battle Log (${partyLabel})</h1><p>Dungeon: ${escapeExportHtml(latestLog.dungeonName)} / Outcome: ${escapeExportHtml(latestLog.finalOutcome)}</p><p>Total rooms: ${escapeExportHtml(String(latestLog.totalRooms))} / Completed: ${escapeExportHtml(String(latestLog.completedRooms))}</p>${entriesHtml || '<p>No entries.</p>'}</body></html>`;
-    const now = new Date();
-    const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
-    return new File([html], `latest-battle-log-${partyLabel}-${timestamp}.html`, { type: 'text/html' });
-  };
-
   // SpecRef: 8.6 | UI_SETTING | フィードバック
   const handleFeedbackFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files ?? []);
@@ -341,12 +321,14 @@ export default function SettingTab({
         ?? userAgent.match(/Windows NT ([\d.]+)/i)?.[0]
         ?? userAgent.match(/Mac OS X ([\d_]+)/i)?.[0]?.replace(/_/g, '.')
         ?? 'unknown';
+      const latestBattleLogParty = feedbackLatestBattleLogSelection === 'None' ? null : Number(feedbackLatestBattleLogSelection.replace('PT', ''));
+      const report = await onBuildFeedbackReport(latestBattleLogParty);
       const payload = {
         content: [
           '**Feedback**',
-          `**Version Build env:** ${APP_VERSION} (${formatNumber(gameState.buildNumber)}) ${getEnvironmentId()}`,
+          `**Version Build env:** ${report.versionBuild} ${getEnvironmentId()}`,
           `**Timestamp:** ${formatFeedbackTimestamp()}`,
-          `**User ID:** ${gameState.global.userId}`,
+          `**User ID:** ${report.userId}`,
           `**browser, version:** ${browser}, ${browserVersion}`,
           `**OS version:** ${osVersion}`,
           `**Resolution:** ${formatNumber(window.innerWidth)} px, ${formatNumber(window.innerHeight)} px`,
@@ -359,23 +341,7 @@ export default function SettingTab({
       };
       const formData = new FormData();
       formData.append('payload_json', JSON.stringify(payload));
-      const generatedFiles: File[] = [await buildBackupFile()];
-      if (feedbackLatestBattleLogSelection !== 'None') {
-        const latestBattleLogFile = buildLatestBattleLogHtml(feedbackLatestBattleLogSelection);
-        if (latestBattleLogFile) {
-          generatedFiles.push(latestBattleLogFile);
-        }
-        const partyIndex = Number(feedbackLatestBattleLogSelection.replace('PT', '')) - 1;
-        const partyStatusRows = buildStatusTableRows(gameState.parties, [partyIndex]);
-        const now = new Date();
-        const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
-        const statusTableFile = buildStatusTableHtmlFile(
-          partyStatusRows,
-          `status-table-${feedbackLatestBattleLogSelection}-${timestamp}.html`,
-          `Status table (${feedbackLatestBattleLogSelection})`,
-        );
-        generatedFiles.push(statusTableFile);
-      }
+      const generatedFiles: File[] = [await buildBackupFile(), ...report.files];
       [...generatedFiles, ...feedbackFiles].forEach((file, index) => {
         formData.append(`files[${index}]`, file, file.name);
       });
@@ -469,21 +435,12 @@ export default function SettingTab({
 
   const versionTag = APP_VERSION;
 
-  const getSettingPartyAbilityLevel = (party: Party, abilityId: string): number => {
-    const { characterStats } = computePartyStats(party);
-    return characterStats.reduce((maxLevel, stats) => {
-      const level = stats.abilities
-        .filter((ability) => ability.id === abilityId)
-        .reduce((abilityMax, ability) => Math.max(abilityMax, ability.level), 0);
-      return Math.max(maxLevel, level);
-    }, 0);
-  };
   const currentEnv = getEnvironmentId();
   const isBetaEnvironment = currentEnv === 'beta';
   const isOrcaEnvironment = currentEnv === 'orca';
   const debugModeEnabled = isDebugModeEnabled();
   const modeSelectionLocked = isBetaEnvironment || runtimeGameMode === 'mode.orca';
-  const unreadDeveloperNewsItems = developerNewsEntries.filter((item) => !(gameState.global.readDeveloperNewsItemIds ?? []).includes(item.version));
+  const unreadDeveloperNewsItems = developerNewsEntries.filter((item) => !item.isRead);
   const hasUnreadDeveloperNews = unreadDeveloperNewsItems.length > 0;
 
   // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
@@ -820,7 +777,7 @@ export default function SettingTab({
   const [characterRosterGenderFilter, setCharacterRosterGenderFilter] = useState<'male' | 'female' | 'unique'>('male');
 
   const availableRosterImageFiles = CHARACTER_IMAGE_FILES;
-  const getCharacterRosterImageFileName = (character: Character, partyId: number): string | null => {
+  const getCharacterRosterImageFileName = (character: SettingRosterCharacter, partyId: number): string | null => {
     const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
       'ケモ': 'Unique_Kemo.png', 'ライカ': 'Unique_Laika.png', 'ルナ': 'Unique_Luna.png', 'ノクス': 'Unique_Nox.png',
       'マーレ': 'Unique_Merle.png', 'プチーツァ': 'Unique_Puchitsa.png', '蒼牙破': 'Unique_Souga-ha.png', 'レナード': 'Unique_Leonard.png',
@@ -832,7 +789,7 @@ export default function SettingTab({
     if (!raceMeta || !genderLabel) return null;
     return `${partyId}_${raceMeta.raceName}_${genderLabel}.png`;
   };
-  const selectedRosterParty = gameState.parties.find((party) => party.id === characterRosterPartyId) ?? gameState.parties[0];
+  const selectedRosterParty = rosterParties.find((party) => party.id === characterRosterPartyId) ?? rosterParties[0];
   const selectedRosterRace = RACES.find((race) => race.id === characterRosterRaceId);
   const selectedRosterEntry = characterRosterEntries?.find((race) => race.raceId === characterRosterRaceId) ?? null;
   const activeRosterCharacter = characterRosterGenderFilter === 'unique'
@@ -842,7 +799,7 @@ export default function SettingTab({
       gender: characterRosterGenderFilter,
       isUnique: false,
       name: '',
-    } as Character;
+    } as SettingRosterCharacter;
   const selectedRosterImageFile = activeRosterCharacter
     ? ((): string | null => {
       const raceMeta = CHARACTER_ROSTER_RACES.find((race) => race.id === characterRosterRaceId);
@@ -874,18 +831,18 @@ export default function SettingTab({
     .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
 
   const hasRosterUniqueCharacter = useCallback((partyId: number, raceId: RaceId): boolean => {
-    const party = gameState.parties.find((entry) => entry.id === partyId);
+    const party = rosterParties.find((entry) => entry.id === partyId);
     return (party?.characters ?? []).some((character) => character.raceId === raceId && character.isUnique);
-  }, [gameState.parties]);
+  }, [rosterParties]);
   const visibleRosterRaceIds = useMemo(() => (
     CHARACTER_ROSTER_RACES
-      .filter((race) => characterRosterEntries?.some((entry) => entry.raceId === race.id) && gameState.parties.some((party) =>
+      .filter((race) => characterRosterEntries?.some((entry) => entry.raceId === race.id) && rosterParties.some((party) =>
         hasRosterGenderImage(party.id, race.id, 'male')
         || hasRosterGenderImage(party.id, race.id, 'female')
         || hasRosterUniqueCharacter(party.id, race.id),
       ))
       .map((race) => race.id)
-  ), [CHARACTER_ROSTER_RACES, characterRosterEntries, gameState.parties, hasRosterGenderImage, hasRosterUniqueCharacter]);
+  ), [CHARACTER_ROSTER_RACES, characterRosterEntries, rosterParties, hasRosterGenderImage, hasRosterUniqueCharacter]);
   const visibleRosterGenders = useMemo(() => {
     const partyId = selectedRosterParty?.id ?? 1;
     const genders: Array<'male' | 'female' | 'unique'> = [];
@@ -1463,7 +1420,7 @@ export default function SettingTab({
               {t('app.title')} orca
             </a>
             <a
-              href={gameState.global.language === 'zh-CN'
+              href={language === 'zh-CN'
                 ? 'https://t.me/+exLhrX12vn5iMmI1'
                 : 'https://discord.gg/k9VSf2ghM'}
               target="_blank"
@@ -1515,25 +1472,17 @@ export default function SettingTab({
       </div>
 
       {/* SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視) */}
-      {gameState.parties.some((party) => getProphecyControlAccess(
-        getSettingPartyAbilityLevel(party, 'prophecy'),
-        debugSettings.clairvoyanceEnabled,
-      ).isVisible) && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+      {/* Availability and reset access come from `resources/clairvoyance/{p}` (Spec 9.1.3 4-2-3; 8.6). */}
+      {(clairvoyanceProjections ?? []).some((projection) => projection.available) && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderSettingPanelHeader('clairvoyance', t('setting.clairvoyance.title'))}
         {settingPanelExpanded.clairvoyance && <div className="mt-3 space-y-3">
-          {gameState.parties.map((party, partyIndex) => {
-            const prophecyLevel = getSettingPartyAbilityLevel(party, 'prophecy');
-            const { isVisible: isPaneVisible, canResetBags } = getProphecyControlAccess(
-              prophecyLevel,
-              debugSettings.clairvoyanceEnabled,
-            );
-            if (!isPaneVisible) {
+          {(clairvoyanceProjections ?? []).map((clairvoyance, partyIndex) => {
+            if (!clairvoyance.available) {
               return null;
             }
-
-            const clairvoyance = clairvoyanceProjections?.[partyIndex];
+            const canResetBags = clairvoyance.canReset;
             const isExpanded = clairvoyancePartyExpanded[partyIndex + 1] === true;
-            return <div key={`clairvoyance-${party.id}`} className="rounded border border-gray-200 bg-white p-2 pane-button-shadow">
+            return <div key={`clairvoyance-${partyIndex + 1}`} className="rounded border border-gray-200 bg-white p-2 pane-button-shadow">
               <button type="button" className="flex w-full items-center justify-between text-left font-semibold" onClick={() => toggleClairvoyanceParty(partyIndex + 1, !isExpanded)}>
                 <span>PT{partyIndex + 1} {isExpanded ? '▲' : '▼'}</span>
               </button>
@@ -1547,7 +1496,7 @@ export default function SettingTab({
                   <div>{t('setting.clairvoyance.commonEnhancement')}: {formatNumber(clairvoyance.enhancement.common.remaining)} / {formatNumber(clairvoyance.enhancement.common.total)}</div>
                   <div className="pl-1 text-xs text-gray-500">
                     {clairvoyance.enhancement.common.tiers.map(({ tier, remaining, total }) => (
-                      <div key={`common-enhancement-${party.id}-${tier}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
+                      <div key={`common-enhancement-${partyIndex + 1}-${tier}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
                         <span className="tabular-nums text-right text-gray-400">{tier}</span>
                         <span>{t('setting.enhancementRemaining', { title: getLocalizedEnhancementTitle(tier) })}</span>
                         <span className="tabular-nums text-right">{formatNumber(remaining)} / {formatNumber(total)}</span>
@@ -1579,7 +1528,7 @@ export default function SettingTab({
                   <div>{t('setting.clairvoyance.enhancement')}: {formatNumber(clairvoyance.enhancement.general.remaining)} / {formatNumber(clairvoyance.enhancement.general.total)}</div>
                   <div className="pl-1 text-xs text-gray-500">
                     {clairvoyance.enhancement.general.tiers.map(({ tier, remaining, total }) => (
-                      <div key={`enhancement-${party.id}-${tier}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
+                      <div key={`enhancement-${partyIndex + 1}-${tier}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
                         <span className="tabular-nums text-right text-gray-400">{tier}</span>
                         <span>{t('setting.enhancementRemaining', { title: getLocalizedEnhancementTitle(tier) })}</span>
                         <span className="tabular-nums text-right">{formatNumber(remaining)} / {formatNumber(total)}</span>
@@ -1929,7 +1878,7 @@ export default function SettingTab({
             </div>
           </div>
           <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
-            {gameState.parties.map((party) => (
+            {rosterParties.map((party) => (
               <button key={party.id} onClick={() => setCharacterRosterPartyId(party.id)} className={`px-2 py-1 text-xs rounded pane-button-shadow ${characterRosterPartyId === party.id ? 'bg-sub text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}>
                 PT{formatNumber(party.id)}
               </button>

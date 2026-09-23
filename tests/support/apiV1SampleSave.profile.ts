@@ -217,13 +217,19 @@ assert.equal(validateDonation(donations), true, JSON.stringify(validateDonation.
     assert.equal(roster.races[0].unlockAbility, race.unlockAbility ? race.unlockAbility.id : null);
   }
 
+  // Availability and reset access follow each party's real a.prophecy level (Spec 8.6; 9.1.3 4-2-3).
+  const { getPartyClairvoyanceAccess } = await import('../../src/game/clairvoyanceAccess.ts');
   for (const party of state.parties) {
-    const clairvoyance = await read(`resources/clairvoyance/${party.id}`) as {
+    const clairvoyance = await read(`resources/clairvoyance/${party.id}`) as { available: boolean; canReset?: boolean } & {
       reward: Record<string, { remaining: number; total: number; hitsRemaining: number; hitsTotal: number }>;
       enhancement: Record<string, { remaining: number; total: number; tiers: { tier: number; remaining: number; total: number }[] }>;
       sleepiness: { remaining: number; total: number };
     };
     assert.equal(validateClairvoyance(clairvoyance), true, `PT${party.id}: ${JSON.stringify(validateClairvoyance.errors?.slice(0, 3))}`);
+    const access = getPartyClairvoyanceAccess(party, false);
+    assert.equal(clairvoyance.available, access.isVisible, `PT${party.id} availability`);
+    if (!clairvoyance.available) continue;
+    assert.equal(clairvoyance.canReset, access.canResetBags, `PT${party.id} reset access`);
     // A real, heavily-played save has drawn from at least one common reward bag by now.
     for (const facts of Object.values(clairvoyance.reward)) assert.ok(facts.remaining <= facts.total && facts.hitsRemaining <= facts.hitsTotal, `PT${party.id} reward bag bounds`);
     assert.equal(clairvoyance.enhancement.common.tiers.length, 6);

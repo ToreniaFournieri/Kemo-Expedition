@@ -45,6 +45,7 @@ import {
 import type { ApiV1PartyCycleView } from './commitOperations.ts';
 import { describeModeSelectCurrent, selectableThemes, toThemeKey, type ApiV1DisplaySettings } from './modeSelect.ts';
 import { describeDebugSettings } from './debugSettings.ts';
+import { getPartyClairvoyanceAccess } from '../../game/clairvoyanceAccess.ts';
 import type { DebugSettings } from '../../game/debugSettings.ts';
 import { MAX_LEVEL, type EnemyDef, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party, type RandomBag } from '../../types/index.ts';
 
@@ -479,6 +480,9 @@ export interface ApiV1ClairvoyanceSleepinessFacts {
   remaining: number; total: number;
   awake: { remaining: number; total: number }; nap: { remaining: number; total: number }; deepSleep: { remaining: number; total: number };
 }
+/** `resources/clairvoyance/{p}` (Spec 9.1.3 4-2-3): `unavailable` without a.prophecy, otherwise the facts and reset access. */
+export type ApiV1ClairvoyanceResource = { available: false } | ({ available: true; canReset: boolean } & ApiV1ClairvoyanceProjection);
+
 export interface ApiV1ClairvoyanceProjection {
   reward: { common: ApiV1ClairvoyanceBagFacts; uncommon: ApiV1ClairvoyanceBagFacts; eliteRare: ApiV1ClairvoyanceBagFacts; bossRare: ApiV1ClairvoyanceBagFacts; mythicRare: ApiV1ClairvoyanceBagFacts };
   enhancement: { common: ApiV1ClairvoyanceEnhancementFacts; general: ApiV1ClairvoyanceEnhancementFacts };
@@ -502,6 +506,12 @@ function sleepinessBagFacts(bag: RandomBag): ApiV1ClairvoyanceSleepinessFacts {
   const of = (id: number) => ({ remaining: getBagEntryTickets(normalized, id), total: getBagEntryTickets(defaultBag, id) });
   return { remaining: getBagTicketTotal(normalized), total: getBagTicketTotal(defaultBag), awake: of(0), nap: of(1), deepSleep: of(2) };
 }
+/** The Debug Clairvoyance override: the ordinary player's Debug pane, or an API account's own debug settings. */
+export function clairvoyanceDebugOverride(context: { debugSettings?: () => { clairvoyanceEnabled: boolean }; control?: { settings?: Record<string, unknown> } }): boolean {
+  if (context.debugSettings) return context.debugSettings().clairvoyanceEnabled;
+  return (context.control?.settings?.debug as { clairvoyance?: unknown } | undefined)?.clairvoyance === true;
+}
+
 function clairvoyance(party: Party) {
   const bags = party.bags;
   const superRareHitIds = SUPER_RARE_TITLES.filter((title) => title.value > 0).map((title) => title.value);
@@ -648,7 +658,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     const parties = state.parties.map((party) => ({
       partyNumber: party.id,
       deityId: getDeityId(party.deity.name),
-      characters: party.characters.map((character) => ({ characterId: character.id, name: character.name, raceId: character.raceId, mimorianEnemyId: character.mimorianEnemyId ?? null })),
+      characters: party.characters.map((character) => ({ characterId: character.id, name: character.name, raceId: character.raceId, gender: character.gender, isUnique: character.isUnique === true, mimorianEnemyId: character.mimorianEnemyId ?? null })),
     }));
     return { partyInfo: { ...partyProjection(state, parameters), parties, unlockedMimorianEnemyIds: [...state.global.unlockedMimorianEnemyIds] } };
   }
@@ -858,7 +868,8 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   if (operationId.startsWith('read/setting/delivery/')) { const deliveryId = operationId.split('/').at(-1); const delivery = (context.control?.deliveries as ApiV1DeliveryRecord[] | undefined)?.find((entry) => entry.deliveryId === deliveryId); if (!delivery) throw new Error('not_found'); return projectDelivery(delivery); }
 
   // SpecRef: 9.1.3, 4-2-1 | "content is returned in the currently selected language."
-  if (operationId === 'resources/developerNewsNotification') return { entries: DEVELOPER_NEWS_ITEMS.map((entry) => ({ version: entry.id, date: entry.date, content: entry.content[state.global.language] })) };
+  // `isRead` is the save's read state, which `commit/setting/markNewsAsRead` changes (Spec 8.6 News; 9.1.4.9).
+  if (operationId === 'resources/developerNewsNotification') return { entries: DEVELOPER_NEWS_ITEMS.map((entry) => ({ version: entry.id, date: entry.date, content: entry.content[state.global.language], isRead: (state.global.readDeveloperNewsItemIds ?? []).includes(entry.id) })) };
   if (operationId === 'resources/donationBox') {
     // Every unlocked god with its rank, donated Gold, and the total needed for the next rank.
     const gods = state.global.unlockedDeities.flatMap((name) => {
@@ -873,7 +884,9 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   if (clairvoyanceMatch) {
     const selected = partyByNumber(state, clairvoyanceMatch[1]);
     if (!selected) throw new Error('not_found');
-    return clairvoyance(selected.party);
+    const access = getPartyClairvoyanceAccess(selected.party, clairvoyanceDebugOverride(context));
+    if (!access.isVisible) return { available: false };
+    return { available: true, canReset: access.canResetBags, ...clairvoyance(selected.party) };
   }
   if (operationId === 'resources/glossary') return glossary(state, parameters);
   if (operationId === 'resources/itemCompendium') return itemCompendium(state, parameters);

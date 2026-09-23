@@ -230,9 +230,9 @@ test('the Setting tab reads migrated settings and reference panels from the Appl
   for (const banned of [/DEVELOPER_NEWS_ITEMS/, /getDeveloperNewsContent/, /\bdeityDonations\b/, /donationByDeity/, /onResetCommonBags/, /onResetUniqueBags/, /onResetSideQuestBag/]) {
     assert.doesNotMatch(tab, banned, `SettingTab must not reference ${banned}`);
   }
-  assert.match(tab, /developerNewsEntries: Array<\{ version: string; date: string; content: string \}>;/);
+  assert.match(tab, /developerNewsEntries: Array<\{ version: string; date: string; content: string; isRead: boolean \}>;/);
   assert.match(tab, /donationRows: Array<\{ deityName: string; donationGold: number; rank: number; nextRankDonationRequirement: number \| null \}>;/);
-  assert.match(tab, /clairvoyanceProjections: ApiV1ClairvoyanceProjection\[\] \| null;/);
+  assert.match(tab, /clairvoyanceProjections: ApiV1ClairvoyanceResource\[\] \| null;/);
   assert.match(tab, /onClairvoyanceReset: \(partyIndex: number, changes:/);
   assert.match(tab, /enemyEditValidOptions\?\.enemyType/, 'Enemy Edit\'s type dropdown reads its option keys from the API, not only the hand-maintained label map');
   for (const projection of ['glossaryEntries', 'itemCompendiumEntries', 'characterRosterEntries', 'bestiaryEntries', 'superRareEntries']) {
@@ -358,4 +358,25 @@ test('the Setting tab keeps retained pane, Clairvoyance, and Glossary-tab state 
   const home = read('src/components/HomeScreen.tsx');
   assert.match(home, /settingPreferences=\{settingTabPreferences\}/);
   assert.match(home, /onSetUiPreference=\{handleSetUiPreference\}/);
+});
+
+// Stage 9.5d: the Setting tab no longer receives the complete save. News read state, Clairvoyance availability and reset
+// access, and the Character Roster's parties come from projections; Send Feedback's save-derived attachments are built
+// by HomeScreen (reviewed local exception). Two scalar reads remain reviewed: the party count (Debug "Party unlock") and
+// the shared language.
+test('the Setting tab receives no complete save and computes no Clairvoyance access itself', () => {
+  const tab = read('src/components/home/tabs/SettingTab.tsx');
+  // `game/gameState` is a display-helper module path, not the save.
+  assert.doesNotMatch(tab, /(?<!game\/)\bgameState\b/, 'SettingTab must not take the complete game state');
+  for (const banned of [/computePartyStats/, /getProphecyControlAccess/, /renderExpeditionMetadata/, /buildStatusTableRows/]) {
+    assert.doesNotMatch(tab, banned, `SettingTab must not reference ${banned}`);
+  }
+  const home = read('src/components/HomeScreen.tsx');
+  const start = home.indexOf('<SettingTab');
+  const jsx = home.slice(start, home.indexOf('\n      />', start));
+  assert.doesNotMatch(jsx, /=\{state\}/);
+  const rawReads = [...jsx.matchAll(/^\s+([A-Za-z]+)=\{state\./gm)].map((match) => match[1]).sort();
+  assert.deepEqual(rawReads, ['language', 'partyCount'], 'only the reviewed scalar reads');
+  assert.match(jsx, /rosterParties=\{rosterParties\}/);
+  assert.match(jsx, /onBuildFeedbackReport=\{handleBuildFeedbackReport\}/);
 });

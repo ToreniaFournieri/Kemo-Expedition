@@ -1,6 +1,6 @@
 # `/api/v1` UI ownership audit (Stage 9.5)
 
-Status as of v0.9.7 Build 103. Contract: `Specification_9.1.4_API_DETAIL.md` §9.1.4.17 (UI state ownership). Mechanical checks: `tests/migratedTabs.test.cjs`.
+Status as of v0.9.7 Build 104. Contract: `Specification_9.1.4_API_DETAIL.md` §9.1.4.17 (UI state ownership). Mechanical checks: `tests/migratedTabs.test.cjs`.
 
 Every screen control and state value is classified as one of:
 
@@ -26,7 +26,7 @@ Cutover is blocked if a migrated screen does any of these:
 | Party tab | `read/observation/party`, `equipment`, `equipmentSet`, `equipmentEvaluation`, `searchItems` | All build and equipment commits; retained category through `uiPreferences` | Reviewed display imports; reducer props limited to toasts and `selectParty` |
 | Base tab | `read/observation/base`, `enemyFormList` | Shop, Altar, Inventory commits | Vault is the reviewed reducer exception (Spec 8.4.3: no API) |
 | Diary tab | `read/observation/diary`, `diaryEntry` | Diary settings and read acknowledgements | `selectParty` is the one shared-state action |
-| Setting tab | News, Donation, Clairvoyance, the five reference panels, `enemyEditPane`, `modeSelect` | Backup export/import/reset, news, Clairvoyance reset, language, theme, dark mode, statistics switch | See findings for storage keys |
+| Setting tab | News (with read state), Donation, Clairvoyance (with availability), the party list for the Character Roster, the five reference panels, `enemyEditPane`, `modeSelect`, retained preferences | Backup export/import/reset, news, Clairvoyance reset, language, theme, dark mode, statistics switch, retained preferences | No complete save; only the Send Feedback storage keys |
 
 ## Reducer actions still called by `HomeScreen`
 
@@ -72,10 +72,11 @@ No tab and not the header touches `window.bokemoDesktop` (guarded). Only the tru
 - **A (fixed, Build 103)**: Setting pane expansion and per-party Clairvoyance expansion are `uiPreferences` catalog families. The tab reads them from `settingInfo.uiPreferences` and commits changes through `commit/setting/uiPreferences`; existing local values are migrated once.
 - **B (fixed, Build 103)**: the Glossary tab is retained by owner decision (`setting.glossaryTab`; the default `能` applies only until a tab is stored). Expanded entries are local view state.
 - **C (fixed, Build 103)**: for the ordinary player, `read/setting/debug` and `settingInfo.debug` report the Debug pane's real settings, and `commit/setting/debug` applies to them after the durable commit (the pattern used for `modeSelect`). An API account keeps its own stored debug settings. `commit/setting/enemyEditPane` still stores its values in control settings (the Enemy Edit pane keeps its own local settings by design, Build 99).
-- **D (open, found while fixing A)**: the Setting tab still receives the complete `GameState` (`gameState` prop). It uses it for:
-  - the News unread check (`global.readDeveloperNewsItemIds`);
-  - the Character Roster and Clairvoyance party lists (`parties`);
-  - the feedback content (`parties`, `buildNumber`, `global.userId`; inside the Send Feedback exception);
-  - the language link (`global.language`).
-
-  This matches the audit's first blocker ("reads the complete persisted save directly"). Replace each use with a projection (the News entries' read state, the Party summaries, `settingInfo.language`) or confine it to the Send Feedback exception, then forbid the prop in the guard.
+- **D (fixed, Build 104)**: the Setting tab no longer receives the complete `GameState`.
+  - News unread state comes from each `resources/developerNewsNotification` entry's new `isRead`.
+  - Clairvoyance availability and reset access come from `resources/clairvoyance/{p}` (`available`, `canReset`); the tab no longer computes a.prophecy levels.
+  - The Character Roster reads every party's members from `read/observation/party`'s `parties` list (now with `gender` and `isUnique`).
+  - Send Feedback's save-derived report lines and attachments are built by `HomeScreen` through `onBuildFeedbackReport` (reviewed local exception), which also removed a duplicate of the battle-log HTML builder.
+  - The language link uses the existing `language` prop.
+  - Two reviewed scalar reads remain: the party count (Debug "Party unlock") and the shared language. The guard fails on any other raw save read.
+- **E (fixed, Build 104, found while fixing D)**: the API ignored the 8.6 Clairvoyance rules. `resources/clairvoyance/{p}` returned the bag facts for a party without `a.prophecy` (9.1.3 4-2-3 says `unavailable`), and `commit/setting/clairvoyanceReset` reset bags without `a.prophecy`2. Both now follow the shared rule in `src/game/clairvoyanceAccess.ts`.

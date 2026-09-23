@@ -5,6 +5,7 @@ import { getDeityId, getDeityNameFromId, isNoFaithDeity, normalizeDeityName } fr
 import { getEnvironmentId, isDebugModeEnabled } from '../../game/environment';
 import { describeModeSelectCurrent, planDisplaySettingWrite, type ApiV1DisplaySettings, type ApiV1DisplaySettingWrite } from './modeSelect';
 import { describeDebugSettings, planDebugSettingWrite } from './debugSettings';
+import { getPartyClairvoyanceAccess } from '../../game/clairvoyanceAccess';
 import type { DebugSettings } from '../../game/debugSettings';
 import { canCharacterEquipCategory, createEquipmentSetSnapshot, evaluateEquipmentSet, evaluateEquipmentState, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
 import { recordEquipmentState, redoEquipmentState, undoEquipmentState } from '../../game/equipmentHistory';
@@ -500,6 +501,9 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const partyNumber = Number(parameters.partyNumber);
     const partyIndex = next.parties.findIndex((entry) => entry.id === partyNumber);
     if (partyIndex < 0) throw new Error('not_found');
+    // SpecRef: 8.6 | Clairvoyance reset needs a.prophecy2 in the party, or the Debug Clairvoyance override.
+    const debugOverride = context.debugSettings ? context.debugSettings.clairvoyanceEnabled : (settings.debug as { clairvoyance?: unknown } | undefined)?.clairvoyance === true;
+    if (!getPartyClairvoyanceAccess(next.parties[partyIndex], debugOverride).canResetBags) throw new Error('illegal_action:clairvoyance_reset_unavailable');
     if (parameters.resetCommonRewards === true) reduce({ type: 'RESET_COMMON_BAGS', partyIndex });
     if (parameters.resetRewards === true) { reduce({ type: 'RESET_UNIQUE_BAGS', partyIndex }); reduce({ type: 'RESET_COMMON_SUPER_RARE_BAG', partyIndex }); reduce({ type: 'RESET_RARE_SUPER_RARE_BAG', partyIndex }); }
     if (parameters.resetSideQuest === true) { reduce({ type: 'RESET_SIDE_QUEST_BAG', partyIndex }); reduce({ type: 'SET_SIDE_QUEST_PROGRESS', partyIndex, progress: 0 }); }

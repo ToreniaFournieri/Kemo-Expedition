@@ -843,6 +843,16 @@ assert.deepEqual(state, before);
   assert.deepEqual(mustelid.races.map((race) => race.raceId), ['mustelid'], 'mustelid (missing from the original query enum) is reachable');
 }
 
+// News (8.6): each entry reports the save's read state, which `commit/setting/markNewsAsRead` changes.
+{
+  const news = await buildApiV1ReadData('resources/developerNewsNotification', state, {}, context) as { entries: Array<{ version: string; isRead: boolean }> };
+  assert.ok(news.entries.length > 0 && news.entries.every((entry) => entry.isRead === false));
+  const [first] = news.entries;
+  const read = { ...state, global: { ...state.global, readDeveloperNewsItemIds: [first.version] } };
+  const after = await buildApiV1ReadData('resources/developerNewsNotification', read, {}, context) as typeof news;
+  assert.deepEqual(after.entries.filter((entry) => entry.isRead).map((entry) => entry.version), [first.version]);
+}
+
 // Clairvoyance (8.6): remaining/total/hitsRemaining/hitsTotal per bag, compared against a freshly created bag of the
 // same kind; a fresh save's live bags equal their own defaults everywhere.
 {
@@ -850,7 +860,14 @@ assert.deepEqual(state, before);
   const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
   const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'resources/clairvoyance/{p}')!.response.data);
   type BagFacts = { remaining: number; total: number; hitsRemaining: number; hitsTotal: number };
-  const fresh = await buildApiV1ReadData('resources/clairvoyance/1', state, {}, context) as {
+  // Spec 9.1.3 4-2-3 / 8.6: a fresh party has no a.prophecy, so without the Debug override Clairvoyance is unavailable.
+  const unavailable = await buildApiV1ReadData('resources/clairvoyance/1', state, {}, context);
+  assert.deepEqual(unavailable, { available: false });
+  assert.equal(validate(unavailable), true, JSON.stringify(validate.errors));
+  const apiAccountOverride = await buildApiV1ReadData('resources/clairvoyance/1', state, {}, { ...context, control: { settings: { debug: { clairvoyance: true } } } } as never) as { available: boolean; canReset: boolean };
+  assert.deepEqual([apiAccountOverride.available, apiAccountOverride.canReset], [true, true], "an API account's own Debug override");
+  const overrideContext = { ...context, debugSettings: () => ({ clairvoyanceEnabled: true }) } as never;
+  const fresh = await buildApiV1ReadData('resources/clairvoyance/1', state, {}, overrideContext) as {
     reward: Record<string, BagFacts>; enhancement: Record<string, { remaining: number; total: number; tiers: { tier: number; remaining: number; total: number }[] }>;
     superRare: Record<string, BagFacts>; sideQuest: BagFacts; sleepiness: { remaining: number; total: number; awake: { remaining: number; total: number } };
   };
@@ -871,11 +888,11 @@ assert.deepEqual(state, before);
       { ...state.parties[0], id: 2 },
     ],
   };
-  const afterDraw = await buildApiV1ReadData('resources/clairvoyance/1', drawnDown, {}, context) as typeof fresh;
+  const afterDraw = await buildApiV1ReadData('resources/clairvoyance/1', drawnDown, {}, overrideContext) as typeof fresh;
   assert.equal(afterDraw.reward.common.hitsRemaining, fresh.reward.common.hitsTotal - 1);
   assert.equal(afterDraw.reward.common.total, fresh.reward.common.total, 'the total never changes with the live bag');
   assert.deepEqual(afterDraw.reward.uncommon, fresh.reward.uncommon, 'another bag is untouched');
-  const otherParty = await buildApiV1ReadData('resources/clairvoyance/2', drawnDown, {}, context) as typeof fresh;
+  const otherParty = await buildApiV1ReadData('resources/clairvoyance/2', drawnDown, {}, overrideContext) as typeof fresh;
   assert.deepEqual(otherParty.reward.common, fresh.reward.common, "another party's bag is untouched");
   await assert.rejects(buildApiV1ReadData('resources/clairvoyance/99', state, {}, context), /not_found/);
 }
