@@ -390,7 +390,6 @@ Path Parameters
 * Return:
   * `headerInfo`  
     * Global game information shared across the application.
-    * Currently displayed in the header pane in the UI.
     * `gameMode`
     * `inGameTime`
       * Format: ISO 8601 datetime string.
