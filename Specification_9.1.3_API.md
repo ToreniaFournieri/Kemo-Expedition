@@ -223,6 +223,8 @@ Path Parameters
 * Return:
     * `systemStatus`
     * `versionBuild`
+      * Format: `v<version> (<buildNumber>)`
+  (for example `v0.9.7 (119)`)
     * `environment`
 
 **1-2. `fundamental/signUp`**
