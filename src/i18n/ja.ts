@@ -3235,7 +3235,7 @@ const ja = {
   'party.categoryName.robe': '法衣',
   'party.categoryName.shield': '盾',
   'party.categoryName.bolt': 'ボルト',
-  'party.categoryName.grimoire': '魔道書',
+  'party.categoryName.grimoire': '魔導書',
   'party.categoryName.catalyst': '触媒',
   'party.categoryName.arrow': '矢',
   'party.categoryName.unknown': '不明',
