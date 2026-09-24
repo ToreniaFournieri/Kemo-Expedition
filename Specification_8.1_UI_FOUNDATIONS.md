@@ -175,6 +175,7 @@
   if (p.includes("/dev/")) return "D";
   if (p.includes("/beta/")) return "β";
   return "";  };
+  if (p.includes("/orca/")) return "O";
   - Use this specification's version
 
 - Speed of Time: `▶︎ (23h)`
