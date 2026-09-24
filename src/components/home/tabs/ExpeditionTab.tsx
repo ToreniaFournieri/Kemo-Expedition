@@ -386,13 +386,10 @@ function ExpeditionTab({
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
         const party = state.parties[partyIndex];
         if (!party) {
-          const lockedPartyUnlockTextByIndex: Partial<Record<number, string>> = {
-            1: t('home.party.locked.clearVarunSea'),
-            2: t('home.party.locked.clearFelidyDesert'),
-            3: t('home.party.locked.clearUrsanBlaze'),
-            4: t('home.party.locked.clearProcyonNest'),
-            5: t('home.party.locked.clearLeporianMoon'),
-          };
+          // Party slots 2-6 unlock by clearing dungeons 3-7.
+          const lockedPartyUnlockTextByIndex: Partial<Record<number, string>> = Object.fromEntries(
+            [1, 2, 3, 4, 5].map((index) => [index, t('home.party.locked.clearDungeon', { dungeon: t(`data.dungeons.${index + 2}.name`) })]),
+          );
           const lockedPartyHintVisibleRequirementByIndex: Partial<Record<number, number>> = {
             1: 2,
             2: 3,

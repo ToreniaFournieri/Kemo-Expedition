@@ -30,3 +30,12 @@ test('ability descriptions contain no generic placeholder text', () => {
     }
   }
 });
+
+test('every language defines exactly the Japanese key set', () => {
+  const expected = Object.keys(ja).sort();
+  for (const [language, dictionary] of Object.entries({ en, 'zh-CN': zhCN, 'zh-TW': zhTW, ko })) {
+    const keys = Object.keys(dictionary).sort();
+    assert.deepEqual(expected.filter((key) => !keys.includes(key)), [], `${language} is missing keys`);
+    assert.deepEqual(keys.filter((key) => !(key in ja)), [], `${language} has keys Japanese does not`);
+  }
+});
