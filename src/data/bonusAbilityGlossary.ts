@@ -169,16 +169,29 @@ const LEVEL_SCALE_VALUE_RULES: Array<[RegExp, (match: RegExpMatchArray) => strin
   [/^遠距離$/u, () => t('ability.levelScale.ranged')],
 ];
 
+// Localizes the value part of a canonical level scale. Parts the canonical text joins
+// with "・" are rejoined with the language's own separator (common.valueSeparator).
+export function localizeLevelScaleValue(value: string): string {
+  for (const [pattern, format] of LEVEL_SCALE_VALUE_RULES) {
+    const valueMatch = pattern.exec(value);
+    if (valueMatch) return format(valueMatch);
+  }
+  return value.split('・').join(t('common.valueSeparator'));
+}
+
 export function localizeLevelScale(levelScale: string): string {
   const match = /^(Lv\d+:\s*)(.*)$/u.exec(levelScale);
   if (!match) return levelScale;
   const [, prefix, value] = match;
-  for (const [pattern, format] of LEVEL_SCALE_VALUE_RULES) {
-    const valueMatch = pattern.exec(value);
-    if (valueMatch) return `${prefix}${format(valueMatch)}`;
-  }
-  return levelScale;
+  return `${prefix}${localizeLevelScaleValue(value)}`;
 }
+
+// These level scales are localized as whole phrases by their own keys.
+const LEVEL_SCALE_KEY_OVERRIDES = new Set<AbilityId>(['illusion', 'first_strike']);
+
+const CANONICAL_LEVEL_SCALES = new Map<AbilityId, string[]>(
+  BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => [entry.abilityId, entry.levelScale]),
+);
 
 function getBonusAbilityLevelScale(entry: BonusAbilityGlossaryEntry): string[] {
   if (entry.abilityId === 'illusion') {
@@ -213,4 +226,131 @@ export const BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID = new Map(
 
 export function isBonusAbilityLevelScalable(abilityId: AbilityId): boolean {
   return (BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.get(abilityId)?.levelScale.length ?? 0) > 1;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Japanese particles before a substituted multiplier ("を x1.6") are joined ("をx1.6").
+// Languages without particles leave these keys empty, and their spacing is kept.
+const PARTICLE_KEYS = [
+  ['home.grammar.objectParticle', 'home.grammar.objectParticleX'],
+  ['home.grammar.subjectParticle', 'home.grammar.subjectParticleX'],
+  ['home.grammar.possessiveParticle', 'home.grammar.possessiveParticleX'],
+] as const;
+
+function joinParticleMultiplier(text: string): string {
+  return PARTICLE_KEYS.reduce((result, [particleKey, joinedKey]) => {
+    const particle = t(particleKey);
+    return particle.length > 0 ? result.replace(new RegExp(`${escapeRegExp(particle)}\\s+x`, 'g'), t(joinedKey)) : result;
+  }, text);
+}
+
+const BONUS_ABILITY_PHASE_DISPLAY_LABEL_KEYS: Record<'COMBAT' | 'END', string> = {
+  COMBAT: 'battleLog.phase.combat',
+  END: 'common.end',
+};
+
+export function formatBonusAbilityPhaseDisplay(value: string): string {
+  return value.replace(/COMBAT|END/g, (phase) => t(BONUS_ABILITY_PHASE_DISPLAY_LABEL_KEYS[phase as 'COMBAT' | 'END']));
+}
+
+export function isBonusAbilityTimingToken(token: string): boolean {
+  return /^(?:COMBAT|END)\d(?:\/(?:COMBAT|END)\d)*$/.test(token);
+}
+
+export function parseBonusAbilityLevelScale(levelScale: string): { timing: string | null; value: string | null } {
+  const scaleContent = levelScale.replace(/^Lv\d+:\s*/, '').trim();
+  if (scaleContent.length === 0 || scaleContent === '-') {
+    return { timing: null, value: null };
+  }
+
+  const separatorIndex = scaleContent.indexOf('・');
+  if (separatorIndex < 0) {
+    const isTimingOnly = /^(COMBAT|END)\d/.test(scaleContent);
+    return {
+      timing: isTimingOnly ? formatBonusAbilityPhaseDisplay(scaleContent) : null,
+      value: isTimingOnly ? null : scaleContent,
+    };
+  }
+
+  const timingToken = scaleContent.slice(0, separatorIndex).trim();
+  const valueToken = scaleContent.slice(separatorIndex + 1).trim();
+
+  if (!isBonusAbilityTimingToken(timingToken)) {
+    return {
+      timing: null,
+      value: scaleContent,
+    };
+  }
+
+  return {
+    timing: timingToken.length > 0 ? formatBonusAbilityPhaseDisplay(timingToken) : null,
+    value: valueToken.length > 0 ? valueToken : null,
+  };
+}
+
+export function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number): string {
+  const entry = BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.get(abilityId);
+  if (!entry) {
+    return t(`ability.${abilityId}.description`);
+  }
+
+  // Parse the canonical scale (its "・" separates timing and value), then localize the value.
+  const scales = LEVEL_SCALE_KEY_OVERRIDES.has(abilityId) ? entry.levelScale : CANONICAL_LEVEL_SCALES.get(abilityId) ?? [];
+  const levelScale = scales[Math.max(level - 1, 0)] ?? scales[scales.length - 1] ?? '';
+  if (levelScale.length === 0) {
+    return entry.description;
+  }
+
+  if (abilityId === 'execution') {
+    const executionScaleMatch = levelScale.match(/Lv\d+:\s*(\d+%)・x?([\d.]+)/);
+    if (executionScaleMatch) {
+      const [, threshold, multiplier] = executionScaleMatch;
+      return joinParticleMultiplier(entry.description
+        .replace(/xN/g, `x${multiplier}`)
+        .replace(/xM/g, `x${multiplier}`)
+        .replace(/\bN\b/g, threshold)
+        .replace(/\bM\b/g, multiplier));
+    }
+  }
+  if (abilityId === 'melee_conversion') {
+    const meleeConversionScaleMatch = levelScale.match(/Lv\d+:\s*(\d+)%・(\d+)%/);
+    if (meleeConversionScaleMatch) {
+      const [, rangedRate, magicalRate] = meleeConversionScaleMatch;
+      return entry.description
+        .replace(/N%/g, `${rangedRate}%`)
+        .replace(/M%/g, `${magicalRate}%`);
+    }
+  }
+
+  const { timing, value: canonicalValue } = parseBonusAbilityLevelScale(levelScale);
+  const value = canonicalValue ? localizeLevelScaleValue(canonicalValue) : null;
+  let description = entry.description;
+
+  if (abilityId.endsWith('_reflect') && value && value.includes(t('home.abilityScale.reflect')) && value.includes(t('home.abilityScale.damageTaken')) && entry.description.includes(t('home.abilityDescription.reflectTemplate'))) {
+    return joinParticleMultiplier(entry.description
+      .replace(t('home.abilityDescription.reflectTemplate'), t('home.abilityDescription.reflectDistributed', { value })));
+  }
+
+  if (timing) {
+    description = description
+      .replace(t('home.abilityDescription.specifiedEndTiming'), t('home.abilityDescription.resolvedEndTiming', { timing }))
+      .replace(t('home.abilityDescription.specifiedTiming'), t('home.abilityDescription.resolvedTiming', { timing }));
+  }
+
+  if (value) {
+    const normalizedValue = value.startsWith('x') ? value.slice(1) : value;
+    const signedPercentValue = normalizedValue.startsWith('+') || normalizedValue.startsWith('-') ? normalizedValue : `+${normalizedValue}`;
+    const negativePercentValue = normalizedValue.startsWith('-') ? normalizedValue : `-${normalizedValue.replace(/^\+/, '')}`;
+    description = description
+      .replace(/\+N%/g, signedPercentValue)
+      .replace(/-N%/g, negativePercentValue)
+      .replace(/N%/g, normalizedValue)
+      .replace(/xN/g, value.startsWith('x') ? value : `x${value}`)
+      .replace(/\bN\b/g, normalizedValue);
+  }
+
+  return joinParticleMultiplier(description);
 }

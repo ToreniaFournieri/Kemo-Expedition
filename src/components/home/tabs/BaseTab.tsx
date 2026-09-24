@@ -393,7 +393,7 @@ function ShopTab({
                 {t(shop.dialogue.key)}
               </p>
               <p className="shop-dialogue-pane__countdown text-xs">
-                {t('home.shop.refreshCountdown', { time: countdownText.replace('後', '') })}
+                {t('home.shop.refreshCountdown', { time: countdownText })}
               </p>
             </div>
           </div>

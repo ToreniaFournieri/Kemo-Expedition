@@ -3,6 +3,7 @@ import { afkRuntimeTrace } from '../game/afkRuntimeTrace';
 import { getEnvironmentId } from '../game/environment';
 import { memoryMonitor, type MemoryMetrics } from '../game/memoryMonitoring';
 import { t } from '../i18n';
+import { DISPLAY_LOCALE } from '../i18n/displayFormat';
 
 function formatBytes(value: number | null): string {
   if (value === null) return t('setting.memory.unavailable');
@@ -41,8 +42,8 @@ export interface RuntimeDiagnosticExport {
 }
 
 function formatDuration(value: number): string {
-  if (value < 1_000) return `${new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 0 }).format(value)} ms`;
-  return `${new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1 }).format(value / 1_000)} s`;
+  if (value < 1_000) return `${new Intl.NumberFormat(DISPLAY_LOCALE, { maximumFractionDigits: 0 }).format(value)} ms`;
+  return `${new Intl.NumberFormat(DISPLAY_LOCALE, { maximumFractionDigits: 1 }).format(value / 1_000)} s`;
 }
 
 function buildRuntimeDiagnosticExport(): RuntimeDiagnosticExport {

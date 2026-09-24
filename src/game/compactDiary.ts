@@ -48,7 +48,7 @@ export function renderExpeditionMetadata(log: ExpeditionLog): ExpeditionLog {
     entries: log.entries.map(entry => {
       const suffix = entry.roomType === 'battle_Elite' ? ' (ELITE)' : entry.roomType === 'battle_Boss' ? (entry.godsBattle ? ` ${t('game.log.godsBattleSuffix')}` : ' (BOSS)') : '';
       return { ...entry,
-        enemyName: entry.enemySnapshot ? formatEnemyDefName(entry.enemySnapshot) + suffix : entry.gateText ? t('auto.jp.270d06353e') : entry.enemyName,
+        enemyName: entry.enemySnapshot ? formatEnemyDefName(entry.enemySnapshot) + suffix : entry.gateText ? t('expedition.gate.sealed') : entry.enemyName,
         ...(entry.gateText ? { gateInfo: renderDiaryText(entry.gateText) } : {}),
         ...(entry.rewardItems?.length ? { reward: entry.rewardItems.map(diaryItemName).join(' / ') } : {}),
       };
@@ -64,8 +64,8 @@ export function renderDiaryBattle(entry: ExpeditionLogEntry, currentCharacters?:
       case 0: return buildPostBattleEffectLogs([event[1]]);
       case 1: return [buildAuriferousLogEntry(event[1])];
       case 2: return [{ phase: 'end', actor: 'effect', action: t('game.log.itemObtained', { item: diaryItemName(event[1]) }), ...(event[2] ? { note: t('game.log.autoSellTarget', { amount: event[2] }) } : {}) }];
-      case 3: return [{ phase: 'end', actor: 'deity', action: t('auto.jp.2660ad39fa'), note: t('auto.jp.36cbc2e27f') }];
-      case 4: return [{ phase: 'end', actor: 'deity', action: t('auto.jp.96b6003d0c') }];
+      case 3: return [{ phase: 'end', actor: 'deity', action: t('expedition.outcome.retreat'), note: t('expedition.retreat.lowHpNote') }];
+      case 4: return [{ phase: 'end', actor: 'deity', action: t('expedition.return.depthReached') }];
     }
   });
   return [...battle, ...end];

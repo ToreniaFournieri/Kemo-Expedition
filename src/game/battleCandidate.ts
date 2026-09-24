@@ -45,6 +45,7 @@ import {
   type BattleProtocolOutput,
 } from './battleProtocol.ts';
 import { requireBattleRngVersion, requireBattleSeed } from './battleReplay.ts';
+import { DISPLAY_LOCALE } from '../i18n/displayFormat.ts';
 
 type BattleEnvironment = {
   terrainEffect?: TerrainEffectKey | null;
@@ -445,7 +446,7 @@ function createBattleNarrationContext(
   return { terrainEffect, combatants };
 }
 
-const noteFormatter = new Intl.NumberFormat('ja-JP');
+const noteFormatter = new Intl.NumberFormat(DISPLAY_LOCALE);
 const FLAVOR_ABILITIES = new Set<AbilityId>([
   'illusion', 'illusion_breaker', 'shock', 'null_shock', 'corrode', 'null_corrode',
   'life_drain', 'null_life_drain', 'death_touch', 'null_death_touch', 'burn',

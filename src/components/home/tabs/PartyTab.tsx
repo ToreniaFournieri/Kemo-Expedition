@@ -23,7 +23,7 @@ import { replaceFlatItemStat } from '../../../game/equipmentDisplay';
 import { getEnemyTypeShortName } from '../../../game/enemyDisplay';
 import { getItemDisplayName } from '../../../game/gameState';
 import { getJewelDisplayName,getJewelOwnedCount,JEWELS_BY_ITEM_CATEGORY } from '../../../game/jewel';
-import { resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../../game/magic';
+import { getMagicStyleLabel,resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../../game/magic';
 import { t } from '../../../i18n';
 import type { PartySummary, PartyView } from '../../../api/v1/partyView';
 import { AbilityId,Bonus,BonusType,Character,ElementalOffense,EnemyDef,InventoryRecord,Item,JewelKey,MAX_LEVEL,Race,RaceId,getVariantKey,type EnemyAbility } from '../../../types';
@@ -78,6 +78,7 @@ UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE
 } from '../homeShared';
 import { EQUIPMENT_EVALUATION_LIMIT } from '../../../api/v1/requestLimits';
 import { useApiReadMany } from '../useApiRead';
+import { DISPLAY_LOCALE } from '../../../i18n/displayFormat';
 
 export default function PartyTab({
   apiAdapter,
@@ -364,7 +365,7 @@ export default function PartyTab({
       }
       if (combatTotals.magicalAttackAmp !== prev.magicalAttackAmp) {
         const isPositive = combatTotals.magicalAttackAmp > prev.magicalAttackAmp;
-        changes.push({ message: formatStatChange('home.party.help.magicalAttackMultiplierLabel', `x${formatDecimal(prev.magicalAttackAmp, 2)}`, `x${formatDecimal(combatTotals.magicalAttackAmp, 2)}`), isPositive });
+        changes.push({ message: formatStatChange('home.party.magicalAttackMultiplier', `x${formatDecimal(prev.magicalAttackAmp, 2)}`, `x${formatDecimal(combatTotals.magicalAttackAmp, 2)}`), isPositive });
       }
       if (combatTotals.magicalNoA !== prev.magicalNoA) {
         const isPositive = combatTotals.magicalNoA > prev.magicalNoA;
@@ -1736,7 +1737,7 @@ export default function PartyTab({
                       disabled={unlockedEnemies.length === 0}
                     >
                       {enemiesForType.map((enemy) => (
-                        <option key={enemy.id} value={enemy.id}>{enemy.name} (ID: {new Intl.NumberFormat('ja-JP').format(enemy.id)})</option>
+                        <option key={enemy.id} value={enemy.id}>{enemy.name} (ID: {new Intl.NumberFormat(DISPLAY_LOCALE).format(enemy.id)})</option>
                       ))}
                     </select>
                     {unlockedEnemies.length === 0 && <span className="mt-1 block text-accent">{t('home.altar.noUnlockedForms')}</span>}
@@ -1998,7 +1999,7 @@ export default function PartyTab({
                     helpTitle: t('home.party.castingSpell'),
                     helpLines: [
                       t('home.party.castingSpellValue', { spell: magicProfile.spellName }),
-                      t('home.party.magicStyleValue', { style: magicProfile.style }),
+                      t('home.party.magicStyleValue', { style: getMagicStyleLabel(magicProfile.style) }),
                       t('home.party.magicEffectValue', { effect: magicProfile.description }),
                     ],
                   });
@@ -2270,7 +2271,7 @@ export default function PartyTab({
                   helpRows.push({ label: entry.label, description: entry.description });
                 }
               };
-              const defensePercentFormatter = new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1, minimumFractionDigits: 0 });
+              const defensePercentFormatter = new Intl.NumberFormat(DISPLAY_LOCALE, { maximumFractionDigits: 1, minimumFractionDigits: 0 });
 
               for (const [key, val] of Object.entries(multipliers)) {
                 if (hiddenBonusDisplayKeys.has(key) || key === 'growth_xV') continue;

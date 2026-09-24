@@ -21,10 +21,9 @@ import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, getSuperRareBonuses } from '../d
 import { getBaseMultiplier } from './baseMultiplier';
 import { getJewelCBonusValue, getJewelDRankBonus, JEWEL_DEFS } from './jewel';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
-import { t } from '../i18n';
 import { ENEMIES, getMimorianEnemyAbilities } from '../data/enemies';
 import { resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
-import { isBonusAbilityLevelScalable } from '../data/bonusAbilityGlossary';
+import { formatBonusAbilityHelpDescription, isBonusAbilityLevelScalable } from '../data/bonusAbilityGlossary';
 
 // Get enhancement and super rare multiplier for an item
 function getItemEnhancementMultiplier(item: Item): number {
@@ -1023,7 +1022,6 @@ export function getAbilityName(id: AbilityId, level: number): string {
 }
 
 export function getAbilityDescription(id: AbilityId, level: number): string {
-  // SpecRef: 8.1 | UI_FOUNDATIONS | Localization lookup
-  void level;
-  return t(`ability.${id}.description`);
+  // SpecRef: 1.1.1 | a. bonus ability | the description with this level's scale substituted
+  return formatBonusAbilityHelpDescription(id, level);
 }

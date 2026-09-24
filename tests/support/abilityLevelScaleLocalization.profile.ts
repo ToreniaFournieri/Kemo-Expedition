@@ -28,3 +28,33 @@ test('English glossary level scales contain no Japanese text', async () => {
     setLanguage('ja');
   }
 });
+
+test('ability help renders every level with its values in every translated language', async () => {
+  const { formatBonusAbilityHelpDescription } = await import('../../src/data/bonusAbilityGlossary.ts');
+  const { t } = await import('../../src/i18n/index.ts');
+  const KANA = /[\u3040-\u309f\u30a0-\u30fa\u30fc-\u30ff]/u;
+  try {
+    for (const language of ['en', 'ko', 'zh-CN', 'zh-TW'] as const) {
+      await ensureLanguageLoaded(language);
+      setLanguage(language);
+      const unresolvedTiming = t('home.abilityDescription.specifiedTiming');
+      for (const entry of BONUS_ABILITY_GLOSSARY_ENTRIES) {
+        for (let level = 1; level <= Math.max(1, entry.levelScale.length); level += 1) {
+          const text = formatBonusAbilityHelpDescription(entry.abilityId, level);
+          const where = `${language} ${entry.abilityId} Lv${level}: ${text}`;
+          assert.doesNotMatch(text, /(?<![A-Za-z0-9])x?[NM](?![A-Za-z0-9])/u, where);
+          assert.doesNotMatch(text, KANA, where);
+          if (entry.phase === 'COMBAT' && entry.levelScale.length > 0) assert.ok(!text.includes(unresolvedTiming), where);
+        }
+      }
+      for (const element of ['ice', 'fire', 'thunder', 'magical', 'melee']) {
+        assert.ok(t(`ability.${element}_reflect.description`).includes(t('home.abilityDescription.reflectTemplate')), `${language} ${element}_reflect`);
+      }
+    }
+    setLanguage('en');
+    assert.equal(formatBonusAbilityHelpDescription('iaigiri', 2), 'Multiplies physical damage by x1.8 (attack count is halved).');
+    assert.equal(formatBonusAbilityHelpDescription('execution', 1), "If the opponent's remaining HP is 40% or less, multiplies damage dealt by x1.5.");
+  } finally {
+    setLanguage('ja');
+  }
+});

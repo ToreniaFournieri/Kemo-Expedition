@@ -1,6 +1,7 @@
 import { AttackType, BattleLogEntry } from '../types';
 import { t } from '../i18n';
 import { gameplayRandom } from './gameplayRandom';
+import { DISPLAY_LOCALE } from '../i18n/displayFormat';
 
 const CONFUSION_SUCCESS_LOGS = [
   'battleFlavor.confusion-success.1',
@@ -550,8 +551,8 @@ export function getBattleFlavorTemplateAtIndex(family: BattleFlavorFamily, index
   return t(entries[index]!);
 }
 
-const decomposeDefenseValueFormatter = new Intl.NumberFormat('ja-JP');
-const battleNoteValueFormatter = new Intl.NumberFormat('ja-JP');
+const decomposeDefenseValueFormatter = new Intl.NumberFormat(DISPLAY_LOCALE);
+const battleNoteValueFormatter = new Intl.NumberFormat(DISPLAY_LOCALE);
 
 function pickRandomEntry<T>(entries: readonly T[]): T {
   return entries[Math.floor(gameplayRandom() * entries.length)];
