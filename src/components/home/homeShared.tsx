@@ -612,6 +612,10 @@ export const EXPEDITION_STATS_DISPLAY_STORAGE_KEY = createEnvironmentStorageKey(
 export const DARK_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-dark-mode');
 export const THEME_SYNC_EVENT = 'kemo-expedition-theme-sync';
 export const APP_VERSION = `v${__APP_VERSION__}`;
+// The running bundle's build, not the loaded save's `buildNumber` (an API account keeps the build it was saved with).
+export const APP_BUILD_NUMBER = __BUILD_NUMBER__;
+// SpecRef: 9.1.4.3 | `fundamental/status` `versionBuild`; 8.6 feedback `Version Build env` (ex. v0.7.0 (12)).
+export const APP_VERSION_BUILD = `${APP_VERSION} (${APP_BUILD_NUMBER})`;
 
 
 export function getExpeditionTierDurationFactor(expTier: number): number {
