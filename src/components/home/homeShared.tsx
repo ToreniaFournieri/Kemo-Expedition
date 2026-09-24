@@ -727,7 +727,7 @@ export function getBestiaryEnemyFromLogEntry(entry: ExpeditionLogEntry): EnemyDe
     return ENEMIES.find((enemy) => enemy.id === entry.enemyId) ?? null;
   }
 
-  const normalizedEnemyName = entry.enemyName.replace(new RegExp(`\\s+\\((ELITE|BOSS|${escapeRegExp(t('party.expedition.godsBattle'))})\\)\\s*$`, 'u'), '').trim();
+  const normalizedEnemyName = stripGodsBattleSuffix(entry.enemyName.replace(/\s+\((ELITE|BOSS)\)\s*$/u, '')).trim();
   if (!normalizedEnemyName) return null;
   return ENEMIES.find((enemy) => formatEnemyDefName(enemy) === normalizedEnemyName) ?? null;
 }
@@ -911,7 +911,7 @@ export function getBattleLogEnemyNameCandidates(entry: ExpeditionLogEntry): stri
   ];
 
   return Array.from(new Set(names.flatMap((name) => {
-    const normalizedName = name.replace(new RegExp(escapeRegExp(t('game.log.godsBattleSuffix')), 'g'), '').trim();
+    const normalizedName = stripGodsBattleSuffix(name);
     if (!normalizedName) return [];
 
     const withoutTrailingMetadata = normalizedName.replace(/(?:\s*\([^()]+\))+\s*$/u, '').trim();
@@ -1426,7 +1426,7 @@ export function parseDiarySideQuestThreshold(value: string): DiarySideQuestThres
   return 'all';
 }
 
-export const numberFormatter = new Intl.NumberFormat('ja-JP');
+export const numberFormatter = new Intl.NumberFormat(DISPLAY_LOCALE);
 export const SPEED_OF_TIME_BONUS_DURATION_MS = (24 * 60 + 45) * 60 * 1000;
 export const SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-speed-of-time-bonus-until-ms');
 export const DEV_DISCORD_WEBHOOK_URL = import.meta.env.VITE_DEV_DISCORD_WEBHOOK_URL;
@@ -1502,7 +1502,7 @@ export function formatBattleLogHitDisplay(entry: BattleLogEntry): string {
 }
 
 export function formatDecimal(value: number, maximumFractionDigits: number, minimumFractionDigits = maximumFractionDigits): string {
-  return new Intl.NumberFormat('ja-JP', {
+  return new Intl.NumberFormat(DISPLAY_LOCALE, {
     minimumFractionDigits,
     maximumFractionDigits,
   }).format(value);
@@ -2494,7 +2494,7 @@ export const UNLOCK_ABILITY_BONUS_LABEL_KEYS: Partial<Record<BonusType, string>>
 export function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'raw' | 'friendly' }): string {
   const defenseMultiplierStyle = options?.defenseMultiplierStyle ?? 'raw';
   const parts: string[] = [];
-  const percentFormatter = new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1, minimumFractionDigits: 0 });
+  const percentFormatter = new Intl.NumberFormat(DISPLAY_LOCALE, { maximumFractionDigits: 1, minimumFractionDigits: 0 });
   const formatRatePercent = (value: number): string => percentFormatter.format(Math.round(value * 1000) / 10);
   const formatSigned = (value: number): string => `${value >= 0 ? '+' : ''}${value}`;
   for (const b of bonuses) {
@@ -2965,3 +2965,5 @@ export function getNextMissingAutoEquipmentCategory(
   return null;
 }
 import { gameplayRandom } from '../../game/gameplayRandom';
+import { stripGodsBattleSuffix } from '../../game/godsBattleSuffix';
+import { DISPLAY_LOCALE } from '../../i18n/displayFormat';

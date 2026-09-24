@@ -20,7 +20,7 @@ const DISPLAY_IMPORTS = {
   equipmentDisplay: ['replaceFlatItemStat'],
   gameState: ['getItemDisplayName'],
   jewel: ['getJewelDisplayName', 'getJewelOwnedCount', 'JEWELS_BY_ITEM_CATEGORY'],
-  magic: ['resolveMagicProfile', 'resolveSpecialMagicFromAbilities'],
+  magic: ['getMagicStyleLabel', 'resolveMagicProfile', 'resolveSpecialMagicFromAbilities'],
 };
 
 // Reviewed exceptions: each is a known gap that is recorded in the plan, with the reason it cannot be projected yet.

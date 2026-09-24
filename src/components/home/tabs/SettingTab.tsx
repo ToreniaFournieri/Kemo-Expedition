@@ -39,6 +39,7 @@ import { AbilityId,Dungeon,EnemyDef,GameState,Item,NotificationCategory,Notifica
 import { GAME_MODES, THEME_DEFINITIONS } from '../../../theme/theme';
 import { DesktopNotificationSettings } from '../../DesktopNotificationSettings';
 import { ApiV1Settings } from '../../ApiV1Settings';
+import { DISPLAY_LOCALE } from '../../../i18n/displayFormat';
 
 
 import {
@@ -270,7 +271,7 @@ export default function SettingTab({
 
   const formatFeedbackTimestamp = (): string => {
     const now = new Date();
-    const formatter = new Intl.DateTimeFormat('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false, timeZoneName:'short' });
+    const formatter = new Intl.DateTimeFormat(DISPLAY_LOCALE, { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false, timeZoneName:'short' });
     const parts = formatter.formatToParts(now);
     const year = parts.find((p) => p.type === 'year')?.value ?? '0000';
     const month = parts.find((p) => p.type === 'month')?.value ?? '00';

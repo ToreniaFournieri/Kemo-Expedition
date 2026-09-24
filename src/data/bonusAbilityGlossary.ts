@@ -169,16 +169,29 @@ const LEVEL_SCALE_VALUE_RULES: Array<[RegExp, (match: RegExpMatchArray) => strin
   [/^遠距離$/u, () => t('ability.levelScale.ranged')],
 ];
 
+// Localizes the value part of a canonical level scale. Parts the canonical text joins
+// with "・" are rejoined with the language's own separator (common.valueSeparator).
+export function localizeLevelScaleValue(value: string): string {
+  for (const [pattern, format] of LEVEL_SCALE_VALUE_RULES) {
+    const valueMatch = pattern.exec(value);
+    if (valueMatch) return format(valueMatch);
+  }
+  return value.split('・').join(t('common.valueSeparator'));
+}
+
 export function localizeLevelScale(levelScale: string): string {
   const match = /^(Lv\d+:\s*)(.*)$/u.exec(levelScale);
   if (!match) return levelScale;
   const [, prefix, value] = match;
-  for (const [pattern, format] of LEVEL_SCALE_VALUE_RULES) {
-    const valueMatch = pattern.exec(value);
-    if (valueMatch) return `${prefix}${format(valueMatch)}`;
-  }
-  return levelScale;
+  return `${prefix}${localizeLevelScaleValue(value)}`;
 }
+
+// These level scales are localized as whole phrases by their own keys.
+const LEVEL_SCALE_KEY_OVERRIDES = new Set<AbilityId>(['illusion', 'first_strike']);
+
+const CANONICAL_LEVEL_SCALES = new Map<AbilityId, string[]>(
+  BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => [entry.abilityId, entry.levelScale]),
+);
 
 function getBonusAbilityLevelScale(entry: BonusAbilityGlossaryEntry): string[] {
   if (entry.abilityId === 'illusion') {
@@ -284,7 +297,9 @@ export function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: n
     return t(`ability.${abilityId}.description`);
   }
 
-  const levelScale = entry.levelScale[Math.max(level - 1, 0)] ?? entry.levelScale[entry.levelScale.length - 1] ?? '';
+  // Parse the canonical scale (its "・" separates timing and value), then localize the value.
+  const scales = LEVEL_SCALE_KEY_OVERRIDES.has(abilityId) ? entry.levelScale : CANONICAL_LEVEL_SCALES.get(abilityId) ?? [];
+  const levelScale = scales[Math.max(level - 1, 0)] ?? scales[scales.length - 1] ?? '';
   if (levelScale.length === 0) {
     return entry.description;
   }
@@ -310,7 +325,8 @@ export function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: n
     }
   }
 
-  const { timing, value } = parseBonusAbilityLevelScale(levelScale);
+  const { timing, value: canonicalValue } = parseBonusAbilityLevelScale(levelScale);
+  const value = canonicalValue ? localizeLevelScaleValue(canonicalValue) : null;
   let description = entry.description;
 
   if (abilityId.endsWith('_reflect') && value && value.includes(t('home.abilityScale.reflect')) && value.includes(t('home.abilityScale.damageTaken')) && entry.description.includes(t('home.abilityDescription.reflectTemplate'))) {

@@ -18,6 +18,17 @@ interface ResolveMagicProfileParams {
 
 export type SpecialMagicKey = 'gravity_well' | 'armor_break' | 'mana_break';
 
+const MAGIC_STYLE_LABEL_KEYS: Record<MagicStyle, string> = {
+  'multi-hit': 'magic.style.multiHit',
+  'arc-magic': 'ability.arc_magic.label',
+  percentage_damage: 'magic.style.percentageDamage',
+  debuff: 'magic.style.debuff',
+};
+
+export function getMagicStyleLabel(style: MagicStyle): string {
+  return t(MAGIC_STYLE_LABEL_KEYS[style]);
+}
+
 const SPECIAL_MAGIC_THRESHOLDS: Readonly<Record<SpecialMagicKey, number>> = {
   gravity_well: 20,
   armor_break: 12,

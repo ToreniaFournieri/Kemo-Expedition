@@ -11,6 +11,8 @@ import { t } from '../../../i18n';
 import { DiaryDefeatNotificationMode,DiarySettings,DiaryTrigger,EnemyDef,ExpeditionLogEntry,Item } from '../../../types';
 import type { DiaryPartyView,DiaryTabView } from '../../../api/v1/diaryTabView';
 import type { ExpeditionLogView } from '../../../api/v1/expeditionLogView';
+import { hasGodsBattleSuffix, stripGodsBattleSuffix } from '../../../game/godsBattleSuffix';
+import { DISPLAY_LOCALE } from '../../../i18n/displayFormat.ts';
 
 
 import {
@@ -203,7 +205,7 @@ export default function DiaryTab({
 
 
   const getGodsBattleOutcomeLabel = (expeditionLog: ExpeditionLogView) => {
-    const hasGodsBattleEntry = expeditionLog.entries.some((entry) => (entry.godsBattle || entry.enemyName.includes('(神魔戦)')));
+    const hasGodsBattleEntry = expeditionLog.entries.some((entry) => (entry.godsBattle || hasGodsBattleSuffix(entry.enemyName)));
     if (!hasGodsBattleEntry) return t('expedition.outcome.unreached');
     if (expeditionLog.finalOutcome === 'Clear') return t('expedition.outcome.victory');
     if (expeditionLog.finalOutcome === 'Defeat') return t('expedition.outcome.defeat');
@@ -234,10 +236,10 @@ export default function DiaryTab({
   ) => {
     // SpecRef: 8.5 | UI_DIARY | 神魔戦通知
     if (triggers.includes('godsBattle')) {
-      const godsBattleEnemyName = expeditionLog.entries
-        .find((entry) => (entry.godsBattle || entry.enemyName.includes('(神魔戦)')))
-        ?.enemyName.replace(/\s*\(神魔戦\)\s*$/u, '')
-        .trim();
+      const godsBattleEntryName = expeditionLog.entries
+        .find((entry) => (entry.godsBattle || hasGodsBattleSuffix(entry.enemyName)))
+        ?.enemyName;
+      const godsBattleEnemyName = godsBattleEntryName ? stripGodsBattleSuffix(godsBattleEntryName) : undefined;
       const semanticGod = expeditionLog.entries.some(entry => entry.godsBattle) ? GOD_ENEMY_PROFILES.find(profile => profile.expId === expeditionLog.dungeonId) : undefined;
       const normalizedGodsBattleEnemyName = semanticGod?.displayName ?? (godsBattleEnemyName
         ? getGodsBattleDiaryDisplayName(godsBattleEnemyName)
@@ -323,7 +325,7 @@ export default function DiaryTab({
   const formatDiaryTimestamp = (timestamp: number) => {
     const date = new Date(timestamp);
     if (Number.isNaN(date.getTime())) return '';
-    return new Intl.DateTimeFormat('ja-JP', {
+    return new Intl.DateTimeFormat(DISPLAY_LOCALE, {
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',

@@ -1,6 +1,6 @@
 import { DUNGEONS } from '../data/dungeons';
-import { t } from '../i18n';
 import type { Party } from '../types';
+import { hasGodsBattleSuffix } from './godsBattleSuffix';
 import {
   getBossGateKey,
   getClearGateProgress,
@@ -32,7 +32,7 @@ export function shouldDelayNextSpecialGoal(party: Party, cycleState?: string): b
   const log = party.lastExpeditionLog;
   if (!log || log.finalOutcome !== 'Clear') return false;
   const lastEntry = log.entries[log.entries.length - 1];
-  return lastEntry?.roomType === 'battle_Boss' && (lastEntry.godsBattle || lastEntry.enemyName.includes(t('game.log.godsBattleSuffix')));
+  return lastEntry?.roomType === 'battle_Boss' && (lastEntry.godsBattle || hasGodsBattleSuffix(lastEntry.enemyName));
 }
 
 /**

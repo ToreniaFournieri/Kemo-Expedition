@@ -1,6 +1,7 @@
 import { SUPPORTED_LANGUAGES, t, translate } from '../i18n';
 import { ComputedCharacterStats, Party } from '../types';
 import { getAbilityDescription, getAbilityName } from './characterComputation';
+import { DISPLAY_LOCALE } from '../i18n/displayFormat';
 
 type DeityOptionKey =
   | 'None'
@@ -224,7 +225,7 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
     case 'Goddess of Restoration': {
       const healMissingPct = 0.2 + 0.001 * effectiveRank;
       return t('deity.effect.GoddessOfRestoration', {
-        healMissingPercent: new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1 }).format(healMissingPct * 100),
+        healMissingPercent: new Intl.NumberFormat(DISPLAY_LOCALE, { maximumFractionDigits: 1 }).format(healMissingPct * 100),
       });
     }
     case 'God of Attrition': {
@@ -248,7 +249,7 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
     case 'God of Fate': {
       const prayerTimeMultiplier = getDeityStateDurationMultiplier(name, totalDonatedGold, 'pray');
       return t('deity.effect.GodOfFate', {
-        prayerTimeMultiplier: new Intl.NumberFormat('ja-JP', { minimumFractionDigits: 2 }).format(prayerTimeMultiplier),
+        prayerTimeMultiplier: new Intl.NumberFormat(DISPLAY_LOCALE, { minimumFractionDigits: 2 }).format(prayerTimeMultiplier),
       });
     }
     case 'God of Dusk': {
@@ -266,13 +267,13 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
     case 'God of Oblivion': {
       const { superRareChanceTickets } = getDeityRewardDrawBonuses(name, totalDonatedGold);
       return t('deity.effect.GodOfOblivion', {
-        currentBonus: new Intl.NumberFormat('ja-JP').format(superRareChanceTickets),
+        currentBonus: new Intl.NumberFormat(DISPLAY_LOCALE).format(superRareChanceTickets),
       });
     }
     case 'Goddess of Discord': {
       const { itemChanceTickets } = getDeityRewardDrawBonuses(name, totalDonatedGold);
       return t('deity.effect.GoddessOfDiscord', {
-        currentBonus: new Intl.NumberFormat('ja-JP').format(itemChanceTickets),
+        currentBonus: new Intl.NumberFormat(DISPLAY_LOCALE).format(itemChanceTickets),
       });
     }
     default:

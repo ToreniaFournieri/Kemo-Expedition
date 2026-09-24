@@ -638,62 +638,62 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "arcane_arrows",
         get label() { return t('magic.arcanaArrow.name'); },
-        get description() { return `style: multi-hit / element: e.none\n${t('magic.arcanaArrow.description')}`; }
+        get description() { return `${t('magic.style.multiHit')}${t('common.valueSeparator')}${t('magic.element.none')}\n${t('magic.arcanaArrow.description')}`; }
       },
       {
         "key": "fire_lance",
         get label() { return t('magic.fireLance.name'); },
-        get description() { return `style: multi-hit / element: e.fire < 1.5\n${t('magic.fireLance.description')}`; }
+        get description() { return `${t('magic.style.multiHit')}${t('common.valueSeparator')}${t('magic.element.fire')}\n${t('magic.fireLance.description')}`; }
       },
       {
         "key": "frost_needles",
         get label() { return t('magic.frostNeedle.name'); },
-        get description() { return `style: multi-hit / element: e.ice < 1.5\n${t('magic.frostNeedle.description')}`; }
+        get description() { return `${t('magic.style.multiHit')}${t('common.valueSeparator')}${t('magic.element.ice')}\n${t('magic.frostNeedle.description')}`; }
       },
       {
         "key": "thunder_bolts",
         get label() { return t('magic.thunderbolt.name'); },
-        get description() { return `style: multi-hit / element: e.thunder < 1.5\n${t('magic.thunderbolt.description')}`; }
+        get description() { return `${t('magic.style.multiHit')}${t('common.valueSeparator')}${t('magic.element.thunder')}\n${t('magic.thunderbolt.description')}`; }
       },
       {
         "key": "hellfire_volley",
         get label() { return t('magic.hellfire.name'); },
-        get description() { return `style: multi-hit / element: e.fire >= 1.5\n${t('magic.hellfire.description')}`; }
+        get description() { return `${t('magic.style.multiHit')}${t('common.valueSeparator')}${t('magic.element.fire')}\n${t('magic.hellfire.description')}`; }
       },
       {
         "key": "blizzard",
         get label() { return t('magic.blizzard.name'); },
-        get description() { return `style: multi-hit / element: e.ice >= 1.5\n${t('magic.blizzard.description')}`; }
+        get description() { return `${t('magic.style.multiHit')}${t('common.valueSeparator')}${t('magic.element.ice')}\n${t('magic.blizzard.description')}`; }
       },
       {
         "key": "lightning_barrage",
         get label() { return t('magic.lightningBarrage.name'); },
-        get description() { return `style: multi-hit / element: e.thunder >= 1.5\n${t('magic.lightningBarrage.description')}`; }
+        get description() { return `${t('magic.style.multiHit')}${t('common.valueSeparator')}${t('magic.element.thunder')}\n${t('magic.lightningBarrage.description')}`; }
       },
       {
         "key": "astral_flare",
         get label() { return t('magic.astralFlare.name'); },
-        get description() { return `style: area_burst / element: e.none\n${t('magic.astralFlare.description')}`; }
+        get description() { return `${t('ability.arc_magic.label')}${t('common.valueSeparator')}${t('magic.element.none')}\n${t('magic.astralFlare.description')}`; }
       },
       {
         "key": "pyroclasm",
         get label() { return t('magic.pyroclasm.name'); },
-        get description() { return `style: area_burst / element: e.fire\n${t('magic.pyroclasm.description')}`; }
+        get description() { return `${t('ability.arc_magic.label')}${t('common.valueSeparator')}${t('magic.element.fire')}\n${t('magic.pyroclasm.description')}`; }
       },
       {
         "key": "glacial_burst",
         get label() { return t('magic.glacialBurst.name'); },
-        get description() { return `style: area_burst / element: e.ice\n${t('magic.glacialBurst.description')}`; }
+        get description() { return `${t('ability.arc_magic.label')}${t('common.valueSeparator')}${t('magic.element.ice')}\n${t('magic.glacialBurst.description')}`; }
       },
       {
         "key": "tempest_nova",
         get label() { return t('magic.tempestNova.name'); },
-        get description() { return `style: area_burst / element: e.thunder\n${t('magic.tempestNova.description')}`; }
+        get description() { return `${t('ability.arc_magic.label')}${t('common.valueSeparator')}${t('magic.element.thunder')}\n${t('magic.tempestNova.description')}`; }
       },
       {
         "key": "gravity_well",
         get label() { return t('magic.gravityWell.name'); },
-        get description() { return `style: percentage_damage / element: e.none\n${t('magic.gravityWell.description')}`; }
+        get description() { return `${t('magic.style.percentageDamage')}${t('common.valueSeparator')}${t('magic.element.none')}\n${t('magic.gravityWell.description')}`; }
       }
     ]
   }

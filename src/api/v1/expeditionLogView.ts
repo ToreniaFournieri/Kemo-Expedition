@@ -129,7 +129,7 @@ function toItem(diary: DiaryItem): Item | null {
 function roomEnemyName(room: ApiBattleRoom, resources: ApiRoomResources | undefined): string {
   if (resources?.legacyText) return resources.legacyText.enemyName;
   const enemy = room.enemyId === null ? undefined : ENEMIES.find((candidate) => candidate.id === room.enemyId);
-  if (!enemy) return room.enemyId === null ? '-' : `${t('home.battle.enemyPrefix')} ${room.enemyId}`;
+  if (!enemy) return room.enemyId === null ? '-' : `${t('home.battleLog.enemyPrefix')} ${room.enemyId}`;
   const suffix = room.roomType === 'battle_Elite' ? ' (ELITE)' : room.roomType === 'battle_Boss' ? ' (BOSS)' : '';
   return `${formatEnemyDefName(enemy)}${suffix}`;
 }

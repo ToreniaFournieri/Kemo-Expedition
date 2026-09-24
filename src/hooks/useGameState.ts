@@ -166,6 +166,8 @@ import { memoryMonitor } from '../game/memoryMonitoring';
 import { BASE_STEP_DURATION_MS } from '../game/progressTiming';
 import { GameStateAuthority, type AuthorityReceipt } from '../game/gameStateAuthority';
 import { useAfkCoordinatorAuthorityCandidate } from '../game/afkLiveProfile';
+import { hasGodsBattleSuffix, stripGodsBattleSuffix } from '../game/godsBattleSuffix';
+import { DISPLAY_LOCALE } from '../i18n/displayFormat';
 
 const BUILD_NUMBER = __BUILD_NUMBER__;
 const AFK_LIVE_PROFILE_BUILD_ENABLED = typeof __AFK_LIVE_PROFILE_ENABLED__ !== 'undefined'
@@ -372,7 +374,7 @@ function getCycleDurationScale(): number {
 
 function formatSideQuestShortText(type: string, shortTextKey: string, target: number): string {
   const shortText = t(shortTextKey);
-  const formatNumber = (value: number) => Math.floor(value).toLocaleString('ja-JP');
+  const formatNumber = (value: number) => Math.floor(value).toLocaleString(DISPLAY_LOCALE);
   const value = formatNumber(target);
   const targetTemplateByType: Partial<Record<string, string>> = {
     'q.squander': 'sideQuest.target.gold',
@@ -395,28 +397,6 @@ function formatSideQuestShortText(type: string, shortTextKey: string, target: nu
 }
 
 
-const GODS_BATTLE_SUFFIX_KEY = 'game.log.godsBattleSuffix';
-const GODS_BATTLE_SUFFIX_FALLBACKS = ['(神魔戦)', '(Gods Battle)'] as const;
-
-function getGodsBattleSuffix(): string {
-  return t(GODS_BATTLE_SUFFIX_KEY);
-}
-
-function hasGodsBattleSuffix(text: string): boolean {
-  const localizedSuffix = getGodsBattleSuffix();
-  return [localizedSuffix, ...GODS_BATTLE_SUFFIX_FALLBACKS].some((suffix) => text.includes(suffix));
-}
-
-function stripGodsBattleSuffix(text: string): string {
-  return [getGodsBattleSuffix(), ...GODS_BATTLE_SUFFIX_FALLBACKS].reduce(
-    (value, suffix) => value.replace(new RegExp(`\\s*${escapeRegExp(suffix)}\\s*$`, 'u'), '').trim(),
-    text,
-  );
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 function characterName(key: string): string {
   return t(`character.default.${key}`);

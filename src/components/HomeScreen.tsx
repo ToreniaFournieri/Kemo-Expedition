@@ -126,6 +126,7 @@ type AfkPartyTransactionAttribution,
 import { Bonus,Character,DiarySettings,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry,type RaceId } from '../types';
 import { NotificationToast } from './NotificationToast';
 import { getBrowserChromeColor, getDesktopTheme, getThemeClassName, isGameModeAvailable, THEME_CLASS_NAMES } from '../theme/theme';
+import { DISPLAY_LOCALE } from '../i18n/displayFormat.ts';
 
 
 import {
@@ -978,7 +979,7 @@ export function HomeScreen({
 
     const reportCreatedAtMs = Date.now();
     const now = new Date(reportCreatedAtMs);
-    const timestampFormatter = new Intl.DateTimeFormat('ja-JP', {
+    const timestampFormatter = new Intl.DateTimeFormat(DISPLAY_LOCALE, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',

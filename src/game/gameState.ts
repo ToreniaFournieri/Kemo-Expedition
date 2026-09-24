@@ -19,20 +19,20 @@ const CORE_CONCEPT_KEY_BY_CATEGORY = {
 } as const satisfies Record<Item['category'], keyof Item>;
 
 // SpecRef: 3.2.1 | Item drop | Localized item display name
-export function getLocalizedItemName(item: Pick<Item, 'name'>): string {
-  return t(`item.name.${item.name}`);
+export function getLocalizedItemName(item: Pick<Item, 'id'>): string {
+  return t(`item.name.${item.id}`);
 }
 
 // SpecRef: 3.1.3 | Item variation | Localized enhancement title
 export function getLocalizedEnhancementTitle(value: number): string {
-  const title = ENHANCEMENT_TITLES.find(t => t.value === value)?.title ?? '';
-  return title ? t(`item.enhancementTitle.${title}`) : '';
+  const hasTitle = ENHANCEMENT_TITLES.some(entry => entry.value === value && entry.title);
+  return hasTitle ? t(`item.enhancementTitle.${value}`) : '';
 }
 
 // SpecRef: 3.1.3 | Item variation | Localized Super Rare title
 export function getLocalizedSuperRareTitle(value: number): string {
-  const title = SUPER_RARE_TITLES.find(t => t.value === value)?.title ?? '';
-  return title ? t(`item.superRareTitle.${title}`) : '';
+  const hasTitle = SUPER_RARE_TITLES.some(entry => entry.value === value && entry.title);
+  return hasTitle ? t(`item.superRareTitle.${value}`) : '';
 }
 
 // SpecRef: 3.1.3 | Item variation | getItemDisplayName
