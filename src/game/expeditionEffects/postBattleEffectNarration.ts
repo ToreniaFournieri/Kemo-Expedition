@@ -13,12 +13,12 @@ export function buildPostBattleEffectLogs(
     switch (fact.type) {
       case 'deity-restoration':
         return {
-          phase: 'end', actor: 'effect', action: t('auto.jp.b871f82e74'),
+          phase: 'end', actor: 'effect', action: t('battle.deity.restorationBlessing'),
           note: t('game.log.hpHeal', { amount: fact.amount }),
         };
       case 'deity-attrition':
         return {
-          phase: 'end', actor: 'effect', action: t('auto.jp.f8c08c2728'),
+          phase: 'end', actor: 'effect', action: t('battle.deity.attritionPrice'),
           note: t('game.log.hpAttrition', { amount: fact.amount }),
         };
       case 'first-aid':

@@ -54,10 +54,10 @@ export function resolveMagicProfile({
     return {
       key: 'gravity_well',
       style,
-      spellName: t('auto.jp.76fefcdce9'),
+      spellName: t('magic.gravityWell.name'),
       description: magicalNoA >= 20
-        ? t('auto.jp.42c56b8aae')
-        : t('auto.jp.47712a2460'),
+        ? t('magic.gravityWell.description')
+        : t('magic.gravityWell.lockedDescription'),
     };
   }
 
@@ -81,35 +81,35 @@ export function resolveMagicProfile({
 
   if (style === 'arc-magic') {
     if (elementalOffense === 'fire') {
-      return { key: 'pyroclasm', style, spellName: t('auto.jp.19007f48b4'), description: t('auto.jp.1a93bf7ef6') };
+      return { key: 'pyroclasm', style, spellName: t('magic.pyroclasm.name'), description: t('magic.pyroclasm.description') };
     }
     if (elementalOffense === 'ice') {
-      return { key: 'glacial-burst', style, spellName: t('auto.jp.aba5a6f432'), description: t('auto.jp.89077a98ea') };
+      return { key: 'glacial-burst', style, spellName: t('magic.glacialBurst.name'), description: t('magic.glacialBurst.description') };
     }
     if (elementalOffense === 'thunder') {
-      return { key: 'tempest-nova', style, spellName: t('auto.jp.68b56c6c08'), description: t('auto.jp.ca4a78f01b') };
+      return { key: 'tempest-nova', style, spellName: t('magic.tempestNova.name'), description: t('magic.tempestNova.description') };
     }
 
-    return { key: 'astral-flare', style, spellName: t('auto.jp.2806705bb2'), description: t('auto.jp.9ad999c153') };
+    return { key: 'astral-flare', style, spellName: t('magic.astralFlare.name'), description: t('magic.astralFlare.description') };
   }
 
   if (elementalOffense === 'fire') {
     return elementalOffenseValue >= 1.5
-      ? { key: 'hellfire-volley', style, spellName: t('auto.jp.60c93cd371'), description: t('auto.jp.220c05256a') }
-      : { key: 'fire-lance', style, spellName: t('auto.jp.c90ba3384d'), description: t('auto.jp.8ad205522b') };
+      ? { key: 'hellfire-volley', style, spellName: t('magic.hellfire.name'), description: t('magic.hellfire.description') }
+      : { key: 'fire-lance', style, spellName: t('magic.fireLance.name'), description: t('magic.fireLance.description') };
   }
 
   if (elementalOffense === 'ice') {
     return elementalOffenseValue >= 1.5
-      ? { key: 'blizzard', style, spellName: t('auto.jp.3f85e740d9'), description: t('auto.jp.2a56475b1a') }
-      : { key: 'frost-needles', style, spellName: t('auto.jp.d2e94d10a7'), description: t('auto.jp.bb1fa11a42') };
+      ? { key: 'blizzard', style, spellName: t('magic.blizzard.name'), description: t('magic.blizzard.description') }
+      : { key: 'frost-needles', style, spellName: t('magic.frostNeedle.name'), description: t('magic.frostNeedle.description') };
   }
 
   if (elementalOffense === 'thunder') {
     return elementalOffenseValue >= 1.5
-      ? { key: 'lightning-barrage', style, spellName: t('auto.jp.015779cc22'), description: t('auto.jp.239f512dae') }
-      : { key: 'thunder-bolts', style, spellName: t('auto.jp.3a0709bb4d'), description: t('auto.jp.2792a5ac98') };
+      ? { key: 'lightning-barrage', style, spellName: t('magic.lightningBarrage.name'), description: t('magic.lightningBarrage.description') }
+      : { key: 'thunder-bolts', style, spellName: t('magic.thunderbolt.name'), description: t('magic.thunderbolt.description') };
   }
 
-  return { key: 'arcane-arrows', style, spellName: t('auto.jp.92bf5f54c3'), description: t('auto.jp.2f8efe880d') };
+  return { key: 'arcane-arrows', style, spellName: t('magic.arcanaArrow.name'), description: t('magic.arcanaArrow.description') };
 }

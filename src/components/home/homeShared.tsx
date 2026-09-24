@@ -4,8 +4,13 @@ import { Fragment,useEffect,useState,type CSSProperties,type ReactNode } from 'r
 import { createPortal } from 'react-dom';
 import { ABILITY_BASE_NAMES } from '../../data/abilityNames';
 import {
-BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID,
 type BonusAbilityGlossarySubcategoryId
+} from '../../data/bonusAbilityGlossary';
+export {
+formatBonusAbilityHelpDescription,
+formatBonusAbilityPhaseDisplay,
+isBonusAbilityTimingToken,
+parseBonusAbilityLevelScale
 } from '../../data/bonusAbilityGlossary';
 import { CLASSES,CLASS_SHORT_NAMES,getClassShortName } from '../../data/classes';
 import { GOD_MYTHIC_DROPS,getGodProfileForDungeon } from '../../data/dropTables';
@@ -403,119 +408,6 @@ export const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   reactivate: 'expedition.cycle.reactivate',
 };
 
-export const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'COMBAT' | 'END', string> = {
-  COMBAT: t('battleLog.phase.combat'),
-  END: t('common.end'),
-};
-
-export function formatBonusAbilityPhaseDisplay(value: string): string {
-  return value.replace(/COMBAT|END/g, (phase) => BONUS_ABILITY_PHASE_DISPLAY_LABELS[phase as 'COMBAT' | 'END']);
-}
-
-export function isBonusAbilityTimingToken(token: string): boolean {
-  return /^(?:COMBAT|END)\d(?:\/(?:COMBAT|END)\d)*$/.test(token);
-}
-
-export function parseBonusAbilityLevelScale(levelScale: string): { timing: string | null; value: string | null } {
-  const scaleContent = levelScale.replace(/^Lv\d+:\s*/, '').trim();
-  if (scaleContent.length === 0 || scaleContent === '-') {
-    return { timing: null, value: null };
-  }
-
-  const separatorIndex = scaleContent.indexOf('・');
-  if (separatorIndex < 0) {
-    const isTimingOnly = /^(COMBAT|END)\d/.test(scaleContent);
-    return {
-      timing: isTimingOnly ? formatBonusAbilityPhaseDisplay(scaleContent) : null,
-      value: isTimingOnly ? null : scaleContent,
-    };
-  }
-
-  const timingToken = scaleContent.slice(0, separatorIndex).trim();
-  const valueToken = scaleContent.slice(separatorIndex + 1).trim();
-
-  if (!isBonusAbilityTimingToken(timingToken)) {
-    return {
-      timing: null,
-      value: scaleContent,
-    };
-  }
-
-  return {
-    timing: timingToken.length > 0 ? formatBonusAbilityPhaseDisplay(timingToken) : null,
-    value: valueToken.length > 0 ? valueToken : null,
-  };
-}
-
-export function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number): string {
-  const entry = BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.get(abilityId);
-  if (!entry) {
-    return getAbilityDescription(abilityId, level);
-  }
-
-  const levelScale = entry.levelScale[Math.max(level - 1, 0)] ?? entry.levelScale[entry.levelScale.length - 1] ?? '';
-  if (levelScale.length === 0) {
-    return entry.description;
-  }
-
-  if (abilityId === 'execution') {
-    const executionScaleMatch = levelScale.match(/Lv\d+:\s*(\d+%)・x?([\d.]+)/);
-    if (executionScaleMatch) {
-      const [, threshold, multiplier] = executionScaleMatch;
-      return entry.description
-        .replace(/xN/g, `x${multiplier}`)
-        .replace(/xM/g, `x${multiplier}`)
-        .replace(/\bN\b/g, threshold)
-        .replace(/\bM\b/g, multiplier)
-        .replace(new RegExp(`${escapeRegExp(t('home.grammar.objectParticle'))}\\s+x`, 'g'), t('home.grammar.objectParticleX'))
-        .replace(new RegExp(`${escapeRegExp(t('home.grammar.subjectParticle'))}\\s+x`, 'g'), t('home.grammar.subjectParticleX'))
-        .replace(new RegExp(`${escapeRegExp(t('home.grammar.possessiveParticle'))}\\s+x`, 'g'), t('home.grammar.possessiveParticleX'));
-    }
-  }
-  if (abilityId === 'melee_conversion') {
-    const meleeConversionScaleMatch = levelScale.match(/Lv\d+:\s*(\d+)%・(\d+)%/);
-    if (meleeConversionScaleMatch) {
-      const [, rangedRate, magicalRate] = meleeConversionScaleMatch;
-      return entry.description
-        .replace(/N%/g, `${rangedRate}%`)
-        .replace(/M%/g, `${magicalRate}%`);
-    }
-  }
-
-  const { timing, value } = parseBonusAbilityLevelScale(levelScale);
-  let description = entry.description;
-
-  if (abilityId.endsWith('_reflect') && value && value.includes(t('home.abilityScale.reflect')) && value.includes(t('home.abilityScale.damageTaken')) && entry.description.includes(t('home.abilityDescription.reflectTemplate'))) {
-    return entry.description
-      .replace(t('home.abilityDescription.reflectTemplate'), t('home.abilityDescription.reflectDistributed', { value }))
-      .replace(new RegExp(`${escapeRegExp(t('home.grammar.objectParticle'))}\\s+x`, 'g'), t('home.grammar.objectParticleX'))
-      .replace(new RegExp(`${escapeRegExp(t('home.grammar.subjectParticle'))}\\s+x`, 'g'), t('home.grammar.subjectParticleX'))
-      .replace(new RegExp(`${escapeRegExp(t('home.grammar.possessiveParticle'))}\\s+x`, 'g'), t('home.grammar.possessiveParticleX'));
-  }
-
-  if (timing) {
-    description = description
-      .replace(t('home.abilityDescription.specifiedEndTiming'), t('home.abilityDescription.resolvedEndTiming', { timing }))
-      .replace(t('home.abilityDescription.specifiedTiming'), t('home.abilityDescription.resolvedTiming', { timing }));
-  }
-
-  if (value) {
-    const normalizedValue = value.startsWith('x') ? value.slice(1) : value;
-    const signedPercentValue = normalizedValue.startsWith('+') || normalizedValue.startsWith('-') ? normalizedValue : `+${normalizedValue}`;
-    const negativePercentValue = normalizedValue.startsWith('-') ? normalizedValue : `-${normalizedValue.replace(/^\+/, '')}`;
-    description = description
-      .replace(/\+N%/g, signedPercentValue)
-      .replace(/-N%/g, negativePercentValue)
-      .replace(/N%/g, normalizedValue)
-      .replace(/xN/g, value.startsWith('x') ? value : `x${value}`)
-      .replace(/\bN\b/g, normalizedValue);
-  }
-
-  return description
-    .replace(new RegExp(`${escapeRegExp(t('home.grammar.objectParticle'))}\\s+x`, 'g'), t('home.grammar.objectParticleX'))
-    .replace(new RegExp(`${escapeRegExp(t('home.grammar.subjectParticle'))}\\s+x`, 'g'), t('home.grammar.subjectParticleX'))
-    .replace(new RegExp(`${escapeRegExp(t('home.grammar.possessiveParticle'))}\\s+x`, 'g'), t('home.grammar.possessiveParticleX'));
-}
 
 export const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   rest: 'rest',
@@ -966,7 +858,7 @@ export function EnemyBestiaryBubble({
         <div>{t('combat.element')}: {elementalOffenseIcon ? renderUiIcon(elementalOffenseIcon) : t('home.enemy.noElement')} (x{formatDecimal(enemy.elementalOffenseValue, 2)})</div>
         <div>{t('combat.physicalDefense')}: {formatNumber(enemy.physicalDefense)} ({formatDecimal(enemy.physicalDefenseAmplifier * 100, 0)}%)</div>
         <div>{t('combat.magicalDefense')}: {formatNumber(enemy.magicalDefense)} ({formatDecimal(enemy.magicalDefenseAmplifier * 100, 0)}%)</div>
-        {hasMagicalAttack && <div>{t('home.enemy.accuracyLine', { label: t('home.enemy.magicalAccuracy'), decay })}</div>}
+        {hasMagicalAttack && <div>{t('home.enemy.accuracyLine', { label: t('home.party.magicalAccuracy'), decay })}</div>}
         <div>{t('combat.evasion')}: {formatNumber(Math.round(enemy.evasionBonus * 1000))}</div>
         <div>{renderElementalResistanceInline(enemy.elementalResistance)}</div>
         {(() => {
@@ -2446,118 +2338,6 @@ export const BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META: Array<{
   { id: 'timed', shortLabelKey: 'home.bonusAbility.subcategory.timedShort', labelKey: 'home.bonusAbility.subcategory.timed' },
 ];
 
-export const ABILITY_HELP_TEXT_KEYS: Record<string, string> = {
-  'defender:1': 'home.abilityHelp.defender.1',
-  'defender:2': 'home.abilityHelp.defender.2',
-  'defender:3': 'home.abilityHelp.defender.3',
-  'counter:1': 'home.abilityHelp.counter.1',
-  'counter:2': 'home.abilityHelp.counter.2',
-  'counter:3': 'home.abilityHelp.counter.3',
-  're_attack:1': 'home.abilityHelp.re_attack.1',
-  're_attack:2': 'home.abilityHelp.re_attack.2',
-  're_attack:3': 'home.abilityHelp.re_attack.3',
-  'iaigiri:1': 'home.abilityHelp.iaigiri.1',
-  'iaigiri:2': 'home.abilityHelp.iaigiri.2',
-  'iaigiri:3': 'home.abilityHelp.iaigiri.3',
-  'command:1': 'home.abilityHelp.command.1',
-  'command:2': 'home.abilityHelp.command.2',
-  'command:3': 'home.abilityHelp.command.3',
-  'hunter:1': 'home.abilityHelp.hunter.1',
-  'hunter:2': 'home.abilityHelp.hunter.2',
-  'hunter:3': 'home.abilityHelp.hunter.3',
-  'resonance:1': 'home.abilityHelp.resonance.1',
-  'resonance:2': 'home.abilityHelp.resonance.2',
-  'resonance:3': 'home.abilityHelp.resonance.3',
-  'resonance:4': 'home.abilityHelp.resonance.4',
-  'resonance:5': 'home.abilityHelp.resonance.5',
-  'm_barrier:1': 'home.abilityHelp.m_barrier.1',
-  'm_barrier:2': 'home.abilityHelp.m_barrier.2',
-  'm_barrier:3': 'home.abilityHelp.m_barrier.3',
-  'deflection:1': 'home.abilityHelp.deflection.1',
-  'deflection:2': 'home.abilityHelp.deflection.2',
-  first_strike: 'home.abilityHelp.first_strike',
-  equation_breaker: 'home.abilityHelp.equation_breaker',
-  domain_breaker: 'home.abilityHelp.domain_breaker',
-  fire_protect_breaker: 'home.abilityHelp.fire_protect_breaker',
-  ice_protect_breaker: 'home.abilityHelp.ice_protect_breaker',
-  thunder_protect_breaker: 'home.abilityHelp.thunder_protect_breaker',
-  m_barrier_breaker: 'home.abilityHelp.m_barrier_breaker',
-  null_counter: 'home.abilityHelp.null_counter',
-  resurrect: 'home.abilityHelp.resurrect',
-  rage: 'home.abilityHelp.rage',
-  re_counter: 'home.abilityHelp.re_counter',
-  pursuit: 'home.abilityHelp.pursuit',
-  illusion_breaker: 'home.abilityHelp.illusion-breaker',
-  bulwark_breaker: 'home.abilityHelp.bulwark-breaker',
-  'illusion-breaker': 'home.abilityHelp.illusion-breaker',
-  'bulwark-breaker': 'home.abilityHelp.bulwark-breaker',
-  momentum: 'home.abilityHelp.momentum',
-  bulwark: 'home.abilityHelp.bulwark',
-  covering_fire: 'home.abilityHelp.covering_fire',
-  magical_counter: 'home.abilityHelp.magical_counter',
-  stealth: 'home.abilityHelp.stealth',
-  illusion: 'home.abilityHelp.illusion',
-  howl: 'home.abilityHelp.howl',
-  predator_sense: 'home.abilityHelp.predator_sense',
-  slow: 'home.abilityHelp.slow',
-  corrode: 'home.abilityHelp.corrode',
-  life_drain: 'home.abilityHelp.life_drain',
-  no_offense: 'home.abilityHelp.no_offense',
-  decompose: 'home.abilityHelp.decompose',
-  swarm: 'home.abilityHelp.swarm',
-  death_touch: 'home.abilityHelp.death_touch',
-  flying: 'home.abilityHelp.flying',
-  free: 'home.abilityHelp.free',
-  frostbite: 'home.abilityHelp.frostbite',
-  ice_reflect: 'home.abilityHelp.ice_reflect',
-  ice_absorb: 'home.abilityHelp.ice_absorb',
-  ice_null: 'home.abilityHelp.ice_null',
-  bind: 'home.abilityHelp.bind',
-  regeneration: 'home.abilityHelp.regeneration',
-  burn: 'home.abilityHelp.burn',
-  fire_reflect: 'home.abilityHelp.fire_reflect',
-  fire_absorb: 'home.abilityHelp.fire_absorb',
-  fire_null: 'home.abilityHelp.fire_null',
-  thunder_reflect: 'home.abilityHelp.thunder_reflect',
-  thunder_absorb: 'home.abilityHelp.thunder_absorb',
-  thunder_null: 'home.abilityHelp.thunder_null',
-  soul_reap: 'home.abilityHelp.soul_reap',
-  mutual_magic_amplify: 'home.abilityHelp.mutual_magic_amplify',
-  mutual_magic_restraint: 'home.abilityHelp.mutual_magic_restraint',
-  mutual_physical_amplify: 'home.abilityHelp.mutual_physical_amplify',
-  mutual_physical_restraint: 'home.abilityHelp.mutual_physical_restraint',
-  ranged_confusion: 'home.abilityHelp.ranged_confusion',
-  magic_confusion: 'home.abilityHelp.magic_confusion',
-  melee_confusion: 'home.abilityHelp.melee_confusion',
-  self_destruct: 'home.abilityHelp.self_destruct',
-  oblivion: 'home.abilityHelp.oblivion',
-  fading_memory: 'home.abilityHelp.fading_memory',
-  reanimate: 'home.abilityHelp.reanimate',
-  auriferous: 'home.abilityHelp.auriferous',
-  magic_seal: 'home.abilityHelp.magic_seal',
-  ambush: 'home.abilityHelp.ambush',
-  mimic: 'home.abilityHelp.mimic',
-  unforgettable: 'home.abilityHelp.unforgettable',
-  shock: 'home.abilityHelp.shock',
-  null_shock: 'home.abilityHelp.null_shock',
-  null_corrode: 'home.abilityHelp.null_corrode',
-  null_life_drain: 'home.abilityHelp.null_life_drain',
-  null_death_touch: 'home.abilityHelp.null_death_touch',
-  null_burn: 'home.abilityHelp.null_burn',
-  null_bind: 'home.abilityHelp.null_bind',
-  null_requiem: 'home.abilityHelp.null_requiem',
-  unstable_core: 'home.abilityHelp.unstable_core',
-  magical_reflect: 'home.abilityHelp.magical_reflect',
-  magical_absorb: 'home.abilityHelp.magical_absorb',
-  magical_null: 'home.abilityHelp.magical_null',
-  ranged_reflect: 'home.abilityHelp.ranged_reflect',
-  ranged_null: 'home.abilityHelp.ranged_null',
-  melee_reflect: 'home.abilityHelp.melee_reflect',
-  melee_null: 'home.abilityHelp.melee_null',
-  colossal: 'home.abilityHelp.colossal',
-  upgrade_all_abilities: 'home.abilityHelp.upgrade_all_abilities',
-};
-
 export const C_MULTIPLIER_HELP_DESCRIPTION_KEYS: Record<string, string> = {
   sword: 'home.cMultiplierHelp.sword',
   katana: 'home.cMultiplierHelp.katana',
@@ -2893,9 +2673,7 @@ export function buildInlineBonusEntry(prefix: string, classId: string | undefine
     return {
       key: `${prefix}-${classId}-${bonus.abilityId}-${bonus.abilityLevel ?? 1}-${index}`,
       label: `${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}Lv${bonus.abilityLevel || 1}`,
-      description: BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.has(bonus.abilityId as AbilityId)
-        ? formatBonusAbilityHelpDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1)
-        : getAbilityDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1),
+      description: getAbilityDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1),
     };
   }
 

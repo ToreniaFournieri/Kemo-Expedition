@@ -364,7 +364,7 @@ export default function PartyTab({
       }
       if (combatTotals.magicalAttackAmp !== prev.magicalAttackAmp) {
         const isPositive = combatTotals.magicalAttackAmp > prev.magicalAttackAmp;
-        changes.push({ message: formatStatChange('home.party.help.magicalAttackMultiplierLabel', `x${formatDecimal(prev.magicalAttackAmp, 2)}`, `x${formatDecimal(combatTotals.magicalAttackAmp, 2)}`), isPositive });
+        changes.push({ message: formatStatChange('home.party.magicalAttackMultiplier', `x${formatDecimal(prev.magicalAttackAmp, 2)}`, `x${formatDecimal(combatTotals.magicalAttackAmp, 2)}`), isPositive });
       }
       if (combatTotals.magicalNoA !== prev.magicalNoA) {
         const isPositive = combatTotals.magicalNoA > prev.magicalNoA;

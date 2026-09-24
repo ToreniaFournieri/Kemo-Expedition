@@ -28,3 +28,22 @@ test('English glossary level scales contain no Japanese text', async () => {
     setLanguage('ja');
   }
 });
+
+test('English ability help renders every level with its values and no Japanese text', async () => {
+  const { formatBonusAbilityHelpDescription } = await import('../../src/data/bonusAbilityGlossary.ts');
+  await ensureLanguageLoaded('en');
+  setLanguage('en');
+  try {
+    for (const entry of BONUS_ABILITY_GLOSSARY_ENTRIES) {
+      for (let level = 1; level <= Math.max(1, entry.levelScale.length); level += 1) {
+        const text = formatBonusAbilityHelpDescription(entry.abilityId, level);
+        assert.doesNotMatch(text, /(?<![A-Za-z0-9])x?[NM](?![A-Za-z0-9])/u, `${entry.abilityId} Lv${level}: ${text}`);
+        assert.doesNotMatch(text.replace(/・/gu, ''), JAPANESE_TEXT, `${entry.abilityId} Lv${level}: ${text}`);
+      }
+    }
+    assert.equal(formatBonusAbilityHelpDescription('iaigiri', 2), 'Multiplies physical damage by x1.8 (attack count is halved).');
+    assert.equal(formatBonusAbilityHelpDescription('execution', 1), "If the opponent's remaining HP is 40% or less, multiplies damage dealt by x1.5.");
+  } finally {
+    setLanguage('ja');
+  }
+});

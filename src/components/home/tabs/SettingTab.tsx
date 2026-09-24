@@ -42,7 +42,6 @@ import { ApiV1Settings } from '../../ApiV1Settings';
 
 
 import {
-ABILITY_HELP_TEXT_KEYS,
 ABILITY_NAMES,
 APP_VERSION,
 BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META,
@@ -1300,17 +1299,9 @@ export default function SettingTab({
     return drops.length > 0 ? drops.join(' / ') : t('common.none');
   };
 
-  const getAbilityHelpDescription = (abilityId: string, level: number): string => {
-    const bonusAbilityEntry = BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.get(abilityId as AbilityId);
-    if (bonusAbilityEntry) {
-      return formatBonusAbilityHelpDescription(abilityId as AbilityId, level);
-    }
-
-    const levelDescriptionKey = ABILITY_HELP_TEXT_KEYS[`${abilityId}:${level}`];
-    if (levelDescriptionKey) return t(levelDescriptionKey);
-    const abilityDescriptionKey = ABILITY_HELP_TEXT_KEYS[abilityId];
-    return abilityDescriptionKey ? t(abilityDescriptionKey) : t('home.abilityHelp.unconfigured');
-  };
+  const getAbilityHelpDescription = (abilityId: string, level: number): string => (
+    formatBonusAbilityHelpDescription(abilityId as AbilityId, level)
+  );
 
   const getAbilityHelpText = (abilityId: string, level: number, abilityLabel: string): { title: string; description: string } => ({
     title: abilityLabel,
