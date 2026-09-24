@@ -858,7 +858,7 @@ const ja = {
   'expedition.floorConcept.3.3': '難破船',
   'expedition.floorConcept.3.4': '海蝕門',
   'expedition.floorConcept.3.5': '打ち捨てられた漁村',
-  'expedition.floorConcept.3.6': 'ヴルピニアン長老会の聖廷',
+  'expedition.floorConcept.3.6': 'ヴァルピニアン長老会の聖廷',
   'expedition.floorConcept.4.1': '砂漠の静夜',
   'expedition.floorConcept.4.2': '岩石台地',
   'expedition.floorConcept.4.3': '石灰洞窟',
