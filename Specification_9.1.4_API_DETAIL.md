@@ -44,6 +44,11 @@ AI / CUI ── loopback HTTP/JSON ───────┘          │
   a new schema version. A breaking operation or path change requires a new API
   base version.
 * `/experimental/v1` is not an alias and must not be exposed.
+* `fundamental/status` `versionBuild` identifies the running application build,
+  not the build recorded in the active save: `v<version> (<buildNumber>)`
+  (for example `v0.9.7 (119)`), with an unformatted build number. It is the same
+  value as the Version Build part of the feedback report (8.6); the header (8.1.2)
+  shows the same version and build number.
 
 Common identifiers:
 

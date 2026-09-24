@@ -133,7 +133,9 @@ import {
 AFK_MAX_ELAPSED_MS,
 AFK_RUNTIME_STORAGE_KEY,
 AfkSummaryStats,
+APP_BUILD_NUMBER,
 APP_VERSION,
+APP_VERSION_BUILD,
 APPROX_CYCLE_STEP_COUNT,
 AUTO_EQUIPMENT_PRIORITY_BY_CLASS,
 AUTO_EQUIPMENT_STORAGE_KEY,
@@ -556,8 +558,8 @@ export function HomeScreen({
 
   // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | Application API
   // The dispatcher lives in src/api/v1/applicationApi.ts; this component only supplies trusted runtime ports.
-  const apiRuntimeRef = useRef({ enemyLevelOffset: effectiveOrcaEnemyLevelOffset, buildNumber: state.buildNumber });
-  apiRuntimeRef.current = { enemyLevelOffset: effectiveOrcaEnemyLevelOffset, buildNumber: state.buildNumber };
+  const apiRuntimeRef = useRef({ enemyLevelOffset: effectiveOrcaEnemyLevelOffset });
+  apiRuntimeRef.current = { enemyLevelOffset: effectiveOrcaEnemyLevelOffset };
   const applicationApiRef = useRef<ApplicationApi | null>(null);
   if (applicationApiRef.current === null) {
     const desktop = () => window.bokemoDesktop!;
@@ -590,7 +592,7 @@ export function HomeScreen({
       desktopAvailable: () => Boolean(window.bokemoDesktop),
       runtime: {
         readiness: () => apiActionsRef.current.getApiReadiness(),
-        versionBuild: () => `${APP_VERSION} (${apiRuntimeRef.current.buildNumber})`,
+        versionBuild: () => APP_VERSION_BUILD,
         environment: () => getEnvironmentId(),
         gameMode: () => gameModeRef.current,
         enemyLevelOffset: () => apiRuntimeRef.current.enemyLevelOffset,
@@ -1071,7 +1073,7 @@ export function HomeScreen({
     ]
       .map(([key, value]) => `**${key}:** ${value}`)
       .join('\n');
-    const versionBuildEnvironmentLine = `**Version Build env:** ${APP_VERSION} (${formatNumber(state.buildNumber)}) ${environmentId}`;
+    const versionBuildEnvironmentLine = `**Version Build env:** ${APP_VERSION_BUILD} ${environmentId}`;
     const currentShopRefreshCount = state.global.shopRefreshCounts[getShopHourKey(now)] ?? 0;
     const goldAndPaidRefreshCostLine = `**Gold and Paid Refresh cost:** ${formatNumber(state.global.gold)}G (${formatNumber(getShopRefreshPrice(currentShopRefreshCount))}G)`;
     const reportMessage = `${headerLines}\n\n${ptRows.map((row) => row.join(' ')).join('\n')}\n\n${goldAndPaidRefreshCostLine}\n${versionBuildEnvironmentLine}\n${environmentLines}`;
@@ -5272,7 +5274,7 @@ export function HomeScreen({
       const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
       files.push(buildStatusTableHtmlFile(buildStatusTableRows(state.parties, [latestBattleLogParty - 1]), `status-table-${label}-${timestamp}.html`, `Status table (${label})`));
     }
-    return { versionBuild: `${APP_VERSION} (${formatNumber(state.buildNumber)})`, userId: state.global.userId, files };
+    return { versionBuild: APP_VERSION_BUILD, userId: state.global.userId, files };
   };
   const handleClairvoyanceReset = useCallback((partyIndex: number, changes: { resetCommonRewards?: boolean; resetRewards?: boolean; resetSideQuest?: boolean }) => {
     const party = state.parties[partyIndex];
@@ -5389,8 +5391,8 @@ export function HomeScreen({
   const hasUnreadDeveloperNews = DEVELOPER_NEWS_ITEMS.some((item) => !(state.global.readDeveloperNewsItemIds ?? []).includes(item.id));
   const envLabel = getEnvLabel();
   const versionLabel = envLabel
-    ? `${APP_VERSION}(${state.buildNumber}) ${envLabel}`
-    : `${APP_VERSION}(${state.buildNumber})`;
+    ? `${APP_VERSION}(${APP_BUILD_NUMBER}) ${envLabel}`
+    : `${APP_VERSION}(${APP_BUILD_NUMBER})`;
   const gameTitle = t('app.title');
 
   useEffect(() => {
