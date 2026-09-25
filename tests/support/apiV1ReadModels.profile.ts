@@ -50,11 +50,12 @@ assert.equal(full.simulatedRevision, 7);
   assert.equal(data.runs, 1_000);
   assert.equal(data.overview, 'Success 90.0% / Draw 4.0% / Retreat 2.0% / Defeat 4.0%');
   assert.deepEqual(data.overviewPercent, { success: 90, clear: 90, return: 0, draw: 4, retreat: 2, defeat: 4 });
-  assert.equal(data.detail.length, 24);
+  // Only the two rooms any run reached are listed; the 22 rooms no run reached are only counted.
+  assert.equal(data.detail.length, 2);
   assert.equal(data.detail[0], '1f-1/Success 90.0% / Draw 4.0% / Retreat 2.0% / Defeat 4.0% / Not reached 0.0%');
   assert.equal(data.detail[1], '1f-2/Success 90.0% / Draw 0.0% / Retreat 0.0% / Defeat 0.0% / Not reached 10.0%');
-  assert.equal(data.detail[23], '6f-4/Success 0.0% / Draw 0.0% / Retreat 0.0% / Defeat 0.0% / Not reached 100.0%');
-  assert.deepEqual(data.rooms.slice(0, 5).map((room) => room.floorRoom), ['1f-1', '1f-2', '1f-3', '1f-4', '2f-1']);
+  assert.deepEqual(data.rooms.map((room) => room.floorRoom), ['1f-1', '1f-2']);
+  assert.equal((full as unknown as { omittedRooms: number }).omittedRooms, 22);
   // Every run is counted exactly once in every room.
   for (const room of data.rooms as unknown as Array<Record<string, number>>) {
     assert.equal(room.reached + room.notReached, 1_000, `room ${room.room} totals`);
@@ -655,6 +656,12 @@ calls.length = 0;
   Object.assign(result, { totals: { experience: 12_345, itemDrops: 2_501, dropSaleValue: 67_890 } });
   const data = buildSimulationRunData(result as never, 3, 'seed-domain');
   assert.deepEqual(parseSimulationRunData(data), result, 'the forecast round-trips through the public projection');
+  assert.equal(data.omittedRooms, 0, 'a room with any count is never omitted');
+  // Unreached rooms are left out of the projection and rebuilt as bars no run reached.
+  const shallow = fakeSimulation(1000);
+  const shallowData = buildSimulationRunData(shallow as never, 3, 'seed-domain');
+  assert.equal(shallowData.rooms.length, 2);
+  assert.deepEqual(parseSimulationRunData(shallowData).rooms, shallow.rooms, 'omitted rooms round-trip');
   assert.deepEqual(data.counts, { clear: 411, return: 37, draw: 29, retreat: 173, defeat: 350 });
   assert.deepEqual(data.expectedPerRun, { experience: 12.3, itemDrops: 2.5, dropSaleValue: 67.9 }, 'expected rewards are per-run means');
 }

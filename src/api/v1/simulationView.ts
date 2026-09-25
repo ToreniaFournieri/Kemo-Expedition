@@ -1,8 +1,8 @@
-import { getExpeditionSimulationRoomCoordinate } from '../../game/expeditionSimulation.ts';
+import { createExpeditionSimulationRoomResults, getExpeditionSimulationRoomCoordinate } from '../../game/expeditionSimulation.ts';
 import { checkClearGateRequirement } from '../../game/clearGate.ts';
 import { hasReachedExpeditionDepthLimit } from '../../game/expeditionEffects/expeditionContinuation.ts';
 import { getDungeonById } from '../../data/dungeons.ts';
-import type { ExpeditionSimulationResult, Party } from '../../types/index.ts';
+import type { ExpeditionSimulationResult, ExpeditionSimulationRoomResult, Party } from '../../types/index.ts';
 
 // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | simulationRun structured percentages
@@ -50,6 +50,15 @@ export function describeSimulationDepthReach(party: Party): SimulationDepthReach
   return { requested: party.expeditionDepthLimit, reachable: party.expeditionDepthLimit, blockedByGate: null };
 }
 
+/** The bar of a room no run reached: every run is `notReached` and nothing else was counted. */
+function unreachedRoom(room: number, total: number): ExpeditionSimulationRoomResult {
+  return { ...createExpeditionSimulationRoomResults(total)[room - 1], NotReached: total };
+}
+
+function isUnreachedRoom(room: ExpeditionSimulationRoomResult, total: number): boolean {
+  return JSON.stringify(room) === JSON.stringify(unreachedRoom(room.room, total));
+}
+
 const perRun = (sum: number, total: number): number => (total > 0 ? Math.round((sum / total) * 10) / 10 : 0);
 
 export function buildSimulationRunData(result: ExpeditionSimulationResult, simulatedRevision: number, seedDomain: string, depthReach: SimulationDepthReach | null = null) {
@@ -59,6 +68,9 @@ export function buildSimulationRunData(result: ExpeditionSimulationResult, simul
   const draw = percent(result.Draw, total);
   const retreat = percent(result.Retreat, total);
   const defeat = percent(result.Defeat, total);
+  // Rooms no run reached (past the depth limit or a closed gate) carry nothing but `notReached = runs`, so they are left out
+  // of `detail` and `rooms`; `omittedRooms` counts them and a client rebuilds them from that.
+  const reachedRooms = result.rooms.filter((room) => !isUnreachedRoom(room, total));
   return {
     simulatedRevision,
     seedDomain,
@@ -73,11 +85,12 @@ export function buildSimulationRunData(result: ExpeditionSimulationResult, simul
     // Expected rewards of one run (the mean over all runs). Gold is realized only when the drops are sold or auto-sold.
     expectedPerRun: { experience: perRun(totals.experience, total), itemDrops: perRun(totals.itemDrops, total), dropSaleValue: perRun(totals.dropSaleValue, total) },
     totals: { ...totals },
-    detail: result.rooms.map((room) => {
+    omittedRooms: result.rooms.length - reachedRooms.length,
+    detail: reachedRooms.map((room) => {
       const won = room.Victory + room.Clear + room.Return;
       return `${floorRoomLabel(room.room)}/Success ${label(percent(won, total))}% / Draw ${label(percent(room.Draw, total))}% / Retreat ${label(percent(room.Retreat, total))}% / Defeat ${label(percent(room.Defeat, total))}% / Not reached ${label(percent(room.NotReached, total))}%`;
     }),
-    rooms: result.rooms.map((room) => ({
+    rooms: reachedRooms.map((room) => ({
       room: room.room,
       floorRoom: floorRoomLabel(room.room),
       reached: room.reached,
@@ -100,9 +113,16 @@ export function buildSimulationRunData(result: ExpeditionSimulationResult, simul
 /** The wire shape of `buildSimulationRunData`, as far as the Expedition pane needs it back. */
 export type SimulationRunData = ReturnType<typeof buildSimulationRunData>;
 
-/** Rebuilds the forecast the Expedition pane draws from the projection; the exact inverse of `buildSimulationRunData`. */
+/**
+ * Rebuilds the forecast the Expedition pane draws from the projection; the exact inverse of `buildSimulationRunData`. The
+ * omitted rooms come back as bars no run reached.
+ */
 export function parseSimulationRunData(data: SimulationRunData): ExpeditionSimulationResult {
   const total = data.runs;
+  const returnedRooms = new Set(data.rooms.map((room) => room.room));
+  const omittedRooms = createExpeditionSimulationRoomResults(total)
+    .filter((room) => !returnedRooms.has(room.room))
+    .map((room) => unreachedRoom(room.room, total));
   return {
     Clear: data.counts.clear,
     Return: data.counts.return,
@@ -111,7 +131,7 @@ export function parseSimulationRunData(data: SimulationRunData): ExpeditionSimul
     Defeat: data.counts.defeat,
     total,
     totals: { ...data.totals },
-    rooms: data.rooms.map((room) => ({
+    rooms: [...data.rooms.map((room) => ({
       room: room.room,
       Victory: room.victory,
       Clear: room.clear,
@@ -127,6 +147,6 @@ export function parseSimulationRunData(data: SimulationRunData): ExpeditionSimul
         From60: room.successfulHp.from60, From50: room.successfulHp.from50, From40: room.successfulHp.from40, Below40: room.successfulHp.below40,
       },
       retreatHp: { From30: room.retreatHp.from30, From20: room.retreatHp.from20, From10: room.retreatHp.from10, Below10: room.retreatHp.below10 },
-    })),
+    })), ...omittedRooms].sort((left, right) => left.room - right.room),
   };
 }

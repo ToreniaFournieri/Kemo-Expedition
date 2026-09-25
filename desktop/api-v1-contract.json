@@ -13860,7 +13860,6 @@
                 },
                 "difficultyOffset": {
                   "minimum": 0,
-                  "maximum": 68,
                   "multipleOf": 2,
                   "type": "integer"
                 }
@@ -13982,7 +13981,6 @@
                     },
                     "difficultyOffset": {
                       "minimum": 0,
-                      "maximum": 68,
                       "multipleOf": 2,
                       "type": "integer"
                     }
@@ -19573,6 +19571,7 @@
             "depthLimit",
             "expectedPerRun",
             "totals",
+            "omittedRooms",
             "detail",
             "rooms"
           ],
@@ -19777,6 +19776,10 @@
                 }
               }
             },
+            "omittedRooms": {
+              "minimum": 0,
+              "type": "integer"
+            },
             "detail": {
               "type": "array",
               "items": {
@@ -19970,6 +19973,7 @@
                 "depthLimit",
                 "expectedPerRun",
                 "totals",
+                "omittedRooms",
                 "detail",
                 "rooms"
               ],
@@ -20173,6 +20177,10 @@
                       "type": "integer"
                     }
                   }
+                },
+                "omittedRooms": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
                 "detail": {
                   "type": "array",
@@ -20395,6 +20403,7 @@
               "itemDrops": 0,
               "dropSaleValue": 0
             },
+            "omittedRooms": 0,
             "detail": [
               "xxxxxxx"
             ],
@@ -28727,7 +28736,6 @@
               },
               "difficultyOffset": {
                 "minimum": 0,
-                "maximum": 68,
                 "multipleOf": 2,
                 "type": "integer"
               }
@@ -28779,7 +28787,6 @@
                 },
                 "difficultyOffset": {
                   "minimum": 0,
-                  "maximum": 68,
                   "multipleOf": 2,
                   "type": "integer"
                 }
@@ -28865,7 +28872,6 @@
                     },
                     "difficultyOffset": {
                       "minimum": 0,
-                      "maximum": 68,
                       "multipleOf": 2,
                       "type": "integer"
                     }

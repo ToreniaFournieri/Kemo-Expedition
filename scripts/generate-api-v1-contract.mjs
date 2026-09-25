@@ -227,7 +227,7 @@ const enemyEditCurrent = { enemyLevel: Type.Integer({ minimum: 1, maximum: 99 })
 const commitParameters = {
   'commit/progress/elapsed': strict({ calculateToRealTime: optional(Type.Boolean()), elapsedSeconds: optional(Type.Integer({ minimum: 60, maximum: 43200 })) }),
   'commit/progress/progressReport': empty,
-  'commit/expedition/{p}/changeExpedition': strict({ destination: optional(integerId), destinationMode: optional(literals('auto', 'fixed')), depthLimit: optional(Type.String({ pattern: '^(?:[1-9][0-9]*f-[1-9][0-9]*|beforeBoss|all)$' })), difficultyOffset: optional(Type.Integer({ minimum: 0, maximum: 68, multipleOf: 2 })) }),
+  'commit/expedition/{p}/changeExpedition': strict({ destination: optional(integerId), destinationMode: optional(literals('auto', 'fixed')), depthLimit: optional(Type.String({ pattern: '^(?:[1-9][0-9]*f-[1-9][0-9]*|beforeBoss|all)$' })), difficultyOffset: optional(Type.Integer({ minimum: 0, multipleOf: 2 })) }),
   'commit/expedition/{p}/sortie': empty, 'commit/expedition/{p}/godsBattle': empty, 'commit/expedition/{p}/resetStatistics': empty,
   'commit/build/party/{p}': strict({ deityId: optional(stableKey), order: optional(nonEmptyArray(integerId, { minItems: 6, maxItems: 6, uniqueItems: true })) }),
   'commit/build/character/{characterId}/changeBuild': strict({ name: optional(Type.String({ minLength: 1, maxLength: 100 })), racesAndGender: optional(stableKey), mainClassId: optional(stableKey), subClassId: optional(stableKey), lineage: optional(stableKey), predisposition: optional(stableKey), simulation: Type.Boolean(), confirmation: Type.Optional(Type.Union([Type.Literal('yes'), Type.Literal('no')])) }),
@@ -440,7 +440,7 @@ const responseDataSchemas = {
   'read/observation/diary': strict({ diaryInfo: diaryProjectionSchema }),
   'read/observation/setting': strict({ settingInfo: settingProjectionSchema }),
   'read/observation/popupEventStream': popupStreamSchema,
-  'read/expedition/{p}/setting': strict({ current: strict({ destination: integerId, destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0, maximum: 68, multipleOf: 2 }) }), validOptions: strict({ destination: Type.Array(integerId), depthLimit: Type.Array(Type.String()), difficultyOffset: range }) }),
+  'read/expedition/{p}/setting': strict({ current: strict({ destination: integerId, destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0, multipleOf: 2 }) }), validOptions: strict({ destination: Type.Array(integerId), depthLimit: Type.Array(Type.String()), difficultyOffset: range }) }),
   'read/expedition/{p}/latestBattleLog': strict({ battleLog: Type.Union([battleLogSchema, Type.Null()]), resources: Type.Union([battleLogResources, Type.Null()]), bottleneckEnemies: Type.Array(bottleneckEnemy) }),
   'read/expedition/{p}/simulationRun': strict({
     simulatedRevision: Type.Integer({ minimum: 0 }), seedDomain: stableKey, runs: Type.Integer({ minimum: 1 }),
@@ -448,6 +448,7 @@ const responseDataSchemas = {
     depthLimit: Type.Union([strict({ requested: Type.String(), reachable: Type.Union([Type.String(), Type.Null()]), blockedByGate: Type.Union([strict({ floorRoom: floorRoomKey, current: count, required: count }), Type.Null()]) }), Type.Null()]),
     expectedPerRun: strict({ experience: Type.Number({ minimum: 0 }), itemDrops: Type.Number({ minimum: 0 }), dropSaleValue: Type.Number({ minimum: 0 }) }),
     totals: strict({ experience: count, itemDrops: count, dropSaleValue: count }),
+    omittedRooms: count,
     detail: Type.Array(Type.String()),
     rooms: Type.Array(strict({
       room: Type.Integer({ minimum: 1, maximum: 24 }), floorRoom: floorRoomKey,
@@ -489,7 +490,7 @@ const responseDataSchemas = {
   'read/setting/debug': strict({ current: strict(debugCurrent), validOptions: strict({ runtimeDiagnostics: booleanOptions, clairvoyance: booleanOptions, speedOfTime: Type.Array(Type.String()), godsBattleCondition: Type.Array(Type.String()), godsStrength: Type.Array(Type.String()), debugStoreOpen: booleanOptions, displayFlavorCondition: booleanOptions, displayAfkDuration: booleanOptions, displayAllBestiary: booleanOptions, displayAllCompendium: booleanOptions, displayAllGlossary: booleanOptions, colosseumMode: booleanOptions }) }),
   'commit/progress/elapsed': strict({ requestedElapsedSeconds: Type.Integer({ minimum: 0 }), acceptedElapsedSeconds: Type.Integer({ minimum: 0 }), cappedElapsedSeconds: Type.Integer({ minimum: 0 }), elapsedSeconds: Type.Integer({ minimum: 0 }), inGameTime: isoTimestamp }),
   'commit/progress/progressReport': strict({ deliveryId: stableKey, status: Type.Literal('queued') }),
-  'commit/expedition/{p}/changeExpedition': strict({ current: strict({ destination: integerId, destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0, maximum: 68, multipleOf: 2 }) }) }),
+  'commit/expedition/{p}/changeExpedition': strict({ current: strict({ destination: integerId, destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0, multipleOf: 2 }) }) }),
   'commit/expedition/{p}/sortie': strict({ outcome: Type.Union([expeditionOutcome, Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]) }),
   'commit/expedition/{p}/godsBattle': strict({ outcome: Type.Union([expeditionOutcome, Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]) }),
   'commit/expedition/{p}/resetStatistics': empty,

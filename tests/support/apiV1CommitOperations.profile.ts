@@ -509,6 +509,14 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   for (const destination of opened.destination) assert.doesNotThrow(() => change(defeated, { destination }), `offered destination ${destination} is accepted`);
   for (const depthLimit of opened.depthLimit) assert.doesNotThrow(() => change(defeated, { depthLimit }), depthLimit);
   assert.doesNotThrow(() => change(defeated, { difficultyOffset: opened.difficultyOffset.max }), 'the offered maximum is accepted');
+  // The published request schema accepts every offset the gameplay can offer (up to 80); the selectable maximum is the
+  // commit's own `illegal_action` check, not a schema bound.
+  const { default: Ajv } = await import('ajv');
+  const { readFileSync } = await import('node:fs');
+  const catalog = JSON.parse(readFileSync('desktop/api-v1-contract.json', 'utf8')) as { operations: { operationId: string; body: { properties: { parameters: object } } }[] };
+  const validateRequest = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'commit/expedition/{p}/changeExpedition')!.body.properties.parameters);
+  for (const difficultyOffset of [0, 68, 70, 80, 82]) assert.equal(validateRequest({ difficultyOffset }), true, `difficultyOffset ${difficultyOffset} passes the schema`);
+  assert.equal(validateRequest({ difficultyOffset: 3 }), false);
 }
 
 // resetStatistics restores the party's expedition statistics to their defaults and touches nothing else (Spec 9.1.3, 3-2-4).
