@@ -372,7 +372,7 @@ const expeditionProjectionSchema = strict({ parties: Type.Array(strict({
   sideQuest: Type.Union([sideQuestFact, Type.Null()]),
   controls: strict({ sortie: sortieControl, godsBattle: sortieControl }),
 })) });
-const characterSummary = strict({ characterId: integerId, name: Type.String({ minLength: 1 }), raceId: stableKey, gender: literals('male', 'female'), mainClassId: stableKey, subClassId: stableKey, lineageId: Type.Union([stableKey, Type.Null()]), predispositionId: Type.Union([stableKey, Type.Null()]), isUnique: Type.Boolean(), mimorianEnemyId: Type.Union([integerId, Type.Null()]), calculatedStatus, equipment: equipmentEntryList, autoEquipmentMode: Type.Integer({ minimum: 0, maximum: 2 }) });
+const characterSummary = strict({ characterId: integerId, name: Type.String({ minLength: 1 }), raceId: stableKey, gender: literals('male', 'female'), mainClassId: stableKey, subClassId: stableKey, lineageId: Type.Union([stableKey, Type.Null()]), predispositionId: Type.Union([stableKey, Type.Null()]), isUnique: Type.Boolean(), mimorianEnemyId: Type.Union([integerId, Type.Null()]), calculatedStatus, equipment: equipmentEntryList, autoEquipmentMode: literals('FULL', 'SEMI', 'OFF') });
 const partyProjectionSchema = strict({ effectiveSelection: strict({ partyNumber, characterId: Type.Union([integerId, Type.Null()]) }), party: strict({ partyNumber, name: Type.String({ minLength: 1 }), level: Type.Integer({ minimum: 1, maximum: 69 }), experience: Type.Integer({ minimum: 0 }), experienceToNext: Type.Integer({ minimum: 0 }), maxHp: Type.Integer({ minimum: 0 }), deityId: stableKey, deityRank: Type.Integer({ minimum: 0 }), condition: Type.Integer({ minimum: -400, maximum: 400 }), order: Type.Array(integerId), characters: Type.Array(characterSummary) }) });
 // Spec 8.4.1: the shop at the request's clock. A slot's `shopItemId` is its 1-based lineup position.
 // `<shopItemId>/<itemId>/<price>/<availability>` (Spec 9.1.3, 2-4-4).
@@ -445,6 +445,9 @@ const responseDataSchemas = {
   'read/expedition/{p}/simulationRun': strict({
     simulatedRevision: Type.Integer({ minimum: 0 }), seedDomain: stableKey, runs: Type.Integer({ minimum: 1 }),
     overview: Type.String(), counts: strict({ clear: count, return: count, draw: count, retreat: count, defeat: count }), overviewPercent: strict({ success: percentage, clear: percentage, return: percentage, draw: percentage, retreat: percentage, defeat: percentage }),
+    depthLimit: Type.Union([strict({ requested: Type.String(), reachable: Type.Union([Type.String(), Type.Null()]), blockedByGate: Type.Union([strict({ floorRoom: floorRoomKey, current: count, required: count }), Type.Null()]) }), Type.Null()]),
+    expectedPerRun: strict({ experience: Type.Number({ minimum: 0 }), itemDrops: Type.Number({ minimum: 0 }), dropSaleValue: Type.Number({ minimum: 0 }) }),
+    totals: strict({ experience: count, itemDrops: count, dropSaleValue: count }),
     detail: Type.Array(Type.String()),
     rooms: Type.Array(strict({
       room: Type.Integer({ minimum: 1, maximum: 24 }), floorRoom: floorRoomKey,
@@ -472,10 +475,11 @@ const responseDataSchemas = {
       magicalDefenseDelta: Type.Integer(),
     })),
   }),
-  'read/base/searchItems': strict({ items: Type.Array(itemStackFormat) }),
+  // SpecRef: 9.1.4.3 | searchItems reports how many items matched before `limit` and whether the list was cut off.
+  'read/base/searchItems': strict({ items: Type.Array(itemStackFormat), totalCount: Type.Integer({ minimum: 0 }), truncated: Type.Boolean() }),
   'read/base/jewelPriorityParty': strict({ current: strict({ partyNumber: Type.Union([partyNumber, Type.Literal('none')]) }), validOptions: strict({ partyNumber: Type.Array(Type.Union([partyNumber, Type.Literal('none')])) }) }),
   'read/base/shopInfo': strict(shopInfoMembers),
-  'read/base/shopItemsList': strict({ current: strict({ lineupId: stableKey, refreshesAt: isoTimestamp, items: Type.Array(shopItemString, { maxItems: 5 }), entries: Type.Array(shopEntry, { maxItems: 5 }) }), validOptions: strict({ items: Type.Array(Type.Integer({ minimum: 1, maximum: 5 })) }) }),
+  'read/base/shopItemsList': strict({ current: strict({ lineupId: stableKey, refreshesAt: isoTimestamp, items: Type.Array(shopItemString, { maxItems: 5 }), entries: Type.Array(shopEntry, { maxItems: 5 }) }), validOptions: strict({ lineupId: stableKey, items: Type.Array(Type.Integer({ minimum: 1, maximum: 5 })) }) }),
   'read/base/altarInfo': strict({ altarOverview }),
   'read/base/enemyFormList': strict({ current: strict({ enemyFormList: Type.Array(enemyForm) }), validOptions: strict({ enemyId: Type.Array(Type.Integer({ minimum: 0 })) }) }),
   'read/diary/{p}/diarySetting': strict({ current: strict(diarySettingMembers), validOptions: diarySettingValidOptions }),

@@ -146,6 +146,11 @@ after the response has been prepared. Fundamental responses use
   `resources/itemCompendium` (`items`), `resources/characterRoster` (`races`),
   `resources/bestiary` (`enemies`), and `resources/superRareList` (`superRare`).
   A client that needs a whole list follows `nextCursor` until it is `null`.
+* `read/base/searchItems` is not cursor-paginated: its `limit` (9.1.3 2-4-1,
+  default `10`) caps one response. Its `data` adds `totalCount` (matches before
+  `limit`) and `truncated` (`true` when `totalCount` exceeds the returned
+  `items`), so a client can tell a cut-off list from a complete one and retry
+  with a larger `limit`.
 * Lists have a documented deterministic order. If 9.1.3 does not prescribe one,
   use stable ID ascending, with stable ID as the final tie-breaker.
 
@@ -465,6 +470,14 @@ definitions in 9.1.3.
   not-reached count and HP bucket, so a client rebuilds the whole forecast (the graph and
   its tooltips) without rounding. The read returns when all runs have finished; it
   reports no partial progress.
+* A run stopped by a closed Clear-Gate ends as `return`, which counts as a
+  success. `simulationRun` therefore also returns `depthLimit`:
+  `{requested, reachable, blockedByGate}`, where `blockedByGate` is
+  `{floorRoom, current, required}` for the first closed gate before the
+  requested depth, or `null` when the requested depth is reachable.
+  `expectedPerRun` gives the mean `experience`, `itemDrops`, and
+  `dropSaleValue` (the drops' Gold value when sold) of one run, and `totals`
+  holds the exact sums over all runs.
 * The Expedition and compact projections report each party's real state:
   `state` is `state.<name>` of the live party cycle for the ordinary player's runtime
   (`state.rest`, `state.sell`, `state.free_action`, `state.sound_sleep`,
@@ -543,6 +556,13 @@ definitions in 9.1.3.
   log; both values are accepted by `latestBattleLog`.
 
 **Party build and equipment**
+
+* Every projection spells the Auto Equipment mode the way 9.1.3 (2-3-3 `mode`) and
+  the `autoEquipment` commit do: `FULL`, `SEMI`, or `OFF`. This includes the
+  `party` projection's `characters[].autoEquipmentMode`.
+* Equipment arrays (the `party` projection's `characters[].equipment` and
+  `character/{characterId}/equipment`) list every slot the character has, in slot
+  order, with `0` for each empty slot, including trailing empty slots.
 
 * `changeBuild` uses the same UI validation as the Party editor and owns its
   confirmation through the `simulation` and `confirmation` parameters defined in
@@ -659,7 +679,9 @@ definitions in 9.1.3.
   returns the compact `<shopItemId>/<itemId>/<price>/<availability>` strings of 9.1.3 in
   `current.items` and the same facts structured in `current.entries` (adding `rarity`,
   `soldOut`, and `unavailableReason`: `sold_out` or `insufficient_gold`);
-  `validOptions.items` lists the slots that can be bought now. The `base` projection's
+  `validOptions.items` lists the slots that can be bought now, and
+  `validOptions.lineupId` repeats `current.lineupId`, so `validOptions` holds
+  everything `purchaseShopItems` needs. The `base` projection's
   `shop` carries the same facts plus `lineupId`, `refreshesAt`, and `entries`.
 * `paidShopRefresh` charges the displayed current price and replaces the lineup
   in the same transaction. Idempotent replay must neither charge twice nor

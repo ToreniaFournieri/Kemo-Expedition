@@ -56,8 +56,14 @@ test('forecast resolution is a detached projection of the completed log', () => 
       remainingPartyHP: 450,
       replayMetadata: { seedHex: '1', rngVersion: 2, randomDrawCount: 7 },
     }],
+    experience: 10,
+    rewards: [],
+    autoSellMultiplier: 1,
+    autoSellCount: 0,
+    autoSellProfit: 0,
   });
   assert.notEqual(resolution.battleDiagnostics, log.entries);
+  assert.notEqual(resolution.rewards, log.rewards);
 });
 
 test('application contract keeps command data, caller authorities, and result publication explicit', () => {

@@ -20,7 +20,7 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
       if (operationId === 'fundamental/logIn') return { revision, data: { userId: 'Taro', environment: 'desktop', gameMode: 'normal', levelOffsetForOrca: null }, identity: { userId: 'Taro' } };
       if (operationId === 'fundamental/logOut') return { revision, data: { finalPersistedRevision: revision } };
       if (operationId === 'read/observation/overview') return { revision, data: { headerInfo: { gameMode: 'mode.normal', inGameTime: new Date(0).toISOString(), gold: 200, prana: 0, environment: 'desktop', unreadDiary: 0, speedOfTime: null, autoRepeat: null, progressReportInfo: { available: false, bonusActive: false } } } };
-      if (operationId === 'read/base/searchItems') return { revision, data: { items: ['0/1101/0/0/1/12'] } };
+      if (operationId === 'read/base/searchItems') return { revision, data: { items: ['0/1101/0/0/1/12'], totalCount: 1, truncated: false } };
       if (operationId === 'commit/base/changeJewelPriorityParty') {
         if (payload.idempotencyKey === 'operation-in-progress-key') return { status: 409, revision, error: { code: 'operation_in_progress', message: 'The operation is already in progress.' } };
         return { previousRevision: revision, revision: ++revision, data: { current: { partyNumber: 1 } } };
@@ -39,6 +39,14 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
   const bootstrap = { Authorization: `Bearer ${descriptor.token}`, 'Content-Type': 'application/json' };
   const invalidLogin = await fetch(`${descriptor.endpoint}/fundamental/logIn`, { method: 'POST', headers: bootstrap, body: JSON.stringify({ userId: 'Taro', environment: 'desktop', gameMode: 'normal', unknown: true }) });
   assert.equal(invalidLogin.status, 400);
+  // SpecRef: 9.1.4.11 | A rejected request names the member it rejected, not only "The request is invalid."
+  const invalidLoginError = (await invalidLogin.json()).error;
+  assert.deepEqual([invalidLoginError.details.field, invalidLoginError.details.rule], ['unknown', 'additionalProperties']);
+  assert.match(invalidLoginError.message, /`unknown` is not a known member/);
+  const missingField = await fetch(`${descriptor.endpoint}/fundamental/logIn`, { method: 'POST', headers: bootstrap, body: JSON.stringify({ userId: 'Taro', environment: 'desktop' }) });
+  const missingFieldError = (await missingField.json()).error;
+  assert.deepEqual([missingField.status, missingFieldError.code, missingFieldError.details.field], [400, 'invalid_request', 'gameMode']);
+  assert.match(missingFieldError.message, /`gameMode` is required/);
   const wrongMethod = await fetch(`${descriptor.endpoint}/fundamental/logIn`, { headers: { Authorization: `Bearer ${descriptor.token}` } });
   assert.equal(wrongMethod.status, 405);
   assert.equal(wrongMethod.headers.get('allow'), 'POST');

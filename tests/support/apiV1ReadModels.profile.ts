@@ -4,6 +4,7 @@ import { buildDiaryTabView, type DiaryProjection } from '../../src/api/v1/diaryT
 import { createFreshGameState } from '../../src/hooks/useGameState.ts';
 
 import { createExpeditionSimulationRoomResults } from '../../src/game/expeditionSimulation.ts';
+import { computePartyStats as computePartyStatsForPadding } from '../../src/game/partyComputation.ts';
 import type { DiaryLog, ExpeditionLog } from '../../src/types/index.ts';
 
 // A hand-built forecast: room 1 is reached by every run, room 2 by 900, and later rooms by nobody.
@@ -251,7 +252,7 @@ calls.length = 0;
   const equippedArmor = target.equipment.findIndex((item) => item?.category === 'armor');
   const withJewels = { ...state, global: { ...state.global, jewels: { 'fort:3': 2, 'might:1': 1, 'ward:2': 0 } },
     parties: state.parties.map((party, index) => index === 0 ? { ...party, characters: party.characters.map((entry) => entry.id === target.id ? { ...entry, equipment: entry.equipment.map((item, slot) => slot === equippedArmor && item ? { ...item, jewel: { key: 'fort' as const, rank: 4 } } : item) } : entry) } : party) };
-  type Search = { items: string[] };
+  type Search = { items: string[]; totalCount: number; truncated: boolean };
   const search = async (parameters: Record<string, unknown>, from = withJewels) => (await buildApiV1ReadData('read/base/searchItems', from, { details: 'none', limit: 5000, ...parameters }, context) as Search).items;
 
   const owned = Object.values(state.global.inventory).filter((variant) => variant.status === 'owned' && variant.count > 0);
@@ -291,6 +292,10 @@ calls.length = 0;
   // limit: default 10, applied after filtering and sorting; out-of-range values are rejected.
   const defaultLimit = (await buildApiV1ReadData('read/base/searchItems', withJewels, { details: 'none' }, context) as Search).items;
   assert.equal(defaultLimit.length, Math.min(10, owned.length), 'the default limit is 10');
+  const defaultPage = await buildApiV1ReadData('read/base/searchItems', withJewels, { details: 'none' }, context) as Search;
+  assert.deepEqual([defaultPage.totalCount, defaultPage.truncated], [all.length, all.length > 10], 'a cut-off list says so');
+  const wholePage = await buildApiV1ReadData('read/base/searchItems', withJewels, { details: 'none', limit: 5000 }, context) as Search;
+  assert.deepEqual([wholePage.totalCount, wholePage.truncated], [all.length, false]);
   assert.deepEqual(defaultLimit, all.slice(0, defaultLimit.length), 'limit takes the top of the sorted result');
   assert.deepEqual(await search({ limit: 2 }), all.slice(0, 2));
   for (const limit of [0, -1, 5001, 1.5]) await assert.rejects(() => buildApiV1ReadData('read/base/searchItems', withJewels, { limit }, context), /invalid_request/, `limit ${limit}`);
@@ -388,8 +393,12 @@ calls.length = 0;
     for (const key of ['id', 'name', 'gender', 'raceId', 'mainClassId', 'subClassId', 'lineageId', 'predispositionId'] as const) assert.equal(rebuilt[key], original[key], key);
     assert.equal(Boolean(rebuilt.isUnique), Boolean(original.isUnique), 'the unique flag is projected');
     assert.equal(rebuilt.autoEquipmentMode, original.autoEquipmentMode);
+    assert.equal(projection.party.characters[index].autoEquipmentMode, ['OFF', 'SEMI', 'FULL'][original.autoEquipmentMode ?? 0], 'the wire uses the same spelling as the autoEquipment commit');
     assert.equal(rebuilt.mimorianEnemyId, original.mimorianEnemyId);
-    assert.equal(rebuilt.equipment.length, original.equipment.length);
+    // Every slot the character has is listed, including trailing empty ones the saved array does not store.
+    const maxEquipSlots = computePartyStatsForPadding(party).characterStats[index].maxEquipSlots;
+    assert.equal(rebuilt.equipment.length, Math.max(original.equipment.length, maxEquipSlots));
+    assert.ok(rebuilt.equipment.slice(original.equipment.length).every((item) => item === null), 'padded slots are empty');
     original.equipment.forEach((item, slot) => {
       const back = rebuilt.equipment[slot];
       if (!item) return assert.equal(back, null);
@@ -643,9 +652,24 @@ calls.length = 0;
     Object.assign(room.successfulHp, { Full: index, From90: index + 1, From80: index + 2, From70: index + 3, From60: index + 4, From50: index + 5, From40: index + 6, Below40: index + 7 });
     Object.assign(room.retreatHp, { From30: index + 8, From20: index + 9, From10: index + 10, Below10: index + 11 });
   });
+  Object.assign(result, { totals: { experience: 12_345, itemDrops: 2_501, dropSaleValue: 67_890 } });
   const data = buildSimulationRunData(result as never, 3, 'seed-domain');
   assert.deepEqual(parseSimulationRunData(data), result, 'the forecast round-trips through the public projection');
   assert.deepEqual(data.counts, { clear: 411, return: 37, draw: 29, retreat: 173, defeat: 350 });
+  assert.deepEqual(data.expectedPerRun, { experience: 12.3, itemDrops: 2.5, dropSaleValue: 67.9 }, 'expected rewards are per-run means');
+}
+
+// A closed Clear-Gate before the depth limit ends every run as `return` (a "success"), so `simulationRun` names the gate.
+{
+  const { describeSimulationDepthReach } = await import('../../src/api/v1/simulationView.ts');
+  const { getEliteGateKey } = await import('../../src/game/clearGateCore.ts');
+  const fresh = createFreshGameState('ja', Date.now()).parties[0];
+  const blocked = { ...fresh, selectedDungeonId: 1, expeditionDepthLimit: '3f-3' as const, clearGateProgress: { [String(getEliteGateKey(1, 1))]: 2 }, clearGateStatus: {} };
+  assert.deepEqual(describeSimulationDepthReach(blocked), { requested: '3f-3', reachable: '1f-3', blockedByGate: { floorRoom: '1f-4', current: 2, required: 7 } });
+  const shallow = { ...blocked, expeditionDepthLimit: '1f-3' as const };
+  assert.deepEqual(describeSimulationDepthReach(shallow), { requested: '1f-3', reachable: '1f-3', blockedByGate: null }, 'a gate past the depth limit does not matter');
+  const open = { ...blocked, clearGateStatus: { [getEliteGateKey(1, 1)]: true, [getEliteGateKey(1, 2)]: true } };
+  assert.deepEqual(describeSimulationDepthReach(open), { requested: '3f-3', reachable: '3f-3', blockedByGate: null });
 }
 
 // Compact observation (9.1.3 2-1-1): `<conditionKey>/<conditionValue>` with the Spec 7.2 keys, and unread Diary titles as

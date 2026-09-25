@@ -8535,9 +8535,20 @@
                             }
                           },
                           "autoEquipmentMode": {
-                            "minimum": 0,
-                            "maximum": 2,
-                            "type": "integer"
+                            "anyOf": [
+                              {
+                                "const": "FULL",
+                                "type": "string"
+                              },
+                              {
+                                "const": "SEMI",
+                                "type": "string"
+                              },
+                              {
+                                "const": "OFF",
+                                "type": "string"
+                              }
+                            ]
                           }
                         }
                       }
@@ -9073,9 +9084,20 @@
                                 }
                               },
                               "autoEquipmentMode": {
-                                "minimum": 0,
-                                "maximum": 2,
-                                "type": "integer"
+                                "anyOf": [
+                                  {
+                                    "const": "FULL",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "SEMI",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "OFF",
+                                    "type": "string"
+                                  }
+                                ]
                               }
                             }
                           }
@@ -9271,7 +9293,7 @@
                     "equipment": [
                       "0"
                     ],
-                    "autoEquipmentMode": 0
+                    "autoEquipmentMode": "FULL"
                   }
                 ]
               },
@@ -19548,6 +19570,9 @@
             "overview",
             "counts",
             "overviewPercent",
+            "depthLimit",
+            "expectedPerRun",
+            "totals",
             "detail",
             "rooms"
           ],
@@ -19642,6 +19667,113 @@
                   "minimum": 0,
                   "maximum": 100,
                   "type": "number"
+                }
+              }
+            },
+            "depthLimit": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "requested",
+                    "reachable",
+                    "blockedByGate"
+                  ],
+                  "properties": {
+                    "requested": {
+                      "type": "string"
+                    },
+                    "reachable": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "blockedByGate": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "floorRoom",
+                            "current",
+                            "required"
+                          ],
+                          "properties": {
+                            "floorRoom": {
+                              "pattern": "^[1-6]f-[1-4]$",
+                              "type": "string"
+                            },
+                            "current": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "required": {
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "expectedPerRun": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "experience",
+                "itemDrops",
+                "dropSaleValue"
+              ],
+              "properties": {
+                "experience": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "itemDrops": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "dropSaleValue": {
+                  "minimum": 0,
+                  "type": "number"
+                }
+              }
+            },
+            "totals": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "experience",
+                "itemDrops",
+                "dropSaleValue"
+              ],
+              "properties": {
+                "experience": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "itemDrops": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "dropSaleValue": {
+                  "minimum": 0,
+                  "type": "integer"
                 }
               }
             },
@@ -19835,6 +19967,9 @@
                 "overview",
                 "counts",
                 "overviewPercent",
+                "depthLimit",
+                "expectedPerRun",
+                "totals",
                 "detail",
                 "rooms"
               ],
@@ -19929,6 +20064,113 @@
                       "minimum": 0,
                       "maximum": 100,
                       "type": "number"
+                    }
+                  }
+                },
+                "depthLimit": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "requested",
+                        "reachable",
+                        "blockedByGate"
+                      ],
+                      "properties": {
+                        "requested": {
+                          "type": "string"
+                        },
+                        "reachable": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "blockedByGate": {
+                          "anyOf": [
+                            {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "floorRoom",
+                                "current",
+                                "required"
+                              ],
+                              "properties": {
+                                "floorRoom": {
+                                  "pattern": "^[1-6]f-[1-4]$",
+                                  "type": "string"
+                                },
+                                "current": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "required": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "expectedPerRun": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "experience",
+                    "itemDrops",
+                    "dropSaleValue"
+                  ],
+                  "properties": {
+                    "experience": {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "itemDrops": {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "dropSaleValue": {
+                      "minimum": 0,
+                      "type": "number"
+                    }
+                  }
+                },
+                "totals": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "experience",
+                    "itemDrops",
+                    "dropSaleValue"
+                  ],
+                  "properties": {
+                    "experience": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "itemDrops": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "dropSaleValue": {
+                      "minimum": 0,
+                      "type": "integer"
                     }
                   }
                 },
@@ -20133,6 +20375,25 @@
               "draw": 0,
               "retreat": 0,
               "defeat": 0
+            },
+            "depthLimit": {
+              "requested": "xxxxxxx",
+              "reachable": "xxxxxxx",
+              "blockedByGate": {
+                "floorRoom": "1f-1",
+                "current": 0,
+                "required": 0
+              }
+            },
+            "expectedPerRun": {
+              "experience": 0,
+              "itemDrops": 0,
+              "dropSaleValue": 0
+            },
+            "totals": {
+              "experience": 0,
+              "itemDrops": 0,
+              "dropSaleValue": 0
             },
             "detail": [
               "xxxxxxx"
@@ -22750,7 +23011,9 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "items"
+            "items",
+            "totalCount",
+            "truncated"
           ],
           "properties": {
             "items": {
@@ -22759,6 +23022,13 @@
                 "pattern": "^(?:(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))/[0-9]+/-?[0-9]+(?:\\.[0-9]+)?|(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))/[0-9]+/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)/-?[0-9]+(?:\\.[0-9]+)?|(?:might|arcana|fort|ward|shade|focus):[1-8]/[0-9]+)(?:/(?:ability|cBonus|otherBonus)=\\[.*\\])*$",
                 "type": "string"
               }
+            },
+            "totalCount": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "truncated": {
+              "type": "boolean"
             }
           }
         },
@@ -22798,7 +23068,9 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "items"
+                "items",
+                "totalCount",
+                "truncated"
               ],
               "properties": {
                 "items": {
@@ -22807,6 +23079,13 @@
                     "pattern": "^(?:(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))/[0-9]+/-?[0-9]+(?:\\.[0-9]+)?|(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))/[0-9]+/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)/-?[0-9]+(?:\\.[0-9]+)?|(?:might|arcana|fort|ward|shade|focus):[1-8]/[0-9]+)(?:/(?:ability|cBonus|otherBonus)=\\[.*\\])*$",
                     "type": "string"
                   }
+                },
+                "totalCount": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "truncated": {
+                  "type": "boolean"
                 }
               }
             }
@@ -22842,7 +23121,9 @@
           "data": {
             "items": [
               "0/1/12"
-            ]
+            ],
+            "totalCount": 0,
+            "truncated": true
           }
         }
       }
@@ -23465,9 +23746,15 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
+                "lineupId",
                 "items"
               ],
               "properties": {
+                "lineupId": {
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "type": "string"
+                },
                 "items": {
                   "type": "array",
                   "items": {
@@ -23630,9 +23917,15 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
+                    "lineupId",
                     "items"
                   ],
                   "properties": {
+                    "lineupId": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
                     "items": {
                       "type": "array",
                       "items": {
@@ -23694,6 +23987,7 @@
               ]
             },
             "validOptions": {
+              "lineupId": "xxxxxxx",
               "items": [
                 1
               ]

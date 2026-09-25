@@ -56,6 +56,7 @@ import { normalizeImportedBags } from '../game/bagMigration';
 import { migrateLegacyInventory } from '../game/inventoryMigration';
 import {
   addItemToInventory,
+  calculateSellPrice,
   grantItemToInventory,
   removeItemFromInventory,
   sellAllOwnedInventory,
@@ -4642,6 +4643,7 @@ export async function simulateExpeditionRuns(
     Defeat: 0,
     total,
     rooms: createExpeditionSimulationRoomResults(total),
+    totals: { experience: 0, itemDrops: 0, dropSaleValue: 0 },
   };
 
   let sliceStartedAt = performance.now();
@@ -4664,6 +4666,10 @@ export async function simulateExpeditionRuns(
     const resolution = forecastResolutionByState.get(resolvedState);
     if (!resolution) throw new Error('simulation_failed');
     memoryMonitor.incrementBattleCount(resolution.completedRooms);
+    result.totals!.experience += resolution.experience;
+    result.totals!.itemDrops += resolution.rewards.length + resolution.autoSellCount;
+    result.totals!.dropSaleValue += resolution.autoSellProfit
+      + resolution.rewards.reduce((sum, item) => sum + calculateSellPrice(item, resolution.autoSellMultiplier), 0);
 
     let terminalStatus: 'Clear' | 'Return' | 'Draw' | 'Retreat' | 'Defeat';
     if (resolution.outcome === 'Clear') {

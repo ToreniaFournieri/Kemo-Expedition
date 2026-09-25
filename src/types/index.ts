@@ -775,6 +775,8 @@ export interface ExpeditionSimulationResult {
   Defeat: number;
   total: number;
   rooms: ExpeditionSimulationRoomResult[];
+  /** Sums over all runs; divide by `total` for the expected value per run. */
+  totals?: { experience: number; itemDrops: number; dropSaleValue: number };
 }
 
 export interface ExpeditionSimulationRoomResult {

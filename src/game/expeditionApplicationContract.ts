@@ -3,6 +3,7 @@ import type {
   ExpeditionLog,
   ExpeditionLogEntry,
   GameState,
+  Item,
   Party,
 } from '../types/index.ts';
 import type { CommittedExpeditionStateProjection } from './expeditionStateInstallation.ts';
@@ -49,6 +50,13 @@ export interface ExpeditionForecastResolution {
   readonly finalHp: number;
   readonly terminalBattleOutcome: ExpeditionLogEntry['outcome'] | null;
   readonly battleDiagnostics: ExpeditionForecastBattleDiagnostic[];
+  /** Party EXP the run awards (every outcome awards it). */
+  readonly experience: number;
+  /** Items kept (a Defeat keeps none), and the items auto-sold with their Gold. */
+  readonly rewards: readonly Item[];
+  readonly autoSellMultiplier: number;
+  readonly autoSellCount: number;
+  readonly autoSellProfit: number;
 }
 
 /**
@@ -92,5 +100,10 @@ export function createExpeditionForecastResolution(
       remainingPartyHP: entry.remainingPartyHP,
       replayMetadata: entry.replayMetadata,
     })),
+    experience: log.totalExperience,
+    rewards: [...log.rewards],
+    autoSellMultiplier: log.autoSellMultiplier ?? 1,
+    autoSellCount: log.autoSellCount,
+    autoSellProfit: log.autoSellProfit,
   };
 }

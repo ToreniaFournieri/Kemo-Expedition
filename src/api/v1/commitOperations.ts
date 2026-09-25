@@ -550,7 +550,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     // SpecRef: 9.1.3 | Commit | 3-6-2 modeSelect — `autoRepeat` is not controlled through the API (the schema rejects it).
     // Display settings live in the ordinary player's runtime, not in the save: validate them here and let the caller
     // apply them after the durable commit, so the Setting tab and the API always report the same values.
-    if (parameters.autoRepeat !== undefined) throw new Error('invalid_request');
+    if (parameters.autoRepeat !== undefined) throw new Error('invalid_request:autoRepeat');
     displaySettingWrite = planDisplaySettingWrite(parameters, context.displaySettings, getEnvironmentId(), context.gameMode);
     if (parameters.language !== undefined) reduce({ type: 'SET_LANGUAGE', language: String(parameters.language) as GameState['global']['language'] });
     // Earlier builds echoed requested values into the control settings; drop that stale copy.
