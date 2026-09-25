@@ -56,6 +56,7 @@ import { normalizeImportedBags } from '../game/bagMigration';
 import { migrateLegacyInventory } from '../game/inventoryMigration';
 import {
   addItemToInventory,
+  calculateSellPrice,
   grantItemToInventory,
   removeItemFromInventory,
   sellAllOwnedInventory,
@@ -4642,6 +4643,7 @@ export async function simulateExpeditionRuns(
     Defeat: 0,
     total,
     rooms: createExpeditionSimulationRoomResults(total),
+    totals: { experience: 0, itemDrops: 0, dropSaleValue: 0 },
   };
 
   let sliceStartedAt = performance.now();
@@ -4664,6 +4666,10 @@ export async function simulateExpeditionRuns(
     const resolution = forecastResolutionByState.get(resolvedState);
     if (!resolution) throw new Error('simulation_failed');
     memoryMonitor.incrementBattleCount(resolution.completedRooms);
+    result.totals!.experience += resolution.experience;
+    result.totals!.itemDrops += resolution.rewards.length + resolution.autoSellCount;
+    result.totals!.dropSaleValue += resolution.autoSellProfit
+      + resolution.rewards.reduce((sum, item) => sum + calculateSellPrice(item, resolution.autoSellMultiplier), 0);
 
     let terminalStatus: 'Clear' | 'Return' | 'Draw' | 'Retreat' | 'Defeat';
     if (resolution.outcome === 'Clear') {
@@ -5119,7 +5125,10 @@ export function useGameState() {
       await coordinator.replaceDurable(nextState);
     }, []),
 
+    // Every state swap below may carry a different save language (account login, backup import, logout restore);
+    // render calls `setActiveLanguage(state.global.language)` and throws unless that dictionary is loaded first.
     publishApiState: useCallback(async (nextState: GameState) => {
+      await ensureLanguageLoaded(nextState.global.language);
       latestGameStateRef.current = nextState;
       dispatch({ type: 'COMMIT_API_STATE', state: nextState });
     }, []),
@@ -5127,6 +5136,7 @@ export function useGameState() {
     commitApiState: useCallback(async (nextState: GameState) => {
       const coordinator = persistenceCoordinatorRef.current;
       if (!coordinator) throw new Error('persistence_unavailable');
+      await ensureLanguageLoaded(nextState.global.language);
       coordinator.commitAtomic(nextState);
       latestGameStateRef.current = nextState;
       dispatch({ type: 'COMMIT_API_STATE', state: nextState });
@@ -5148,6 +5158,7 @@ export function useGameState() {
         const imported = loadSavedState(JSON.stringify(nextState));
         if (!imported.state) return imported;
         const normalizedState = gameReducer(imported.state, { type: 'IMPORT_GAME_STATE', state: imported.state });
+        await ensureLanguageLoaded(normalizedState.global.language);
         await persistenceCoordinatorRef.current?.replaceDurable(normalizedState);
         dispatch({ type: 'COMMIT_API_STATE', state: normalizedState });
         setSaveErrorLog(null);

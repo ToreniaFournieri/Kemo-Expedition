@@ -63,12 +63,12 @@ export function describeCharacterBuildCurrent(character: Character) {
 }
 
 function parseRaceAndGender(state: GameState, character: Character, value: unknown): Pick<Character, 'raceId' | 'gender'> & Partial<Pick<Character, 'mimorianEnemyId'>> {
-  if (typeof value !== 'string') invalid('races_and_gender');
+  if (typeof value !== 'string') invalid('racesAndGender');
   const parts = value.split('/');
   const raceId = parts[0] as RaceId;
   const gender = parts[1];
-  if (!EDITABLE_RACES.has(raceId) || (gender !== 'male' && gender !== 'female')) invalid('races_and_gender');
-  if (raceId !== 'mimorian' && parts.length !== 2) invalid('races_and_gender');
+  if (!EDITABLE_RACES.has(raceId) || (gender !== 'male' && gender !== 'female')) invalid('racesAndGender');
+  if (raceId !== 'mimorian' && parts.length !== 2) invalid('racesAndGender');
   if (raceId === 'mimorian') {
     if (parts.length !== 3 || gender !== 'female' || !/^[1-9][0-9]*$/.test(parts[2])) illegal('mimorian_form');
     const enemyId = Number(parts[2]);
@@ -84,7 +84,8 @@ function parseRaceAndGender(state: GameState, character: Character, value: unkno
 }
 
 export function planCharacterBuildChange(state: GameState, characterId: number, parameters: Record<string, unknown>): CharacterBuildChangePlan {
-  if (Object.keys(parameters).some((key) => !ALLOWED_PARAMETERS.has(key))) invalid('unknown_member');
+  const unknownMember = Object.keys(parameters).find((key) => !ALLOWED_PARAMETERS.has(key));
+  if (unknownMember !== undefined) invalid(`${unknownMember}.unknown_member`);
   const partyIndex = state.parties.findIndex((party) => party.characters.some((candidate) => candidate.id === characterId));
   if (partyIndex < 0) throw new Error('not_found');
   const party = state.parties[partyIndex];
@@ -98,11 +99,11 @@ export function planCharacterBuildChange(state: GameState, characterId: number, 
   }
   if (parameters.racesAndGender !== undefined) Object.assign(requested, parseRaceAndGender(state, character, parameters.racesAndGender));
   if (parameters.mainClassId !== undefined) {
-    if (typeof parameters.mainClassId !== 'string' || !CLASSES.some((entry) => entry.id === parameters.mainClassId)) invalid('main_class');
+    if (typeof parameters.mainClassId !== 'string' || !CLASSES.some((entry) => entry.id === parameters.mainClassId)) invalid('mainClassId');
     requested.mainClassId = parameters.mainClassId as Character['mainClassId'];
   }
   if (parameters.subClassId !== undefined) {
-    if (typeof parameters.subClassId !== 'string' || !CLASSES.some((entry) => entry.id === parameters.subClassId)) invalid('sub_class');
+    if (typeof parameters.subClassId !== 'string' || !CLASSES.some((entry) => entry.id === parameters.subClassId)) invalid('subClassId');
     requested.subClassId = parameters.subClassId as Character['subClassId'];
   }
   if (parameters.lineage !== undefined) {

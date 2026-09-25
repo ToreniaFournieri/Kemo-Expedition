@@ -1,4 +1,5 @@
 import type { ExpeditionLog, GameState } from '../../types';
+import { describeInvalidRequest, invalidRequestMessage } from './requestErrors';
 import { buildApiV1ReadData, type ApiV1ReadContext } from './readModels';
 import { SerializedApplicationApiAuthority, type ApiV1CommitAuthorityDependencies, type ApiV1ControlMetadata, type ApiV1InternalTransactionDependencies } from './authority';
 import { normalizeApiV1PopupEvents } from './popupEvents';
@@ -339,7 +340,9 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
         const missing = String(error).includes('not_found');
         // SpecRef: 9.1.4.3 | A cursor from another route, filter set, or revision is `invalid_cursor`.
         if (!missing && /\binvalid_cursor\b/.test(String(error))) return failure(400, 'invalid_cursor', 'The cursor does not match this list.');
-        return failure(missing ? 404 : 400, missing ? 'not_found' : 'invalid_request', 'The requested projection is unavailable.');
+        if (missing) return failure(404, 'not_found', 'The requested projection is unavailable.');
+        const details = describeInvalidRequest(error);
+        return failure(400, 'invalid_request', invalidRequestMessage(details, 'The request is invalid.'), { ...details });
       }
     }
 

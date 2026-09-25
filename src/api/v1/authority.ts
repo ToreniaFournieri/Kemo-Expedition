@@ -1,4 +1,5 @@
 import type { GameState, SavedEquipmentSet } from '../../types';
+import { describeInvalidRequest, invalidRequestMessage } from './requestErrors';
 import { serializeGameState } from '../../game/saveCodec';
 import { createApiRandom, withGameplayRandomSource } from '../../game/gameplayRandom';
 import { applyApiV1Commit, type ApiV1CommitContext, type ApiV1PartyCycleWrite } from './commitOperations';
@@ -157,7 +158,8 @@ function classifyCommitError(error: unknown): ApiV1AuthorityError {
   const reason = String(error);
   if (reason.includes('not_found')) return { code: 'not_found', message: 'The requested resource was not found.', details: { reason } };
   if (reason.includes('illegal_action')) return { code: 'illegal_action', message: 'The action is unavailable.', details: { reason } };
-  return { code: 'invalid_request', message: 'The commit could not be applied.', details: { reason } };
+  const details = describeInvalidRequest(error);
+  return { code: 'invalid_request', message: invalidRequestMessage(details, 'The commit could not be applied.'), details: { ...details } };
 }
 
 /**

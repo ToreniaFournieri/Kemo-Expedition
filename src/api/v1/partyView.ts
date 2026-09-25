@@ -13,7 +13,7 @@ export interface PartyProjection {
     partyNumber: number; name: string; level: number; experience: number; experienceToNext: number; maxHp: number; deityId: string; deityRank: number; condition: number; order: number[];
     characters: {
       characterId: number; name: string; raceId: string; gender: string; mainClassId: string; subClassId: string; lineageId: string | null; predispositionId: string | null;
-      isUnique: boolean; mimorianEnemyId: number | null; equipment: string[]; autoEquipmentMode: number; calculatedStatus: CalculatedStatus;
+      isUnique: boolean; mimorianEnemyId: number | null; equipment: string[]; autoEquipmentMode: 'FULL' | 'SEMI' | 'OFF'; calculatedStatus: CalculatedStatus;
     }[];
   };
   /** The Mimorian enemy forms unlocked at the Altar (the character editor's form choices). */
@@ -58,7 +58,7 @@ export function buildPartyView(projection: PartyProjection): PartyView {
       name: character.name,
       gender: character.gender as CharacterGender,
       isUnique: character.isUnique,
-      autoEquipmentMode: character.autoEquipmentMode as 0 | 1 | 2,
+      autoEquipmentMode: character.autoEquipmentMode === 'FULL' ? 2 : character.autoEquipmentMode === 'SEMI' ? 1 : 0,
       raceId: character.raceId as RaceId,
       mainClassId: character.mainClassId as ClassId,
       subClassId: character.subClassId as ClassId,

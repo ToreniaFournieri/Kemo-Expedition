@@ -73,7 +73,9 @@ Check `GET /api/v1/read/expedition/1/setting`, then set the target with `POST /a
 
 ## 3. Buy opening items
 
-Look for a sword, wand, and grimoire in `GET /api/v1/read/base/shopItemsList`. The historical budget was about `180G`; use current prices and Gold. Buy only available entries. The numeric `shopItemId` values identify lineup slots, not base item IDs or old stock-entry strings.
+Look for a sword, wand, grimoire, and catalyst in `GET /api/v1/read/base/shopItemsList`. The historical budget was about `180G`; use current prices and Gold. Buy only available entries. The numeric `shopItemId` values identify lineup slots, not base item IDs or old stock-entry strings. `current.entries` gives each slot's `itemId`, `price`, and `unavailableReason` as structured fields.
+
+`purchaseShopItems` requires `lineupId`. Copy it from the same `shopItemsList` response (`current.lineupId`, also repeated in `validOptions.lineupId`). A lineup that changed since that read is rejected with `illegal_action:lineup_changed` and nothing is bought; reread and choose again.
 
 For example, if slots `2` and `4` are available:
 
@@ -85,13 +87,22 @@ POST /api/v1/commit/base/purchaseShopItems
 {
   "expectedRevision": 43,
   "idempotencyKey": "550e8400-e29b-41d4-a716-446655440002",
-  "parameters": {"items":[{"shopItemId":2},{"shopItemId":4}]}
+  "parameters": {"lineupId":"11041102111011111111","items":[{"shopItemId":2},{"shopItemId":4}]}
 }
 ```
 
 Replace those IDs with observed choices. The whole purchase succeeds or fails together. A lineup can rotate without a revision change, so buy promptly and reread `shopItemsList` after purchases or refreshes. Inspect the purchased item variants before equipping. Skip unavailable categories instead of guessing.
 
 ## 4. Equip the party
+
+The shop rolls a different lineup and different enhancements each time, so treat the table below as an example, not a recipe. It assumes a good roll: two grimoires and +2/+3 enhancements. With a sword, wand, and grimoire at +1 each, the same table gave 0% success and 99% Draw at 1f-3.
+
+Allocate by these rules first, then use the table to break ties:
+
+* **Every character must keep at least one attack.** A grimoire (`1111`) adds magical attack but lowers magical NoA by 1, and a catalyst (`1112`) raises it. Never give a caster grimoires without a catalyst, and never stack two grimoires on one character. Two grimoires alone left Borg with no attacks.
+* **Give each caster (Grun, Borg, Selfin, Laika) a catalyst** before adding grimoires or wands.
+* **Give Kemo the extra melee weapons** (swords `1104`, a katana `1105`) so the front line deals damage.
+* After each `equip`, read `GET /api/v1/read/build/character/{characterId}/status` and check that at least one attack has NoA above 0.
 
 The original allocation target is below. These are **base item IDs**, not the `Item Format` strings accepted by `equip`. Match each target to an owned, compatible item in current inventory. Prefer the strongest available enhancement for Kemo's sword, Grun's wand, and Borg's grimoire.
 
@@ -102,19 +113,22 @@ The original allocation target is below. These are **base item IDs**, not the `I
 | 3 | 2 (Borg) | `1102, 1111, 1111, 1112` | `SEMI` |
 | 4 | 5 (Selfin) | `1101, 1102, 1110` | `SEMI` |
 | 5 | 3 (Lop) | `1107, 1107, 1109, 1109` | `SEMI` |
-| 6 | 6 (Laika) | Leave for a `FULL` automatic run | `FULL` |
+| 6 | 6 (Laika) | At least one `1112`, then a `SEMI` automatic run | `SEMI` |
 
-Inspect current equipment and party inventory with `GET /api/v1/read/observation/party`. Set the manual characters to `SEMI` using `POST /api/v1/commit/build/character/{characterId}/autoEquipment` with `parameters` of `{"mode":"SEMI","immediateAutoEquipment":false}`. Remove equipment from affected characters with their `removeAllEquipment` commits, then equip characters in the table's order using `POST /api/v1/commit/build/character/{characterId}/equip`. Supply owned **Item Format** values in `parameters.targetEquipment`, such as `"0/1104/1/0"`; verify the exact format and quantity in current inventory. Use `targetSlot` only for a deliberate single-slot replacement.
+Inspect current equipment and party inventory with `GET /api/v1/read/observation/party`. To list inventory, use `GET /api/v1/read/base/searchItems` with a `limit` large enough for the whole inventory, such as `limit=500`. The default returns only 10 items. When `truncated` is `true`, `totalCount` says how many items matched. Set the manual characters to `SEMI` using `POST /api/v1/commit/build/character/{characterId}/autoEquipment` with `parameters` of `{"mode":"SEMI","immediateAutoEquipment":false}`. Remove equipment from affected characters with their `removeAllEquipment` commits, then equip characters in the table's order using `POST /api/v1/commit/build/character/{characterId}/equip`. Supply owned **Item Format** values in `parameters.targetEquipment`, such as `"0/1104/1/0"`; verify the exact format and quantity in current inventory. Use `targetSlot` only for a deliberate single-slot replacement.
 
 Every removal, equip, and mode change is a separate commit. There is no v1 operation that removes and reallocates all six characters' equipment atomically. Check equipment and revision after each character before assigning the next one's items. If an item is missing or incompatible, revise the target from current inventory rather than assuming partial success.
 
-Finally, run Laika's automatic equipment with `POST /api/v1/commit/build/character/6/autoEquipment` and `parameters` of `{"mode":"FULL","immediateAutoEquipment":true}`. Inspect its `autoEquipmentReport` and resulting equipment.
+Finally, equip a catalyst on Laika by hand, then run `POST /api/v1/commit/build/character/6/autoEquipment` with `parameters` of `{"mode":"SEMI","immediateAutoEquipment":true}`. Inspect its `autoEquipmentReport` and resulting equipment. `FULL` has been seen to remove a caster's only catalyst and leave NoA at 0. If you use `FULL`, check every attack's NoA afterward, both here and after AFK time.
 
 This concentrates offensive items on Kemo, Grun, and Borg. Early enemies can have roughly 16–26 Defense, so per-hit damage matters. Treat those figures and this allocation as starting points, then check current attack values and simulation results.
 
 ## 5. Verify productive farming
 
 Run `POST /api/v1/read/expedition/1/simulationRun` with an empty JSON object or an optional `expectedRevision` for a private 1,000-run forecast. This is a Read operation: it does not commit progression, consume charge, or return rewards. Forecast percentages describe the simulated snapshot, not guaranteed live results.
+
+* A run stopped by a closed Clear-Gate ends as `return`, which counts as "Success". Check `data.depthLimit`: when `blockedByGate` is not `null`, no run gets past `blockedByGate.floorRoom` (`current`/`required` consecutive results so far), and `reachable` is the deepest room a run can reach. Farm at or below that depth until the gate opens.
+* `data.expectedPerRun` gives the mean `experience`, `itemDrops`, and `dropSaleValue` per run, which lets you compare depths. `dropSaleValue` becomes Gold only when the drops are sold. Auto-sell applies only to a variant that has been sold once, so a fresh save earns no Gold from farming until you sell with `sellInventoryItems`.
 
 If promising, check `GET /api/v1/read/expedition/1/chargeStock` and the Sortie control in `GET /api/v1/read/observation/expedition`, then send one `POST /api/v1/commit/expedition/1/sortie` with the standard commit envelope and empty `parameters`. One accepted request consumes one charge stock and resolves one sortie. Inspect its `outcome`, `rewards`, `diaryEntryId`, and `logId` before another.
 

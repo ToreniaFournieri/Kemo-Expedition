@@ -24,7 +24,7 @@ import { isJewelAllowedForCategory, JEWEL_DEFS } from '../../game/jewel.ts';
 import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
 import { apiExpeditionOutcomeOrNull } from './expeditionOutcome.ts';
 import { buildBattleLogData, buildBattleRoomData, buildRoomResources } from './battleLogs.ts';
-import { buildSimulationRunData } from './simulationView.ts';
+import { buildSimulationRunData, describeSimulationDepthReach } from './simulationView.ts';
 import { describeCharacterBuildCurrent } from './buildChange.ts';
 import { EQUIPMENT_EVALUATION_LIMIT } from './requestLimits.ts';
 import { paginate } from './pagination.ts';
@@ -56,7 +56,7 @@ import { getPartyClairvoyanceAccess } from '../../game/clairvoyanceAccess.ts';
 import type { DebugSettings } from '../../game/debugSettings.ts';
 import type { ColosseumEnemySettings } from '../../game/colosseum.ts';
 import { accountEnemyEditSettingsOf, describeEnemyEditPane, enemyEditPaneValidOptions } from './enemyEditPane.ts';
-import { MAX_LEVEL, type DiaryLog, type EnemyDef, type ExpeditionLog, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party, type RandomBag } from '../../types/index.ts';
+import { MAX_LEVEL, type DiaryLog, type EnemyDef, type ExpeditionLog, type Character, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party, type RandomBag } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
 
@@ -134,6 +134,17 @@ function itemFormat(item: Item): string {
 
 function equipmentEntry(item: Item | null, slotIndex: number): string {
   return item ? formatEquipmentEntry(slotIndex, item, item.isLocked === true, item.jewel) : '0';
+}
+
+// SpecRef: 9.1.3 | 2-3-3 equipment | Array in equipment-slot order; an empty slot is `0`.
+/** Every slot the character has, including trailing empty ones the saved equipment array may not store. */
+function equipmentEntries(character: Character, maxEquipSlots: number): string[] {
+  return Array.from({ length: Math.max(character.equipment.length, maxEquipSlots) }, (_, slot) => equipmentEntry(character.equipment[slot] ?? null, slot));
+}
+
+/** The API's one spelling of Auto Equipment mode (9.1.3 2-3-3 `mode`), shared by every projection. */
+export function autoEquipmentModeName(mode: Character['autoEquipmentMode']): 'FULL' | 'SEMI' | 'OFF' {
+  return mode === 2 ? 'FULL' : mode === 1 ? 'SEMI' : 'OFF';
 }
 
 function partyByNumber(state: GameState, value: unknown): { party: Party; index: number } | null {
@@ -341,8 +352,8 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>) 
         isUnique: character.isUnique === true,
         mimorianEnemyId: character.mimorianEnemyId ?? null,
         calculatedStatus: buildCalculatedStatus(character, computed[index], party.level),
-        equipment: character.equipment.map(equipmentEntry),
-        autoEquipmentMode: character.autoEquipmentMode,
+        equipment: equipmentEntries(character, computed[index].maxEquipSlots),
+        autoEquipmentMode: autoEquipmentModeName(character.autoEquipmentMode),
       })),
     },
   };
@@ -364,7 +375,7 @@ const API_CATEGORY_TO_ITEM_CATEGORY: Record<string, string> = {
  * follow in the fixed order ability, cBonus, otherBonus. Equipment is sorted by higher calculated base power, then higher
  * item id, then higher Jewel rank (remaining ties: higher enhancement, higher Super Rare title, stack before
  * character-assigned, lower character id). Unassigned Jewels come first, by higher rank, then higher Jewel type. `limit`
- * (default 10, at most 5000) is applied after filtering and sorting.
+ * (default 10, at most 5000) is applied after filtering and sorting; `totalCount` and `truncated` report what it cut.
  */
 const SEARCH_ITEMS_DEFAULT_LIMIT = 10;
 const SEARCH_ITEMS_MAX_LIMIT = 5000;
@@ -423,7 +434,8 @@ function searchItems(state: GameState, parameters: Record<string, unknown>) {
     }
   }
   entries.sort((left, right) => { for (let index = 0; index < left.order.length; index += 1) { const difference = left.order[index] - right.order[index]; if (difference !== 0) return difference; } return 0; });
-  return { items: entries.slice(0, limit).map((entry) => entry.text) };
+  // SpecRef: 9.1.4.3 | `totalCount` and `truncated` tell a cut-off list (default `limit` 10) from a complete one.
+  return { items: entries.slice(0, limit).map((entry) => entry.text), totalCount: entries.length, truncated: entries.length > limit };
 }
 
 /** The Debug settings in force for this read: the ordinary player's Debug pane, or an API account's own debug settings. */
@@ -807,7 +819,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     }
     if (expedition[2] === 'simulationRun') {
       if (!context.simulation) throw new Error('runtime_unavailable');
-      return buildSimulationRunData(await context.simulation(index, 1_000) as ExpeditionSimulationResult, context.revision, crypto.randomUUID());
+      return buildSimulationRunData(await context.simulation(index, 1_000) as ExpeditionSimulationResult, context.revision, crypto.randomUUID(), describeSimulationDepthReach(party));
     }
     const charge = getInstantExpeditionChargeState(party, context.inGameTime, context.chargeDurationScale ?? 1);
     return { chargeStock: charge.stock, chargeDuration: charge.remainingMs <= 0 ? 0 : Math.ceil(charge.remainingMs / 1000) };
@@ -857,7 +869,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       const maxSlots = computePartyStats(party).characterStats[characterIndex].maxEquipSlots;
       const emptySlots = Array.from({ length: maxSlots }, (_, slot) => slot).filter((slot) => !character.equipment[slot]).length;
       return {
-        current: { mode: character.autoEquipmentMode === 2 ? 'FULL' : character.autoEquipmentMode === 1 ? 'SEMI' : 'OFF', equipment: character.equipment.map(equipmentEntry) },
+        current: { mode: autoEquipmentModeName(character.autoEquipmentMode), equipment: equipmentEntries(character, maxSlots) },
         validOptions: { mode: ['FULL', 'SEMI', 'OFF'], numberOfEmptyEquipmentSlots: emptySlots, ...describeEquipmentHistory(state, character.id, context.control?.equipmentHistory) },
       };
     }
@@ -936,7 +948,8 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     // structured, including why a slot cannot be bought.
     return {
       current: { lineupId: shop.lineupId, refreshesAt: shop.refreshesAt, items: shop.entries.map((entry) => `${entry.shopItemId}/${entry.itemId}/${entry.price}/${entry.available}`), entries: shop.entries },
-      validOptions: { items: shop.entries.filter((entry) => entry.available).map((entry) => entry.shopItemId) },
+      // `lineupId` is repeated here because `purchaseShopItems` requires it together with the `items` below.
+      validOptions: { lineupId: shop.lineupId, items: shop.entries.filter((entry) => entry.available).map((entry) => entry.shopItemId) },
     };
   }
   if (operationId === 'read/base/altarInfo') return { altarOverview: altarProjection(state) };

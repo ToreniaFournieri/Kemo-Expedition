@@ -1,5 +1,8 @@
 import { getExpeditionSimulationRoomCoordinate } from '../../game/expeditionSimulation.ts';
-import type { ExpeditionSimulationResult } from '../../types/index.ts';
+import { checkClearGateRequirement } from '../../game/clearGate.ts';
+import { hasReachedExpeditionDepthLimit } from '../../game/expeditionEffects/expeditionContinuation.ts';
+import { getDungeonById } from '../../data/dungeons.ts';
+import type { ExpeditionSimulationResult, Party } from '../../types/index.ts';
 
 // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | simulationRun structured percentages
@@ -15,8 +18,43 @@ export function floorRoomLabel(room: number): string {
   return `${floor}f-${roomInFloor}`;
 }
 
-export function buildSimulationRunData(result: ExpeditionSimulationResult, simulatedRevision: number, seedDomain: string) {
+export interface SimulationDepthReach {
+  /** The party's `depthLimit` setting. */
+  requested: string;
+  /** The last room a run can reach before a closed Clear-Gate stops it (`null`: the gate is the first room). */
+  reachable: string | null;
+  /** The closed gate that stops every run short of `requested`, or `null` when `requested` is reachable. */
+  blockedByGate: { floorRoom: string; current: number; required: number } | null;
+}
+
+// SpecRef: 5.1.3.1 | Clear-Gate gate check; 9.1.4.9 | simulationRun reports a depth limit a closed gate makes unreachable.
+/** Walks the party's destination the way a run does and reports the first closed Clear-Gate before its depth limit. */
+export function describeSimulationDepthReach(party: Party): SimulationDepthReach | null {
+  const dungeon = getDungeonById(party.selectedDungeonId);
+  if (!dungeon) return null;
+  let previous: string | null = null;
+  for (const floor of dungeon.floors) {
+    for (let roomIndex = 0; roomIndex < floor.rooms.length; roomIndex += 1) {
+      const roomInFloor = roomIndex + 1;
+      const floorRoom = `${floor.floorNumber}f-${roomInFloor}`;
+      const gate = checkClearGateRequirement({ dungeonId: dungeon.id, floorNumber: floor.floorNumber, roomInFloor, roomType: floor.rooms[roomIndex].type, party });
+      if (gate.blocked) {
+        return { requested: party.expeditionDepthLimit, reachable: previous, blockedByGate: { floorRoom, current: gate.current, required: gate.required } };
+      }
+      if (hasReachedExpeditionDepthLimit(party.expeditionDepthLimit, floor.floorNumber, roomInFloor)) {
+        return { requested: party.expeditionDepthLimit, reachable: party.expeditionDepthLimit, blockedByGate: null };
+      }
+      previous = floorRoom;
+    }
+  }
+  return { requested: party.expeditionDepthLimit, reachable: party.expeditionDepthLimit, blockedByGate: null };
+}
+
+const perRun = (sum: number, total: number): number => (total > 0 ? Math.round((sum / total) * 10) / 10 : 0);
+
+export function buildSimulationRunData(result: ExpeditionSimulationResult, simulatedRevision: number, seedDomain: string, depthReach: SimulationDepthReach | null = null) {
   const total = result.total;
+  const totals = result.totals ?? { experience: 0, itemDrops: 0, dropSaleValue: 0 };
   const success = percent(result.Clear + result.Return, total);
   const draw = percent(result.Draw, total);
   const retreat = percent(result.Retreat, total);
@@ -30,6 +68,11 @@ export function buildSimulationRunData(result: ExpeditionSimulationResult, simul
     // the whole forecast without rounding.
     counts: { clear: result.Clear, return: result.Return, draw: result.Draw, retreat: result.Retreat, defeat: result.Defeat },
     overviewPercent: { success, clear: percent(result.Clear, total), return: percent(result.Return, total), draw, retreat, defeat },
+    // A `return` counts as a success, so a closed gate before the depth limit shows up here rather than as a failure.
+    depthLimit: depthReach,
+    // Expected rewards of one run (the mean over all runs). Gold is realized only when the drops are sold or auto-sold.
+    expectedPerRun: { experience: perRun(totals.experience, total), itemDrops: perRun(totals.itemDrops, total), dropSaleValue: perRun(totals.dropSaleValue, total) },
+    totals: { ...totals },
     detail: result.rooms.map((room) => {
       const won = room.Victory + room.Clear + room.Return;
       return `${floorRoomLabel(room.room)}/Success ${label(percent(won, total))}% / Draw ${label(percent(room.Draw, total))}% / Retreat ${label(percent(room.Retreat, total))}% / Defeat ${label(percent(room.Defeat, total))}% / Not reached ${label(percent(room.NotReached, total))}%`;
@@ -67,6 +110,7 @@ export function parseSimulationRunData(data: SimulationRunData): ExpeditionSimul
     Retreat: data.counts.retreat,
     Defeat: data.counts.defeat,
     total,
+    totals: { ...data.totals },
     rooms: data.rooms.map((room) => ({
       room: room.room,
       Victory: room.victory,

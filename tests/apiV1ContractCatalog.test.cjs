@@ -98,10 +98,12 @@ test('searchItems response schema accepts every documented result format', () =>
     'fort:3/2',
     'fort:3/2/ability=[]/cBonus=[c.physical-defense+11]/otherBonus=[d.HP:10]',
   ];
-  assert.equal(validate({ items: accepted }), true, JSON.stringify(validate.errors));
+  const page = (items) => ({ items, totalCount: items.length, truncated: false });
+  assert.equal(validate(page(accepted)), true, JSON.stringify(validate.errors));
   for (const rejected of ['', 'nonsense', '0/1101/2/0', '0/1101/2/0/3', 'fort:9/2', '0/1101/2/0/3/junk', '1/1211/0/0/101/fort:3']) {
-    assert.equal(validate({ items: [rejected] }), false, `${rejected} must not validate`);
+    assert.equal(validate(page([rejected])), false, `${rejected} must not validate`);
   }
-  assert.equal(validate({ items: [], equippedItems: [] }), false, 'equippedItems is no longer part of the response');
-  assert.equal(validate({ items: [], nextCursor: null }), false, 'limit replaces the cursor for this operation');
+  assert.equal(validate({ items: [] }), false, 'totalCount and truncated are required, so a cut-off list is never silent');
+  assert.equal(validate({ ...page([]), equippedItems: [] }), false, 'equippedItems is no longer part of the response');
+  assert.equal(validate({ ...page([]), nextCursor: null }), false, 'limit replaces the cursor for this operation');
 });

@@ -270,6 +270,15 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   // The purchase names the lineup it was chosen from; any other lineup (or none) buys nothing (Spec 9.1.3 3-4-3).
   assert.ok(attempt(richState, [{ shopItemId: 1 }], '1101110211031104').includes('illegal_action:lineup_changed'));
   assert.ok(attempt(richState, [{ shopItemId: 1 }], null).includes('invalid_request:lineupId'));
+  // SpecRef: 9.1.4.11 | The failure names the rejected parameter in `details.field`.
+  const { describeInvalidRequest, invalidRequestMessage } = await import('../../src/api/v1/requestErrors');
+  const missingLineup = describeInvalidRequest(new Error(attempt(richState, [{ shopItemId: 1 }], null).replace(/^Error: /, '')));
+  assert.equal(missingLineup.field, 'lineupId');
+  assert.match(invalidRequestMessage(missingLineup, 'The commit could not be applied.'), /`lineupId` is invalid/);
+  assert.deepEqual([describeInvalidRequest(new Error('invalid_request:targetEquipment.duplicate')).field, describeInvalidRequest(new Error('invalid_request:targetEquipment.duplicate')).rule], ['targetEquipment', 'duplicate']);
+  assert.equal(describeInvalidRequest(new Error('invalid_request:duplicate_items')).field, 'items', 'older reason tokens map to their parameter');
+  assert.equal(describeInvalidRequest(new Error('invalid_elapsed')).field, 'elapsedSeconds');
+  assert.equal(describeInvalidRequest(new Error('something_else')).field, undefined, 'no field is invented');
   assert.ok(attempt(richState, [{ shopItemId: 1 }, { shopItemId: 1 }]).includes('invalid_request'), 'a duplicate slot is invalid');
   assert.ok(attempt(richState, [{ shopItemId: 0 }]).includes('invalid_request'));
   assert.ok(attempt(richState, []).includes('invalid_request'));
@@ -317,6 +326,7 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.equal(list.current.items.length, 5);
   assert.match(list.current.items[0], /^1\/\d+\/\d+\/(true|false)$/);
   assert.deepEqual(list.validOptions.items, list.current.entries.filter((entry: { available: boolean }) => entry.available).map((entry: { shopItemId: number }) => entry.shopItemId));
+  assert.equal(list.validOptions.lineupId, list.current.lineupId, 'validOptions holds everything purchaseShopItems needs');
   const base = await read('read/observation/base');
   assert.deepEqual(base.baseInfo.shop.entries, list.current.entries);
   assert.equal(base.baseInfo.shop.paidRefreshPrice, info.paidRefreshPrice);

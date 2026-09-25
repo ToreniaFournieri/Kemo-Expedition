@@ -92,8 +92,31 @@ function createApiV1(options) {
   function validateSchema(validator, value) {
     if (validator(value)) return;
     const validationError = Object.assign(new Error('schema_validation_failed'), { status: 400, code: 'invalid_request' });
-    validationError.details = { issues: validator.errors?.map(error => ({ path: error.instancePath, keyword: error.keyword })) ?? [] };
+    const issues = validator.errors?.map(error => ({ path: error.instancePath, keyword: error.keyword, ...(error.params?.missingProperty ? { missingProperty: error.params.missingProperty } : {}), ...(error.params?.additionalProperty ? { additionalProperty: error.params.additionalProperty } : {}), ...(Array.isArray(error.params?.allowedValues) ? { allowedValues: error.params.allowedValues } : {}) })) ?? [];
+    const field = schemaIssueField(issues[0]);
+    validationError.details = { ...(field ? { field } : {}), ...(issues[0] ? { rule: issues[0].keyword } : {}), issues };
     throw validationError;
+  }
+
+  // SpecRef: 9.1.4.11 | `details.field` names the rejected request member, e.g. `lineupId` for `/parameters/lineupId`.
+  function schemaIssueField(issue) {
+    if (!issue) return null;
+    const segments = issue.path.split('/').slice(1).map(segment => segment.replace(/~1/g, '/').replace(/~0/g, '~'));
+    const member = issue.missingProperty ?? issue.additionalProperty;
+    if (member) segments.push(member);
+    if (segments[0] === 'parameters' && segments.length > 1) segments.shift();
+    return segments.reduce((path, segment) => /^\d+$/.test(segment) ? `${path}[${segment}]` : path ? `${path}.${segment}` : segment, '') || null;
+  }
+
+  function invalidRequestMessage(error) {
+    const details = error.details;
+    if (!details?.field) return 'The request is invalid.';
+    const issue = details.issues?.[0];
+    const problem = issue?.missingProperty ? 'is required'
+      : issue?.additionalProperty ? 'is not a known member'
+        : issue?.allowedValues ? `must be one of ${issue.allowedValues.map(value => JSON.stringify(value)).join(', ')}`
+          : `is invalid (${details.rule})`;
+    return `The request is invalid: \`${details.field}\` ${problem}.`;
   }
 
   // A response mismatch is an implementation drift against the operation's own catalog contract, not caller error,
@@ -289,7 +312,9 @@ function createApiV1(options) {
         payload = { ...body, pathParameters, transport: { requestId: id } };
       }
     } catch (error) {
-      return sendJson(response, error.status ?? 400, errorEnvelope(id, error.code ?? 'invalid_request', 'The request is invalid.'));
+      const code = error.code ?? 'invalid_request';
+      const reason = typeof error.message === 'string' && error.message !== 'schema_validation_failed' ? { reason: error.message } : {};
+      return sendJson(response, error.status ?? 400, errorEnvelope(id, code, code === 'invalid_request' ? invalidRequestMessage(error) : 'The request is invalid.', undefined, error.details ?? (Object.keys(reason).length ? reason : undefined)));
     }
 
     if (route.operationId === 'fundamental/logIn' && lease) {
