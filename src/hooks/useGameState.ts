@@ -5119,7 +5119,10 @@ export function useGameState() {
       await coordinator.replaceDurable(nextState);
     }, []),
 
+    // Every state swap below may carry a different save language (account login, backup import, logout restore);
+    // render calls `setActiveLanguage(state.global.language)` and throws unless that dictionary is loaded first.
     publishApiState: useCallback(async (nextState: GameState) => {
+      await ensureLanguageLoaded(nextState.global.language);
       latestGameStateRef.current = nextState;
       dispatch({ type: 'COMMIT_API_STATE', state: nextState });
     }, []),
@@ -5127,6 +5130,7 @@ export function useGameState() {
     commitApiState: useCallback(async (nextState: GameState) => {
       const coordinator = persistenceCoordinatorRef.current;
       if (!coordinator) throw new Error('persistence_unavailable');
+      await ensureLanguageLoaded(nextState.global.language);
       coordinator.commitAtomic(nextState);
       latestGameStateRef.current = nextState;
       dispatch({ type: 'COMMIT_API_STATE', state: nextState });
@@ -5148,6 +5152,7 @@ export function useGameState() {
         const imported = loadSavedState(JSON.stringify(nextState));
         if (!imported.state) return imported;
         const normalizedState = gameReducer(imported.state, { type: 'IMPORT_GAME_STATE', state: imported.state });
+        await ensureLanguageLoaded(normalizedState.global.language);
         await persistenceCoordinatorRef.current?.replaceDurable(normalizedState);
         dispatch({ type: 'COMMIT_API_STATE', state: normalizedState });
         setSaveErrorLog(null);

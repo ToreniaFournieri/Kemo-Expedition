@@ -10,6 +10,7 @@ import { accountDebugSettingsOf, accountTimeScale } from './debugSettings';
 import { getGameplayDebugOverride, setGameplayDebugOverride } from '../../game/debugSettings';
 import { setColosseumEnemySettingsOverride } from '../../game/colosseum';
 import { accountEnemyEditSettingsOf } from './enemyEditPane';
+import { ensureLanguageLoaded } from '../../i18n/index.ts';
 import { appendApiV1PopupEvents, normalizeApiV1PopupEvents, planApiV1PopupCandidates } from './popupEvents';
 
 // SpecRef: 9.1.3.2 | API requirement fundamental | signUp / logIn / logOut
@@ -100,6 +101,9 @@ export async function logInApiAccount(request: Record<string, unknown>, activeSe
     returnPayloadWritten = true;
 
     let accountState = decodeApiSavePayload(account.savePayload);
+    // The runtime only preloads the player's own language; the account's save may use another one (e.g. `en`), and
+    // rendering it with an unloaded dictionary throws. Load it before anything is committed or swapped.
+    await ensureLanguageLoaded(accountState.global.language);
     const control = structuredClone(account.control);
     control.popupEvents = normalizeApiV1PopupEvents(control.popupEvents);
     const realNow = ports.now();

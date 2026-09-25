@@ -10,6 +10,7 @@ import { createFreshGameState } from '../../src/hooks/useGameState';
 import { serializeGameState } from '../../src/game/saveCodec';
 import { encodePersistedState } from '../../src/game/storageCompression';
 import type { GameState } from '../../src/types';
+import { setLanguage } from '../../src/i18n/index.ts';
 
 // SpecRef: 9.1.3.2 | API requirement fundamental | signUp / logIn / logOut
 // Isolated, transport-neutral behavioral coverage for the account/session boundary: no React, Electron, or HTTP.
@@ -205,6 +206,27 @@ function ports(overrides: Partial<ApiV1SessionPorts> = {}): {
   assert.equal(result.ok, false);
   if (result.ok) throw new Error('expected save_failed');
   assert.equal(result.code, 'save_failed');
+}
+
+// 10. logIn to an account saved in a language the runtime has not loaded yet (only `ja` is bundled) loads that
+// dictionary before the swap, so rendering the swapped state with `setLanguage(state.global.language)` cannot throw.
+{
+  const p = ports();
+  const englishAccount: DesktopApiAccountRecord = {
+    identity: { userId: 'Taro', environment: 'desktop', gameMode: 'normal' },
+    savePayload: accountPayload(createFreshGameState('en', fixedNow - 30_000)),
+    control: { revisionHighWater: 5, inGameTime: fixedNow - 30_000, receipts: [], tombstones: [], popupEvents: [], deliveries: [] },
+  };
+  assert.throws(() => setLanguage('en'), /Language dictionary is not loaded: en/, 'precondition: en is not preloaded');
+  const result = await logInApiAccount({ userId: 'Taro', environment: 'desktop', gameMode: 'normal' }, null, {
+    ...p.value,
+    accounts: { ...p.value.accounts, load: async () => englishAccount },
+    importGameState: async (state) => { setLanguage(state.global.language); return { state, errorLog: null }; },
+  });
+  assert.equal(result.ok, true, result.ok ? '' : JSON.stringify(result));
+  if (!result.ok) throw new Error(result.code);
+  assert.equal(result.session.state.global.language, 'en');
+  setLanguage('ja');
 }
 
 console.log('apiV1SessionLifecycle profile ok');

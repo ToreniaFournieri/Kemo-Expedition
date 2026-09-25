@@ -29,6 +29,12 @@ let apiV1RendererReady = false;
 const apiV1PendingRequests = new Map();
 const apiAccountStore = createApiAccountStore({ userDataPath: app.getPath('userData') });
 
+function apiV1RendererTimeoutMs(operation) {
+  if (operation === 'fundamental/status') return 15_000;
+  if (operation === 'fundamental/logIn') return 600_000;
+  return 120_000;
+}
+
 function invokeApiV1Renderer(operation, payload) {
   return new Promise((resolve, reject) => {
     if (!mainWindow || mainWindow.isDestroyed() || mainWindow.webContents.isLoadingMainFrame()) {
@@ -40,10 +46,12 @@ function invokeApiV1Renderer(operation, payload) {
       return;
     }
     const requestId = ++apiV1RequestId;
-    const timeout = operation === 'fundamental/status' ? setTimeout(() => {
+    // Every request is bounded so a renderer that never answers cannot hang the client or pin the lease forever
+    // (the caller maps the rejection to 503 runtime_unavailable). logIn may run a long login catch-up.
+    const timeout = setTimeout(() => {
       apiV1PendingRequests.delete(requestId);
       reject(new Error('Renderer request timed out'));
-    }, 15_000) : null;
+    }, apiV1RendererTimeoutMs(operation));
     apiV1PendingRequests.set(requestId, { resolve, reject, timeout });
     mainWindow.webContents.send('desktop:api-v1-request', { requestId, operation, payload });
   });
