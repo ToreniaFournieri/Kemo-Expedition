@@ -1,7 +1,7 @@
 import { getShopItemPrice as getTierShopItemPrice } from './pricing';
 import { DUNGEONS } from '../data/dungeons';
 import { ITEMS } from '../data/items';
-import type { Item, ItemCategory, Party } from '../types';
+import type { Item, Party } from '../types';
 
 const SHOP_REFRESH_BASE_PRICE = 200;
 const SHOP_REFRESH_HOURS = [2, 10, 18] as const;
@@ -120,7 +120,6 @@ export function buildShopLineup(input: ShopLineupInput, now: Date) {
     return hasBeatenBoss ? Math.max(highestTier, dungeon.tier) : highestTier;
   }, 1);
   const lineupSeed = getShopLineupSeed(now, refreshCount);
-  const shopCategories: ItemCategory[] = ['shield', 'armor', 'sword', 'wand', 'grimoire'];
   const rarityPool: number[] = effectiveIntimacy >= 80
     ? [400, 300, 300, 200, 200]
     : effectiveIntimacy >= 40
@@ -135,11 +134,9 @@ export function buildShopLineup(input: ShopLineupInput, now: Date) {
     const tierRarityItems = ITEMS.filter((item) => (
       Math.floor(item.id / 1000) === tier && getShopItemRarity(item.id) === targetRarity
     ));
-    const rotatedCategories = shopCategories.map((_, offset) => shopCategories[(index + offset) % shopCategories.length]);
-    const selectedCategory = rotatedCategories.find((category) => tierRarityItems.some((item) => item.category === category));
-    const categoryItems = selectedCategory ? tierRarityItems.filter((item) => item.category === selectedCategory) : tierRarityItems;
+    // Every category of the rolled tier and rarity is eligible, so a refresh can change every slot.
     const selectionSeed = Math.abs(Math.floor(Math.sin(lineupSeed + (index + 1) * 193) * 10000));
-    const baseItem = categoryItems[selectionSeed % categoryItems.length];
+    const baseItem = tierRarityItems[selectionSeed % tierRarityItems.length];
     if (!baseItem) return [];
     const stockEntryId = `${baseItem.id}-${index}`;
     const price = getShopItemPrice(baseItem.id);

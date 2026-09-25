@@ -1,5 +1,6 @@
 import { getAttackRollProfile } from '../../game/attackProfile.ts';
 import { getUnlockedRaceAbilitiesFromBonuses } from '../../game/characterComputation.ts';
+import { getCharacterCombatBonusLevels } from '../../game/combatBonusLevels.ts';
 import { computeCharacterHpContribution } from '../../game/partyComputation.ts';
 import { deriveStatusFacts, type StatusFacts } from '../../game/statusFacts.ts';
 import type { AttackType, Character, ComputedCharacterStats } from '../../types/index.ts';
@@ -74,11 +75,14 @@ export function buildCalculatedStatus(character: Character, stats: ComputedChara
     { bonusId: 'c.thunder-defense-multiplier', value: stats.elementalDefenseMultipliers.thunder },
   ];
 
+  // SpecRef: 9.1.4.14 | CalculatedStatus | `available`: the character has the aptitude (`c.equip_*`) and at least one attack (NoA > 0)
+  const combatBonusLevels = getCharacterCombatBonusLevels(character);
   const attacks = ATTACKS.map((entry) => {
     const attack = numeric(entry.attack);
     const noa = numeric(entry.noa);
-    const available = attack > 0 || noa > 0 || numeric(entry.originalNoa) > 0;
-    if (!available) return { attackType: entry.api, available, facts: [] as NumericFact[], speed: null };
+    const available = (entry.api === 'magical' ? combatBonusLevels.magic : combatBonusLevels[entry.api]) && noa > 0;
+    // Facts stay published while the attack has any value, so party totals and the Party pane rebuild without loss.
+    if (!available && attack <= 0 && noa <= 0 && numeric(entry.originalNoa) <= 0) return { attackType: entry.api, available, facts: [] as NumericFact[], speed: null };
     const profile = getAttackRollProfile(entry.attackType);
     return {
       attackType: entry.api,

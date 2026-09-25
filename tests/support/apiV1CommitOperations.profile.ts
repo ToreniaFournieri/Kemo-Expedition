@@ -277,6 +277,7 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.match(invalidRequestMessage(missingLineup, 'The commit could not be applied.'), /`lineupId` is invalid/);
   assert.deepEqual([describeInvalidRequest(new Error('invalid_request:targetEquipment.duplicate')).field, describeInvalidRequest(new Error('invalid_request:targetEquipment.duplicate')).rule], ['targetEquipment', 'duplicate']);
   assert.equal(describeInvalidRequest(new Error('invalid_request:duplicate_items')).field, 'items', 'older reason tokens map to their parameter');
+  assert.equal(describeInvalidRequest(new Error('invalid_request:lineupId')).reason, 'invalid_request:lineupId', 'the reason is the bare token, not a stringified Error');
   assert.equal(describeInvalidRequest(new Error('invalid_elapsed')).field, 'elapsedSeconds');
   assert.equal(describeInvalidRequest(new Error('something_else')).field, undefined, 'no field is invented');
   assert.ok(attempt(richState, [{ shopItemId: 1 }, { shopItemId: 1 }]).includes('invalid_request'), 'a duplicate slot is invalid');

@@ -33,7 +33,8 @@ function tokenOf(error: unknown): string | null {
 
 /** `details` for an `invalid_request` failure: the rejected `field` (and `rule`) when the validator named one. */
 export function describeInvalidRequest(error: unknown): ApiV1InvalidRequestDetails {
-  const reason = String(error);
+  // The bare thrown message (`invalid_request:targetItems`), not the stringified `Error: …` wrapper.
+  const reason = error instanceof Error ? error.message : String(error);
   const token = tokenOf(error);
   if (!token) return { reason };
   const legacy = LEGACY_TOKEN_FIELDS[token];

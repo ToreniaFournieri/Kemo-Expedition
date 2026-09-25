@@ -44,6 +44,10 @@ const sword = ITEMS.find((item) => item.category === 'sword')!;
   const targets = [format(sword, 0, 0), format(sword, 3, 0, 'shade:2'), format(sword, 3, 12, 'fort:8')];
   const many = await evaluate(character.id, targets);
   assert.deepEqual((many as { calculatedItemStatus: Entry[] }).calculatedItemStatus.map((entry) => entry.item), targets, 'results keep the request order');
+  // `0:0` is an item without a Jewel, exactly as in `equipmentChanges`; it matches the item evaluated with no Jewel stats.
+  const bare = await evaluate(character.id, `0/${sword.id}/3/0/0:0`) as { calculatedItemStatus: Entry[] };
+  assert.equal(bare.calculatedItemStatus[0].item, `0/${sword.id}/3/0/0:0`);
+  assert.equal(validate(bare), true, JSON.stringify(validate.errors));
 }
 
 // 2. Slot-aware replacements and removals report the complete character-defense delta without mutating the snapshot.
@@ -144,7 +148,7 @@ const sword = ITEMS.find((item) => item.category === 'sword')!;
   await fail(`0/${sword.id}/0/0`, /invalid_request:targetItems/);
   await fail([format(sword, 0, 0), format(sword, 0, 0)], /invalid_request:targetItems/);
   await fail([format(sword, 0, 0), 'nope'], /invalid_request:targetItems/);
-  await fail(undefined, /invalid_request:targetItems/);
+  await fail(undefined, /invalid_request:targetItems\.or_equipmentChanges_required/);
   await assert.rejects(() => evaluateChanges(character.id, ['0=0', '0=0']), /invalid_request:equipmentChanges/);
   await assert.rejects(() => evaluateChanges(character.id, '999=0'), /invalid_request:equipmentChanges/);
   await assert.rejects(() => evaluateChanges(character.id, `0=0/${sword.id}/0/0/arcana:1`), /invalid_request:equipmentChanges/);

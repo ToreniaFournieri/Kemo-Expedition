@@ -877,7 +877,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       // SpecRef: 9.1.3 | Read | 2-3-5 character/{characterId}/equipmentEvaluation
       const requested = parameters.targetItems === undefined ? [] : Array.isArray(parameters.targetItems) ? parameters.targetItems : [parameters.targetItems];
       const requestedChanges = parameters.equipmentChanges === undefined ? [] : Array.isArray(parameters.equipmentChanges) ? parameters.equipmentChanges : [parameters.equipmentChanges];
-      if (requested.length === 0 && requestedChanges.length === 0) throw new Error('invalid_request:targetItems');
+      if (requested.length === 0 && requestedChanges.length === 0) throw new Error('invalid_request:targetItems.or_equipmentChanges_required');
       if (new Set(requested).size !== requested.length) throw new Error('invalid_request:targetItems');
       if (new Set(requestedChanges).size !== requestedChanges.length) throw new Error('invalid_request:equipmentChanges');
       if (requested.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:targetItems');
@@ -886,7 +886,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       return {
         calculatedItemStatus: requested.map((entry) => {
           const item = typeof entry === 'string' ? parseEvaluatedItemFormat(entry) : null;
-          if (!item || !item.jewel || !isJewelAllowedForCategory(item.category, item.jewel.key)) throw new Error('invalid_request:targetItems');
+          if (!item || (item.jewel && !isJewelAllowedForCategory(item.category, item.jewel.key))) throw new Error('invalid_request:targetItems');
           return { item: entry as string, ...evaluateItemForCharacter(character, item, party.level), abilities: describeItem(item).ability };
         }),
         calculatedEquipmentChange: requestedChanges.map((entry) => {

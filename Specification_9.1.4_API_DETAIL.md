@@ -596,7 +596,10 @@ definitions in 9.1.3.
 * `equipmentEvaluation` (9.1.3, 2-3-5) is a Read operation. `targetItems` is one
   `<Item Format>/<jewelType>:<jewelRank>` value or a nonempty array of unique
   values, encoded as one or repeated `targetItems` query parameters (`0` is not
-  an item; the lock digit is ignored). An unknown item, unknown Jewel type,
+  an item; the lock digit is ignored). As in `equipmentChanges`, the Jewel part
+  `0:0` evaluates the item without a Jewel. When neither `targetItems` nor
+  `equipmentChanges` is supplied, the rejection is `details.field: targetItems`
+  with `details.rule: or_equipmentChanges_required`. An unknown item, unknown Jewel type,
   Jewel type that cannot be attached to the item's category, or out-of-range
   enhancement or Jewel rank is `invalid_request`; an unknown character is
   `not_found`; and the whole request is rejected on any invalid entry. Results
@@ -1136,7 +1139,13 @@ type DiaryEntry = {
 * `calculatedStatus` uses `CalculatedStatus`. `stats`, `bonuses`, and attack
   `facts` contain every value required by the 8.2 status pane, with stable
   glossary keys and raw numbers; no formula is recomputed in the adapter.
-  All three attack types appear; unavailable attacks have empty facts/null speed.
+  All three attack types appear. `available` is `true` exactly when the character
+  can make that attack: it has the aptitude (`c.equip_melee`, `c.equip_ranged`, or
+  `c.equip_magic`, the 8.2 status pane's attack-row rule) and its `NoA` is at
+  least 1. An attack with `NoA` 0 is unavailable. An attack has empty
+  facts and null speed only when it is unavailable and its attack, `NoA`, and
+  original `NoA` are all 0; otherwise its facts are published so party totals
+  rebuild without loss.
 * `equipmentSets` is `{equipmentSetId, equipmentSet: EquipmentSet}[]`.
   `isEquipmentSetDetail` defaults to false. Detail includes the complete equipment
   array; summary omits it. Every `EquipmentSet` includes current, character-specific

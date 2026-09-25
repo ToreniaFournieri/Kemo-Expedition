@@ -58,8 +58,13 @@ export function parseItemFormat(value: string): Item | null {
   return { ...definition, enhancement: Number(match[3]), superRare: Number(match[4]), isLocked: match[1] === '1', jewel: null };
 }
 
-/** Rebuilds an evaluation target from `<Item Format>/<jewelType>:<jewelRank>`; `null` for a malformed or unknown value. */
+/**
+ * Rebuilds an evaluation target from `<Item Format>/<jewelType>:<jewelRank>`, where `0:0` means no Jewel (as in
+ * `equipmentChanges`); `null` for a malformed or unknown value.
+ */
 export function parseEvaluatedItemFormat(value: string): Item | null {
+  const withoutJewel = /^(.*)\/0:0$/.exec(value);
+  if (withoutJewel) return parseItemFormat(withoutJewel[1]);
   const match = /^([01])\/(\d+)\/([0-6])\/(\d+)\/([a-z]+):([1-8])$/.exec(value);
   if (!match || !JEWEL_KEYS.includes(match[5])) return null;
   const definition = getItemById(Number(match[2]));
@@ -80,8 +85,7 @@ export function parseEquipmentChange(value: string): { slotIndex: number; item: 
   const slotIndex = Number(match[1]);
   if (!Number.isSafeInteger(slotIndex)) return null;
   if (match[2] === '0') return { slotIndex, item: null };
-  const withoutJewel = /^(.*)\/0:0$/.exec(match[2]);
-  const item = withoutJewel ? parseItemFormat(withoutJewel[1]) : parseEvaluatedItemFormat(match[2]);
+  const item = parseEvaluatedItemFormat(match[2]);
   return item ? { slotIndex, item } : null;
 }
 

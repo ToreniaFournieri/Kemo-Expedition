@@ -820,6 +820,7 @@ assert.deepEqual(state, before);
   const { computePartyStats } = await import('../../src/game/partyComputation.ts');
   const { deriveStatusFacts } = await import('../../src/game/statusFacts.ts');
   const { buildCalculatedStatus, readStatusFacts } = await import('../../src/api/v1/calculatedStatus.ts');
+  const { getCharacterCombatBonusLevels } = await import('../../src/game/combatBonusLevels.ts');
   const { buildCombatTotals, buildPartyStatsView } = await import('../../src/api/v1/statusView.ts');
   const { computeCharacterHpContribution } = await import('../../src/game/partyComputation.ts');
   const { getUnlockedRaceAbilitiesFromBonuses } = await import('../../src/game/characterComputation.ts');
@@ -847,6 +848,9 @@ assert.deepEqual(state, before);
         // Published and read back without loss, and never a non-finite number.
         const status = buildCalculatedStatus(character, stats, party.level);
         assert.deepEqual(readStatusFacts(status), derived, 'lossless round trip');
+        // `available` means the character can make the attack: the aptitude and at least one attack.
+        const aptitude = getCharacterCombatBonusLevels(character);
+        assert.deepEqual(status.attacks.map((entry) => entry.available), [aptitude.melee && stats.meleeNoA > 0, aptitude.ranged && stats.rangedNoA > 0, aptitude.magic && stats.magicalNoA > 0], 'attack availability');
         for (const entry of status.stats) assert.equal(Number.isFinite(entry.value), true, entry.key);
 
         // The Party tab's character numbers are rebuilt from the facts alone, with no loss against the computed stats.

@@ -22480,7 +22480,7 @@
           "targetItems": {
             "anyOf": [
               {
-                "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:might|arcana|fort|ward|shade|focus):[1-8]$",
+                "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)$",
                 "type": "string"
               },
               {
@@ -22489,7 +22489,7 @@
                 "maxItems": 100,
                 "type": "array",
                 "items": {
-                  "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:might|arcana|fort|ward|shade|focus):[1-8]$",
+                  "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)$",
                   "type": "string"
                 }
               }
@@ -22542,7 +22542,7 @@
                 ],
                 "properties": {
                   "item": {
-                    "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:might|arcana|fort|ward|shade|focus):[1-8]$",
+                    "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)$",
                     "type": "string"
                   },
                   "equippable": {
@@ -22676,7 +22676,7 @@
                     ],
                     "properties": {
                       "item": {
-                        "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:might|arcana|fort|ward|shade|focus):[1-8]$",
+                        "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)$",
                         "type": "string"
                       },
                       "equippable": {
