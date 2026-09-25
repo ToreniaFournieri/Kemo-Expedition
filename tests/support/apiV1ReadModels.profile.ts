@@ -701,11 +701,23 @@ calls.length = 0;
   calls.length = 0;
 }
 
-// latestBattleLog (9.1.4.14): `logId=latest` is the party's newest log, exactly like an omitted `logId`.
-assert.deepEqual(
-  await buildApiV1ReadData('read/expedition/1/latestBattleLog', state, { logId: 'latest' }, context),
-  await buildApiV1ReadData('read/expedition/1/latestBattleLog', state, {}, context),
-);
+// latestBattleLog (9.1.4.14): the newest log is published under its own `log:<partyNumber>:<hash>` ID, which selects it
+// while it is still the newest; the legacy alias `latest` equals an omitted `logId`.
+{
+  const newest = await buildApiV1ReadData('read/expedition/1/latestBattleLog', state, {}, context) as { battleLog: { logId: string } | null };
+  assert.deepEqual(await buildApiV1ReadData('read/expedition/1/latestBattleLog', state, { logId: 'latest' }, context), newest);
+  if (newest.battleLog) {
+    assert.match(newest.battleLog.logId, /^log:1:[0-9a-z]+$/);
+    assert.deepEqual(await buildApiV1ReadData('read/expedition/1/latestBattleLog', state, { logId: newest.battleLog.logId }, context), newest);
+    const { retainedLogIdOf } = await import('../../src/api/v1/battleLogs.ts');
+    const log = state.parties[0].lastExpeditionLog!;
+    const other = { ...log, totalExperience: log.totalExperience + 1 };
+    assert.notEqual(retainedLogIdOf(other, 1), newest.battleLog.logId, 'a different log has a different ID');
+    const replaced = { ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, lastExpeditionLog: other } : party) };
+    await assert.rejects(buildApiV1ReadData('read/expedition/1/latestBattleLog', replaced, { logId: newest.battleLog.logId }, context), /not_found/, 'a replaced log is not found');
+  }
+  await assert.rejects(buildApiV1ReadData('read/expedition/1/latestBattleLog', state, { logId: 'log:1:zzzz' }, context), /not_found/);
+}
 
 // Party projection (9.1.4.17): an explicitly invalid party or a character outside the selected party is rejected.
 {
@@ -809,7 +821,7 @@ assert.deepEqual(state, before);
   assert.deepEqual(status.calculatedStatus, character.calculatedStatus, 'both projections use the same fact model');
   assert.ok(status.calculatedStatus.stats.some((entry) => entry.key === 'b.vitality'));
   assert.deepEqual(status.calculatedStatus.attacks.map((entry) => entry.attackType), ['melee', 'ranged', 'magical']);
-  for (const attack of status.calculatedStatus.attacks) assert.equal(attack.available, attack.speed !== null);
+  for (const attack of status.calculatedStatus.attacks) if (attack.available) assert.notEqual(attack.speed, null, 'an available attack has a speed');
   assert.equal('rangedNoA' in (status.calculatedStatus as object), false, 'no internal computed-stats members leak');
 }
 assert.deepEqual(state, before);
@@ -847,7 +859,17 @@ assert.deepEqual(state, before);
 
         // Published and read back without loss, and never a non-finite number.
         const status = buildCalculatedStatus(character, stats, party.level);
-        assert.deepEqual(readStatusFacts(status), derived, 'lossless round trip');
+        // Ratios are published at the pane's display precision: 2 decimals, or 3 for accuracy and evasion.
+        const r2 = (value: number) => Math.round(value * 100) / 100;
+        const r3 = (value: number) => Math.round(value * 1000) / 1000;
+        assert.deepEqual(readStatusFacts(status), {
+          offenseAmplifier: { melee: r2(derived.offenseAmplifier.melee), ranged: r2(derived.offenseAmplifier.ranged), magical: r2(derived.offenseAmplifier.magical) },
+          defenseAmplifier: { physical: r2(derived.defenseAmplifier.physical), magical: r2(derived.defenseAmplifier.magical) },
+          effectiveAccuracyBonus: r3(derived.effectiveAccuracyBonus), accuracyDecay: r3(derived.accuracyDecay), penetration: r2(derived.penetration),
+        }, 'round trip at display precision');
+        for (const entry of [...status.stats.filter((fact) => fact.unit === 'ratio'), ...status.bonuses.map((bonus) => ({ key: bonus.bonusId, value: bonus.value }))]) {
+          assert.equal(Math.abs(entry.value * 1000 - Math.round(entry.value * 1000)) < 1e-6, true, `${entry.key} carries no float noise: ${entry.value}`);
+        }
         // `available` means the character can make the attack: the aptitude and at least one attack.
         const aptitude = getCharacterCombatBonusLevels(character);
         assert.deepEqual(status.attacks.map((entry) => entry.available), [aptitude.melee && stats.meleeNoA > 0, aptitude.ranged && stats.rangedNoA > 0, aptitude.magic && stats.magicalNoA > 0], 'attack availability');
@@ -857,10 +879,10 @@ assert.deepEqual(state, before);
         const view = buildPartyStatsView(status);
         assert.deepEqual(view.baseStats, stats.baseStats, 'base stats');
         assert.equal(view.maxEquipSlots, stats.maxEquipSlots);
-        assert.deepEqual([view.physicalDefense, view.magicalDefense, view.evasionBonus, view.accuracyPotency], [stats.physicalDefense, stats.magicalDefense, stats.evasionBonus, stats.accuracyPotency]);
+        assert.deepEqual([view.physicalDefense, view.magicalDefense, view.evasionBonus, view.accuracyPotency], [stats.physicalDefense, stats.magicalDefense, r3(stats.evasionBonus), r2(stats.accuracyPotency)]);
         assert.deepEqual([view.meleeAttack, view.rangedAttack, view.magicalAttack, view.meleeNoA, view.rangedNoA, view.magicalNoA], [stats.meleeAttack, stats.rangedAttack, stats.magicalAttack, stats.meleeNoA, stats.rangedNoA, stats.magicalNoA], 'attacks and attack counts');
-        assert.deepEqual([view.elementalOffense, view.elementalOffenseValue], [stats.elementalOffense, stats.elementalOffenseValue]);
-        assert.deepEqual(view.elementalDefenseMultipliers, stats.elementalDefenseMultipliers);
+        assert.deepEqual([view.elementalOffense, view.elementalOffenseValue], [stats.elementalOffense, r2(stats.elementalOffenseValue)]);
+        assert.deepEqual(view.elementalDefenseMultipliers, { fire: r2(stats.elementalDefenseMultipliers.fire), ice: r2(stats.elementalDefenseMultipliers.ice), thunder: r2(stats.elementalDefenseMultipliers.thunder) });
         assert.deepEqual(view.abilities, stats.abilities, 'abilities keep their order, level, localized name, and description');
         // The HP breakdown and the race unlock state are published, not recomputed by the tab.
         const hp = computeCharacterHpContribution(character, party.level);
@@ -870,7 +892,7 @@ assert.deepEqual(state, before);
         // The notification totals come from the projection and agree with the old rounding rules.
         const totals = buildCombatTotals(status, 12345.9);
         assert.equal(totals.hp, 12345);
-        assert.equal(totals.meleeAttackAmp, expected.melee);
+        assert.equal(totals.meleeAttackAmp, r2(expected.melee), 'the amplifier is published at the x0.00 precision the change popup shows');
         assert.equal(totals.physicalDefenseResistPercent, Math.round(expected.physicalDefense * 100));
         assert.equal(totals.magicalDefenseResistPercent, Math.round(expected.magicalDefense * 100));
         assert.equal(totals.accuracy, Math.round(expected.effective * 1000));

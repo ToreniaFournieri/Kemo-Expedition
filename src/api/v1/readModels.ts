@@ -23,7 +23,7 @@ import { formatEquipmentEntry, formatItem, parseEquipmentChange, parseEvaluatedI
 import { isJewelAllowedForCategory, JEWEL_DEFS } from '../../game/jewel.ts';
 import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
 import { apiExpeditionOutcomeOrNull } from './expeditionOutcome.ts';
-import { buildBattleLogData, buildBattleRoomData, buildRoomResources } from './battleLogs.ts';
+import { buildBattleLogData, buildBattleRoomData, buildRoomResources, retainedLogIdOf } from './battleLogs.ts';
 import { buildSimulationRunData, describeSimulationDepthReach } from './simulationView.ts';
 import { describeCharacterBuildCurrent } from './buildChange.ts';
 import { EQUIPMENT_EVALUATION_LIMIT } from './requestLimits.ts';
@@ -809,9 +809,16 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       };
     }
     if (expedition[2] === 'latestBattleLog') {
-      // Omitted `logId` or `latest` selects the party's latest retained log (the `logId` a sortie without a Diary entry
-      // returns); `diary:<id>` selects the log of one retained Diary entry.
-      if (parameters.logId === undefined || parameters.logId === 'latest') return buildBattleLogData(disclosedLogOf(state, context, index), party.id, 'latest');
+      // Omitted `logId` (or the legacy alias `latest`) selects the party's newest retained log, published under its unique
+      // `log:<partyNumber>:<hash>` ID; that ID selects the same log only while it is still the newest one. `diary:<id>`
+      // selects the log of one retained Diary entry.
+      const newest = disclosedLogOf(state, context, index);
+      const newestId = newest ? retainedLogIdOf(newest, party.id) : null;
+      if (parameters.logId === undefined || parameters.logId === 'latest') return buildBattleLogData(newest, party.id, newestId ?? '');
+      if (String(parameters.logId).startsWith('log:')) {
+        if (!newest || !newestId || parameters.logId !== newestId) throw new Error('not_found');
+        return buildBattleLogData(newest, party.id, newestId);
+      }
       const diaryId = /^diary:(.+)$/.exec(String(parameters.logId))?.[1];
       const diary = diaryId === undefined ? undefined : party.diaryLogs.find((entry) => String(entry.id) === diaryId);
       if (!diary) throw new Error('not_found');

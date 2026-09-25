@@ -213,7 +213,7 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
   assert.equal(sortie.revision, 1);
   assert.deepEqual(h.playerCommitEvents, ['persist', 'cycle', 'publish']);
   assert.deepEqual(h.cycleWrites, [{ partyIndex: 0, cycle: { state: 'rest', stateStartedAt: t0, durationMs: 9_999, restInitialTotalSteps: 1, isCurrentExpeditionGodsBattle: false } }]);
-  assert.match(sortie.data.logId, /^(latest|diary:.+)$/);
+  assert.match(sortie.data.logId, /^(log:\d+:[0-9a-z]+|diary:.+)$/);
 }
 
 // 1a-ter. The ordinary player's in-game time is the wall clock of each request, not the time the app started: a charge that

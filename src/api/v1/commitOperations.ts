@@ -31,6 +31,7 @@ import type { Character, GameState, Party, SavedEquipmentSet } from '../../types
 import { getVariantKey } from '../../types';
 import { diarySettingsView } from './diaryView';
 import { formatItem } from './itemFormat';
+import { retainedLogIdOf } from './battleLogs';
 
 // SpecRef: 9.1 | Desktop distribution | Application API
 // This is the transport-neutral gameplay-mutation slice of the `/api/v1` commit dispatcher. It owns exactly the
@@ -228,9 +229,11 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
         partyCycleWrites.push({ partyIndex, cycle: { state: 'rest', stateStartedAt: context.now(), durationMs: context.restDurationMs(next.parties[partyIndex]), restInitialTotalSteps: 1, isCurrentExpeditionGodsBattle: false } });
       }
       const resolved = next.parties[partyIndex];
-      // Only an outcome the party's Diary settings record creates an entry; otherwise the result is the party's latest log.
+      // Only an outcome the party's Diary settings record creates an entry; otherwise the result is the party's newest
+      // retained log, named by its own unique ID.
       const newDiaryEntry = resolved.diaryLogs.find((entry) => !previousDiaryIds.has(entry.id));
-      data = { outcome: apiExpeditionOutcomeOrNull(resolved.lastExpeditionLog), rewards: resolved.lastExpeditionLog?.rewards.map((item) => formatItem(item, item.isLocked === true)) ?? [], diaryEntryId: newDiaryEntry?.id ?? null, logId: newDiaryEntry ? `diary:${newDiaryEntry.id}` : 'latest' };
+      const logId = newDiaryEntry ? `diary:${newDiaryEntry.id}` : resolved.lastExpeditionLog ? retainedLogIdOf(resolved.lastExpeditionLog, resolved.id) : null;
+      data = { outcome: apiExpeditionOutcomeOrNull(resolved.lastExpeditionLog), rewards: resolved.lastExpeditionLog?.rewards.map((item) => formatItem(item, item.isLocked === true)) ?? [], diaryEntryId: newDiaryEntry?.id ?? null, logId };
     }
   } else if (operation.match(/^commit\/build\/party\/(\d+)$/)) {
     const partyNumber = Number(operation.split('/').at(-1));

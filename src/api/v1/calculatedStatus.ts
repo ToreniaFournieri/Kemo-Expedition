@@ -11,7 +11,14 @@ import type { AbilityFact, BonusFact, CalculatedStatus, NumericFact } from './co
 // Projects the shared, already-computed character stats into the public CalculatedStatus fact model. No formula is
 // recomputed here: every value comes from computeCharacterStats/computePartyStats, the same source the Party pane uses.
 
-const fact = (key: string, value: number, unit: NumericFact['unit'] = 'number'): NumericFact => ({ key, value, unit });
+// SpecRef: 9.1.4.14 | CalculatedStatus | ratio facts and bonuses are rounded to the precision the 8.2 status pane shows them at
+// Most ratios show as `x0.00` or a whole percent (2 decimals); accuracy and evasion show in thousandths (`+15`, `92.3%`).
+const THOUSANDTHS = new Set(['f.c_accuracy', 'f.accuracy_decay', 'c.accuracy', 'c.evasion']);
+const roundRatio = (key: string, value: number): number => {
+  const scale = THOUSANDTHS.has(key) ? 1000 : 100;
+  return Math.round(value * scale) / scale;
+};
+const fact = (key: string, value: number, unit: NumericFact['unit'] = 'number'): NumericFact => ({ key, value: unit === 'ratio' ? roundRatio(key, value) : value, unit });
 
 const ATTACKS: { attackType: AttackType; api: 'melee' | 'ranged' | 'magical'; attack: keyof ComputedCharacterStats; noa: keyof ComputedCharacterStats; originalNoa: keyof ComputedCharacterStats; cBonus: keyof ComputedCharacterStats }[] = [
   { attackType: 'melee', api: 'melee', attack: 'meleeAttack', noa: 'meleeNoA', originalNoa: 'originalMeleeNoA', cBonus: 'meleeAttackCBonus' },
@@ -73,7 +80,7 @@ export function buildCalculatedStatus(character: Character, stats: ComputedChara
     { bonusId: 'c.fire-defense-multiplier', value: stats.elementalDefenseMultipliers.fire },
     { bonusId: 'c.ice-defense-multiplier', value: stats.elementalDefenseMultipliers.ice },
     { bonusId: 'c.thunder-defense-multiplier', value: stats.elementalDefenseMultipliers.thunder },
-  ];
+  ].map((bonus) => ({ ...bonus, value: roundRatio(bonus.bonusId, bonus.value) }));
 
   // SpecRef: 9.1.4.14 | CalculatedStatus | `available`: the character has the aptitude (`c.equip_*`) and at least one attack (NoA > 0)
   const combatBonusLevels = getCharacterCombatBonusLevels(character);
@@ -100,8 +107,8 @@ export function buildCalculatedStatus(character: Character, stats: ComputedChara
 }
 
 /**
- * The exact inverse of the derived facts above: reads the status-pane values back out of a `CalculatedStatus`, so the
- * Party pane renders from the projection and cannot disagree with the game function that produced it.
+ * The inverse of the derived facts above: reads the status-pane values back out of a `CalculatedStatus`, so the Party
+ * pane renders from the projection. Ratios come back at the precision the pane displays, so the display is unchanged.
  */
 export function readStatusFacts(status: CalculatedStatus): StatusFacts {
   const value = (key: string): number => {

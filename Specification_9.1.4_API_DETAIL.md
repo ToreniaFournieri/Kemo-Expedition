@@ -554,8 +554,8 @@ definitions in 9.1.3.
   one. The result is `{outcome, rewards, diaryEntryId, logId}`: `outcome` uses the
   outcome names above, `rewards` lists the dropped items in `Item Format`,
   `diaryEntryId` is the Diary entry this sortie created (or `null`), and `logId` is
-  `diary:<diaryEntryId>` for that entry or `latest` for the party's newest retained
-  log; both values are accepted by `latestBattleLog`.
+  `diary:<diaryEntryId>` for that entry or the unique `log:<partyNumber>:<hash>` ID
+  of the log this sortie produced; both values are accepted by `latestBattleLog`.
 
 **Party build and equipment**
 
@@ -661,8 +661,12 @@ definitions in 9.1.3.
   the clock (02:00, 10:00, and 18:00 local time) and with paid refreshes and purchases
   (which raise intimacy and can change the rarity mix), none of which change the
   revision. So the request names the lineup it was chosen from: `lineupId` (required)
-  is the value `shopItemsList` or the `base` projection published, the five item IDs
-  of the lineup in slot order, concatenated (for example `11041102111011111111`). A
+  is the value `shopItemsList` or the `base` projection published: for each slot in
+  order, the item ID followed by `true` while the slot is in stock or `false` once it
+  is sold, concatenated (for example `1104true1102false1110true1111true1111true`).
+  So a refresh that rolls the same items but restocks a sold slot changes the ID.
+  The availability part is stock only; Gold does not affect it, so earning or spending
+  Gold between the read and the purchase does not invalidate the ID. A
   missing `lineupId` is `invalid_request`; one that differs from the current lineup is
   `illegal_action:lineup_changed`, and nothing is bought. The request is validated whole
   against one snapshot: a malformed,
@@ -1108,8 +1112,12 @@ type DiaryEntry = {
   attempts, value, facts]`) or `legacy-facts` (the original recorded facts, marked
   `legacyIncomplete`, never inferred into compact events). The log never contains
   rendered narration, flavor rows, or replay metadata (seeds, protocol and draw
-  counts). `logId` is `latest` for the party's newest log or `diary:<diaryEntryId>`
-  for the log retained by that Diary entry; an unknown `logId` is `not_found`, and a
+  counts). `logId` is `log:<partyNumber>:<hash>` for the party's newest log or
+  `diary:<diaryEntryId>` for the log retained by that Diary entry. The `log:` ID is a
+  hash of the returned `battleLog`, so it is stable across reads and save/load and
+  names one log: once a later expedition replaces the newest log, the old `log:` ID
+  is `not_found` rather than selecting the newer log. `latest` is accepted as an
+  alias of an omitted `logId` but is never returned. An unknown `logId` is `not_found`, and a
   party with no log yet returns `{battleLog: null, resources: null, bottleneckEnemies: []}`.
   `resources` (Spec 9.1.3, 2-2-2) is what a client needs to render the log in its own
   language from this response alone. `resources.rooms[]` has one entry per room: the
@@ -1139,6 +1147,12 @@ type DiaryEntry = {
 * `calculatedStatus` uses `CalculatedStatus`. `stats`, `bonuses`, and attack
   `facts` contain every value required by the 8.2 status pane, with stable
   glossary keys and raw numbers; no formula is recomputed in the adapter.
+  Values with unit `ratio` and every `bonuses` value are rounded to the precision
+  the 8.2 status pane displays them at: 3 decimals for `f.c_accuracy`,
+  `f.accuracy_decay`, `c.accuracy`, and `c.evasion` (shown as `92.3%` or `+15`),
+  and 2 decimals for every other ratio and bonus (shown as `x1.13` or `34%`). A
+  client therefore reads the same numbers the UI shows, without floating-point
+  tails such as `0.3422222222222222`. Plain `number` facts are not rounded.
   All three attack types appear. `available` is `true` exactly when the character
   can make that attack: it has the aptitude (`c.equip_melee`, `c.equip_ranged`, or
   `c.equip_magic`, the 8.2 status pane's attack-row rule) and its `NoA` is at

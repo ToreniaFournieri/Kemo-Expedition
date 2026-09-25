@@ -105,7 +105,13 @@ for (const party of state.parties) {
     assert.deepEqual([derived.offenseAmplifier.melee, derived.offenseAmplifier.ranged, derived.offenseAmplifier.magical], [expected.melee, expected.ranged, expected.magical], `${original.name} offense`);
     assert.deepEqual([derived.defenseAmplifier.physical, derived.defenseAmplifier.magical], [expected.physicalDefense, expected.magicalDefense], `${original.name} defense`);
     assert.deepEqual([derived.effectiveAccuracyBonus, derived.accuracyDecay, derived.penetration], [expected.effective, expected.decay, expected.penetration], `${original.name} accuracy`);
-    assert.deepEqual(readStatusFacts(status), derived, `${original.name} round trip`);
+    const r2 = (value: number) => Math.round(value * 100) / 100;
+    const r3 = (value: number) => Math.round(value * 1000) / 1000;
+    assert.deepEqual(readStatusFacts(status), {
+      offenseAmplifier: { melee: r2(derived.offenseAmplifier.melee), ranged: r2(derived.offenseAmplifier.ranged), magical: r2(derived.offenseAmplifier.magical) },
+      defenseAmplifier: { physical: r2(derived.defenseAmplifier.physical), magical: r2(derived.defenseAmplifier.magical) },
+      effectiveAccuracyBonus: r3(derived.effectiveAccuracyBonus), accuracyDecay: r3(derived.accuracyDecay), penetration: r2(derived.penetration),
+    }, `${original.name} round trip at display precision`);
     for (const fact of [...status.stats, ...status.attacks.flatMap((attack) => attack.facts)]) assert.equal(Number.isFinite(fact.value), true, `${original.name} ${fact.key}`);
     const statsView = buildPartyStatsView(status);
     assert.deepEqual(statsView.baseStats, stats.baseStats);
@@ -375,7 +381,7 @@ const before = { items: itemConservation(state), jewels: jewelConservation(state
   }
   assert.ok(logs > 0, 'the real save retains battle logs');
   await assert.rejects(() => read('read/expedition/1/latestBattleLog', { logId: 'diary:does-not-exist' }), /not_found/);
-  // `latest` (the `logId` a sortie without a Diary entry returns) selects the party's newest log, like an omitted `logId`.
+  // The legacy alias `latest` selects the party's newest log, like an omitted `logId`.
   assert.deepEqual(await read('read/expedition/1/latestBattleLog', { logId: 'latest' }), await read('read/expedition/1/latestBattleLog'));
   console.log(`latestBattleLog: ${logs} retained logs, ${bottlenecks} bottleneck rooms validated`);
 }

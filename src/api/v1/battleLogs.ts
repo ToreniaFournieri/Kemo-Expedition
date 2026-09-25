@@ -196,3 +196,27 @@ export function buildBattleLogData(log: ExpeditionLog | null, partyNumber: numbe
     }),
   };
 }
+
+// A 53-bit string hash (cyrb53): enough to tell retained logs apart, not a security measure.
+function hashText(text: string): string {
+  let h1 = 0xdeadbeef;
+  let h2 = 0x41c6ce57;
+  for (let index = 0; index < text.length; index += 1) {
+    const code = text.charCodeAt(index);
+    h1 = Math.imul(h1 ^ code, 2654435761);
+    h2 = Math.imul(h2 ^ code, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+// SpecRef: 9.1.4.13 | sortie / latestBattleLog | `log:<partyNumber>:<hash>` names a party's newest retained log
+/**
+ * The unique ID of a party's newest retained log (the one no Diary entry retains): a hash of the public battle log a reader
+ * receives, so it survives save/load and two logs share an ID only when they would read back identically. Once a later
+ * expedition replaces the log, the old ID is `not_found` instead of silently selecting the newer log.
+ */
+export function retainedLogIdOf(log: ExpeditionLog, partyNumber: number): string {
+  return `log:${partyNumber}:${hashText(JSON.stringify(buildBattleLogData(log, partyNumber, '').battleLog))}`;
+}

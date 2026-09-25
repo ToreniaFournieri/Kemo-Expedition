@@ -252,9 +252,10 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   const facts = getShopFacts(shopLineupInputOf(richState), new Date(simulatedAt));
   assert.deepEqual(facts.entries.map((entry) => entry.shopItemId), [1, 2, 3, 4, 5], 'a slot is its 1-based position');
   const entry = facts.entries[0];
-  // The lineup ID is the five item IDs in slot order (Spec 9.1.3 2-4-4).
+  // The lineup ID is each slot's item ID and stock availability, in slot order (Spec 9.1.3 2-4-4).
   const lineupId = getPublicShopLineupId(facts);
-  assert.equal(lineupId, facts.entries.map((candidate) => candidate.itemId).join(''));
+  assert.equal(lineupId, facts.entries.map((candidate) => `${candidate.itemId}true`).join(''));
+  assert.equal(getPublicShopLineupId(getShopFacts(shopLineupInputOf({ ...richState, global: { ...richState.global, gold: 0 } }), new Date(simulatedAt))), lineupId, 'gold does not change the lineup ID');
   const bought = applyApiV1Commit('commit/base/purchaseShopItems', richState, { lineupId, items: [{ shopItemId: entry.shopItemId }] }, baseContext({ simulatedAt }));
   const data = bought.data as { items: { item: string; quantity: number }[]; goldDelta: number; pranaDelta: number };
   assert.equal(data.items.length, 1);
@@ -265,6 +266,8 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   // The slot is sold out afterwards, at the same transaction time.
   const after = getShopFacts(shopLineupInputOf(bought.state), new Date(simulatedAt));
   assert.equal(after.entries.find((candidate) => candidate.stockEntryId === entry.stockEntryId)?.soldOut, true);
+  const afterLineupId = getPublicShopLineupId(after);
+  assert.equal(afterLineupId, lineupId.replace(`${entry.itemId}true`, `${entry.itemId}false`), 'a sold slot changes the lineup ID');
 
   const attempt = (state: GameState, items: unknown, id: unknown = lineupId) => { try { applyApiV1Commit('commit/base/purchaseShopItems', state, { lineupId: id, items }, baseContext({ simulatedAt })); return ''; } catch (error) { return String(error); } };
   // The purchase names the lineup it was chosen from; any other lineup (or none) buys nothing (Spec 9.1.3 3-4-3).
@@ -285,7 +288,8 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.ok(attempt(richState, []).includes('invalid_request'));
   assert.ok(attempt(richState, [{ shopItemId: 1 }, { shopItemId: 99 }]).includes('not_found'), 'an unknown slot rejects the whole request');
   assert.ok(attempt({ ...richState, global: { ...richState.global, gold: 0 } }, [{ shopItemId: 1 }]).includes('illegal_action:insufficient_gold'));
-  assert.ok(attempt(bought.state, [{ shopItemId: 1 }]).includes('illegal_action:sold_out'), 'a sold slot cannot be bought again');
+  assert.ok(attempt(bought.state, [{ shopItemId: 2 }]).includes('illegal_action:lineup_changed'), 'a lineup ID read before a sale is stale');
+  assert.ok(attempt(bought.state, [{ shopItemId: 1 }], afterLineupId).includes('illegal_action:sold_out'), 'a sold slot cannot be bought again');
   // Atomic: the total must be affordable, and nothing is bought when it is not.
   const twoPrices = facts.entries[0].price + facts.entries[1].price;
   const short = { ...richState, global: { ...richState.global, gold: twoPrices - 1 } } as GameState;
@@ -413,7 +417,12 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   const ok = sortie(charged);
   assert.equal(ok.state.parties[0].instantExpeditionStock, 2, 'one stock is consumed');
   assert.deepEqual(ok.partyCycleWrites, [{ partyIndex: 0, cycle: { state: 'rest', stateStartedAt: 777, durationMs: 12_345, restInitialTotalSteps: 1, isCurrentExpeditionGodsBattle: false } }]);
-  assert.match(String((ok.data as { logId: string }).logId), /^(latest|diary:.+)$/);
+  const sortieLogId = String((ok.data as { logId: string }).logId);
+  assert.match(sortieLogId, /^(log:1:[0-9a-z]+|diary:.+)$/, 'a sortie names its log uniquely, never `latest`');
+  if (sortieLogId.startsWith('log:')) {
+    const { retainedLogIdOf } = await import('../../src/api/v1/battleLogs');
+    assert.equal(sortieLogId, retainedLogIdOf(ok.state.parties[0].lastExpeditionLog!, ok.state.parties[0].id));
+  }
   assert.ok(['Clear', 'Return', 'Draw', 'Retreat', 'Defeat'].includes(String((ok.data as { outcome: string }).outcome)));
   assert.equal(charged.parties[0].instantExpeditionStock, 3, 'the input snapshot is untouched');
   // Rewards use the Item Format of the rest of the API (`<lock>/<itemId>/<enhancement>/<superRare>`), not variant keys.
