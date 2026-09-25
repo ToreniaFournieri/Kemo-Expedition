@@ -891,8 +891,9 @@ Path Parameters
 * Return:
   * `current`:
     * `lineupId`
-      * Format: `<1stItemId><2ndItemId><3rdItemId><4thItemId><5thItemId>`
-        * Example: `11041102111011111111`
+      * Format: `<1stItemId><1stItemAvailability><2ndItemId><2ndItemAvailability><3rdItemId><3rdItemAvailability><4thItemId><4thItemAvailability><5thItemId><5thItemAvailability>`
+        * Example: `1104ture1102false1110true1111true1111true`
+      * Represents both the current shop item lineup and the availability of each item.
       * Used to verify that the shop lineup has not changed before the player purchases items.
     * `items`
       * Current shop item list.
@@ -1225,6 +1226,8 @@ Path Parameters
   * Consumes 1 stock and immediately processes one full party cycle.
   * If the party is currently in `state.explore`, the current exploration cycle is completed first, then one additional full cycle is processed.
   * Processing always ends at the beginning of `state.rest`.
+
+* 
 
 **3-2-3. `{p}/godsBattle`**
 
