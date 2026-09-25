@@ -194,22 +194,27 @@ function compactObservation(state: GameState, context: ApiV1ReadContext, simulat
   };
 }
 
-/** `YYYYMMDD HH:MM` in the game clock's display timezone (the device's local time, as the Diary tab shows it). */
+/** `YYYYMMDD HH:MM` in UTC, the same clock as `inGameTime`, `occurredAt`, and every other API time (9.1.4.14). */
 function compactDiaryTimestamp(epochMs: number): string {
   const date = new Date(epochMs);
   const pad = (value: number) => String(value).padStart(2, '0');
-  return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
+}
+
+/** Free text inside a slash-delimited compact value: readable as-is, with only `%` and `/` escaped so splitting stays exact. */
+function compactText(text: string): string {
+  return text.replace(/%/g, '%25').replace(/\//g, '%2F');
 }
 
 // SpecRef: 9.1.3 | 2-1-1 compact | unreadDiaryTitle `<diaryEntryId>/<diaryTitle>/<diarySubtitle>/<timeStamp>`
-// The title and subtitle are the Diary tab's own (current language); as free text they are percent-encoded (9.1.4.14).
+// The title and subtitle are the Diary tab's own (current language), shown as written except for `%` and `/` (9.1.4.14).
 function compactDiaryTitle(entry: DiaryLog): string {
   const content = diaryEntryContent(entry);
   const title = content.format === 'semantic' ? t(content.title.key) : content.title;
   const subtitle = content.format === 'semantic'
     ? getDungeonById(entry.expeditionLog.dungeonId)?.name ?? String(entry.expeditionLog.dungeonId)
     : content.subtitle;
-  return `${encodeURIComponent(entry.id)}/${encodeURIComponent(title)}/${encodeURIComponent(subtitle)}/${compactDiaryTimestamp(entry.createdAt)}`;
+  return `${compactText(entry.id)}/${compactText(title)}/${compactText(subtitle)}/${compactDiaryTimestamp(entry.createdAt)}`;
 }
 
 /** The log a client may see for a party: the disclosed log while the runtime hides a running exploration, else the newest one. */
@@ -575,14 +580,14 @@ function characterRoster(parameters: Record<string, unknown>, context: ApiV1Read
 }
 
 // SpecRef: 9.1.3 | 4-2-8 superRareList | `<superRareId>/<name>/<bonus>`, the name in the current language
-// Every Super Rare title (1–N; 0 is "no title", not a title). The name and the bonus IDs are free text, so each is
-// percent-encoded (9.1.4.14); the bonus IDs are joined by `, ` like the `searchItems` detail fields.
+// Every Super Rare title (1–N; 0 is "no title", not a title). The name and the bonus IDs are free text, so each escapes
+// `%` and `/` (9.1.4.14); the bonus IDs are joined by `, ` like the `searchItems` detail fields.
 function superRareList(parameters: Record<string, unknown>, context: ApiV1ReadContext) {
   const superRareId = parameters.superRareId === undefined ? null : Number(parameters.superRareId);
   const entries = SUPER_RARE_TITLES.filter((title) => title.value > 0 && (superRareId === null || title.value === superRareId)).map((title) => {
     const bonuses = describeBonuses(title.bonuses ?? []);
     const bonusIds = [...bonuses.ability, ...bonuses.cBonus, ...bonuses.otherBonus].join(', ');
-    return `${title.value}/${encodeURIComponent(getLocalizedSuperRareTitle(title.value).trim())}/${encodeURIComponent(bonusIds)}`;
+    return `${title.value}/${compactText(getLocalizedSuperRareTitle(title.value).trim())}/${compactText(bonusIds)}`;
   });
   const { page, nextCursor } = paginate('resources/superRareList', entries, parameters, context.revision);
   return { superRare: page, nextCursor };
@@ -877,24 +882,24 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       // SpecRef: 9.1.3 | Read | 2-3-5 character/{characterId}/equipmentEvaluation
       const requested = parameters.targetItems === undefined ? [] : Array.isArray(parameters.targetItems) ? parameters.targetItems : [parameters.targetItems];
       const requestedChanges = parameters.equipmentChanges === undefined ? [] : Array.isArray(parameters.equipmentChanges) ? parameters.equipmentChanges : [parameters.equipmentChanges];
-      if (requested.length === 0 && requestedChanges.length === 0) throw new Error('invalid_request:targetItems');
-      if (new Set(requested).size !== requested.length) throw new Error('invalid_request:targetItems');
-      if (new Set(requestedChanges).size !== requestedChanges.length) throw new Error('invalid_request:equipmentChanges');
-      if (requested.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:targetItems');
-      if (requestedChanges.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:equipmentChanges');
+      if (requested.length === 0 && requestedChanges.length === 0) throw new Error('invalid_request:targetItems.required');
+      if (new Set(requested).size !== requested.length) throw new Error('invalid_request:targetItems.duplicate');
+      if (new Set(requestedChanges).size !== requestedChanges.length) throw new Error('invalid_request:equipmentChanges.duplicate');
+      if (requested.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:targetItems.too_many');
+      if (requestedChanges.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:equipmentChanges.too_many');
       const currentStats = computeCharacterStatsInParty(party, characterIndex);
       return {
         calculatedItemStatus: requested.map((entry) => {
           const item = typeof entry === 'string' ? parseEvaluatedItemFormat(entry) : null;
-          if (!item || !item.jewel || !isJewelAllowedForCategory(item.category, item.jewel.key)) throw new Error('invalid_request:targetItems');
+          if (!item) throw new Error('invalid_request:targetItems.format');
+          if (!item.jewel || !isJewelAllowedForCategory(item.category, item.jewel.key)) throw new Error('invalid_request:targetItems.jewel');
           return { item: entry as string, ...evaluateItemForCharacter(character, item, party.level), abilities: describeItem(item).ability };
         }),
         calculatedEquipmentChange: requestedChanges.map((entry) => {
           const change = typeof entry === 'string' ? parseEquipmentChange(entry) : null;
-          if (!change || change.slotIndex >= currentStats.maxEquipSlots
-            || (change.item?.jewel && !isJewelAllowedForCategory(change.item.category, change.item.jewel.key))) {
-            throw new Error('invalid_request:equipmentChanges');
-          }
+          if (!change) throw new Error('invalid_request:equipmentChanges.format');
+          if (change.slotIndex >= currentStats.maxEquipSlots) throw new Error('invalid_request:equipmentChanges.slot');
+          if (change.item?.jewel && !isJewelAllowedForCategory(change.item.category, change.item.jewel.key)) throw new Error('invalid_request:equipmentChanges.jewel');
           const equipment = [...character.equipment];
           equipment[change.slotIndex] = change.item;
           const nextStats = computeCharacterStatsInParty(party, characterIndex, { ...character, equipment });

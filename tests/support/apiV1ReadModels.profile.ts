@@ -690,7 +690,9 @@ calls.length = 0;
   assert.equal(steady.partyInfo[0].party.condition, 'steady/55');
   assert.equal(compact.attention.notification[0].unreadDiary, 1);
   const dungeonName = getDungeonById(1)!.name;
-  assert.deepEqual(compact.attention.notification[0].unreadDiaryTitle, [`120/${encodeURIComponent('Defeat Record')}/${encodeURIComponent(dungeonName)}/20260916 22:04`]);
+  const utc = new Date(createdAt);
+  const utcStamp = `${utc.getUTCFullYear()}${String(utc.getUTCMonth() + 1).padStart(2, '0')}${String(utc.getUTCDate()).padStart(2, '0')} ${String(utc.getUTCHours()).padStart(2, '0')}:${String(utc.getUTCMinutes()).padStart(2, '0')}`;
+  assert.deepEqual(compact.attention.notification[0].unreadDiaryTitle, [`120/Defeat Record/${dungeonName.replace(/%/g, '%25').replace(/\//g, '%2F')}/${utcStamp}`], 'diary text is readable and the timestamp is UTC');
   calls.length = 0;
 }
 

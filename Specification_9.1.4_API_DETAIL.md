@@ -359,10 +359,17 @@ request with the same base parameters and key when no receipt exists.
 * While an external lease is active, normal real-time progression is paused and
   state-mutating React/Desktop controls are disabled with the stable reason
   `apiControlActive`. Read-only UI remains usable.
-* An idle lease expires after five minutes without a successful authenticated
+* An idle lease expires after fifteen minutes without a successful authenticated
   session operation. Successful session reads, commits, and receipt replays
   renew it; public/bootstrap requests and failed requests do not. Work lifecycle
   and safe release rules are defined in 9.1.4.16. No lease survives process exit.
+* Every authenticated session response, including `logIn`, carries the header
+  `X-BoKemo-Lease-Expires-At` (ISO 8601 UTC): the lease deadline after that
+  request's renewal.
+* An idle expiry persists and releases the account as `logOut` would. The
+  expired tokens then receive `control_lease_expired` with `details.expiredAt`,
+  not `login_required`. A `logOut` with those tokens succeeds once with the
+  `finalPersistedRevision` of that release; afterwards they are unknown.
 * In-process React/Desktop adapters use their trusted process identity and do
   not call `signUp` or `logIn`. They still use the same Application API handlers.
 
@@ -812,7 +819,14 @@ save is visible to the request.
 ```
 
 `code` is stable. Clients must not parse `message`. `details` is optional and
-must use stable member names. Errors must not expose secrets, stack traces,
+must use stable member names. For `invalid_request`, `details.field` names the
+rejected member, `details.rule` the most specific failed rule (for a schema
+failure inside `anyOf`, the deepest non-combinator rule, so a malformed array
+element reports `pattern` on `targetEquipment[0]`, not the string branch's
+`type`), and `details.reason` is a readable sentence such as
+"`targetItems` is required." or "`targetEquipment[0]` must match the pattern
+`^…$`", never a stringified runtime error. Schema failures also list `issues`,
+with `pattern`, `limit`, or `expectedType` where the rule has one. Errors must not expose secrets, stack traces,
 partially staged state, undisclosed random results, or whether an inaccessible
 user/resource exists.
 
@@ -1009,12 +1023,13 @@ use the same operation without HTTP authentication headers.
   every integer. An action is `{available: boolean, unavailableReason: string|null}`;
   the reason is null exactly when available. Enumerated keys come from the shared
   gameplay catalogs, not translated labels.
-* Slash-delimited formats containing free text encode each text component with
-  percent-encoding before joining; clients split first and decode once. Numeric
-  item/equipment formats require no escaping. Compact prose is a display field,
-  not an alternative source of gameplay identifiers. The documented compact
-  Diary timestamp uses the game clock's display timezone; transport `*At` values
-  use UTC. `inGameTime` is an ISO 8601 instant normalized to UTC on the wire.
+* Slash-delimited formats containing free text keep the text readable and
+  escape only `%` as `%25` and `/` as `%2F` in each text component before
+  joining; clients split first and may percent-decode each component once.
+  Numeric item/equipment formats require no escaping. Compact prose is a display
+  field, not an alternative source of gameplay identifiers. Every API time is
+  UTC: the compact Diary timestamp `YYYYMMDD HH:MM` is the UTC wall time, and
+  transport `*At` values and `inGameTime` are ISO 8601 instants normalized to UTC.
 
 The following concrete payload definitions supplement 9.1.3. Object members are
 required unless marked `?`; `T[]` means an ordered JSON array of T. These are
@@ -1339,7 +1354,7 @@ Feedback `metadata`, accompanied by one verified image part named `attachment0`:
   enqueueing in 9.1.4.15. An admitted simulation or commit pins its control lease
   until it finishes or rolls back. Queued-but-not-admitted work does not pin it
   and must authenticate again at admission. After a successful operation, the
-  normal five-minute idle window starts from completion.
+  normal fifteen-minute idle window starts from completion.
 * Reads capture an immutable snapshot at admission. Simulations run in private
   workers and must not block unrelated UI rendering or read queries. The compact
   query's 100 runs and full query's 1,000 runs are never reduced under load.

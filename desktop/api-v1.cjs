@@ -11,7 +11,8 @@ const catalog = require('./api-v1-contract.json');
 const API_PREFIX = '/api/v1';
 const API_VERSION = 'v1';
 const SCHEMA_VERSION = 1;
-const LEASE_IDLE_TIMEOUT_MS = 300_000;
+const LEASE_IDLE_TIMEOUT_MS = 900_000;
+const LEASE_EXPIRES_HEADER = 'X-BoKemo-Lease-Expires-At';
 const MAX_JSON_BODY_BYTES = 1024 * 1024;
 const MAX_MULTIPART_BODY_BYTES = 32 * 1024 * 1024;
 const PUBLIC_OPERATIONS = new Set(['fundamental/status', 'help/overview', 'help/endpoints']);
@@ -57,6 +58,9 @@ function createApiV1(options) {
   let port = null;
   let descriptorPath = null;
   let lease = null;
+  // The last lease that lapsed from inactivity: its tokens still identify the client, so a late `logOut` completes and
+  // other requests report `control_lease_expired` instead of an unexplained `login_required` (9.1.4.6).
+  let expiredLease = null;
   let expiryTimer = null;
   let shuttingDown = false;
   let admissionClosed = false;
@@ -64,7 +68,7 @@ function createApiV1(options) {
   const streams = new Set();
 
   const nowMonotonic = () => Number(process.hrtime.bigint() / 1_000_000n);
-  // Tests shorten the idle lease; the desktop app always uses the specified five minutes (9.1.4.6).
+  // Tests shorten the idle lease; the desktop app always uses the specified fifteen minutes (9.1.4.6).
   const leaseIdleTimeoutMs = Number.isInteger(options.leaseIdleTimeoutMs) && options.leaseIdleTimeoutMs > 0 ? options.leaseIdleTimeoutMs : LEASE_IDLE_TIMEOUT_MS;
 
   function requestId() { return crypto.randomUUID(); }
@@ -89,12 +93,34 @@ function createApiV1(options) {
     streams.clear();
   }
 
+  // SpecRef: 9.1.4.11 | `details.rule` and the message report the most specific failed rule. Ajv reports every branch of an
+  // `anyOf`, so a malformed element of an item array would otherwise surface as the string branch's `type` failure.
+  const COMBINATOR_KEYWORDS = new Set(['anyOf', 'oneOf', 'allOf', 'if', 'not']);
+  function specificIssues(errors) {
+    const issues = errors.map(error => ({
+      path: error.instancePath, keyword: error.keyword,
+      ...(error.params?.missingProperty ? { missingProperty: error.params.missingProperty } : {}),
+      ...(error.params?.additionalProperty ? { additionalProperty: error.params.additionalProperty } : {}),
+      ...(Array.isArray(error.params?.allowedValues) ? { allowedValues: error.params.allowedValues } : {}),
+      ...(typeof error.params?.pattern === 'string' ? { pattern: error.params.pattern } : {}),
+      ...(Number.isFinite(error.params?.limit) ? { limit: error.params.limit } : {}),
+      ...(typeof error.params?.type === 'string' ? { expectedType: error.params.type } : {}),
+    }));
+    const depth = issue => issue.path.split('/').length + (issue.missingProperty || issue.additionalProperty ? 1 : 0);
+    const rank = issue => [COMBINATOR_KEYWORDS.has(issue.keyword) ? 1 : 0, -depth(issue), issue.keyword === 'type' ? 1 : 0];
+    return issues
+      .map((issue, index) => ({ issue, index, rank: rank(issue) }))
+      .sort((left, right) => left.rank[0] - right.rank[0] || left.rank[1] - right.rank[1] || left.rank[2] - right.rank[2] || left.index - right.index)
+      .map(entry => entry.issue);
+  }
+
   function validateSchema(validator, value) {
     if (validator(value)) return;
     const validationError = Object.assign(new Error('schema_validation_failed'), { status: 400, code: 'invalid_request' });
-    const issues = validator.errors?.map(error => ({ path: error.instancePath, keyword: error.keyword, ...(error.params?.missingProperty ? { missingProperty: error.params.missingProperty } : {}), ...(error.params?.additionalProperty ? { additionalProperty: error.params.additionalProperty } : {}), ...(Array.isArray(error.params?.allowedValues) ? { allowedValues: error.params.allowedValues } : {}) })) ?? [];
+    const issues = specificIssues(validator.errors ?? []);
     const field = schemaIssueField(issues[0]);
     validationError.details = { ...(field ? { field } : {}), ...(issues[0] ? { rule: issues[0].keyword } : {}), issues };
+    validationError.details.reason = schemaIssueProblem(validationError.details);
     throw validationError;
   }
 
@@ -108,15 +134,23 @@ function createApiV1(options) {
     return segments.reduce((path, segment) => /^\d+$/.test(segment) ? `${path}[${segment}]` : path ? `${path}.${segment}` : segment, '') || null;
   }
 
+  function schemaIssueProblem(details) {
+    const issue = details.issues?.[0];
+    const problem = !issue ? 'is invalid'
+      : issue.missingProperty ? 'is required'
+        : issue.additionalProperty ? 'is not a known member'
+          : issue.allowedValues ? `must be one of ${issue.allowedValues.map(value => JSON.stringify(value)).join(', ')}`
+            : issue.pattern ? `must match the pattern ${issue.pattern}`
+              : issue.expectedType ? `must be of type ${issue.expectedType}`
+                : issue.limit !== undefined ? `violates ${issue.keyword} ${issue.limit}`
+                  : `is invalid (${details.rule})`;
+    return details.field ? `\`${details.field}\` ${problem}.` : 'The request is invalid.';
+  }
+
   function invalidRequestMessage(error) {
     const details = error.details;
     if (!details?.field) return 'The request is invalid.';
-    const issue = details.issues?.[0];
-    const problem = issue?.missingProperty ? 'is required'
-      : issue?.additionalProperty ? 'is not a known member'
-        : issue?.allowedValues ? `must be one of ${issue.allowedValues.map(value => JSON.stringify(value)).join(', ')}`
-          : `is invalid (${details.rule})`;
-    return `The request is invalid: \`${details.field}\` ${problem}.`;
+    return `The request is invalid: ${details.reason ?? schemaIssueProblem(details)}`;
   }
 
   // A response mismatch is an implementation drift against the operation's own catalog contract, not caller error,
@@ -142,10 +176,14 @@ function createApiV1(options) {
   function authenticateSession(request, id) {
     const bootstrapFailure = authenticateBootstrap(request, id);
     if (bootstrapFailure) return bootstrapFailure;
-    if (!lease) return { status: 401, body: errorEnvelope(id, 'login_required', 'A control session is required.') };
-    if (nowMonotonic() >= lease.deadline && lease.pins === 0) {
+    if (!lease) {
+      return matchesExpiredLease(request)
+        ? { status: 401, body: errorEnvelope(id, 'control_lease_expired', 'The control lease expired from inactivity; log in again.', undefined, { expiredAt: expiredLease.expiredAt }) }
+        : { status: 401, body: errorEnvelope(id, 'login_required', 'A control session is required.') };
+    }
+    if (leaseLapsed()) {
       void expireLease();
-      return { status: 401, body: errorEnvelope(id, 'control_lease_expired', 'The control lease expired.') };
+      return { status: 401, body: errorEnvelope(id, 'control_lease_expired', 'The control lease expired from inactivity; log in again.', undefined, { expiredAt: new Date(lease.expiresAt).toISOString() }) };
     }
     if (!timingSafeEqualString(request.headers['x-bokemo-session'], lease.sessionToken)) {
       return { status: 401, body: errorEnvelope(id, 'login_required', 'The session token is invalid.') };
@@ -154,6 +192,13 @@ function createApiV1(options) {
       return { status: 401, body: errorEnvelope(id, 'control_lease_invalid', 'The control lease is invalid.') };
     }
     return null;
+  }
+
+  function leaseLapsed() { return Boolean(lease) && nowMonotonic() >= lease.deadline && lease.pins === 0; }
+  function matchesExpiredLease(request) {
+    return Boolean(expiredLease)
+      && timingSafeEqualString(request.headers['x-bokemo-session'], expiredLease.sessionToken)
+      && timingSafeEqualString(request.headers['x-bokemo-control-lease'], expiredLease.controlLeaseToken);
   }
 
   function renewLease() {
@@ -172,7 +217,27 @@ function createApiV1(options) {
     const expired = lease;
     lease = null;
     closeStreams();
-    try { await options.invokeApplication('fundamental/logOut', { reason: 'inactivity', identity: expired.identity }); } catch { /* durable account state remains authoritative */ }
+    const released = (async () => {
+      try {
+        const result = await options.invokeApplication('fundamental/logOut', { reason: 'inactivity', identity: expired.identity });
+        return result?.error ? null : result?.data?.finalPersistedRevision ?? null;
+      } catch { return null; /* durable account state remains authoritative */ }
+    })();
+    expiredLease = { sessionToken: expired.sessionToken, controlLeaseToken: expired.controlLeaseToken, expiredAt: new Date(expired.expiresAt).toISOString(), released };
+    await released;
+  }
+
+  // SpecRef: 9.1.4.6 | `logOut` with the tokens of a lease that already lapsed succeeds: the inactivity release already
+  // persisted the account, so the client learns the final revision instead of a 401.
+  async function logOutExpiredLease(request, response, id) {
+    if (leaseLapsed() && timingSafeEqualString(request.headers['x-bokemo-session'], lease.sessionToken)
+      && timingSafeEqualString(request.headers['x-bokemo-control-lease'], lease.controlLeaseToken)) await expireLease();
+    if (lease || !matchesExpiredLease(request)) return false;
+    const finalPersistedRevision = await expiredLease.released;
+    if (!Number.isInteger(finalPersistedRevision)) return false;
+    expiredLease = null;
+    sendJson(response, 200, { ...baseEnvelope(id), revision: finalPersistedRevision, observedAt: new Date().toISOString(), data: { finalPersistedRevision } });
+    return true;
   }
 
   async function readJson(request, allowEmpty = false) {
@@ -291,9 +356,12 @@ function createApiV1(options) {
         : sendJson(response, 404, errorEnvelope(id, 'not_found', 'The endpoint does not exist.'));
     }
 
+    if (route.operationId === 'fundamental/logOut' && authenticateBootstrap(request, id) === null && await logOutExpiredLease(request, response, id)) return;
     if (!PUBLIC_OPERATIONS.has(route.operationId)) {
       const failure = route.access === 'session' ? authenticateSession(request, id) : authenticateBootstrap(request, id);
       if (failure) return sendJson(response, failure.status, failure.body);
+      // Every authenticated session response says when the lease lapses; renewal below moves it forward.
+      if (route.access === 'session' && lease) response.setHeader(LEASE_EXPIRES_HEADER, new Date(lease.expiresAt).toISOString());
     }
 
     let payload;
@@ -331,6 +399,7 @@ function createApiV1(options) {
     if (route.operationId === 'read/observation/popupEventStream') {
       assertResponseData(route, result.data ?? {});
       renewLease();
+      if (lease) response.setHeader(LEASE_EXPIRES_HEADER, new Date(lease.expiresAt).toISOString());
       response.writeHead(200, {
         'Content-Type': 'text/event-stream; charset=utf-8',
         'Cache-Control': 'no-store',
@@ -385,13 +454,19 @@ function createApiV1(options) {
         expiresAt: now + leaseIdleTimeoutMs,
         pins: 0,
       };
+      expiredLease = null;
       scheduleExpiry();
+      response.setHeader(LEASE_EXPIRES_HEADER, new Date(lease.expiresAt).toISOString());
       result.data = { ...(result.data ?? {}), sessionToken: lease.sessionToken, controlLeaseToken: lease.controlLeaseToken, leaseExpiresAt: new Date(lease.expiresAt).toISOString() };
     } else if (route.operationId === 'fundamental/logOut') {
       closeStreams();
       lease = null;
       if (expiryTimer) clearTimeout(expiryTimer);
-    } else if (route.access === 'session') renewLease();
+      response.removeHeader(LEASE_EXPIRES_HEADER);
+    } else if (route.access === 'session') {
+      renewLease();
+      if (lease) response.setHeader(LEASE_EXPIRES_HEADER, new Date(lease.expiresAt).toISOString());
+    }
 
     // Import/reset atomically fence the popup-event buffer (authority.ts); close open streams synchronously here
     // rather than waiting for their next poll tick to discover the fenced cursor.
@@ -535,6 +610,7 @@ function createApiV1(options) {
       try { await options.invokeApplication('fundamental/logOut', { reason: 'disabled', identity: lease.identity }); } catch { /* preserve last durable account save */ }
     }
     lease = null;
+    expiredLease = null;
     enabled = false;
     bearerToken = null;
     port = null;
@@ -554,6 +630,7 @@ function createApiV1(options) {
   // (without a logOut round trip, which could not reach it). The client's old tokens then get `login_required`, and a new
   // `logIn` succeeds at once instead of waiting for the idle lease to expire.
   function releaseForRendererLoss() {
+    expiredLease = null;
     if (!lease) return;
     lease = null;
     if (expiryTimer) clearTimeout(expiryTimer);

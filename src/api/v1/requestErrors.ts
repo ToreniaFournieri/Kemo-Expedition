@@ -17,6 +17,20 @@ const LEGACY_TOKEN_FIELDS: Record<string, { field: string; rule?: string }> = {
   invalid_backup: { field: 'backup' },
 };
 
+// Readable wording for the rules validators name; any other rule reads as "is invalid (<rule>)".
+const RULE_PROBLEMS: Record<string, string> = {
+  required: 'is required',
+  duplicate: 'contains a duplicate entry',
+  format: 'has an invalid format',
+  too_many: 'has too many entries',
+  single: 'must name exactly one item',
+  single_item: 'can be used only with one item',
+  unknown_member: 'is not a known member',
+  with_simulation: 'cannot be combined with `simulation`',
+  jewel: 'names a jewel that this item cannot hold',
+  slot: 'names a slot outside this character\'s equipment slots',
+};
+
 export interface ApiV1InvalidRequestDetails {
   field?: string;
   rule?: string;
@@ -31,20 +45,32 @@ function tokenOf(error: unknown): string | null {
   return legacy && LEGACY_TOKEN_FIELDS[legacy[1]] ? legacy[1] : null;
 }
 
+function problemOf(rule: string | undefined): string {
+  if (!rule) return 'is invalid';
+  return RULE_PROBLEMS[rule] ?? `is invalid (${rule})`;
+}
+
+/** A readable sentence for `details.reason`, e.g. "`targetItems` is required." */
+function reasonOf(field: string | undefined, rule: string | undefined, fallback: string): string {
+  return field ? `\`${field}\` ${problemOf(rule)}.` : fallback;
+}
+
 /** `details` for an `invalid_request` failure: the rejected `field` (and `rule`) when the validator named one. */
 export function describeInvalidRequest(error: unknown): ApiV1InvalidRequestDetails {
-  const reason = String(error);
   const token = tokenOf(error);
-  if (!token) return { reason };
+  const unnamed = 'The request is invalid.';
+  // An unrecognized failure keeps its own message for diagnosis, without the `Error: ` prefix of a stringified Error.
+  if (!token) return { reason: (error instanceof Error ? error.message : String(error)) || unnamed };
   const legacy = LEGACY_TOKEN_FIELDS[token];
-  if (legacy) return { ...legacy, reason };
-  const [field, ...rule] = token.split('.');
-  if (!/^[a-z][A-Za-z0-9[\]]*$/.test(field)) return { rule: token, reason };
-  return { field, ...(rule.length > 0 ? { rule: rule.join('.') } : {}), reason };
+  if (legacy) return { ...legacy, reason: reasonOf(legacy.field, legacy.rule, unnamed) };
+  const [field, ...ruleParts] = token.split('.');
+  if (!/^[a-z][A-Za-z0-9[\]]*$/.test(field)) return { rule: token, reason: unnamed };
+  const rule = ruleParts.length > 0 ? ruleParts.join('.') : undefined;
+  return { field, ...(rule ? { rule } : {}), reason: reasonOf(field, rule, unnamed) };
 }
 
 /** A human-readable message; clients must still branch on `code` and `details`, never on this text. */
 export function invalidRequestMessage(details: ApiV1InvalidRequestDetails, fallback: string): string {
   if (!details.field) return fallback;
-  return `${fallback.replace(/\.$/, '')}: \`${details.field}\` is invalid${details.rule ? ` (${details.rule})` : ''}.`;
+  return `${fallback.replace(/\.$/, '')}: ${details.reason}`;
 }

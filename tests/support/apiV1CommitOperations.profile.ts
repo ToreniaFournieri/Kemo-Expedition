@@ -279,6 +279,12 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.equal(describeInvalidRequest(new Error('invalid_request:duplicate_items')).field, 'items', 'older reason tokens map to their parameter');
   assert.equal(describeInvalidRequest(new Error('invalid_elapsed')).field, 'elapsedSeconds');
   assert.equal(describeInvalidRequest(new Error('something_else')).field, undefined, 'no field is invented');
+  // `details.reason` is a readable sentence, never the stringified Error.
+  assert.equal(describeInvalidRequest(new Error('invalid_request:targetItems.required')).reason, '`targetItems` is required.');
+  assert.equal(describeInvalidRequest(new Error('invalid_request:lineupId')).reason, '`lineupId` is invalid.');
+  assert.equal(describeInvalidRequest(new Error('invalid_request:duplicate_items')).reason, '`items` contains a duplicate entry.');
+  assert.equal(describeInvalidRequest(new Error('something_else')).reason, 'something_else', 'an unrecognized failure keeps its message without the Error: prefix');
+  assert.equal(invalidRequestMessage(describeInvalidRequest(new Error('invalid_request:targetItems.required')), 'The request is invalid.'), 'The request is invalid: `targetItems` is required.');
   assert.ok(attempt(richState, [{ shopItemId: 1 }, { shopItemId: 1 }]).includes('invalid_request'), 'a duplicate slot is invalid');
   assert.ok(attempt(richState, [{ shopItemId: 0 }]).includes('invalid_request'));
   assert.ok(attempt(richState, []).includes('invalid_request'));
