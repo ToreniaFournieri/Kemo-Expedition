@@ -44,6 +44,11 @@ export interface ApiV1ControlMetadata {
   equipmentHistory?: Record<string, { undo: SavedEquipmentSet[]; redo: SavedEquipmentSet[] }>;
   settings?: Record<string, unknown>;
   rngState?: number;
+  /**
+   * SpecRef: 9.1.4.4 | Sub-Cycle progress each party carries between `elapsed` calls (and login catch-up), keyed by
+   * Party ID. Like `inGameTime`, it belongs to the account's clock, not the save: import and reset clear it.
+   */
+  elapsedCarryMs?: Record<string, number>;
 }
 
 export interface ApiV1CommitResponse {
@@ -265,7 +270,9 @@ export async function executeApiV1CommitTransaction(
         yieldBetweenChunks: dependencies.yieldBetweenChunks,
         afterChunk: dependencies.afterElapsedChunk,
         runWithRandom,
+        carriedMsByPartyId: stagedControl.elapsedCarryMs,
       });
+      stagedControl.elapsedCarryMs = elapsed.carriedMsByPartyId;
       outcome = {
         state: elapsed.state,
         data: elapsed.data,
@@ -313,13 +320,20 @@ export async function executeApiV1CommitTransaction(
     stagedControl.deliveries = replacement.deliveries;
     stagedControl.popupEvents = [];
     stagedControl.confirmations = [];
+    delete stagedControl.elapsedCarryMs;
+  }
+  // SpecRef: 5.1.1 | An immediate sortie restarts the party's Cycle, so the interrupted Cycle's carried progress ends.
+  const sortieMatch = input.operation.match(/^commit\/expedition\/(\d+)\/(sortie|godsBattle)$/);
+  if (sortieMatch && stagedControl.elapsedCarryMs?.[sortieMatch[1]] !== undefined) {
+    const { [sortieMatch[1]]: _interrupted, ...carry } = stagedControl.elapsedCarryMs;
+    stagedControl.elapsedCarryMs = carry;
   }
   if (outcome.delivery) stagedControl.deliveries = [...(stagedControl.deliveries ?? []), outcome.delivery];
   if (randomDrawCount > 0) stagedControl.rngState = apiRandom.state;
 
   const stateChanged = canonicalizeApiValue(serializeGameState(outcome.state)) !== canonicalizeApiValue(serializeGameState(input.state));
-  const metadataChanged = canonicalizeApiValue({ deliveries: stagedControl.deliveries, equipmentHistory: stagedControl.equipmentHistory, popupEvents: stagedControl.popupEvents, rngState: stagedControl.rngState, settings: stagedControl.settings })
-    !== canonicalizeApiValue({ deliveries: input.control.deliveries, equipmentHistory: input.control.equipmentHistory, popupEvents: input.control.popupEvents, rngState: input.control.rngState, settings: input.control.settings });
+  const metadataChanged = canonicalizeApiValue({ deliveries: stagedControl.deliveries, elapsedCarryMs: stagedControl.elapsedCarryMs, equipmentHistory: stagedControl.equipmentHistory, popupEvents: stagedControl.popupEvents, rngState: stagedControl.rngState, settings: stagedControl.settings })
+    !== canonicalizeApiValue({ deliveries: input.control.deliveries, elapsedCarryMs: input.control.elapsedCarryMs, equipmentHistory: input.control.equipmentHistory, popupEvents: input.control.popupEvents, rngState: input.control.rngState, settings: input.control.settings });
   const clockChanged = outcome.simulatedAt !== input.simulatedAt;
   const changed = stateChanged || metadataChanged || clockChanged;
   const previousRevision = stagedControl.revisionHighWater;

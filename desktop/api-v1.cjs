@@ -316,10 +316,13 @@ function createApiV1(options) {
       return sendJson(response, 401, errorEnvelope(id, 'authentication_failed', 'The request origin is not allowed.', undefined, { reason: 'origin_not_allowed' }));
     }
 
+    // SpecRef: 9.1.4.3 | HEAD is answered like GET without a body (RFC 9110); the popup event stream has no HEAD form.
+    const isHead = request.method === 'HEAD';
     let route = null;
     let pathParameters = {};
     for (const candidate of ROUTES) {
-      if (candidate.method !== request.method) continue;
+      if (candidate.method !== (isHead ? 'GET' : request.method)) continue;
+      if (isHead && candidate.operationId === 'read/observation/popupEventStream') continue;
       const match = candidate.pattern.exec(url.pathname);
       if (!match) continue;
       route = candidate;
@@ -330,7 +333,7 @@ function createApiV1(options) {
     if (!route) {
       const pathRoute = ROUTES.find(candidate => candidate.pattern.test(url.pathname));
       return pathRoute
-        ? sendJson(response, 405, errorEnvelope(id, 'method_not_allowed', 'The HTTP method is not allowed.'), { Allow: pathRoute.method })
+        ? sendJson(response, 405, errorEnvelope(id, 'method_not_allowed', 'The HTTP method is not allowed.'), { Allow: pathRoute.method === 'GET' && pathRoute.operationId !== 'read/observation/popupEventStream' ? 'GET, HEAD' : pathRoute.method })
         : sendJson(response, 404, errorEnvelope(id, 'not_found', 'The endpoint does not exist.'));
     }
 

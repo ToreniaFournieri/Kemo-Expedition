@@ -17,6 +17,8 @@ export interface ApiV1ElapsedProgressionOptions {
   runWithRandom: <T>(operation: () => T) => T;
   maximumElapsedSeconds?: number;
   allowExtendedElapsedSeconds?: boolean;
+  /** Sub-Cycle progress each party kept from the previous call, keyed by Party ID (milliseconds of effective time). */
+  carriedMsByPartyId?: Record<string, number>;
 }
 
 export interface ApiV1ElapsedProgressionResult {
@@ -24,6 +26,13 @@ export interface ApiV1ElapsedProgressionResult {
   simulatedAt: number;
   data: Record<string, unknown>;
   chunkCount: number;
+  /** Sub-Cycle progress each party keeps for the next call, keyed by Party ID. Empty parties are omitted. */
+  carriedMsByPartyId: Record<string, number>;
+}
+
+function normalizeCarriedMs(value: unknown): number {
+  const carriedMs = Number(value);
+  return Number.isFinite(carriedMs) && carriedMs > 0 ? Math.floor(carriedMs) : 0;
 }
 
 function resolveRequestedElapsedSeconds(parameters: Record<string, unknown>, simulatedAt: number, realNow: number, allowExtendedElapsedSeconds: boolean, maximumElapsedSeconds: number): number {
@@ -53,10 +62,24 @@ export async function stageApiV1ElapsedProgression(
   const elapsedSeconds = Math.floor(effectiveElapsedMs / 1_000);
   const simulatedAt = options.simulatedAt + (cappedElapsedSeconds * 1_000);
   let stagedState = state;
-  const remainingMsByParty = stagedState.parties.map(() => effectiveElapsedMs);
-  const estimatedChunkCount = stagedState.parties.reduce((total, party) => {
+  // SpecRef: 5.1 | Only the last Cycle keeps partial progress: a party's sub-Cycle remainder is carried into the next
+  // call instead of being discarded, so short elapsed steps add up to the same Cycles as one long step.
+  // A call that processes no time leaves every carried remainder untouched.
+  if (effectiveElapsedMs <= 0) {
+    return {
+      state,
+      simulatedAt,
+      chunkCount: 0,
+      carriedMsByPartyId: Object.fromEntries(Object.entries(options.carriedMsByPartyId ?? {})
+        .map(([partyId, carriedMs]) => [partyId, normalizeCarriedMs(carriedMs)] as const)
+        .filter(([, carriedMs]) => carriedMs > 0)),
+      data: { requestedElapsedSeconds, acceptedElapsedSeconds, cappedElapsedSeconds, elapsedSeconds, inGameTime: new Date(simulatedAt).toISOString() },
+    };
+  }
+  const remainingMsByParty = stagedState.parties.map((party) => effectiveElapsedMs + normalizeCarriedMs(options.carriedMsByPartyId?.[String(party.id)]));
+  const estimatedChunkCount = stagedState.parties.reduce((total, party, partyIndex) => {
     const durationMs = getApproxAfkCycleDurationMs(party, options.cycleDurationScale);
-    return total + Math.ceil(Math.floor(effectiveElapsedMs / durationMs) / AFK_CHUNK_CYCLE_COUNT);
+    return total + Math.ceil(Math.floor(remainingMsByParty[partyIndex] / durationMs) / AFK_CHUNK_CYCLE_COUNT);
   }, 0);
   let chunkCount = 0;
 
@@ -100,10 +123,17 @@ export async function stageApiV1ElapsedProgression(
     await options.afterChunk?.(chunkCount, Math.max(estimatedChunkCount, chunkCount), stagedState);
   }
 
+  const carriedMsByPartyId: Record<string, number> = {};
+  stagedState.parties.forEach((party, partyIndex) => {
+    const carriedMs = normalizeCarriedMs(remainingMsByParty[partyIndex]);
+    if (carriedMs > 0) carriedMsByPartyId[String(party.id)] = carriedMs;
+  });
+
   return {
     state: stagedState,
     simulatedAt,
     chunkCount,
+    carriedMsByPartyId,
     data: {
       requestedElapsedSeconds,
       acceptedElapsedSeconds,

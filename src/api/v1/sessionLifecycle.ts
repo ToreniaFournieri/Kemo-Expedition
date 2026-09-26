@@ -133,6 +133,7 @@ export async function logInApiAccount(request: Record<string, unknown>, activeSe
           yieldBetweenChunks: ports.catchUp.yieldBetweenChunks,
           maximumElapsedSeconds: Math.floor(ports.catchUp.maximumElapsedMs / 1_000),
           allowExtendedElapsedSeconds: true,
+          carriedMsByPartyId: control.elapsedCarryMs,
         });
       } finally {
         // The application API installs the account's overrides for the session once the login succeeds.
@@ -140,6 +141,7 @@ export async function logInApiAccount(request: Record<string, unknown>, activeSe
         setColosseumEnemySettingsOverride(null);
       }
       accountState = catchUp.state;
+      control.elapsedCarryMs = catchUp.carriedMsByPartyId;
       if (randomDrawCount > 0) control.rngState = apiRandom.state;
       const revision = control.revisionHighWater + 1;
       control.popupEvents = appendApiV1PopupEvents(
