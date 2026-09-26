@@ -1886,6 +1886,7 @@ Path Parameters
   * `enemyId`
   * `enemyType`
   * `expedition`
+  * `x.type`
 
 * `validOptions`:
   * `enemyId`
@@ -1899,6 +1900,10 @@ Path Parameters
     * Current valid expedition IDs.
     * Example: `1–9`.
     * The available range may be extended in future versions.
+  * `x.type`
+    * Optional.
+    * Example: `Normal`, `Elite`, `BOSS`
+
 
 * Return:
   * `enemies`
