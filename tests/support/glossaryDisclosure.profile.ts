@@ -5,6 +5,7 @@ import test from 'node:test';
 import { BONUS_ABILITY_GLOSSARY_ENTRIES } from '../../src/data/bonusAbilityGlossary.ts';
 import { TERRAIN_EFFECT_GLOSSARY_SECTION } from '../../src/data/glossary.ts';
 import {
+  getItemGlossaryAbilityIds,
   normalizeRevealedGlossaryAbilityIds,
   normalizeRevealedGlossaryTerrainKeys,
   planGlossaryRevealFromEncounter,
@@ -91,6 +92,16 @@ test('owned items reveal their own and Super Rare title abilities', () => {
   assert.equal(revealOwnedItemGlossaryAbilities(revealed, owned(0, 'sold')), revealed);
   assert.equal(revealOwnedItemGlossaryAbilities(revealed, owned(0, 'owned', 0)), revealed);
   assert.deepEqual(revealed, ['counter'], 'the input is untouched');
+});
+
+// Every ability an item can grant must have a glossary entry, otherwise owning the item can never reveal it.
+test('every item ability has a glossary entry', () => {
+  const glossaryIds = new Set<string>(BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => entry.abilityId));
+  const missing = [...new Set(ITEMS.flatMap((item) => (item.bonuses ?? []).flatMap((bonus) => bonus.abilityId ?? [])))]
+    .filter((abilityId) => !glossaryIds.has(abilityId));
+  assert.deepEqual(missing, []);
+  assert.ok(getItemGlossaryAbilityIds({ id: 1304, superRare: 0 }).includes('pursuit'));
+  assert.ok(getItemGlossaryAbilityIds({ id: 1406, superRare: 0 }).includes('true_sight'));
 });
 
 test('React reducer delegates glossary normalization and has no glossary validation sets', () => {

@@ -32,7 +32,7 @@ export interface ApiV1PopupCandidate {
 }
 
 const RETAIN_EVENT_COUNT = 256;
-const RETAIN_EVENT_AGE_MS = 5 * 60 * 1_000;
+const RETAIN_EVENT_AGE_MS = 15 * 60 * 1_000;
 
 /** Upgrades the pre-D3 prototype records and drops malformed control data instead of exposing it on the wire. */
 export function normalizeApiV1PopupEvents(value: unknown): ApiV1PopupEvent[] {

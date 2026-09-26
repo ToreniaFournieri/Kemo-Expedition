@@ -215,7 +215,7 @@ export async function executeApiV1CommitTransaction(
       if (reserved && (reserved.operation !== input.operation || reserved.canonical !== baseCanonical)) return failure('idempotency_conflict', 'The idempotency key is reserved for different parameters.');
       const challenge = reserved ?? {
         token: dependencies.createOpaqueId(), key: input.idempotencyKey, operation: input.operation,
-        canonical: baseCanonical, revision: input.expectedRevision, expiresAt: now + 300_000,
+        canonical: baseCanonical, revision: input.expectedRevision, expiresAt: now + 900_000,
       };
       if (!reserved) stagedControl.confirmations.push(challenge);
       try {

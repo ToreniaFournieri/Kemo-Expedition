@@ -297,7 +297,7 @@ The token goes in the top-level `confirmationToken` member of the commit envelop
 (9.1.4.4), never inside `parameters`. A request that would be rejected anyway (an
 unreadable backup, an invalid parameter) is rejected before any challenge is issued.
 
-The token expires after five minutes and is bound to the authenticated session,
+The token expires after fifteen minutes and is bound to the authenticated session,
 current revision, endpoint, base parameters, idempotency key, and any listed
 choice. The client repeats the request with the token and, when applicable, one
 `allowedChoices` value inside `parameters`; adding that declared choice is the
@@ -363,7 +363,7 @@ request with the same base parameters and key when no receipt exists.
 * While an external lease is active, normal real-time progression is paused and
   state-mutating React/Desktop controls are disabled with the stable reason
   `apiControlActive`. Read-only UI remains usable.
-* An idle lease expires after five minutes without a successful authenticated
+* An idle lease expires after fifteen minutes without a successful authenticated
   session operation. Successful session reads, commits, and receipt replays
   renew it; public/bootstrap requests and failed requests do not. Work lifecycle
   and safe release rules are defined in 9.1.4.16. No lease survives process exit.
@@ -415,7 +415,7 @@ data: {"apiVersion":"v1","schemaVersion":1,"revision":43,"sequence":2,"eventId":
   restart, import, or reset. Persist the replay buffer with the state transaction,
   so a crash between persistence and publication is recoverable by replay.
 * Clients reconnect with `Last-Event-ID`. The server retains at least the latest
-  256 events or five minutes of events, whichever is larger.
+  256 events or fifteen minutes of events, whichever is larger.
   A first connection without `Last-Event-ID` starts after the current committed
   event boundary; it does not replay old notifications. Clients keep reconnect
   IDs scoped to the authenticated save, never transfer them between saves, and
@@ -1450,7 +1450,7 @@ Feedback `metadata`, accompanied by one verified image part named `attachment0`:
   enqueueing in 9.1.4.15. An admitted simulation or commit pins its control lease
   until it finishes or rolls back. Queued-but-not-admitted work does not pin it
   and must authenticate again at admission. After a successful operation, the
-  normal five-minute idle window starts from completion.
+  normal fifteen-minute idle window starts from completion.
 * Reads capture an immutable snapshot at admission. Simulations run in private
   workers and must not block unrelated UI rendering or read queries. The compact
   query's 100 runs and full query's 1,000 runs are never reduced under load.
