@@ -263,8 +263,8 @@ at least one party member has an empty equipment slot.
    
 
 **3. Initialize the simulation memory.**
-- Record the **item IDs** of all currently equipped items as **Memory A**.
-- Record all **`c.*` bonus effects** provided by the currently equipped items as **Memory B**.
+- Record the **item IDs** of locked and Super Rare items as **Memory A**.
+- Record all **`c.*` bonus effects** provided by the locked and Super Rare items as **Memory B**.
   - Intention: Prevent duplicate bonuses in the final simulated equipment set.
 - Initialize the `simulated equipment set` as a copy of the character's current equipment set.
 - All equipment and jewel changes during this section are applied only to the `simulated equipment set` until the Commit phase.
