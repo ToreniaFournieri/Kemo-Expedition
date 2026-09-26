@@ -43487,9 +43487,6 @@
       "query": {
         "additionalProperties": false,
         "type": "object",
-        "required": [
-          "category"
-        ],
         "properties": {
           "category": {
             "anyOf": [
@@ -43909,9 +43906,7 @@
       "examples": {
         "request": {
           "pathParameters": {},
-          "query": {
-            "category": "sword"
-          }
+          "query": {}
         },
         "invalidRequest": {
           "query": {

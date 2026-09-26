@@ -241,6 +241,23 @@ function dependencies(overrides: Partial<ApiV1CommitAuthorityDependencies> = {})
   resetGameplayRandomForTesting();
 }
 
+// SpecRef: 9.1.4.11 | `illegal_action` and `not_found` `details.reason` is the bare token, not the stringified `Error: …`.
+for (const [thrown, code] of [['illegal_action:charge_insufficient', 'illegal_action'], ['not_found', 'not_found']] as const) {
+  const deps = dependencies({
+    cycleDurationScale: 0.01,
+    afterElapsedChunk: async () => { throw new Error(thrown); },
+    yieldBetweenChunks: async () => undefined,
+  });
+  const result = await executeApiV1CommitTransaction(input({
+    operation: 'commit/progress/elapsed',
+    idempotencyKey: `authority-key-reason-${code}`,
+    parameters: { elapsedSeconds: 180 },
+    control: control(),
+  }), deps.value);
+  if (result.ok) throw new Error(`expected ${code}`);
+  assert.deepEqual([result.error.code, result.error.details?.reason], [code, thrown]);
+}
+
 // An intermediate Chunk failure discards all private state, RNG/log effects, receipt, clock, and revision.
 {
   const originalControl = control();

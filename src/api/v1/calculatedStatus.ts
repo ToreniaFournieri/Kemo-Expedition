@@ -5,6 +5,7 @@ import { computeCharacterHpContribution } from '../../game/partyComputation.ts';
 import { deriveStatusFacts, type StatusFacts } from '../../game/statusFacts.ts';
 import type { AttackType, Character, ComputedCharacterStats } from '../../types/index.ts';
 import type { AbilityFact, BonusFact, CalculatedStatus, NumericFact } from './contracts.ts';
+import { roundRatio } from './numericPrecision.ts';
 
 // SpecRef: 8.2.2 | Party member details | Status pane
 // SpecRef: 9.1.4.14 | Parameter and payload schema conventions | Concrete payload schema definitions
@@ -12,12 +13,6 @@ import type { AbilityFact, BonusFact, CalculatedStatus, NumericFact } from './co
 // recomputed here: every value comes from computeCharacterStats/computePartyStats, the same source the Party pane uses.
 
 // SpecRef: 9.1.4.14 | CalculatedStatus | ratio facts and bonuses are rounded to the precision the 8.2 status pane shows them at
-// Most ratios show as `x0.00` or a whole percent (2 decimals); accuracy and evasion show in thousandths (`+15`, `92.3%`).
-const THOUSANDTHS = new Set(['f.c_accuracy', 'f.accuracy_decay', 'c.accuracy', 'c.evasion']);
-const roundRatio = (key: string, value: number): number => {
-  const scale = THOUSANDTHS.has(key) ? 1000 : 100;
-  return Math.round(value * scale) / scale;
-};
 const fact = (key: string, value: number, unit: NumericFact['unit'] = 'number'): NumericFact => ({ key, value: unit === 'ratio' ? roundRatio(key, value) : value, unit });
 
 const ATTACKS: { attackType: AttackType; api: 'melee' | 'ranged' | 'magical'; attack: keyof ComputedCharacterStats; noa: keyof ComputedCharacterStats; originalNoa: keyof ComputedCharacterStats; cBonus: keyof ComputedCharacterStats }[] = [

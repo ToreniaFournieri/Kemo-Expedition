@@ -1104,3 +1104,28 @@ assert.deepEqual(state, before);
 }
 
 assert.deepEqual(state, before);
+
+// SpecRef: 9.1.4.14 | Numeric precision | Bestiary ratios and battle-event values carry no floating-point tails.
+{
+  const { ENEMIES } = await import('../../src/data/enemies.ts');
+  const { buildEnemyStatus, publicEnemySnapshot } = await import('../../src/api/v1/enemyStatus.ts');
+  const { buildBattleRoomData } = await import('../../src/api/v1/battleLogs.ts');
+  const { encodeCompactBattleEvents } = await import('../../src/game/compactBattleLog.ts');
+  const base = ENEMIES[0];
+  const scaled = { ...base, rangedAttackAmplifier: 0.8 * 0.8, accuracyBonus: 0.1 / 3, elementalResistance: { fire: 0.1 * 3, ice: 1, thunder: 1 } };
+  const stat = (key: string) => buildEnemyStatus(scaled, null).stats.find((fact) => fact.key === key)?.value;
+  assert.deepEqual([stat('d.ranged_attack_amplifier'), stat('c.accuracy'), stat('r.fire')], [0.64, 0.033, 0.3]);
+  const snapshot = publicEnemySnapshot(scaled);
+  assert.deepEqual([snapshot.rangedAttackAmplifier, snapshot.accuracyBonus, snapshot.elementalResistance.fire], [0.64, 0.033, 0.3]);
+  const bestiary = await buildApiV1ReadData('resources/bestiary', state, { limit: 200 }, { ...context, debugSettings: () => ({ ...(context as { debugSettings?: () => object }).debugSettings?.(), displayAllBestiary: true }) }) as { enemies: { stats?: { value: number; unit: string }[] }[] };
+  for (const fact of bestiary.enemies.flatMap((enemy) => enemy.stats ?? []).filter((entry) => entry.unit === 'ratio')) {
+    assert.equal(Math.abs(fact.value * 1000 - Math.round(fact.value * 1000)) < 1e-6, true, `bestiary ratio carries no float noise: ${fact.value}`);
+  }
+
+  const actor = { id: 1, kind: 'character' as const, name: 'A', elementalOffense: 'none' as const, elementalOffenseValue: 1, physicalDefense: 0, abilities: [] };
+  const howl = { opcode: 'ability_activated', phase: 2, actorKind: 1, actorId: 1, targetId: 0, abilityId: 'howl', attackType: 'melee', flags: 0, timing: 3, hits: 0, attempts: 0, aux0: 0, value0: 5 / 7, value1: 0, value2: 0, aux1: 0, aux2: 0 };
+  const compactBattle = encodeCompactBattleEvents([howl] as never, [actor]);
+  const room = buildBattleRoomData({ room: 1, enemyHP: 1, outcome: 'victory', damageDealt: 0, damageTaken: 0, remainingPartyHP: 1, maxPartyHP: 1, details: [], compactBattle } as never) as { events: unknown[][] };
+  assert.equal(room.events[0][8], 0.714, 'Howl 5/7 is published at 3 decimals');
+  assert.equal(Math.round((room.events[0][8] as number) * 7), 5, 'the numerator is still recoverable');
+}

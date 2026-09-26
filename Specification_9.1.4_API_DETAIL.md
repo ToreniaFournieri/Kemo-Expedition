@@ -825,6 +825,14 @@ must use stable member names. Errors must not expose secrets, stack traces,
 partially staged state, undisclosed random results, or whether an inaccessible
 user/resource exists.
 
+`details.reason`, when present, is the bare stable token the rule produced
+(`illegal_action:charge_insufficient`, `invalid_request:targetItems`), never a
+stringified exception such as `Error: illegal_action:…`. A schema rejection names
+the member in `details.field` and the failed keyword in `details.rule`; when an
+array-typed GET parameter was sent comma-joined (`targetItems=a,b`) it also carries
+`details.hint: "repeat_parameter"`, and the message says to repeat the parameter
+(`targetItems=a&targetItems=b`, 9.1.4.14).
+
 | Status | Code | Meaning |
 | --- | --- | --- |
 | 400 | `invalid_request` | Invalid syntax, unknown field, type, range, enum, combination, cursor shape, or file. |
@@ -1144,6 +1152,16 @@ type DiaryEntry = {
   dropItemIds[]}`; `level` is the effective enemy level of the room (dungeon level,
   floor, room type, and difficulty offset) and `stats` are raw numeric facts
   (`d.`, `f.`, `c.`, `e.`, `r.`, and `d.experience`), never localized text.
+  `ratio` stats, and the matching ratio members of `resources.rooms[].enemy`
+  (attack and defense amplifiers, `accuracyBonus`, `evasionBonus`,
+  `elementalOffenseValue`, `elementalResistance`), are rounded like
+  `calculatedStatus` ratios below: 3 decimals for `c.accuracy`/`c.evasion`, 2 for
+  the rest, as the Bestiary bubble shows them (`0.64`, not `0.6400000000000001`).
+  The same applies to `resources/bestiary`. In `battleLog.rooms[]`, a fractional
+  event value (the value, `sourceValue`, `secondaryValue`, `tertiaryValue`, the
+  `modifiers` rows, and legacy `modifiers` members) is rounded to 3 decimals
+  (Howl's 5/7 is `0.714`); integer values are unchanged. The stored
+  `resources.rooms[].battle` record is published as saved.
 * `calculatedStatus` uses `CalculatedStatus`. `stats`, `bonuses`, and attack
   `facts` contain every value required by the 8.2 status pane, with stable
   glossary keys and raw numbers; no formula is recomputed in the adapter.
@@ -1264,7 +1282,8 @@ type DiaryEntry = {
   subtitle are the Diary tab's (current language; the subtitle is the expedition
   name for an ordinary entry) and are percent-encoded free text.
 * `itemCompendium` applies every documented filter (`category`, `rarity`, `tier`,
-  `itemId`, `searchAbility`, `searchBonus`). Each item carries `itemId`, `category`,
+  `itemId`, `searchAbility`, `searchBonus`); every filter, `category` included, is
+  optional, so `itemId` alone looks up one item. Each item carries `itemId`, `category`,
   `rarity`, `tier` (the thousands digit of the item ID), and `revealed`. A revealed
   item also carries its localized `name` and the `ability`, `cBonus`, and
   `otherBonus` arrays selected by `details` (omitted when not selected). An
