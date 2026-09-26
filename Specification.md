@@ -120,6 +120,9 @@
 - The application bundle must define a stable bundle identifier, application name and version, the macOS icon, and the minimum supported macOS version.
 - Public macOS release artifacts must be code-signed and notarized using CI secrets when release credentials are available. Unsigned packages are development-only and must be documented accordingly.
 
+* **Electron window title:** `BoKemo <name>`
+  * `<name>` uses the same value as the name field in the Feedback section.
+
 #### 9.1.1 macOS background lifecycle and native notifications
 - This policy applies only to the packaged macOS desktop application. It must not alter notification or window-lifecycle behavior in the browser distribution.
 - Closing the desktop window may hide it without terminating the renderer so that local progression can continue. While hidden, the application must retain its Dock icon and provide a macOS menu-bar item with explicit `Open BoKemo` and `Quit BoKemo` actions.

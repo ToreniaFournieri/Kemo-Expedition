@@ -10,6 +10,8 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 151 | 2026/09/27 | Setting > Feedback name field now defaults to the logged-in API session `userId` when empty (a previously entered name still wins); the window title (`BoKemo <name>`) falls back to the same API session `userId`. `onSessionActive` now also reports the logged-in `userId`. |
+| 0.9.7 | 150 | 2026/09/27 | Window title now appends the Setting feedback name (e.g. `BoKemo Taro`) and updates live, so concurrent runs such as AI-played sessions are distinguishable by owner. |
 | 0.9.7 | 149 | 2026/09/27 | Header title adds a word space before the Orca suffix for Latin-script languages ("BoKemo orca"); CJK titles stay joined. |
 | 0.9.7 | 148 | 2026/09/27 | Saved equipment sets keep each item's Jewel (Spec 8.2.4): saving records the item and Jewel combination, save data keeps it, and the Party pane and API `equipmentSet` show it. A set is fully available (`equipSet`) only when every item and its saved Jewel are available; `equipSimilar` and `equipExactMatchesOnly` attach each saved Jewel where available, and only for the Jewel Priority Party does `equipSimilar` fill items left without a Jewel with the Auto Equipment allocator. Loading a set no longer strips or re-plans a non-priority party's Jewels. |
 | 0.9.7 | 147 | 2026/09/26 | Fix Party and Diary subtab navigation during API control: Diary switching no longer waits for a blocked read-acknowledgement commit, Diary projections receive the displayed Party selection explicitly, and API state updates preserve the renderer's selected Party instead of returning to PT1. Account switches and direct save imports still restore the incoming save's selection. |

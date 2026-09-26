@@ -28,7 +28,7 @@ import { getDeityDisplayName } from '../../../game/deity';
 import { formatEnemyDefName } from '../../../game/enemyDisplay';
 import { getEncounterEnemyWithScaling } from '../../../game/enemyScaling';
 import { resolveEnemyPassiveAbilities } from '../../../game/enemyPassiveAbilities';
-import { createEnvironmentStorageKey,getEnvironmentId,isDebugModeEnabled } from '../../../game/environment';
+import { createEnvironmentStorageKey,FEEDBACK_NAME_CHANGED_EVENT,getEnvironmentId,isDebugModeEnabled } from '../../../game/environment';
 import { completeFeedbackSubmission,FEEDBACK_REWARD_COOLDOWN_MS,getFeedbackRewardEligibility,parseFeedbackSubmissionTimestamp,type FeedbackRewardState } from '../../../game/feedbackRewards';
 import { getLocalizedEnhancementTitle,getLocalizedItemName,getLocalizedSuperRareTitle } from '../../../game/gameState';
 import { buildGodRuntimeEnemy } from '../../../game/godEnemy';
@@ -92,6 +92,7 @@ export default function SettingTab({
   developerNewsEntries,
   rosterParties,
   onBuildFeedbackReport,
+  defaultFeedbackName,
   donationRows,
   clairvoyanceProjections,
   enemyEditValidOptions,
@@ -141,6 +142,8 @@ export default function SettingTab({
   rosterParties: SettingRosterParty[];
   /** Send Feedback (reviewed local exception): the save-derived report lines and attachments, built by HomeScreen. */
   onBuildFeedbackReport: (latestBattleLogParty: number | null) => Promise<{ versionBuild: string; userId: string; files: File[] }>;
+  /** The current (API session) userId, or '' when none is set; the Feedback name field defaults to it. */
+  defaultFeedbackName: string;
   donationRows: Array<{ deityName: string; donationGold: number; rank: number; nextRankDonationRequirement: number | null }>;
   clairvoyanceProjections: ApiV1ClairvoyanceResource[] | null;
   enemyEditValidOptions: { terrainEffect: string[]; enemyType: string[] } | null;
@@ -231,6 +234,10 @@ export default function SettingTab({
       return '';
     }
   });
+  // SpecRef: 8.6 | Feedback | Name field defaults to the current userId if one is set (a previously entered name wins).
+  useEffect(() => {
+    if (defaultFeedbackName) setFeedbackName((current) => (current.trim() ? current : defaultFeedbackName));
+  }, [defaultFeedbackName]);
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackCategory, setFeedbackCategory] = useState<'Feedback' | 'Question' | 'Feature Request' | 'Bug Report'>('Feedback');
   const [feedbackRewardState, setFeedbackRewardState] = useState<FeedbackRewardState>(() => {
@@ -254,6 +261,7 @@ export default function SettingTab({
   useEffect(() => {
     try {
       localStorage.setItem(FEEDBACK_NAME_STORAGE_KEY, feedbackName);
+      window.dispatchEvent(new CustomEvent(FEEDBACK_NAME_CHANGED_EVENT, { detail: feedbackName }));
     } catch (error) {
       console.error('Failed to persist feedback name:', error);
     }

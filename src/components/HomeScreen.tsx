@@ -85,7 +85,7 @@ useAfkCompactBattleResultCandidate,
 useAfkRendererPartyStatsMemo,
 } from '../game/afkLiveProfile';
 import { getPeddlerTravelDurationMs } from '../game/expeditionAbilityPolicies';
-import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel,isDebugModeEnabled } from '../game/environment';
+import { createEnvironmentStorageKey,FEEDBACK_NAME_CHANGED_EVENT,getEnvironmentId,getEnvLabel,isDebugModeEnabled } from '../game/environment';
 import { getItemCoreConceptValue,getItemDisplayName,getLocalizedItemName } from '../game/gameState';
 import { memoryMonitor } from '../game/memoryMonitoring';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../game/instantExpedition';
@@ -462,6 +462,7 @@ export function HomeScreen({
     state.parties.map((party) => party.lastExpeditionLog),
   );
   const [apiControlActive, setApiControlActive] = useState(false);
+  const [apiSessionUserId, setApiSessionUserId] = useState('');
 
   useEffect(() => {
     const enabled = __AFK_LIVE_PROFILE_ENABLED__
@@ -623,7 +624,7 @@ export function HomeScreen({
         colosseumEnabled: () => colosseumEnabledRef.current,
       },
       help: { requirements: apiRequirementsDocument, detail: apiDetailDocument },
-      onSessionActive: (active) => { apiControlActiveRef.current = active; setApiControlActive(active); },
+      onSessionActive: (active, userId) => { apiControlActiveRef.current = active; setApiControlActive(active); setApiSessionUserId(active ? userId ?? '' : ''); },
       delivery: { send: sendApiV1Delivery },
     }, state);
   }
@@ -5491,10 +5492,26 @@ export function HomeScreen({
     ? `${APP_VERSION}(${APP_BUILD_NUMBER}) ${envLabel}`
     : `${APP_VERSION}(${APP_BUILD_NUMBER})`;
   const gameTitle = t('app.title');
+  // SpecRef: 8.1 | Window title | Append the Setting feedback name so concurrent (e.g. AI-played) runs are distinguishable.
+  const [ownerName, setOwnerName] = useState(() => {
+    try {
+      return (localStorage.getItem(createEnvironmentStorageKey('settingFeedbackName')) ?? '').trim();
+    } catch {
+      return '';
+    }
+  });
 
   useEffect(() => {
-    document.title = gameTitle;
-  }, [gameTitle]);
+    const handleNameChanged = (event: Event) => setOwnerName(String((event as CustomEvent).detail ?? '').trim());
+    window.addEventListener(FEEDBACK_NAME_CHANGED_EVENT, handleNameChanged);
+    return () => window.removeEventListener(FEEDBACK_NAME_CHANGED_EVENT, handleNameChanged);
+  }, []);
+
+  useEffect(() => {
+    // SpecRef: 8.6 | Feedback | The name field defaults to the current (API session) userId when left empty.
+    const titleName = ownerName || apiSessionUserId;
+    document.title = titleName ? `${gameTitle} ${titleName}` : gameTitle;
+  }, [gameTitle, ownerName, apiSessionUserId]);
 
   // SpecRef: 8.1.2 | Header | The header is always visible, so its projection is always enabled (unlike a per-tab read).
   const overview = useApiRead<{ headerInfo: HeaderProjection }>(
@@ -5673,6 +5690,7 @@ export function HomeScreen({
         developerNewsEntries={developerNewsEntries}
         rosterParties={rosterParties}
         onBuildFeedbackReport={handleBuildFeedbackReport}
+        defaultFeedbackName={apiSessionUserId}
         donationRows={donationRows}
         clairvoyanceProjections={clairvoyanceProjections}
         enemyEditValidOptions={enemyEditPaneRead?.validOptions ?? null}

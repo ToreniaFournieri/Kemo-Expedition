@@ -38,3 +38,6 @@ export function isDebugModeEnabled(): boolean {
 export function createEnvironmentStorageKey(baseKey: string): string {
   return `${baseKey}:${getEnvironmentId()}`;
 }
+
+// Fired on `window` (detail: the raw name) whenever the Setting feedback name is persisted.
+export const FEEDBACK_NAME_CHANGED_EVENT = 'bokemo:feedback-name-changed';

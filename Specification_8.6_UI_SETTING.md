@@ -433,6 +433,7 @@ HP: 312                 タイプ: 神魔
       - Display: 「開発チームにフィードバックを送信します。」
       - On successful submission: 「フィードバックを送信しました。」
   - Name field (Required, persist the previously entered value)
+    - Defaults to the current `userId` if one is set.
   - Category list
     - Feedback: 感想(ゲームバランスなど)
     - Question: 質問

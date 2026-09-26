@@ -76,8 +76,8 @@ export interface ApplicationApiPorts {
     applyEnemyEditSettings?: ApiV1CommitAuthorityDependencies['applyEnemyEditSettings'];
   };
   help: { requirements: string; detail: string };
-  /** Notifies the UI that an exclusive API session started or ended (it disables state-mutating controls). */
-  onSessionActive: (active: boolean) => void;
+  /** Notifies the UI that an exclusive API session started or ended (it disables state-mutating controls). `userId` is the logged-in account's. */
+  onSessionActive: (active: boolean, userId?: string) => void;
   /** SpecRef: 9.1.4.15 | The actual network send for a claimed delivery job; never called more than once per claim. */
   delivery: { send: (record: ApiV1DeliveryRecord) => Promise<ApiV1DeliveryOutcome> };
 }
@@ -276,7 +276,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       activeIdentity = session.identity;
       authority.replaceSnapshot({ state: session.state, control: session.control as ApiV1ControlMetadata, simulatedAt: session.simulatedAt });
       syncAccountDebugOverride();
-      ports.onSessionActive(true);
+      ports.onSessionActive(true, session.identity.userId);
       return { revision: session.control.revisionHighWater, identity: session.identity, data: { ...session.identity } };
     }
 
