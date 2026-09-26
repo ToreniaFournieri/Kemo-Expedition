@@ -89,13 +89,25 @@ function createApiV1(options) {
     streams.clear();
   }
 
-  function validateSchema(validator, value) {
+  function validateSchema(validator, value, querySchema = null) {
     if (validator(value)) return;
     const validationError = Object.assign(new Error('schema_validation_failed'), { status: 400, code: 'invalid_request' });
     const issues = validator.errors?.map(error => ({ path: error.instancePath, keyword: error.keyword, ...(error.params?.missingProperty ? { missingProperty: error.params.missingProperty } : {}), ...(error.params?.additionalProperty ? { additionalProperty: error.params.additionalProperty } : {}), ...(Array.isArray(error.params?.allowedValues) ? { allowedValues: error.params.allowedValues } : {}) })) ?? [];
     const field = schemaIssueField(issues[0]);
-    validationError.details = { ...(field ? { field } : {}), ...(issues[0] ? { rule: issues[0].keyword } : {}), issues };
+    const hint = querySchema && field && commaJoinedArray(querySchema, field, value) ? { hint: 'repeat_parameter' } : {};
+    validationError.details = { ...(field ? { field } : {}), ...(issues[0] ? { rule: issues[0].keyword } : {}), ...hint, issues };
     throw validationError;
+  }
+
+  // SpecRef: 9.1.4.14 | GET arrays repeat the parameter name; a comma-joined value (`a=1,2`) is one malformed element.
+  function commaJoinedArray(querySchema, field, query) {
+    const name = field.replace(/\[\d+\]$/, '');
+    const raw = query[name];
+    const values = Array.isArray(raw) ? raw : [raw];
+    if (!values.some(entry => typeof entry === 'string' && entry.includes(','))) return false;
+    const property = querySchema.properties?.[name];
+    const acceptsArray = schema => schema?.type === 'array' || (Array.isArray(schema?.type) && schema.type.includes('array')) || (schema?.anyOf ?? schema?.oneOf ?? []).some(acceptsArray);
+    return acceptsArray(property);
   }
 
   // SpecRef: 9.1.4.11 | `details.field` names the rejected request member, e.g. `lineupId` for `/parameters/lineupId`.
@@ -116,7 +128,9 @@ function createApiV1(options) {
       : issue?.additionalProperty ? 'is not a known member'
         : issue?.allowedValues ? `must be one of ${issue.allowedValues.map(value => JSON.stringify(value)).join(', ')}`
           : `is invalid (${details.rule})`;
-    return `The request is invalid: \`${details.field}\` ${problem}.`;
+    const name = details.field.replace(/\[\d+\]$/, '');
+    const hint = details.hint === 'repeat_parameter' ? ` Encode an array by repeating the parameter (\`${name}=1&${name}=2\`), not as a comma-joined value.` : '';
+    return `The request is invalid: \`${details.field}\` ${problem}.${hint}`;
   }
 
   // A response mismatch is an implementation drift against the operation's own catalog contract, not caller error,
@@ -302,7 +316,7 @@ function createApiV1(options) {
         if (request.headers['content-length'] && request.headers['content-length'] !== '0') throw Object.assign(new Error('get_body'), { status: 400, code: 'invalid_request' });
         const query = decodeQuery(url, {});
         validateSchema(route.validators.pathParameters, pathParameters);
-        validateSchema(route.validators.query, query);
+        validateSchema(route.validators.query, query, route.query);
         payload = { parameters: { ...pathParameters, ...query }, pathParameters, transport: { requestId: id, lastEventId: request.headers['last-event-id'] ?? null } };
       } else {
         const multipart = route.operationId === 'commit/setting/backup/import' || route.operationId === 'commit/setting/feedback';

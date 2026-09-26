@@ -5,6 +5,7 @@ import type { ExpeditionLog, Item, ItemRarity } from '../../types/index.ts';
 import { buildEnemyStatus, publicEnemySnapshot, type EnemyStatus } from './enemyStatus.ts';
 import { apiExpeditionOutcome } from './expeditionOutcome.ts';
 import { formatItem } from './itemFormat.ts';
+import { roundEventValue } from './numericPrecision.ts';
 
 function retainedLogRarity(item: Item): ItemRarity {
   const code = item.id % 1000;
@@ -16,13 +17,13 @@ function retainedLogRarity(item: Item): ItemRarity {
 
 function serializeRetainedBattleEvent(entry: ExpeditionLog['entries'][number]['details'][number], index: number) {
   const modifiers = {
-    ...(entry.rageBonusPercent !== undefined ? { rageBonusPercent: entry.rageBonusPercent } : {}),
-    ...(entry.momentumBonusPercent !== undefined ? { momentumBonusPercent: entry.momentumBonusPercent } : {}),
-    ...(entry.ambushMultiplier !== undefined ? { ambushMultiplier: entry.ambushMultiplier } : {}),
-    ...(entry.overwatchMultiplier !== undefined ? { overwatchMultiplier: entry.overwatchMultiplier } : {}),
-    ...(entry.executionMultiplier !== undefined ? { executionMultiplier: entry.executionMultiplier } : {}),
-    ...(entry.swarmActorPenaltyPercent !== undefined ? { swarmActorPenaltyPercent: entry.swarmActorPenaltyPercent } : {}),
-    ...(entry.swarmOpponentBonusPercent !== undefined ? { swarmOpponentBonusPercent: entry.swarmOpponentBonusPercent } : {}),
+    ...(entry.rageBonusPercent !== undefined ? { rageBonusPercent: roundEventValue(entry.rageBonusPercent) } : {}),
+    ...(entry.momentumBonusPercent !== undefined ? { momentumBonusPercent: roundEventValue(entry.momentumBonusPercent) } : {}),
+    ...(entry.ambushMultiplier !== undefined ? { ambushMultiplier: roundEventValue(entry.ambushMultiplier) } : {}),
+    ...(entry.overwatchMultiplier !== undefined ? { overwatchMultiplier: roundEventValue(entry.overwatchMultiplier) } : {}),
+    ...(entry.executionMultiplier !== undefined ? { executionMultiplier: roundEventValue(entry.executionMultiplier) } : {}),
+    ...(entry.swarmActorPenaltyPercent !== undefined ? { swarmActorPenaltyPercent: roundEventValue(entry.swarmActorPenaltyPercent) } : {}),
+    ...(entry.swarmOpponentBonusPercent !== undefined ? { swarmOpponentBonusPercent: roundEventValue(entry.swarmOpponentBonusPercent) } : {}),
     ...(entry.isFirstStrike !== undefined ? { firstStrike: entry.isFirstStrike } : {}),
     ...(entry.isCounter !== undefined ? { counter: entry.isCounter } : {}),
     ...(entry.isReAttack !== undefined ? { reAttack: entry.isReAttack } : {}),
@@ -65,7 +66,7 @@ function compactApiBattle(log: CompactBattleLog) {
     })),
     modifiers: events.filter(event => event.opcode === 'diagnostic').map(event => [
       event.actorId, event.targetId, event.timing, event.attackType, event.aux0,
-      event.flags, event.aux1, event.value0, event.value1, event.value2,
+      event.flags, event.aux1, roundEventValue(event.value0), roundEventValue(event.value1), roundEventValue(event.value2),
     ]),
     events: events.filter(event => !['random_flavor', 'initiative', 'diagnostic'].includes(event.opcode)).map(event => {
       const attack = event.opcode === 'attack';
@@ -73,16 +74,20 @@ function compactApiBattle(log: CompactBattleLog) {
       const element = event.abilityId === 'burn' ? 'fire'
         : event.opcode === 'terrain_effect' && ['terrain.conduction', 'terrain.sacred-judgement', 'terrain.chain-lightning'].includes(log.terrain ?? '') ? 'thunder'
         : attack ? actors.get(event.actorId)?.elementalOffense ?? 'none' : 'none';
-      const value = attack && !special ? event.value1 : event.value0;
+      // SpecRef: 9.1.4.14 | Numeric precision | a fractional value (Howl's 5/7) is published at 3 decimals
+      const value0 = roundEventValue(event.value0);
+      const value1 = roundEventValue(event.value1);
+      const value2 = roundEventValue(event.value2);
+      const value = attack && !special ? value1 : value0;
       const facts = {
         ...(event.phase !== 2 ? { phase: event.phase } : {}),
         ...(event.attackType ? { attackType: event.attackType } : {}),
         ...(event.abilityId ? { ability: event.abilityId } : {}),
         ...(event.aux0 ? (attack ? { reaction: event.aux0 } : { subtype: event.aux0 }) : {}),
         ...(event.flags ? { flags: event.flags } : {}),
-        ...(attack && event.value0 !== value ? { sourceValue: event.value0 } : {}),
-        ...(!attack && event.value1 ? { secondaryValue: event.value1 } : {}),
-        ...(event.value2 ? { tertiaryValue: event.value2 } : {}),
+        ...(attack && value0 !== value ? { sourceValue: value0 } : {}),
+        ...(!attack && value1 ? { secondaryValue: value1 } : {}),
+        ...(value2 ? { tertiaryValue: value2 } : {}),
       };
       return [getDiaryEventCategory(event), event.timing, event.actorId, DIARY_EVENT_CODES[event.opcode as keyof typeof DIARY_EVENT_CODES],
         event.targetId, element, event.hits, event.attempts, value, facts];

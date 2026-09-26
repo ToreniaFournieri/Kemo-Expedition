@@ -1,6 +1,7 @@
 import { getEnemyDropCandidates } from '../../data/enemies.ts';
 import type { EnemyDef } from '../../types/index.ts';
 import { describeBonuses } from './itemDetails.ts';
+import { roundRatio } from './numericPrecision.ts';
 
 // SpecRef: 8.6 | UI_SETTING | Bestiary (敵キャラクター図鑑)
 // SpecRef: 9.1.3 | Read | 2-2-2 {p}/latestBattleLog (bottleneckEnemies)
@@ -34,7 +35,8 @@ export interface EnemyStatus {
 
 export function buildEnemyStatus(enemy: EnemyDef, level: number | null): EnemyStatus {
   const stats: EnemyStatusFact[] = [];
-  const add = (key: string, value: number, unit: EnemyStatusFact['unit'] = 'number') => stats.push({ key, value, unit });
+  // SpecRef: 9.1.4.14 | Numeric precision | ratio stats at the Bestiary bubble's precision (`x0.64`, not `0.6400000000000001`)
+  const add = (key: string, value: number, unit: EnemyStatusFact['unit'] = 'number') => stats.push({ key, value: unit === 'ratio' ? roundRatio(key, value) : value, unit });
   add('d.ranged_attack', enemy.rangedAttack); add('d.ranged_NoA', enemy.rangedNoA); add('d.ranged_attack_amplifier', enemy.rangedAttackAmplifier, 'ratio');
   add('d.magical_attack', enemy.magicalAttack); add('d.magical_NoA', enemy.magicalNoA); add('d.magical_attack_amplifier', enemy.magicalAttackAmplifier, 'ratio');
   add('d.melee_attack', enemy.meleeAttack); add('d.melee_NoA', enemy.meleeNoA); add('d.melee_attack_amplifier', enemy.meleeAttackAmplifier, 'ratio');
@@ -74,11 +76,24 @@ const ENEMY_SNAPSHOT_KEYS = [
   'itemIds', 'isGodEnemy', 'image_path',
 ] as const;
 
+const SNAPSHOT_RATIO_KEYS: [string, string][] = [
+  ['rangedAttackAmplifier', 'd.ranged_attack_amplifier'], ['magicalAttackAmplifier', 'd.magical_attack_amplifier'], ['meleeAttackAmplifier', 'd.melee_attack_amplifier'],
+  ['physicalDefenseAmplifier', 'f.physical_defense_amplifier'], ['magicalDefenseAmplifier', 'f.magical_defense_amplifier'],
+  ['accuracyBonus', 'c.accuracy'], ['evasionBonus', 'c.evasion'], ['elementalOffenseValue', 'e.value'],
+];
+
 /**
  * The enemy as it was met, in the public shape the Bestiary bubble renders from (Spec 9.1.3, 2-2-2 `resources`). Only the
  * documented members are published: an older retained snapshot may carry members that no longer exist, and they are dropped.
  */
 export function publicEnemySnapshot(enemy: EnemyDef): EnemyDef {
   const source = enemy as unknown as Record<string, unknown>;
-  return Object.fromEntries(ENEMY_SNAPSHOT_KEYS.filter((key) => source[key] !== undefined).map((key) => [key, source[key]])) as unknown as EnemyDef;
+  const snapshot = Object.fromEntries(ENEMY_SNAPSHOT_KEYS.filter((key) => source[key] !== undefined).map((key) => [key, source[key]])) as Record<string, unknown>;
+  // The scaled ratio members are published at the Bestiary bubble's precision, like `EnemyStatus.stats`.
+  for (const [member, key] of SNAPSHOT_RATIO_KEYS) {
+    if (typeof snapshot[member] === 'number') snapshot[member] = roundRatio(key, snapshot[member] as number);
+  }
+  const resistance = snapshot.elementalResistance as Record<string, number> | undefined;
+  if (resistance) snapshot.elementalResistance = Object.fromEntries(Object.entries(resistance).map(([element, value]) => [element, typeof value === 'number' ? roundRatio(`r.${element}`, value) : value]));
+  return snapshot as unknown as EnemyDef;
 }
