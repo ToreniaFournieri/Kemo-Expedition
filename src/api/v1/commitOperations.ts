@@ -149,6 +149,13 @@ export interface ApiV1CommitOutcome {
  * the caller's error-code classification (`not_found`, `illegal_action`, or any other message maps to
  * `invalid_request`).
  */
+// Saved equipment set names are 1–80 characters, the Party pane limit; the rule suffix matches the schema keyword.
+function validateEquipmentSetName(name: unknown): asserts name is string {
+  if (typeof name !== 'string') throw new Error('invalid_request:name.type');
+  if (name.trim().length === 0) throw new Error('invalid_request:name.minLength');
+  if (name.length > 80) throw new Error('invalid_request:name.maxLength');
+}
+
 export function applyApiV1Commit(operation: string, state: GameState, parameters: Record<string, unknown>, context: ApiV1CommitContext): ApiV1CommitOutcome {
   let next = state;
   let simulatedAt = context.simulatedAt;
@@ -334,7 +341,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       // The set is captured from the character's current equipment into the lowest empty saved slot.
       const equipmentSet = parameters.equipmentSet as { name?: unknown } | undefined;
       const requestedName = equipmentSet?.name;
-      if (requestedName !== undefined && (typeof requestedName !== 'string' || requestedName.trim().length === 0 || requestedName.length > 80)) throw new Error('invalid_request:name');
+      if (requestedName !== undefined) validateEquipmentSetName(requestedName);
       if (next.global.savedEquipmentSets.length >= MAX_SAVED_EQUIPMENT_SETS) throw new Error('illegal_action:saved_sets_full');
       const occupied = new Set(next.global.savedEquipmentSets.map((entry) => entry.slot));
       // An omitted name uses the Party pane's default name (Spec 8.2.4), dated by the transaction's in-game clock.
@@ -367,7 +374,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       reduce({ type: 'DELETE_EQUIPMENT_SET', slot: Number(parameters.equipmentSetId) });
     } else if (action === 'renameEquipmentSet') {
       if (!next.global.savedEquipmentSets.some((entry) => entry.slot === Number(parameters.equipmentSetId))) throw new Error('not_found');
-      if (typeof parameters.name !== 'string' || parameters.name.trim().length === 0 || parameters.name.length > 80) throw new Error('invalid_request:name');
+      validateEquipmentSetName(parameters.name);
       reduce({ type: 'RENAME_EQUIPMENT_SET', slot: Number(parameters.equipmentSetId), name: parameters.name });
     }
     else if (action === 'autoEquipment') {

@@ -704,6 +704,18 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.match(set.name, new RegExp(`^${character.name} .+\\(.+\\), .+/.+ \\d{2}/\\d{2}$`));
 }
 
+// Equipment set name errors name the violated rule, as schema length errors do.
+{
+  const { describeInvalidRequest } = await import('../../src/api/v1/requestErrors');
+  const character = seed.parties[0].characters[0];
+  const ruleOf = (parameters: Record<string, unknown>): unknown => {
+    try { applyApiV1Commit(`commit/build/character/${character.id}/saveEquipmentSet`, seed, parameters, baseContext()); } catch (error) { return describeInvalidRequest(error); }
+    return null;
+  };
+  assert.deepEqual(ruleOf({ equipmentSet: { name: 'x'.repeat(81) } }), { field: 'name', rule: 'maxLength', reason: 'invalid_request:name.maxLength' });
+  assert.deepEqual(ruleOf({ equipmentSet: { name: ' ' } }), { field: 'name', rule: 'minLength', reason: 'invalid_request:name.minLength' });
+}
+
 // commit/setting/debug for an API account reports every field, with defaults for the ones never set.
 {
   const location = globalThis as { location?: { pathname: string } };

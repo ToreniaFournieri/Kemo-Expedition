@@ -94,7 +94,10 @@ export function planCharacterBuildChange(state: GameState, characterId: number, 
 
   if (parameters.name !== undefined) {
     const name = parameters.name;
-    if (typeof name !== 'string' || name.trim().length === 0 || name.length > MAX_CHARACTER_NAME_LENGTH) invalid('name');
+    // The rule suffix matches the schema keyword a contract violation reports (`type`, `minLength`, `maxLength`).
+    if (typeof name !== 'string') invalid('name.type');
+    if (name.trim().length === 0) invalid('name.minLength');
+    if (name.length > MAX_CHARACTER_NAME_LENGTH) invalid('name.maxLength');
     requested.name = name;
   }
   if (parameters.racesAndGender !== undefined) Object.assign(requested, parseRaceAndGender(state, character, parameters.racesAndGender));

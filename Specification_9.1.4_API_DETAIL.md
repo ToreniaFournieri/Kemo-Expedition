@@ -1252,8 +1252,10 @@ type DiaryEntry = {
   included in `goldDelta`).
 * Saved equipment set names (`saveEquipmentSet.equipmentSet.name`,
   `renameEquipmentSet.name`) are 1–80 characters, the Party pane's limit.
-* `changeBuild.parameters.name` is 1–20 characters (Spec 8.2.3); a longer name is
-  `invalid_request`.
+* `changeBuild.parameters.name` is 1–20 characters (Spec 8.2.3).
+* A rejected set or character name is `invalid_request` with `details.field` `name`
+  and `details.rule` naming the violated rule as a schema error does: `type` (not a
+  string), `minLength` (empty or whitespace only), or `maxLength` (too long).
 * `resources/glossary.category` uses the 9.1.3 (4-2-4) keys `Ab.`, `Base.`,
   `Fixed.`, `Inc.`, `Mech.`, `Faith.`, `Magic.`, `Quest.`, and `Terrain.`; each entry
   reports the same key. `Ab.` entries are the Glossary pane's bonus-ability entries
