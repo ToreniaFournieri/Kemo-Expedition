@@ -2,7 +2,7 @@ import { CLASSES } from '../../data/classes';
 import { ENEMIES } from '../../data/enemies';
 import { LINEAGES } from '../../data/lineages';
 import { PREDISPOSITIONS } from '../../data/predispositions';
-import { computeCharacterStats } from '../../game/characterComputation';
+import { computeCharacterStats, MAX_CHARACTER_NAME_LENGTH } from '../../game/characterComputation';
 import { canCharacterEquipCategory, getEquipmentAptitudeForCategory, type EquipmentAptitude } from '../../game/equipmentSets';
 import type { Character, GameState, RaceId } from '../../types';
 
@@ -94,7 +94,7 @@ export function planCharacterBuildChange(state: GameState, characterId: number, 
 
   if (parameters.name !== undefined) {
     const name = parameters.name;
-    if (typeof name !== 'string' || name.trim().length === 0 || name.length > 100) invalid('name');
+    if (typeof name !== 'string' || name.trim().length === 0 || name.length > MAX_CHARACTER_NAME_LENGTH) invalid('name');
     requested.name = name;
   }
   if (parameters.racesAndGender !== undefined) Object.assign(requested, parseRaceAndGender(state, character, parameters.racesAndGender));

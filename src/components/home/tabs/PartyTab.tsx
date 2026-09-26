@@ -19,6 +19,7 @@ import { formatAttackSpeedHelp } from '../../../game/attackProfile';
 import { gameplayRandom } from '../../../game/gameplayRandom';
 import { DEITY_OPTIONS,getDeityDisplayName,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity } from '../../../game/deity';
 import { createDefaultEquipmentSetName,MAX_SAVED_EQUIPMENT_SETS,type EquipmentSetLoadMode } from '../../../game/equipmentSets';
+import { MAX_CHARACTER_NAME_LENGTH } from '../../../game/characterComputation';
 import { replaceFlatItemStat } from '../../../game/equipmentDisplay';
 import { getEnemyTypeShortName } from '../../../game/enemyDisplay';
 import { getItemDisplayName } from '../../../game/gameState';
@@ -1299,6 +1300,7 @@ export default function PartyTab({
                 <input
                   type="text"
                   value={pendingEdits?.name ?? char.name}
+                  maxLength={MAX_CHARACTER_NAME_LENGTH}
                   onChange={(e) => {
                     if (char.isUnique) return;
                     setPendingEdits({ ...pendingEdits, name: e.target.value });

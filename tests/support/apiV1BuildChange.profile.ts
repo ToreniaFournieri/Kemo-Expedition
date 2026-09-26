@@ -34,6 +34,9 @@ function fails(state: GameState, id: number, parameters: Record<string, unknown>
 fails(base, characterId, { mainClassId: 'unknown' }, 'invalid_request');
 fails(base, characterId, { lineage: 'unascertained' }, 'invalid_request');
 fails(base, uniqueCharacterId, { name: 'renamed unique' }, 'illegal_action');
+// Spec 8.2.3: names are up to 20 characters.
+fails(base, characterId, { name: 'x'.repeat(21) }, 'invalid_request');
+assert.equal(character(change(base, characterId, { name: 'x'.repeat(20) }).state).name, 'x'.repeat(20));
 fails(base, base.parties[0].characters[2].id, { racesAndGender: 'vulpinian/female' }, 'illegal_action');
 fails(base, characterId, { racesAndGender: 'mimorian/male/1' }, 'illegal_action');
 fails(base, characterId, { racesAndGender: 'mimorian/female/999999' }, 'illegal_action');

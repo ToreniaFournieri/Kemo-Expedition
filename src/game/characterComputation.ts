@@ -23,6 +23,9 @@ import { getJewelCBonusValue, getJewelDRankBonus, JEWEL_DEFS } from './jewel';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
 import { ENEMIES, getMimorianEnemyAbilities } from '../data/enemies';
 import { resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
+
+// Spec 8.2.3: a character name is up to 20 characters.
+export const MAX_CHARACTER_NAME_LENGTH = 20;
 import { formatBonusAbilityHelpDescription, isBonusAbilityLevelScalable } from '../data/bonusAbilityGlossary';
 
 // Get enhancement and super rare multiplier for an item
