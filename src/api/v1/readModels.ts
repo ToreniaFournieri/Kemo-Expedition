@@ -22,7 +22,7 @@ import { describeBonuses, describeItem, describeJewel, formatItemDetails, type I
 import { formatEquipmentEntry, formatItem, parseEquipmentChange, parseEvaluatedItemFormat } from './itemFormat.ts';
 import { isJewelAllowedForCategory, JEWEL_DEFS } from '../../game/jewel.ts';
 import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentHistoryFacts.ts';
-import { apiExpeditionOutcomeOrNull } from './expeditionOutcome.ts';
+import { apiExpeditionOutcome, apiExpeditionOutcomeOrNull } from './expeditionOutcome.ts';
 import { buildBattleLogData, buildBattleRoomData, buildRoomResources, retainedLogIdOf } from './battleLogs.ts';
 import { buildSimulationRunData, describeSimulationDepthReach } from './simulationView.ts';
 import { describeCharacterBuildCurrent } from './buildChange.ts';
@@ -324,7 +324,30 @@ function expeditionProjection(state: GameState, context: ApiV1ReadContext) {
 }
 
 // SpecRef: 9.1.4.17 | Focused projection query context | party: an explicitly invalid selection is rejected
-function partyProjection(state: GameState, parameters: Record<string, unknown>) {
+// SpecRef: 9.1.3 | 2-1-4 party | `statistics`
+// SpecRef: 8.3 | UI_EXPEDITION | Expedition statistics
+// The Expedition pane's statistics (the counts `resetStatistics` clears). A running log's outcome is already counted
+// when it starts, so while that log is still hidden it is left out, as the pane does.
+function expeditionStatistics(state: GameState, context: ApiV1ReadContext | undefined, partyIndex: number) {
+  const party = state.parties[partyIndex];
+  const stats = { ...party.expeditionStats };
+  const running = party.lastExpeditionLog;
+  if (context && running && disclosedLogOf(state, context, partyIndex) !== running) {
+    const outcome = apiExpeditionOutcome(running);
+    stats[outcome] = Math.max(0, stats[outcome] - 1);
+  }
+  return {
+    clear: stats.Clear,
+    return: stats.Return,
+    draw: stats.Draw,
+    retreat: stats.Retreat,
+    defeat: stats.Defeat,
+    donatedGold: stats.donatedGold,
+    savedGold: stats.savedGold,
+  };
+}
+
+function partyProjection(state: GameState, parameters: Record<string, unknown>, context?: ApiV1ReadContext) {
   const explicit = parameters.partyNumber === undefined ? null : partyByNumber(state, parameters.partyNumber);
   if (parameters.partyNumber !== undefined && !explicit) throw new Error('not_found');
   const selected = explicit ?? { party: state.parties[state.selectedPartyIndex] ?? state.parties[0], index: state.selectedPartyIndex };
@@ -362,6 +385,7 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>) 
         equipment: equipmentEntries(character, computed[index].maxEquipSlots),
         autoEquipmentMode: autoEquipmentModeName(character.autoEquipmentMode),
       })),
+      statistics: expeditionStatistics(state, context, state.parties.indexOf(party)),
     },
   };
 }
@@ -803,7 +827,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       deityId: getDeityId(party.deity.name),
       characters: party.characters.map((character) => ({ characterId: character.id, name: character.name, raceId: character.raceId, gender: character.gender, isUnique: character.isUnique === true, mimorianEnemyId: character.mimorianEnemyId ?? null })),
     }));
-    return { partyInfo: { ...partyProjection(state, parameters), parties, unlockedMimorianEnemyIds: [...state.global.unlockedMimorianEnemyIds] } };
+    return { partyInfo: { ...partyProjection(state, parameters, context), parties, unlockedMimorianEnemyIds: [...state.global.unlockedMimorianEnemyIds] } };
   }
   if (operationId === 'read/observation/base') return { baseInfo: baseProjection(state, context) };
   if (operationId === 'read/observation/diary') return { diaryInfo: buildDiaryProjection(state, parameters) };

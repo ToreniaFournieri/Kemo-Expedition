@@ -8186,7 +8186,8 @@
                     "deityRank",
                     "condition",
                     "order",
-                    "characters"
+                    "characters",
+                    "statistics"
                   ],
                   "properties": {
                     "partyNumber": {
@@ -8552,6 +8553,49 @@
                           }
                         }
                       }
+                    },
+                    "statistics": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "clear",
+                        "return",
+                        "draw",
+                        "retreat",
+                        "defeat",
+                        "donatedGold",
+                        "savedGold"
+                      ],
+                      "properties": {
+                        "clear": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "return": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "draw": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "retreat": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "defeat": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "donatedGold": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "savedGold": {
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      }
                     }
                   }
                 },
@@ -8735,7 +8779,8 @@
                         "deityRank",
                         "condition",
                         "order",
-                        "characters"
+                        "characters",
+                        "statistics"
                       ],
                       "properties": {
                         "partyNumber": {
@@ -9101,6 +9146,49 @@
                               }
                             }
                           }
+                        },
+                        "statistics": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "clear",
+                            "return",
+                            "draw",
+                            "retreat",
+                            "defeat",
+                            "donatedGold",
+                            "savedGold"
+                          ],
+                          "properties": {
+                            "clear": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "return": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "draw": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "retreat": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "defeat": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "donatedGold": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "savedGold": {
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          }
                         }
                       }
                     },
@@ -9295,7 +9383,16 @@
                     ],
                     "autoEquipmentMode": "FULL"
                   }
-                ]
+                ],
+                "statistics": {
+                  "clear": 0,
+                  "return": 0,
+                  "draw": 0,
+                  "retreat": 0,
+                  "defeat": 0,
+                  "donatedGold": 0,
+                  "savedGold": 0
+                }
               },
               "unlockedMimorianEnemyIds": [
                 1
@@ -32725,7 +32822,8 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "current"
+            "current",
+            "jewelAttachReport"
           ],
           "properties": {
             "current": {
@@ -32766,6 +32864,43 @@
                 },
                 "redoAvailable": {
                   "type": "boolean"
+                }
+              }
+            },
+            "jewelAttachReport": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "slotIndex",
+                "attached",
+                "replaced"
+              ],
+              "properties": {
+                "slotIndex": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "attached": {
+                  "anyOf": [
+                    {
+                      "pattern": "^(might|arcana|fort|ward|shade|focus):[1-8]$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "replaced": {
+                  "anyOf": [
+                    {
+                      "pattern": "^(might|arcana|fort|ward|shade|focus):[1-8]$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               }
             }
@@ -32815,7 +32950,8 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "current"
+                "current",
+                "jewelAttachReport"
               ],
               "properties": {
                 "current": {
@@ -32856,6 +32992,43 @@
                     },
                     "redoAvailable": {
                       "type": "boolean"
+                    }
+                  }
+                },
+                "jewelAttachReport": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "slotIndex",
+                    "attached",
+                    "replaced"
+                  ],
+                  "properties": {
+                    "slotIndex": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "attached": {
+                      "anyOf": [
+                        {
+                          "pattern": "^(might|arcana|fort|ward|shade|focus):[1-8]$",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "replaced": {
+                      "anyOf": [
+                        {
+                          "pattern": "^(might|arcana|fort|ward|shade|focus):[1-8]$",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   }
                 }
@@ -32959,6 +33132,11 @@
               ],
               "undoAvailable": true,
               "redoAvailable": true
+            },
+            "jewelAttachReport": {
+              "slotIndex": 0,
+              "attached": "might:1",
+              "replaced": "might:1"
             }
           }
         }

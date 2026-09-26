@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 133 | 2026/09/26 | API `read/observation/party` now returns `party.statistics` (clear/return/draw/retreat/defeat counts and donated/saved Gold, hiding a still-running log's outcome like the Expedition pane), so `resetStatistics` can be checked. `jewelAttach` now reports `jewelAttachReport` with the Jewel it replaced. FULL Auto Equipment's Jewel planning now counts Jewels returned to Inventory by the same run's equipment changes and by earlier members' assignments. |
 | 0.9.7 | 132 | 2026/09/26 | API name errors now report the violated rule: `changeBuild` character names and `saveEquipmentSet`/`renameEquipmentSet` set names fail with `details.rule` `type`, `minLength`, or `maxLength` instead of a bare `invalid_request:name`. |
 | 0.9.7 | 131 | 2026/09/26 | Character names are limited to 20 characters (Spec 8.2.3): the Party edit name input caps input at 20 and `changeBuild` rejects longer names as `invalid_request`. |
 | 0.9.7 | 130 | 2026/09/26 | Compact slash-delimited API formats (`superRareList` entries, `unreadDiaryTitle`) no longer fully percent-encode their free-text parts: only `%` (`%25`) and `/` (`%2F`) are escaped, so names and non-ASCII text stay readable; splitting on `/` and decoding each part once still restores the text exactly (9.1.4.14). |

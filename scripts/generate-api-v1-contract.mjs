@@ -375,7 +375,9 @@ const expeditionProjectionSchema = strict({ parties: Type.Array(strict({
   controls: strict({ sortie: sortieControl, godsBattle: sortieControl }),
 })) });
 const characterSummary = strict({ characterId: integerId, name: Type.String({ minLength: 1 }), raceId: stableKey, gender: literals('male', 'female'), mainClassId: stableKey, subClassId: stableKey, lineageId: Type.Union([stableKey, Type.Null()]), predispositionId: Type.Union([stableKey, Type.Null()]), isUnique: Type.Boolean(), mimorianEnemyId: Type.Union([integerId, Type.Null()]), calculatedStatus, equipment: equipmentEntryList, autoEquipmentMode: literals('FULL', 'SEMI', 'OFF') });
-const partyProjectionSchema = strict({ effectiveSelection: strict({ partyNumber, characterId: Type.Union([integerId, Type.Null()]) }), party: strict({ partyNumber, name: Type.String({ minLength: 1 }), level: Type.Integer({ minimum: 1, maximum: 69 }), experience: Type.Integer({ minimum: 0 }), experienceToNext: Type.Integer({ minimum: 0 }), maxHp: Type.Integer({ minimum: 0 }), deityId: stableKey, deityRank: Type.Integer({ minimum: 0 }), condition: Type.Integer({ minimum: -400, maximum: 400 }), order: Type.Array(integerId), characters: Type.Array(characterSummary) }) });
+// Spec 9.1.3 2-1-4: the Expedition pane's statistics, the counts `resetStatistics` clears.
+const expeditionStatistics = strict({ clear: Type.Integer({ minimum: 0 }), return: Type.Integer({ minimum: 0 }), draw: Type.Integer({ minimum: 0 }), retreat: Type.Integer({ minimum: 0 }), defeat: Type.Integer({ minimum: 0 }), donatedGold: Type.Integer({ minimum: 0 }), savedGold: Type.Integer({ minimum: 0 }) });
+const partyProjectionSchema = strict({ effectiveSelection: strict({ partyNumber, characterId: Type.Union([integerId, Type.Null()]) }), party: strict({ partyNumber, name: Type.String({ minLength: 1 }), level: Type.Integer({ minimum: 1, maximum: 69 }), experience: Type.Integer({ minimum: 0 }), experienceToNext: Type.Integer({ minimum: 0 }), maxHp: Type.Integer({ minimum: 0 }), deityId: stableKey, deityRank: Type.Integer({ minimum: 0 }), condition: Type.Integer({ minimum: -400, maximum: 400 }), order: Type.Array(integerId), characters: Type.Array(characterSummary), statistics: expeditionStatistics }) });
 // Spec 8.4.1: the shop at the request's clock. A slot's `shopItemId` is its 1-based lineup position.
 // `<shopItemId>/<itemId>/<price>/<availability>` (Spec 9.1.3, 2-4-4).
 const shopItemString = Type.String({ pattern: '^[1-5]/[1-9][0-9]*/[0-9]+/(true|false)$' });
@@ -514,7 +516,14 @@ const responseDataSchemas = {
       })),
     }),
   }),
-  'commit/build/character/{characterId}/jewelAttach': strict({ current: equipmentCommitCurrent }),
+  'commit/build/character/{characterId}/jewelAttach': strict({
+    current: equipmentCommitCurrent,
+    jewelAttachReport: strict({
+      slotIndex: Type.Integer({ minimum: 0 }),
+      attached: Type.Union([Type.String({ pattern: '^(might|arcana|fort|ward|shade|focus):[1-8]$' }), Type.Null()]),
+      replaced: Type.Union([Type.String({ pattern: '^(might|arcana|fort|ward|shade|focus):[1-8]$' }), Type.Null()]),
+    }),
+  }),
   'commit/build/character/{characterId}/jewelRemove': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/saveEquipmentSet': strict({ equipmentSetId: integerId }),
   'commit/build/character/{characterId}/loadEquipmentSet': strict({

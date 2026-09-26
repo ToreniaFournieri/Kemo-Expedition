@@ -23,7 +23,7 @@ import { ENEMIES } from '../../data/enemies';
 import { describeEquipmentHistory } from './equipmentHistoryFacts';
 import { apiExpeditionOutcomeOrNull } from './expeditionOutcome';
 import { listUiPreferences, validateUiPreference, type UiPreferenceValue } from './uiPreferenceCatalog';
-import { isEquipmentSlotAction, planEquipOperation, planEquipmentSlotOperation } from './equipmentSlots';
+import { isEquipmentSlotAction, parseSlotTargets, planEquipOperation, planEquipmentSlotOperation } from './equipmentSlots';
 import { describeCharacterBuildCurrent, planCharacterBuildChange } from './buildChange';
 import { decodePersistedState, encodePersistedState } from '../../game/storageCompression';
 import { createFreshGameState, gameReducer } from '../../hooks/useGameState';
@@ -334,7 +334,19 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     }
     else if (isEquipmentSlotAction(action)) {
       const character = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
-      for (const step of planEquipmentSlotOperation(action, character, next.global.jewels, parameters)) reduce({ ...step, partyIndex, characterId });
+      const steps = planEquipmentSlotOperation(action, character, next.global.jewels, parameters);
+      for (const step of steps) reduce({ ...step, partyIndex, characterId });
+      if (action === 'jewelAttach') {
+        // An attached Jewel is replaced, not stacked: report the one that returned to Inventory.
+        const slotIndex = parseSlotTargets(character, parameters.targetEquipment)[0];
+        const previous = character.equipment[slotIndex]?.jewel;
+        const attached = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!.equipment[slotIndex]?.jewel;
+        data = { jewelAttachReport: {
+          slotIndex,
+          attached: attached ? `${attached.key}:${attached.rank}` : null,
+          replaced: steps.length > 0 && previous ? `${previous.key}:${previous.rank}` : null,
+        } };
+      }
       if (action === 'removeEquipment' || action === 'jewelAttach' || action === 'jewelRemove') demoteFullAutoEquipment();
     }
     else if (action === 'saveEquipmentSet') {

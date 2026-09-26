@@ -632,6 +632,9 @@ definitions in 9.1.3.
   commands, so it follows the same rule.
 * `jewelAttach.jewelToSet` uses `Jewel Format`. The exact owned Jewel instance is
   reserved during validation and consumed only by the successful transaction.
+  A Jewel already attached to the target item is replaced and returns to
+  Inventory. The response's `jewelAttachReport` gives `slotIndex`, `attached`,
+  and `replaced` (the returned Jewel in `Jewel Format`, or `null`).
 * Saved equipment sets and Undo/Redo states differ in what they carry:
   * A saved set records slot assignment, exact `Item Format`, and lock state, and
     never a Jewel (Spec 8.2.4: items and Jewels are stored separately and assigned
@@ -763,6 +766,11 @@ definitions in 9.1.3.
 * `read/observation/party`'s `parties` list gives each member's `characterId`,
   `name`, `raceId`, `gender`, `isUnique`, and `mimorianEnemyId`, for screens that
   list every party's members (the Character Roster).
+* `read/observation/party`'s `party.statistics` is the selected party's
+  Expedition statistics (9.1.3, 2-1-4): `clear`, `return`, `draw`, `retreat`,
+  `defeat`, `donatedGold`, and `savedGold`, the values `resetStatistics` restores
+  to their defaults. Like the Expedition pane, an outcome of a log that is still
+  hidden while the party explores is not counted yet.
 * `commit/progress/elapsed` reports requested, accepted, and capped elapsed
   seconds plus resulting progression effects. Existing AFK caps and FIFO rules
   remain authoritative. All Chunks form one staged transaction under 9.1.4.4;

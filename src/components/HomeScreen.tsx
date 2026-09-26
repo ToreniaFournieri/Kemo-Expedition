@@ -89,7 +89,7 @@ import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel,isDebugModeEna
 import { getItemCoreConceptValue,getItemDisplayName,getLocalizedItemName } from '../game/gameState';
 import { memoryMonitor } from '../game/memoryMonitoring';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../game/instantExpedition';
-import { isJewelAllowedForCategory, planAutoJewelAssignmentsForCharacter } from '../game/jewel';
+import { addJewelToInventory, isJewelAllowedForCategory, planAutoJewelAssignmentsForCharacter, removeJewelFromInventory } from '../game/jewel';
 import { computePartyStats } from '../game/partyComputation';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { getFreeActionStepCount } from '../game/partyStateDuration';
@@ -123,7 +123,7 @@ applyAutoEquipmentProfileActions,
 applyAutoEquipmentProfileActionsSequentially,
 type AfkPartyTransactionAttribution,
 } from '../hooks/useGameState';
-import { Bonus,Character,DiarySettings,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry,type RaceId } from '../types';
+import { Bonus,Character,DiarySettings,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelInventory,JewelKey,Party,type BattleLogEntry,type RaceId } from '../types';
 import { NotificationToast } from './NotificationToast';
 import { getBrowserChromeColor, getDesktopTheme, getThemeClassName, isGameModeAvailable, THEME_CLASS_NAMES } from '../theme/theme';
 import { DISPLAY_LOCALE } from '../i18n/displayFormat.ts';
@@ -1203,6 +1203,31 @@ export function HomeScreen({
         simulatedInventory = measure('inventoryClone', () => ({ ...simulatedInventory }));
       }
     };
+    // SpecRef: 7.1.2.2 | Evaluate jewel allocation | 8-2
+    // Planned equipment changes return displaced jewels to Inventory, so the
+    // jewel candidate pool follows the planned actions instead of the source.
+    let simulatedJewels: JewelInventory = sourceState.global.jewels;
+    const reconcileSimulatedJewels = (beforeSlots: readonly (Item | null)[], afterSlots: readonly (Item | null)[]) => {
+      const deltaByJewel = new Map<string, { key: JewelKey; rank: number; delta: number }>();
+      const count = (slots: readonly (Item | null)[], sign: number) => slots.forEach((item) => {
+        if (!item?.jewel) return;
+        const id = `${item.jewel.key}:${item.jewel.rank}`;
+        const entry = deltaByJewel.get(id) ?? { key: item.jewel.key, rank: item.jewel.rank, delta: 0 };
+        entry.delta += sign;
+        deltaByJewel.set(id, entry);
+      });
+      count(beforeSlots, 1);
+      count(afterSlots, -1);
+      deltaByJewel.forEach(({ key, rank, delta }) => {
+        if (delta === 0) return;
+        if (simulatedJewels === sourceState.global.jewels) simulatedJewels = { ...simulatedJewels };
+        for (let i = 0; i < Math.abs(delta); i += 1) {
+          simulatedJewels = delta > 0
+            ? addJewelToInventory(simulatedJewels, key, rank, 1, true)
+            : removeJewelFromInventory(simulatedJewels, key, rank, true);
+        }
+      });
+    };
     let inventoryIndex: AutoEquipmentInventoryIndex | null = null;
     const getInventoryIndex = (): AutoEquipmentInventoryIndex | null => {
       if (!usesInventoryIndex) return null;
@@ -1692,6 +1717,7 @@ export function HomeScreen({
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.guardian;
         const maxEquipSlots = getMaxSlots(character);
         const simulatedEquipmentSlots = Array.from({ length: maxEquipSlots }, (_, index) => character.equipment[index] ?? null);
+        let jewelBaselineSlots: (Item | null)[] = [...simulatedEquipmentSlots];
         const memoryItemIds = new Set<number>();
         const memoryCBonusNames = new Set<string>();
         const replaceableSlotIndexes = simulatedEquipmentSlots
@@ -1877,13 +1903,16 @@ export function HomeScreen({
           }
         });
 
+        reconcileSimulatedJewels(jewelBaselineSlots, simulatedEquipmentSlots);
+        jewelBaselineSlots = [...simulatedEquipmentSlots];
+
         if (autoEquipmentMode === 2 && isJewelPriorityParty) {
           const simulatedCharacterForJewel = {
             ...character,
             equipment: simulatedEquipmentSlots,
           };
           const assignments = measure('jewelPlanning', () => (
-            planAutoJewelAssignmentsForCharacter(simulatedCharacterForJewel, sourceState.global.jewels)
+            planAutoJewelAssignmentsForCharacter(simulatedCharacterForJewel, simulatedJewels)
           ));
           // A planned jewel can originate from another equipped slot. Detach
           // every replaced jewel first so ATTACH_JEWEL can draw that combined
@@ -1915,6 +1944,7 @@ export function HomeScreen({
             dispatchAttachJewel(character.id, assignment.slotIndex, assignment.key, assignment.rank, partyIndex);
             summary.jewelAssignmentCount += 1;
           });
+          reconcileSimulatedJewels(jewelBaselineSlots, simulatedEquipmentSlots);
         }
 
       });
