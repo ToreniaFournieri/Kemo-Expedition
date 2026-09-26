@@ -417,6 +417,8 @@ Path Parameters
   * `partyInfo`
     * Party-related information.
     * Currently displayed in the party tab in the UI.
+    * Includes `statistics`.
+
 
 **2-1-5. `base`**
 
