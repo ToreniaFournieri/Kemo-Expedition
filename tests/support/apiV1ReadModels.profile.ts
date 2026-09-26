@@ -983,6 +983,15 @@ assert.deepEqual(state, before);
   // An unencountered enemy is a placeholder: its ID and counts, never its name, status, or drops (9.1.4.7).
   const hidden = await buildApiV1ReadData('resources/bestiary', state, { enemyId: enemy.id }, context) as { enemies: Record<string, unknown>[] };
   assert.deepEqual(hidden.enemies, [{ enemyId: enemy.id, revealed: false, encounters: 0, defeats: 0 }]);
+  // The expedition filter includes that expedition's boss, which belongs to no enemy pool (poolId 0).
+  const { getDungeonById } = await import('../../src/data/dungeons.ts');
+  for (const expedition of [1, 2, 4]) {
+    const bossId = getDungeonById(expedition)!.bossId;
+    const byExpedition = await buildApiV1ReadData('resources/bestiary', state, { expedition, limit: 200 }, context) as { enemies: { enemyId: number }[] };
+    const ids = byExpedition.enemies.map((entry) => entry.enemyId);
+    assert.ok(ids.includes(bossId), `expedition ${expedition} lists its boss ${bossId}`);
+    assert.equal(ids.length, ENEMIES.filter((entry) => entry.poolId === expedition).length + 1);
+  }
 }
 
 // Enemy Edit Pane current (9.1.3 2-6-1): the ordinary player's real pane, an API account's own settings (defaults if unset).

@@ -536,13 +536,16 @@ function bestiary(state: GameState, parameters: Record<string, unknown>, context
   const enemyId = parameters.enemyId === undefined ? null : Number(parameters.enemyId);
   const enemyType = parameters.enemyType === undefined ? null : String(parameters.enemyType);
   const expedition = parameters.expedition === undefined ? null : Number(parameters.expedition);
+  // Bosses sit outside every enemy pool (poolId 0), so an expedition's boss is matched through its `bossId`, as the
+  // Bestiary pane's BOSS group does.
+  const expeditionBossId = expedition === null ? null : getDungeonById(expedition)?.bossId ?? null;
   const revealAll = effectiveDebugSettings(context).displayAllBestiary;
   // An enemy not yet encountered (and not revealed by the Debug "Display all Bestiary" setting) is listed only as a
   // placeholder, its ID and zero counts, never its name, status, or drops; the type filter never matches it
   // (9.1.4.7: no undisclosed content).
   const enemies = ENEMIES.flatMap((enemy) => {
     if (enemyId !== null && enemy.id !== enemyId) return [];
-    if (expedition !== null && enemy.poolId !== expedition) return [];
+    if (expedition !== null && enemy.poolId !== expedition && enemy.id !== expeditionBossId) return [];
     const stats = state.global.enemyBattleStats?.[enemy.id];
     const encounters = stats?.encounters ?? 0;
     const defeats = stats?.defeats ?? 0;
