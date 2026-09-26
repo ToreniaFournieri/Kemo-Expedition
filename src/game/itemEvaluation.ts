@@ -1,4 +1,5 @@
-import type { Character, Item } from '../types';
+import type { BonusType, Character, ElementalOffense, Item } from '../types';
+import { getSuperRareBonuses } from '../data/items';
 import { canCharacterEquipCategory } from './equipmentSets';
 import { computeCharacterStats } from './characterComputation';
 import { getItemDisplayMultiplier } from './itemPower';
@@ -10,6 +11,8 @@ import { getCharacterGrowthMultiplier, getCharacterMultiplier } from './partyCom
 // The status one item would show for one character: its own `d.` stats scaled by enhancement, Super Rare title, and the
 // item's multipliers plus the character's equipment-category bonus (for example `c.katana_x1.4`) and, for HP, the
 // character's growth and vitality/mind scale. Values are the ones the Party pane prints for that item.
+// A Super Rare title's own bonuses (for example 53 `e.fire+0.30`, `c.accuracy+0.010`) are added to the matching facts,
+// and its multiplicative bonuses follow the `e.` facts, so the result covers everything the item gives the character.
 
 export interface ItemStatusFact { key: string; value: number; unit: 'number' | 'ratio' }
 export interface EvaluatedItemStatus {
@@ -19,6 +22,13 @@ export interface EvaluatedItemStatus {
 }
 
 const round2 = (value: number): number => Math.round(value * 100) / 100;
+// Float sums such as 0.12 + 0.3 are kept to the precision master data uses.
+const round6 = (value: number): number => Math.round(value * 1e6) / 1e6;
+const ELEMENTS: readonly Exclude<ElementalOffense, 'none'>[] = ['fire', 'ice', 'thunder'];
+const TITLE_MULTIPLIER_TYPES: readonly BonusType[] = [
+  'physical_offense_multiplier_xV', 'magical_offense_multiplier_xV', 'physical_defense_multiplier_xV', 'magical_defense_multiplier_xV',
+  'fire_defense_multiplier_xV', 'ice_defense_multiplier_xV', 'thunder_defense_multiplier_xV', 'growth_xV',
+];
 
 export function evaluateItemForCharacter(character: Character, item: Item, partyLevel: number): EvaluatedItemStatus {
   const categoryMultiplier = getCharacterMultiplier(character, item.category);
@@ -30,9 +40,12 @@ export function evaluateItemForCharacter(character: Character, item: Item, party
   const jewelCBonus = item.jewel ? getJewelCBonusValue(item.jewel.key, item.jewel.rank) : 0;
   const jewelCType = item.jewel ? JEWEL_DEFS[item.jewel.key].cBonusType : null;
 
+  const titleBonuses = getSuperRareBonuses(item.superRare);
+  const title = (type: BonusType): number => titleBonuses.filter((bonus) => bonus.type === type).reduce((total, bonus) => total + bonus.value, 0);
+
   const stats: ItemStatusFact[] = [];
   const add = (key: string, value: number | undefined, unit: ItemStatusFact['unit'] = 'number') => {
-    if (typeof value === 'number' && value !== 0) stats.push({ key, value, unit });
+    if (typeof value === 'number' && value !== 0) stats.push({ key, value: unit === 'ratio' ? round6(value) : value, unit });
   };
   add('d.melee_attack', Math.round(((item.meleeAttack ?? 0) + getJewelDRankBonus(item.jewel, 'meleeAttack')) * multiplier));
   add('d.ranged_attack', Math.round(((item.rangedAttack ?? 0) + getJewelDRankBonus(item.jewel, 'rangedAttack')) * multiplier));
@@ -46,18 +59,23 @@ export function evaluateItemForCharacter(character: Character, item: Item, party
   add('c.melee_NoA', item.meleeNoABonus);
   add('c.ranged_NoA', item.rangedNoABonus);
   add('c.magical_NoA', item.magicalNoABonus);
-  add('c.physical_attack', jewelCType === 'physical_attack' ? jewelCBonus : 0, 'ratio');
-  add('c.magical_attack', jewelCType === 'magical_attack' ? jewelCBonus : 0, 'ratio');
-  add('c.physical_defense', jewelCType === 'physical_defense' ? jewelCBonus : 0, 'ratio');
-  add('c.magical_defense', jewelCType === 'magical_defense' ? jewelCBonus : 0, 'ratio');
-  add('c.accuracy', (item.accuracyBonus ?? 0) + (jewelCType === 'accuracy' ? jewelCBonus : 0), 'ratio');
-  add('c.evasion', (item.evasionBonus ?? 0) + (jewelCType === 'evasion' ? jewelCBonus : 0), 'ratio');
-  add('c.penet', item.penetBonus, 'ratio');
-  add('b.vitality', item.vitalityBonus);
-  add('b.strength', item.strengthBonus);
-  add('b.intelligence', item.intelligenceBonus);
-  add('b.mind', item.mindBonus);
-  if (item.elementalOffense && item.elementalOffense !== 'none') add(`e.${item.elementalOffense}`, item.elementalOffenseBonus, 'ratio');
+  add('c.physical_attack', (jewelCType === 'physical_attack' ? jewelCBonus : 0) + title('physical_attack'), 'ratio');
+  add('c.magical_attack', (jewelCType === 'magical_attack' ? jewelCBonus : 0) + title('magical_attack'), 'ratio');
+  add('c.physical_defense', (jewelCType === 'physical_defense' ? jewelCBonus : 0) + title('physical_defense'), 'ratio');
+  add('c.magical_defense', (jewelCType === 'magical_defense' ? jewelCBonus : 0) + title('magical_defense'), 'ratio');
+  add('c.accuracy', (item.accuracyBonus ?? 0) + (jewelCType === 'accuracy' ? jewelCBonus : 0) + title('accuracy'), 'ratio');
+  add('c.evasion', (item.evasionBonus ?? 0) + (jewelCType === 'evasion' ? jewelCBonus : 0) + title('evasion'), 'ratio');
+  add('c.penet', (item.penetBonus ?? 0) + title('penet'), 'ratio');
+  add('b.vitality', (item.vitalityBonus ?? 0) + title('vitality'));
+  add('b.strength', (item.strengthBonus ?? 0) + title('strength'));
+  add('b.intelligence', (item.intelligenceBonus ?? 0) + title('intelligence'));
+  add('b.mind', (item.mindBonus ?? 0) + title('mind'));
+  for (const element of ELEMENTS) {
+    add(`e.${element}`, (item.elementalOffense === element ? item.elementalOffenseBonus ?? 0 : 0) + title(`${element}_offense`), 'ratio');
+  }
+  for (const type of TITLE_MULTIPLIER_TYPES) {
+    for (const bonus of titleBonuses) if (bonus.type === type) add(`c.${type}`, bonus.value, 'ratio');
+  }
   stats.push({ key: 'f.category_multiplier', value: categoryMultiplier, unit: 'ratio' });
   stats.push({ key: 'f.item_multiplier', value: multiplier, unit: 'ratio' });
   return { equippable: canCharacterEquipCategory(character, item.category), stats };

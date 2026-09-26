@@ -1157,13 +1157,17 @@ type DiaryEntry = {
   `c.melee_NoA`, `c.ranged_NoA`, `c.magical_NoA`, `c.physical_attack`,
   `c.magical_attack`, `c.physical_defense`, `c.magical_defense`, `c.accuracy`, `c.evasion`,
   `c.penet`, `b.vitality`, `b.strength`, `b.intelligence`, `b.mind`,
-  `e.<element>`, then always `f.category_multiplier` (the character's
+  `e.fire`, `e.ice`, `e.thunder`, the Super Rare title's multiplicative
+  bonuses as `c.<bonusType>` (for example `c.fire_defense_multiplier_xV`,
+  `c.growth_xV`), then always `f.category_multiplier` (the character's
   `c.<category>_x1.x` product for the item's category) and `f.item_multiplier`
   (enhancement, Super Rare title, the item's own multipliers, and the category
   multiplier). Attack, defense, and HP values are whole numbers scaled by
   `f.item_multiplier`; `d.HP` also carries the character's growth and
   vitality/mind scale; the specified Jewel contributes its scaled `d.` values
-  and its `c.` bonus; a positive attack-count value scales and keeps two
+  and its `c.` bonus; the Super Rare title's additive `c.`, `b.`, and `e.` bonuses
+  are added to the matching facts (title 53 lists `e.fire` 0.3 and `c.accuracy`
+  0.01 beside the item's own element); a positive attack-count value scales and keeps two
   decimals while a penalty stays fixed. These are the values the Party pane
   prints for the item. `equippable` is whether the character has the equipment
   aptitude for the item's category; an item that cannot be equipped is still
