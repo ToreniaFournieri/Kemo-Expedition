@@ -238,9 +238,9 @@ Path Parameters
     * If a user with the same `gameMode`, `levelOffsetForOrca`, and `userId` already exists, `signUp` fails and does not modify the existing save data.
   * `language`
     * Optional.
-    * Default: `ja`.
+    * Default: `en`.
     * If a supported `lang` URL parameter is present, use its value instead.
-      * Example: `lang=ja`.
+      * Example: `lang=en`.
   * `gameMode`
     * Allowed values:
       * `normal` // `mode.normal`

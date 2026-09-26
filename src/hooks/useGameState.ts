@@ -2362,8 +2362,9 @@ function reduceGameState(
     case 'SET_LANGUAGE': {
       // SpecRef: 8.1 | UI_FOUNDATIONS | Mode select (モード切替) Persist language
       // SpecRef: 5.1.4 | Save and load | Persisted user settings
+      // The reducer stays free of storage/URL writes: an API commit can still be rejected after this runs, and an API
+      // account's language must not become the device language. The Setting tab persists it after a successful commit.
       const language = normalizeLanguage(action.language);
-      persistLanguage(language);
       const sourceLanguage = normalizeLanguage(state.global.language);
       setActiveLanguage(language);
       const parties = translatePartyCharacterNames(state.parties, sourceLanguage, language).map((party) => ({
