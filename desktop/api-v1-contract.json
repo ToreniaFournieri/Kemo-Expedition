@@ -31836,6 +31836,10 @@
               "targetSlot": {
                 "minimum": 0,
                 "type": "integer"
+              },
+              "remainsMode": {
+                "type": "boolean",
+                "default": false
               }
             }
           },

@@ -640,11 +640,19 @@ definitions in 9.1.3.
   `undoEquipment`, and `redoEquipment`. `lockEquipment` and `unlockEquipment` only
   mark items and keep the mode. The Party pane makes these changes through the same
   commands, so it follows the same rule.
+* `equip.remainsMode` (Boolean, default `false`; any other type is
+  `invalid_request`) keeps the current mode instead of demoting `FULL` to `SEMI`.
+  Because `lockEquipment` requires `FULL` (8.2), equip-then-lock on a `FULL`
+  character is `equip` with `remainsMode: true`, then `lockEquipment`. A command
+  that plans no change (re-attaching the Jewel the item already holds) is a no-op
+  and keeps the mode as well.
 * `jewelAttach.jewelToSet` uses `Jewel Format`. The exact owned Jewel instance is
   reserved during validation and consumed only by the successful transaction.
   A Jewel already attached to the target item is replaced and returns to
   Inventory. The response's `jewelAttachReport` gives `slotIndex`, `attached`,
-  and `replaced` (the returned Jewel in `Jewel Format`, or `null`).
+  and `replaced` (the returned Jewel in `Jewel Format`, or `null`). Re-attaching
+  the Jewel the item already holds is a no-op: nothing returns to Inventory, so
+  `attached` is that Jewel and `replaced` is `null`.
 * Saved equipment sets and Undo/Redo states differ in what they carry:
   * A saved set records slot assignment, exact `Item Format`, and lock state, and
     never a Jewel (Spec 8.2.4: items and Jewels are stored separately and assigned
@@ -1278,7 +1286,9 @@ type DiaryEntry = {
   `Fixed.`, `Inc.`, `Mech.`, `Faith.`, `Magic.`, `Quest.`, and `Terrain.`; each entry
   reports the same key. `Ab.` entries are the Glossary pane's bonus-ability entries
   (`glossaryId` is the ability ID, the description carries the level scale), and
-  only `Ab.` and `Terrain.` entries are reveal-gated.
+  only `Ab.` and `Terrain.` entries are reveal-gated. An ability is revealed when
+  it is met in battle or appears on an owned item (the item's own ability bonus or
+  its Super Rare title's), since `searchItems` and the Inventory pane show it.
 * `modeSelect` is a partial update. `autoEquipment.immediateAutoEquipment`
   defaults to false. All other defaults and environment restrictions remain
   those explicitly defined in 9.1.3 and the UI specifications.

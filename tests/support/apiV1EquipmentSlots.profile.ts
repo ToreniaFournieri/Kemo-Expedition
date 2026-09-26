@@ -61,6 +61,7 @@ assert.equal(seeded.global.jewels['fort:3'], 1, 'the input snapshot is untouched
 // Attaching the same jewel again is a no-op, NOT a silent removal.
 const again = applyApiV1Commit(path('jewelAttach'), attached.state, { targetEquipment: armor, jewelToSet: 'fort:3' }, context());
 assert.deepEqual(character(again.state).equipment[armor]!.jewel, { key: 'fort', rank: 3 });
+assert.deepEqual((again.data as { jewelAttachReport: unknown }).jewelAttachReport, { slotIndex: armor, attached: 'fort:3', replaced: null });
 
 // Replacing returns the previous jewel to the inventory.
 const replaced = applyApiV1Commit(path('jewelAttach'), attached.state, { targetEquipment: armor, jewelToSet: 'fort:4' }, context());
@@ -293,6 +294,17 @@ assert.equal(undoHistory[String(characterId)].redo.length, 0);
   assert.equal(mode(withJewel), 1, 'jewelAttach');
   assert.equal(mode(commit(full(withJewel), 'jewelRemove', { targetEquipment: armor })), 1, 'jewelRemove');
   assert.equal(mode(commit(seeded, 'lockEquipment', { targetEquipment: armor })), 2, 'lockEquipment keeps FULL');
+  // Re-attaching the Jewel already held is a no-op and keeps FULL.
+  assert.equal(mode(commit(full(withJewel), 'jewelAttach', { targetEquipment: armor, jewelToSet: 'fort:3' })), 2, 'same-Jewel jewelAttach keeps FULL');
+  // `equip.remainsMode: true` keeps FULL, so equip-then-lock works (Spec 9.1.3 3-3-5).
+  const freed = full(commit(seeded, 'removeEquipment', { targetEquipment: armor }));
+  const freedItem = character(seeded).equipment[armor]!;
+  const freedFormat = `0/${freedItem.id}/${freedItem.enhancement}/${freedItem.superRare}`;
+  assert.equal(mode(commit(freed, 'equip', { targetEquipment: freedFormat, targetSlot: armor })), 1, 'equip demotes by default');
+  const kept = commit(freed, 'equip', { targetEquipment: freedFormat, targetSlot: armor, remainsMode: true });
+  assert.equal(mode(kept), 2, 'equip with remainsMode keeps FULL');
+  assert.equal(character(commit(kept, 'lockEquipment', { targetEquipment: armor })).equipment[armor]!.isLocked, true, 'equip then lock succeeds');
+  fails(freed, 'equip', { targetEquipment: freedFormat, targetSlot: armor, remainsMode: 'yes' }, 'invalid_request');
   // Undo and Redo restore a recorded state, which is a manual change too.
   const changed = full(commit(seeded, 'removeEquipment', { targetEquipment: armor }));
   const undone = commit(changed, 'undoEquipment');

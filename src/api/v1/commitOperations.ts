@@ -361,7 +361,8 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
           replaced: steps.length > 0 && previous ? `${previous.key}:${previous.rank}` : null,
         } };
       }
-      if (action === 'removeEquipment' || action === 'jewelAttach' || action === 'jewelRemove') demoteFullAutoEquipment();
+      // Re-attaching the Jewel the item already holds plans no step: a no-op that keeps the mode (`replaced` stays null).
+      if ((action === 'removeEquipment' || action === 'jewelAttach' || action === 'jewelRemove') && steps.length > 0) demoteFullAutoEquipment();
     }
     else if (action === 'saveEquipmentSet') {
       // The set is captured from the character's current equipment into the lowest empty saved slot.
@@ -424,9 +425,11 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       };
     }
     else if (action === 'equip') {
+      // SpecRef: 9.1.3 | 3-3-5 equip | `remainsMode: true` preserves the current auto-equipment mode.
+      if (parameters.remainsMode !== undefined && typeof parameters.remainsMode !== 'boolean') throw new Error('invalid_request:remainsMode');
       const maxSlots = computeCharacterStats(characterBefore, next.parties[partyIndex].level).maxEquipSlots;
       for (const step of planEquipOperation(characterBefore, next.global.inventory, parameters.targetEquipment, maxSlots, parameters.targetSlot)) reduce({ type: 'EQUIP_ITEM', partyIndex, characterId, slotIndex: step.slotIndex, itemKey: step.itemKey });
-      demoteFullAutoEquipment();
+      if (parameters.remainsMode !== true) demoteFullAutoEquipment();
     } else if (action === 'undoEquipment' || action === 'redoEquipment') {
       const current = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
       const currentSnapshot = snapshotEquipment(current);

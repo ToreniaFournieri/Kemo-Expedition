@@ -8,8 +8,10 @@ import {
   normalizeRevealedGlossaryAbilityIds,
   normalizeRevealedGlossaryTerrainKeys,
   planGlossaryRevealFromEncounter,
+  revealOwnedItemGlossaryAbilities,
 } from '../../src/game/glossaryDisclosure.ts';
-import type { GameState, TerrainEffectKey } from '../../src/types/index.ts';
+import { ITEMS } from '../../src/data/items.ts';
+import { getVariantKey, type GameState, type InventoryRecord, type TerrainEffectKey } from '../../src/types/index.ts';
 
 test('glossary save normalization filters invalid IDs, deduplicates, and preserves order', () => {
   const firstAbility = BONUS_ABILITY_GLOSSARY_ENTRIES[0].abilityId;
@@ -68,6 +70,27 @@ test('encounter disclosure appends only known IDs without mutating saved arrays'
     planGlossaryRevealFromEncounter({ global, abilityIds: [], terrainEffect: 'none' }),
     global,
   );
+});
+
+// SpecRef: 1.0.3 | Glossary Reveal Rule | an owned item shows its abilities, so they are revealed without a battle.
+test('owned items reveal their own and Super Rare title abilities', () => {
+  const ward = ITEMS.find((item) => item.bonuses?.some((bonus) => bonus.abilityId === 'mana_ward'))!;
+  const owned = (superRare: number, status: 'owned' | 'sold' = 'owned', count = 1): InventoryRecord => {
+    const item = { ...ward, enhancement: 0, superRare } as InventoryRecord[string]['item'];
+    return { [getVariantKey(item)]: { item, count, status } };
+  };
+  const revealed = ['counter'];
+
+  assert.deepEqual(revealOwnedItemGlossaryAbilities(revealed, owned(0)), ['counter', 'mana_ward']);
+  // Title 13 (抜刀の) carries `iaigiri`.
+  assert.deepEqual(revealOwnedItemGlossaryAbilities([], owned(13)), ['mana_ward', 'iaigiri']);
+  // Nothing new keeps the same array, so the reducer can skip a state copy.
+  const already = ['mana_ward'];
+  assert.equal(revealOwnedItemGlossaryAbilities(already, owned(0)), already);
+  // A variant that is not currently owned shows nothing.
+  assert.equal(revealOwnedItemGlossaryAbilities(revealed, owned(0, 'sold')), revealed);
+  assert.equal(revealOwnedItemGlossaryAbilities(revealed, owned(0, 'owned', 0)), revealed);
+  assert.deepEqual(revealed, ['counter'], 'the input is untouched');
 });
 
 test('React reducer delegates glossary normalization and has no glossary validation sets', () => {

@@ -68,6 +68,7 @@ import { recordRunExpeditionStatusAuthority } from '../game/battle';
 import {
   normalizeRevealedGlossaryAbilityIds,
   normalizeRevealedGlossaryTerrainKeys,
+  revealOwnedItemGlossaryAbilities,
 } from '../game/glossaryDisclosure';
 import { upgradeLegacyOutcomeKeys } from '../game/legacyOutcomeKeys';
 import { gameplayRandom, createApiRandom, withGameplayRandomSource } from '../game/gameplayRandom';
@@ -950,7 +951,11 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
           ...normalizeRevealedItemCompendiumItemIds(parsed.global.revealedItemCompendiumItemIds),
           ...collectRevealedItemIdsFromOwnedData(parsed.global.inventory, parsed.parties),
         ]));
-        parsed.global.revealedGlossaryAbilityIds = normalizeRevealedGlossaryAbilityIds(parsed.global.revealedGlossaryAbilityIds);
+        parsed.global.revealedGlossaryAbilityIds = revealOwnedItemGlossaryAbilities(
+          normalizeRevealedGlossaryAbilityIds(parsed.global.revealedGlossaryAbilityIds),
+          parsed.global.inventory,
+          parsed.parties,
+        );
         parsed.global.revealedGlossaryTerrainKeys = normalizeRevealedGlossaryTerrainKeys(parsed.global.revealedGlossaryTerrainKeys);
         parsed.global.shopPurchases = (parsed.global.shopPurchases && typeof parsed.global.shopPurchases === 'object')
           ? Object.entries(parsed.global.shopPurchases as Record<string, unknown>).reduce<Record<string, string[]>>((acc, [hourKey, itemIds]) => {
@@ -2286,6 +2291,15 @@ function syncPartyCurrentHpAfterMaxHpChange(
   };
 }
 
+function newlyAvailableVariants(previous: InventoryRecord, next: InventoryRecord, changedKeys?: readonly string[]): InventoryRecord {
+  const variants: InventoryRecord = {};
+  for (const key of changedKeys ?? Object.keys(next)) {
+    const variant = next[key];
+    if (variant && variant.count > 0 && (previous[key]?.count ?? 0) <= 0) variants[key] = variant;
+  }
+  return variants;
+}
+
 function applyInventoryAvailabilityRevisions(
   previous: GameState,
   next: GameState,
@@ -2301,6 +2315,10 @@ function applyInventoryAvailabilityRevisions(
       ...next.global,
       equipmentInventoryRevision: (next.global.equipmentInventoryRevision ?? 0) + (equipmentChanged ? 1 : 0),
       jewelInventoryRevision: (next.global.jewelInventoryRevision ?? 0) + (jewelChanged ? 1 : 0),
+      // SpecRef: 1.0.3 | Glossary Reveal Rule | an owned item shows its abilities, so gaining one reveals them.
+      revealedGlossaryAbilityIds: equipmentChanged
+        ? revealOwnedItemGlossaryAbilities(next.global.revealedGlossaryAbilityIds, newlyAvailableVariants(previous.global.inventory, next.global.inventory, changedKeys?.equipment))
+        : next.global.revealedGlossaryAbilityIds,
     },
   };
 }

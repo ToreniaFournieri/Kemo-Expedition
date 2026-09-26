@@ -233,7 +233,7 @@ const commitParameters = {
   'commit/build/character/{characterId}/changeBuild': strict({ name: optional(Type.String({ minLength: 1, maxLength: 100 })), racesAndGender: optional(stableKey), mainClassId: optional(stableKey), subClassId: optional(stableKey), lineage: optional(stableKey), predisposition: optional(stableKey), simulation: Type.Boolean(), confirmation: Type.Optional(Type.Union([Type.Literal('yes'), Type.Literal('no')])) }),
   'commit/build/character/{characterId}/removeAllEquipment': empty,
   'commit/build/character/{characterId}/removeEquipment': strict({ targetEquipment: equipmentTarget }),
-  'commit/build/character/{characterId}/equip': strict({ targetEquipment: Type.Union([itemFormat, nonEmptyArray(itemFormat)]), targetSlot: optional(Type.Integer({ minimum: 0 })) }),
+  'commit/build/character/{characterId}/equip': strict({ targetEquipment: Type.Union([itemFormat, nonEmptyArray(itemFormat)]), targetSlot: optional(Type.Integer({ minimum: 0 })), remainsMode: optional(Type.Boolean(), false) }),
   'commit/build/character/{characterId}/lockEquipment': strict({ targetEquipment: equipmentTarget }),
   'commit/build/character/{characterId}/unlockEquipment': strict({ targetEquipment: equipmentTarget }),
   'commit/build/character/{characterId}/autoEquipment': strict({ mode: literals('FULL', 'SEMI', 'OFF'), immediateAutoEquipment: optional(Type.Boolean(), false) }),
