@@ -159,6 +159,11 @@ test('HomeScreen gives the Diary tab projections and commits, with only shared P
   assert.doesNotMatch(jsx, /state\.parties|actions\./);
   const selection = home.slice(home.indexOf('const selectDiaryParty ='), home.indexOf('const prevDiaryTabVisibleRef'));
   assert.match(selection, /actions\.selectParty\(partyIndex\)/, 'the persisted shared Party selection is the one reviewed reducer exception');
+  assert.match(selection, /if \(apiControlActiveRef\.current\) \{[\s\S]*?actions\.selectParty\(partyIndex\);[\s\S]*?return;[\s\S]*?diaryCommandQueueRef\.current/, 'API-controlled navigation must not wait for a blocked acknowledgement');
+  const diaryRead = home.slice(home.indexOf('const diaryObservation ='), home.indexOf('const diaryProjection ='));
+  assert.match(diaryRead, /parameters: \{ partyNumber: currentParty\.id \}/, 'Diary uses renderer view context instead of the API account default');
+  const publication = read('src/hooks/useGameState.ts').split('publishApiState:')[1].split('commitApiState:')[0];
+  assert.match(publication, /preservePartySelection: true/, 'API runtime publications keep the renderer selection');
   assert.doesNotMatch(selection, /actions\.(markDiaryLogSeen|markPartyDiaryLogsSeen|updateDiarySettings)/);
 });
 

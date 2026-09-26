@@ -5193,8 +5193,8 @@ export function HomeScreen({
   const diaryObservation = useApiRead<{ diaryInfo: DiaryProjection }>(
     inProcessApiRef.current,
     'read/observation/diary',
-    {},
-    [state.parties, state.selectedPartyIndex],
+    { parameters: { partyNumber: currentParty.id } },
+    [state.parties, currentParty.id],
     isDiaryTabVisible,
   );
   const diaryProjection = diaryObservation?.diaryInfo ?? null;
@@ -5217,6 +5217,7 @@ export function HomeScreen({
   );
   const diaryCommandQueueRef = useRef<Promise<void>>(Promise.resolve());
   const markDiaryEntriesRead = useCallback((partyNumber: number, diaryEntryId: string | 'ALL') => {
+    if (apiControlActiveRef.current) return;
     diaryCommandQueueRef.current = diaryCommandQueueRef.current.then(async () => {
       const response = await inProcessApiRef.current?.commit('commit/diary/diaryEntry/markAsRead', {
         parameters: { partyNumber, diaryEntryId },
@@ -5230,12 +5231,18 @@ export function HomeScreen({
       if (response?.error) console.error('[api-v1] Diary settings change failed', response.error);
     });
   }, []);
-  const selectedDiaryPartyNumberRef = useRef(diaryProjection?.effectiveSelection.partyNumber ?? state.parties[state.selectedPartyIndex]?.id ?? 1);
-  selectedDiaryPartyNumberRef.current = diaryProjection?.effectiveSelection.partyNumber ?? selectedDiaryPartyNumberRef.current;
+  const selectedDiaryPartyNumberRef = useRef(currentParty.id);
+  selectedDiaryPartyNumberRef.current = currentParty.id;
   const selectDiaryParty = useCallback((partyNumber: number) => {
     if (partyNumber === selectedDiaryPartyNumberRef.current) return;
     const previousPartyNumber = selectedDiaryPartyNumberRef.current;
     selectedDiaryPartyNumberRef.current = partyNumber;
+    // SpecRef: 9.1.3 | 1-3 logIn | Navigation remains available while UI commits are disabled.
+    if (apiControlActiveRef.current) {
+      const partyIndex = applicationApiRef.current?.authority.getSnapshot().state.parties.findIndex((party) => party.id === partyNumber) ?? -1;
+      if (partyIndex >= 0) actions.selectParty(partyIndex);
+      return;
+    }
     diaryCommandQueueRef.current = diaryCommandQueueRef.current.then(async () => {
       const response = await inProcessApiRef.current?.commit('commit/diary/diaryEntry/markAsRead', {
         parameters: { partyNumber: previousPartyNumber, diaryEntryId: 'ALL' },

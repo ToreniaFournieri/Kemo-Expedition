@@ -1855,7 +1855,7 @@ export type GameAction =
   | { type: 'COMMIT_AFK_PARTY_TRANSACTION'; result: AfkPartyChunkResult; autoEquipment: readonly AutoEquipmentProfileAction[] | AfkPartyTransactionPlanner; attribution?: AfkPartyTransactionAttribution }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
-  | { type: 'COMMIT_API_STATE'; state: GameState }
+  | { type: 'COMMIT_API_STATE'; state: GameState; preservePartySelection?: boolean }
   | { type: 'RESET_COMMON_BAGS'; partyIndex?: number }
   | { type: 'RESET_UNIQUE_BAGS'; partyIndex?: number }
   | { type: 'RESET_COMMON_SUPER_RARE_BAG'; partyIndex?: number }
@@ -4072,8 +4072,17 @@ function reduceGameState(
       };
     }
 
-    case 'COMMIT_API_STATE':
-      return action.state;
+    case 'COMMIT_API_STATE': {
+      // SpecRef: 9.1.4.17 | API updates must keep the renderer's shared Party/Diary selection.
+      // Wholesale account/save imports use the incoming selection instead.
+      if (!action.preservePartySelection) return action.state;
+      const selectedPartyId = state.parties[state.selectedPartyIndex]?.id;
+      const selectedPartyIndex = action.state.parties.findIndex((party) => party.id === selectedPartyId);
+      return {
+        ...action.state,
+        selectedPartyIndex: selectedPartyIndex >= 0 ? selectedPartyIndex : 0,
+      };
+    }
 
     case 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY': {
       const normalizedPartyId = normalizeJewelAutoEquipPriorityPartyId(action.partyId, state.parties.length);
@@ -5112,7 +5121,7 @@ export function useGameState() {
     publishApiState: useCallback(async (nextState: GameState) => {
       await ensureLanguageLoaded(nextState.global.language);
       latestGameStateRef.current = nextState;
-      dispatch({ type: 'COMMIT_API_STATE', state: nextState });
+      dispatch({ type: 'COMMIT_API_STATE', state: nextState, preservePartySelection: true });
     }, []),
 
     commitApiState: useCallback(async (nextState: GameState) => {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createApplicationApi, type ApplicationApi, type ApplicationApiPorts } from '../../src/api/v1/applicationApi';
-import { createFreshGameState } from '../../src/hooks/useGameState';
+import { createFreshGameState, gameReducer } from '../../src/hooks/useGameState';
 import { serializeGameState } from '../../src/game/saveCodec';
 import { encodePersistedState } from '../../src/game/storageCompression';
 import type { GameState } from '../../src/types';
@@ -390,6 +390,45 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
   await h.api.handle('fundamental/logOut', {});
   const resumed = await ui.commit('commit/base/changeJewelPriorityParty', { parameters: { partyNumber: 'none' } }) as { error?: unknown };
   assert.equal(resumed.error, undefined, 'ordinary UI commits resume after logout');
+}
+
+// The renderer's Party/Diary navigation survives publications from an account whose saved selection is PT1.
+{
+  const h = harness();
+  const ui = h.api.createInProcessAdapter({ restrictDuringSession: true });
+  await h.api.handle('fundamental/logIn', { ...identity });
+  const snapshot = h.api.authority.getSnapshot();
+  let account = snapshot.state;
+  account = gameReducer(account, { type: 'UNLOCK_PARTY_SLOT' });
+  account = gameReducer(account, { type: 'UNLOCK_PARTY_SLOT' });
+  h.api.authority.replaceSnapshot({ ...snapshot, state: account });
+  const revision = snapshot.control.revisionHighWater;
+  const persisted = h.persisted.length;
+  for (const partyIndex of [1, 2]) {
+    const selected = gameReducer(account, { type: 'SELECT_PARTY', partyIndex });
+    const updated = { ...account, global: { ...account.global, gold: account.global.gold + 10 } };
+    const presented = gameReducer(selected, { type: 'COMMIT_API_STATE', state: updated, preservePartySelection: true });
+    assert.equal(presented.selectedPartyIndex, partyIndex, `PT${partyIndex + 1} stays selected after API publication`);
+    assert.equal(presented.global.gold, updated.global.gold, 'API gameplay updates are still installed');
+    const partyNumber = presented.parties[presented.selectedPartyIndex].id;
+    const diary = await ui.read('read/observation/diary', { parameters: { partyNumber } }) as {
+      data: { diaryInfo: { effectiveSelection: { partyNumber: number } } };
+    };
+    assert.equal(diary.data.diaryInfo.effectiveSelection.partyNumber, partyNumber, 'Diary reads the renderer selection during API control');
+    const party = await ui.read('read/observation/party', { parameters: { partyNumber } }) as {
+      data: { partyInfo: { effectiveSelection: { partyNumber: number } } };
+    };
+    assert.equal(party.data.partyInfo.effectiveSelection.partyNumber, partyNumber);
+    assert.equal(account.selectedPartyIndex, 0, 'view navigation leaves the API snapshot selection unchanged');
+    assert.equal(gameReducer(presented, { type: 'COMMIT_API_STATE', state: account }), account, 'a save replacement restores its incoming selection');
+    const reordered = { ...updated, parties: [...updated.parties].reverse() };
+    const reorderedPresentation = gameReducer(selected, { type: 'COMMIT_API_STATE', state: reordered, preservePartySelection: true });
+    assert.equal(reorderedPresentation.parties[reorderedPresentation.selectedPartyIndex].id, partyNumber, 'selection follows stable Party IDs');
+    const removed = { ...updated, parties: [updated.parties[0]] };
+    assert.equal(gameReducer(selected, { type: 'COMMIT_API_STATE', state: removed, preservePartySelection: true }).selectedPartyIndex, 0, 'missing parties fall back to PT1');
+  }
+  assert.equal(h.api.authority.getSnapshot().control.revisionHighWater, revision, 'navigation does not advance API revision');
+  assert.equal(h.persisted.length, persisted, 'navigation does not persist API account changes');
 }
 
 // 3. HTTP-shaped and in-process adapters produce identical semantic results, persisted state, and publications.
