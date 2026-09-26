@@ -631,7 +631,7 @@ async function runCommit(operation: CatalogOperation) {
       const key = client.newKey('expiry');
       const challenge = await client.commit(id, request, { key });
       if (challenge.body.error?.code !== 'confirmation_required') return 'MISSING: the fixture does not reach the confirmation';
-      runtimeNow = t0 + 300_001;
+      runtimeNow = t0 + 900_001;
       const late = await client.commit(id, withChoice(request, challenge), { key, confirmationToken: String(challenge.body.error.details?.confirmationToken) });
       expectError(late, 'confirmation_invalid', 'an expired token');
       assert.equal(await snapshot(client), before, 'no partial mutation');

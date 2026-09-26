@@ -90,9 +90,9 @@ function event(index: number, createdAt: string): ApiV1PopupEvent {
 }
 
 // IDs are deterministic inside the committed revision. Retention preserves the union of the latest 256 events and
-// every event younger than five minutes.
+// every event younger than fifteen minutes.
 {
-  const oldTime = new Date(now - 600_000).toISOString();
+  const oldTime = new Date(now - 1_200_000).toISOString();
   const retained = Array.from({ length: 300 }, (_, index) => event(index, oldTime));
   const appended = appendApiV1PopupEvents(retained, [{
     eventKey: 'popup.afkSummary', args: { count: 1 }, partyNumber: 2, diaryEntryId: null, groupKey: 'afk',
@@ -109,7 +109,7 @@ function event(index: number, createdAt: string): ApiV1PopupEvent {
   const recent = Array.from({ length: 300 }, (_, index) => event(index, recentTime));
   assert.equal(appendApiV1PopupEvents(recent, [{
     eventKey: 'popup.test', args: {}, partyNumber: null, diaryEntryId: null, groupKey: null,
-  }], 301, new Date(now).toISOString()).length, 301, 'five minutes retains more than the count floor');
+  }], 301, new Date(now).toISOString()).length, 301, 'fifteen minutes retains more than the count floor');
 }
 
 console.log('apiV1PopupEvents profile ok');

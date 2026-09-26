@@ -11,7 +11,7 @@ const catalog = require('./api-v1-contract.json');
 const API_PREFIX = '/api/v1';
 const API_VERSION = 'v1';
 const SCHEMA_VERSION = 1;
-const LEASE_IDLE_TIMEOUT_MS = 300_000;
+const LEASE_IDLE_TIMEOUT_MS = 900_000;
 const MAX_JSON_BODY_BYTES = 1024 * 1024;
 const MAX_MULTIPART_BODY_BYTES = 32 * 1024 * 1024;
 const PUBLIC_OPERATIONS = new Set(['fundamental/status', 'help/overview', 'help/endpoints']);
@@ -67,7 +67,7 @@ function createApiV1(options) {
   const streams = new Set();
 
   const nowMonotonic = () => Number(process.hrtime.bigint() / 1_000_000n);
-  // Tests shorten the idle lease; the desktop app always uses the specified five minutes (9.1.4.6).
+  // Tests shorten the idle lease; the desktop app always uses the specified fifteen minutes (9.1.4.6).
   const leaseIdleTimeoutMs = Number.isInteger(options.leaseIdleTimeoutMs) && options.leaseIdleTimeoutMs > 0 ? options.leaseIdleTimeoutMs : LEASE_IDLE_TIMEOUT_MS;
 
   function requestId() { return crypto.randomUUID(); }
