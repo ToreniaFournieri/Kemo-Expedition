@@ -1794,7 +1794,7 @@ Path Parameters
 
 * `validOptions`:
   * `category`
-    * Choose one.
+    * Optional.
     * Uses the `Item category` list.
   * `rarity`
     * Optional.
