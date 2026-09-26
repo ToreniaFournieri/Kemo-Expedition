@@ -11,6 +11,7 @@ import { serializeGameState } from '../../src/game/saveCodec';
 import { encodePersistedState } from '../../src/game/storageCompression';
 import type { GameState } from '../../src/types';
 import { setLanguage } from '../../src/i18n/index.ts';
+import { decodeApiSavePayload } from '../../src/api/v1/commitOperations';
 
 // SpecRef: 9.1.3.2 | API requirement fundamental | signUp / logIn / logOut
 // Isolated, transport-neutral behavioral coverage for the account/session boundary: no React, Electron, or HTTP.
@@ -84,6 +85,14 @@ function ports(overrides: Partial<ApiV1SessionPorts> = {}): {
   if (!result.ok) throw new Error(result.code);
   assert.equal(result.identity.userId, 'Taro');
   assert.equal(p.accountsCreated.length, 1);
+}
+
+// 2b. signUp without `language` creates an English save (Spec 9.1.3 1-2 default).
+{
+  const p = ports();
+  const result = await signUpApiAccount({ userId: 'Hanako', environment: 'desktop', gameMode: 'normal' }, p.value);
+  assert.equal(result.ok, true);
+  assert.equal(decodeApiSavePayload(p.accountsCreated[0].savePayload).global.language, 'en');
 }
 
 // 3. logIn rejects a second login while a session is already active, without touching the account store.

@@ -127,7 +127,13 @@ function createWindow(options = {}) {
   });
 
   mainWindow = window;
-  window.webContents.on('did-start-loading', () => { apiV1RendererReady = false; apiV1.releaseForRendererLoss(); });
+  // Only a real main-frame document load loses the renderer. Same-document navigations (`history.replaceState`, e.g.
+  // the language URL parameter) also fire `did-start-loading`, but the page and its API bridge keep running.
+  window.webContents.on('did-start-navigation', (details) => {
+    if (!details.isMainFrame || details.isSameDocument) return;
+    apiV1RendererReady = false;
+    apiV1.releaseForRendererLoss();
+  });
   window.webContents.on('render-process-gone', () => {
     apiV1RendererReady = false;
     apiV1.releaseForRendererLoss();

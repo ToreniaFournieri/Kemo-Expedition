@@ -410,4 +410,17 @@ for (const [thrown, code] of [['illegal_action:charge_insufficient', 'illegal_ac
   assert.equal(notifyCount, 2, 'the confirmed reset that fences the popup buffer notifies once more');
 }
 
+// A language switch loads that language's dictionary before the synchronous commit activates it, so switching to a
+// language whose text was never loaded in this process succeeds instead of failing with a missing-dictionary error.
+{
+  const deps = dependencies();
+  const result = await executeApiV1CommitTransaction(input({
+    operation: 'commit/setting/modeSelect', idempotencyKey: 'authority-key-language-en', parameters: { language: 'en' },
+  }), deps.value);
+  assert.equal(result.ok, true, result.ok ? undefined : JSON.stringify(result.error));
+  if (!result.ok) throw new Error(result.error.code);
+  assert.equal(result.state.global.language, 'en');
+  assert.equal(deps.persisted.length, 1);
+}
+
 console.log('apiV1Authority profile ok');

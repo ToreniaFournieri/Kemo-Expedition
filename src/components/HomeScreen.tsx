@@ -95,7 +95,7 @@ import { getXpToNextLevel } from '../game/partyLevel';
 import { getFreeActionStepCount } from '../game/partyStateDuration';
 import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
 import { DEFAULT_ORCA_ENEMY_LEVEL_OFFSET, isRuntimeGameMode, normalizeOrcaEnemyLevelOffset, type RuntimeGameMode } from '../game/runtimeGameMode';
-import { ensureLanguageLoaded,setLanguage,t } from '../i18n';
+import { ensureLanguageLoaded,persistLanguage,setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
 import { base64FromUtf8, encodePersistedState } from '../game/storageCompression';
 import { characterEditToChangeBuildParameters, type CharacterBuildOutcome } from '../api/v1/characterBuildParameters';
@@ -5317,7 +5317,15 @@ export function HomeScreen({
     // `setLanguage(state.global.language)` runs unconditionally on every render (below) and throws if that
     // language's dictionary bundle is not yet loaded — it must be pre-loaded before the commit lands, not after.
     await ensureLanguageLoaded(nextLanguage);
-    await inProcessApiRef.current?.commit('commit/setting/modeSelect', { parameters: { language: nextLanguage } });
+    const response = await inProcessApiRef.current?.commit('commit/setting/modeSelect', { parameters: { language: nextLanguage } });
+    if (!response || response.error) {
+      if (response?.error) console.error('[api-v1] Language change failed', response.error);
+      return;
+    }
+    // SpecRef: 8.6 | UI_SETTING | Mode select — the player's own selection is the device language: it goes to local
+    // storage and the URL's `lang` parameter. `lang` from an ad link only picks the first language; after that the
+    // player's choice wins. API accounts never write it, so their save language cannot leak into the player's.
+    persistLanguage(nextLanguage);
   }, []);
   // Dark mode, the theme color, and the statistics switch commit through `modeSelect`, which validates them and applies
   // them to the runtime, so the Setting tab and the API always agree. Auto-repeat stays local (Spec 9.1.3, 3-6-2 note).

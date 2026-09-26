@@ -2,6 +2,7 @@ import type { GameState, SavedEquipmentSet } from '../../types';
 import { describeInvalidRequest, invalidRequestMessage } from './requestErrors';
 import { serializeGameState } from '../../game/saveCodec';
 import { createApiRandom, withGameplayRandomSource } from '../../game/gameplayRandom';
+import { ensureLanguageLoaded, SUPPORTED_LANGUAGES, type Language } from '../../i18n/index.ts';
 import { applyApiV1Commit, type ApiV1CommitContext, type ApiV1PartyCycleWrite } from './commitOperations';
 import type { ApiV1DisplaySettings, ApiV1DisplaySettingWrite } from './modeSelect';
 import type { DebugSettings } from '../../game/debugSettings';
@@ -266,6 +267,10 @@ export async function executeApiV1CommitTransaction(
         delivery: null,
       };
     } else {
+      // `SET_LANGUAGE` activates the target dictionary synchronously, so it must be loaded before the commit runs
+      // (the Setting tab's own path pre-loads it the same way).
+      const requestedLanguage = input.operation === 'commit/setting/modeSelect' ? input.parameters.language : undefined;
+      if (SUPPORTED_LANGUAGES.includes(requestedLanguage as Language)) await ensureLanguageLoaded(requestedLanguage as Language);
       outcome = runWithRandom(() => applyApiV1Commit(input.operation, input.state, input.parameters, {
         simulatedAt: input.simulatedAt,
         gameMode: dependencies.gameMode,

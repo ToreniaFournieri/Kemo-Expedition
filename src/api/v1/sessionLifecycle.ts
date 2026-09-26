@@ -74,7 +74,8 @@ export async function signUpApiAccount(request: Record<string, unknown>, ports: 
   const identity = parseIdentity(request, true);
   if (!USER_ID_PATTERN.test(identity.userId)) return fail(400, 'invalid_request', 'userId is invalid.', { field: 'userId' });
   try {
-    const language = (LANGUAGES as readonly string[]).includes(String(request.language)) ? String(request.language) as GameState['global']['language'] : 'ja';
+    // SpecRef: 9.1.3 | 1-2 fundamental/signUp | `language` is optional and defaults to `en`.
+    const language = (LANGUAGES as readonly string[]).includes(String(request.language)) ? String(request.language) as GameState['global']['language'] : 'en';
     const savePayload = encodePersistedState(JSON.stringify(serializeGameState(createFreshGameState(language))));
     await ports.accounts.create(identity, savePayload);
     return { ok: true, identity };
