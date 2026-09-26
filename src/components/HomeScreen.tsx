@@ -136,7 +136,6 @@ AfkSummaryStats,
 APP_BUILD_NUMBER,
 APP_VERSION,
 APP_VERSION_BUILD,
-APPROX_CYCLE_STEP_COUNT,
 AUTO_EQUIPMENT_PRIORITY_BY_CLASS,
 AUTO_EQUIPMENT_STORAGE_KEY,
 AutoEquipmentCombatStyle,
@@ -3462,7 +3461,7 @@ export function HomeScreen({
         afkActiveChunkJobsRef.current.has(partyIndex)
         || afkPartyTransactionLocksRef.current.has(partyIndex)
       ) return null;
-      const cycleDurationMs = getApproxAfkCycleDurationMs(party, durationScale);
+      const cycleDurationMs = getApproxAfkCycleDurationMs(party, durationScale, { deityDonations: dispatchState.global.deityDonations });
       const remainingMs = afkRemainingMsByPartyRef.current[partyIndex] ?? 0;
       // SpecRef: 5.1 | PROGRESS | Chunk
       // Full Chunks contain 30 Cycles. At the end of recovery, every remaining
@@ -3951,10 +3950,8 @@ export function HomeScreen({
 
         const durationScale = getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus);
         const exploreDurationMultiplier = getPartyStateDurationMultiplier(party, 'explore');
-        const approximateCycleDurationMs = Math.max(
-          1,
-          Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * durationScale * exploreDurationMultiplier),
-        );
+        // The same Cycle length AFK catch-up charged, so the kept partial Cycle maps onto the same fraction.
+        const approximateCycleDurationMs = getApproxAfkCycleDurationMs(party, durationScale, { deityDonations: state.global.deityDonations });
         const partialAfkMs = Math.max(
           0,
           Math.min(

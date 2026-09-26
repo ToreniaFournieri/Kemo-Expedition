@@ -2329,6 +2329,9 @@ CombatResult resolve_counter_checkpoint(const InputHeader& input, BattleStateCor
   if ((target.side == Side::Party ? state.party_hp : state.enemy_hp) <= 0.0) return CombatResult::Ok;
   const int counter_level = active_ability_level(target, protocol::AbilityId::Counter);
   if (counter_level <= 0) return CombatResult::Ok;
+  // SpecRef: 6.1.4.3 | f.counter | Failure condition: without an attack of the incoming type, the counter is skipped
+  // (no event, and no null-counter use).
+  if (action_noa(target, profile_index) <= 0.0) return CombatResult::Ok;
   if (target.side == Side::Enemy) {
     if (auto* nullifier = available_party_null_counter(state)) {
       return emit_counter_nullification(state, *nullifier, target, protocol::AbilityId::NullCounter,

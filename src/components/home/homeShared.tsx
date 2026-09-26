@@ -511,7 +511,6 @@ export { BASE_STEP_DURATION_MS };
 export const EXPLORING_PROGRESS_STEP_MS = BASE_STEP_DURATION_MS;
 export const SOUND_SLEEP_STEP_COUNT = 16;
 export const PRAY_STEP_COUNT = 4;
-export const APPROX_CYCLE_STEP_COUNT = 30;
 export const CHUNK_CYCLE_COUNT = 30;
 export const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 export const AFK_MAX_ELAPSED_MS = AFK_MAX_REAL_ELAPSED_MS;

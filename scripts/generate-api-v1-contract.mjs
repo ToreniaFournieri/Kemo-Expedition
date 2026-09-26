@@ -56,7 +56,7 @@ const scalar = Type.Union([Type.String(), Type.Number(), Type.Boolean(), Type.Nu
 const factMap = Type.Record(Type.String(), scalar);
 const enemyStatus = strict({
   enemyId: integerId, name: Type.String(), nameKey: Type.Union([Type.String(), Type.Null()]), level: Type.Union([Type.Integer({ minimum: 1 }), Type.Null()]),
-  enemyType: stableKey, tier: literals('normal', 'elite', 'boss', 'divine'), mainClass: stableKey, subClass: Type.Union([stableKey, Type.Null()]),
+  enemyType: stableKey, type: literals('normal', 'elite', 'boss', 'divine'), mainClass: stableKey, subClass: Type.Union([stableKey, Type.Null()]),
   hp: Type.Integer({ minimum: 0 }), magicStyle: Type.Union([Type.String(), Type.Null()]),
   stats: Type.Array(strict({ key: stableKey, value: Type.Number(), unit: literals('number', 'ratio') })),
   abilities: Type.Array(strict({ abilityId: stableKey, level: Type.Integer({ minimum: 1 }) })),
@@ -175,7 +175,7 @@ const querySchemas = {
   'resources/itemCompendium': strict({ category: optional(itemCategory), rarity: optional(rarity, 'all'), tier: optional(Type.Integer({ minimum: 1, maximum: 8 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), ...page }),
   // `mustelid` was missing from this list, making it unreachable through this operation (RaceId has 14 members, not 13).
   'resources/characterRoster': strict({ race: literals('lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'mustelid', 'procyonian', 'leporian', 'cervin', 'murid', 'kemoria', 'orcinian', 'avian', 'mimorian'), ...page }),
-  'resources/bestiary': strict({ enemyId: optional(integerId), enemyType: optional(stableKey), expedition: optional(integerId), ...page }),
+  'resources/bestiary': strict({ enemyId: optional(integerId), enemyType: optional(stableKey), expedition: optional(integerId), 'x.type': optional(literals('Normal', 'Elite', 'BOSS')), ...page }),
   'resources/superRareList': strict({ superRareId: optional(Type.Integer({ minimum: 1 })), ...page }),
 };
 
@@ -392,7 +392,7 @@ const formAbilityId = Type.String({ pattern: '^a\\.[a-z0-9-]+$' });
 sampleOverrides.set(formAbilityId, 'a.howl');
 const formUnavailableReason = literals('already_unlocked', 'altar_level_too_low', 'insufficient_prana');
 const enemyForm = strict({
-  enemyId: Type.Integer({ minimum: 0 }), enemyName: Type.String({ minLength: 1 }), nameKey: Type.Union([Type.String(), Type.Null()]), enemyType: stableKey, enemyTier: literals('normal', 'elite', 'boss', 'divine'),
+  enemyId: Type.Integer({ minimum: 0 }), enemyName: Type.String({ minLength: 1 }), nameKey: Type.Union([Type.String(), Type.Null()]), enemyType: stableKey, type: literals('normal', 'elite', 'boss', 'divine'),
   enemyAbility: Type.Array(strict({ abilityId: formAbilityId, level: Type.Integer({ minimum: 1 }) })), enemyBonus: Type.Array(Type.String()),
   unlockCost: count, unlockCondition: strict({ requiredAltarLevel: Type.Integer({ minimum: 0, maximum: 20 }), currentAltarLevel: Type.Integer({ minimum: 0, maximum: 20 }), met: Type.Boolean() }),
   unlocked: Type.Boolean(), unlockable: strict({ available: Type.Boolean(), unavailableReason: Type.Union([formUnavailableReason, Type.Null()]) }),
@@ -502,7 +502,7 @@ const responseDataSchemas = {
   'commit/build/character/{characterId}/changeBuild': strict({ calculatedStatus, current: characterBuildCurrent, confirmationRequired: Type.Boolean(), warnings: Type.Array(semanticText), applied: Type.Boolean() }),
   'commit/build/character/{characterId}/removeAllEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/removeEquipment': strict({ current: equipmentCommitCurrent }),
-  'commit/build/character/{characterId}/equip': strict({ current: equipmentCommitCurrent }),
+  'commit/build/character/{characterId}/equip': strict({ warnings: Type.Array(semanticText), current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/lockEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/unlockEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/autoEquipment': strict({

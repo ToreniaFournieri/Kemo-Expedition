@@ -3331,7 +3331,8 @@ function reduceGameState(
           }
         }
 
-        newEquipment = [...keptEquipment, ...Array.from({ length: newEquipment.length - nextMaxEquipSlots }, () => null)];
+        // The lost slots no longer exist, so the array ends at the surviving slots (no stale empty entries).
+        newEquipment = keptEquipment;
 
         newInventory = { ...state.global.inventory };
         newJewels = { ...newJewels };
@@ -3701,7 +3702,7 @@ function reduceGameState(
       const resolvedCycleDurationScale = Math.max(0.001, action.cycleDurationScale ?? getCycleDurationScale());
       const cycleDurationByParty = action.cycleDurationByParty?.length === state.parties.length
         ? action.cycleDurationByParty.map((durationMs) => Math.max(1, Math.floor(durationMs)))
-        : state.parties.map((party) => getApproxAfkCycleDurationMs(party, resolvedCycleDurationScale));
+        : state.parties.map((party) => getApproxAfkCycleDurationMs(party, resolvedCycleDurationScale, { deityDonations: state.global.deityDonations }));
       const runCountByParty = cycleDurationByParty.map((durationMs) => Math.max(0, Math.floor(cappedElapsedMs / durationMs)));
       const runCount = runCountByParty.reduce((maxRuns, count) => Math.max(maxRuns, count), 0);
       if (runCount <= 0) return state;

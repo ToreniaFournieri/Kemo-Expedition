@@ -85,10 +85,12 @@ for (const party of state.parties) {
     for (const key of ['id', 'name', 'gender', 'raceId', 'mainClassId', 'subClassId', 'lineageId', 'predispositionId'] as const) assert.equal(rebuilt[key], original[key], `${original.name} ${key}`);
     assert.equal(Boolean(rebuilt.isUnique), Boolean(original.isUnique));
     assert.equal(rebuilt.mimorianEnemyId, original.mimorianEnemyId);
-    assert.equal(rebuilt.equipment.length, original.equipment.length);
+    // Only real slots are listed: stale empty entries past the last slot (left by an old class change) are dropped.
+    const lastEquipped = original.equipment.reduce((last, item, index) => item ? index : last, -1);
+    assert.equal(rebuilt.equipment.length, Math.max(lastEquipped + 1, computed[slot].maxEquipSlots), `${original.name} slot count`);
     original.equipment.forEach((item, index) => {
       const back = rebuilt.equipment[index];
-      if (!item) return assert.equal(back, null);
+      if (!item) return assert.equal(back ?? null, null);
       assert.ok(back, `${original.name} slot ${index}`);
       assert.deepEqual(
         [back.id, back.enhancement, back.superRare, back.isLocked === true, back.jewel ?? null],

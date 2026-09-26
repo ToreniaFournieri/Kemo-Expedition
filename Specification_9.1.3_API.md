@@ -1332,6 +1332,7 @@ Path Parameters
     * Boolean.
     * Default: `false`.
     * If `true`, the current auto-equipment mode is preserved.
+    * If one or more unlocked items are affected while `remainsMode` is `true`, return a warning message.
     * Useful when updating an equipped item without changing the mode, such as when changing its lock status.
 
 
@@ -1339,12 +1340,27 @@ Path Parameters
 
 * Parameters:
   * `targetEquipment`
+    * One equipment entry or an array of equipment entries.
+    * Uses `<slotIndex>` (not `Item Format`).
+    * Example:
+      `0`
+    * Example:
+      `[0, 1]`
+  * Requires `autoEquipment.mode` = `FULL`.
+  * Does not change `autoEquipment.mode`.
 
 **3-3-7. `character/{characterId}/unlockEquipment`**
 
 * Parameters:
   * `targetEquipment`
-
+    * One equipment entry or an array of equipment entries.
+    * Uses `<slotIndex>` (not `Item Format`).
+    * Example:
+      `0`
+    * Example:
+      `[0, 1]`
+  * Requires `autoEquipment.mode` = `FULL`.
+  * Does not change `autoEquipment.mode`.
 
 **3-3-8. `character/{characterId}/autoEquipment`**
 

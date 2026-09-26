@@ -46,7 +46,7 @@ export interface EnemyFormProjection {
   enemyName: string;
   nameKey: string | null;
   enemyType: string;
-  enemyTier: 'normal' | 'elite' | 'boss' | 'divine';
+  type: 'normal' | 'elite' | 'boss' | 'divine';
   enemyAbility: { abilityId: string; level: number }[];
   enemyBonus: string[];
   unlockCost: number;

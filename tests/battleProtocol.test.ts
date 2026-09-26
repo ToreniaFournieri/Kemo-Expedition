@@ -1770,6 +1770,27 @@ test('reactive COMBAT resolves counter, Null Counter exhaustion, and one termina
   assert.ok(nullified.events.some((event) => event.opcode === 'nullified' && event.abilityId === 'null_counter'));
 });
 
+test('reactive COMBAT skips a counter when the owner has no attack of the incoming type (6.1.4.3)', () => {
+  const run = (ownerRangedNoA: number, nullCounter: boolean) => executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    partyHp: 1_000, partyMaxHp: 1_000, enemyHp: 1_000, enemyMaxHp: 1_000,
+    combatants: combatReactiveInput().combatants.map((combatant, index) => index === 0 ? {
+      ...combatant, rangedAttack: 10, rangedNoA: ownerRangedNoA, magicalNoA: 0, meleeNoA: 0,
+      abilities: [{ id: 'counter', level: 2 }],
+    } : {
+      ...combatant, rangedAttack: 10, rangedNoA: 1, magicalNoA: 0, meleeNoA: 0,
+      abilities: nullCounter ? [{ id: 'null_counter', level: 1 }] : [],
+    }),
+    randomValues: Array(32).fill(0),
+  })));
+  const counters = (output: ReturnType<typeof run>) => output.events.filter((event) => event.aux0 === BATTLE_ACTION_IDS.counter);
+  assert.ok(counters(run(1, false)).length > 0, 'a ranged owner counters a ranged hit');
+  const skipped = run(0, false);
+  assert.equal(skipped.protocolError, 0);
+  assert.deepEqual(counters(skipped), [], 'no zero-hit counter is logged');
+  assert.equal(run(0, true).events.some((event) => event.opcode === 'nullified' && event.abilityId === 'null_counter'), false,
+    'a skipped counter does not spend Null Counter');
+});
+
 test('reactive COMBAT applies close nullifiers without draws and recovery priority with bookkeeping events', () => {
   const nullified = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
     combatants: combatReactiveInput().combatants.map((combatant, index) => index === 1 ? {

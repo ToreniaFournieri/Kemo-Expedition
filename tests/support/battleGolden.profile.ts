@@ -190,8 +190,8 @@ const PINNED_HASHES = {
   reference: 'de13ff1bec298ac9f076229497d9716ea789358856bd7391ceb81fea5b9ba322',
   goldenV1: 'e71f11bf791f52315ea20febabfc31cf881e7a72a4154ee95fa5806aa6df8bf0',
   contractV1: 'a784c5b763dbbd62b1fef9529d21bcf76c0afe83bebf26556b595f7c5e8b7867',
-  goldenV2: 'a12180dff3cadaad3a89f031c812dd1105793a5a647ab0eaa20d4b5fa89e3ddd',
-  contractV2: '5d1d24c6fa6a5481905987f434ef0a096df9ec251fb0e0155191ed7cad2f5e1e',
+  goldenV2: 'b402cfbdd2a4d33084045b2a005013fdfd672aabf516ed8666e7edffb5a103ef',
+  contractV2: '8688fe1971e9663d9e59484faa3806c4c9f344acb9298a460eabb16ed3a96ff3',
 } as const;
 
 type BattleReferenceContractV2 = {

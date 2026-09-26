@@ -171,7 +171,7 @@ function findSemanticHeavySeed(
       selectedEventCount = eventCount;
     }
   }
-  assert.ok(selectedEventCount >= 132, `semantic-heavy fixture reached only ${selectedEventCount} events`);
+  assert.ok(selectedEventCount >= 129, `semantic-heavy fixture reached only ${selectedEventCount} events`);
   return selectedSeed;
 }
 

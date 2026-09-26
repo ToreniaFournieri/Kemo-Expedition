@@ -16592,7 +16592,7 @@
                           "nameKey",
                           "level",
                           "enemyType",
-                          "tier",
+                          "type",
                           "mainClass",
                           "subClass",
                           "hp",
@@ -16638,7 +16638,7 @@
                             "maxLength": 200,
                             "type": "string"
                           },
-                          "tier": {
+                          "type": {
                             "anyOf": [
                               {
                                 "const": "normal",
@@ -19185,7 +19185,7 @@
                               "nameKey",
                               "level",
                               "enemyType",
-                              "tier",
+                              "type",
                               "mainClass",
                               "subClass",
                               "hp",
@@ -19231,7 +19231,7 @@
                                 "maxLength": 200,
                                 "type": "string"
                               },
-                              "tier": {
+                              "type": {
                                 "anyOf": [
                                   {
                                     "const": "normal",
@@ -19581,7 +19581,7 @@
                   "nameKey": "xxxxxxx",
                   "level": 1,
                   "enemyType": "xxxxxxx",
-                  "tier": "normal",
+                  "type": "normal",
                   "mainClass": "xxxxxxx",
                   "subClass": "xxxxxxx",
                   "hp": 0,
@@ -24433,7 +24433,7 @@
                       "enemyName",
                       "nameKey",
                       "enemyType",
-                      "enemyTier",
+                      "type",
                       "enemyAbility",
                       "enemyBonus",
                       "unlockCost",
@@ -24465,7 +24465,7 @@
                         "maxLength": 200,
                         "type": "string"
                       },
-                      "enemyTier": {
+                      "type": {
                         "anyOf": [
                           {
                             "const": "normal",
@@ -24659,7 +24659,7 @@
                           "enemyName",
                           "nameKey",
                           "enemyType",
-                          "enemyTier",
+                          "type",
                           "enemyAbility",
                           "enemyBonus",
                           "unlockCost",
@@ -24691,7 +24691,7 @@
                             "maxLength": 200,
                             "type": "string"
                           },
-                          "enemyTier": {
+                          "type": {
                             "anyOf": [
                               {
                                 "const": "normal",
@@ -24865,7 +24865,7 @@
                   "enemyName": "xxxxxxx",
                   "nameKey": "xxxxxxx",
                   "enemyType": "xxxxxxx",
-                  "enemyTier": "normal",
+                  "type": "normal",
                   "enemyAbility": [
                     {
                       "abilityId": "a.howl",
@@ -31855,9 +31855,46 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
+            "warnings",
             "current"
           ],
           "properties": {
+            "warnings": {
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "key",
+                  "args"
+                ],
+                "properties": {
+                  "key": {
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "args": {
+                    "type": "object",
+                    "patternProperties": {
+                      "^(.*)$": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "boolean"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
             "current": {
               "additionalProperties": false,
               "type": "object",
@@ -31945,9 +31982,46 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
+                "warnings",
                 "current"
               ],
               "properties": {
+                "warnings": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "key",
+                      "args"
+                    ],
+                    "properties": {
+                      "key": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "args": {
+                        "type": "object",
+                        "patternProperties": {
+                          "^(.*)$": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
                 "current": {
                   "additionalProperties": false,
                   "type": "object",
@@ -32081,6 +32155,12 @@
         },
         "response": {
           "data": {
+            "warnings": [
+              {
+                "key": "xxxxxxx",
+                "args": {}
+              }
+            ],
             "current": {
               "mode": "FULL",
               "equipment": [
@@ -45002,6 +45082,22 @@
             "minimum": 1,
             "type": "integer"
           },
+          "x.type": {
+            "anyOf": [
+              {
+                "const": "Normal",
+                "type": "string"
+              },
+              {
+                "const": "Elite",
+                "type": "string"
+              },
+              {
+                "const": "BOSS",
+                "type": "string"
+              }
+            ]
+          },
           "limit": {
             "minimum": 1,
             "maximum": 200,
@@ -45042,7 +45138,7 @@
                       "nameKey",
                       "level",
                       "enemyType",
-                      "tier",
+                      "type",
                       "mainClass",
                       "subClass",
                       "hp",
@@ -45091,7 +45187,7 @@
                         "maxLength": 200,
                         "type": "string"
                       },
-                      "tier": {
+                      "type": {
                         "anyOf": [
                           {
                             "const": "normal",
@@ -45335,7 +45431,7 @@
                           "nameKey",
                           "level",
                           "enemyType",
-                          "tier",
+                          "type",
                           "mainClass",
                           "subClass",
                           "hp",
@@ -45384,7 +45480,7 @@
                             "maxLength": 200,
                             "type": "string"
                           },
-                          "tier": {
+                          "type": {
                             "anyOf": [
                               {
                                 "const": "normal",
@@ -45613,7 +45709,7 @@
                 "nameKey": "xxxxxxx",
                 "level": 1,
                 "enemyType": "xxxxxxx",
-                "tier": "normal",
+                "type": "normal",
                 "mainClass": "xxxxxxx",
                 "subClass": "xxxxxxx",
                 "hp": 0,

@@ -18,7 +18,8 @@ export interface EnemyStatus {
   /** Effective enemy level for the room the enemy was met in; null when it cannot be derived (a legacy record). */
   level: number | null;
   enemyType: string;
-  tier: 'normal' | 'elite' | 'boss' | 'divine';
+  /** The enemy master's `x.type`; `divine` for a god. */
+  type: 'normal' | 'elite' | 'boss' | 'divine';
   mainClass: string;
   /** `null` when the enemy has no sub class; equal to `mainClass` for a master class. */
   subClass: string | null;
@@ -54,7 +55,7 @@ export function buildEnemyStatus(enemy: EnemyDef, level: number | null): EnemySt
     nameKey: enemy.nameKey ?? null,
     level,
     enemyType: enemy.enemyType,
-    tier: enemy.isGodEnemy ? 'divine' : enemy.type,
+    type: enemy.isGodEnemy ? 'divine' : enemy.type,
     mainClass: enemy.enemyClass,
     subClass,
     hp: enemy.hp,

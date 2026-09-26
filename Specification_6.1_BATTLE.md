@@ -437,9 +437,10 @@ If `a.*` with phase = START:
 **Counter**
 - If opponent.`a.counter` 
   - `f.counter`(actor:actor , opponent:opponent ,attack_type: )
-- If opponent.`a.magical-counter` and (`attack_type = magical`), `f.magical-counter`(actor:opponent, opponent:actor ,attack_type: )
+- If opponent.`a.magical-counter` and (actor.attacking.`attack_type = magical`), `f.magical-counter`(actor:opponent, opponent:actor ,attack_type: )
 - **counter-chain**
-  - If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,attack_type: )
+  - If opponent.`a.re-counter` and (opponent.`attack_type` = actor.attacking.`attack_type`), `f.re-counter`(actor:opponent , opponent:actor ,attack_type: )
+
 
 
 **Ally-follow-up**

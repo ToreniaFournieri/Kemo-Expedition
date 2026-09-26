@@ -157,6 +157,8 @@ function validateEquipmentSetName(name: unknown): asserts name is string {
   if (name.length > 80) throw new Error('invalid_request:name.maxLength');
 }
 
+export const EQUIP_WARNING_KEYS = { unlockedItemsRemainsMode: 'api.warning.equip.unlockedItemsRemainsMode' } as const;
+
 export function applyApiV1Commit(operation: string, state: GameState, parameters: Record<string, unknown>, context: ApiV1CommitContext): ApiV1CommitOutcome {
   let next = state;
   let simulatedAt = context.simulatedAt;
@@ -428,8 +430,14 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       // SpecRef: 9.1.3 | 3-3-5 equip | `remainsMode: true` preserves the current auto-equipment mode.
       if (parameters.remainsMode !== undefined && typeof parameters.remainsMode !== 'boolean') throw new Error('invalid_request:remainsMode');
       const maxSlots = computeCharacterStats(characterBefore, next.parties[partyIndex].level).maxEquipSlots;
-      for (const step of planEquipOperation(characterBefore, next.global.inventory, parameters.targetEquipment, maxSlots, parameters.targetSlot)) reduce({ type: 'EQUIP_ITEM', partyIndex, characterId, slotIndex: step.slotIndex, itemKey: step.itemKey });
+      const steps = planEquipOperation(characterBefore, next.global.inventory, parameters.targetEquipment, maxSlots, parameters.targetSlot);
+      for (const step of steps) reduce({ type: 'EQUIP_ITEM', partyIndex, characterId, slotIndex: step.slotIndex, itemKey: step.itemKey });
       if (parameters.remainsMode !== true) demoteFullAutoEquipment();
+      // SpecRef: 9.1.3 | 3-3-5 equip | An unlocked item equipped while the mode is kept stays open to automatic
+      // equipment (a later FULL pass may replace it), so the caller is warned; `lockEquipment` keeps it.
+      const equipped = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!.equipment;
+      const unlocked = parameters.remainsMode === true ? steps.filter((step) => equipped[step.slotIndex]?.isLocked !== true).length : 0;
+      data = { warnings: unlocked > 0 ? [{ key: EQUIP_WARNING_KEYS.unlockedItemsRemainsMode, args: { items: unlocked } }] : [] };
     } else if (action === 'undoEquipment' || action === 'redoEquipment') {
       const current = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
       const currentSnapshot = snapshotEquipment(current);
@@ -454,11 +462,15 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (action !== 'changeBuild' && !data.equipmentSetId) {
       const currentCharacter = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
       const historyFacts = describeEquipmentHistory(next, characterId, history);
+      // Every current slot, empty ones included, but no empty entry past the last slot (as `read/party/.../equipment`).
+      const maxSlots = computeCharacterStats(currentCharacter, next.parties[partyIndex].level).maxEquipSlots;
+      const lastEquipped = currentCharacter.equipment.reduce((last, item, slot) => item ? slot : last, -1);
+      const slots = Array.from({ length: Math.max(lastEquipped + 1, maxSlots) }, (_, slot) => currentCharacter.equipment[slot] ?? null);
       data = {
         ...data,
         current: {
           mode: currentCharacter.autoEquipmentMode === 2 ? 'FULL' : currentCharacter.autoEquipmentMode === 1 ? 'SEMI' : 'OFF',
-          equipment: currentCharacter.equipment.map((item, slot) => item ? `${slot}/${item.isLocked ? 1 : 0}/${item.id}/${item.enhancement}/${item.superRare}${item.jewel ? `/${item.jewel.key}:${item.jewel.rank}` : ''}` : '0'),
+          equipment: slots.map((item, slot) => item ? `${slot}/${item.isLocked ? 1 : 0}/${item.id}/${item.enhancement}/${item.superRare}${item.jewel ? `/${item.jewel.key}:${item.jewel.rank}` : ''}` : '0'),
           undoAvailable: historyFacts.undoEquipment.available,
           redoAvailable: historyFacts.redoEquipment.available,
         },

@@ -138,9 +138,13 @@ function equipmentEntry(item: Item | null, slotIndex: number): string {
 }
 
 // SpecRef: 9.1.3 | 2-3-3 equipment | Array in equipment-slot order; an empty slot is `0`.
-/** Every slot the character has, including trailing empty ones the saved equipment array may not store. */
+/**
+ * Every slot the character has, including trailing empty ones the saved equipment array may not store. Empty entries
+ * past the last slot (left by a save from before a class change trimmed them) are not slots and are not listed.
+ */
 function equipmentEntries(character: Character, maxEquipSlots: number): string[] {
-  return Array.from({ length: Math.max(character.equipment.length, maxEquipSlots) }, (_, slot) => equipmentEntry(character.equipment[slot] ?? null, slot));
+  const lastEquipped = character.equipment.reduce((last, item, slot) => item ? slot : last, -1);
+  return Array.from({ length: Math.max(lastEquipped + 1, maxEquipSlots) }, (_, slot) => equipmentEntry(character.equipment[slot] ?? null, slot));
 }
 
 /** The API's one spelling of Auto Equipment mode (9.1.3 2-3-3 `mode`), shared by every projection. */
@@ -536,12 +540,14 @@ function bestiary(state: GameState, parameters: Record<string, unknown>, context
   const enemyId = parameters.enemyId === undefined ? null : Number(parameters.enemyId);
   const enemyType = parameters.enemyType === undefined ? null : String(parameters.enemyType);
   const expedition = parameters.expedition === undefined ? null : Number(parameters.expedition);
+  // `x.type` is the enemy's own `type` (9.1.3 4-2-7: `Normal`, `Elite`, `BOSS`).
+  const tierFilter = parameters['x.type'] === undefined ? null : String(parameters['x.type']).toLowerCase();
   // Bosses sit outside every enemy pool (poolId 0), so an expedition's boss is matched through its `bossId`, as the
   // Bestiary pane's BOSS group does.
   const expeditionBossId = expedition === null ? null : getDungeonById(expedition)?.bossId ?? null;
   const revealAll = effectiveDebugSettings(context).displayAllBestiary;
   // An enemy not yet encountered (and not revealed by the Debug "Display all Bestiary" setting) is listed only as a
-  // placeholder, its ID and zero counts, never its name, status, or drops; the type filter never matches it
+  // placeholder, its ID and zero counts, never its name, status, or drops; the type filters never match it
   // (9.1.4.7: no undisclosed content).
   const enemies = ENEMIES.flatMap((enemy) => {
     if (enemyId !== null && enemy.id !== enemyId) return [];
@@ -551,6 +557,7 @@ function bestiary(state: GameState, parameters: Record<string, unknown>, context
     const defeats = stats?.defeats ?? 0;
     const isRevealed = revealAll || encounters > 0;
     if (enemyType !== null && (!isRevealed || enemy.enemyType !== enemyType)) return [];
+    if (tierFilter !== null && (!isRevealed || enemy.type !== tierFilter)) return [];
     return [isRevealed
       ? { ...buildEnemyStatus(enemy, null), revealed: true, encounters, defeats }
       : { enemyId: enemy.id, revealed: false, encounters, defeats }];
@@ -753,7 +760,7 @@ function enemyFormEntry(state: GameState, enemy: EnemyDef) {
     enemyName: enemy.name,
     nameKey: enemy.nameKey ?? null,
     enemyType: enemy.enemyType,
-    enemyTier: enemy.isGodEnemy ? 'divine' as const : enemy.type,
+    type: enemy.isGodEnemy ? 'divine' as const : enemy.type,
     enemyAbility: abilities.map((ability) => ({ abilityId: `a.${ability.id.replace(/_/g, '-')}`, level: ability.level })),
     enemyBonus: [...bonuses.cBonus, ...bonuses.otherBonus],
     unlockCost: facts.unlockCost,

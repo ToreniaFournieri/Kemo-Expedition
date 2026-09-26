@@ -78,14 +78,14 @@ export async function stageApiV1ElapsedProgression(
   }
   const remainingMsByParty = stagedState.parties.map((party) => effectiveElapsedMs + normalizeCarriedMs(options.carriedMsByPartyId?.[String(party.id)]));
   const estimatedChunkCount = stagedState.parties.reduce((total, party, partyIndex) => {
-    const durationMs = getApproxAfkCycleDurationMs(party, options.cycleDurationScale);
+    const durationMs = getApproxAfkCycleDurationMs(party, options.cycleDurationScale, { deityDonations: stagedState.global.deityDonations });
     return total + Math.ceil(Math.floor(remainingMsByParty[partyIndex] / durationMs) / AFK_CHUNK_CYCLE_COUNT);
   }, 0);
   let chunkCount = 0;
 
   while (true) {
     const candidate = stagedState.parties.map((party, partyIndex) => {
-      const cycleDurationMs = getApproxAfkCycleDurationMs(party, options.cycleDurationScale);
+      const cycleDurationMs = getApproxAfkCycleDurationMs(party, options.cycleDurationScale, { deityDonations: stagedState.global.deityDonations });
       const remainingMs = remainingMsByParty[partyIndex] ?? 0;
       const operationCount = getAfkChunkOperationCount(remainingMs, cycleDurationMs);
       return operationCount > 0 ? {

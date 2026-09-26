@@ -304,6 +304,11 @@ assert.equal(undoHistory[String(characterId)].redo.length, 0);
   const kept = commit(freed, 'equip', { targetEquipment: freedFormat, targetSlot: armor, remainsMode: true });
   assert.equal(mode(kept), 2, 'equip with remainsMode keeps FULL');
   assert.equal(character(commit(kept, 'lockEquipment', { targetEquipment: armor })).equipment[armor]!.isLocked, true, 'equip then lock succeeds');
+  // An unlocked item equipped with `remainsMode: true` is warned about (a later FULL pass may replace it); without
+  // `remainsMode` the mode is demoted, so there is nothing to warn about.
+  const warningsOf = (parameters: Record<string, unknown>) => (applyApiV1Commit(path('equip'), freed, { targetEquipment: freedFormat, targetSlot: armor, ...parameters }, context()).data as { warnings: unknown[] }).warnings;
+  assert.deepEqual(warningsOf({ remainsMode: true }), [{ key: 'api.warning.equip.unlockedItemsRemainsMode', args: { items: 1 } }]);
+  assert.deepEqual(warningsOf({}), []);
   fails(freed, 'equip', { targetEquipment: freedFormat, targetSlot: armor, remainsMode: 'yes' }, 'invalid_request');
   // Undo and Redo restore a recorded state, which is a manual change too.
   const changed = full(commit(seeded, 'removeEquipment', { targetEquipment: armor }));
@@ -314,6 +319,26 @@ assert.equal(undoHistory[String(characterId)].redo.length, 0);
   const saved = applyApiV1Commit(path('saveEquipmentSet'), seeded, { equipmentSet: { name: 'Set' } }, context());
   const slot = (saved.data as { equipmentSetId: number }).equipmentSetId;
   assert.equal(mode(commit(saved.state, 'loadEquipmentSet', { equipmentSetId: slot, loadMode: 'equipSet' })), 1, 'loadEquipmentSet');
+}
+
+// Losing slots (lord -> wizard) moves the overflow to inventory and leaves no stale empty entries past the last slot.
+{
+  const { computeCharacterStats } = await import('../../src/game/characterComputation');
+  const setClass = (state: GameState, mainClassId: string, subClassId: string) => gameReducer(state, {
+    type: 'UPDATE_CHARACTER', partyIndex: 0, characterId, updates: { mainClassId, subClassId } as never,
+  });
+  const lord = setClass(base, 'lord', 'lord');
+  const maxSlots = (state: GameState) => computeCharacterStats(character(state), state.parties[0].level).maxEquipSlots;
+  const wizard = setClass(lord, 'wizard', 'wizard');
+  assert.ok(maxSlots(wizard) < maxSlots(lord), 'the fixture loses slots');
+  assert.ok(character(wizard).equipment.length <= maxSlots(wizard), 'no equipment entry past the last slot');
+  // A save from before the fix still lists only real slots.
+  const stale = { ...wizard, parties: wizard.parties.map((party, index) => index !== 0 ? party : {
+    ...party, characters: party.characters.map((entry) => entry.id !== characterId ? entry : { ...entry, equipment: [...entry.equipment, null, null] }),
+  }) };
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
+  const view = await buildApiV1ReadData(`read/build/character/${characterId}/equipment`, stale, {}, { revision: 1 } as never) as { current: { equipment: string[] } };
+  assert.equal(view.current.equipment.length, maxSlots(wizard), 'the read model lists only real slots');
 }
 
 console.log('apiV1EquipmentSlots profile ok');

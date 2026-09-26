@@ -985,6 +985,11 @@ assert.deepEqual(state, before);
   // The type filter matches revealed enemies only: an unencountered enemy's type is undisclosed.
   const byType = await buildApiV1ReadData('resources/bestiary', encountered, { enemyType: enemy.enemyType, limit: 200 }, context) as { enemies: { enemyId: number; enemyType: string }[] };
   assert.deepEqual(byType.enemies.map((entry) => entry.enemyId), [enemy.id]);
+  // `x.type` filters on the enemy's own type (Normal, Elite, BOSS), again revealed enemies only.
+  const byTier = await buildApiV1ReadData('resources/bestiary', encountered, { 'x.type': enemy.type === 'boss' ? 'BOSS' : enemy.type === 'elite' ? 'Elite' : 'Normal', limit: 200 }, context) as { enemies: { enemyId: number }[] };
+  assert.deepEqual(byTier.enemies.map((entry) => entry.enemyId), [enemy.id]);
+  const otherTier = await buildApiV1ReadData('resources/bestiary', encountered, { 'x.type': enemy.type === 'boss' ? 'Normal' : 'BOSS', limit: 200 }, context) as { enemies: unknown[] };
+  assert.deepEqual(otherTier.enemies, []);
   // An unencountered enemy is a placeholder: its ID and counts, never its name, status, or drops (9.1.4.7).
   const hidden = await buildApiV1ReadData('resources/bestiary', state, { enemyId: enemy.id }, context) as { enemies: Record<string, unknown>[] };
   assert.deepEqual(hidden.enemies, [{ enemyId: enemy.id, revealed: false, encounters: 0, defeats: 0 }]);

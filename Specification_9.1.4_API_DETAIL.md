@@ -267,8 +267,11 @@ All JSON Commit requests use this transport envelope:
 * Section 5.1 lets only the last Cycle keep partial progress. For each party,
   the effective time left over after its last complete Cycle is carried to that
   party's next `elapsed` request or login catch-up instead of being discarded,
-  so several short steps complete the same Cycles as one step of the same total
-  length. The carry is less than one Cycle, keyed by Party ID, and stored with
+  so no effective time is lost between short steps. A Cycle costs what the
+  online Cycle would (every state's own Steps and modifiers, 5.1.1), priced from
+  the party's state and last expedition when its Chunk starts; since that length
+  follows the outcomes, several short steps complete about, not exactly, the
+  Cycles of one step of the same total length. The carry is less than one Cycle, keyed by Party ID, and stored with
   the clock in the account's control metadata (never in the save or a backup).
   A request that processes no time leaves it unchanged. A successful immediate
   `sortie`/`godsBattle` drops that party's carry, because it restarts the party's
@@ -587,6 +590,12 @@ definitions in 9.1.3.
   `character/{characterId}/equipment`) list every slot the character has, in slot
   order, with `0` for each empty slot, including trailing empty slots.
 
+* `equip` returns `warnings` beside `current`, as semantic `{key, args}` entries.
+  With `remainsMode: true`, equipping one or more unlocked items returns
+  `api.warning.equip.unlockedItemsRemainsMode` (`items`, the number of unlocked
+  items equipped): the kept mode may still replace them (FULL reevaluates every
+  unlocked, non-Super-Rare item), so lock them with `lockEquipment` to keep them.
+  The command is still applied. Otherwise `warnings` is empty.
 * `changeBuild` uses the same UI validation as the Party editor and owns its
   confirmation through the `simulation` and `confirmation` parameters defined in
   9.1.3 (3-3-2); it never issues the generic 9.1.4.5 challenge.
@@ -744,7 +753,7 @@ definitions in 9.1.3.
   at the maximum), `maximumLevel`, and its total and unlocked form counts.
   `enemyFormList` (optional intersecting `enemyType` and `enemyId` filters; an unknown
   `enemyId` is `not_found`) returns one entry per enemy form with the canonical
-  `enemyName`, `nameKey`, `enemyType`, `enemyTier`, the abilities (`enemyAbility`) and
+  `enemyName`, `nameKey`, `enemyType`, `type` (the enemy master's `x.type`), the abilities (`enemyAbility`) and
   bonuses (`enemyBonus`, `c.` and other bonus IDs) a Mimorian copying the form gets,
   `unlockCost` in Prana, `unlockCondition` (`requiredAltarLevel`, `currentAltarLevel`,
   `met`), `unlocked`, and `unlockable` (`{available, unavailableReason}`). The reason is
@@ -1217,7 +1226,7 @@ type DiaryEntry = {
   (`outcome`); it reports `room`, `outcome`, `damageTakenPercent`, and `enemy`, the
   Bestiary `EnemyStatus` of the enemy as it was scaled for that battle (`null` for
   a record without a snapshot). `EnemyStatus` is `{enemyId, name, nameKey, level,
-  enemyType, tier ("normal"|"elite"|"boss"|"divine"), mainClass, subClass, hp,
+  enemyType, type ("normal"|"elite"|"boss"|"divine", the enemy master's `x.type`), mainClass, subClass, hp,
   magicStyle, stats[], abilities[], ability[], cBonus[], otherBonus[],
   dropItemIds[]}`; `level` is the effective enemy level of the room (dungeon level,
   floor, room type, and difficulty offset) and `stats` are raw numeric facts
@@ -1383,7 +1392,9 @@ type DiaryEntry = {
   and `searchAbility`/`searchBonus` never match it.
 * `bestiary` lists an enemy not yet encountered as a placeholder,
   `{enemyId, revealed: false, encounters: 0, defeats: 0}`, never its name, status,
-  or drops; the `enemyType` filter never matches it. An encountered enemy carries
+  or drops; the `enemyType` and `x.type` filters never match it. `x.type`
+  (`Normal`, `Elite`, `BOSS`) filters on the enemy master's `x.type`, matching
+  the response's `type` (`normal`, `elite`, `boss`). An encountered enemy carries
   its full `EnemyStatus` with `revealed: true`. The Debug display-all settings
   reveal every entry.
 * `superRareList` lists titles `1–N` only (optional `superRareId` filter) as

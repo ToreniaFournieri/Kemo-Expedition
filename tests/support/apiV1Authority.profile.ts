@@ -226,15 +226,16 @@ function dependencies(overrides: Partial<ApiV1CommitAuthorityDependencies> = {})
   const result = await executeApiV1CommitTransaction(input({
     operation: 'commit/progress/elapsed',
     idempotencyKey: 'authority-key-elapsed',
-    parameters: { elapsedSeconds: 180 },
+    // A fresh Cycle is about 78 Steps (Spec 5.1.1), 12 s at this scale: 900 s spans more than one 30-Cycle Chunk.
+    parameters: { elapsedSeconds: 900 },
   }), deps.value);
   assert.equal(result.ok, true);
   if (!result.ok) throw new Error(result.error.code);
   assert.ok(chunkNumbers.length >= 2, `expected multiple Chunks, received ${chunkNumbers.length}`);
   assert.deepEqual(chunkNumbers, chunkNumbers.map((_, index) => index + 1));
   assert.equal(result.response.revision, 1);
-  assert.equal(result.response.data.elapsedSeconds, 180);
-  assert.equal(result.response.data.inGameTime, new Date(fixedNow + 180_000).toISOString());
+  assert.equal(result.response.data.elapsedSeconds, 900);
+  assert.equal(result.response.data.inGameTime, new Date(fixedNow + 900_000).toISOString());
   assert.equal(deps.persisted.length, 1, 'only the complete staged state is persisted');
   assert.equal(deps.published.length, 1, 'only the complete staged state is published');
   assert.equal(globalGameplayDraws, 0, 'the API transaction never consumes the renderer gameplay stream');
@@ -270,7 +271,7 @@ for (const [thrown, code] of [['illegal_action:charge_insufficient', 'illegal_ac
   const result = await executeApiV1CommitTransaction(input({
     operation: 'commit/progress/elapsed',
     idempotencyKey: 'authority-key-chunk-fail',
-    parameters: { elapsedSeconds: 180 },
+    parameters: { elapsedSeconds: 900 },
     control: originalControl,
   }), deps.value);
   assert.equal(result.ok, false);
@@ -308,8 +309,9 @@ for (const [thrown, code] of [['illegal_action:charge_insufficient', 'illegal_ac
   assert.equal(future.state, seed);
 }
 
-// SpecRef: 5.1 | Short elapsed steps carry each party's sub-Cycle remainder, so twelve 5-minute steps run exactly the
-// Cycles of one 1-hour step, and a zero-length call keeps the carried progress untouched.
+// SpecRef: 5.1 | Short elapsed steps carry each party's sub-Cycle remainder, so no effective time is lost between calls:
+// every party keeps less than one Cycle, and a zero-length call keeps the carried progress untouched. A Cycle's length
+// follows the party's state (Spec 5.1.1), so short steps complete about, not exactly, the Cycles of one long step.
 {
   const scale = 1;
   const options = {
@@ -321,13 +323,12 @@ for (const [thrown, code] of [['illegal_action:charge_insufficient', 'illegal_ac
     applyAutoEquipment: (state: GameState) => state,
     runWithRandom: <T>(operation: () => T) => operation(),
   };
-  const cycleMsById = Object.fromEntries(seed.parties.map(party => [String(party.id), getApproxAfkCycleDurationMs(party, scale)]));
-  assert.ok(Object.values(cycleMsById).some(cycleMs => cycleMs > 300_000), 'the fixture needs a Cycle longer than one short step');
-  const cyclesRun = (carriedBefore: Record<string, number>, carriedAfter: Record<string, number>, elapsedMs: number) =>
-    Object.fromEntries(Object.entries(cycleMsById).map(([id, cycleMs]) => [id, ((carriedBefore[id] ?? 0) + elapsedMs - (carriedAfter[id] ?? 0)) / cycleMs]));
+  const cycleMsOf = (state: GameState) => Object.fromEntries(state.parties.map(party => [String(party.id), getApproxAfkCycleDurationMs(party, scale, { deityDonations: state.global.deityDonations })]));
+  assert.ok(Object.values(cycleMsOf(seed)).some(cycleMs => cycleMs > 300_000), 'the fixture needs a Cycle longer than one short step');
 
   const long = await stageApiV1ElapsedProgression(seed, { elapsedSeconds: 3_600 }, options);
-  const expectedCycles = cyclesRun({}, long.carriedMsByPartyId, 3_600_000);
+  for (const [id, carriedMs] of Object.entries(long.carriedMsByPartyId)) assert.ok(carriedMs < cycleMsOf(long.state)[id], `party ${id} carries less than one Cycle`);
+  assert.ok(long.chunkCount > 0, 'an hour completes Cycles');
 
   let state = seed;
   let simulatedAt = fixedNow;
@@ -338,12 +339,11 @@ for (const [thrown, code] of [['illegal_action:charge_insufficient', 'illegal_ac
     ({ state, simulatedAt } = short);
     carried = short.carriedMsByPartyId;
     totalChunks += short.chunkCount;
-    for (const [id, carriedMs] of Object.entries(carried)) assert.ok(carriedMs < cycleMsById[id], `party ${id} carries less than one Cycle`);
+    const cycleMs = cycleMsOf(state);
+    for (const [id, carriedMs] of Object.entries(carried)) assert.ok(carriedMs < cycleMs[id], `party ${id} carries less than one Cycle`);
   }
   assert.ok(totalChunks > 0, 'short steps must still complete Cycles');
-  assert.deepEqual(carried, long.carriedMsByPartyId, 'the same remainder is left after the same total time');
-  assert.deepEqual(cyclesRun({}, carried, 3_600_000), expectedCycles);
-  for (const cycles of Object.values(expectedCycles)) assert.ok(Number.isInteger(cycles) && cycles > 0);
+  assert.equal(simulatedAt, long.simulatedAt, 'the clock advances by the same total time');
 
   const noOp = await stageApiV1ElapsedProgression(state, {}, { ...options, simulatedAt, carriedMsByPartyId: carried });
   assert.deepEqual(noOp.carriedMsByPartyId, carried);

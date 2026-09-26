@@ -1,43 +1,12 @@
-import { DUNGEONS } from '../data/dungeons';
 import type { Party } from '../types';
-import { getDeityStateDurationMultiplier } from './deity';
 import type { AfkChunkPlan } from './afkSchedulerCore';
-import { BASE_STEP_DURATION_MS } from './progressTiming';
+import { getPartyCycleDurationMs, type PartyCycleDurationOptions } from './partyCycleDuration';
 export * from './afkSchedulerCore';
 
-const APPROX_CYCLE_STEP_COUNT = 30;
-function getExploreTerrainDurationMultiplier(party: Party): number {
-  const dungeon = DUNGEONS.find((entry) => entry.id === party.selectedDungeonId);
-  if (!dungeon) return 1;
-
-  const roomMultiplier = (terrainEffect?: string): number => (
-    terrainEffect === 'terrain.chill' || terrainEffect === 'terrain.looping-path' ? 2 : 1
-  );
-  const floorByNumber = new Map(dungeon.floors.map((floor) => [floor.floorNumber, floor]));
-  const loggedRooms = party.lastExpeditionLog?.dungeonId === dungeon.id
-    ? party.lastExpeditionLog.entries
-    : [];
-
-  if (loggedRooms.length > 0) {
-    return loggedRooms.reduce((total, room) => (
-      total + roomMultiplier(floorByNumber.get(room.floor ?? 0)?.terrainEffect)
-    ), 0) / loggedRooms.length;
-  }
-
-  const total = dungeon.floors.reduce((sum, floor) => sum + (4 * roomMultiplier(floor.terrainEffect)), 0);
-  const rooms = dungeon.floors.length * 4;
-  return rooms > 0 ? total / rooms : 1;
-}
-
-export function getApproxAfkCycleDurationMs(party: Party, cycleDurationScale: number): number {
-  const safeScale = Math.max(0.001, cycleDurationScale);
-  const baseCycleDurationMs = BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * safeScale;
-  const deityMultiplier = getDeityStateDurationMultiplier(
-    party.deity.name,
-    party.deityGold ?? 0,
-    'explore',
-  );
-  return Math.max(1, Math.ceil(baseCycleDurationMs * deityMultiplier * getExploreTerrainDurationMultiplier(party)));
+// SpecRef: 5.1 | Time-Based Progress Handling | catch-up resolves the Cycle's actual state transitions.
+// A catch-up Cycle costs what the online Cycle would: every state's own duration and modifiers (Spec 5.1.1).
+export function getApproxAfkCycleDurationMs(party: Party, cycleDurationScale: number, options?: PartyCycleDurationOptions): number {
+  return getPartyCycleDurationMs(party, cycleDurationScale, options);
 }
 
 export function createAfkChunkPlan(
