@@ -107,7 +107,7 @@ export const BATTLE_ABILITY_IDS = {
   "predator_sense": 74,
   "decompose": 75,
   "self_destruct": 76,
-  "free": 77,
+  "flee": 77,
   "auriferous": 78,
   "no_offense": 79,
   "swarm": 80,

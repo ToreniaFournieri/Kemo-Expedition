@@ -269,11 +269,11 @@ If `a.*` with phase = START:
   - actor.`d.HP` = 0.
   - Log: `log.self-destruct`
 
-- **free**
-  - Triggered by `a.free` and (opponent members don't have `a.pursuit`)
+- **flee**
+  - Triggered by `a.flee` and (opponent members don't have `a.pursuit`)
   - this battle is Draw.
-  - Log: `log.free`
-  - Triggered by `a.free` and opponent member has `a.pursuit`, 
+  - Log: `log.flee`
+  - Triggered by `a.flee` and opponent member has `a.pursuit`, 
   - this battle continues. 
   - Log: `log.pursuit`
 

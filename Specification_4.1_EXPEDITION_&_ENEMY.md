@@ -180,7 +180,7 @@
 | Slime_Colony | 粘体群 | 粘 | `a.slow`1, `a.corrode`1 | `a.life-drain`3 | `r.ice_x1.3` |
 | Plant_Fungal | 植菌 | 植 | `a.no-offense`1, `a.magical-counter`1, `a.counter`1 | `a.decompose`1 | `r.fire_x1.3`, `r.thunder_x2/3`, `r.ice_x2/3`, `c.grit+1`, `c.caster+1` |
 | Insect_Swarm | 昆虫 | 虫 | `a.swarm`1, `a.pursuit`1, `a.thunder-protect-breaker`1 | `a.death-touch`1 | `e.thunder+20`, `r.fire_x1.3`, `r.thunder_x2/3` |
-| Aerial | 飛行 | 飛 | `a.flying`1, `a.vine-cutter`1 | `a.free`1 | `c.evasion+0.045`, `c.growth_x0.7`  |
+| Aerial | 飛行 | 飛 | `a.flying`1, `a.vine-cutter`1 | `a.flee`1 | `c.evasion+0.045`, `c.growth_x0.7`  |
 | Frost | 氷雪 | 雪 | `a.frostbite`1, `a.null-burn`1, `a.ice-protect-breaker`1 | `a.ice-reflect`1, `a.ice-protect-breaker`1 | `e.ice+20`, `r.fire_x1.3`, `r.ice_x1/5` |
 | Fruit | 果物 | 果 | `a.bind`1, `a.null-antagonism`1 | `a.execution`1 | `r.thunder_x1.3`, `c.equip-slot+1` |
 | Dragon | 竜 | 竜 | `a.burn`1, `a.command`1 | `a.fire-reflect`1 | `e.fire+25`, `r.fire_x1/2`, `r.ice_x1.3`, `c.equip-slot+2` |

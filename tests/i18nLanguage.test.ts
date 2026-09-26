@@ -50,7 +50,7 @@ test('all indexed ability and terrain flavor families are complete and use suppo
 
   const abilityFamilies: Record<string, number> = {
     'confusion-success': 10, 'confusion-failure': 10, 'confusion-no-target': 13,
-    'soul-reap': 10, regeneration: 10, 'self-destruct': 10, decompose: 10, free: 10,
+    'soul-reap': 10, regeneration: 10, 'self-destruct': 10, decompose: 10, flee: 10,
     pursuit: 10, illusion: 10, 'illusion-breaker': 10, shock: 10, 'null-shock': 10,
     flying: 10, corrode: 10, 'null-corrode': 10, 'life-drain': 10, 'null-life-drain': 10,
     'death-touch': 10, 'null-death-touch': 10, burn: 10, 'null-burn': 10, bind: 10,

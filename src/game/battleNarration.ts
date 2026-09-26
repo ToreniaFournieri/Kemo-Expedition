@@ -153,17 +153,17 @@ const DECOMPOSE_LOGS = [
   'battleFlavor.decompose.10',
 ] as const;
 
-const FREE_LOGS = [
-  'battleFlavor.free.1',
-  'battleFlavor.free.2',
-  'battleFlavor.free.3',
-  'battleFlavor.free.4',
-  'battleFlavor.free.5',
-  'battleFlavor.free.6',
-  'battleFlavor.free.7',
-  'battleFlavor.free.8',
-  'battleFlavor.free.9',
-  'battleFlavor.free.10',
+const FLEE_LOGS = [
+  'battleFlavor.flee.1',
+  'battleFlavor.flee.2',
+  'battleFlavor.flee.3',
+  'battleFlavor.flee.4',
+  'battleFlavor.flee.5',
+  'battleFlavor.flee.6',
+  'battleFlavor.flee.7',
+  'battleFlavor.flee.8',
+  'battleFlavor.flee.9',
+  'battleFlavor.flee.10',
 ] as const;
 
 // SpecRef: 6.2.1 | Ability flavor text | log.pursuit
@@ -487,7 +487,7 @@ export type BattleFlavorFamily =
   | 'confusion-success' | 'confusion-failure' | 'confusion-no-target'
   | 'antagonism-ranged' | 'antagonism-magical' | 'antagonism-melee'
   | 'unstable-core-ranged' | 'unstable-core-magical'
-  | 'soul-reap' | 'regeneration' | 'self-destruct' | 'decompose' | 'free'
+  | 'soul-reap' | 'regeneration' | 'self-destruct' | 'decompose' | 'flee'
   | 'pursuit' | 'illusion' | 'illusion-breaker' | 'shock' | 'null-shock'
   | 'flying' | 'corrode' | 'null-corrode' | 'life-drain' | 'null-life-drain'
   | 'death-touch' | 'null-death-touch' | 'burn' | 'null-burn' | 'bind'
@@ -507,7 +507,7 @@ const INDEXED_BATTLE_FLAVORS: Record<BattleFlavorFamily, readonly string[]> = {
   'regeneration': REGENERATION_LOGS,
   'self-destruct': SELF_DESTRUCT_LOGS,
   'decompose': DECOMPOSE_LOGS,
-  'free': FREE_LOGS,
+  'flee': FLEE_LOGS,
   pursuit: PURSUIT_LOGS,
   illusion: ILLUSION_LOGS,
   'illusion-breaker': ILLUSION_BREAKER_LOGS,
@@ -611,7 +611,7 @@ export function buildDecomposeAction(actorName: string, targetName: string): str
 }
 
 export function buildFreeAction(actorName: string): string {
-  return pickRandomTranslatedEntry(FREE_LOGS).replace(/\{actor\}/g, actorName);
+  return pickRandomTranslatedEntry(FLEE_LOGS).replace(/\{actor\}/g, actorName);
 }
 
 // SpecRef: 6.2.1 | Ability flavor text | log.pursuit

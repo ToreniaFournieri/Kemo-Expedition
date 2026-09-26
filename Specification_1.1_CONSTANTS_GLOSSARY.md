@@ -228,7 +228,7 @@
 | `a.predator-sense` | 捕食 | 指定タイミングで発動し、相手のHPがN%未満なら命中+40する | Lv1: COMBAT4・30%, Lv2: COMBAT4・38%, Lv3: COMBAT4・44%, Lv4: COMBAT4・48%, Lv5: COMBAT4・50% | COMBAT | 3 |
 | `a.decompose` | 分解 | 指定タイミングで発動し、相手の物理防御力をxN倍にする | Lv1: COMBAT2・x6/7, Lv2: COMBAT2・x5/7, Lv3: COMBAT2・x4/7, Lv4: COMBAT2・x3/7, Lv5: COMBAT2・x2/7 | COMBAT | 2 |
 | `a.self-destruct` | 自爆 | 指定タイミングで発動し、自爆して相手に残ダメージのNを与える | Lv1: COMBAT2・1/10, Lv2: COMBAT2・3/10, Lv3: COMBAT2・5/10, Lv4: COMBAT2・7/10, Lv5: COMBAT2・100% | COMBAT | 2 |
-| `a.free` | 逃走 | 指定タイミングで発動し、戦闘から逃走する(戦闘は引分になる) | Lv1: COMBAT1, Lv2: COMBAT2, Lv3: COMBAT3, Lv4: COMBAT4, Lv5: COMBAT5 | COMBAT | 1 |
+| `a.flee` | 逃走 | 指定タイミングで発動し、戦闘から逃走する(戦闘は引分になる) | Lv1: COMBAT1, Lv2: COMBAT2, Lv3: COMBAT3, Lv4: COMBAT4, Lv5: COMBAT5 | COMBAT | 1 |
 | `a.auriferous` | 含金 | 自身が受けた攻撃回数の累計が10回に達するごとに、ドロップ抽選チケット数を+1する | - | END | 5 |
 | `a.first-aid` | 応急措置 | 各エリート戦後に、自身のHP増加基礎値とアイテムHP増加値のN%を回復する | Lv1: 2%, Lv2: 3%, Lv3: 4%, Lv4: 5%, Lv5: 6%  | END | 4 |
 

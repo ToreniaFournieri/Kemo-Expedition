@@ -143,7 +143,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'predator_sense', levelScale: ['Lv1: COMBAT4・30%', 'Lv2: COMBAT4・38%', 'Lv3: COMBAT4・44%', 'Lv4: COMBAT4・48%', 'Lv5: COMBAT4・50%'], subcategory: 'timed', phase: 'COMBAT', priority: 3 },
   { abilityId: 'decompose', levelScale: ['Lv1: COMBAT2・x6/7', 'Lv2: COMBAT2・x5/7', 'Lv3: COMBAT2・x4/7', 'Lv4: COMBAT2・x3/7', 'Lv5: COMBAT2・x2/7'], subcategory: 'timed', phase: 'COMBAT', priority: 2 },
   { abilityId: 'self_destruct', levelScale: ['Lv1: COMBAT2・1/10', 'Lv2: COMBAT2・3/10', 'Lv3: COMBAT2・5/10', 'Lv4: COMBAT2・7/10', 'Lv5: COMBAT2・100%'], subcategory: 'timed', phase: 'COMBAT', priority: 2 },
-  { abilityId: 'free', levelScale: ['Lv1: COMBAT1', 'Lv2: COMBAT2', 'Lv3: COMBAT3', 'Lv4: COMBAT4', 'Lv5: COMBAT5'], subcategory: 'timed', phase: 'COMBAT', priority: 1 },
+  { abilityId: 'flee', levelScale: ['Lv1: COMBAT1', 'Lv2: COMBAT2', 'Lv3: COMBAT3', 'Lv4: COMBAT4', 'Lv5: COMBAT5'], subcategory: 'timed', phase: 'COMBAT', priority: 1 },
   { abilityId: 'auriferous', levelScale: [], subcategory: 'timed' },
   { abilityId: 'first_aid', levelScale: ['Lv1: 2%', 'Lv2: 3%', 'Lv3: 4%', 'Lv4: 5%', 'Lv5: 6%'], subcategory: 'timed', phase: 'END', priority: 4 },
 ];

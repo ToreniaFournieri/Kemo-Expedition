@@ -42,7 +42,7 @@ const ABILITY_CATEGORY_IDS = {
     'mutual_magic_amplify', 'mutual_magic_restraint', 'mutual_physical_amplify',
     'mutual_physical_restraint', 'magic_seal', 'first_strike', 'slow', 'boost', 'frostbite',
     'howl', 'ranged_confusion', 'magic_confusion', 'melee_confusion', 'unstable_core',
-    'soul_reap', 'regeneration', 'predator_sense', 'decompose', 'self_destruct', 'free',
+    'soul_reap', 'regeneration', 'predator_sense', 'decompose', 'self_destruct', 'flee',
     'auriferous', 'first_aid', 'pursuit',
   ),
 } as const satisfies Record<MechanicCategory, readonly AbilityId[]>;
@@ -67,7 +67,7 @@ const ABILITY_MAX_LEVELS: Partial<Record<AbilityId, number>> = {
   mutual_physical_amplify: 5, mutual_physical_restraint: 5, first_strike: 3, slow: 5,
   boost: 5, frostbite: 5, howl: 5, ranged_confusion: 5, magic_confusion: 5, melee_confusion: 5,
   unstable_core: 5, soul_reap: 5, regeneration: 5, predator_sense: 5, decompose: 5,
-  self_destruct: 5, free: 5, first_aid: 5,
+  self_destruct: 5, flee: 5, first_aid: 5,
 };
 
 const ABILITY_TIMINGS: Partial<Record<AbilityId, MechanicTiming>> = {
@@ -86,7 +86,7 @@ const ABILITY_TIMINGS: Partial<Record<AbilityId, MechanicTiming>> = {
   predator_sense: { phase: 'COMBAT', priority: 3 },
   decompose: { phase: 'COMBAT', priority: 2 },
   self_destruct: { phase: 'COMBAT', priority: 2 },
-  free: { phase: 'COMBAT', priority: 1 },
+  flee: { phase: 'COMBAT', priority: 1 },
   first_aid: { phase: 'END', priority: 4 },
 };
 

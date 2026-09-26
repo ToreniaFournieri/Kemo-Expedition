@@ -1147,7 +1147,7 @@ test('END checkpoint gives simultaneous lethality to defeat and preserves exact 
 test('END checkpoint preserves forced Free draw at source position without entering END', () => {
   const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
     combatants: endCheckpointInput().combatants.map((combatant, index) => index === 0
-      ? { ...combatant, abilities: [{ id: 'free', level: 4 }] } : combatant),
+      ? { ...combatant, abilities: [{ id: 'flee', level: 4 }] } : combatant),
     randomValues: [0.875],
   })));
   assert.equal(output.outcome, 'draw');
@@ -1164,7 +1164,7 @@ test('END flavor draws use source-order zero-based array boundaries and skipped 
   for (const [random, expectedIndex] of [[0, 0], [0.999999, 9]] as const) {
     const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
       combatants: endCheckpointInput().combatants.map((combatant, index) => index === 0
-        ? { ...combatant, abilities: [{ id: 'free', level: 4 }] } : combatant),
+        ? { ...combatant, abilities: [{ id: 'flee', level: 4 }] } : combatant),
       randomValues: [random],
     })));
     assert.equal(output.protocolError, 0);
@@ -1471,7 +1471,7 @@ test('timed melee 4 preserves Predator Sense before a Free-forced draw', () => {
     enemyHp: 20,
     enemyMaxHp: 100,
     combatants: combatTimedInput().combatants.map((combatant, index) => index === 0
-      ? { ...combatant, abilities: [{ id: 'free', level: 4 }] }
+      ? { ...combatant, abilities: [{ id: 'flee', level: 4 }] }
       : { ...combatant, abilities: [{ id: 'predator_sense', level: 1 }] }),
     randomValues: [],
   })));
@@ -1480,7 +1480,7 @@ test('timed melee 4 preserves Predator Sense before a Free-forced draw', () => {
   assert.deepEqual(
     output.events.filter((event) => event.aux0 === BATTLE_ACTION_IDS.timed_ability)
       .map((event) => event.abilityId),
-    ['predator_sense', 'free'],
+    ['predator_sense', 'flee'],
   );
   assert.equal(output.randomConsumed, 0);
 });
@@ -1493,7 +1493,7 @@ test('timed timing 4 resolves ranged Unstable Core and magic Confusion before me
       ? { ...combatant, abilities: [
           { id: 'unstable_core', level: 1 },
           { id: 'magic_confusion', level: 1 },
-          { id: 'free', level: 4 },
+          { id: 'flee', level: 4 },
         ] }
       : {
           ...combatant,
@@ -1513,11 +1513,11 @@ test('timed timing 4 resolves ranged Unstable Core and magic Confusion before me
   assert.equal(output.randomConsumed, input.randomValues.length);
   assert.equal(output.diagnosticDrawCount, input.randomValues.length);
   assert.deepEqual([output.partyHp, output.enemyHp], [100, 13]);
-  const orderedAbilities = new Set(['unstable_core', 'magic_confusion', 'predator_sense', 'free']);
+  const orderedAbilities = new Set(['unstable_core', 'magic_confusion', 'predator_sense', 'flee']);
   assert.deepEqual(
     output.events.filter((event) => event.timing === 4 && orderedAbilities.has(event.abilityId ?? ''))
       .map((event) => event.abilityId),
-    ['unstable_core', 'magic_confusion', 'predator_sense', 'free'],
+    ['unstable_core', 'magic_confusion', 'predator_sense', 'flee'],
   );
 });
 
@@ -1532,7 +1532,7 @@ test('timed melee 2 preserves Free, Decompose, Confusion, then Self Destruct and
       ? {
           ...combatant,
           abilities: [
-            { id: 'free', level: 2 },
+            { id: 'flee', level: 2 },
             { id: 'decompose', level: 1 },
             { id: 'melee_confusion', level: 3 },
             { id: 'self_destruct', level: 1 },

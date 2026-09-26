@@ -78,7 +78,7 @@ export const ABILITY_BASE_NAME_KEYS: Record<AbilityId, string> = {
   predator_sense: 'ability.predator_sense.label',
   decompose: 'ability.decompose.label',
   self_destruct: 'ability.self_destruct.label',
-  free: 'ability.free.label',
+  flee: 'ability.flee.label',
   auriferous: 'ability.auriferous.label',
   no_offense: 'ability.no_offense.label',
   swarm: 'ability.swarm.label',
@@ -207,7 +207,7 @@ export const TERRAIN_REACTIVE_AND_TIMED_ABILITY_IDS: readonly AbilityId[] = [
   'predator_sense',
   'decompose',
   'self_destruct',
-  'free',
+  'flee',
   'auriferous',
   'first_aid',
 ] as const;

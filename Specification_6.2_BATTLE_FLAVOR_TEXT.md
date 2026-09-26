@@ -175,7 +175,7 @@
 | {actor} は断末魔と共に爆ぜ、{target} を巻き込んだ！ |
 | {actor} は破裂し、{target} を巻き込んだ！ |
 
-- `log.free`
+- `log.flee`
 
 | flavor text |
 |---|

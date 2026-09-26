@@ -452,7 +452,7 @@ const FLAVOR_ABILITIES = new Set<AbilityId>([
   'life_drain', 'null_life_drain', 'death_touch', 'null_death_touch', 'burn',
   'null_burn', 'bind', 'null_bind', 'resurrect', 'reanimate', 'requiem',
   'null_requiem', 'regeneration', 'decompose', 'self_destruct', 'soul_reap',
-  'free', 'flying', 'pursuit', 'unforgettable', 'equation_breaker',
+  'flee', 'flying', 'pursuit', 'unforgettable', 'equation_breaker',
   'null_antagonism', 'rage',
 ]);
 const CONFUSION_ABILITIES = new Set<AbilityId>([
@@ -1322,7 +1322,7 @@ function convertIndexedBattleSemanticEvents(
     }
 
     if (event.opcode === 'ability_activated' && event.phase === 2 && event.abilityId
-        && ['regeneration', 'flying', 'decompose', 'self_destruct', 'soul_reap', 'free', 'pursuit'].includes(event.abilityId)) {
+        && ['regeneration', 'flying', 'decompose', 'self_destruct', 'soul_reap', 'flee', 'pursuit'].includes(event.abilityId)) {
       const flavor = requireFlavor(flavors, index, event, flavorEvent);
       const family = flavorFamily(event.abilityId);
       if (!family) throw new Error(`Missing flavor family for ${event.abilityId}`);

@@ -108,7 +108,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
   },
   Aerial: {
     ability1: [{ id: 'flying', level: 1 }, { id: 'vine_cutter', level: 1 }],
-    ability30: [{ id: 'free', level: 1 }],
+    ability30: [{ id: 'flee', level: 1 }],
     bonuses: [{ type: 'evasion', value: 0.045 }, { type: 'growth_xV', value: 0.7 }],
   },
   Frost: {
