@@ -127,6 +127,9 @@ after the response has been prepared. Fundamental responses use
 * Reads use `GET`, except `simulationRun`, which uses `POST` because it performs
   substantial non-cacheable computation. It remains a Read operation and must
   not commit anything.
+* Every `GET` endpoint except the popup event stream also answers `HEAD` with
+  the status and headers (including `ETag`) that `GET` would return, and no body.
+  A `405` for a `GET` endpoint lists `Allow: GET, HEAD`.
 * Every compact observation request deliberately runs a new private 100-run
   simulation for each unlocked party against the response's immutable snapshot.
   This includes the `/read/observation` alias. It is an on-demand AI decision
@@ -213,6 +216,11 @@ All JSON Commit requests use this transport envelope:
   backups and never replaced by imported metadata. The import/reset receipt
   commits with the replacement state. Replaying an older receipt reports that
   historical result and does not reapply it to the replacement save.
+* The account's in-game clock (`inGameTime`) is also server-owned control
+  metadata, not save content. An exported backup does not carry it, and
+  import/reset leave it unchanged: importing a save exported at an earlier
+  in-game time does not rewind the clock. Import/reset do clear every party's
+  carried sub-Cycle progress (9.1.4.4), because it belongs to the replaced save.
 * The persisted game state and its idempotency receipt commit atomically. A
   persistence failure returns `save_failed`, publishes no popup event, and
   leaves the previous state and revision authoritative.
@@ -256,6 +264,15 @@ All JSON Commit requests use this transport envelope:
   a successful session; its Fundamental envelope and authentication rules remain
   unchanged. This boundary does not change elapsed-time selection, caps,
   efficiency, or speed modifiers defined by 9.1.3 and section 5.1.
+* Section 5.1 lets only the last Cycle keep partial progress. For each party,
+  the effective time left over after its last complete Cycle is carried to that
+  party's next `elapsed` request or login catch-up instead of being discarded,
+  so several short steps complete the same Cycles as one step of the same total
+  length. The carry is less than one Cycle, keyed by Party ID, and stored with
+  the clock in the account's control metadata (never in the save or a backup).
+  A request that processes no time leaves it unchanged. A successful immediate
+  `sortie`/`godsBattle` drops that party's carry, because it restarts the party's
+  Cycle. Import/reset clear all carries.
 
 ##### 9.1.4.5 Confirmation protocol
 

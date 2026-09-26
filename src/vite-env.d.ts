@@ -172,6 +172,7 @@ interface DesktopApiControlMetadata {
   confirmations?: import('./api/v1/authority').ApiV1Confirmation[];
   settings?: Record<string, unknown>;
   rngState?: number;
+  elapsedCarryMs?: Record<string, number>;
 }
 
 interface DesktopApiAccountRecord {

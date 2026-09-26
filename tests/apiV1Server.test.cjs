@@ -59,6 +59,14 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
   assert.equal(overview.status, 200);
   assert.ok(overview.headers.get('etag'));
   assert.equal((await fetch(`${descriptor.endpoint}/read/observation/overview`, { headers: { ...session, 'If-None-Match': overview.headers.get('etag') } })).status, 304);
+  // SpecRef: 9.1.4.3 | HEAD answers a read like GET, with the same ETag and no body.
+  const head = await fetch(`${descriptor.endpoint}/read/observation/overview`, { method: 'HEAD', headers: session });
+  assert.equal(head.status, 200);
+  assert.equal(head.headers.get('etag'), overview.headers.get('etag'));
+  assert.equal(await head.text(), '');
+  const headOnCommit = await fetch(`${descriptor.endpoint}/commit/base/changeJewelPriorityParty`, { method: 'HEAD', headers: session });
+  assert.equal(headOnCommit.status, 405);
+  assert.equal(headOnCommit.headers.get('allow'), 'POST');
   assert.equal((await fetch(`${descriptor.endpoint}/read/observation/overview?typo=1`, { headers: session })).status, 400);
   assert.equal((await fetch(`${descriptor.endpoint}/read/expedition/7/chargeStock`, { headers: session })).status, 400);
   assert.equal((await fetch(`${descriptor.endpoint}/read/base/searchItems?category=nonsense`, { headers: session })).status, 400);

@@ -8,6 +8,7 @@ import {
 } from '../../src/api/v1/authority';
 import { createFreshGameState } from '../../src/hooks/useGameState';
 import { stageApiV1ElapsedProgression } from '../../src/api/v1/elapsedProgression';
+import { getApproxAfkCycleDurationMs } from '../../src/game/afkScheduler';
 import { resetGameplayRandomForTesting } from '../../src/game/gameplayRandom';
 import type { GameState } from '../../src/types';
 
@@ -305,6 +306,75 @@ for (const [thrown, code] of [['illegal_action:charge_insufficient', 'illegal_ac
   assert.equal(future.data.elapsedSeconds, 0);
   assert.equal(future.simulatedAt, fixedNow);
   assert.equal(future.state, seed);
+}
+
+// SpecRef: 5.1 | Short elapsed steps carry each party's sub-Cycle remainder, so twelve 5-minute steps run exactly the
+// Cycles of one 1-hour step, and a zero-length call keeps the carried progress untouched.
+{
+  const scale = 1;
+  const options = {
+    simulatedAt: fixedNow,
+    realNow: fixedNow,
+    gameMode: 'mode.normal' as const,
+    enemyLevelOffset: 0,
+    cycleDurationScale: scale,
+    applyAutoEquipment: (state: GameState) => state,
+    runWithRandom: <T>(operation: () => T) => operation(),
+  };
+  const cycleMsById = Object.fromEntries(seed.parties.map(party => [String(party.id), getApproxAfkCycleDurationMs(party, scale)]));
+  assert.ok(Object.values(cycleMsById).some(cycleMs => cycleMs > 300_000), 'the fixture needs a Cycle longer than one short step');
+  const cyclesRun = (carriedBefore: Record<string, number>, carriedAfter: Record<string, number>, elapsedMs: number) =>
+    Object.fromEntries(Object.entries(cycleMsById).map(([id, cycleMs]) => [id, ((carriedBefore[id] ?? 0) + elapsedMs - (carriedAfter[id] ?? 0)) / cycleMs]));
+
+  const long = await stageApiV1ElapsedProgression(seed, { elapsedSeconds: 3_600 }, options);
+  const expectedCycles = cyclesRun({}, long.carriedMsByPartyId, 3_600_000);
+
+  let state = seed;
+  let simulatedAt = fixedNow;
+  let carried: Record<string, number> = {};
+  let totalChunks = 0;
+  for (let step = 0; step < 12; step += 1) {
+    const short = await stageApiV1ElapsedProgression(state, { elapsedSeconds: 300 }, { ...options, simulatedAt, carriedMsByPartyId: carried });
+    ({ state, simulatedAt } = short);
+    carried = short.carriedMsByPartyId;
+    totalChunks += short.chunkCount;
+    for (const [id, carriedMs] of Object.entries(carried)) assert.ok(carriedMs < cycleMsById[id], `party ${id} carries less than one Cycle`);
+  }
+  assert.ok(totalChunks > 0, 'short steps must still complete Cycles');
+  assert.deepEqual(carried, long.carriedMsByPartyId, 'the same remainder is left after the same total time');
+  assert.deepEqual(cyclesRun({}, carried, 3_600_000), expectedCycles);
+  for (const cycles of Object.values(expectedCycles)) assert.ok(Number.isInteger(cycles) && cycles > 0);
+
+  const noOp = await stageApiV1ElapsedProgression(state, {}, { ...options, simulatedAt, carriedMsByPartyId: carried });
+  assert.deepEqual(noOp.carriedMsByPartyId, carried);
+  assert.equal(noOp.state, state);
+}
+
+// The carried remainder lives in the account control beside the clock: elapsed stores it and import/reset clears it.
+{
+  const deps = dependencies();
+  const elapsed = await executeApiV1CommitTransaction(input({
+    operation: 'commit/progress/elapsed',
+    idempotencyKey: 'authority-key-carry',
+    parameters: { elapsedSeconds: 60 },
+  }), deps.value);
+  assert.equal(elapsed.ok, true);
+  if (!elapsed.ok) throw new Error(elapsed.error.code);
+  assert.ok(Object.keys(elapsed.control.elapsedCarryMs ?? {}).length > 0, 'a 60-second step keeps its partial Cycle');
+  assert.deepEqual(deps.persisted[0].control.elapsedCarryMs, elapsed.control.elapsedCarryMs);
+
+  const reset = await executeApiV1CommitTransaction(input({
+    operation: 'commit/setting/backup/reset',
+    idempotencyKey: 'authority-key-carry-reset',
+    expectedRevision: elapsed.response.revision,
+    parameters: { skipConfirmation: true },
+    state: elapsed.state,
+    simulatedAt: elapsed.simulatedAt,
+    control: elapsed.control,
+  }), dependencies().value);
+  assert.equal(reset.ok, true);
+  if (!reset.ok) throw new Error(reset.error.code);
+  assert.equal(reset.control.elapsedCarryMs, undefined);
 }
 
 // Advancing only the in-game clock is still a mutation with one revision, but requires no React state publication.
