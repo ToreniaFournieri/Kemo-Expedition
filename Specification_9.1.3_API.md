@@ -1327,6 +1327,13 @@ Path Parameters
     * Optional.
     * Format: `slotIndex`.
     * If specified, equips the target item to the specified slot, replacing the currently equipped item in that slot.
+  * `remainsMode`
+    * Optional.
+    * Boolean.
+    * Default: `false`.
+    * If `true`, the current auto-equipment mode is preserved.
+    * Useful when updating an equipped item without changing the mode, such as when changing its lock status.
+
 
 **3-3-6. `character/{characterId}/lockEquipment`**
 
