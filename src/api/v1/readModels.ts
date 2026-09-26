@@ -981,7 +981,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     const maxSlots = computePartyStats(party).characterStats[characterIndex].maxEquipSlots;
     return {
       equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => {
-        const availability = evaluateEquipmentSet(set, character, state.global.inventory, maxSlots);
+        const availability = evaluateEquipmentSet(set, character, state.global.inventory, state.global.jewels, maxSlots);
         return {
           equipmentSetId: set.slot,
           equipmentSet: {
@@ -989,13 +989,13 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
             name: set.name,
             createdAt: new Date(set.createdAt).toISOString(),
             ...(parameters.isEquipmentSetDetail === true || parameters.isEquipmentSetDetail === 'true'
-              ? { equipment: set.equipment.map((entry, index) => formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, null)) }
+              ? { equipment: set.equipment.map((entry, index) => formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, entry.item.jewel)) }
               : {}),
             availability: {
               allAvailable: availability.allAvailable,
               entries: availability.entries.map(({ entry, available, unavailableReason }, index) => ({
                 slotIndex: getSavedEquipmentSlot(entry, index),
-                item: formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, null),
+                item: formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, entry.item.jewel),
                 available,
                 unavailableReason,
               })),

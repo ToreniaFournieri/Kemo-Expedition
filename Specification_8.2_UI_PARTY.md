@@ -349,6 +349,7 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
   - When this button is pressed, all currently equipped items are unequipped.
 - **Save Equipment Set button:** (装備記憶)
   - When this button is pressed, the current equipment set is saved to a new empty saved slot.
+  - The saved set includes both equipped items and their attached jewel combinations.
 - **Load Equipment Set button:** (装備呼出▲)
   - When this button is pressed, expand the pane and display the saved equipment slots.
   - Pressing a saved slot attempts to apply the corresponding equipment set.
@@ -359,14 +360,18 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
       - The character does not have the required equipment bonus, such as `c.equip_melee`, `c.equip_ranged`, or `c.equip_magic`.
       - If the number of candidate items exceeds the character's available equipment slots, any excess items are not equipped.
   - Options:
-    - equipSet: `装備する` : Equip items, this option is visible only when all of items are available.
-    - equipSimilar: `類似のものを装備`: Equip matching items where available, and substitute unavailable items with similar items.
+    - equipSet: `装備する` :
+      - Equips the saved equipment set.
+      - This option is available only when all saved items and their associated jewel combinations are currently available.
+    - equipSimilar: `類似のものを装備`: Equip matching items and their associated jewel combinations where available, and substitute unavailable items with similar items.
     - equipExactMatchesOnly:`一致するものだけ装備`: Equip only items that exactly match the saved equipment set.
     - deleteSet: `セットを削除する`: Delete the selected set.
   - **Similar-item assignment:**
     - Super Rare prefix is excluded from substitution.
     - An item with a lower enhancement level may be used as a substitute.
-    - Jewels do not need to match exactly; suitable jewels are assigned using the same logic as Auto Equipment.
+    - Only when the party is the Jewel Priority Party:
+      - Jewels do not need to match the saved set exactly.
+      - Suitable jewels are assigned automatically using the same logic as Auto Equipment.
   - The saved equipment slot preserves the lock status of each item and restores it when the equipment set is loaded.
   - **Note:** items and jewels are stored separately in the inventory and should therefore be matched and assigned independently.
 - **Saved equipment slots:**

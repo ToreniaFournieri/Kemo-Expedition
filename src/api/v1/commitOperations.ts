@@ -386,7 +386,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       const loadMode = String(parameters.loadMode ?? 'equipSet');
       const maxSlots = computeCharacterStats(characterBefore, next.parties[partyIndex].level).maxEquipSlots;
       // `equipSet` promises every stored item; a partial set must be loaded through an explicit confirmed choice.
-      if (loadMode === 'equipSet' && !evaluateEquipmentSet(set, characterBefore, next.global.inventory, maxSlots).allAvailable) throw new Error('illegal_action:partial_load_requires_choice');
+      if (loadMode === 'equipSet' && !evaluateEquipmentSet(set, characterBefore, next.global.inventory, next.global.jewels, maxSlots).allAvailable) throw new Error('illegal_action:partial_load_requires_choice');
       reduce({ type: 'LOAD_EQUIPMENT_SET', partyIndex, characterId, slot: set.slot, mode: loadMode === 'equipSimilar' ? 'similar' : 'exact' });
       demoteFullAutoEquipment();
       const loaded = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;

@@ -2591,6 +2591,7 @@ export default function PartyTab({
                           <span className={getItemNameFontWeightClass(entry.item)}>{getItemDisplayName(entry.item)}</span>
                           <span> {getRarityShortLabel(entry.item.id, entry.item.name)} {renderTextWithRaceIcons(getItemStats(entry.item, getCharacterCategoryMultiplier(char, entry.item.category), hpDisplayMultiplier))}</span>
                           <span> [{t(CATEGORY_NAME_KEYS[entry.item.category] ?? 'party.categoryName.unknown')}]</span>
+                          {entry.item.jewel && <span> {getJewelSlotStatusText(entry.item.jewel.key, entry.item.jewel.rank)}</span>}
                         </div>
                       ))}
                     </div>

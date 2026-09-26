@@ -28,7 +28,7 @@ delete inventory[lostKey];
 const partial: GameState = { ...bare, global: { ...bare.global, inventory } };
 const full: GameState = bare;
 
-// Jewels are assigned independently every time, so a stored Jewel (even one that no longer exists) never affects availability.
+// A saved set carries each item's Jewel (Spec 8.2.4), so a saved Jewel that no longer exists makes the set partial.
 const jeweledEntryIndex = saved.state.global.savedEquipmentSets[0].equipment.findIndex((entry) => entry.item.category === 'armor');
 assert.ok(jeweledEntryIndex >= 0, 'fixture set has an armor entry');
 const jeweledSet = structuredClone(saved.state.global.savedEquipmentSets[0]);
@@ -119,14 +119,30 @@ let durable: ApiV1ControlMetadata;
   assert.ok(missing.includes('not_found'), missing);
 }
 
-// 7. A missing saved Jewel never makes a set partial: no confirmation, the item is equipped, and Jewels are assigned afresh.
+// 7. A missing saved Jewel makes the set partial: the load is challenged, and a confirmed exact-only load equips the
+// item without the Jewel (an exact-only load never attaches another Jewel).
 {
-  const loaded = await executeApiV1CommitTransaction(request(missingExactJewel, { equipmentSetId: setId }, { idempotencyKey: 'load-set-jewel-001' }), deps());
-  assert.equal(loaded.ok, true, 'no confirmation challenge for a missing saved Jewel');
+  const challenged = await executeApiV1CommitTransaction(request(missingExactJewel, { equipmentSetId: setId }, { idempotencyKey: 'load-set-jewel-001' }), deps());
+  assert.equal(challenged.ok === false && challenged.error.code, 'confirmation_required', 'a missing saved Jewel needs a choice');
+  if (challenged.ok) throw new Error('expected a challenge');
+  const jewelToken = (challenged.error.details as { confirmationToken: string }).confirmationToken;
+  const loaded = await executeApiV1CommitTransaction(request(missingExactJewel, { equipmentSetId: setId, loadMode: 'equipExactMatchesOnly' }, { idempotencyKey: 'load-set-jewel-001', control: challenged.durableControl!, confirmationToken: jewelToken }), deps());
+  assert.equal(loaded.ok, true);
   if (!loaded.ok) throw new Error(loaded.error.code);
   const report = (loaded.response.data as { loadReport: { entries: Array<{ slotIndex: number; result: string }> } }).loadReport;
   const jeweledSlot = jeweledSet.equipment[jeweledEntryIndex].slotIndex ?? jeweledEntryIndex;
   assert.equal(report.entries.find((entry) => entry.slotIndex === jeweledSlot)?.result, 'equipped');
+  assert.equal(character(loaded.state).equipment[jeweledSlot]?.jewel ?? null, null);
+}
+
+// 8. A saved Jewel is restored exactly when available.
+{
+  const withJewel: GameState = { ...full, global: { ...full.global, jewels: { ...full.global.jewels, 'fort:2': 1 }, savedEquipmentSets: [jeweledSet] } };
+  const loaded = await executeApiV1CommitTransaction(request(withJewel, { equipmentSetId: setId }, { idempotencyKey: 'load-set-jewel-002' }), deps());
+  assert.equal(loaded.ok, true, 'every item and Jewel is available: no challenge');
+  if (!loaded.ok) throw new Error(loaded.error.code);
+  const jeweledSlot = jeweledSet.equipment[jeweledEntryIndex].slotIndex ?? jeweledEntryIndex;
+  assert.deepEqual(character(loaded.state).equipment[jeweledSlot]?.jewel, { key: 'fort', rank: 2 });
 }
 
 // The Party set controls map to one command each; the load choice the player made is answered on their behalf.

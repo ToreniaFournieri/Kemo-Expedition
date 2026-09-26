@@ -206,21 +206,22 @@ calls.length = 0;
 
   // The saved-set read returns each entry's own lock flag (not the item's) when detail is requested, as a boolean or a string.
   const first = equipped[0];
-  const withSet = { ...state, global: { ...state.global, savedEquipmentSets: [{ slot: 4, name: 'Boss', createdAt: Date.UTC(2026, 8, 20), equipment: [{ slotIndex: first.slot, item: { ...first.item, isLocked: false, jewel: { key: 'ward' as const, rank: 2 } }, isLocked: true }] }] } };
+  // The saved Jewel is in the Jewel inventory, so the entry is available (Spec 8.2.4: a set is the item and Jewel combination).
+  const withSet = { ...state, global: { ...state.global, jewels: { ...state.global.jewels, 'ward:2': 1 }, savedEquipmentSets: [{ slot: 4, name: 'Boss', createdAt: Date.UTC(2026, 8, 20), equipment: [{ slotIndex: first.slot, item: { ...first.item, isLocked: false, jewel: { key: 'ward' as const, rank: 2 } }, isLocked: true }] }] } };
   for (const detail of [true, 'true']) {
     const read = await buildApiV1ReadData(`read/build/character/${target.id}/equipmentSet`, withSet, { isEquipmentSetDetail: detail }, context) as {
       equipmentSets: { equipmentSetId: number; equipmentSet: { name: string; createdAt: string; equipment?: string[]; availability: { allAvailable: boolean; entries: Array<{ slotIndex: number; item: string; available: boolean; unavailableReason: string | null }> } } }[];
     };
-    assert.equal(read.equipmentSets[0].equipmentSet.equipment?.[0], `${first.slot}/1/${first.item.id}/${first.item.enhancement}/${first.item.superRare}`, 'saved sets carry no Jewel');
+    assert.equal(read.equipmentSets[0].equipmentSet.equipment?.[0], `${first.slot}/1/${first.item.id}/${first.item.enhancement}/${first.item.superRare}/ward:2`, 'saved sets carry their Jewel');
     const rebuilt = parseSavedEquipmentSet(read.equipmentSets[0]);
     assert.equal(rebuilt.slot, 4);
     assert.equal(rebuilt.equipment[0].isLocked, true);
-    assert.equal(rebuilt.equipment[0].item.jewel, null);
+    assert.deepEqual(rebuilt.equipment[0].item.jewel, { key: 'ward', rank: 2 });
     assert.equal(rebuilt.createdAt, Date.UTC(2026, 8, 20));
     assert.equal(read.equipmentSets[0].equipmentSet.availability.allAvailable, true);
     assert.deepEqual(read.equipmentSets[0].equipmentSet.availability.entries, [{
       slotIndex: first.slot,
-      item: `${first.slot}/1/${first.item.id}/${first.item.enhancement}/${first.item.superRare}`,
+      item: `${first.slot}/1/${first.item.id}/${first.item.enhancement}/${first.item.superRare}/ward:2`,
       available: true,
       unavailableReason: null,
     }]);

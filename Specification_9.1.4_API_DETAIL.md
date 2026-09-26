@@ -1263,7 +1263,12 @@ type DiaryEntry = {
   `availability`: `allAvailable` plus ordered entries containing `slotIndex`, the
   saved Equipment Entry string as `item`, `available`, and stable
   `unavailableReason` (`slot_unavailable`, `not_equippable`, `unavailable`, or
-  null). Jewels never affect this availability. `saveEquipmentSet.parameters.equipmentSet` is
+  null). A saved set stores each item's Jewel (Spec 8.2.4), shown in the Equipment
+  Entry; an entry is available only when its item and its saved Jewel (in the Jewel
+  inventory or worn by this character) are both available. `equipSimilar` and
+  `equipExactMatchesOnly` attach each saved Jewel where available; only for the
+  Jewel Priority Party does `equipSimilar` then fill items left without a Jewel
+  by the Auto Equipment allocator. `saveEquipmentSet.parameters.equipmentSet` is
   `{name?: string}`; omission of name uses the existing UI default. Saving captures
   current equipment at `expectedRevision` into the next empty set slot, never
   accepts a caller-created equipment snapshot, and never overwrites a full list.

@@ -3094,6 +3094,7 @@ function reduceGameState(
           state.global.gold,
           maxSlots,
           action.type === 'LOAD_EQUIPMENT_SET' ? action.mode : 'exact',
+          state.global.jewelAutoEquipPriorityPartyId === currentParty.id,
         );
       const characters = [...currentParty.characters];
       characters[charIndex] = result.character;
