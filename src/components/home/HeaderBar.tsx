@@ -16,6 +16,9 @@ interface HeaderBarProps {
 
 export function HeaderBar({ header, nowMs, gameTitle, versionLabel, onReportProgress, onEnableAutoRepeat }: HeaderBarProps) {
   const view = buildHeaderView(header, nowMs);
+  const kemoLabel = t('setting.theme.kemo');
+  // Latin-script titles need a word space before the mode suffix ("BoKemo orca"); CJK titles stay joined.
+  const orcaSuffix = /[A-Za-z]$/.test(kemoLabel) ? ' orca' : 'orca';
   const hoursLabel = view.remainingBonusHours === null ? null : `${formatNumber(view.remainingBonusHours)}h`;
   const speedOfTimeLabel = view.speedOfTimeUnlimited
     ? '(∞)'
@@ -32,8 +35,8 @@ export function HeaderBar({ header, nowMs, gameTitle, versionLabel, onReportProg
             <h1 className="flex items-center gap-1 text-lg font-bold">
               <span aria-label={gameTitle}>
                 <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>{t('home.nav.expeditionIcon')}</span>
-                <span>{t('setting.theme.kemo')}</span>
-                {header?.gameMode === 'mode.orca' && <span>orca</span>}
+                <span>{kemoLabel}</span>
+                {header?.gameMode === 'mode.orca' && <span className="whitespace-pre">{orcaSuffix}</span>}
               </span>
               <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
             </h1>
