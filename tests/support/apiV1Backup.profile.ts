@@ -89,7 +89,7 @@ function popupEvent(revision: number, sequence: number) {
   assert.throws(() => applyApiV1Commit('commit/setting/backup/import', original, {}, baseContext({ uploadedFiles: { backup: {} } })), /invalid_backup/, 'file present without contentBase64');
   assert.throws(() => applyApiV1Commit('commit/setting/backup/import', original, {}, baseContext({
     uploadedFiles: { backup: { contentBase64: Buffer.from('not a real backup', 'utf8').toString('base64') } },
-  })), 'a well-formed but non-backup upload still throws instead of silently corrupting the state');
+  })), /^Error: invalid_backup$/, 'a non-backup upload is the stable invalid_backup marker, never the decoder\'s own error');
 }
 
 // 3. Reset discards the state for a fresh one in the same language and flags resetControlEvents.
@@ -235,6 +235,15 @@ function popupEvent(revision: number, sequence: number) {
     pathParameters: {}, parameters: {}, uploadedFiles: { backup: uploadedBackupFile(savePayload) }, transport: {},
     expectedRevision: revision, idempotencyKey: 'import-idempotency-key-01', confirmationToken,
   });
+  // A file that is not a backup is refused at admission: no confirmation token is ever issued for it.
+  const bogus = await api.handle('commit/setting/backup/import', {
+    ...importRequest(null), idempotencyKey: 'import-idempotency-key-bogus',
+    uploadedFiles: { backup: uploadedBackupFile('{"not":"a backup"}') },
+  }) as Record<string, unknown>;
+  const bogusError = (bogus.error ?? {}) as Record<string, unknown>;
+  assert.equal(bogusError.code, 'invalid_request');
+  assert.deepEqual(bogusError.details, { field: 'backup', reason: 'invalid_backup' });
+
   const challenge = await api.handle('commit/setting/backup/import', importRequest(null)) as Record<string, unknown>;
   const error = (challenge.error ?? {}) as Record<string, unknown>;
   assert.equal(error.code, 'confirmation_required', 'backup/import requires confirmation like backup/reset');

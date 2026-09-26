@@ -258,7 +258,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
     await sleep(300);
     const expired = await client.request('GET', 'read/observation/overview');
     assert.equal(expired.status, 401);
-    assert.ok(['login_required', 'control_lease_expired'].includes(String(expired.body.error?.code)), JSON.stringify(expired.body));
+    assert.equal(expired.body.error?.code, 'control_lease_expired', 'the idle client is told its lease expired, not merely that it must log in');
     assert.equal(s.renderer().global.userId, s.playerUserId, "expiry logs out and restores the player's save");
     assert.equal((await client.logIn('Idle')).status, 200, 'a new login succeeds after expiry');
   } finally { await s.close(); }

@@ -697,7 +697,7 @@ calls.length = 0;
   assert.equal(steady.partyInfo[0].party.condition, 'steady/55');
   assert.equal(compact.attention.notification[0].unreadDiary, 1);
   const dungeonName = getDungeonById(1)!.name;
-  assert.deepEqual(compact.attention.notification[0].unreadDiaryTitle, [`120/${encodeURIComponent('Defeat Record')}/${encodeURIComponent(dungeonName)}/20260916 22:04`]);
+  assert.deepEqual(compact.attention.notification[0].unreadDiaryTitle, [`120/Defeat Record/${dungeonName.replace(/%/g, '%25').replace(/\//g, '%2F')}/20260916 22:04`]);
   calls.length = 0;
 }
 
@@ -784,6 +784,7 @@ calls.length = 0;
   const list = await buildApiV1ReadData('resources/superRareList', state, {}, context) as { superRare: string[] };
   assert.equal(list.superRare.length, SUPER_RARE_TITLES.filter((title) => title.value > 0).length);
   assert.ok(!list.superRare.some((entry) => entry.startsWith('0/')), 'title 0 ("no title") is not listed');
+  assert.equal(list.superRare[0], '1/World-Conquering/c.growth_x1.6, c.evasion-0.005', 'free text stays readable: only `%` and `/` are escaped');
   const [id, name, bonus] = list.superRare[0].split('/').map(decodeURIComponent);
   assert.equal(id, '1');
   assert.equal(name, 'World-Conquering');
@@ -1014,17 +1015,27 @@ assert.deepEqual(state, before);
   const terrainSection = GLOSSARY_SECTIONS.find((section) => section.heading === '1.1.10 t. terrain effects')!;
   const someTerrain = terrainSection.entries[0];
   const bonusSection = GLOSSARY_SECTIONS.find((section) => section.heading === '2.1.2 b. bonus')!;
-  const fresh = await buildApiV1ReadData('resources/glossary', state, { category: 't.' }, context) as { entries: { glossaryId: string; category: string }[]; validOptions: { category: string[] } };
+  const fresh = await buildApiV1ReadData('resources/glossary', state, { category: 'Terrain.' }, context) as { entries: { glossaryId: string; category: string }[]; validOptions: { category: string[] } };
   assert.equal(validate(fresh), true, JSON.stringify(validate.errors));
   assert.deepEqual(fresh.entries, [], 'no terrain effect is revealed in a fresh save');
-  assert.deepEqual(fresh.validOptions.category, ['a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.']);
+  assert.deepEqual(fresh.validOptions.category, ['Ab.', 'Base.', 'Fixed.', 'Inc.', 'Mech.', 'Faith.', 'Magic.', 'Quest.', 'Terrain.']);
   const revealed = { ...state, global: { ...state.global, revealedGlossaryTerrainKeys: [someTerrain.key] } };
-  const afterReveal = await buildApiV1ReadData('resources/glossary', revealed, { category: 't.' }, context) as { entries: { glossaryId: string }[] };
+  const afterReveal = await buildApiV1ReadData('resources/glossary', revealed, { category: 'Terrain.' }, context) as { entries: { glossaryId: string }[] };
   assert.deepEqual(afterReveal.entries.map((entry) => entry.glossaryId), [someTerrain.key]);
-  const always = await buildApiV1ReadData('resources/glossary', state, { category: 'b.' }, context) as { entries: { glossaryId: string; label: string; description: string }[] };
+  const always = await buildApiV1ReadData('resources/glossary', state, { category: 'Base.' }, context) as { entries: { glossaryId: string; label: string; description: string }[] };
   assert.deepEqual(always.entries.map((entry) => entry.glossaryId), bonusSection.entries.map((entry) => entry.key), 'non-reveal-gated categories are always fully visible');
-  const narrowed = await buildApiV1ReadData('resources/glossary', state, { category: 'b.', glossaryId: bonusSection.entries[0].key }, context) as { entries: { glossaryId: string }[] };
+  const narrowed = await buildApiV1ReadData('resources/glossary', state, { category: 'Base.', glossaryId: bonusSection.entries[0].key }, context) as { entries: { glossaryId: string }[] };
   assert.deepEqual(narrowed.entries.map((entry) => entry.glossaryId), [bonusSection.entries[0].key]);
+  // The ability section has no rows of its own: its entries are the bonus-ability glossary's, reveal-gated per ability.
+  const { LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES } = await import('../../src/data/bonusAbilityGlossary.ts');
+  const someAbility = LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES[0];
+  const noAbility = await buildApiV1ReadData('resources/glossary', state, { category: 'Ab.' }, context) as { entries: unknown[] };
+  assert.deepEqual(noAbility.entries, [], 'no ability is revealed in a fresh save');
+  const abilityRevealed = { ...state, global: { ...state.global, revealedGlossaryAbilityIds: [someAbility.abilityId] } };
+  const abilities = await buildApiV1ReadData('resources/glossary', abilityRevealed, { category: 'Ab.' }, context) as { entries: { glossaryId: string; category: string; label: string; description: string }[] };
+  assert.equal(validate(abilities), true, JSON.stringify(validate.errors));
+  assert.deepEqual(abilities.entries.map((entry) => [entry.glossaryId, entry.category, entry.label]), [[someAbility.abilityId, 'Ab.', someAbility.label]]);
+  assert.ok(abilities.entries[0].description.startsWith(someAbility.description));
 }
 
 // Character Roster (8.6): base status is unchanged; the bonus vocabulary excludes ability-type bonuses (redundant with

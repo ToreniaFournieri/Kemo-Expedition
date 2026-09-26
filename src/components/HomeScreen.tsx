@@ -89,7 +89,7 @@ import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel,isDebugModeEna
 import { getItemCoreConceptValue,getItemDisplayName,getLocalizedItemName } from '../game/gameState';
 import { memoryMonitor } from '../game/memoryMonitoring';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../game/instantExpedition';
-import { planAutoJewelAssignmentsForCharacter } from '../game/jewel';
+import { isJewelAllowedForCategory, planAutoJewelAssignmentsForCharacter } from '../game/jewel';
 import { computePartyStats } from '../game/partyComputation';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { getFreeActionStepCount } from '../game/partyStateDuration';
@@ -1713,17 +1713,28 @@ export function HomeScreen({
           if (resolvedCategories.length === 0) return 0;
           return resolvedCategories.reduce((sum, category) => sum + (equippedCategoryCounts[category] ?? 0), 0);
         };
+        // SpecRef: 7.1.2.2 | Initialize the simulation memory | Memory A/B hold only locked and Super Rare items.
+        // Every other equipped item is reevaluated (step 2), so it must not block its own replacement candidates.
         simulatedEquipmentSlots.forEach((item) => {
-          if (!item) return;
+          if (!item || (item.isLocked !== true && item.superRare <= 0)) return;
           memoryItemIds.add(item.id);
           addItemCBonusSignaturesToMemory(item, memoryCBonusNames);
-          if (item.isLocked === true || item.superRare > 0) {
-            equippedCategoryCounts[item.category] = (equippedCategoryCounts[item.category] ?? 0) + 1;
-          }
+          equippedCategoryCounts[item.category] = (equippedCategoryCounts[item.category] ?? 0) + 1;
         });
 
         if (autoEquipmentMode === 2) {
+          // The replaceable items rejoin the candidate pool beside Inventory, so the simulated set is built as if
+          // every replaceable slot were empty and an equipped item survives only by winning its category again.
+          const currentKeyBySlot = new Map<number, string>();
           replaceableSlotIndexes.forEach((slotIndex) => {
+            const item = simulatedEquipmentSlots[slotIndex];
+            if (!item) return;
+            currentKeyBySlot.set(slotIndex, getVariantKey(item));
+            addItemToSimulatedInventory(item.jewel ? { ...item, jewel: null } : item);
+          });
+
+          const plannedKeys: string[] = [];
+          for (let planned = 0; planned < replaceableSlotIndexes.length; planned += 1) {
             const skippedCategories = new Set<AutoEquipmentTargetCategory>();
             let resolvedSelection: { itemKey: string; targetCategory: AutoEquipmentTargetCategory } | null = null;
 
@@ -1751,18 +1762,9 @@ export function HomeScreen({
               resolvedSelection = { itemKey, targetCategory };
             }
 
-            if (!resolvedSelection) return;
-
+            if (!resolvedSelection) break;
             const variant = simulatedInventory[resolvedSelection.itemKey];
-            if (!variant) return;
-
-            const previousItem = simulatedEquipmentSlots[slotIndex];
-            const candidateValue = getAutoEquipmentSelectionValueForCharacter(character, variant.item);
-            const previousValue = previousItem ? getAutoEquipmentSelectionValueForCharacter(character, previousItem) : Number.NEGATIVE_INFINITY;
-            if (previousItem && candidateValue <= previousValue) {
-              equippedCategoryCounts[previousItem.category] = (equippedCategoryCounts[previousItem.category] ?? 0) + 1;
-              return;
-            }
+            if (!variant) break;
 
             equippedCategoryCounts[variant.item.category] = (equippedCategoryCounts[variant.item.category] ?? 0) + 1;
             if (
@@ -1772,20 +1774,73 @@ export function HomeScreen({
               resolvedFallbackTargetCounts[resolvedSelection.targetCategory] = (resolvedFallbackTargetCounts[resolvedSelection.targetCategory] ?? 0) + 1;
             }
             removeItemFromSimulatedInventory(resolvedSelection.itemKey);
-            simulatedEquipmentSlots[slotIndex] = variant.item;
             memoryItemIds.add(variant.item.id);
             addItemCBonusSignaturesToMemory(variant.item, memoryCBonusNames);
-            dispatchEquipItem(character.id, slotIndex, resolvedSelection.itemKey, partyIndex);
+            plannedKeys.push(resolvedSelection.itemKey);
+          }
+
+          // SpecRef: 7.1.2.4 | Commit: Equipment change | apply only the differences.
+          // A planned item that is already equipped stays in its slot (with its jewel); only the rest move.
+          const openSlots = new Set(replaceableSlotIndexes);
+          const incomingKeys: string[] = [];
+          plannedKeys.forEach((itemKey) => {
+            const keptSlot = replaceableSlotIndexes.find((slotIndex) => openSlots.has(slotIndex) && currentKeyBySlot.get(slotIndex) === itemKey);
+            if (keptSlot === undefined) {
+              incomingKeys.push(itemKey);
+              return;
+            }
+            openSlots.delete(keptSlot);
+          });
+
+          incomingKeys.forEach((itemKey) => {
+            const variant = sourceState.global.inventory[itemKey] ?? simulatedInventory[itemKey];
+            if (!variant) return;
+            // Prefer the slot whose outgoing item shares the category (its jewel can carry over), then an empty slot.
+            const open = replaceableSlotIndexes.filter((slotIndex) => openSlots.has(slotIndex));
+            const slotIndex = open.find((index) => simulatedEquipmentSlots[index]?.category === variant.item.category)
+              ?? open.find((index) => simulatedEquipmentSlots[index] == null)
+              ?? open[0];
+            if (slotIndex === undefined) return;
+            openSlots.delete(slotIndex);
+
+            const previousItem = simulatedEquipmentSlots[slotIndex];
+            dispatchEquipItem(character.id, slotIndex, itemKey, partyIndex);
             summary.equippedCount += 1;
+            let nextItem: Item = variant.item.jewel ? { ...variant.item, jewel: null } : variant.item;
+            // The outgoing item's jewel returns to Inventory with it; keep it on the character when it still fits.
+            if (previousItem?.jewel && isJewelAllowedForCategory(nextItem.category, previousItem.jewel.key)) {
+              dispatchAttachJewel(character.id, slotIndex, previousItem.jewel.key, previousItem.jewel.rank, partyIndex);
+              nextItem = { ...nextItem, jewel: previousItem.jewel };
+            }
+            simulatedEquipmentSlots[slotIndex] = nextItem;
             queueAutoEquipmentNotification(
               party.name,
               character.name,
               character.id,
               slotIndex,
-              variant.item,
+              nextItem,
               previousItem,
               partyIndex,
             );
+          });
+
+          // A replaceable item the plan did not reach (no missing category left for it) stays equipped unless it
+          // would duplicate an item ID or `c.*` bonus of the simulated set.
+          replaceableSlotIndexes.forEach((slotIndex) => {
+            if (!openSlots.has(slotIndex)) return;
+            const item = simulatedEquipmentSlots[slotIndex];
+            if (!item) return;
+            const itemFacts = usesItemFactCache ? getItemFacts(item) : null;
+            const cBonusNames = itemFacts?.cBonusSignatures ?? getItemCBonusSignatures(item);
+            const duplicates = memoryItemIds.has(item.id) || [...cBonusNames].some((bonusName) => memoryCBonusNames.has(bonusName));
+            if (!duplicates) {
+              memoryItemIds.add(item.id);
+              addItemCBonusSignaturesToMemory(item, memoryCBonusNames);
+              return;
+            }
+            dispatchEquipItem(character.id, slotIndex, null, partyIndex);
+            simulatedEquipmentSlots[slotIndex] = null;
+            summary.unequippedCount += 1;
           });
         }
 

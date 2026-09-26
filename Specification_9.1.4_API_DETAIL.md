@@ -293,6 +293,10 @@ An operation requiring confirmation first returns HTTP `409`:
 }
 ```
 
+The token goes in the top-level `confirmationToken` member of the commit envelope
+(9.1.4.4), never inside `parameters`. A request that would be rejected anyway (an
+unreadable backup, an invalid parameter) is rejected before any challenge is issued.
+
 The token expires after five minutes and is bound to the authenticated session,
 current revision, endpoint, base parameters, idempotency key, and any listed
 choice. The client repeats the request with the token and, when applicable, one
@@ -796,6 +800,9 @@ definitions in 9.1.3.
   are PNG, JPEG, and WebP, verified by content rather than filename alone.
 * Imported backups are decoded, schema-validated, migrated in memory, and fully
   hydrated before replacing the active save. Failure preserves the active save.
+  The upload is decoded at admission, before a confirmation challenge; a file that
+  is not a readable backup is `invalid_request` with `details: {field: "backup",
+  reason: "invalid_backup"}`, never the decoder's own exception text.
   Success creates one new authoritative revision and invalidates prior cursors,
   confirmations, and observation caches.
 * Filenames, attachment metadata, and text are treated as untrusted input.
@@ -831,7 +838,21 @@ stringified exception such as `Error: illegal_action:…`. A schema rejection na
 the member in `details.field` and the failed keyword in `details.rule`; when an
 array-typed GET parameter was sent comma-joined (`targetItems=a,b`) it also carries
 `details.hint: "repeat_parameter"`, and the message says to repeat the parameter
-(`targetItems=a&targetItems=b`, 9.1.4.14).
+(`targetItems=a&targetItems=b`, 9.1.4.14). An enum mismatch is reported as one
+`enum` issue per member with its `allowedValues`, not one issue per literal.
+
+Every `illegal_action` carries a reason token. Refusals that apply to many
+operations use shared tokens: `debug_mode_required` (the dev/beta restriction),
+`mode_fixed` and `enemy_level_offset_fixed` (`modeSelect`),
+`api_account_display_setting` (a runtime display setting sent by an API account),
+`theme_unavailable`, `nothing_to_undo`, `nothing_to_redo`,
+`equipment_unavailable`, `deity_locked`, `deity_in_use`, and `variant_not_sold`.
+
+`control_lease_expired` is returned to the session whose lease expired from
+inactivity until that client logs in or out again; after that, or for any other
+unknown session, the code is `login_required`. A request whose `Origin` is not the
+packaged application origin is `authentication_failed` with
+`details.reason: "origin_not_allowed"`.
 
 | Status | Code | Meaning |
 | --- | --- | --- |
@@ -1026,8 +1047,10 @@ use the same operation without HTTP authentication headers.
   every integer. An action is `{available: boolean, unavailableReason: string|null}`;
   the reason is null exactly when available. Enumerated keys come from the shared
   gameplay catalogs, not translated labels.
-* Slash-delimited formats containing free text encode each text component with
-  percent-encoding before joining; clients split first and decode once. Numeric
+* Slash-delimited formats containing free text escape each text component before
+  joining: `%` becomes `%25` and `/` becomes `%2F`, and nothing else is escaped, so
+  names, spaces, and non-ASCII text stay readable. Clients split on `/` first and
+  then decode each component once (`decodeURIComponent` restores it exactly). Numeric
   item/equipment formats require no escaping. Compact prose is a display field,
   not an alternative source of gameplay identifiers. The documented compact
   Diary timestamp uses the game clock's display timezone; transport `*At` values
@@ -1221,8 +1244,19 @@ type DiaryEntry = {
 * `purchaseShopItems.items` is `{shopItemId: number}[]`.
   `sellInventoryItems.items` and `unlockSoldItems.items` are nonempty `Item Format`
   string arrays. The latter returns `{items: string[]}` of changed variants with
-  zero currency effects. Sell/purchase return `{items: {item: string, quantity:
-  number}[], goldDelta: number, pranaDelta: number}`.
+  zero currency effects; a well-formed variant that is not currently auto-sold is
+  `illegal_action:variant_not_sold`. Sell/purchase return `{items: {item: string,
+  quantity: number}[], goldDelta: number, pranaDelta: number}`; each purchase entry
+  also has `autoSoldQuantity`, the number of those items turned straight into Gold
+  because the variant is auto-sold or already at the 99 stack cap (its sell price is
+  included in `goldDelta`).
+* Saved equipment set names (`saveEquipmentSet.equipmentSet.name`,
+  `renameEquipmentSet.name`) are 1–80 characters, the Party pane's limit.
+* `resources/glossary.category` uses the 9.1.3 (4-2-4) keys `Ab.`, `Base.`,
+  `Fixed.`, `Inc.`, `Mech.`, `Faith.`, `Magic.`, `Quest.`, and `Terrain.`; each entry
+  reports the same key. `Ab.` entries are the Glossary pane's bonus-ability entries
+  (`glossaryId` is the ability ID, the description carries the level scale), and
+  only `Ab.` and `Terrain.` entries are reveal-gated.
 * `modeSelect` is a partial update. `autoEquipment.immediateAutoEquipment`
   defaults to false. All other defaults and environment restrictions remain
   those explicitly defined in 9.1.3 and the UI specifications.
@@ -1280,7 +1314,7 @@ type DiaryEntry = {
   keys, for example `steady/55`. Each `unreadDiaryTitle` is
   `<diaryEntryId>/<diaryTitle>/<diarySubtitle>/<YYYYMMDD HH:MM>`: the title and
   subtitle are the Diary tab's (current language; the subtitle is the expedition
-  name for an ordinary entry) and are percent-encoded free text.
+  name for an ordinary entry) and are escaped free text (only `%` and `/`).
 * `itemCompendium` applies every documented filter (`category`, `rarity`, `tier`,
   `itemId`, `searchAbility`, `searchBonus`); every filter, `category` included, is
   optional, so `itemId` alone looks up one item. Each item carries `itemId`, `category`,
@@ -1296,7 +1330,8 @@ type DiaryEntry = {
   reveal every entry.
 * `superRareList` lists titles `1–N` only (optional `superRareId` filter) as
   `<superRareId>/<name>/<bonus>`: `name` is the title in the current language and
-  `bonus` the title's bonus IDs joined by `, `, both percent-encoded.
+  `bonus` the title's bonus IDs joined by `, `, both escaped free text (only `%`
+  and `/`), for example `1/World-Conquering/c.growth_x1.6, c.evasion-0.005`.
 * Feedback parameters are `name: string`, `category: feedback|question|
   featureRequest|bugReport`, `text: string`, `latestBattleLogParty?: number|"none"`
   (default 1), `includeBackup?: boolean` (default false), and

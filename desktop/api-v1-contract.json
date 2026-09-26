@@ -33341,7 +33341,7 @@
                 "properties": {
                   "name": {
                     "minLength": 1,
-                    "maxLength": 100,
+                    "maxLength": 80,
                     "type": "string"
                   }
                 }
@@ -34394,7 +34394,7 @@
               },
               "name": {
                 "minLength": 1,
-                "maxLength": 100,
+                "maxLength": 80,
                 "type": "string"
               }
             }
@@ -35879,7 +35879,8 @@
                 "type": "object",
                 "required": [
                   "item",
-                  "quantity"
+                  "quantity",
+                  "autoSoldQuantity"
                 ],
                 "properties": {
                   "item": {
@@ -35888,6 +35889,10 @@
                   },
                   "quantity": {
                     "minimum": 1,
+                    "type": "integer"
+                  },
+                  "autoSoldQuantity": {
+                    "minimum": 0,
                     "type": "integer"
                   }
                 }
@@ -35957,7 +35962,8 @@
                     "type": "object",
                     "required": [
                       "item",
-                      "quantity"
+                      "quantity",
+                      "autoSoldQuantity"
                     ],
                     "properties": {
                       "item": {
@@ -35966,6 +35972,10 @@
                       },
                       "quantity": {
                         "minimum": 1,
+                        "type": "integer"
+                      },
+                      "autoSoldQuantity": {
+                        "minimum": 0,
                         "type": "integer"
                       }
                     }
@@ -36075,7 +36085,8 @@
             "items": [
               {
                 "item": "0",
-                "quantity": 1
+                "quantity": 1,
+                "autoSoldQuantity": 0
               }
             ],
             "goldDelta": 1,
@@ -43046,39 +43057,39 @@
           "category": {
             "anyOf": [
               {
-                "const": "a.",
+                "const": "Ab.",
                 "type": "string"
               },
               {
-                "const": "b.",
+                "const": "Base.",
                 "type": "string"
               },
               {
-                "const": "c.",
+                "const": "Fixed.",
                 "type": "string"
               },
               {
-                "const": "d.",
+                "const": "Inc.",
                 "type": "string"
               },
               {
-                "const": "f.",
+                "const": "Mech.",
                 "type": "string"
               },
               {
-                "const": "g.",
+                "const": "Faith.",
                 "type": "string"
               },
               {
-                "const": "m.",
+                "const": "Magic.",
                 "type": "string"
               },
               {
-                "const": "q.",
+                "const": "Quest.",
                 "type": "string"
               },
               {
-                "const": "t.",
+                "const": "Terrain.",
                 "type": "string"
               }
             ]
@@ -43136,39 +43147,39 @@
                   "category": {
                     "anyOf": [
                       {
-                        "const": "a.",
+                        "const": "Ab.",
                         "type": "string"
                       },
                       {
-                        "const": "b.",
+                        "const": "Base.",
                         "type": "string"
                       },
                       {
-                        "const": "c.",
+                        "const": "Fixed.",
                         "type": "string"
                       },
                       {
-                        "const": "d.",
+                        "const": "Inc.",
                         "type": "string"
                       },
                       {
-                        "const": "f.",
+                        "const": "Mech.",
                         "type": "string"
                       },
                       {
-                        "const": "g.",
+                        "const": "Faith.",
                         "type": "string"
                       },
                       {
-                        "const": "m.",
+                        "const": "Magic.",
                         "type": "string"
                       },
                       {
-                        "const": "q.",
+                        "const": "Quest.",
                         "type": "string"
                       },
                       {
-                        "const": "t.",
+                        "const": "Terrain.",
                         "type": "string"
                       }
                     ]
@@ -43194,39 +43205,39 @@
                   "items": {
                     "anyOf": [
                       {
-                        "const": "a.",
+                        "const": "Ab.",
                         "type": "string"
                       },
                       {
-                        "const": "b.",
+                        "const": "Base.",
                         "type": "string"
                       },
                       {
-                        "const": "c.",
+                        "const": "Fixed.",
                         "type": "string"
                       },
                       {
-                        "const": "d.",
+                        "const": "Inc.",
                         "type": "string"
                       },
                       {
-                        "const": "f.",
+                        "const": "Mech.",
                         "type": "string"
                       },
                       {
-                        "const": "g.",
+                        "const": "Faith.",
                         "type": "string"
                       },
                       {
-                        "const": "m.",
+                        "const": "Magic.",
                         "type": "string"
                       },
                       {
-                        "const": "q.",
+                        "const": "Quest.",
                         "type": "string"
                       },
                       {
-                        "const": "t.",
+                        "const": "Terrain.",
                         "type": "string"
                       }
                     ]
@@ -43309,39 +43320,39 @@
                       "category": {
                         "anyOf": [
                           {
-                            "const": "a.",
+                            "const": "Ab.",
                             "type": "string"
                           },
                           {
-                            "const": "b.",
+                            "const": "Base.",
                             "type": "string"
                           },
                           {
-                            "const": "c.",
+                            "const": "Fixed.",
                             "type": "string"
                           },
                           {
-                            "const": "d.",
+                            "const": "Inc.",
                             "type": "string"
                           },
                           {
-                            "const": "f.",
+                            "const": "Mech.",
                             "type": "string"
                           },
                           {
-                            "const": "g.",
+                            "const": "Faith.",
                             "type": "string"
                           },
                           {
-                            "const": "m.",
+                            "const": "Magic.",
                             "type": "string"
                           },
                           {
-                            "const": "q.",
+                            "const": "Quest.",
                             "type": "string"
                           },
                           {
-                            "const": "t.",
+                            "const": "Terrain.",
                             "type": "string"
                           }
                         ]
@@ -43367,39 +43378,39 @@
                       "items": {
                         "anyOf": [
                           {
-                            "const": "a.",
+                            "const": "Ab.",
                             "type": "string"
                           },
                           {
-                            "const": "b.",
+                            "const": "Base.",
                             "type": "string"
                           },
                           {
-                            "const": "c.",
+                            "const": "Fixed.",
                             "type": "string"
                           },
                           {
-                            "const": "d.",
+                            "const": "Inc.",
                             "type": "string"
                           },
                           {
-                            "const": "f.",
+                            "const": "Mech.",
                             "type": "string"
                           },
                           {
-                            "const": "g.",
+                            "const": "Faith.",
                             "type": "string"
                           },
                           {
-                            "const": "m.",
+                            "const": "Magic.",
                             "type": "string"
                           },
                           {
-                            "const": "q.",
+                            "const": "Quest.",
                             "type": "string"
                           },
                           {
-                            "const": "t.",
+                            "const": "Terrain.",
                             "type": "string"
                           }
                         ]
@@ -43444,7 +43455,7 @@
         "request": {
           "pathParameters": {},
           "query": {
-            "category": "a."
+            "category": "Ab."
           }
         },
         "invalidRequest": {
@@ -43457,14 +43468,14 @@
             "entries": [
               {
                 "glossaryId": "xxxxxxx",
-                "category": "a.",
+                "category": "Ab.",
                 "label": "xxxxxxx",
                 "description": "xxxxxxx"
               }
             ],
             "validOptions": {
               "category": [
-                "a."
+                "Ab."
               ]
             },
             "nextCursor": "xxxxxxx"

@@ -29,6 +29,7 @@ import { decodePersistedState, encodePersistedState } from '../../game/storageCo
 import { createFreshGameState, gameReducer } from '../../hooks/useGameState';
 import type { Character, GameState, Party, SavedEquipmentSet } from '../../types';
 import { getVariantKey } from '../../types';
+import { ITEM_MAX_STACK } from '../../game/inventoryMutation';
 import { diarySettingsView } from './diaryView';
 import { formatItem } from './itemFormat';
 import { retainedLogIdOf } from './battleLogs';
@@ -43,6 +44,28 @@ import { retainedLogIdOf } from './battleLogs';
 
 export function decodeApiSavePayload(payload: string): GameState {
   return hydrateGameState(JSON.parse(decodePersistedState(payload)) as GameState);
+}
+
+/**
+ * SpecRef: 9.1.4.11 | Errors | the uploaded `backup` of `commit/setting/backup/import`, decoded into a save.
+ * Anything that is not a readable save is `invalid_backup` (never the decoder's own exception text). The authority
+ * calls this at admission, before a confirmation challenge is issued, so a bad file is rejected up front.
+ */
+export function decodeApiBackupUpload(uploadedFiles: Record<string, Record<string, unknown>>): GameState {
+  const backup = uploadedFiles.backup;
+  if (!backup || typeof backup.contentBase64 !== 'string') throw new Error('invalid_backup');
+  try {
+    // The uploaded bytes are the UTF-8 encoding of the compressed save string (desktop/api-v1.cjs's raw-binary
+    // export writes `Buffer.from(savePayload, 'utf8')`), and that string routinely contains code points above
+    // Latin1 range (LZ-string's UTF16 packing). Plain `atob` only reverses a Latin1 byte-for-character mapping, so
+    // it must be paired with a UTF-8 decode of the recovered bytes, not used on its own.
+    const text = new TextDecoder().decode(Uint8Array.from(atob(backup.contentBase64), (char) => char.charCodeAt(0)));
+    const imported = decodeApiSavePayload(text);
+    if (!imported || typeof imported !== 'object' || !Array.isArray(imported.parties) || typeof imported.global !== 'object' || imported.global === null) throw new Error('not_a_save');
+    return imported;
+  } catch {
+    throw new Error('invalid_backup');
+  }
 }
 
 /** Whether the Colosseum is enabled: the runtime's Debug setting for the ordinary player, the API debug settings otherwise. */
@@ -144,13 +167,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
   if (operation === 'commit/setting/backup/export') {
     data = { savePayload: encodePersistedState(JSON.stringify(serializeGameState(next))) };
   } else if (operation === 'commit/setting/backup/import') {
-    const backup = context.uploadedFiles.backup;
-    if (!backup || typeof backup.contentBase64 !== 'string') throw new Error('invalid_backup');
-    // The uploaded bytes are the UTF-8 encoding of the compressed save string (desktop/api-v1.cjs's raw-binary
-    // export writes `Buffer.from(savePayload, 'utf8')`), and that string routinely contains code points above
-    // Latin1 range (LZ-string's UTF16 packing). Plain `atob` only reverses a Latin1 byte-for-character mapping, so
-    // it must be paired with a UTF-8 decode of the recovered bytes, not used on its own.
-    const imported = decodeApiSavePayload(new TextDecoder().decode(Uint8Array.from(atob(backup.contentBase64), (char) => char.charCodeAt(0))));
+    const imported = decodeApiBackupUpload(context.uploadedFiles);
     next = imported;
     resetControlEvents = true;
     data = { imported: true };
@@ -246,7 +263,8 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       const current = normalizeDeityName(next.parties[partyIndex].deity.name);
       const unlocked = next.global.unlockedDeities.map(normalizeDeityName).includes(normalized);
       const usedElsewhere = !isNoFaithDeity(normalized) && next.parties.some((party, index) => index !== partyIndex && normalizeDeityName(party.deity.name) === normalized);
-      if ((!isNoFaithDeity(normalized) && normalized !== current && !unlocked) || usedElsewhere) throw new Error('illegal_action');
+      if (!isNoFaithDeity(normalized) && normalized !== current && !unlocked) throw new Error('illegal_action:deity_locked');
+      if (usedElsewhere) throw new Error('illegal_action:deity_in_use');
       reduce({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
     }
     if (Array.isArray(parameters.order)) {
@@ -316,7 +334,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       // The set is captured from the character's current equipment into the lowest empty saved slot.
       const equipmentSet = parameters.equipmentSet as { name?: unknown } | undefined;
       const requestedName = equipmentSet?.name;
-      if (requestedName !== undefined && (typeof requestedName !== 'string' || requestedName.trim().length === 0 || requestedName.length > 100)) throw new Error('invalid_request:name');
+      if (requestedName !== undefined && (typeof requestedName !== 'string' || requestedName.trim().length === 0 || requestedName.length > 80)) throw new Error('invalid_request:name');
       if (next.global.savedEquipmentSets.length >= MAX_SAVED_EQUIPMENT_SETS) throw new Error('illegal_action:saved_sets_full');
       const occupied = new Set(next.global.savedEquipmentSets.map((entry) => entry.slot));
       // An omitted name uses the Party pane's default name (Spec 8.2.4), dated by the transaction's in-game clock.
@@ -349,7 +367,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       reduce({ type: 'DELETE_EQUIPMENT_SET', slot: Number(parameters.equipmentSetId) });
     } else if (action === 'renameEquipmentSet') {
       if (!next.global.savedEquipmentSets.some((entry) => entry.slot === Number(parameters.equipmentSetId))) throw new Error('not_found');
-      if (typeof parameters.name !== 'string' || parameters.name.trim().length === 0 || parameters.name.length > 100) throw new Error('invalid_request:name');
+      if (typeof parameters.name !== 'string' || parameters.name.trim().length === 0 || parameters.name.length > 80) throw new Error('invalid_request:name');
       reduce({ type: 'RENAME_EQUIPMENT_SET', slot: Number(parameters.equipmentSetId), name: parameters.name });
     }
     else if (action === 'autoEquipment') {
@@ -382,9 +400,9 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       const transition = action === 'undoEquipment'
         ? undoEquipmentState(characterHistory, currentSnapshot)
         : redoEquipmentState(characterHistory, currentSnapshot);
-      if (!transition || sameEquipment(transition.target, currentSnapshot)) throw new Error('illegal_action');
+      if (!transition || sameEquipment(transition.target, currentSnapshot)) throw new Error(action === 'undoEquipment' ? 'illegal_action:nothing_to_undo' : 'illegal_action:nothing_to_redo');
       const maxSlots = computeCharacterStats(current, next.parties[partyIndex].level).maxEquipSlots;
-      if (!evaluateEquipmentState(transition.target, current, next.global.inventory, next.global.jewels, maxSlots).allAvailable) throw new Error('illegal_action');
+      if (!evaluateEquipmentState(transition.target, current, next.global.inventory, next.global.jewels, maxSlots).allAvailable) throw new Error('illegal_action:equipment_unavailable');
       reduce({ type: 'RESTORE_EQUIPMENT_STATE', partyIndex, characterId, set: transition.target });
       history[historyKey] = transition.history;
       demoteFullAutoEquipment();
@@ -453,19 +471,33 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (entries.reduce((sum, entry) => sum + entry.price, 0) > next.global.gold) throw new Error('illegal_action:insufficient_gold');
     const before = { gold: next.global.gold, prana: next.global.prana };
     const purchasedFormats: string[] = [];
+    const autoSold = new Map<string, number>();
     for (const entry of entries) {
       // The enhancement and Super Rare title are drawn inside the reducer; the callback reports the exact result.
-      reduce({ type: 'BUY_SHOP_ITEM', itemId: entry.itemId, stockItemKey: entry.stockEntryId, now: simulatedAt, onPurchased: (purchased) => { purchasedFormats.push(`0/${purchased.id}/${purchased.enhancement}/${purchased.superRare}`); } });
+      reduce({ type: 'BUY_SHOP_ITEM', itemId: entry.itemId, stockItemKey: entry.stockEntryId, now: simulatedAt, onPurchased: (purchased) => {
+        const format = `0/${purchased.id}/${purchased.enhancement}/${purchased.superRare}`;
+        purchasedFormats.push(format);
+        // `next` is still the state before this purchase: the reducer turns the item into Gold when its variant is
+        // auto-sold or already at the stack cap (addItemToInventory), so report that instead of a silent conversion.
+        const held = next.global.inventory[getVariantKey(purchased)];
+        if (held?.status === 'sold' || (held?.status === 'owned' && held.count >= ITEM_MAX_STACK)) autoSold.set(format, (autoSold.get(format) ?? 0) + 1);
+      } });
     }
     if (purchasedFormats.length !== entries.length) throw new Error('illegal_action:purchase_rejected');
     const quantities = new Map<string, number>();
     for (const format of purchasedFormats) quantities.set(format, (quantities.get(format) ?? 0) + 1);
-    data = { items: [...quantities].map(([item, quantity]) => ({ item, quantity })), goldDelta: next.global.gold - before.gold, pranaDelta: next.global.prana - before.prana };
+    data = { items: [...quantities].map(([item, quantity]) => ({ item, quantity, autoSoldQuantity: autoSold.get(item) ?? 0 })), goldDelta: next.global.gold - before.gold, pranaDelta: next.global.prana - before.prana };
   } else if (operation === 'commit/base/unlockSoldItems') {
     const items = parameters.items as string[];
-    const keys = Array.isArray(items) ? items.map((format) => { const [, itemId, enhancement, superRare] = String(format).split('/').map(Number); return Object.keys(next.global.inventory).find((variantKey) => { const candidate = next.global.inventory[variantKey]; return candidate.status === 'sold' && candidate.item.id === itemId && candidate.item.enhancement === enhancement && candidate.item.superRare === superRare; }); }) : [];
-    if (keys.length === 0 || keys.some((key) => !key) || new Set(keys).size !== keys.length) throw new Error('invalid_items');
-    for (const variantKey of keys) reduce({ type: 'SET_VARIANT_STATUS', variantKey: variantKey!, status: 'notown' });
+    if (!Array.isArray(items) || items.length === 0 || new Set(items).size !== items.length) throw new Error('invalid_items');
+    // A well-formed variant that is not currently auto-sold is a game-rule refusal, like selling one that is not owned.
+    const keys = items.map((format) => {
+      const [, itemId, enhancement, superRare] = String(format).split('/').map(Number);
+      const key = getVariantKey({ id: itemId, enhancement, superRare });
+      if (next.global.inventory[key]?.status !== 'sold') throw new Error('illegal_action:variant_not_sold');
+      return key;
+    });
+    for (const variantKey of keys) reduce({ type: 'SET_VARIANT_STATUS', variantKey, status: 'notown' });
     data = { items };
   } else if (operation === 'commit/base/paidShopRefresh') {
     // SpecRef: 9.1.3 | Commit | 3-4-4 paidShopRefresh
@@ -548,8 +580,8 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
   } else if (operation === 'commit/setting/backup/reset') {
     next = createFreshGameState(next.global.language); resetControlEvents = true; data = {};
   } else if (operation === 'commit/setting/modeSelect') {
-    if (parameters.mode !== undefined && parameters.mode !== context.gameMode) throw new Error('illegal_action');
-    if (parameters.enemyLevelOffset !== undefined && Number(parameters.enemyLevelOffset) !== context.enemyLevelOffset) throw new Error('illegal_action');
+    if (parameters.mode !== undefined && parameters.mode !== context.gameMode) throw new Error('illegal_action:mode_fixed');
+    if (parameters.enemyLevelOffset !== undefined && Number(parameters.enemyLevelOffset) !== context.enemyLevelOffset) throw new Error('illegal_action:enemy_level_offset_fixed');
     // SpecRef: 9.1.3 | Commit | 3-6-2 modeSelect — `autoRepeat` is not controlled through the API (the schema rejects it).
     // Display settings live in the ordinary player's runtime, not in the save: validate them here and let the caller
     // apply them after the durable commit, so the Setting tab and the API always report the same values.
@@ -562,13 +594,13 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     data = { current: describeModeSelectCurrent({ gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, language: next.global.language }, display) };
   } else if (operation === 'commit/setting/debug' && context.debugSettings) {
     // SpecRef: 9.1.3 | Commit | 3-6-4 debug — the ordinary player's real Debug settings, applied after the durable commit.
-    if (!isDebugModeEnabled()) throw new Error('illegal_action');
+    if (!isDebugModeEnabled()) throw new Error('illegal_action:debug_mode_required');
     debugSettingWrite = planDebugSettingWrite(parameters, context.debugSettings);
     data = { current: describeDebugSettings({ ...context.debugSettings, ...debugSettingWrite }) };
   } else if (operation === 'commit/setting/enemyEditPane') {
     // SpecRef: 9.1.3 | Commit | 3-6-3 enemyEditPane — the ordinary player's real Enemy Edit pane, applied after the durable
     // commit; an API account's own stored settings. Partial update; every field is validated first.
-    if (!isDebugModeEnabled()) throw new Error('illegal_action');
+    if (!isDebugModeEnabled()) throw new Error('illegal_action:debug_mode_required');
     const before = context.enemyEditSettings ?? accountEnemyEditSettingsOf(settings);
     const after = planEnemyEditPaneWrite(parameters, before);
     const changed = JSON.stringify(after) !== JSON.stringify(before);
@@ -579,7 +611,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     }
     data = { current: describeEnemyEditPane(after) };
   } else if (operation === 'commit/setting/debug') {
-    if (!isDebugModeEnabled()) throw new Error('illegal_action');
+    if (!isDebugModeEnabled()) throw new Error('illegal_action:debug_mode_required');
     const current = { ...((settings.debug as Record<string, unknown> | undefined) ?? {}), ...parameters };
     if (Object.keys(parameters).length > 0) settings.debug = current;
     // An API account's debug settings report every field, with defaults for the ones never set (Spec 9.1.4.14).

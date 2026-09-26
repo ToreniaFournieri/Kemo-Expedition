@@ -85,13 +85,13 @@ export function planDisplaySettingWrite(
 ): ApiV1DisplaySettingWrite {
   const requested = parameters.darkMode !== undefined || parameters.theme !== undefined || parameters.showExpeditionStats !== undefined;
   if (!requested) return {};
-  if (!display) throw new Error('illegal_action');
+  if (!display) throw new Error('illegal_action:api_account_display_setting');
   const write: ApiV1DisplaySettingWrite = {};
   if (parameters.darkMode !== undefined && parameters.darkMode !== display.darkMode) write.darkMode = parameters.darkMode as DarkModeSetting;
   if (parameters.showExpeditionStats !== undefined && parameters.showExpeditionStats !== display.showExpeditionStats) write.showExpeditionStats = parameters.showExpeditionStats === true;
   if (parameters.theme !== undefined) {
     const theme = fromThemeKey(parameters.theme);
-    if (!theme || !selectableThemes(environment, gameMode, display.theme).includes(theme)) throw new Error('illegal_action');
+    if (!theme || !selectableThemes(environment, gameMode, display.theme).includes(theme)) throw new Error('illegal_action:theme_unavailable');
     if (theme !== display.theme) write.theme = theme;
   }
   return write;

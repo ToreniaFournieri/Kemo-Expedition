@@ -208,7 +208,7 @@ assert.equal(validateDonation(donations), true, JSON.stringify(validateDonation.
   assert.equal(validateEnemyEditPane(enemyEditPane), true, JSON.stringify(validateEnemyEditPane.errors?.slice(0, 3)));
   assert.ok(enemyEditPane.validOptions.terrainEffect.length > 1 && enemyEditPane.validOptions.enemyType.length > 0);
 
-  for (const category of ['a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.']) {
+  for (const category of ['Ab.', 'Base.', 'Fixed.', 'Inc.', 'Mech.', 'Faith.', 'Magic.', 'Quest.', 'Terrain.']) {
     const glossary = await read('resources/glossary', { category }) as { entries: { glossaryId: string; category: string }[] };
     assert.equal(validateGlossary(glossary), true, `${category}: ${JSON.stringify(validateGlossary.errors?.slice(0, 3))}`);
     for (const entry of glossary.entries) assert.equal(entry.category, category);

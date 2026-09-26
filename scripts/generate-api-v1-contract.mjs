@@ -171,7 +171,7 @@ const querySchemas = {
   'read/base/searchItems': strict({ state: optional(literals('owned', 'equipped', 'sold', 'all'), 'owned'), category: optional(itemCategory), rarity: optional(rarity, 'all'), superRare: optional(Type.Boolean()), superRareId: optional(Type.Integer({ minimum: 0 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), limit: optional(Type.Integer({ minimum: 1, maximum: 5000 }), 10) }),
   'read/base/enemyFormList': strict({ enemyType: optional(stableKey), enemyId: optional(integerId) }),
   // Category letters match Specification_1.1_CONSTANTS_GLOSSARY.md's own section numbering (1.1.1 a., 1.1.2 b., ...).
-  'resources/glossary': strict({ category: literals('a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.'), glossaryId: optional(stableKey), ...page }),
+  'resources/glossary': strict({ category: literals('Ab.', 'Base.', 'Fixed.', 'Inc.', 'Mech.', 'Faith.', 'Magic.', 'Quest.', 'Terrain.'), glossaryId: optional(stableKey), ...page }),
   'resources/itemCompendium': strict({ category: optional(itemCategory), rarity: optional(rarity, 'all'), tier: optional(Type.Integer({ minimum: 1, maximum: 8 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), ...page }),
   // `mustelid` was missing from this list, making it unreachable through this operation (RaceId has 14 members, not 13).
   'resources/characterRoster': strict({ race: literals('lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'mustelid', 'procyonian', 'leporian', 'cervin', 'murid', 'kemoria', 'orcinian', 'avian', 'mimorian'), ...page }),
@@ -239,10 +239,10 @@ const commitParameters = {
   'commit/build/character/{characterId}/autoEquipment': strict({ mode: literals('FULL', 'SEMI', 'OFF'), immediateAutoEquipment: optional(Type.Boolean(), false) }),
   'commit/build/character/{characterId}/jewelAttach': strict({ targetEquipment: equipmentTarget, jewelToSet: Type.String({ pattern: '^(?:might|arcana|fort|ward|shade|focus):[1-8]$' }) }),
   'commit/build/character/{characterId}/jewelRemove': strict({ targetEquipment: equipmentTarget }),
-  'commit/build/character/{characterId}/saveEquipmentSet': strict({ equipmentSet: strict({ name: optional(Type.String({ minLength: 1, maxLength: 100 })) }) }),
+  'commit/build/character/{characterId}/saveEquipmentSet': strict({ equipmentSet: strict({ name: optional(Type.String({ minLength: 1, maxLength: 80 })) }) }),
   'commit/build/character/{characterId}/loadEquipmentSet': strict({ equipmentSetId: integerId, loadMode: optional(literals('equipSet', 'equipSimilar', 'equipExactMatchesOnly')) }),
   'commit/build/character/{characterId}/deleteEquipmentSet': strict({ equipmentSetId: integerId }),
-  'commit/build/character/{characterId}/renameEquipmentSet': strict({ equipmentSetId: integerId, name: Type.String({ minLength: 1, maxLength: 100 }) }),
+  'commit/build/character/{characterId}/renameEquipmentSet': strict({ equipmentSetId: integerId, name: Type.String({ minLength: 1, maxLength: 80 }) }),
   'commit/build/character/{characterId}/undoEquipment': empty, 'commit/build/character/{characterId}/redoEquipment': empty,
   'commit/base/changeJewelPriorityParty': strict({ partyNumber: Type.Union([partyNumber, Type.Literal('none')]) }),
   'commit/base/sellInventoryItems': strict({ items: nonEmptyArray(itemFormat, { uniqueItems: true }) }),
@@ -274,6 +274,8 @@ const attackFact = strict({ attackType: literals('melee', 'ranged', 'magical'), 
 const calculatedStatus = strict({ stats: Type.Array(numericFact), abilities: Type.Array(abilityFact), bonuses: Type.Array(bonusFact), attacks: Type.Array(attackFact) });
 // SpecRef: 9.1.4.14 | Parameter and payload schema conventions | Sell/purchase results
 const tradeResult = strict({ items: Type.Array(strict({ item: itemFormat, quantity: Type.Integer({ minimum: 1 }) })), goldDelta: Type.Integer(), pranaDelta: Type.Integer() });
+// A purchase also reports how many of each variant were sold on arrival (auto-sell status or the 99 stack cap).
+const purchaseResult = strict({ items: Type.Array(strict({ item: itemFormat, quantity: Type.Integer({ minimum: 1 }), autoSoldQuantity: Type.Integer({ minimum: 0 }) })), goldDelta: Type.Integer(), pranaDelta: Type.Integer() });
 const semanticText = strict({ key: stableKey, args: Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), Type.Boolean()])) });
 const availability = strict({ available: Type.Boolean(), unavailableReason: Type.Union([Type.String(), Type.Null()]) });
 const equipmentEntryFormat = Type.String({ pattern: '^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$' });
@@ -533,7 +535,7 @@ const responseDataSchemas = {
   'commit/build/character/{characterId}/redoEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/base/changeJewelPriorityParty': strict({ current: strict({ partyNumber: Type.Union([partyNumber, Type.Literal('none')]) }) }),
   'commit/base/sellInventoryItems': tradeResult,
-  'commit/base/purchaseShopItems': tradeResult,
+  'commit/base/purchaseShopItems': purchaseResult,
   'commit/base/paidShopRefresh': strict({ lineupId: stableKey, goldDelta: Type.Integer(), paidRefreshPrice: Type.Integer({ minimum: 0 }) }),
   'commit/base/unlockSoldItems': strict({ items: Type.Array(itemFormat) }),
   'commit/base/unlockForm': strict({ enemyId: Type.Integer({ minimum: 0 }), pranaDelta: Type.Integer() }),
@@ -571,8 +573,8 @@ const responseDataSchemas = {
     })),
   }),
   'resources/glossary': strict({
-    entries: Type.Array(strict({ glossaryId: stableKey, category: literals('a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.'), label: Type.String(), description: Type.String() })),
-    validOptions: strict({ category: Type.Array(literals('a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.')) }),
+    entries: Type.Array(strict({ glossaryId: stableKey, category: literals('Ab.', 'Base.', 'Fixed.', 'Inc.', 'Mech.', 'Faith.', 'Magic.', 'Quest.', 'Terrain.'), label: Type.String(), description: Type.String() })),
+    validOptions: strict({ category: Type.Array(literals('Ab.', 'Base.', 'Fixed.', 'Inc.', 'Mech.', 'Faith.', 'Magic.', 'Quest.', 'Terrain.')) }),
     ...nextCursor,
   }),
   'resources/itemCompendium': strict({ items: Type.Array(strict({ itemId: integerId, name: optional(Type.String()), category: stableKey, rarity: literals('common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRare'), tier: Type.Integer({ minimum: 1, maximum: 8 }), revealed: Type.Boolean(), ability: optional(Type.Array(Type.String())), cBonus: optional(Type.Array(Type.String())), otherBonus: optional(Type.Array(Type.String())) })), ...nextCursor }),

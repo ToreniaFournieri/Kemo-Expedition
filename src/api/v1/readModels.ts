@@ -44,6 +44,7 @@ import { getAltarCategoryFacts, getAltarEnemyTypes, getEnemyFormFacts } from '..
 import { getEnemyIndividualBonuses, getEnemyTypeBonuses, getMimorianEnemyAbilities } from '../../data/enemies.ts';
 import { buildEnemyStatus } from './enemyStatus.ts';
 import { GLOSSARY_SECTIONS } from '../../data/glossary.ts';
+import { formatBonusAbilityPhaseDisplay, LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES } from '../../data/bonusAbilityGlossary.ts';
 import {
   createCommonEnhancementBag, createCommonRewardBag, createCommonSuperRareBag, createEliteRareRewardBag, createEnhancementBag,
   createBossRareRewardBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag,
@@ -201,15 +202,21 @@ function compactDiaryTimestamp(epochMs: number): string {
   return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+// SpecRef: 9.1.4.14 | Slash-delimited formats | free-text components escape only `%` and `/`, so the text stays
+// readable while `split('/')` followed by one `decodeURIComponent` per component still recovers it exactly.
+function encodeCompactText(text: string): string {
+  return text.replace(/%/g, '%25').replace(/\//g, '%2F');
+}
+
 // SpecRef: 9.1.3 | 2-1-1 compact | unreadDiaryTitle `<diaryEntryId>/<diaryTitle>/<diarySubtitle>/<timeStamp>`
-// The title and subtitle are the Diary tab's own (current language); as free text they are percent-encoded (9.1.4.14).
+// The title and subtitle are the Diary tab's own (current language), escaped as compact free text (9.1.4.14).
 function compactDiaryTitle(entry: DiaryLog): string {
   const content = diaryEntryContent(entry);
   const title = content.format === 'semantic' ? t(content.title.key) : content.title;
   const subtitle = content.format === 'semantic'
     ? getDungeonById(entry.expeditionLog.dungeonId)?.name ?? String(entry.expeditionLog.dungeonId)
     : content.subtitle;
-  return `${encodeURIComponent(entry.id)}/${encodeURIComponent(title)}/${encodeURIComponent(subtitle)}/${compactDiaryTimestamp(entry.createdAt)}`;
+  return `${encodeCompactText(entry.id)}/${encodeCompactText(title)}/${encodeCompactText(subtitle)}/${compactDiaryTimestamp(entry.createdAt)}`;
 }
 
 /** The log a client may see for a party: the disclosed log while the runtime hides a running exploration, else the newest one. */
@@ -525,32 +532,51 @@ function bestiary(state: GameState, parameters: Record<string, unknown>, context
   return { enemies: page, nextCursor };
 }
 
-const GLOSSARY_CATEGORY_KEYS = ['a.', 'b.', 'c.', 'd.', 'f.', 'g.', 'm.', 'q.', 't.'];
+// SpecRef: 9.1.3 | Read | 4-2-4 glossary — the public category keys, in the Glossary pane's tab order.
 // Each GLOSSARY_SECTIONS heading is numbered like "2.1.2 b. bonus" (Specification_1.1_CONSTANTS_GLOSSARY.md's own section
-// numbering); the single letter is the category, so it is parsed once here rather than hand-copied per section.
+// numbering); that single letter selects the public key, so it is parsed once here rather than hand-copied per section.
+const GLOSSARY_CATEGORY_BY_SECTION_LETTER: Record<string, string> = {
+  a: 'Ab.', b: 'Base.', c: 'Fixed.', d: 'Inc.', f: 'Mech.', g: 'Faith.', m: 'Magic.', q: 'Quest.', t: 'Terrain.',
+};
+const GLOSSARY_CATEGORY_KEYS = Object.values(GLOSSARY_CATEGORY_BY_SECTION_LETTER);
+const ABILITY_GLOSSARY_CATEGORY = GLOSSARY_CATEGORY_BY_SECTION_LETTER.a;
+const TERRAIN_GLOSSARY_CATEGORY = GLOSSARY_CATEGORY_BY_SECTION_LETTER.t;
 function glossaryCategoryOf(heading: string): string | null {
   const match = heading.match(/^\d+\.\d+\.\d+ (\w)\./);
-  return match ? `${match[1]}.` : null;
+  return match ? GLOSSARY_CATEGORY_BY_SECTION_LETTER[match[1]] ?? null : null;
 }
 
 // SpecRef: 1.0.3 | CONSTANTS | Glossary Reveal Rule
 // SpecRef: 8.6 | UI_SETTING | Glossary (用語集)
-// Only `a.` (ability) and `t.` (terrain effect) entries are reveal-gated; the other 7 categories are always visible.
+// Only `Ab.` (ability) and `Terrain.` entries are reveal-gated; the other 7 categories are always visible. The ability
+// section has no rows of its own in GLOSSARY_SECTIONS: like the Glossary pane, its entries come from the bonus-ability
+// glossary, with the level scale appended as the pane shows it.
 function glossary(state: GameState, parameters: Record<string, unknown>, context: ApiV1ReadContext) {
   const category = parameters.category === undefined ? null : String(parameters.category);
   const glossaryId = parameters.glossaryId === undefined ? null : String(parameters.glossaryId);
   // The Debug "Display all Glossary" setting reveals every entry, as it does in the Glossary pane.
   const revealAll = effectiveDebugSettings(context).displayAllGlossary;
-  const revealedAbilities = new Set(state.global.revealedGlossaryAbilityIds);
+  const revealedAbilities = new Set<string>(state.global.revealedGlossaryAbilityIds);
   const revealedTerrain = new Set<string>(state.global.revealedGlossaryTerrainKeys);
   const entries: Array<{ glossaryId: string; category: string; label: string; description: string }> = [];
   for (const section of GLOSSARY_SECTIONS) {
     const sectionCategory = glossaryCategoryOf(section.heading);
     if (!sectionCategory || (category !== null && sectionCategory !== category)) continue;
+    if (sectionCategory === ABILITY_GLOSSARY_CATEGORY) {
+      for (const entry of LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES) {
+        if (glossaryId !== null && entry.abilityId !== glossaryId) continue;
+        if (!revealAll && !revealedAbilities.has(entry.abilityId)) continue;
+        const levelScale = entry.levelScale;
+        const description = levelScale.length > 0
+          ? `${entry.description} (${levelScale.map(formatBonusAbilityPhaseDisplay).join(', ')})`
+          : entry.description;
+        entries.push({ glossaryId: entry.abilityId, category: sectionCategory, label: entry.label, description });
+      }
+      continue;
+    }
     for (const entry of section.entries) {
       if (glossaryId !== null && entry.key !== glossaryId) continue;
-      if (!revealAll && sectionCategory === 'a.' && !revealedAbilities.has(entry.key)) continue;
-      if (!revealAll && sectionCategory === 't.' && !revealedTerrain.has(entry.key)) continue;
+      if (!revealAll && sectionCategory === TERRAIN_GLOSSARY_CATEGORY && !revealedTerrain.has(entry.key)) continue;
       entries.push({ glossaryId: entry.key, category: sectionCategory, label: entry.label, description: entry.description });
     }
   }
@@ -575,14 +601,14 @@ function characterRoster(parameters: Record<string, unknown>, context: ApiV1Read
 }
 
 // SpecRef: 9.1.3 | 4-2-8 superRareList | `<superRareId>/<name>/<bonus>`, the name in the current language
-// Every Super Rare title (1–N; 0 is "no title", not a title). The name and the bonus IDs are free text, so each is
-// percent-encoded (9.1.4.14); the bonus IDs are joined by `, ` like the `searchItems` detail fields.
+// Every Super Rare title (1–N; 0 is "no title", not a title). The name and the bonus IDs are escaped as compact free
+// text (9.1.4.14); the bonus IDs are joined by `, ` like the `searchItems` detail fields.
 function superRareList(parameters: Record<string, unknown>, context: ApiV1ReadContext) {
   const superRareId = parameters.superRareId === undefined ? null : Number(parameters.superRareId);
   const entries = SUPER_RARE_TITLES.filter((title) => title.value > 0 && (superRareId === null || title.value === superRareId)).map((title) => {
     const bonuses = describeBonuses(title.bonuses ?? []);
     const bonusIds = [...bonuses.ability, ...bonuses.cBonus, ...bonuses.otherBonus].join(', ');
-    return `${title.value}/${encodeURIComponent(getLocalizedSuperRareTitle(title.value).trim())}/${encodeURIComponent(bonusIds)}`;
+    return `${title.value}/${encodeCompactText(getLocalizedSuperRareTitle(title.value).trim())}/${encodeCompactText(bonusIds)}`;
   });
   const { page, nextCursor } = paginate('resources/superRareList', entries, parameters, context.revision);
   return { superRare: page, nextCursor };

@@ -82,7 +82,7 @@ export function stripDeliveryPayload(record: ApiV1DeliveryRecord): ApiV1Delivery
 
 export function settleDelivery(deliveries: readonly ApiV1DeliveryRecord[], deliveryId: string, outcome: ApiV1DeliveryOutcome, now: number): ApiV1DeliveryRecord[] {
   const target = deliveries.find((record) => record.deliveryId === deliveryId);
-  if (!target || target.status !== 'sending') throw new Error('illegal_action');
+  if (!target || target.status !== 'sending') throw new Error('illegal_action:delivery_not_sending');
   return replaceDelivery(deliveries, deliveryId, (record) => {
     const base = { ...record, updatedAt: stampDelivery(now) };
     switch (outcome.kind) {

@@ -57,6 +57,9 @@ function createApiV1(options) {
   let port = null;
   let descriptorPath = null;
   let lease = null;
+  // SpecRef: 9.1.4.11 | The session token of a lease that expired from inactivity, so that client's next request is
+  // told `control_lease_expired` rather than `login_required`. Any logIn, logOut, or release clears it.
+  let expiredSessionToken = null;
   let expiryTimer = null;
   let shuttingDown = false;
   let admissionClosed = false;
@@ -89,10 +92,30 @@ function createApiV1(options) {
     streams.clear();
   }
 
+  // An enum is a union of `const` literals, so Ajv reports one `const` failure per literal plus the enclosing `anyOf`.
+  // Collapse those into one `enum` issue per path that lists every allowed value.
+  function collapseEnumIssues(issues) {
+    const constsByPath = new Map();
+    for (const issue of issues) {
+      if (issue.keyword !== 'const') continue;
+      if (!constsByPath.has(issue.path)) constsByPath.set(issue.path, []);
+      constsByPath.get(issue.path).push(issue.allowedValue);
+    }
+    const collapsed = [];
+    for (const issue of issues) {
+      const allowedValues = constsByPath.get(issue.path);
+      if (!allowedValues) { collapsed.push(issue); continue; }
+      if (issue.keyword !== 'const' && issue.keyword !== 'anyOf') { collapsed.push(issue); continue; }
+      if (collapsed.some(entry => entry.path === issue.path && entry.keyword === 'enum')) continue;
+      collapsed.push({ path: issue.path, keyword: 'enum', allowedValues: [...new Set(allowedValues)] });
+    }
+    return collapsed;
+  }
+
   function validateSchema(validator, value, querySchema = null) {
     if (validator(value)) return;
     const validationError = Object.assign(new Error('schema_validation_failed'), { status: 400, code: 'invalid_request' });
-    const issues = validator.errors?.map(error => ({ path: error.instancePath, keyword: error.keyword, ...(error.params?.missingProperty ? { missingProperty: error.params.missingProperty } : {}), ...(error.params?.additionalProperty ? { additionalProperty: error.params.additionalProperty } : {}), ...(Array.isArray(error.params?.allowedValues) ? { allowedValues: error.params.allowedValues } : {}) })) ?? [];
+    const issues = collapseEnumIssues(validator.errors?.map(error => ({ path: error.instancePath, keyword: error.keyword, ...(error.params?.missingProperty ? { missingProperty: error.params.missingProperty } : {}), ...(error.params?.additionalProperty ? { additionalProperty: error.params.additionalProperty } : {}), ...(Array.isArray(error.params?.allowedValues) ? { allowedValues: error.params.allowedValues } : {}), ...('allowedValue' in (error.params ?? {}) ? { allowedValue: error.params.allowedValue } : {}) })) ?? []);
     const field = schemaIssueField(issues[0]);
     const hint = querySchema && field && commaJoinedArray(querySchema, field, value) ? { hint: 'repeat_parameter' } : {};
     validationError.details = { ...(field ? { field } : {}), ...(issues[0] ? { rule: issues[0].keyword } : {}), ...hint, issues };
@@ -156,7 +179,12 @@ function createApiV1(options) {
   function authenticateSession(request, id) {
     const bootstrapFailure = authenticateBootstrap(request, id);
     if (bootstrapFailure) return bootstrapFailure;
-    if (!lease) return { status: 401, body: errorEnvelope(id, 'login_required', 'A control session is required.') };
+    if (!lease) {
+      if (expiredSessionToken && timingSafeEqualString(request.headers['x-bokemo-session'], expiredSessionToken)) {
+        return { status: 401, body: errorEnvelope(id, 'control_lease_expired', 'The control lease expired.') };
+      }
+      return { status: 401, body: errorEnvelope(id, 'login_required', 'A control session is required.') };
+    }
     if (nowMonotonic() >= lease.deadline && lease.pins === 0) {
       void expireLease();
       return { status: 401, body: errorEnvelope(id, 'control_lease_expired', 'The control lease expired.') };
@@ -185,6 +213,7 @@ function createApiV1(options) {
     if (!lease || lease.pins > 0 || nowMonotonic() < lease.deadline) return scheduleExpiry();
     const expired = lease;
     lease = null;
+    expiredSessionToken = expired.sessionToken;
     closeStreams();
     try { await options.invokeApplication('fundamental/logOut', { reason: 'inactivity', identity: expired.identity }); } catch { /* durable account state remains authoritative */ }
   }
@@ -284,7 +313,7 @@ function createApiV1(options) {
     catch { return sendJson(response, 400, errorEnvelope(id, 'invalid_request', 'The request URL is invalid.')); }
 
     if (request.headers.origin && request.headers.origin !== options.allowedOrigin) {
-      return sendJson(response, 401, errorEnvelope(id, 'authentication_failed', 'The request origin is not allowed.'));
+      return sendJson(response, 401, errorEnvelope(id, 'authentication_failed', 'The request origin is not allowed.', undefined, { reason: 'origin_not_allowed' }));
     }
 
     let route = null;
@@ -391,6 +420,7 @@ function createApiV1(options) {
 
     if (route.operationId === 'fundamental/logIn') {
       const now = Date.now();
+      expiredSessionToken = null;
       lease = {
         identity: result.identity ?? result.data,
         sessionToken: crypto.randomBytes(32).toString('base64url'),
@@ -404,6 +434,7 @@ function createApiV1(options) {
     } else if (route.operationId === 'fundamental/logOut') {
       closeStreams();
       lease = null;
+      expiredSessionToken = null;
       if (expiryTimer) clearTimeout(expiryTimer);
     } else if (route.access === 'session') renewLease();
 
@@ -549,6 +580,7 @@ function createApiV1(options) {
       try { await options.invokeApplication('fundamental/logOut', { reason: 'disabled', identity: lease.identity }); } catch { /* preserve last durable account save */ }
     }
     lease = null;
+    expiredSessionToken = null;
     enabled = false;
     bearerToken = null;
     port = null;
@@ -568,6 +600,7 @@ function createApiV1(options) {
   // (without a logOut round trip, which could not reach it). The client's old tokens then get `login_required`, and a new
   // `logIn` succeeds at once instead of waiting for the idle lease to expire.
   function releaseForRendererLoss() {
+    expiredSessionToken = null;
     if (!lease) return;
     lease = null;
     if (expiryTimer) clearTimeout(expiryTimer);

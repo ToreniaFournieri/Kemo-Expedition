@@ -450,7 +450,7 @@ const readFixtures: Record<string, ReadFixture> = {
   'read/build/character/{characterId}/equipmentSet': { path: characterPath, missingPath: { characterId: 999999 } },
   'read/build/character/{characterId}/equipmentEvaluation': { path: characterPath, query: { equipmentChanges: '1=0' }, missingPath: { characterId: 999999 } },
   'read/base/searchItems': { query: { state: 'owned' } },
-  'resources/glossary': { query: { category: 'a.' } },
+  'resources/glossary': { query: { category: 'Ab.' } },
   'resources/itemCompendium': { query: { category: 'armor' } },
   'resources/characterRoster': { query: { race: 'lupinian' } },
   'read/diary/{p}/diarySetting': { path: async () => ({ p: 1 }), missingPath: { p: 6 } },

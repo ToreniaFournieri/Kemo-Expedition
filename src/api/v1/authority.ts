@@ -3,7 +3,7 @@ import { describeInvalidRequest, invalidRequestMessage } from './requestErrors';
 import { serializeGameState } from '../../game/saveCodec';
 import { createApiRandom, withGameplayRandomSource } from '../../game/gameplayRandom';
 import { ensureLanguageLoaded, SUPPORTED_LANGUAGES, type Language } from '../../i18n/index.ts';
-import { applyApiV1Commit, type ApiV1CommitContext, type ApiV1PartyCycleWrite } from './commitOperations';
+import { applyApiV1Commit, decodeApiBackupUpload, type ApiV1CommitContext, type ApiV1PartyCycleWrite } from './commitOperations';
 import type { ApiV1DisplaySettings, ApiV1DisplaySettingWrite } from './modeSelect';
 import type { DebugSettings } from '../../game/debugSettings';
 import type { ColosseumEnemySettings } from '../../game/colosseum';
@@ -190,6 +190,15 @@ export async function executeApiV1CommitTransaction(
   }
   if (input.control.tombstones.includes(input.idempotencyKey)) return failure('idempotency_expired', 'The successful receipt has expired.');
   if (input.expectedRevision !== input.control.revisionHighWater) return failure('stale_revision', 'The supplied revision is stale.', { currentRevision: input.control.revisionHighWater });
+
+  // SpecRef: 9.1.4.5 | A backup that cannot be read is rejected before a confirmation challenge is issued.
+  if (input.operation === 'commit/setting/backup/import') {
+    try {
+      decodeApiBackupUpload(input.uploadedFiles);
+    } catch (error) {
+      return { ok: false, error: classifyCommitError(error) };
+    }
+  }
 
   const stagedControl = structuredClone(input.control);
   const policy = resolveConfirmationPolicy(input.operation, input.state, input.parameters);

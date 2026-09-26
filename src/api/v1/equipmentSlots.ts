@@ -79,9 +79,10 @@ export function planEquipmentSlotOperation(
   const { key, rank } = parseJewelFormat(parameters.jewelToSet);
   const item = character.equipment[slots[0]];
   if (!item) throw illegal('slot_empty');
-  if (!isJewelAllowedForCategory(item.category, key)) throw illegal('jewel_incompatible');
   if (item.jewel?.key === key && item.jewel.rank === rank) return [];
+  // Ownership first: a Jewel the player does not have is `jewel_not_owned` whatever slot it was aimed at.
   if (getJewelOwnedCount(jewels, key, rank) <= 0) throw illegal('jewel_not_owned');
+  if (!isJewelAllowedForCategory(item.category, key)) throw illegal('jewel_incompatible');
   return [{ type: 'ATTACH_JEWEL', slotIndex: slots[0], jewelKey: key, rank }];
 }
 
