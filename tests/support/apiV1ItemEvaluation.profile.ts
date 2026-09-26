@@ -6,7 +6,7 @@ import { getCharacterCategoryMultiplier, getCharacterGrowthMultiplier, getItemSt
 import { computeCharacterStats } from '../../src/game/characterComputation.ts';
 import { getItemDisplayMultiplier } from '../../src/game/itemPower.ts';
 import { getJewelCBonusValue, getJewelDRankBonus, JEWEL_DEFS, JEWELS_BY_ITEM_CATEGORY } from '../../src/game/jewel.ts';
-import { getItemById, ITEMS } from '../../src/data/items.ts';
+import { getItemById, getSuperRareBonuses, ITEMS } from '../../src/data/items.ts';
 import { t } from '../../src/i18n/index.ts';
 
 // SpecRef: 9.1.3 | Read | 2-3-5 character/{characterId}/equipmentEvaluation
@@ -100,7 +100,9 @@ const sword = ITEMS.find((item) => item.category === 'sword')!;
         assert.equal(stat('d.melee_attack'), Math.round(((item.meleeAttack ?? 0) + getJewelDRankBonus(item.jewel, 'meleeAttack')) * multiplier));
         assert.equal(stat('d.physical_defense'), Math.round(((item.physicalDefense ?? 0) + getJewelDRankBonus(item.jewel, 'physicalDefense')) * multiplier));
         assert.equal(stat('d.HP'), Math.round((item.partyHP ?? 0) * multiplier * hpScale) + Math.round(getJewelDRankBonus(item.jewel, 'partyHP') * multiplier * hpScale));
-        assert.equal(stat(`c.${JEWEL_DEFS[jewelKey].cBonusType}`), getJewelCBonusValue(jewelKey, 1));
+        const cType = JEWEL_DEFS[jewelKey].cBonusType;
+        const titleC = getSuperRareBonuses(superRare).filter((bonus) => bonus.type === cType).reduce((total, bonus) => total + bonus.value, 0);
+        assert.equal(stat(`c.${cType}`), Math.round((getJewelCBonusValue(jewelKey, 1) + titleC) * 1e6) / 1e6, 'the Jewel and the title add up');
         const text = getItemStats(item, categoryMultiplier, hpScale);
         if (stat('d.melee_attack')) assert.ok(text.includes(t('home.itemStat.meleeAttackFlat', { value: stat('d.melee_attack') })), text);
         if (stat('d.magical_attack')) assert.ok(text.includes(t('home.itemStat.magicalAttackFlat', { value: stat('d.magical_attack') })), text);
@@ -133,6 +135,29 @@ const sword = ITEMS.find((item) => item.category === 'sword')!;
   assert.equal(canCharacterEquipCategory(casterCharacter, 'sword'), false, 'the fixture has no melee aptitude');
   assert.equal((await first(caster, sword)).equippable, false);
   assert.equal((await first(caster, ITEMS.find((item) => item.category === 'armor')!)).equippable, true, 'defensive gear needs no aptitude');
+}
+
+// 4b. A Super Rare title's own bonuses are part of the evaluation, added to the item's matching facts.
+{
+  const { SUPER_RARE_TITLES } = await import('../../src/data/items.ts');
+  const thunderItem = ITEMS.find((item) => item.elementalOffense === 'thunder' && (item.elementalOffenseBonus ?? 0) > 0 && !item.accuracyBonus)!;
+  const flamewreathed = SUPER_RARE_TITLES.find((entry) => entry.value === 53)!;
+  assert.deepEqual(flamewreathed.bonuses, [{ type: 'fire_offense', value: 0.3 }, { type: 'accuracy', value: 0.01 }]);
+  const fact = async (superRare: number, key: string) => ((await evaluate(character.id, `0/${thunderItem.id}/0/${superRare}/0:0`)) as { calculatedItemStatus: Entry[] }).calculatedItemStatus[0].stats.find((entry) => entry.key === key)?.value;
+  assert.equal(await fact(53, 'e.thunder'), thunderItem.elementalOffenseBonus, 'the item element stays');
+  assert.equal(await fact(53, 'e.fire'), 0.3, 'the title element is listed');
+  assert.equal(await fact(53, 'c.accuracy'), 0.01, 'the title accuracy is listed');
+  assert.equal(await fact(0, 'e.fire'), undefined);
+  // Same element: the title adds to the item's value, as in the character status.
+  assert.equal(await fact(55, 'e.thunder'), Math.round(((thunderItem.elementalOffenseBonus ?? 0) + 0.3) * 1e6) / 1e6);
+  assert.equal(await fact(55, 'c.magical_defense'), 0.1);
+  // Multiplicative title bonuses are listed by their type.
+  assert.equal(await fact(56, 'c.fire_defense_multiplier_xV'), 3 / 5);
+  // The character status keeps the strongest element: the title's fire (0.3) wins over the item's thunder.
+  const worn = { ...thunderItem, enhancement: 0, superRare: 53, isLocked: false, jewel: null };
+  const wearing = computeCharacterStats({ ...character, equipment: [worn] }, state.parties[0].level);
+  assert.equal(wearing.elementalOffense, 'fire');
+  assert.ok(Math.abs(wearing.elementalOffenseValue - 1.3) < 1e-9);
 }
 
 // 5. Invalid queries are rejected without partial results.
