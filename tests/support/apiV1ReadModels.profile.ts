@@ -353,6 +353,11 @@ calls.length = 0;
   const defaulted = (await buildApiV1ReadData('read/base/searchItems', withJewels, { itemId: 1104 }, context) as Search).items[0];
   assert.equal(defaulted, `${sampleFormat}/ability=[]/cBonus=[c.accuracy+0.001, c.melee-attack+23]`, 'the default details are abilityAndCBonus');
   assert.equal((await search({ category: 'jewel', details: 'all' }))[0], 'fort:3/2/ability=[]/cBonus=[c.physical-defense+11]/otherBonus=[d.physical_defense:10, d.HP:10]', 'a rank-3 Jewel reports its rank bonuses');
+  // A Super Rare title's bonuses follow the item's own: title 53 adds `c.accuracy+0.010` and `e.fire+0.300`, title 17 an ability upgrade.
+  const titled = (superRare: number) => ({ ...withJewels, global: { ...withJewels.global, inventory: { title: { ...sample, item: { ...sample.item, superRare } } } } });
+  assert.equal((await search({ details: 'all' }, titled(53)))[0], `0/1104/${sample.item.enhancement}/53/${sample.count}/${getItemBasePower({ ...sample.item, superRare: 53 })}/ability=[]/cBonus=[c.accuracy+0.001, c.melee-attack+23, c.accuracy+0.010]/otherBonus=[d.melee_attack:14, e.fire+0.300]`);
+  assert.match((await search({ details: 'cBonus' }, titled(17)))[0], /cBonus=\[c\.accuracy\+0\.001, c\.melee-attack\+23, c\.upgrade_hunter\+1, c\.magical-attack\+10\]$/);
+  assert.equal((await search({ searchBonus: 'e.fire+0.300' }, titled(53))).length, 1, 'searchBonus matches a title bonus');
 
   // searchAbility and searchBonus filter on the same ids the details report.
   const { describeItem } = await import('../../src/api/v1/itemDetails.ts');
