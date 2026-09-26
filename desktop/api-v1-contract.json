@@ -30341,12 +30341,210 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
+            "calculatedStatus",
             "current",
             "confirmationRequired",
             "warnings",
             "applied"
           ],
           "properties": {
+            "calculatedStatus": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "stats",
+                "abilities",
+                "bonuses",
+                "attacks"
+              ],
+              "properties": {
+                "stats": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "key",
+                      "value",
+                      "unit"
+                    ],
+                    "properties": {
+                      "key": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "number"
+                      },
+                      "unit": {
+                        "anyOf": [
+                          {
+                            "const": "number",
+                            "type": "string"
+                          },
+                          {
+                            "const": "ratio",
+                            "type": "string"
+                          },
+                          {
+                            "const": "seconds",
+                            "type": "string"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "abilities": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "abilityId",
+                      "level"
+                    ],
+                    "properties": {
+                      "abilityId": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "level": {
+                        "minimum": 1,
+                        "maximum": 10,
+                        "type": "integer"
+                      }
+                    }
+                  }
+                },
+                "bonuses": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "bonusId",
+                      "value"
+                    ],
+                    "properties": {
+                      "bonusId": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "attacks": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "attackType",
+                      "available",
+                      "facts",
+                      "speed"
+                    ],
+                    "properties": {
+                      "attackType": {
+                        "anyOf": [
+                          {
+                            "const": "melee",
+                            "type": "string"
+                          },
+                          {
+                            "const": "ranged",
+                            "type": "string"
+                          },
+                          {
+                            "const": "magical",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "available": {
+                        "type": "boolean"
+                      },
+                      "facts": {
+                        "type": "array",
+                        "items": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "key",
+                            "value",
+                            "unit"
+                          ],
+                          "properties": {
+                            "key": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "number"
+                            },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "const": "number",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "ratio",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "seconds",
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "speed": {
+                        "anyOf": [
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "min",
+                              "max",
+                              "diceCount",
+                              "dieSize"
+                            ],
+                            "properties": {
+                              "min": {
+                                "type": "integer"
+                              },
+                              "max": {
+                                "type": "integer"
+                              },
+                              "diceCount": {
+                                "type": "integer"
+                              },
+                              "dieSize": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
             "current": {
               "additionalProperties": false,
               "type": "object",
@@ -30496,12 +30694,210 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
+                "calculatedStatus",
                 "current",
                 "confirmationRequired",
                 "warnings",
                 "applied"
               ],
               "properties": {
+                "calculatedStatus": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "stats",
+                    "abilities",
+                    "bonuses",
+                    "attacks"
+                  ],
+                  "properties": {
+                    "stats": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "key",
+                          "value",
+                          "unit"
+                        ],
+                        "properties": {
+                          "key": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "value": {
+                            "type": "number"
+                          },
+                          "unit": {
+                            "anyOf": [
+                              {
+                                "const": "number",
+                                "type": "string"
+                              },
+                              {
+                                "const": "ratio",
+                                "type": "string"
+                              },
+                              {
+                                "const": "seconds",
+                                "type": "string"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "abilities": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "abilityId",
+                          "level"
+                        ],
+                        "properties": {
+                          "abilityId": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "level": {
+                            "minimum": 1,
+                            "maximum": 10,
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    },
+                    "bonuses": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "bonusId",
+                          "value"
+                        ],
+                        "properties": {
+                          "bonusId": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "value": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    },
+                    "attacks": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "attackType",
+                          "available",
+                          "facts",
+                          "speed"
+                        ],
+                        "properties": {
+                          "attackType": {
+                            "anyOf": [
+                              {
+                                "const": "melee",
+                                "type": "string"
+                              },
+                              {
+                                "const": "ranged",
+                                "type": "string"
+                              },
+                              {
+                                "const": "magical",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "available": {
+                            "type": "boolean"
+                          },
+                          "facts": {
+                            "type": "array",
+                            "items": {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "key",
+                                "value",
+                                "unit"
+                              ],
+                              "properties": {
+                                "key": {
+                                  "minLength": 1,
+                                  "maxLength": 200,
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "type": "number"
+                                },
+                                "unit": {
+                                  "anyOf": [
+                                    {
+                                      "const": "number",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "ratio",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "seconds",
+                                      "type": "string"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          },
+                          "speed": {
+                            "anyOf": [
+                              {
+                                "type": "null"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "min",
+                                  "max",
+                                  "diceCount",
+                                  "dieSize"
+                                ],
+                                "properties": {
+                                  "min": {
+                                    "type": "integer"
+                                  },
+                                  "max": {
+                                    "type": "integer"
+                                  },
+                                  "diceCount": {
+                                    "type": "integer"
+                                  },
+                                  "dieSize": {
+                                    "type": "integer"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
                 "current": {
                   "additionalProperties": false,
                   "type": "object",
@@ -30697,6 +31093,41 @@
         },
         "response": {
           "data": {
+            "calculatedStatus": {
+              "stats": [
+                {
+                  "key": "xxxxxxx",
+                  "value": 1,
+                  "unit": "number"
+                }
+              ],
+              "abilities": [
+                {
+                  "abilityId": "xxxxxxx",
+                  "level": 1
+                }
+              ],
+              "bonuses": [
+                {
+                  "bonusId": "xxxxxxx",
+                  "value": 1
+                }
+              ],
+              "attacks": [
+                {
+                  "attackType": "melee",
+                  "available": true,
+                  "facts": [
+                    {
+                      "key": "xxxxxxx",
+                      "value": 1,
+                      "unit": "number"
+                    }
+                  ],
+                  "speed": null
+                }
+              ]
+            },
             "current": {
               "unique": true,
               "name": "xxxxxxx",

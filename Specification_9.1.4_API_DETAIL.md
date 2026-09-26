@@ -577,8 +577,13 @@ definitions in 9.1.3.
     and reports without committing: it is a valid no-op (no revision change, no
     state change, no equipment-history entry) that still records the idempotency
     receipt, and it returns the same validation errors a commit would.
-  * The response `data` always includes `confirmationRequired`, `warnings`, and
-    `applied`, plus the complete new `current` object. `warnings` are semantic
+  * The response `data` always includes `calculatedStatus`, `confirmationRequired`,
+    `warnings`, and `applied`, plus the complete new `current` object.
+  * `calculatedStatus` is the 9.1.4.14 `CalculatedStatus` of the character (the
+    same shape as 2-3-2) with the requested build. With `simulation: true` it is a
+    preview of the status a `confirmation: "yes"` commit would produce, including
+    the effect of any equipment the change would remove; after a commit it is the
+    committed status, and after `confirmation: "no"` it is the unchanged status. `warnings` are semantic
     `{key, args}` entries with numeric arguments, never localized text, and are
     non-empty only when `confirmationRequired` is true. The keys are
     `api.warning.changeBuild.equipmentSlotReduction` (`count`),

@@ -1275,6 +1275,7 @@ Path Parameters
   * Unspecified parameters retain their current values.
 
 * Return:
+  * `calculatedStatus` 
   * `confirmationRequired`
     * Boolean.
     * Indicates whether user confirmation is required before the requested changes can be committed.

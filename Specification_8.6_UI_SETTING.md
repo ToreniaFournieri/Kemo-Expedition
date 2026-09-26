@@ -62,13 +62,10 @@
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.
 
-- Donation Scaling (Setting)
-  - For each god g:
-  - Let D_g be total donated gold to god g.
-  - Convert donation to tier T_g using thresholds. 
-  - Use effectiveTier = min(T_g, 10).
-  - displayRank = tierIndex + 1
-  - thresholds: [0, 500, 1200, 2200, 3600, 5500, 8000, 11000, 14500, 18500, 23000]
+- **next-rank donation amount for gods**
+  - n is rank
+　- Donation(1) = 1,000 G, Donation(n) = (3.0 - 0.1 * n) * Donation(n-1) (round off)
+  - max rank is 10.
 
 - God scaling:
   - Restoration:

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 135 | 2026/09/26 | API `changeBuild` now returns `calculatedStatus`. With `simulation: true` it previews the status of the requested build (after any equipment the change would remove), so class and build changes can be compared without committing them. Deity rank code references now point to the Spec 8.6 next-rank donation section. |
 | 0.9.7 | 134 | 2026/09/26 | API: `equipmentEvaluation` rejections now name the bad entry and rule, e.g. `details.field: targetItems[2]` with `details.rule: jewel_category` (also `format`, `slotIndex`, `duplicate`, `maxItems`; same for `equipmentChanges`). |
 | 0.9.7 | 133 | 2026/09/26 | API `read/observation/party` now returns `party.statistics` (clear/return/draw/retreat/defeat counts and donated/saved Gold, hiding a still-running log's outcome like the Expedition pane), so `resetStatistics` can be checked. `jewelAttach` now reports `jewelAttachReport` with the Jewel it replaced. FULL Auto Equipment's Jewel planning now counts Jewels returned to Inventory by the same run's equipment changes and by earlier members' assignments. |
 | 0.9.7 | 132 | 2026/09/26 | API name errors now report the violated rule: `changeBuild` character names and `saveEquipmentSet`/`renameEquipmentSet` set names fail with `details.rule` `type`, `minLength`, or `maxLength` instead of a bare `invalid_request:name`. |

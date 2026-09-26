@@ -103,6 +103,16 @@ function request(parameters: Record<string, unknown>, overrides: Partial<ApiV1Co
   assert.equal((confirmed.response.data as { applied: boolean; confirmationRequired: boolean }).applied, true);
   assert.equal(character(confirmed.state).equipment.filter(Boolean).length < character(base).equipment.filter(Boolean).length, true);
 
+  // `calculatedStatus` previews the requested build: the simulation reports exactly the status the confirmed change
+  // commits (removed equipment included), and a cancelled change reports the unchanged status.
+  const statusOf = async (state: GameState) => (await buildApiV1ReadData(`read/build/character/${characterId}/status`, state, {}, {
+    revision: 0, environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, inGameTime: now,
+  })).calculatedStatus;
+  assert.deepEqual(simulated.data.calculatedStatus, await statusOf(confirmed.state), 'a simulation previews the committed status');
+  assert.notDeepEqual(simulated.data.calculatedStatus, await statusOf(base), 'the preview reflects the new classes');
+  assert.deepEqual((confirmed.response.data as { calculatedStatus: unknown }).calculatedStatus, await statusOf(confirmed.state));
+  assert.deepEqual((cancelled.response.data as { calculatedStatus: unknown }).calculatedStatus, await statusOf(base));
+
   // Simulating through the authority is a valid no-op: no revision, no state change.
   const simulatedTransaction = await executeApiV1CommitTransaction(request({ ...riskyParameters, simulation: true }, { idempotencyKey: 'change-build-sim-001' }), dependencies());
   assert.equal(simulatedTransaction.ok, true);

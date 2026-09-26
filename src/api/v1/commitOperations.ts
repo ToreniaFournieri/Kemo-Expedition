@@ -25,6 +25,7 @@ import { apiExpeditionOutcomeOrNull } from './expeditionOutcome';
 import { listUiPreferences, validateUiPreference, type UiPreferenceValue } from './uiPreferenceCatalog';
 import { isEquipmentSlotAction, parseSlotTargets, planEquipOperation, planEquipmentSlotOperation } from './equipmentSlots';
 import { describeCharacterBuildCurrent, planCharacterBuildChange } from './buildChange';
+import { buildCalculatedStatus } from './calculatedStatus';
 import { decodePersistedState, encodePersistedState } from '../../game/storageCompression';
 import { createFreshGameState, gameReducer } from '../../hooks/useGameState';
 import type { Character, GameState, Party, SavedEquipmentSet } from '../../types';
@@ -326,7 +327,20 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       }
       // SpecRef: 9.1.4.9 | changeBuild returns the complete new build `current` (unchanged after a simulation or `no`).
       const characterAfter = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
-      data = { current: describeCharacterBuildCurrent(characterAfter), confirmationRequired: plan.requiresConfirmation, warnings: plan.warnings, applied };
+      // `calculatedStatus` previews the requested build: a simulation runs the pure reducer on a discarded state, so it
+      // shows the result a `yes` would commit, including any equipment the change would remove.
+      const previewState = simulation && Object.keys(plan.updates).length > 0
+        ? gameReducer(next, { type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: plan.updates, validatedMimorianAssignments: true })
+        : next;
+      const previewParty = previewState.parties[partyIndex];
+      const previewIndex = previewParty.characters.findIndex((entry) => entry.id === characterId);
+      data = {
+        calculatedStatus: buildCalculatedStatus(previewParty.characters[previewIndex], computePartyStats(previewParty).characterStats[previewIndex], previewParty.level),
+        current: describeCharacterBuildCurrent(characterAfter),
+        confirmationRequired: plan.requiresConfirmation,
+        warnings: plan.warnings,
+        applied,
+      };
     }
     else if (action === 'removeAllEquipment') {
       reduce({ type: 'REMOVE_ALL_EQUIPMENT', partyIndex, characterId });

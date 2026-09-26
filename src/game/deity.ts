@@ -131,7 +131,7 @@ DEITY_KEY_BY_NAME['God of Precision'] = 'Goddess of Precision';
 DEITY_KEY_BY_NAME['God of Evasion'] = 'God of Dusk';
 
 
-// SpecRef: 8.6 | UI_SETTING | Donation Scaling (Setting)
+// SpecRef: 8.6 | UI_SETTING | next-rank donation amount for gods
 function getDonationTier(totalDonatedGold: number): number {
   const safeDonation = Math.max(0, totalDonatedGold);
   let tier = 0;
@@ -143,7 +143,7 @@ function getDonationTier(totalDonatedGold: number): number {
   return tier;
 }
 
-// SpecRef: 8.6 | UI_SETTING | Donation Scaling (Setting)
+// SpecRef: 8.6 | UI_SETTING | next-rank donation amount for gods
 export function getDeityRank(totalDonatedGold: number): number {
   return Math.min(MAX_DEITY_RANK, getDonationTier(totalDonatedGold) + 1);
 }
@@ -163,7 +163,7 @@ export function getDeityRewardDrawBonuses(
   };
 }
 
-// SpecRef: 8.6 | UI_SETTING | Donation Scaling (Setting)
+// SpecRef: 8.6 | UI_SETTING | next-rank donation amount for gods
 export function getNextRankDonationRequirement(totalDonatedGold: number): number | null {
   const safeDonation = Math.max(0, totalDonatedGold);
   const currentTier = getDonationTier(safeDonation);
@@ -175,7 +175,7 @@ export function getNextRankDonationRequirement(totalDonatedGold: number): number
   return nextThreshold;
 }
 
-// SpecRef: 8.6 | UI_SETTING | Donation Scaling (Setting)
+// SpecRef: 8.6 | UI_SETTING | next-rank donation amount for gods
 function getEffectiveDeityRank(totalDonatedGold: number): number {
   return getDeityRank(totalDonatedGold);
 }
