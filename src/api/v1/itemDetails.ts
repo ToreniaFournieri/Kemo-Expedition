@@ -1,9 +1,11 @@
 import { getJewelCBonusValue, getJewelDRankValue, JEWEL_DEFS } from '../../game/jewel';
+import { getSuperRareBonuses } from '../../data/items';
 import type { Bonus, BonusType, ElementalOffense, Item, JewelKey } from '../../types';
 
 // SpecRef: 9.1.3 | 2-4-1 searchItems | `details`: `<ability>`, `<cBonus>`, and `<otherBonus>` fields
 // Describes an item (or Jewel) as the ability, `c.` bonus, and other (`d.`, `e.`, `r.`, `b.`) bonus IDs the search returns
-// and filters on. Values are the master-data (base) values, not enhancement-scaled.
+// and filters on. Values are the master-data (base) values, not enhancement-scaled. An item's Super Rare title bonuses
+// follow its own, so a title's `c.evasion+0.015` is listed beside the item's own `c.evasion`.
 
 export interface ItemDetails { ability: string[]; cBonus: string[]; otherBonus: string[] }
 export type ItemDetailsMode = 'none' | 'ability' | 'cBonus' | 'otherBonus' | 'abilityAndCBonus' | 'all';
@@ -39,6 +41,8 @@ function classifyBonus(bonus: Bonus, details: ItemDetails): void {
   if (INTERNAL_ONLY.has(type)) return;
   if (type === 'ability') {
     if (bonus.abilityId) details.ability.push(`a.${kebab(bonus.abilityId)}${(bonus.abilityLevel ?? 1) > 1 ? `:${bonus.abilityLevel}` : ''}`);
+  } else if (type === 'ability_upgrade') {
+    if (bonus.abilityId) details.cBonus.push(`c.upgrade_${kebab(bonus.abilityId)}${value < 0 ? '-' : '+'}${Math.abs(value)}`);
   } else if (PERCENT_TYPES[type]) details.cBonus.push(`${PERCENT_TYPES[type]}${percent(value)}`);
   else if (MULTIPLIER_TYPES[type]) details.cBonus.push(`${MULTIPLIER_TYPES[type]}-x${multiplier(value)}`);
   else if (type === 'penet') details.cBonus.push(`c.penet${signed(value, 2)}`);
@@ -85,6 +89,7 @@ export function describeItem(item: Item): ItemDetails {
     if (typeof value === 'number' && value !== 0) details.otherBonus.push(`${id}${value < 0 ? '-' : '+'}${Math.abs(value)}`);
   }
   for (const bonus of item.bonuses ?? []) classifyBonus(bonus, details);
+  for (const bonus of getSuperRareBonuses(item.superRare)) classifyBonus(bonus, details);
   return details;
 }
 

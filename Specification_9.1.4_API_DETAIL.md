@@ -1363,6 +1363,11 @@ type DiaryEntry = {
 * `Item category` keys are the item categories themselves (`archery`, `gauntlet`,
   `grimoire`, ...). The earlier names `bow`, `glove`, and `book` remain accepted as
   aliases of the same categories in `searchItems` and `itemCompendium`.
+* `searchItems` details list an item's Super Rare title bonuses after the item's
+  own (title 53 adds `c.accuracy+0.010` to `cBonus` and `e.fire+0.300` to
+  `otherBonus`), and `searchBonus` matches them. A same-type bonus appears once per
+  source, not summed. A title's ability upgrade is `c.upgrade_<abilityId>+N` (for
+  example `c.upgrade_hunter+1`), here and in `superRareList`.
 * The compact `condition` is `<conditionKey>/<conditionValue>` with the Spec 7.2
   keys, for example `steady/55`. Each `unreadDiaryTitle` is
   `<diaryEntryId>/<diaryTitle>/<diarySubtitle>/<YYYYMMDD HH:MM>`: the title and
