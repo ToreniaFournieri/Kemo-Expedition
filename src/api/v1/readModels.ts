@@ -935,22 +935,25 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       const requested = parameters.targetItems === undefined ? [] : Array.isArray(parameters.targetItems) ? parameters.targetItems : [parameters.targetItems];
       const requestedChanges = parameters.equipmentChanges === undefined ? [] : Array.isArray(parameters.equipmentChanges) ? parameters.equipmentChanges : [parameters.equipmentChanges];
       if (requested.length === 0 && requestedChanges.length === 0) throw new Error('invalid_request:targetItems.or_equipmentChanges_required');
-      if (new Set(requested).size !== requested.length) throw new Error('invalid_request:targetItems');
-      if (new Set(requestedChanges).size !== requestedChanges.length) throw new Error('invalid_request:equipmentChanges');
-      if (requested.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:targetItems');
-      if (requestedChanges.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:equipmentChanges');
+      if (new Set(requested).size !== requested.length) throw new Error('invalid_request:targetItems.duplicate');
+      if (new Set(requestedChanges).size !== requestedChanges.length) throw new Error('invalid_request:equipmentChanges.duplicate');
+      if (requested.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:targetItems.maxItems');
+      if (requestedChanges.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:equipmentChanges.maxItems');
       const currentStats = computeCharacterStatsInParty(party, characterIndex);
       return {
-        calculatedItemStatus: requested.map((entry) => {
+        // A rejected entry is named by its request index so a caller can find it among many.
+        calculatedItemStatus: requested.map((entry, index) => {
           const item = typeof entry === 'string' ? parseEvaluatedItemFormat(entry) : null;
-          if (!item || (item.jewel && !isJewelAllowedForCategory(item.category, item.jewel.key))) throw new Error('invalid_request:targetItems');
+          if (!item) throw new Error(`invalid_request:targetItems[${index}].format`);
+          if (item.jewel && !isJewelAllowedForCategory(item.category, item.jewel.key)) throw new Error(`invalid_request:targetItems[${index}].jewel_category`);
           return { item: entry as string, ...evaluateItemForCharacter(character, item, party.level), abilities: describeItem(item).ability };
         }),
-        calculatedEquipmentChange: requestedChanges.map((entry) => {
+        calculatedEquipmentChange: requestedChanges.map((entry, index) => {
           const change = typeof entry === 'string' ? parseEquipmentChange(entry) : null;
-          if (!change || change.slotIndex >= currentStats.maxEquipSlots
-            || (change.item?.jewel && !isJewelAllowedForCategory(change.item.category, change.item.jewel.key))) {
-            throw new Error('invalid_request:equipmentChanges');
+          if (!change) throw new Error(`invalid_request:equipmentChanges[${index}].format`);
+          if (change.slotIndex >= currentStats.maxEquipSlots) throw new Error(`invalid_request:equipmentChanges[${index}].slotIndex`);
+          if (change.item?.jewel && !isJewelAllowedForCategory(change.item.category, change.item.jewel.key)) {
+            throw new Error(`invalid_request:equipmentChanges[${index}].jewel_category`);
           }
           const equipment = [...character.equipment];
           equipment[change.slotIndex] = change.item;

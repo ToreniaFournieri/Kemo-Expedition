@@ -154,6 +154,20 @@ const sword = ITEMS.find((item) => item.category === 'sword')!;
   await assert.rejects(() => evaluateChanges(character.id, `0=0/${sword.id}/0/0/arcana:1`), /invalid_request:equipmentChanges/);
   await assert.rejects(() => evaluateChanges(character.id, 'bad'), /invalid_request:equipmentChanges/);
   await assert.rejects(() => evaluate(9_999_999, format(sword, 0, 0)), /not_found/);
+  // Among several entries, the rejection names the bad one by index and says which rule it broke.
+  const { describeInvalidRequest, invalidRequestMessage } = await import('../../src/api/v1/requestErrors.ts');
+  const rejection = async (run: () => Promise<unknown>) => { try { await run(); } catch (error) { return error; } assert.fail('expected a rejection'); };
+  const badJewel = describeInvalidRequest(await rejection(() => evaluate(character.id, [format(sword, 0, 0), format(sword, 1, 0), `0/${sword.id}/0/0/arcana:1`])));
+  assert.deepEqual([badJewel.field, badJewel.rule], ['targetItems[2]', 'jewel_category']);
+  assert.match(invalidRequestMessage(badJewel, 'The request is invalid.'), /`targetItems\[2\]` is invalid \(jewel_category\)/);
+  const badFormat = describeInvalidRequest(await rejection(() => evaluate(character.id, [format(sword, 0, 0), 'nope'])));
+  assert.deepEqual([badFormat.field, badFormat.rule], ['targetItems[1]', 'format']);
+  const duplicate = describeInvalidRequest(await rejection(() => evaluate(character.id, [format(sword, 0, 0), format(sword, 0, 0)])));
+  assert.deepEqual([duplicate.field, duplicate.rule], ['targetItems', 'duplicate']);
+  const badSlot = describeInvalidRequest(await rejection(() => evaluateChanges(character.id, ['0=0', '999=0'])));
+  assert.deepEqual([badSlot.field, badSlot.rule], ['equipmentChanges[1]', 'slotIndex']);
+  const badChangeJewel = describeInvalidRequest(await rejection(() => evaluateChanges(character.id, [`0=0/${sword.id}/0/0/arcana:1`])));
+  assert.deepEqual([badChangeJewel.field, badChangeJewel.rule], ['equipmentChanges[0]', 'jewel_category']);
 }
 
 // 5. One request carries at most 100 entries (a GET query must stay within header limits); larger batches are chunked by the caller.

@@ -1,7 +1,8 @@
 // SpecRef: 9.1.4.11 | Errors | `details` uses stable member names; `details.field` names the rejected parameter.
 //
 // Validators throw `invalid_request:<token>`, where `<token>` is a parameter name (`lineupId`) optionally followed by a
-// rule (`targetEquipment.duplicate`). A few older tokens predate that shape and are mapped to their parameter here.
+// rule (`targetEquipment.duplicate`). An array entry is named by its index (`targetItems[2].jewel_category`), as schema
+// rejections do. A few older tokens predate that shape and are mapped to their parameter here.
 
 const LEGACY_TOKEN_FIELDS: Record<string, { field: string; rule?: string }> = {
   item_format: { field: 'items', rule: 'format' },

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 134 | 2026/09/26 | API: `equipmentEvaluation` rejections now name the bad entry and rule, e.g. `details.field: targetItems[2]` with `details.rule: jewel_category` (also `format`, `slotIndex`, `duplicate`, `maxItems`; same for `equipmentChanges`). |
 | 0.9.7 | 133 | 2026/09/26 | API `read/observation/party` now returns `party.statistics` (clear/return/draw/retreat/defeat counts and donated/saved Gold, hiding a still-running log's outcome like the Expedition pane), so `resetStatistics` can be checked. `jewelAttach` now reports `jewelAttachReport` with the Jewel it replaced. FULL Auto Equipment's Jewel planning now counts Jewels returned to Inventory by the same run's equipment changes and by earlier members' assignments. |
 | 0.9.7 | 132 | 2026/09/26 | API name errors now report the violated rule: `changeBuild` character names and `saveEquipmentSet`/`renameEquipmentSet` set names fail with `details.rule` `type`, `minLength`, or `maxLength` instead of a bare `invalid_request:name`. |
 | 0.9.7 | 131 | 2026/09/26 | Character names are limited to 20 characters (Spec 8.2.3): the Party edit name input caps input at 20 and `changeBuild` rejects longer names as `invalid_request`. |

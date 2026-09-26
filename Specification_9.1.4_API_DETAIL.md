@@ -606,7 +606,12 @@ definitions in 9.1.3.
   with `details.rule: or_equipmentChanges_required`. An unknown item, unknown Jewel type,
   Jewel type that cannot be attached to the item's category, or out-of-range
   enhancement or Jewel rank is `invalid_request`; an unknown character is
-  `not_found`; and the whole request is rejected on any invalid entry. Results
+  `not_found`; and the whole request is rejected on any invalid entry. A rejected
+  entry is named by its index in `details.field` (`targetItems[2]`,
+  `equipmentChanges[0]`) with `details.rule` `format`, `jewel_category`, or (for
+  changes) `slotIndex`; a repeated value or more than 100 entries is
+  `details.field: targetItems` or `equipmentChanges` with `details.rule`
+  `duplicate` or `maxItems`. Results
   keep the request order and include the specified Jewel's `d.` and `c.` effects.
   The item and Jewel need not be owned. Evaluation does not change state,
   revision, receipts, or equipment history.
