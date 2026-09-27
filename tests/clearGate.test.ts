@@ -12,10 +12,12 @@ import {
   addRecoveredBossRaresToGodsBattleProgress,
   applyClearGateOutcome,
   getBossGateKey,
+  getClearGateQualifyingPosition,
   getClearGateProgress,
   getClearGateRequired,
   getEliteGateKey,
   getGodsBattleProgress,
+  getRoomPosition,
   isClearGateUnlocked,
   migrateLegacyGateState,
 } from '../src/game/clearGateCore.ts';
@@ -135,6 +137,33 @@ test('a Return that did not clear the room before the gate neither counts nor re
 
   const fresh = applyClearGateOutcome(gateParty(), 1, 'Return', 12);
   assert.equal(fresh.progress[String(firstGate)], undefined);
+});
+
+test('each gate qualifies on the recorded position of room X,3, including the boss gate', () => {
+  for (let floor = 1; floor <= 5; floor += 1) {
+    assert.equal(getClearGateQualifyingPosition(getEliteGateKey(1, floor)), getRoomPosition(floor, 3));
+  }
+  assert.equal(getClearGateQualifyingPosition(getBossGateKey(1)), getRoomPosition(6, 3));
+});
+
+test('two consecutive Returns through 6F-3 unlock the boss gate', () => {
+  const bossGate = getBossGateKey(1);
+  const allElitesUnlocked = Object.fromEntries(
+    [1, 2, 3, 4, 5].map((floor) => [getEliteGateKey(1, floor), true]),
+  );
+  let party = gateParty({ clearGateStatus: allElitesUnlocked });
+
+  const shallow = applyClearGateOutcome(party, 1, 'Return', getRoomPosition(6, 2));
+  assert.equal(shallow.gateKey, bossGate);
+  assert.equal(shallow.progress[String(bossGate)], undefined);
+
+  for (let run = 1; run <= BOSS_GATE_REQUIRED; run += 1) {
+    const result = applyClearGateOutcome(party, 1, 'Return', getRoomPosition(6, 3));
+    assert.equal(result.gateKey, bossGate);
+    party = { ...party, clearGateProgress: result.progress, clearGateStatus: result.status };
+    assert.equal(getClearGateProgress(party, bossGate), run);
+  }
+  assert.equal(isClearGateUnlocked(party, bossGate), true);
 });
 
 test('Gods Battle progress counts Boss Rare items but not Mythic items', () => {

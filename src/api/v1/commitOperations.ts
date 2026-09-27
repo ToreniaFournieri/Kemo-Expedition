@@ -507,7 +507,9 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     // Every entry is checked against one snapshot of the lineup at the transaction time before anything is bought, so one bad
     // entry buys nothing. A slot's ID is its 1-based position in the lineup.
     const items = Array.isArray(parameters.items) ? parameters.items : [];
-    const requested = items.map((item) => Number(item && typeof item === 'object' ? (item as Record<string, unknown>).shopItemId : NaN));
+    // SpecRef: 9.1.3 | 2-4-4 shopItemsList | `validOptions.items` (bare IDs) can be used directly, as can `{shopItemId}`.
+    const requested = items.map((item) => typeof item === 'number' ? item
+      : item && typeof item === 'object' ? Number((item as Record<string, unknown>).shopItemId) : NaN);
     if (requested.length === 0 || requested.some((id) => !Number.isSafeInteger(id) || id < 1) || new Set(requested).size !== requested.length) throw new Error('invalid_request:items');
     const facts = getShopFacts(shopLineupInputOf(next), new Date(simulatedAt));
     // SpecRef: 9.1.3 | 3-4-3 purchaseShopItems | `lineupId` must match the current lineup, or nothing is bought.

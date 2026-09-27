@@ -60,22 +60,38 @@ function fail(status: number, code: string, message: string, details?: Record<st
 }
 
 function parseIdentity(request: Record<string, unknown>, defaultOrcaOffset: boolean): DesktopApiAccountIdentity {
+  const gameMode = String(request.gameMode ?? '') as DesktopApiAccountIdentity['gameMode'];
+  // SpecRef: 9.1.3 | 1-2 fundamental/signUp | `levelOffsetForOrca` is used only when `gameMode` is `orca`.
+  const orcaOffset = gameMode !== 'orca'
+    ? { levelOffsetForOrca: null }
+    : request.levelOffsetForOrca === undefined
+      ? (defaultOrcaOffset ? { levelOffsetForOrca: 5 } : {})
+      : { levelOffsetForOrca: Number(request.levelOffsetForOrca) };
   return {
     userId: String(request.userId ?? ''),
     environment: String(request.environment ?? '') as DesktopApiAccountIdentity['environment'],
-    gameMode: String(request.gameMode ?? '') as DesktopApiAccountIdentity['gameMode'],
-    ...(request.levelOffsetForOrca === undefined
-      ? (defaultOrcaOffset ? { levelOffsetForOrca: 5 } : {})
-      : { levelOffsetForOrca: Number(request.levelOffsetForOrca) }),
+    gameMode,
+    ...orcaOffset,
   };
+}
+
+// SpecRef: 9.1.4.14 | The Orca environment fixes `mode.orca`, so it cannot host a normal-mode account.
+function environmentModeFailure(identity: DesktopApiAccountIdentity): ApiV1SessionFailure | null {
+  return identity.environment === 'orca' && identity.gameMode !== 'orca'
+    ? fail(400, 'invalid_request', 'The orca environment accepts only gameMode `orca`.', { field: 'gameMode' })
+    : null;
 }
 
 export async function signUpApiAccount(request: Record<string, unknown>, ports: ApiV1SessionPorts): Promise<{ ok: true; identity: DesktopApiAccountIdentity } | ApiV1SessionFailure> {
   const identity = parseIdentity(request, true);
   if (!USER_ID_PATTERN.test(identity.userId)) return fail(400, 'invalid_request', 'userId is invalid.', { field: 'userId' });
+  const modeFailure = environmentModeFailure(identity);
+  if (modeFailure) return modeFailure;
   try {
     // SpecRef: 9.1.3 | 1-2 fundamental/signUp | `language` is optional and defaults to `en`.
     const language = (LANGUAGES as readonly string[]).includes(String(request.language)) ? String(request.language) as GameState['global']['language'] : 'en';
+    // The starting party is named in the account's language, which the host may not have loaded yet.
+    await ensureLanguageLoaded(language);
     const savePayload = encodePersistedState(JSON.stringify(serializeGameState(createFreshGameState(language))));
     await ports.accounts.create(identity, savePayload);
     return { ok: true, identity };
@@ -92,6 +108,8 @@ export async function signUpApiAccount(request: Record<string, unknown>, ports: 
 export async function logInApiAccount(request: Record<string, unknown>, activeSession: ApiV1ActiveSession | null, ports: ApiV1SessionPorts): Promise<{ ok: true; session: ApiV1ActiveSession } | ApiV1SessionFailure> {
   if (activeSession) return fail(409, 'control_unavailable', 'Another API account is active.');
   const identity = parseIdentity(request, false);
+  const modeFailure = environmentModeFailure(identity);
+  if (modeFailure) return modeFailure;
   let returnPayloadWritten = false;
   let swapped = false;
   try {

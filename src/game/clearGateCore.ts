@@ -45,7 +45,10 @@ export function getRoomPosition(floorNumber: number, roomInFloor: number): numbe
 
 // SpecRef: 5.1.3.1 | "Clear-Gate" progression system specification | Runs through X,3
 export function getClearGateQualifyingPosition(gateKey: number): number {
-  return (gateKey % 1000) - 1;
+  const gatePosition = gateKey % 1000;
+  // The boss gate key uses 604 (not 64), so its floor is not gatePosition / 10.
+  const floorNumber = gatePosition === 604 ? 6 : Math.floor(gatePosition / 10);
+  return getRoomPosition(floorNumber, 3);
 }
 
 export function getGodsBattleProgressKey(dungeonId: number): string {

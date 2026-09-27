@@ -422,9 +422,16 @@
               ]
             },
             "levelOffsetForOrca": {
-              "minimum": 0,
-              "maximum": 20,
-              "type": "integer"
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "maximum": 20,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "revision": {
               "minimum": 0,
@@ -515,9 +522,16 @@
                   ]
                 },
                 "levelOffsetForOrca": {
-                  "minimum": 0,
-                  "maximum": 20,
-                  "type": "integer"
+                  "anyOf": [
+                    {
+                      "minimum": 0,
+                      "maximum": 20,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
                 "revision": {
                   "minimum": 0,
@@ -36533,17 +36547,25 @@
                 "uniqueItems": true,
                 "type": "array",
                 "items": {
-                  "additionalProperties": false,
-                  "type": "object",
-                  "required": [
-                    "shopItemId"
-                  ],
-                  "properties": {
-                    "shopItemId": {
+                  "anyOf": [
+                    {
                       "minimum": 1,
                       "type": "integer"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "shopItemId"
+                      ],
+                      "properties": {
+                        "shopItemId": {
+                          "minimum": 1,
+                          "type": "integer"
+                        }
+                      }
                     }
-                  }
+                  ]
                 }
               }
             }
@@ -36761,9 +36783,7 @@
             "parameters": {
               "lineupId": "xxxxxxx",
               "items": [
-                {
-                  "shopItemId": 1
-                }
+                1
               ]
             }
           }

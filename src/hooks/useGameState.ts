@@ -401,8 +401,10 @@ function formatSideQuestShortText(type: string, shortTextKey: string, target: nu
 
 
 
-function characterName(key: string): string {
-  return t(`character.default.${key}`);
+// Without `language`, names follow the active UI language (party unlocks during play); a fresh save passes its own
+// language so a new account is not named in whatever language the host process happens to be using.
+function characterName(key: string, language?: Language): string {
+  return language ? translate(language, `character.default.${key}`) : t(`character.default.${key}`);
 }
 
 const DEFAULT_NAME_RACES: readonly RaceId[] = [
@@ -1296,14 +1298,15 @@ function drawPartySleepiness(party: Party): { party: Party; sleepiness: Sleepine
 }
 
 // SpecRef: 2.1.4.2 | Initial setup | PT1 Party initial condition.
-function createInitialParty() {
+function createInitialParty(language?: Language) {
+  const name = (key: string) => characterName(key, language);
   const defaultSetup = [
-    { race: 'kemoria', main: 'guardian', sub: 'samurai', pred: 'none', lineage: 'unascertained', name: characterName('n1'), gender: 'male', isUnique: true, equipmentIds: [1101, 1102, 1104, 1105, 1106, 1211] },
-    { race: 'vulpinian', main: 'duelist', sub: 'pilgrim', pred: 'aggressive', lineage: 'sandstorm', name: characterName('n13'), gender: 'female', equipmentIds: [1104, 1106] },
-    { race: 'leporian', main: 'ranger', sub: 'ninja', pred: 'inquisitive', lineage: 'abyssal_sea', name: characterName('n14'), gender: 'female', equipmentIds: [1107, 1109] },
-    { race: 'procyonian', main: 'ninja', sub: 'striker', pred: 'evasive', lineage: 'firmament', name: characterName('n15'), gender: 'male', equipmentIds: [1107, 1109] },
-    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'introspective', lineage: 'utopia', name: characterName('n16'), gender: 'female', equipmentIds: [1110, 1112] },
-    { race: 'caninian', main: 'sage', sub: 'alchemist', pred: 'none', lineage: 'pioneer', name: characterName('n2'), gender: 'female', isUnique: true, equipmentIds: [1110, 1112] },
+    { race: 'kemoria', main: 'guardian', sub: 'samurai', pred: 'none', lineage: 'unascertained', name: name('n1'), gender: 'male', isUnique: true, equipmentIds: [1101, 1102, 1104, 1105, 1106, 1211] },
+    { race: 'vulpinian', main: 'duelist', sub: 'pilgrim', pred: 'aggressive', lineage: 'sandstorm', name: name('n13'), gender: 'female', equipmentIds: [1104, 1106] },
+    { race: 'leporian', main: 'ranger', sub: 'ninja', pred: 'inquisitive', lineage: 'abyssal_sea', name: name('n14'), gender: 'female', equipmentIds: [1107, 1109] },
+    { race: 'procyonian', main: 'ninja', sub: 'striker', pred: 'evasive', lineage: 'firmament', name: name('n15'), gender: 'male', equipmentIds: [1107, 1109] },
+    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'introspective', lineage: 'utopia', name: name('n16'), gender: 'female', equipmentIds: [1110, 1112] },
+    { race: 'caninian', main: 'sage', sub: 'alchemist', pred: 'none', lineage: 'pioneer', name: name('n2'), gender: 'female', isUnique: true, equipmentIds: [1110, 1112] },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1703,7 +1706,7 @@ export function createFreshGameState(language: Language, now: number = Date.now(
       readDeveloperNewsItemIds: [],
       language,
     },
-    parties: [createInitialParty()],
+    parties: [createInitialParty(language)],
     selectedPartyIndex: 0,
     bags: {
       commonRewardBag: createCommonRewardBag(),
