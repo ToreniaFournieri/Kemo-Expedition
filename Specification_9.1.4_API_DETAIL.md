@@ -696,6 +696,10 @@ definitions in 9.1.3.
     (which demotes to `SEMI`) undoes back to `FULL`, and Redo returns to
     `SEMI`. A state recorded without a mode (older saves) demotes `FULL` to
     `SEMI` as other manual changes do.
+  * Changing only the mode (`autoEquipment` to `OFF`, `SEMI`, or `FULL`) is
+    also one Undo step, and Undo/Redo of that step restores only the mode.
+    Selecting the current mode records nothing. `autoEquipment` with
+    `immediateAutoEquipment` records the mode and equipment change as one step.
 * `loadEquipmentSet.loadMode` is required in the confirmed execution:
   `equipSet` restores every stored exact item, slot, and lock when all are
   available; `equipExactMatchesOnly` equips only exact available stored matches;

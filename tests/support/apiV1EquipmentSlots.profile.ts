@@ -324,6 +324,19 @@ assert.equal(undoHistory[String(characterId)].redo.length, 0);
   assert.equal(mode(commit(offChanged, 'undoEquipment')), 0, 'undoEquipment restores OFF');
   history[String(characterId)] = { undo: [legacy], redo: [] };
   assert.equal(mode(commit(offChanged, 'undoEquipment')), 1, 'legacy state demotes FULL to SEMI');
+  // Changing only the mode is one Undo step: OFF -> SEMI -> FULL undoes to SEMI, then OFF, and redoes back to FULL.
+  history[String(characterId)] = { undo: [], redo: [] };
+  const semi = commit(off, 'autoEquipment', { mode: 'SEMI' });
+  const fullMode = commit(semi, 'autoEquipment', { mode: 'FULL' });
+  assert.equal(history[String(characterId)].undo.length, 2, 'each mode change is recorded');
+  assert.equal(mode(commit(fullMode, 'autoEquipment', { mode: 'FULL' })), 2);
+  assert.equal(history[String(characterId)].undo.length, 2, 'selecting the current mode records nothing');
+  const backToSemi = commit(fullMode, 'undoEquipment');
+  assert.equal(mode(backToSemi), 1, 'Undo restores SEMI');
+  const backToOff = commit(backToSemi, 'undoEquipment');
+  assert.equal(mode(backToOff), 0, 'Undo restores OFF');
+  assert.deepEqual(character(backToOff).equipment, character(off).equipment, 'a mode-only step leaves equipment unchanged');
+  assert.equal(mode(commit(commit(backToOff, 'redoEquipment'), 'redoEquipment')), 2, 'Redo restores FULL');
   // Loading a saved set.
   const saved = applyApiV1Commit(path('saveEquipmentSet'), seeded, { equipmentSet: { name: 'Set' } }, context());
   const slot = (saved.data as { equipmentSetId: number }).equipmentSetId;

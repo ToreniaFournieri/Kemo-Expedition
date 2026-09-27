@@ -1,6 +1,6 @@
 import { computeCharacterStats } from '../../game/characterComputation';
 import { createEquipmentSetSnapshot, evaluateEquipmentState, getSavedEquipmentSlot } from '../../game/equipmentSets';
-import type { GameState, SavedEquipmentSet } from '../../types';
+import type { Character, GameState, SavedEquipmentSet } from '../../types';
 
 // SpecRef: 8.2.4 | Equipment management | Undo and Redo
 // SpecRef: 9.1.4.14 | Parameter and payload schema conventions | Action availability
@@ -17,12 +17,17 @@ function formatEquipmentState(state: SavedEquipmentSet): string[] {
     `${getSavedEquipmentSlot(entry, index)}/${entry.isLocked ? 1 : 0}/${entry.item.id}/${entry.item.enhancement}/${entry.item.superRare}${entry.item.jewel ? `/${entry.item.jewel.key}:${entry.item.jewel.rank}` : ''}`);
 }
 
-/** The comparable snapshot of one character's equipment: exact items, slots, locks, and Jewel assignment (Spec 9.1.3, 2-3-3). */
-export function snapshotCharacterEquipment(equipment: Parameters<typeof createEquipmentSetSnapshot>[0], createdAt: number): SavedEquipmentSet {
-  return { ...createEquipmentSetSnapshot(equipment, true), name: 'API history', createdAt };
+/**
+ * The comparable snapshot of one character's equipment state: exact items, slots, locks, and Jewel assignment
+ * (Spec 9.1.3, 2-3-3), plus the auto-equipment mode, so a mode change alone is an Undo step.
+ */
+export function snapshotCharacterEquipment(character: Pick<Character, 'equipment' | 'autoEquipmentMode'>, createdAt: number): SavedEquipmentSet {
+  return { ...createEquipmentSetSnapshot(character.equipment, true), name: 'API history', createdAt, autoEquipmentMode: character.autoEquipmentMode ?? 0 };
 }
 
+/** A state recorded before modes were kept carries none; it then compares by equipment alone. */
 export function sameEquipmentSnapshot(left: SavedEquipmentSet, right: SavedEquipmentSet): boolean {
+  if (left.autoEquipmentMode !== undefined && right.autoEquipmentMode !== undefined && left.autoEquipmentMode !== right.autoEquipmentMode) return false;
   return JSON.stringify(left.equipment) === JSON.stringify(right.equipment);
 }
 
@@ -35,7 +40,7 @@ export function describeEquipmentHistory(
   const character = party?.characters.find((candidate) => candidate.id === characterId);
   if (!party || !character) throw new Error('not_found');
   const history = histories?.[String(characterId)] ?? { undo: [], redo: [] };
-  const current = snapshotCharacterEquipment(character.equipment, 0);
+  const current = snapshotCharacterEquipment(character, 0);
   const maxSlots = computeCharacterStats(character, party.level).maxEquipSlots;
   const describe = (states: readonly SavedEquipmentSet[], label: 'undo' | 'redo'): EquipmentHistoryAction => {
     // Stored oldest-first; the next state to restore is the last one.

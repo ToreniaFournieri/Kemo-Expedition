@@ -158,12 +158,15 @@ calls.length = 0;
   assert.deepEqual(options.undoEquipment, { equipmentStates: [], available: false, unavailableReason: 'No undo history.' });
   assert.deepEqual(options.redoEquipment, { equipmentStates: [], available: false, unavailableReason: 'No redo history.' });
 
-  const empty = snapshotCharacterEquipment([], 0);
-  const same = snapshotCharacterEquipment(target.equipment, 0);
+  const empty = snapshotCharacterEquipment({ ...target, equipment: [] }, 0);
+  const same = snapshotCharacterEquipment(target, 0);
   const key = String(target.id);
   const bareUndo = (await readEquipment({ [key]: { undo: [empty] as never[], redo: [] } })).undoEquipment;
   assert.deepEqual(bareUndo, { equipmentStates: [[]], available: true, unavailableReason: null }, 'restoring a bare state is available');
   assert.equal((await readEquipment({ [key]: { undo: [same] as never[], redo: [] } })).undoEquipment.unavailableReason, 'The undo target matches the current equipment.');
+  // The mode is part of the state: the same equipment in another mode can be restored.
+  const otherMode = { ...same, autoEquipmentMode: ((same.autoEquipmentMode! + 1) % 3) as 0 | 1 | 2 };
+  assert.equal((await readEquipment({ [key]: { undo: [otherMode] as never[], redo: [] } })).undoEquipment.available, true, 'a mode-only state is restorable');
   const unavailable = { ...same, equipment: same.equipment.map((entry, index) => index === 0 ? { ...entry, item: { ...entry.item, id: 999999 } } : entry) };
   const redo = (await readEquipment({ [key]: { undo: [], redo: [unavailable] as never[] } })).redoEquipment;
   assert.equal(redo.available, false);
@@ -172,7 +175,7 @@ calls.length = 0;
   assert.match(redo.equipmentStates[0][0], /^\d+\/[01]\/999999\/\d\/\d+/);
 
   // History keeps up to 30 states and lists them most recent first (the order repeated Undo restores them).
-  const thirty = Array.from({ length: 30 }, (_, index) => snapshotCharacterEquipment(index === 0 ? [] : target.equipment.slice(0, index % 2), 0));
+  const thirty = Array.from({ length: 30 }, (_, index) => snapshotCharacterEquipment({ ...target, equipment: index === 0 ? [] : target.equipment.slice(0, index % 2) }, 0));
   const listed = (await readEquipment({ [key]: { undo: thirty as never[], redo: [] } })).undoEquipment;
   assert.equal(listed.equipmentStates.length, 30);
   assert.deepEqual(listed.equipmentStates[29], [], 'the oldest state is last');

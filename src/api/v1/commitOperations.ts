@@ -9,7 +9,7 @@ import { getPartyClairvoyanceAccess } from '../../game/clairvoyanceAccess';
 import type { DebugSettings } from '../../game/debugSettings';
 import type { ColosseumEnemySettings } from '../../game/colosseum';
 import { accountEnemyEditSettingsOf, describeEnemyEditPane, planEnemyEditPaneWrite } from './enemyEditPane';
-import { canCharacterEquipCategory, createDefaultEquipmentSetName, createEquipmentSetSnapshot, evaluateEquipmentSet, evaluateEquipmentState, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
+import { canCharacterEquipCategory, createDefaultEquipmentSetName, evaluateEquipmentSet, evaluateEquipmentState, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
 import { recordEquipmentState, redoEquipmentState, undoEquipmentState } from '../../game/equipmentHistory';
 import { computeCharacterStats } from '../../game/characterComputation';
 import { getSortieUnavailableReason } from './sortieAvailability';
@@ -20,7 +20,7 @@ import { hydrateGameState, serializeGameState } from '../../game/saveCodec';
 import { getPublicShopLineupId, getShopFacts, shopLineupInputOf } from '../../game/shopFacts';
 import { getEnemyFormFacts } from '../../game/altarFacts';
 import { ENEMIES } from '../../data/enemies';
-import { describeEquipmentHistory } from './equipmentHistoryFacts';
+import { describeEquipmentHistory, sameEquipmentSnapshot, snapshotCharacterEquipment } from './equipmentHistoryFacts';
 import { apiExpeditionOutcomeOrNull } from './expeditionOutcome';
 import { listUiPreferences, validateUiPreference, type UiPreferenceValue } from './uiPreferenceCatalog';
 import { isEquipmentSlotAction, parseSlotTargets, planEquipOperation, planEquipmentSlotOperation } from './equipmentSlots';
@@ -303,14 +303,10 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const history = context.equipmentHistory;
     const historyKey = String(characterId);
     const characterHistory = history[historyKey] ?? { undo: [], redo: [] };
-    const snapshotEquipment = (character: Character): SavedEquipmentSet => ({
-      ...createEquipmentSetSnapshot(character.equipment, true),
-      name: 'API history',
-      createdAt: simulatedAt,
-      autoEquipmentMode: character.autoEquipmentMode ?? 0,
-    });
+    // A history state is the equipment plus the auto-equipment mode: changing only the mode is an Undo step too.
+    const snapshotEquipment = (character: Character): SavedEquipmentSet => snapshotCharacterEquipment(character, simulatedAt);
     const equipmentBefore = snapshotEquipment(characterBefore);
-    const sameEquipment = (left: SavedEquipmentSet, right: SavedEquipmentSet) => JSON.stringify(left.equipment) === JSON.stringify(right.equipment);
+    const sameEquipment = sameEquipmentSnapshot;
     const recordsEquipmentHistory = !['saveEquipmentSet', 'deleteEquipmentSet', 'renameEquipmentSet', 'undoEquipment', 'redoEquipment'].includes(action);
     if (action === 'changeBuild') {
       // SpecRef: 9.1.3 | Commit | 3-3-2 character/{characterId}/changeBuild
@@ -449,7 +445,8 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       if (!transition || sameEquipment(transition.target, currentSnapshot)) throw new Error(action === 'undoEquipment' ? 'illegal_action:nothing_to_undo' : 'illegal_action:nothing_to_redo');
       const maxSlots = computeCharacterStats(current, next.parties[partyIndex].level).maxEquipSlots;
       if (!evaluateEquipmentState(transition.target, current, next.global.inventory, next.global.jewels, maxSlots).allAvailable) throw new Error('illegal_action:equipment_unavailable');
-      reduce({ type: 'RESTORE_EQUIPMENT_STATE', partyIndex, characterId, set: transition.target });
+      // A mode-only step restores just the mode and leaves the equipment untouched.
+      if (JSON.stringify(transition.target.equipment) !== JSON.stringify(currentSnapshot.equipment)) reduce({ type: 'RESTORE_EQUIPMENT_STATE', partyIndex, characterId, set: transition.target });
       history[historyKey] = transition.history;
       // The state restores the mode it was recorded with (a change made in FULL undoes back to FULL); a state recorded
       // before modes were kept falls back to the manual-change demotion.
