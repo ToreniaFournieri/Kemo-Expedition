@@ -92,7 +92,9 @@ test('Expedition controls are Application API commits, not reducer actions', () 
   for (const command of ['changeExpedition', 'resetStatistics']) assert.match(home, new RegExp(`commit/expedition/\\{p\\}/${command}`));
   // The forecast is the API's `simulationRun`, not a direct call into the game engine.
   assert.match(home, /adapter\.read\('read\/expedition\/\{p\}\/simulationRun'/);
-  assert.doesNotMatch(read('src/components/home/tabs/ExpeditionTab.tsx'), /onProgress/);
+  // Progress (`120/1000`) is the one sanctioned non-API exception: an in-process listener, while the result stays the API read.
+  assert.match(home, /const onProgress = simulationProgressListenerRef\.current \?\? undefined;/);
+  assert.doesNotMatch(read('src/components/home/tabs/ExpeditionTab.tsx'), /simulateExpeditionRuns/);
   // The button's expedition is the API sortie: `triggerSortie` keeps only its popups and no longer runs the reducer sequence.
   const trigger = home.slice(home.indexOf('const triggerSortie = ('), home.indexOf('const triggerSortieRef'));
   assert.match(trigger, /commit\/expedition\/\{p\}\/godsBattle/);

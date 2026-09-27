@@ -559,6 +559,7 @@ export function HomeScreen({
   // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | Application API
   // The dispatcher lives in src/api/v1/applicationApi.ts; this component only supplies trusted runtime ports.
   const apiRuntimeRef = useRef({ enemyLevelOffset: effectiveOrcaEnemyLevelOffset });
+  const simulationProgressListenerRef = useRef<((completed: number, total: number) => void) | null>(null);
   apiRuntimeRef.current = { enemyLevelOffset: effectiveOrcaEnemyLevelOffset };
   const applicationApiRef = useRef<ApplicationApi | null>(null);
   if (applicationApiRef.current === null) {
@@ -598,7 +599,12 @@ export function HomeScreen({
         enemyLevelOffset: () => apiRuntimeRef.current.enemyLevelOffset,
         cycleDurationScale: () => apiCycleDurationScaleRef.current,
         applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
-        simulate: async (snapshot, partyIndex, count) => simulateExpeditionRuns(snapshot, partyIndex, gameModeRef.current, count, undefined, apiRuntimeRef.current.enemyLevelOffset),
+        simulate: async (snapshot, partyIndex, count) => {
+          // SpecRef: 8.3 | Simulation Run progress is an in-process exception to the API boundary: only the Expedition
+          // pane's own in-flight request registers a listener, and it is captured at start so later runs never report into it.
+          const onProgress = simulationProgressListenerRef.current ?? undefined;
+          return simulateExpeditionRuns(snapshot, partyIndex, gameModeRef.current, count, onProgress, apiRuntimeRef.current.enemyLevelOffset);
+        },
         persistPlayer: async (snapshot) => { await apiActionsRef.current.persistApiState(snapshot); },
         persistPlayerReplacement: async (snapshot) => { await apiActionsRef.current.persistApiStateReplacement(snapshot); },
         publish: async (snapshot) => { await apiActionsRef.current.publishApiState(snapshot); },
@@ -5169,16 +5175,21 @@ export function HomeScreen({
   // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun
   // The Expedition pane's forecast is the Application API's private 1,000-run forecast, read through the trusted in-process
   // adapter; the read returns when every run has finished, so the pane shows no running count.
-  const handleSimulateExpedition = useCallback(async (partyIndex: number): Promise<ExpeditionSimulationResult> => {
+  const handleSimulateExpedition = useCallback(async (
+    partyIndex: number,
+    onProgress?: (completed: number, total: number) => void,
+  ): Promise<ExpeditionSimulationResult> => {
     const adapter = inProcessApiRef.current;
     const partyNumber = applicationApiRef.current?.authority.getSnapshot().state.parties[partyIndex]?.id;
     if (!adapter || partyNumber === undefined) throw new Error('simulation_unavailable');
     memoryMonitor.setRuntime('simulation', effectiveDebugSettings.timeSpeed);
+    simulationProgressListenerRef.current = onProgress ?? null;
     try {
       const response = await adapter.read('read/expedition/{p}/simulationRun', { pathParameters: { p: partyNumber } });
       if (response.error) throw new Error(String((response.error as { code?: unknown }).code));
       return parseSimulationRunData(response.data as SimulationRunData);
     } finally {
+      if (simulationProgressListenerRef.current === (onProgress ?? null)) simulationProgressListenerRef.current = null;
       memoryMonitor.setRuntime(
         pendingAfkMsRef.current > 0 ? 'afk' : autoRepeatEnabledRef.current ? 'online' : 'idle',
         effectiveDebugSettings.timeSpeed,

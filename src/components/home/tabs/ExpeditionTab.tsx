@@ -65,7 +65,7 @@ interface ExpeditionTabProps {
   onSetExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
   onSetExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
   onResetExpeditionStats: (partyIndex: number) => void;
-  onSimulateExpedition: (partyIndex: number) => Promise<ExpeditionSimulationResult>;
+  onSimulateExpedition: (partyIndex: number, onProgress?: (completed: number, total: number) => void) => Promise<ExpeditionSimulationResult>;
   isExpeditionStatsDisplayEnabled: boolean;
   expeditionProjection: ExpeditionProjection | null;
   expeditionLogViews: ReadonlyMap<number, ExpeditionLogView | null>;
@@ -282,7 +282,12 @@ function ExpeditionTab({
     }));
 
     try {
-      const result = await onSimulateExpedition(partyIndex);
+      const result = await onSimulateExpedition(partyIndex, (completed, total) => {
+        if (simulationRequestIdByParty.current[partyIndex] !== requestId) return;
+        setSimulationByParty((current) => current[partyIndex]?.status === 'running'
+          ? { ...current, [partyIndex]: { status: 'running', completed, total } }
+          : current);
+      });
       if (simulationRequestIdByParty.current[partyIndex] !== requestId) return;
       setSimulationByParty((current) => ({
         ...current,
@@ -900,7 +905,7 @@ function ExpeditionTab({
                   </button>
                   <span className="min-w-0 text-right tabular-nums">
                     {simulation?.status === 'running'
-                      ? t('party.expedition.simulationRunning')
+                      ? `${t('party.expedition.simulationRunning')} ${simulation.completed}/${simulation.total}`
                       : simulationResultText
                       ?? (simulation?.status === 'error'
                       ? t('party.expedition.simulationError')

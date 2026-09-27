@@ -77,7 +77,8 @@ and {condition ≥ 230}
     - Do not construct the TypeScript narration context, localize semantic events, or allocate `BattleLogEntry` objects.
     - The private simulation may use empty per-room `details` arrays because neither its expedition log nor its cloned state may be retained or displayed.
   - Online play, Gods Battles, AFK processing, Experimental AI API sorties, latest expedition logs, and Diary logs must retain complete compact semantic battle results and generate full localized narration when displayed. The result-only mode must not be selected merely because execution is batched or backgrounded.
-  - The simulation is processed asynchronously, with progress displayed in real time during execution.
+  - The simulation is processed asynchronously, with progress displayed in real time during execution. 
+    - Example: `120/1000`
   - When all runs are complete, display the aggregated result:
     - If the run reaches the expedition completion condition: `Example: 踏破45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`
     - If the run reaches the configured return depth limit: `Example: 帰還45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`

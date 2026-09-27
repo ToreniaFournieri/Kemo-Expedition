@@ -422,6 +422,7 @@ The toggle cycles through the following modes:
 **4. Lock and Unlock Item**
 - Visibility
   - The lock icon (🔒 / 🔓) is displayed only when `m.auto_equipment` = `FULL`.
+  - Internally, the lock condition remains.  
 - Default state
   - All items are Unlocked by default.
 - Lock behavior
