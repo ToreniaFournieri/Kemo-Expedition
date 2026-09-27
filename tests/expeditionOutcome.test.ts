@@ -17,6 +17,7 @@ function resolve(overrides: Partial<Parameters<typeof resolveExpeditionOutcome>[
   return resolveExpeditionOutcome({
     finalOutcome: 'Return',
     endedWithDrawRetreat: false,
+    deepestClearedPosition: 13,
     isGodsBattle: false,
     dungeonId: 1,
     recoveredItems: [],
@@ -44,6 +45,13 @@ test('a successful return unlocks the active gate and reports the transition onc
   assert.equal(result.clearGateStatus[gateKey], true);
   assert.equal(result.evaluatedGateKey, gateKey);
   assert.equal(result.newlyUnlockedGateKey, gateKey);
+});
+
+test('a Return before clearing the room ahead of the active gate does not advance it', () => {
+  const gateKey = getEliteGateKey(1, 1);
+  const result = resolve({ deepestClearedPosition: 12, clearGateProgress: { [String(gateKey)]: 3 } });
+  assert.equal(result.clearGateProgress[String(gateKey)], 3);
+  assert.equal(result.newlyUnlockedGateKey, null);
 });
 
 test('defeat neither counts recovered Boss Rare items nor preserves the active streak', () => {

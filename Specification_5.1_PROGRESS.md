@@ -445,9 +445,9 @@ PT3: 貯金額: 10G
 
 * Each progression gate requires **X consecutive successful runs** to unlock. (`Clear`, `Return` outcome)
 * If the party fails a run (`Draw`, `Retreat`, `Defeat`), the current consecutive-success count is reset to 0.
-* Evaluate the streak once at the end of each normal expedition. `Clear` or `Return` increments the next locked Clear-Gate by 1; `Draw`, `Retreat`, or `Defeat` resets that gate's count to 0.
+* Evaluate the streak once at the end of each normal expedition. `Clear` increments the next locked Clear-Gate `X,4` by 1; `Return` increments it only if the run cleared room `X,3` (a `Return` that ended before clearing `X,3`, e.g. at a shallower depth limit, neither counts nor resets the streak); `Draw`, `Retreat`, or `Defeat` resets that gate's count to 0.
 * Reaching the required count permanently unlocks that gate. Previously unlocked gates never relock. If the party reaches a still-locked gate during the run that completes its required count, that run ends as `Return` and the newly unlocked route is available from the next run.
-* When the expedition meets the Clear-Gate condition, the locked-area text changes to indicate that the gate has been cleared::
+* When the expedition meets the Clear-Gate condition, the locked-area text changes to indicate that the gate has been cleared:
 連続攻略成功 9回 で 1F-4 解放達成（次回から先に進める）
 
 **Examples**
@@ -455,12 +455,12 @@ PT3: 貯金額: 10G
 | title            | Gate `x.floor`,`x.room` | condition                                                                                           | text example         |
 | ---------------- | ----------------------- | --------------------------------------------------------------------------------------------------- | -------------------- |
 | Entering         | 1,1                     | Defeat the boss from the previous expedition (`x.expedition - 1`), except for the first expedition. | ボス撃破でヴァルンの樹林帯 開放     |
-| 1st Elite gate   | 1,4                     | Complete 7 consecutive successful runs | 連続攻略成功 7回 で 1F-4解放 |
-| 2nd Elite gate   | 2,4                     | Complete 6 consecutive successful runs | 連続攻略成功 6回 で 2F-4解放 |
-| 3rd Elite gate   | 3,4                     | Complete 5 consecutive successful runs | 連続攻略成功 5回 で 3F-4解放 |
-| 4th Elite gate   | 4,4                     | Complete 4 consecutive successful runs | 連続攻略成功 4回 で 4F-4解放 |
-| 5th Elite gate   | 5,4                     | Complete 3 consecutive successful runs | 連続攻略成功 3回 で 5F-4解放 |
-| Boss gate        | 6,4                     | Complete 2 consecutive successful runs | 連続攻略成功 2回 で ボス戦解放  |
+| 1st Elite gate   | 1,4                     | Complete 7 consecutive successful runs through 1,3. | 1F-3連続攻略成功 7回 で 1F-4解放 |
+| 2nd Elite gate   | 2,4                     | Complete 6 consecutive successful runs through 2,3.| 2F-3連続攻略成功 6回 で 2F-4解放 |
+| 3rd Elite gate   | 3,4                     | Complete 5 consecutive successful runs through 3,3.| 3F-3連続攻略成功 5回 で 3F-4解放 |
+| 4th Elite gate   | 4,4                     | Complete 4 consecutive successful runs through 4,3.| 4F-3連続攻略成功 4回 で 4F-4解放 |
+| 5th Elite gate   | 5,4                     | Complete 3 consecutive successful runs through 5,3.| 5F-3連続攻略成功 3回 で 5F-4解放 |
+| Boss gate        | 6,4                     | Complete 2 consecutive successful runs through 6,3.| 6F-3連続攻略成功 2回 で ボス戦解放  |
 | Gods battle gate | -                       | Defeat the dungeon boss at least once and satisfy the Gods Battle-specific condition.               | ボスを撃破せよ              |
 | Side quest gate  | -                       | Depends on the side quest `q.` condition. |             |
 

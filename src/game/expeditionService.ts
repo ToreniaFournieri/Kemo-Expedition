@@ -184,6 +184,7 @@ export function runExpeditionService<TPresentation>(
 
       if (victory) {
         if (room.type === 'battle_Boss') completedBossVictory = true;
+        transaction.recordClearedRoom(floor.floorNumber, roomInFloor);
         const rewards = resolveExpeditionRoomVictoryRewards({
           context: input.context,
           dungeon: input.dungeon,

@@ -39,6 +39,15 @@ export function getClearGateRequired(gateKey: number): number {
   return ELITE_GATE_REQUIREMENTS[floorNumber] ?? BOSS_GATE_REQUIRED;
 }
 
+export function getRoomPosition(floorNumber: number, roomInFloor: number): number {
+  return floorNumber * 10 + roomInFloor;
+}
+
+// SpecRef: 5.1.3.1 | "Clear-Gate" progression system specification | Runs through X,3
+export function getClearGateQualifyingPosition(gateKey: number): number {
+  return (gateKey % 1000) - 1;
+}
+
 export function getGodsBattleProgressKey(dungeonId: number): string {
   return `godBattle:${dungeonId}:bossRare`;
 }
@@ -83,6 +92,7 @@ export function applyClearGateOutcome(
   party: Pick<Party, 'clearGateProgress' | 'clearGateStatus'>,
   dungeonId: number,
   outcome: ClearGateOutcome,
+  deepestClearedPosition: number,
 ): { progress: Record<string, number>; status: Record<number, boolean>; gateKey: number | null } {
   const progress = { ...(party.clearGateProgress ?? {}) };
   const status = { ...(party.clearGateStatus ?? {}) };
@@ -92,6 +102,11 @@ export function applyClearGateOutcome(
   const key = String(gateKey);
   const required = getClearGateRequired(gateKey);
   if (outcome === 'Clear' || outcome === 'Return') {
+    // A success counts only when the run cleared the room just before the gate
+    // (X,3); shallower returns neither count nor break the streak.
+    if (outcome === 'Return' && deepestClearedPosition < getClearGateQualifyingPosition(gateKey)) {
+      return { progress, status, gateKey };
+    }
     const nextCount = Math.min(required, getClearGateProgress(party, gateKey) + 1);
     progress[key] = nextCount;
     if (nextCount >= required) status[gateKey] = true;

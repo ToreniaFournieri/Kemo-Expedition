@@ -5,6 +5,7 @@ import type {
   Item,
   TerrainEffectKey,
 } from '../types/index.ts';
+import { getRoomPosition } from './clearGateCore.ts';
 import {
   resolveExpeditionOutcome,
   type ExpeditionOutcomeResult,
@@ -69,6 +70,7 @@ export interface ExpeditionTransactionResult {
   readonly autoSoldItems: ExpeditionAutoSoldItemFact[];
   readonly autoSellProfit: number;
   readonly endedWithDrawRetreat: boolean;
+  readonly deepestClearedPosition: number;
 }
 
 export interface PlanExpeditionFinalizationInput {
@@ -146,6 +148,7 @@ export class ExpeditionTransactionAccumulator {
   private readonly autoSoldItems: ExpeditionAutoSoldItemFact[] = [];
   private totalAutoSellProfit = 0;
   private drawRetreat = false;
+  private deepestClearedPosition = 0;
 
   constructor(input: CreateExpeditionTransactionInput) {
     this.currentHp = input.initialHp;
@@ -184,6 +187,13 @@ export class ExpeditionTransactionAccumulator {
     input.revealedAbilityIds.forEach((abilityId) => this.revealedAbilityIds.add(abilityId));
     input.revealedItemIds.forEach((itemId) => this.revealedItemIds.add(itemId));
     if (input.terrainEffect) this.revealedTerrainKeys.add(input.terrainEffect);
+  }
+
+  recordClearedRoom(floorNumber: number, roomInFloor: number): void {
+    this.deepestClearedPosition = Math.max(
+      this.deepestClearedPosition,
+      getRoomPosition(floorNumber, roomInFloor),
+    );
   }
 
   recordVictoryRewards(input: RecordExpeditionVictoryRewardsInput): void {
@@ -237,6 +247,7 @@ export class ExpeditionTransactionAccumulator {
       autoSoldItems: this.autoSoldItems.map((fact) => ({ ...fact })),
       autoSellProfit: this.totalAutoSellProfit,
       endedWithDrawRetreat: this.drawRetreat,
+      deepestClearedPosition: this.deepestClearedPosition,
     };
   }
 }
@@ -253,6 +264,7 @@ export function planExpeditionFinalization(
   const outcome = resolveExpeditionOutcome({
     finalOutcome: input.transaction.finalOutcome,
     endedWithDrawRetreat: input.transaction.endedWithDrawRetreat,
+    deepestClearedPosition: input.transaction.deepestClearedPosition,
     isGodsBattle: input.isGodsBattle,
     dungeonId: input.dungeonId,
     recoveredItems: input.transaction.recoveredItems,

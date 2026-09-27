@@ -12,6 +12,7 @@ export type RuntimeExpeditionOutcome = 'Clear' | 'Return' | 'Defeat' | 'Retreat'
 export interface ResolveExpeditionOutcomeInput {
   readonly finalOutcome: RuntimeExpeditionOutcome;
   readonly endedWithDrawRetreat: boolean;
+  readonly deepestClearedPosition: number;
   readonly isGodsBattle: boolean;
   readonly dungeonId: number;
   readonly recoveredItems: readonly Item[];
@@ -65,6 +66,7 @@ export function resolveExpeditionOutcome(input: ResolveExpeditionOutcomeInput): 
         },
         input.dungeonId,
         canonicalGateOutcome,
+        input.deepestClearedPosition,
       );
 
   const clearGateProgress = { ...gateOutcome.progress };
