@@ -294,6 +294,8 @@ export interface SavedEquipmentSet {
   name: string;
   createdAt: number;
   equipment: SavedEquipmentEntry[];
+  /** Undo/Redo history states only: the auto-equipment mode at that state. Saved sets never carry it. */
+  autoEquipmentMode?: 0 | 1 | 2;
 }
 
 // Computed character stats for battle

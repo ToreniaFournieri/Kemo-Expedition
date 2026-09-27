@@ -295,9 +295,10 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const action = characterMatch[2];
     const characterBefore = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
     // SpecRef: 8.2.4 | Equipment management | three-state toggle(手動/補助/一任)
-    // SpecRef: 9.1.3 | 3-3-3/3-3-4/3-3-5/3-3-9/3-3-10/3-3-12/3-3-15/3-3-16 | If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
-    // A manual equipment change (equip, remove one or all, Jewel attach or remove, loading a set, Undo, Redo) made while
-    // FULL demotes the character to SEMI. The Party pane makes these changes through the same commands.
+    // SpecRef: 9.1.3 | 3-3-3/3-3-4/3-3-5/3-3-9/3-3-10/3-3-12 | If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
+    // A manual equipment change (equip, remove one or all, Jewel attach or remove, loading a set) made while FULL demotes
+    // the character to SEMI. The Party pane makes these changes through the same commands. Undo and Redo instead restore
+    // the mode recorded with the target state.
     const demoteFullAutoEquipment = () => { if (characterBefore.autoEquipmentMode === 2) reduce({ type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: { autoEquipmentMode: 1 } }); };
     const history = context.equipmentHistory;
     const historyKey = String(characterId);
@@ -306,6 +307,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       ...createEquipmentSetSnapshot(character.equipment, true),
       name: 'API history',
       createdAt: simulatedAt,
+      autoEquipmentMode: character.autoEquipmentMode ?? 0,
     });
     const equipmentBefore = snapshotEquipment(characterBefore);
     const sameEquipment = (left: SavedEquipmentSet, right: SavedEquipmentSet) => JSON.stringify(left.equipment) === JSON.stringify(right.equipment);
@@ -449,7 +451,11 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       if (!evaluateEquipmentState(transition.target, current, next.global.inventory, next.global.jewels, maxSlots).allAvailable) throw new Error('illegal_action:equipment_unavailable');
       reduce({ type: 'RESTORE_EQUIPMENT_STATE', partyIndex, characterId, set: transition.target });
       history[historyKey] = transition.history;
-      demoteFullAutoEquipment();
+      // The state restores the mode it was recorded with (a change made in FULL undoes back to FULL); a state recorded
+      // before modes were kept falls back to the manual-change demotion.
+      const restoredMode = transition.target.autoEquipmentMode;
+      if (restoredMode === undefined) demoteFullAutoEquipment();
+      else if (restoredMode !== current.autoEquipmentMode) reduce({ type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: { autoEquipmentMode: restoredMode } });
     }
     if (recordsEquipmentHistory) {
       const characterAfter = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;

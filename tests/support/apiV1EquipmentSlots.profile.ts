@@ -310,11 +310,20 @@ assert.equal(undoHistory[String(characterId)].redo.length, 0);
   assert.deepEqual(warningsOf({ remainsMode: true }), [{ key: 'api.warning.equip.unlockedItemsRemainsMode', args: { items: 1 } }]);
   assert.deepEqual(warningsOf({}), []);
   fails(freed, 'equip', { targetEquipment: freedFormat, targetSlot: armor, remainsMode: 'yes' }, 'invalid_request');
-  // Undo and Redo restore a recorded state, which is a manual change too.
-  const changed = full(commit(seeded, 'removeEquipment', { targetEquipment: armor }));
+  // Undo and Redo restore the mode recorded with the target state: a change made in FULL undoes back to FULL, and Redo
+  // returns to the SEMI the change left.
+  const changed = commit(seeded, 'removeEquipment', { targetEquipment: armor });
+  assert.equal(mode(changed), 1, 'removeEquipment demotes before Undo');
   const undone = commit(changed, 'undoEquipment');
-  assert.equal(mode(undone), 1, 'undoEquipment');
-  assert.equal(mode(commit(full(undone), 'redoEquipment')), 1, 'redoEquipment');
+  assert.equal(mode(undone), 2, 'undoEquipment restores FULL');
+  assert.equal(mode(commit(undone, 'redoEquipment')), 1, 'redoEquipment restores SEMI');
+  // A state recorded in OFF restores OFF, and a legacy state without a mode keeps the FULL-to-SEMI demotion.
+  const off = gameReducer(seeded, { type: 'UPDATE_CHARACTER', partyIndex: 0, characterId, updates: { autoEquipmentMode: 0 } });
+  const offChanged = full(commit(off, 'removeEquipment', { targetEquipment: armor }));
+  const { autoEquipmentMode: _recorded, ...legacy } = history[String(characterId)].undo.at(-1)!;
+  assert.equal(mode(commit(offChanged, 'undoEquipment')), 0, 'undoEquipment restores OFF');
+  history[String(characterId)] = { undo: [legacy], redo: [] };
+  assert.equal(mode(commit(offChanged, 'undoEquipment')), 1, 'legacy state demotes FULL to SEMI');
   // Loading a saved set.
   const saved = applyApiV1Commit(path('saveEquipmentSet'), seeded, { equipmentSet: { name: 'Set' } }, context());
   const slot = (saved.data as { equipmentSetId: number }).equipmentSetId;

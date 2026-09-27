@@ -691,6 +691,11 @@ definitions in 9.1.3.
     unavailable item or Jewel (missing, already used elsewhere, or not valid for
     its item) makes the whole state unavailable, and no partial restore happens.
     A change that only moves Jewels adds an Undo entry.
+  * An Undo/Redo state also records the character's auto-equipment mode, and
+    Undo/Redo restores it with the equipment: a manual change made in `FULL`
+    (which demotes to `SEMI`) undoes back to `FULL`, and Redo returns to
+    `SEMI`. A state recorded without a mode (older saves) demotes `FULL` to
+    `SEMI` as other manual changes do.
 * `loadEquipmentSet.loadMode` is required in the confirmed execution:
   `equipSet` restores every stored exact item, slot, and lock when all are
   available; `equipExactMatchesOnly` equips only exact available stored matches;
