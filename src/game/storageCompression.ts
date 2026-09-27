@@ -1,4 +1,12 @@
+import { deflateSync as deflateRawSync, inflateSync as inflateRawSync } from 'fflate';
+
 const STORAGE_COMPRESSION_PREFIX = 'kexp-lz16:';
+// Internal storage codec: deflate-raw bytes packed 15 bits per UTF-16 code unit
+// (offset 0x20, so every unit is in 0x20..0x801F: no controls, no surrogates).
+const STORAGE_DEFLATE_PREFIX = 'kexp-df15:';
+const PACK_BITS = 15;
+const PACK_OFFSET = 0x20;
+const PACK_MASK = (1 << PACK_BITS) - 1;
 
 // Based on lz-string's UTF-16 codec approach (synchronous, localStorage-safe).
 function compressToUTF16(input: string): string {
@@ -240,12 +248,84 @@ function decompressFromUTF16(compressed: string): string | null {
   }
 }
 
+function packBytesToUtf16(bytes: Uint8Array): string {
+  const units = new Uint16Array(Math.ceil(bytes.length * 8 / PACK_BITS));
+  let accumulator = 0;
+  let bitCount = 0;
+  let unitIndex = 0;
+  for (let index = 0; index < bytes.length; index += 1) {
+    accumulator = (accumulator << 8) | bytes[index]!;
+    bitCount += 8;
+    if (bitCount >= PACK_BITS) {
+      bitCount -= PACK_BITS;
+      units[unitIndex++] = ((accumulator >>> bitCount) & PACK_MASK) + PACK_OFFSET;
+      accumulator &= (1 << bitCount) - 1;
+    }
+  }
+  if (bitCount > 0) units[unitIndex++] = ((accumulator << (PACK_BITS - bitCount)) & PACK_MASK) + PACK_OFFSET;
+  let packed = '';
+  const chunkSize = 0x2000;
+  for (let index = 0; index < units.length; index += chunkSize) {
+    packed += String.fromCharCode(...units.subarray(index, index + chunkSize));
+  }
+  return `${STORAGE_DEFLATE_PREFIX}${bytes.length}:${packed}`;
+}
+
+function unpackUtf16ToBytes(rawPayload: string): Uint8Array {
+  const separator = rawPayload.indexOf(':', STORAGE_DEFLATE_PREFIX.length);
+  const byteLength = Number(rawPayload.slice(STORAGE_DEFLATE_PREFIX.length, separator));
+  if (separator < 0 || !Number.isSafeInteger(byteLength) || byteLength < 0) {
+    throw new Error('Failed to decode compressed save payload.');
+  }
+  const bytes = new Uint8Array(byteLength);
+  let accumulator = 0;
+  let bitCount = 0;
+  let byteIndex = 0;
+  for (let index = separator + 1; index < rawPayload.length && byteIndex < byteLength; index += 1) {
+    const value = rawPayload.charCodeAt(index) - PACK_OFFSET;
+    if (value < 0 || value > PACK_MASK) throw new Error('Failed to decode compressed save payload.');
+    accumulator = (accumulator << PACK_BITS) | value;
+    bitCount += PACK_BITS;
+    while (bitCount >= 8 && byteIndex < byteLength) {
+      bitCount -= 8;
+      bytes[byteIndex++] = (accumulator >>> bitCount) & 0xff;
+    }
+    accumulator &= (1 << bitCount) - 1;
+  }
+  if (byteIndex !== byteLength) throw new Error('Failed to decode compressed save payload.');
+  return bytes;
+}
+
+/** Fast synchronous internal-storage encoding (deflate-raw). Not for portable backups. */
+export function encodeStoredStateSync(jsonPayload: string): string {
+  return packBytesToUtf16(deflateRawSync(new TextEncoder().encode(jsonPayload)));
+}
+
+/**
+ * Internal-storage encoding using the platform's native `CompressionStream`
+ * when available, falling back to the synchronous JS deflate. Both produce
+ * standard deflate-raw data, so `decodePersistedState` reads either.
+ */
+export async function encodeStoredState(jsonPayload: string): Promise<string> {
+  if (typeof CompressionStream === 'undefined') return encodeStoredStateSync(jsonPayload);
+  const stream = new Blob([jsonPayload]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+  return packBytesToUtf16(new Uint8Array(await new Response(stream).arrayBuffer()));
+}
+
+/** Portable encoding for exported backups and payloads older runtimes must read. */
 export function encodePersistedState(jsonPayload: string): string {
   const compressed = compressToUTF16(jsonPayload);
   return `${STORAGE_COMPRESSION_PREFIX}${compressed}`;
 }
 
 export function decodePersistedState(rawPayload: string): string {
+  if (rawPayload.startsWith(STORAGE_DEFLATE_PREFIX)) {
+    try {
+      return new TextDecoder().decode(inflateRawSync(unpackUtf16ToBytes(rawPayload)));
+    } catch {
+      throw new Error('Failed to decode compressed save payload.');
+    }
+  }
   if (!rawPayload.startsWith(STORAGE_COMPRESSION_PREFIX)) {
     return rawPayload;
   }
