@@ -641,7 +641,7 @@ Path Parameters
       * Example: `1`.
     * `undoEquipment`
       * Up to 30 equipment states available for Undo. 
-      * Each Undo state includes both equipped item information and jewel assignment information.
+      * Each Undo state includes equipped item information, jewel assignment information, and `mode` condition. 
       * If any required equipment item or jewel is unavailable, the entire Undo state is unavailable.
       * Partial restoration is not allowed.
       * Format:
@@ -652,7 +652,7 @@ Path Parameters
         * `unavailableReason`: `No undo history.`
     * `redoEquipment`
       * Up to 30 equipment states available for Redo.
-      * Each Redo state includes both equipped item information and jewel assignment information.
+      * Each Redo state includes equipped item information, jewel assignment information, and `mode` condition.
       * If any required equipment item or jewel is unavailable, the entire Redo state is unavailable.
       * Partial restoration is not allowed.
       * Format:
@@ -1449,14 +1449,9 @@ Path Parameters
 
 * Parameters: none.
 
-* If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
-
-
 **3-3-16. `character/{characterId}/redoEquipment`**
 
 * Parameters: none.
-
-* If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
 
 
 **3-4. `commit/base`**
