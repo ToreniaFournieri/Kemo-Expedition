@@ -7,7 +7,7 @@ import {
   type PreparedDiaryLogRecord,
 } from './logSegmentedSave.ts';
 import { serializeGameState } from './saveCodec.ts';
-import { encodePersistedState } from './storageCompression.ts';
+import { encodeStoredStateSync } from './storageCompression.ts';
 
 export interface PersistedStateWriter { setItem(key: string, value: string): void }
 export type PersistedStateStorage = LogSegmentedStorage;
@@ -20,6 +20,8 @@ export interface PersistenceWorkerRequest {
   readonly type: 'encode'; readonly requestId: number; readonly revision: number;
   readonly jsonPayload: string; readonly submittedAt: number;
   readonly logRecords?: readonly PreparedDiaryLogRecord[];
+  /** `portable` keeps the legacy codec for exported backups; omitted means internal storage. */
+  readonly codec?: 'portable';
 }
 export type PersistenceWorkerResponse =
   | { readonly type: 'complete'; readonly requestId: number; readonly revision: number; readonly encodedPayload: string; readonly encodedLogRecords: readonly { key: string; encodedPayload: string }[]; readonly queueLatencyMs: number; readonly compressionMs: number; readonly completedAt: number }
@@ -79,7 +81,7 @@ export function persistGameState(state: GameState, storageKey: string, storage: 
   const jsonPayload = JSON.stringify(canonical);
   const jsonStringifyMs = enabled ? now() - stringifyStarted : 0;
   const compressionStarted = enabled ? now() : 0;
-  const encodedPayload = encodePersistedState(jsonPayload);
+  const encodedPayload = encodeStoredStateSync(jsonPayload);
   const compressionEncodingMs = enabled ? now() - compressionStarted : 0;
   const storageStarted = enabled ? now() : 0;
   storage.setItem(storageKey, encodedPayload);
@@ -156,6 +158,7 @@ export class PersistenceCoordinator {
       worker.onerror = (event) => { finish(); reject(new Error(event.message || 'Export compression worker failed.')); };
       worker.postMessage({
         type: 'encode',
+        codec: 'portable',
         requestId: 0,
         revision: 0,
         jsonPayload,
