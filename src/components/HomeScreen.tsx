@@ -2178,9 +2178,9 @@ export function HomeScreen({
   const baseProjection = baseObservation?.baseInfo ?? null;
   useEffect(() => {
     if (!isBaseTabVisible || !baseProjection) return;
-    const timer = window.setTimeout(() => setBaseProjectionRefresh((value) => value + 1), Math.max(1000, Date.parse(baseProjection.shop.refreshesAt) - Date.now() + 1000));
+    const timer = window.setTimeout(() => setBaseProjectionRefresh((value) => value + 1), Math.max(1000, baseProjection.shop.paidRefreshCountdown * 1000 + 1000));
     return () => window.clearTimeout(timer);
-  }, [baseProjection?.shop.refreshesAt, isBaseTabVisible]);
+  }, [baseProjection?.shop.refreshesAt, baseProjection?.shop.paidRefreshCountdown, isBaseTabVisible]);
   const baseCommandQueueRef = useRef<Promise<void>>(Promise.resolve());
   const commitBase = useCallback((operation: string, parameters: Record<string, unknown>) => {
     baseCommandQueueRef.current = baseCommandQueueRef.current.then(async () => {

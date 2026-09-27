@@ -351,7 +351,8 @@ function ShopTab({
   if (!mustelidRace || !shop) {
     return <div className="text-sm text-gray-600">{t('home.shop.preparing')}</div>;
   }
-  const minutesToRefresh = Math.max(1, Math.ceil((Date.parse(shop.refreshesAt) - Date.now()) / 60000));
+  // `refreshesAt` is on the account's in-game clock, which can run ahead of the wall clock; the countdown is measured on it.
+  const minutesToRefresh = Math.max(1, Math.ceil(shop.paidRefreshCountdown / 60));
   const countdownText = minutesToRefresh >= 60
     ? t('home.shop.countdown.hours', { count: Math.floor(minutesToRefresh / 60) })
     : t('home.shop.countdown.minutes', { count: minutesToRefresh });

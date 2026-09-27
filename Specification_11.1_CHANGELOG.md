@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 154 | 2026/09/27 | Shop lineup countdown fix: the Shop pane and its re-read timer now use the Base projection's `paidRefreshCountdown` (measured on the account's in-game clock) instead of `refreshesAt − wall clock`, so an API account whose in-game time runs ahead no longer shows a countdown like `7732 hours`. |
 | 0.9.7 | 153 | 2026/09/27 | Clear-Gate loophole fix: a `Return` now counts toward the next locked gate `X,4` only if the run cleared room `X,3` (e.g. a depth-limit return at 2F-3 no longer advances the 4F-4 gate). Shallower returns neither count nor reset the streak; `Clear` always counts and `Draw`/`Retreat`/`Defeat` still reset. |
 | 0.9.7 | 152 | 2026/09/27 | Predisposition i18n unified with keys: English display names are now `Amiable`, `Serene`, `Precise` (were Amicable/Serenity/Exacting) and the `precise` English short name is `Pre` (was `Exa`); Korean `resourceful` short name is now `수` so it no longer collides with `stubborn` (`완`). |
 | 0.9.7 | 151 | 2026/09/27 | Setting > Feedback name field now defaults to the logged-in API session `userId` when empty (a previously entered name still wins); the window title (`BoKemo <name>`) falls back to the same API session `userId`. `onSessionActive` now also reports the logged-in `userId`. |
