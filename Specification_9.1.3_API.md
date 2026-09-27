@@ -601,9 +601,9 @@ Path Parameters
       * For `mimorian`, the third value is the transformed target enemy ID.
       * If unavailable: `none`.
     * `mainClassId`
-      * Example: [`fighter`, `ranger`]
+      * Example: [`duelist`, `ranger`]
     * `subClassId`
-      * Example: [`fighter`, `ranger`]
+      * Example: [`duelist`, `ranger`]
     * `lineage`
       * Example: [`sandstorm`, `ashen_capital`]
       * Example for unique: `none`

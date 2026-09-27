@@ -3195,7 +3195,7 @@ const ko = {
   'party.predispositionShort.nimble': '경',
   'party.predispositionShort.perceptive': '간',
   'party.predispositionShort.precise': '정',
-  'party.predispositionShort.resourceful': '완',
+  'party.predispositionShort.resourceful': '수',
   'party.lineageShort.sandstorm': '사',
   'party.lineageShort.ashenCapital': '회',
   'party.lineageShort.blazePeak': '염',
