@@ -296,6 +296,13 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.ok(attempt(short, [{ shopItemId: 1 }, { shopItemId: 2 }]).includes('insufficient_gold'));
   const two = applyApiV1Commit('commit/base/purchaseShopItems', { ...richState, global: { ...richState.global, gold: twoPrices } } as GameState, { lineupId, items: [{ shopItemId: 1 }, { shopItemId: 2 }] }, baseContext({ simulatedAt }));
   assert.equal((two.data as { items: { quantity: number }[] }).items.reduce((sum, row) => sum + row.quantity, 0), 2);
+  // `shopItemsList.validOptions.items` are bare IDs that purchaseShopItems accepts as-is (Spec 9.1.3 2-4-4).
+  const bare = applyApiV1Commit('commit/base/purchaseShopItems', { ...richState, global: { ...richState.global, gold: twoPrices } } as GameState, { lineupId, items: [1, 2] }, baseContext({ simulatedAt }));
+  assert.equal((bare.data as { items: { quantity: number }[] }).items.reduce((sum, row) => sum + row.quantity, 0), 2, 'bare IDs buy like {shopItemId} entries');
+  assert.equal(bare.state.global.gold, two.state.global.gold, 'bare IDs buy the same slots');
+  assert.ok(attempt(richState, [1, { shopItemId: 1 }]).includes('invalid_request'), 'a slot named in both forms is a duplicate');
+  assert.ok(attempt(richState, [0]).includes('invalid_request'));
+  assert.ok(attempt(richState, ['1']).includes('invalid_request'), 'a string is not a slot ID');
 }
 
 // 4b. The paid refresh charges the displayed price at the transaction time and replaces the lineup; an unaffordable refresh

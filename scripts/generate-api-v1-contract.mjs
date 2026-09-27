@@ -247,7 +247,8 @@ const commitParameters = {
   'commit/base/changeJewelPriorityParty': strict({ partyNumber: Type.Union([partyNumber, Type.Literal('none')]) }),
   'commit/base/sellInventoryItems': strict({ items: nonEmptyArray(itemFormat, { uniqueItems: true }) }),
   // Spec 9.1.3 3-4-3: `lineupId` (from `shopItemsList` or the `base` projection) must name the current lineup.
-  'commit/base/purchaseShopItems': strict({ lineupId: stableKey, items: nonEmptyArray(strict({ shopItemId: integerId }), { uniqueItems: true }) }),
+  // Each entry is `{shopItemId}` or the bare ID, so `shopItemsList.validOptions.items` can be used directly (Spec 9.1.3 2-4-4).
+  'commit/base/purchaseShopItems': strict({ lineupId: stableKey, items: nonEmptyArray(Type.Union([integerId, strict({ shopItemId: integerId })]), { uniqueItems: true }) }),
   'commit/base/paidShopRefresh': empty, 'commit/base/unlockSoldItems': strict({ items: nonEmptyArray(itemFormat, { uniqueItems: true }) }),
   'commit/base/unlockForm': strict({ enemyId: integerId }), 'commit/base/markItemsAsSeen': strict({ items: nonEmptyArray(stableKey, { uniqueItems: true }) }),
   'commit/diary/{p}/diarySetting': strict(diarySetting),
@@ -425,7 +426,8 @@ const baseStats = strict({ vitality: Type.Integer({ minimum: 0 }), strength: Typ
 
 const responseDataSchemas = {
   'fundamental/status': strict({ systemStatus: Type.String({ minLength: 1 }), versionBuild: Type.String({ minLength: 1 }), environment: Type.String({ minLength: 1 }) }),
-  'fundamental/signUp': strict({ userId: identity.userId, environment, gameMode, levelOffsetForOrca: Type.Integer({ minimum: 0, maximum: 20 }), revision: optional(Type.Integer({ minimum: 0 })) }),
+  // signUp reports `null` for a normal-mode account, matching the persisted identity logIn echoes.
+  'fundamental/signUp': strict({ userId: identity.userId, environment, gameMode, levelOffsetForOrca: Type.Union([Type.Integer({ minimum: 0, maximum: 20 }), Type.Null()]), revision: optional(Type.Integer({ minimum: 0 })) }),
   // The account store normalizes levelOffsetForOrca to `null` (not omitted) for non-Orca accounts; logIn echoes that persisted identity verbatim.
   'fundamental/logIn': strict({ userId: identity.userId, environment, gameMode, levelOffsetForOrca: Type.Union([Type.Integer({ minimum: 0, maximum: 20 }), Type.Null()]), sessionToken: Type.String({ minLength: 1 }), controlLeaseToken: Type.String({ minLength: 1 }), leaseExpiresAt: isoTimestamp }),
   'fundamental/logOut': strict({ finalPersistedRevision: Type.Integer({ minimum: 0 }) }),

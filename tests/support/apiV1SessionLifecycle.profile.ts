@@ -10,7 +10,7 @@ import { createFreshGameState } from '../../src/hooks/useGameState';
 import { serializeGameState } from '../../src/game/saveCodec';
 import { encodePersistedState } from '../../src/game/storageCompression';
 import type { GameState } from '../../src/types';
-import { setLanguage } from '../../src/i18n/index.ts';
+import { setLanguage, t, translate } from '../../src/i18n/index.ts';
 import { decodeApiSavePayload } from '../../src/api/v1/commitOperations';
 
 // SpecRef: 9.1.3.2 | API requirement fundamental | signUp / logIn / logOut
@@ -87,12 +87,50 @@ function ports(overrides: Partial<ApiV1SessionPorts> = {}): {
   assert.equal(p.accountsCreated.length, 1);
 }
 
+// 2a. A normal-mode signUp reports no Orca offset; an Orca signUp defaults it to 5 (Spec 9.1.3 1-2).
+{
+  const p = ports();
+  const normal = await signUpApiAccount({ userId: 'Taro', environment: 'desktop', gameMode: 'normal' }, p.value);
+  if (!normal.ok) throw new Error(normal.code);
+  assert.equal(normal.identity.levelOffsetForOrca, null);
+  const orca = await signUpApiAccount({ userId: 'Lin', environment: 'orca', gameMode: 'orca' }, p.value);
+  if (!orca.ok) throw new Error(orca.code);
+  assert.equal(orca.identity.levelOffsetForOrca, 5);
+}
+
+// 2c. The Orca environment fixes `mode.orca`: signUp and logIn reject a normal-mode account there.
+{
+  const p = ports();
+  const signUp = await signUpApiAccount({ userId: 'Taro', environment: 'orca', gameMode: 'normal' }, p.value);
+  assert.equal(signUp.ok, false);
+  if (signUp.ok) throw new Error('expected invalid_request');
+  assert.equal(signUp.code, 'invalid_request');
+  assert.equal(signUp.details?.field, 'gameMode');
+  assert.equal(p.accountsCreated.length, 0);
+  const logIn = await logInApiAccount({ userId: 'Taro', environment: 'orca', gameMode: 'normal' }, null, p.value);
+  assert.equal(logIn.ok, false);
+  if (logIn.ok) throw new Error('expected invalid_request');
+  assert.equal(logIn.code, 'invalid_request');
+}
+
 // 2b. signUp without `language` creates an English save (Spec 9.1.3 1-2 default).
 {
   const p = ports();
   const result = await signUpApiAccount({ userId: 'Hanako', environment: 'desktop', gameMode: 'normal' }, p.value);
   assert.equal(result.ok, true);
   assert.equal(decodeApiSavePayload(p.accountsCreated[0].savePayload).global.language, 'en');
+}
+
+// 2d. The starting party is named in the account's language, not the host's active one, and signUp leaves the host alone.
+{
+  setLanguage('ja');
+  const p = ports();
+  const result = await signUpApiAccount({ userId: 'Eve', environment: 'desktop', gameMode: 'normal', language: 'ko' }, p.value);
+  if (!result.ok) throw new Error(result.code);
+  const [firstMember] = decodeApiSavePayload(p.accountsCreated[0].savePayload).parties[0].characters;
+  assert.equal(firstMember.name, translate('ko', 'character.default.n1'));
+  assert.notEqual(firstMember.name, translate('ja', 'character.default.n1'));
+  assert.equal(t('character.default.n1'), translate('ja', 'character.default.n1'));
 }
 
 // 3. logIn rejects a second login while a session is already active, without touching the account store.
@@ -221,20 +259,20 @@ function ports(overrides: Partial<ApiV1SessionPorts> = {}): {
 // dictionary before the swap, so rendering the swapped state with `setLanguage(state.global.language)` cannot throw.
 {
   const p = ports();
-  const englishAccount: DesktopApiAccountRecord = {
+  const unloadedLanguageAccount: DesktopApiAccountRecord = {
     identity: { userId: 'Taro', environment: 'desktop', gameMode: 'normal' },
-    savePayload: accountPayload(createFreshGameState('en', fixedNow - 30_000)),
+    savePayload: accountPayload(createFreshGameState('zh-TW', fixedNow - 30_000)),
     control: { revisionHighWater: 5, inGameTime: fixedNow - 30_000, receipts: [], tombstones: [], popupEvents: [], deliveries: [] },
   };
-  assert.throws(() => setLanguage('en'), /Language dictionary is not loaded: en/, 'precondition: en is not preloaded');
+  assert.throws(() => setLanguage('zh-TW'), /Language dictionary is not loaded: zh-TW/, 'precondition: zh-TW is not preloaded');
   const result = await logInApiAccount({ userId: 'Taro', environment: 'desktop', gameMode: 'normal' }, null, {
     ...p.value,
-    accounts: { ...p.value.accounts, load: async () => englishAccount },
+    accounts: { ...p.value.accounts, load: async () => unloadedLanguageAccount },
     importGameState: async (state) => { setLanguage(state.global.language); return { state, errorLog: null }; },
   });
   assert.equal(result.ok, true, result.ok ? '' : JSON.stringify(result));
   if (!result.ok) throw new Error(result.code);
-  assert.equal(result.session.state.global.language, 'en');
+  assert.equal(result.session.state.global.language, 'zh-TW');
   setLanguage('ja');
 }
 

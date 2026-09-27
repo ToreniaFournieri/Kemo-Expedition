@@ -373,7 +373,11 @@ request with the same base parameters and key when no receipt exists.
 * All HTTP operations except `fundamental/status`, `help/overview`, and
   `help/endpoints` require `Authorization: Bearer <bootstrapToken>`.
 * `fundamental/signUp` initializes the named API-controlled save but does not
-  grant a control session.
+  grant a control session. It returns `levelOffsetForOrca: null` for a
+  `normal` account (the offset applies only to `orca`, default `5`).
+* Because the Orca environment fixes `mode.orca`, `signUp` and `logIn` in the
+  `orca` environment reject `gameMode: normal` with `invalid_request`
+  (`details.field: gameMode`).
 * `fundamental/logIn` returns opaque `sessionToken` and `controlLeaseToken`.
   Subsequent session operations also require:
   `X-BoKemo-Session: <sessionToken>` and
@@ -1311,7 +1315,9 @@ type DiaryEntry = {
   omission selects all currently visible forms. `rarity` defaults to `all` for
   search/compendium. Missing `superRare` means either value; inconsistent
   `superRare` and `superRareId` filters are invalid.
-* `purchaseShopItems.items` is `{shopItemId: number}[]`.
+* `purchaseShopItems.items` entries are `{shopItemId: number}` or the bare
+  `shopItemId`, so `shopItemsList.validOptions.items` can be passed as-is; both
+  forms may be mixed, and a slot named twice is `invalid_request`.
   `sellInventoryItems.items` and `unlockSoldItems.items` are nonempty `Item Format`
   string arrays. The latter returns `{items: string[]}` of changed variants with
   zero currency effects; a well-formed variant that is not currently auto-sold is
