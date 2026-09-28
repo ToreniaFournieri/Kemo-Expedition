@@ -320,7 +320,13 @@ Path Parameters
   * Simulation results are not cached between requests and are not persisted.
   * Other observation endpoints do not trigger these simulations.
 
-* Parameters: none.
+* Parameters: 
+  * `runLatestSimulation`
+    * `{p}`
+     * Optional.
+     * Boolean.
+     * Default: `false`
+     * If true, runs `latestSimulationResult` for party `{p}`.
 
 * Return:
   * `globalInfo`
