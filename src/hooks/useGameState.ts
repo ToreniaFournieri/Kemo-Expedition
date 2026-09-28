@@ -2571,7 +2571,9 @@ function reduceGameState(
           afkChunkContext ? {
             inventoryOverlay: afkChunkContext.inventoryOverlay,
             encounterCache: afkChunkContext.encounterCache,
-          } : undefined,
+          } : action.resolutionMode === 'forecast' && action.forecastEncounterCache
+            ? { encounterCache: action.forecastEncounterCache }
+            : undefined,
         ),
         ...(AFK_LIVE_PROFILE_BUILD_ENABLED && afkChunkContext?.workerAttribution
           ? { attribution: afkChunkContext.workerAttribution }
@@ -4627,6 +4629,8 @@ export async function simulateExpeditionRuns(
   void memoryMonitor.recordEvent('simulation_start');
   const total = Math.max(1, Math.floor(count));
   const sandbox = createSimulationSandbox(state, partyIndex);
+  // All forecasts share the sandbox party status, so they also share enemies and prepared battle inputs.
+  const forecastEncounterCache = new Map<string, EnemyDef>();
   const seed = new Uint32Array(1); crypto.getRandomValues(seed);
   const forecastRandom = createApiRandom(seed[0]);
 
@@ -4657,6 +4661,7 @@ export async function simulateExpeditionRuns(
         party: sandbox.baseline.parties[partyIndex],
         computed: sandbox.authoritativePartyStatus,
       },
+      forecastEncounterCache,
     }));
     const resolution = forecastResolutionByState.get(resolvedState);
     if (!resolution) throw new Error('simulation_failed');

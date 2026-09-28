@@ -1,5 +1,6 @@
 import type { RuntimeGameMode } from './runtimeGameMode.ts';
 import type {
+  EnemyDef,
   ExpeditionLog,
   ExpeditionLogEntry,
   GameState,
@@ -29,6 +30,11 @@ export interface RunExpeditionApplicationCommand {
   readonly battleOutputMode?: 'full' | 'result-only';
   readonly compactBattleResultOutput?: boolean;
   readonly resolutionMode?: ExpeditionResolutionMode;
+  /**
+   * Encounter cache shared across repeated forecasts of one party (Simulation Run),
+   * so their battles reuse enemy objects and prepared battle inputs.
+   */
+  readonly forecastEncounterCache?: Map<string, EnemyDef>;
 }
 
 /** Explicit caller-owned authorities for a future application command runner. */
