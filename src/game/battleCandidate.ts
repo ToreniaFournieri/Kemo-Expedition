@@ -1707,9 +1707,27 @@ function retainCompactBattle(output: IndexedBattleProtocolOutput, context: Battl
       value0: cursor.value0, value1: cursor.value1, value2: cursor.value2, aux1: cursor.aux1, aux2: cursor.aux2 });
   }
   requireFlavorPairs(output);
-  const actors = [...context.combatants.values()].map(({ magicStyle, ...actor }) => ({ ...actor, ...(magicStyle ? { magicStyle } : {}),
-    name: actor.nameKey ? '' : actor.name, abilities: [...actor.abilities.entries()].filter(([id]) => ['arc_magic', 'ranged_confusion', 'magic_confusion', 'melee_confusion', 'unstable_core', 'soul_reap', 'life_drain', 'death_touch'].includes(id)) }));
+  // Each retained battle owns its actor objects; only the projection is shared per context.
+  const actors = getCompactBattleActorTemplate(context).map((actor) => ({
+    ...actor,
+    abilities: actor.abilities.map(([id, level]): [AbilityId, number] => [id, level]),
+  }));
   return { ...createBattleCandidateResolution(output), log: [], compactBattle: encodeCompactBattleEvents(events, actors, context.terrainEffect) };
+}
+
+const RETAINED_COMPACT_ACTOR_ABILITIES = new Set<AbilityId>([
+  'arc_magic', 'ranged_confusion', 'magic_confusion', 'melee_confusion', 'unstable_core', 'soul_reap', 'life_drain', 'death_touch',
+]);
+const compactBattleActorTemplates = new WeakMap<BattleNarrationContext, readonly CompactBattleActor[]>();
+
+/** Compact actor projection of a narration context; retention never mutates the context. */
+function getCompactBattleActorTemplate(context: BattleNarrationContext): readonly CompactBattleActor[] {
+  const cached = compactBattleActorTemplates.get(context);
+  if (cached) return cached;
+  const template = [...context.combatants.values()].map(({ magicStyle, ...actor }) => ({ ...actor, ...(magicStyle ? { magicStyle } : {}),
+    name: actor.nameKey ? '' : actor.name, abilities: [...actor.abilities.entries()].filter(([id]) => RETAINED_COMPACT_ACTOR_ABILITIES.has(id)) }));
+  compactBattleActorTemplates.set(context, template);
+  return template;
 }
 /**
  * Renders a retained, language-neutral battle.  Character IDs are stable across

@@ -45,9 +45,18 @@ export function getDiaryEventCategory(event: BattleProtocolEvent): 0 | 1 | 2 | 3
 }
 export function encodeCompactBattleEvents(events: BattleProtocolEvent[], actors: CompactBattleActor[], terrain?: TerrainEffectKey | null): CompactBattleLog {
   const abilities: AbilityId[] = [];
+  const abilityIndexes = new Map<AbilityId, number>();
+  // First match wins, as in a linear search, if an actor ID were ever repeated.
+  const actorIndexes = new Map<number, number>();
+  actors.forEach((actor, index) => { if (!actorIndexes.has(actor.id)) actorIndexes.set(actor.id, index); });
+  const actorKindBaseline = (id: number): number => {
+    const index = actorIndexes.get(id);
+    return index === undefined ? 0 : actors[index]!.kind === 'character' ? 1 : 2;
+  };
+  const actorReference = (id: number): number => (actorIndexes.get(id) ?? -1) + 1;
   const rows: CompactEvent[] = [];
   for (let eventIndex = 0; eventIndex < events.length; eventIndex++) {
-    const event = events[eventIndex];
+    const event = events[eventIndex]!;
     const code = DIARY_EVENT_CODES[event.opcode as keyof typeof DIARY_EVENT_CODES];
     if (!code) continue;
     // Only presentation diagnostics and flavored target selections are retained.
@@ -55,36 +64,39 @@ export function encodeCompactBattleEvents(events: BattleProtocolEvent[], actors:
     if (event.opcode === 'target_selected' && !(event.flags & 8)) continue;
     // Numerical damage/heal bookkeeping is already represented by attack/effect facts.
     const flavored = events[eventIndex + 1]?.opcode === 'random_flavor';
-    const chainDamage = event.opcode === 'damage' && events[eventIndex - 2]?.opcode === 'target_selected' && !!(events[eventIndex - 2].flags & 8);
+    const chainDamage = event.opcode === 'damage' && events[eventIndex - 2]?.opcode === 'target_selected' && !!(events[eventIndex - 2]!.flags & 8);
     if ((event.opcode === 'damage' || event.opcode === 'heal') && !flavored && !chainDamage) continue;
-    const category = getDiaryEventCategory(event);
+    const source = event.opcode === 'random_flavor' ? events[eventIndex - 1]! : null;
+    const row: CompactEvent = [getDiaryEventCategory(event), code, 0];
     let mask = 0;
-    const values: number[] = [];
-    DIARY_EVENT_FIELDS.forEach((field, index) => {
+    for (let index = 0; index < DIARY_EVENT_FIELDS.length; index++) {
+      const field = DIARY_EVENT_FIELDS[index]!;
       let value: number;
       if (field === 'abilityId') {
-        if (!event.abilityId) return;
-        let id = abilities.indexOf(event.abilityId);
-        if (id < 0) { id = abilities.length; abilities.push(event.abilityId); }
+        if (!event.abilityId) continue;
+        let id = abilityIndexes.get(event.abilityId);
+        if (id === undefined) { id = abilities.length; abilities.push(event.abilityId); abilityIndexes.set(event.abilityId, id); }
         value = id + 1;
       } else if (field === 'attackType') value = attackTypes.indexOf(event.attackType);
       else value = event[field];
-      if (field === 'actorId' || field === 'targetId') {
-        if (value !== 0) { const ref = actors.findIndex(actor => actor.id === value); if (ref < 0) throw new Error('Unknown Diary actor reference'); value = ref + 1; }
+      if ((field === 'actorId' || field === 'targetId') && value !== 0) {
+        const ref = actorIndexes.get(value);
+        if (ref === undefined) throw new Error('Unknown Diary actor reference');
+        value = ref + 1;
       }
-      let baseline = field === 'phase' ? 2 : field === 'actorKind' ? (actors.find(actor => actor.id === event.actorId)?.kind === 'character' ? 1 : actors.some(actor => actor.id === event.actorId) ? 2 : 0) : 0;
-      if (event.opcode === 'random_flavor') {
-        const source = events[eventIndex - 1];
-        if (field === 'abilityId') baseline = source.abilityId ? abilities.indexOf(source.abilityId) + 1 : 0;
+      let baseline = field === 'phase' ? 2 : field === 'actorKind' ? actorKindBaseline(event.actorId) : 0;
+      if (source) {
+        if (field === 'abilityId') baseline = source.abilityId ? (abilityIndexes.get(source.abilityId) ?? -1) + 1 : 0;
         else if (field === 'attackType') baseline = attackTypes.indexOf(source.attackType);
-        else if (field === 'actorId' || field === 'targetId') baseline = source[field] ? actors.findIndex(actor => actor.id === source[field]) + 1 : 0;
+        else if (field === 'actorId' || field === 'targetId') baseline = source[field] ? actorReference(source[field]) : 0;
         else baseline = source[field];
       }
-      if (value === baseline) return;
+      if (value === baseline) continue;
       mask |= 1 << index;
-      values.push(value);
-    });
-    rows.push([category, code, mask, ...values]);
+      row.push(value);
+    }
+    row[2] = mask;
+    rows.push(row);
   }
   return { version: 1, actors, ...(terrain ? { terrain } : {}), abilities, events: rows };
 }
