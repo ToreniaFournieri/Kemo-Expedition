@@ -160,6 +160,35 @@ export function apiValuesEqual(left: unknown, right: unknown): boolean {
   return true;
 }
 
+/**
+ * A mutable copy of the control metadata for one transaction. Receipts are never modified once written, so the copy
+ * shares them (and the tombstone strings) instead of deep-cloning up to 4096 retained response bodies every commit.
+ */
+function stageControl(control: ApiV1ControlMetadata): ApiV1ControlMetadata {
+  const { receipts, tombstones, ...rest } = control;
+  return { ...structuredClone(rest), receipts: [...receipts], tombstones: [...tombstones] };
+}
+
+const receiptJsonCache = new WeakMap<ApiV1Receipt, string>();
+
+/**
+ * The control metadata as JSON (equivalent to `JSON.stringify(control)`, with `receipts` last). Each retained receipt is immutable, so its
+ * JSON is built once and reused: re-serializing all 4096 receipts on every commit dominated the account commit cost.
+ */
+export function serializeApiV1Control(control: ApiV1ControlMetadata): string {
+  const { receipts, ...rest } = control;
+  const receiptsJson = receipts.map((receipt) => {
+    let json = receiptJsonCache.get(receipt);
+    if (json === undefined) {
+      json = JSON.stringify(receipt);
+      receiptJsonCache.set(receipt, json);
+    }
+    return json;
+  }).join(',');
+  const restJson = JSON.stringify(rest);
+  return `${restJson.slice(0, -1)}${restJson.length > 2 ? ',' : ''}"receipts":[${receiptsJson}]}`;
+}
+
 export function canonicalizeApiV1Request(operation: string, parameters: Record<string, unknown>, uploadedFiles: Record<string, Record<string, unknown>>): string {
   const files = Object.fromEntries(Object.entries(uploadedFiles).map(([name, file]) => [name, {
     mediaType: file.mediaType,
@@ -228,7 +257,7 @@ export async function executeApiV1CommitTransaction(
     }
   }
 
-  const stagedControl = structuredClone(input.control);
+  const stagedControl = stageControl(input.control);
   const policy = resolveConfirmationPolicy(input.operation, input.state, input.parameters);
   const confirmationRequired = policy !== null;
   if (policy) {

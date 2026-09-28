@@ -3,6 +3,7 @@ import {
   apiValuesEqual,
   canonicalizeApiValue,
   executeApiV1CommitTransaction,
+  serializeApiV1Control,
   SerializedApplicationApiAuthority,
   type ApiV1CommitAuthorityDependencies,
   type ApiV1CommitAuthorityInput,
@@ -515,6 +516,32 @@ for (const [thrown, code] of [['illegal_action:charge_insufficient', 'illegal_ac
   for (const [left, right] of cases) {
     assert.equal(apiValuesEqual(left, right), canonicalizeApiValue(left) === canonicalizeApiValue(right), `${canonicalizeApiValue(left)} vs ${canonicalizeApiValue(right)}`);
   }
+}
+
+// Commits share retained receipts with the previous control instead of deep-cloning them, and the cached control
+// JSON stays equivalent to `JSON.stringify` (member order aside) across commits, receipt eviction, and a reload from that JSON.
+{
+  const deps = dependencies();
+  let current = control();
+  for (let index = 0; index < 4100; index += 1) current.receipts.push({ key: `seeded-key-${String(index).padStart(6, '0')}`, operation: 'commit/base/changeJewelPriorityParty', canonical: '{}', response: { requestId: `r${index}`, previousRevision: 0, revision: 0, data: { index }, effects: [], changedResources: [], committedAt: 'x' } });
+  current.receipts.splice(0, 4);
+  current.tombstones.push('seeded-key-000000', 'seeded-key-000001', 'seeded-key-000002', 'seeded-key-000003');
+  const sameJson = (value: ApiV1ControlMetadata) => assert.ok(apiValuesEqual(JSON.parse(serializeApiV1Control(value)), JSON.parse(JSON.stringify(value))), 'serialized control differs from JSON.stringify');
+  sameJson(current);
+  const before = current;
+  const beforeJson = JSON.stringify(before);
+  const result = await executeApiV1CommitTransaction(input({ control: current, idempotencyKey: 'authority-key-share-0001' }), deps.value);
+  assert.equal(result.ok, true, result.ok ? undefined : JSON.stringify(result.error));
+  if (!result.ok) throw new Error(result.error.code);
+  current = result.control;
+  assert.equal(JSON.stringify(before), beforeJson, 'the committed snapshot never mutates the previous control');
+  assert.equal(current.receipts.length, 4096);
+  assert.equal(current.receipts[0], before.receipts[1], 'retained receipts are shared, not cloned');
+  assert.deepEqual(current.tombstones.slice(-1), ['seeded-key-000004']);
+  sameJson(current);
+  const json = serializeApiV1Control(current);
+  assert.ok(json === serializeApiV1Control(JSON.parse(json)), 'reloaded control serializes identically');
+  sameJson({ revisionHighWater: 0, receipts: [], tombstones: [] });
 }
 
 console.log('apiV1Authority profile ok');

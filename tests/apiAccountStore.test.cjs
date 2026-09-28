@@ -54,6 +54,20 @@ test('a commit removes the generation its manifest replaced, keeping one save an
   assert.equal(store.load(identity).savePayload, 'save-5');
 });
 
+test('a commit writes control metadata that arrives already serialized as JSON verbatim', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'bokemo-api-json-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const store = createApiAccountStore({ userDataPath: root });
+  const identity = { userId: 'Json', environment: 'desktop', gameMode: 'normal' };
+  store.create(identity, 'save-0');
+  const controlJson = JSON.stringify({ revisionHighWater: 3, tombstones: ['old'], receipts: [{ key: 'k', operation: 'o', canonical: '{}', response: {} }] });
+  store.commit(identity, 'save-1', controlJson);
+  const directory = store.resolveAccount(identity).directory;
+  const manifest = JSON.parse(fs.readFileSync(path.join(directory, 'manifest.json'), 'utf8'));
+  assert.equal(fs.readFileSync(path.join(directory, manifest.controlFile), 'utf8'), controlJson);
+  assert.deepEqual(store.load(identity).control, JSON.parse(controlJson));
+});
+
 test('loading sweeps generations an earlier runtime or an interrupted commit left unreferenced', t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'bokemo-api-sweep-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
