@@ -40,3 +40,34 @@ test('manifest-write failure leaves the previous generation authoritative', t =>
   assert.equal(store.load(identity).savePayload, 'old-save');
   assert.equal(store.load(identity).control.revisionHighWater, 0);
 });
+
+test('a commit removes the generation its manifest replaced, keeping one save and control file', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'bokemo-api-prune-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const store = createApiAccountStore({ userDataPath: root });
+  const identity = { userId: 'Prune', environment: 'desktop', gameMode: 'normal' };
+  store.create(identity, 'save-0');
+  for (let revision = 1; revision <= 5; revision += 1) store.commit(identity, `save-${revision}`, { revisionHighWater: revision, receipts: [], tombstones: [] });
+  const directory = store.resolveAccount(identity).directory;
+  const manifest = JSON.parse(fs.readFileSync(path.join(directory, 'manifest.json'), 'utf8'));
+  assert.deepEqual(fs.readdirSync(directory).sort(), [manifest.controlFile, 'manifest.json', manifest.saveFile].sort());
+  assert.equal(store.load(identity).savePayload, 'save-5');
+});
+
+test('loading sweeps generations an earlier runtime or an interrupted commit left unreferenced', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'bokemo-api-sweep-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  let fail = false;
+  const store = createApiAccountStore({ userDataPath: root, beforeManifestWrite: () => { if (fail) throw new Error('injected_manifest_failure'); } });
+  const identity = { userId: 'Sweep', environment: 'desktop', gameMode: 'normal' };
+  store.create(identity, 'kept-save');
+  const directory = store.resolveAccount(identity).directory;
+  const stale = ['save-00000000-0000-4000-8000-000000000000.bokemo', 'control-00000000-0000-4000-8000-000000000000.json', 'manifest.json.tmp-1-2'];
+  for (const name of stale) fs.writeFileSync(path.join(directory, name), 'stale');
+  fs.writeFileSync(path.join(directory, 'notes.txt'), 'not a generation file');
+  fail = true;
+  assert.throws(() => store.commit(identity, 'orphaned-save', { revisionHighWater: 1, receipts: [], tombstones: [] }), /injected_manifest_failure/);
+  assert.equal(store.load(identity).savePayload, 'kept-save');
+  const manifest = JSON.parse(fs.readFileSync(path.join(directory, 'manifest.json'), 'utf8'));
+  assert.deepEqual(fs.readdirSync(directory).sort(), [manifest.controlFile, 'manifest.json', manifest.saveFile, 'notes.txt'].sort());
+});

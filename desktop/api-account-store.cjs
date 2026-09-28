@@ -45,6 +45,24 @@ function createApiAccountStore({ userDataPath, beforeManifestWrite = null }) {
     }
   }
 
+  // SpecRef: 5.1 | Records made unreachable may be deleted only after the manifest that drops them is durable.
+  // Every commit writes a new generation; without this the account directory grows by one full save and control file
+  // per commit (tens of GB over a long API run). Also removes generations and temporary files left by an interrupted commit.
+  const GENERATION_FILE_PATTERN = /^(?:save-[0-9a-f-]{36}\.bokemo|control-[0-9a-f-]{36}\.json)(?:\.tmp-\d+-\d+)?$|^manifest\.json\.tmp-\d+-\d+$/;
+
+  function removeFile(filePath) {
+    try { fs.unlinkSync(filePath); } catch { /* already gone or unremovable: retried by the next sweep */ }
+  }
+
+  function sweepUnreferencedGenerations(directory, manifest) {
+    let entries;
+    try { entries = fs.readdirSync(directory); } catch { return; }
+    for (const entry of entries) {
+      if (entry === manifest.saveFile || entry === manifest.controlFile || !GENERATION_FILE_PATTERN.test(entry)) continue;
+      removeFile(path.join(directory, entry));
+    }
+  }
+
   function exists(identity) {
     const { directory } = resolveAccount(identity);
     return fs.existsSync(path.join(directory, 'manifest.json'));
@@ -69,11 +87,13 @@ function createApiAccountStore({ userDataPath, beforeManifestWrite = null }) {
     const manifest = readJson(path.join(directory, 'manifest.json'), null);
     if (!manifest) return null;
     if (manifest.schemaVersion !== 1 || typeof manifest.saveFile !== 'string' || typeof manifest.controlFile !== 'string') throw new Error('invalid_manifest');
-    return {
+    const record = {
       identity: normalized,
       savePayload: fs.readFileSync(path.join(directory, manifest.saveFile), 'utf8'),
       control: readJson(path.join(directory, manifest.controlFile), { revisionHighWater: 0, receipts: [], tombstones: [], confirmations: [], popupEvents: [], deliveries: [] }),
     };
+    sweepUnreferencedGenerations(directory, manifest);
+    return record;
   }
 
   function commit(identity, savePayload, control) {
@@ -88,6 +108,8 @@ function createApiAccountStore({ userDataPath, beforeManifestWrite = null }) {
     writeAtomic(path.join(directory, controlFile), JSON.stringify(control));
     beforeManifestWrite?.({ identity: normalized, generation });
     writeAtomic(manifestPath, JSON.stringify({ ...manifest, identity: normalized, generation, saveFile, controlFile, updatedAt: new Date().toISOString() }));
+    if (typeof manifest.saveFile === 'string' && manifest.saveFile !== saveFile) removeFile(path.join(directory, manifest.saveFile));
+    if (typeof manifest.controlFile === 'string' && manifest.controlFile !== controlFile) removeFile(path.join(directory, manifest.controlFile));
   }
 
   return { create, load, commit, exists, resolveAccount };

@@ -496,6 +496,8 @@ function record(operationId: string, cell: Cell, outcome: string) {
 
 /** Everything a failed commit must leave untouched: the revision and the complete observation. */
 async function snapshot(client: Client): Promise<string> {
+  // A report or feedback commit fires the delivery sender in the background; compare only once it has settled.
+  await settleDeliveries(application);
   const observation = await client.send('read/observation');
   assert.equal(observation.status, 200, JSON.stringify(observation.body));
   return JSON.stringify({ revision: observation.body.revision, data: observation.body.data });
