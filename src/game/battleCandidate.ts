@@ -669,9 +669,10 @@ function getPreparedCompactBattleInput(
   initialPartyHp: number | undefined,
   environment: BattleEnvironment,
   outputMode: 'result-only' | 'compact' = 'result-only',
+  compactResultOutput = true,
 ): PreparedCompactBattleInput {
   const status = environment.partyStatus;
-  const cacheKey = `${outputMode}:${environment.terrainEffect ?? 'none'}:${bags.physicalThreatBag.entries.length}:${bags.magicalThreatBag.entries.length}`;
+  const cacheKey = `${outputMode}:${compactResultOutput ? 'compact-result' : 'full-result'}:${environment.terrainEffect ?? 'none'}:${bags.physicalThreatBag.entries.length}:${bags.magicalThreatBag.entries.length}`;
   let byEnemy: WeakMap<EnemyDef, Map<string, PreparedCompactBattleInput>> | undefined;
   if (status) {
     let byParty = compactBattleInputCache.get(status);
@@ -698,9 +699,9 @@ function getPreparedCompactBattleInput(
     [],
     initialPartyHp,
     environment,
-    outputMode === 'compact'
-      ? BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG
-      : BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG | BATTLE_ENGINE_FLAG_COMPACT_RESULT_OUTPUT,
+    outputMode === 'result-only' && compactResultOutput
+      ? BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG | BATTLE_ENGINE_FLAG_COMPACT_RESULT_OUTPUT
+      : BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG,
     outputMode,
   );
   prepared.input.seed = seed;
@@ -862,13 +863,15 @@ export function executeBattleCandidateFromSeed(
       rngVersion: output.rngVersion,
     };
   };
-  const usePreparedInput = (outputMode === 'result-only' && compactResultOutput)
-    || (outputMode === 'compact' && environment.reusePreparedInput === true && environment.partyStatus !== undefined);
+  const reusesPreparedInput = environment.reusePreparedInput === true && environment.partyStatus !== undefined;
+  const usePreparedInput = (outputMode === 'result-only' && (compactResultOutput || reusesPreparedInput))
+    || (outputMode === 'compact' && reusesPreparedInput);
   const result = usePreparedInput
     ? (() => {
       const prepared = getPreparedCompactBattleInput(
         party, enemy, bags, normalizedSeed, rngVersion, initialPartyHp, environment,
         outputMode === 'compact' ? 'compact' : 'result-only',
+        compactResultOutput,
       );
       narration = prepared.narration;
       return consumePreparedBattleProtocolInput(
