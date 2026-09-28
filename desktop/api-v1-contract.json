@@ -1023,7 +1023,32 @@
       "query": {
         "additionalProperties": false,
         "type": "object",
-        "properties": {}
+        "properties": {
+          "runLatestSimulation.1": {
+            "type": "boolean",
+            "default": false
+          },
+          "runLatestSimulation.2": {
+            "type": "boolean",
+            "default": false
+          },
+          "runLatestSimulation.3": {
+            "type": "boolean",
+            "default": false
+          },
+          "runLatestSimulation.4": {
+            "type": "boolean",
+            "default": false
+          },
+          "runLatestSimulation.5": {
+            "type": "boolean",
+            "default": false
+          },
+          "runLatestSimulation.6": {
+            "type": "boolean",
+            "default": false
+          }
+        }
       },
       "body": {
         "additionalProperties": false,
@@ -1552,7 +1577,32 @@
       "query": {
         "additionalProperties": false,
         "type": "object",
-        "properties": {}
+        "properties": {
+          "runLatestSimulation.1": {
+            "type": "boolean",
+            "default": false
+          },
+          "runLatestSimulation.2": {
+            "type": "boolean",
+            "default": false
+          },
+          "runLatestSimulation.3": {
+            "type": "boolean",
+            "default": false
+          },
+          "runLatestSimulation.4": {
+            "type": "boolean",
+            "default": false
+          },
+          "runLatestSimulation.5": {
+            "type": "boolean",
+            "default": false
+          },
+          "runLatestSimulation.6": {
+            "type": "boolean",
+            "default": false
+          }
+        }
       },
       "body": {
         "additionalProperties": false,

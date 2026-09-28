@@ -158,7 +158,11 @@ const pathSchemas = {
 };
 
 const page = { limit: optional(Type.Integer({ minimum: 1, maximum: 200 }), 100), cursor: optional(stableKey) };
+// SpecRef: 9.1.3 | 2-1-1 compact | `runLatestSimulation.{p}` (default false) opts party `{p}` into the fresh 100-run forecast.
+const compactObservationQuery = strict(Object.fromEntries([1, 2, 3, 4, 5, 6].map((p) => [`runLatestSimulation.${p}`, optional(Type.Boolean(), false)])));
 const querySchemas = {
+  'read/observation': compactObservationQuery,
+  'read/observation/compact': compactObservationQuery,
   'read/observation/party': strict({ partyNumber: optional(partyNumber), characterId: optional(integerId) }),
   'read/observation/base': strict({ pane: optional(literals('shop', 'inventory', 'vault', 'workshop', 'altar')) }),
   'read/observation/diary': strict({ partyNumber: optional(partyNumber), diaryEntryId: optional(stableKey) }),

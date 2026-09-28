@@ -314,11 +314,13 @@ Path Parameters
 * Provides a compact observation designed primarily for AI decision-making.
 
 * Behavior:
-  * Each request performs a fresh, private 100-run simulation for every unlocked party.
-  * The simulations use the same game-state snapshot as the current facts returned by this request.
-  * The simulation results are intended as an on-demand decision aid, not as a real-time monitoring or prediction mechanism.
+  * By default, no simulation is performed.
+  * For each party `{p}` where `runLatestSimulation.{p}` is `true`, the request performs a fresh, private 100-run simulation and returns its `latestSimulationResult`.
+  * Each simulation uses the same game-state snapshot as the current facts returned by the request.
+  * Simulation results are intended as an on-demand decision aid, not as a real-time monitoring or prediction mechanism.
   * Simulation results are not cached between requests and are not persisted.
-  * Other observation endpoints do not trigger these simulations.
+  * Parties for which `runLatestSimulation.{p}` is `false` or omitted do not trigger a simulation.
+  * Other read endpoints do not trigger these simulations.
 
 * Parameters: 
   * `runLatestSimulation`

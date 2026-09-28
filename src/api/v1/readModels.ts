@@ -818,8 +818,11 @@ function baseProjection(state: GameState, context: ApiV1ReadContext) {
 
 export async function buildApiV1ReadData(operationId: string, state: GameState, parameters: Record<string, unknown>, context: ApiV1ReadContext): Promise<Record<string, unknown>> {
   if (operationId === 'read/observation' || operationId === 'read/observation/compact') {
+    // SpecRef: 9.1.3 | 2-1-1 compact | `runLatestSimulation.{p}` (default false): only opted-in parties are simulated.
     const simulations: string[] = [];
     for (let index = 0; index < state.parties.length; index += 1) {
+      const requested = parameters[`runLatestSimulation.${state.parties[index].id}`];
+      if (requested !== true && requested !== 'true') continue;
       const result = await context.simulation?.(index, 100) as { Clear?: number; Return?: number; Draw?: number; Retreat?: number; Defeat?: number; total?: number } | undefined;
       const total = result?.total ?? 100;
       const percent = (value: number | undefined) => Math.round(((value ?? 0) / total) * 100);

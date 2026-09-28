@@ -130,12 +130,16 @@ after the response has been prepared. Fundamental responses use
 * Every `GET` endpoint except the popup event stream also answers `HEAD` with
   the status and headers (including `ETag`) that `GET` would return, and no body.
   A `405` for a `GET` endpoint lists `Allow: GET, HEAD`.
-* Every compact observation request deliberately runs a new private 100-run
-  simulation for each unlocked party against the response's immutable snapshot.
-  This includes the `/read/observation` alias. It is an on-demand AI decision
-  operation, not the UI's real-time monitoring query. Do not reuse an older
-  forecast or reduce the run count. It uses the same simulation rules as the
-  1,000-run query, with an isolated random domain and no persisted result.
+* A compact observation request runs a new private 100-run simulation against
+  the response's immutable snapshot for each unlocked party `{p}` whose
+  `runLatestSimulation.{p}` query parameter is `true` (default `false`, e.g.
+  `?runLatestSimulation.1=true&runLatestSimulation.3=true`). This includes the
+  `/read/observation` alias. `latestSimulationResult` lists only those parties,
+  in party order, and is empty when none is requested; a requested party number
+  (1–6) that is not unlocked is ignored; other keys are `invalid_request`. It is an on-demand AI decision operation, not
+  the UI's real-time monitoring query. Do not reuse an older forecast or reduce
+  the run count. It uses the same simulation rules as the 1,000-run query, with
+  an isolated random domain and no persisted result.
 * Compact observation, including its alias, returns `Cache-Control: no-store`,
   emits no ETag, and does not return 304. Other save-derived JSON reads return
   `ETag: "rev-<revision>-<projectionHash>"` and honor `If-None-Match` with

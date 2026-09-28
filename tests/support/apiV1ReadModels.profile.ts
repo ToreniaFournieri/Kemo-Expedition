@@ -34,9 +34,16 @@ const context = {
   },
 };
 
-await buildApiV1ReadData('read/observation/compact', state, {}, context);
-assert.deepEqual(calls, state.parties.map((_, partyIndex) => ({ partyIndex, count: 100 })));
+// 9.1.3 2-1-1: no party is simulated unless `runLatestSimulation.{p}` opts it in; unknown party numbers are ignored.
+const unsimulated = await buildApiV1ReadData('read/observation/compact', state, {}, context) as { attention: { latestSimulationResult: string[] } };
+assert.deepEqual(calls, []);
+assert.deepEqual(unsimulated.attention.latestSimulationResult, []);
+const optedIn = await buildApiV1ReadData('read/observation', state, { 'runLatestSimulation.1': true, 'runLatestSimulation.6': true }, context) as typeof unsimulated;
+assert.deepEqual(calls, [{ partyIndex: 0, count: 100 }]);
+assert.deepEqual(optedIn.attention.latestSimulationResult, [`PT${state.parties[0].id} / Clear 90% / Return 0% / Draw 4% / Retreat 2% / Defeat 4%`]);
 calls.length = 0;
+await buildApiV1ReadData('read/observation/compact', state, { 'runLatestSimulation.1': false }, context);
+assert.deepEqual(calls, []);
 const full = await buildApiV1ReadData('read/expedition/1/simulationRun', state, {}, context);
 assert.deepEqual(calls, [{ partyIndex: 0, count: 1_000 }]);
 assert.equal(full.simulatedRevision, 7);
