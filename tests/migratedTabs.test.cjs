@@ -301,7 +301,7 @@ const HOMESCREEN_REDUCER_ACTIONS = {
     'advanceSideQuest', 'applyAutoEquipmentActions', 'autoSelectDungeon', 'cancelSideQuest', 'commitAfkPartyChunk',
     'commitAfkPartyTransaction', 'commitAfkPartyTransactionAuthoritatively', 'finalizeDiaryLog', 'flushSave',
     'getAuthoritativeState', 'healPartyHp', 'processPendingProfit', 'publishAuthoritativeState', 'rollPartySleepiness',
-    'rollSideQuest', 'runExpedition', 'setSideQuestProgress', 'spendPendingProfit',
+    'rollSideQuest', 'runExpedition', 'saveNow', 'setRecoverySaveMode', 'setSideQuestProgress', 'spendPendingProfit',
   ],
   // Local toasts: no game state, no save.
   localNotification: ['addNotification', 'addStatNotifications'],

@@ -319,14 +319,18 @@ test('reports deterministic end-to-end AFK migration metrics', () => {
   assert.ok(report.totalWorkerCpuMs < AFK_TOTAL_CPU_CEILING_MS, `AFK total CPU ${report.totalWorkerCpuMs}ms must remain below ${AFK_TOTAL_CPU_CEILING_MS}ms`);
   assert.ok(report.projectedParallelWorkerMs < AFK_PROJECTED_PARALLEL_CEILING_MS, `AFK projected parallel ${report.projectedParallelWorkerMs}ms must remain below ${AFK_PROJECTED_PARALLEL_CEILING_MS}ms`);
   assert.equal(report.wasmBoundaryCalls, report.battles, 'AFK must make one Wasm call per battle');
-  assert.equal(preparation.combatantProjections, report.battles, 'AFK production must project once per battle');
+  // Prepared inputs are reused across a Chunk's battles: each cache miss projects and
+  // encodes once, and every battle makes one bounded arena copy of its patched input.
+  assert.ok(preparation.combatantProjections < report.battles, 'AFK production must reuse prepared inputs across battles');
+  assert.equal(report.encodedInputAllocations, preparation.combatantProjections, 'AFK must encode each prepared input once');
+  assert.equal(report.inputArenaCopies, report.battles, 'AFK must make one bounded arena copy per battle');
   assert.equal(preparation.productionResultOnlyResolutions, 0, 'AFK must retain complete narrated battle results');
   assert.equal(preparation.productionCompactRetentions, report.battles, 'AFK must retain complete compact facts for every battle');
   assert.equal(preparation.projectionPartyStatusFallbacks, 0, 'AFK battles must use chunk-start status');
   assert.equal(preparation.productionPartyStatusComputations, 0, 'AFK battles must not compute status locally');
   assert.equal(getProductionBattleTelemetry().runExpeditionStatusComputations, 0, 'AFK Cycles must not recompute RUN_EXPEDITION status');
   assert.equal(getProductionBattleTelemetry().runExpeditionStatusSnapshots, state.parties.length * AFK_CHUNK_CYCLE_COUNT, 'AFK must reuse one supplied status for all 30 Cycles per party');
-  assert.equal(report.encodedInputAllocations + report.inputArenaCopies + report.outputBufferCopies, 0);
+  assert.equal(report.outputBufferCopies, 0);
   if (!RETROSPECTIVE_COMPARISON) assert.equal(report.decodedEventObjectAllocations + report.decodedBagEntryObjectAllocations, 0);
 });
 
@@ -358,6 +362,8 @@ test('reports Application API sortie counts 1 and 100 through the production bat
     assert.deepEqual([finalParty.instantExpeditionStock, finalParty.instantExpeditionChargeStartedAt], chargeBefore);
     assert.equal(boundary.calls, telemetry.battles, 'API sortie must make one Wasm call per encounter');
     const preparation = getBattlePreparationMeasurement();
+    // API sorties get a fresh status per Cycle and no shared encounter cache, so they
+    // keep the direct zero-copy write instead of the AFK prepared-input reuse.
     assert.equal(preparation.combatantProjections, telemetry.battles, 'API production must project once per battle');
     assert.equal(preparation.productionCompactRetentions, telemetry.battles, 'API production must compact each prepared projection once');
     assert.equal(preparation.projectionPartyStatusFallbacks, 0, 'API battles must use Cycle-start status');

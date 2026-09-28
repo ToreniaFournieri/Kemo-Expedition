@@ -4763,6 +4763,9 @@ export function useGameState() {
   const saveRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const persistenceCoordinatorRef = useRef<PersistenceCoordinator | null>(null);
   const lastSavedAtRef = useRef(0);
+  // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Saving and persistence
+  // While AFK recovery is active, its durable checkpoint loop owns game-state saves.
+  const recoverySaveModeRef = useRef(false);
   const loadErrorLog = initialStateRef.current.loadErrorLog;
   const isSaveBlockedByLoadFailure = loadErrorLog !== null;
 
@@ -4815,9 +4818,23 @@ export function useGameState() {
     });
   }, [isSaveBlockedByLoadFailure]);
 
+  // SpecRef: 5.1.4 | Save and load | Quit, close, and hide cannot wait for the worker.
+  const saveNowSync = useCallback((): boolean => {
+    if (isSaveBlockedByLoadFailure) return false;
+    const coordinator = persistenceCoordinatorRef.current;
+    if (!coordinator) return false;
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+    const durable = coordinator.persistNowSync(latestGameStateRef.current);
+    if (durable) lastSavedAtRef.current = Date.now();
+    return durable;
+  }, [isSaveBlockedByLoadFailure]);
+
   // Save immediately for normal-paced play, while coalescing rapid update bursts (e.g. AFK recovery).
   useEffect(() => {
-    if (isSaveBlockedByLoadFailure) {
+    if (isSaveBlockedByLoadFailure || recoverySaveModeRef.current) {
       return;
     }
 
@@ -4854,13 +4871,12 @@ export function useGameState() {
       persistenceCoordinatorRef.current = createPersistenceCoordinator();
     }
     const flushOnHidden = () => {
-      if (document.visibilityState === 'hidden') {
-        void flushPendingSave().catch(() => undefined);
-      }
+      if (document.visibilityState === 'hidden') saveNowSync();
     };
 
-    const requestBestEffortFlush = () => { void flushPendingSave().catch(() => undefined) };
+    const requestBestEffortFlush = () => { saveNowSync() };
     window.addEventListener('beforeunload', requestBestEffortFlush);
+    window.addEventListener('pagehide', requestBestEffortFlush);
     document.addEventListener('visibilitychange', flushOnHidden);
 
     return () => {
@@ -4873,12 +4889,13 @@ export function useGameState() {
         saveRetryTimeoutRef.current = null;
       }
       window.removeEventListener('beforeunload', requestBestEffortFlush);
+      window.removeEventListener('pagehide', requestBestEffortFlush);
       document.removeEventListener('visibilitychange', flushOnHidden);
       // Worker completion is not guaranteed during page teardown; reject durable waiters cleanly.
       persistenceCoordinatorRef.current?.shutdown();
       persistenceCoordinatorRef.current = null;
     };
-  }, [createPersistenceCoordinator, flushPendingSave, isSaveBlockedByLoadFailure]);
+  }, [createPersistenceCoordinator, saveNowSync, isSaveBlockedByLoadFailure]);
 
   // Add notification helper
   // For 'stat' category, dismiss previous stat notifications first
@@ -5206,6 +5223,24 @@ export function useGameState() {
     dismissNotification,
     dismissAllNotifications,
     flushSave: flushPendingSave,
+    saveNow: saveNowSync,
+
+    /**
+     * Suspend ordinary autosaves while AFK recovery checkpoints own persistence.
+     * Leaving recovery saves the next (finalized) state immediately.
+     */
+    setRecoverySaveMode: useCallback((active: boolean) => {
+      if (recoverySaveModeRef.current === active) return;
+      recoverySaveModeRef.current = active;
+      if (active) {
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current);
+          saveTimeoutRef.current = null;
+        }
+      } else {
+        lastSavedAtRef.current = 0;
+      }
+    }, []),
   };
 
   const selectedParty = state.parties[state.selectedPartyIndex];

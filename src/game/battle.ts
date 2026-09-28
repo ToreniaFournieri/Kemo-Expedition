@@ -13,6 +13,7 @@ import { acquireBattleSeed } from './battleSeedSource.ts';
 export type BattleEnvironment = {
   terrainEffect?: TerrainEffectKey | null;
   partyStatus?: ComputedPartyStatus;
+  reusePreparedInput?: boolean;
 };
 export type BattleResult = BattleCandidateResult & { replayMetadata: BattleReplayMetadata };
 export type BattleResolution = BattleCandidateResolution & { replayMetadata: BattleReplayMetadata };

@@ -141,6 +141,35 @@ export class PersistenceCoordinator {
     waiters.forEach(waiter => waiter.resolve());
   }
   requestOrdinary(state: GameState): number { return this.enqueue(state) }
+  // SpecRef: 5.1.4 | Save and load | Data persistence
+  /**
+   * Synchronously makes `state` durable before returning, for quit, close, and
+   * hide handlers that cannot wait for the worker. It supersedes any older
+   * encode still in the worker. Returns whether `state` is durable.
+   */
+  persistNowSync(state: GameState): boolean {
+    if (this.stopped) return false;
+    if (state === this.lastEnqueuedState && this.durableRevision >= this.lastEnqueuedRevision) return true;
+    const prepared = this.prepare(state, false);
+    this.worker?.terminate(); this.worker = null;
+    this.inFlight = null; this.pending = null; this.storageRetry = null;
+    const requestId = ++this.requestId;
+    const compressionStarted = this.now();
+    let retry: StorageRetry;
+    try {
+      retry = { ...prepared, requestId, encodedPayload: encodeStoredStateSync(prepared.jsonPayload),
+        encodedLogRecords: prepared.logRecords.map((record) => ({ key: record.key, encodedPayload: encodeStoredStateSync(record.jsonPayload) })) };
+    } catch (error) {
+      this.pending = prepared;
+      this.options.onError?.(error instanceof Error ? error : new Error(String(error)));
+      return false;
+    }
+    this.emit({ event: 'worker_compression', revision: prepared.revision, requestId, durationMs: this.now() - compressionStarted,
+      data: { synchronous: true } });
+    this.storageRetry = retry;
+    this.writeEncodedPayload(retry);
+    return this.durableRevision >= prepared.revision;
+  }
   requestDurable(state: GameState): Promise<void> { const revision = this.enqueue(state); return this.waitForRevision(revision) }
   replaceDurable(state: GameState): Promise<void> { const revision = this.enqueue(state, true); return this.waitForRevision(revision) }
   async createExportPayload(state: GameState): Promise<string> {
@@ -195,6 +224,12 @@ export class PersistenceCoordinator {
   private enqueue(state: GameState, rewriteAllLogs = false): number {
     if (this.stopped) throw new PersistenceShutdownError();
     if (!rewriteAllLogs && state === this.lastEnqueuedState) return this.lastEnqueuedRevision;
+    const prepared = this.prepare(state, rewriteAllLogs);
+    this.pending = prepared;
+    this.startPending();
+    return prepared.revision;
+  }
+  private prepare(state: GameState, rewriteAllLogs: boolean): PreparedSave {
     const revision = ++this.revision;
     // A full replacement garbage-collects the prior record generation. Every
     // snapshot prepared before the newest self-contained snapshot is durable
@@ -216,17 +251,15 @@ export class PersistenceCoordinator {
     this.emit({ event: 'json_serialization', revision, durationMs: this.now() - serializationStarted,
       data: { jsonChars: projection.coreJsonChars, jsonUtf16Bytes: projection.coreJsonChars * 2,
         diaryRecords: projection.newLogRecords.length } });
-    this.pending = {
+    this.lastEnqueuedState = state;
+    this.lastEnqueuedRevision = revision;
+    return {
       revision,
       jsonPayload: projection.coreJsonPayload,
       logRecords: projection.newLogRecords,
       retainedLogKeys: [...projection.retainedLogKeys],
       requestedAt,
     };
-    this.lastEnqueuedState = state;
-    this.lastEnqueuedRevision = revision;
-    this.startPending();
-    return revision;
   }
   private waitForRevision(revision: number): Promise<void> {
     if (this.durableRevision >= revision) return Promise.resolve();
