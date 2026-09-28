@@ -41,7 +41,19 @@ test('backup payloads include a schema-marked runtime snapshot and imports repla
   assert.match(homeSource, /normalizeRuntimeSnapshot\(rawRuntimeSnapshot, nextState\.parties\.length\)/);
   assert.match(homeSource, /localStorage\.setItem\(AFK_RUNTIME_STORAGE_KEY, JSON\.stringify\(nextRuntimeSnapshot\)\)/);
   assert.match(homeSource, /afkRemainingMsByParty: afkRemainingMsByPartyRef\.current/);
-  assert.match(homeSource, /if \(pendingAfkMsRef\.current > 0\) await actions\.flushSave\(\)\.catch[\s\S]*persistAfkRuntimeState\(\)/);
+  assert.match(homeSource, /if \(pendingAfkMsRef\.current > 0\) \{[\s\S]{0,400}await actions\.flushSave\(\)\.catch[\s\S]{0,300}persistAfkRuntimeState\(\)/);
+});
+
+test('AFK recovery owns game-state saves through spaced, non-overlapping durable checkpoints', () => {
+  // The ordinary autosave is suspended while recovery backlog remains.
+  assert.match(homeSource, /const isAfkRecoveryPending = pendingAfkMs > 0;[\s\S]{0,120}actions\.setRecoverySaveMode\(isAfkRecoveryPending\)/);
+  assert.match(hookSource, /if \(isSaveBlockedByLoadFailure \|\| recoverySaveModeRef\.current\) \{\s*return;/);
+  // Leaving recovery resets the throttle so the finalized state is saved on its next change.
+  assert.match(hookSource, /setRecoverySaveMode: useCallback\(\(active: boolean\) => \{[\s\S]{0,400}else \{\s*lastSavedAtRef\.current = 0;/);
+  // Recovery checkpoints are spaced by a named interval and never overlap.
+  assert.match(homeSource, /const AFK_RECOVERY_CHECKPOINT_INTERVAL_MS = 15_000;/);
+  assert.match(homeSource, /if \(recoveryCheckpointInFlight\s*\|\| performance\.now\(\) - lastRecoveryCheckpointAt < AFK_RECOVERY_CHECKPOINT_INTERVAL_MS\) return;/);
+  assert.match(homeSource, /recoveryCheckpointInFlight = true;[\s\S]{0,200}finally \{\s*recoveryCheckpointInFlight = false;/);
 });
 
 test('the checked-in legacy backup retains the required canonical roots', () => {
@@ -53,4 +65,14 @@ test('the checked-in legacy backup retains the required canonical roots', () => 
   assert.equal(typeof state.bags, 'object');
   assert.equal(typeof state.selectedPartyIndex, 'number');
   assert.equal(typeof state.buildNumber, 'number');
+});
+
+test('quit, close, and hide save the newest state synchronously before the AFK cursor', () => {
+  // The worker cannot finish during teardown, so these handlers must not rely on it.
+  assert.match(hookSource, /const flushOnHidden = \(\) => \{\s*if \(document\.visibilityState === 'hidden'\) saveNowSync\(\);/);
+  assert.match(hookSource, /const requestBestEffortFlush = \(\) => \{ saveNowSync\(\) \};/);
+  assert.match(hookSource, /window\.addEventListener\('pagehide', requestBestEffortFlush\)/);
+  assert.match(hookSource, /coordinator\.persistNowSync\(latestGameStateRef\.current\)/);
+  assert.match(homeSource, /const persistLatestCheckpoint = \(\) => \{[\s\S]{0,400}actions\.saveNow\(\);\s*persistAfkRuntimeState\(now\);/);
+  assert.doesNotMatch(homeSource, /const persistLatestCheckpoint = \(\) => \{[\s\S]{0,400}void actions\.flushSave\(\)/);
 });

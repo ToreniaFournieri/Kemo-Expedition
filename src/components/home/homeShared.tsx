@@ -282,6 +282,8 @@ export interface HomeScreenProps {
     ) => void;
     addStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
     flushSave: () => Promise<void>;
+    saveNow: () => boolean;
+    setRecoverySaveMode: (active: boolean) => void;
   };
 }
 

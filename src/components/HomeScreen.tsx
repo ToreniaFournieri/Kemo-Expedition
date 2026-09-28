@@ -219,6 +219,8 @@ const loadExpeditionTab = () => import('./home/tabs/ExpeditionTab');
 const loadBaseTab = () => import('./home/tabs/BaseTab');
 const ORCA_TIME_SPEED_OVERRIDE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.orca-time-speed-override');
 const API_PLAYER_RETURN_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.api-player-return');
+// Durable game-state checkpoint spacing while AFK recovery is active (Spec 5.1 Saving and persistence).
+const AFK_RECOVERY_CHECKPOINT_INTERVAL_MS = 15_000;
 // Local keys the Setting tab used before its retained state moved to `uiPreferences` (Build 103); read once, then removed.
 const LEGACY_SETTING_PANEL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.panel-expanded');
 const LEGACY_CLAIRVOYANCE_PARTY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.clairvoyance-party-expanded');
@@ -4660,11 +4662,29 @@ export function HomeScreen({
     };
   }, [processTimeCheckpoint]);
 
+  const isAfkRecoveryPending = pendingAfkMs > 0;
   useEffect(() => {
+    actions.setRecoverySaveMode(isAfkRecoveryPending);
+  }, [actions.setRecoverySaveMode, isAfkRecoveryPending]);
+
+  useEffect(() => {
+    let recoveryCheckpointInFlight = false;
+    let lastRecoveryCheckpointAt = performance.now();
     const id = window.setInterval(async () => {
       // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Saving and persistence
       // Flush authoritative game state before writing the matching AFK cursor checkpoint.
-      if (pendingAfkMsRef.current > 0) await actions.flushSave().catch(() => undefined);
+      // During recovery, checkpoints are spaced out and never overlap.
+      if (pendingAfkMsRef.current > 0) {
+        if (recoveryCheckpointInFlight
+          || performance.now() - lastRecoveryCheckpointAt < AFK_RECOVERY_CHECKPOINT_INTERVAL_MS) return;
+        recoveryCheckpointInFlight = true;
+        try {
+          await actions.flushSave().catch(() => undefined);
+        } finally {
+          recoveryCheckpointInFlight = false;
+          lastRecoveryCheckpointAt = performance.now();
+        }
+      }
       persistAfkRuntimeState();
     }, 5000);
 
@@ -4693,8 +4713,9 @@ export function HomeScreen({
     const persistLatestCheckpoint = () => {
       const now = Date.now();
       lastCheckpointAtRef.current = now;
-      // pagehide/beforeunload cannot guarantee that an asynchronous worker flush completes.
-      void actions.flushSave().catch(() => undefined);
+      // pagehide/beforeunload cannot wait for the worker, so the game state is made
+      // durable synchronously before the matching AFK cursor is written.
+      actions.saveNow();
       persistAfkRuntimeState(now);
     };
 
@@ -4713,7 +4734,7 @@ export function HomeScreen({
       window.removeEventListener('pagehide', persistLatestCheckpoint);
       document.removeEventListener('visibilitychange', handleVisibilityPersist);
     };
-  }, [actions.flushSave, persistAfkRuntimeState]);
+  }, [actions.saveNow, persistAfkRuntimeState]);
 
   // Item gain notifications after selling phase
   useEffect(() => {
