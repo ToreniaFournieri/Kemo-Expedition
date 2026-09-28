@@ -160,8 +160,9 @@ async function commit(h: Harness, operation: string, revision: number, parameter
 }
 
 /** Lets an auto-fired pump (queued right before a commit's response returns) run to completion. */
-async function flush(): Promise<void> {
+async function flush(h: Harness): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 0));
+  await h.api.whenDeliveryPumpIdle();
 }
 
 function deliveryOf(h: Harness, deliveryId: string): ApiV1DeliveryRecord | undefined {
@@ -183,7 +184,7 @@ async function readPendingDeliveryIds(h: Harness): Promise<unknown> {
   const deliveryId = String((queued.data as Record<string, unknown>).deliveryId);
   assert.equal((queued.data as Record<string, unknown>).status, 'queued', 'the commit itself only reports queued, never delivered');
 
-  await flush();
+  await flush(h);
   assert.equal(h.sendCalls.length, 1);
   const record = deliveryOf(h, deliveryId);
   assert.equal(record?.status, 'delivered');
@@ -201,7 +202,7 @@ async function readPendingDeliveryIds(h: Harness): Promise<unknown> {
   const revision = await logIn(h);
   const goldBefore = h.api.authority.getSnapshot().state.global.prana;
   await commit(h, 'commit/setting/feedback', revision, { name: 'Taro', category: 'feedback', text: 'hi', latestBattleLogParty: 'none', includeBackup: false, attachments: [] });
-  await flush();
+  await flush(h);
   const snapshot = h.api.authority.getSnapshot();
   const record = snapshot.control.deliveries?.[0];
   assert.equal(record?.status, 'delivered');
@@ -216,7 +217,7 @@ async function readPendingDeliveryIds(h: Harness): Promise<unknown> {
   const h = harness(async () => ({ kind: 'not_sent', reason: 'dns_failure' }));
   const revision = await logIn(h);
   await commit(h, 'commit/progress/progressReport', revision);
-  await flush(); // attempt 1 (auto-fired)
+  await flush(h); // attempt 1 (auto-fired)
   await h.api.pumpDeliveries(); // attempt 2
   await h.api.pumpDeliveries(); // attempt 3
   assert.equal(h.sendCalls.length, 3, 'API_V1_DELIVERY_MAX_ATTEMPTS caps automatic retry at 3');
@@ -232,7 +233,7 @@ async function readPendingDeliveryIds(h: Harness): Promise<unknown> {
   const h = harness(async () => ({ kind: 'rejected', reason: 'http_400' }));
   const revision = await logIn(h);
   await commit(h, 'commit/progress/progressReport', revision);
-  await flush();
+  await flush(h);
   await h.api.pumpDeliveries();
   assert.equal(h.sendCalls.length, 1);
   assert.equal(h.api.authority.getSnapshot().control.deliveries?.[0].status, 'failed');
@@ -243,7 +244,7 @@ async function readPendingDeliveryIds(h: Harness): Promise<unknown> {
   const h = harness(async () => ({ kind: 'ambiguous', reason: 'timeout_after_send' }));
   const revision = await logIn(h);
   await commit(h, 'commit/progress/progressReport', revision);
-  await flush();
+  await flush(h);
   assert.equal(h.sendCalls.length, 1);
   assert.equal(h.api.authority.getSnapshot().control.deliveries?.[0].status, 'unknown');
   await h.api.pumpDeliveries();
@@ -262,7 +263,7 @@ async function readPendingDeliveryIds(h: Harness): Promise<unknown> {
   h.persistState.failOnCallIndex = 4;
   const revision = h.api.authority.getSnapshot().control.revisionHighWater;
   await commit(h, 'commit/progress/progressReport', revision);
-  await flush(); // attempt 1 (auto-fired): commit and claim persist, send happens once, settle persist fails as arranged
+  await flush(h); // attempt 1 (auto-fired): commit and claim persist, send happens once, settle persist fails as arranged
   assert.equal(h.sendCalls.length, 1);
   assert.equal(h.api.authority.getSnapshot().control.deliveries?.[0].status, 'sending', 'settle could not persist yet');
 
@@ -277,7 +278,7 @@ async function readPendingDeliveryIds(h: Harness): Promise<unknown> {
   const revision = await logIn(h);
   const queued = await commit(h, 'commit/progress/progressReport', revision);
   const deliveryId = String((queued.data as Record<string, unknown>).deliveryId);
-  await flush();
+  await flush(h);
   assert.equal(deliveryOf(h, deliveryId)?.status, 'unknown');
   assert.deepEqual(await readPendingDeliveryIds(h), [deliveryId], 'unknown still counts as pending per 9.1.4.15');
 }
@@ -285,7 +286,7 @@ async function readPendingDeliveryIds(h: Harness): Promise<unknown> {
   const h = harness(async () => ({ kind: 'delivered' }));
   const revision = await logIn(h);
   await commit(h, 'commit/progress/progressReport', revision);
-  await flush();
+  await flush(h);
   assert.deepEqual(await readPendingDeliveryIds(h), [], 'a delivered job is no longer pending');
 }
 

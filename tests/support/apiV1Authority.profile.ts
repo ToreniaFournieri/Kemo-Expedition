@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import {
+  apiValuesEqual,
+  canonicalizeApiValue,
   executeApiV1CommitTransaction,
   SerializedApplicationApiAuthority,
   type ApiV1CommitAuthorityDependencies,
@@ -491,6 +493,28 @@ for (const [thrown, code] of [['illegal_action:charge_insufficient', 'illegal_ac
   if (!result.ok) throw new Error(result.error.code);
   assert.equal(result.state.global.language, 'en');
   assert.equal(deps.persisted.length, 1);
+}
+
+// Change detection compares structurally, with exactly the canonical form's notion of equality: key order is ignored,
+// array order is not, and `undefined`/`NaN` read as `null` while a missing member differs from a present one.
+{
+  const cases: Array<[unknown, unknown]> = [
+    [{ a: 1, b: [1, { c: 'x' }] }, { b: [1, { c: 'x' }], a: 1 }],
+    [{ a: 1 }, { a: 2 }],
+    [[1, 2], [2, 1]],
+    [[1], { 0: 1 }],
+    [{ a: undefined }, { a: null }],
+    [{ a: undefined }, {}],
+    [{ a: NaN }, { a: null }],
+    [null, {}],
+    [[], {}],
+    ['1', 1],
+    [seed, structuredClone(seed)],
+    [seed, { ...seed, global: { ...seed.global, gold: seed.global.gold + 1 } }],
+  ];
+  for (const [left, right] of cases) {
+    assert.equal(apiValuesEqual(left, right), canonicalizeApiValue(left) === canonicalizeApiValue(right), `${canonicalizeApiValue(left)} vs ${canonicalizeApiValue(right)}`);
+  }
 }
 
 console.log('apiV1Authority profile ok');

@@ -4,7 +4,7 @@ import { buildApiV1ReadData, type ApiV1ReadContext } from './readModels';
 import { SerializedApplicationApiAuthority, type ApiV1CommitAuthorityDependencies, type ApiV1ControlMetadata, type ApiV1InternalTransactionDependencies } from './authority';
 import { normalizeApiV1PopupEvents } from './popupEvents';
 import { serializeGameState } from '../../game/saveCodec';
-import { encodePersistedState } from '../../game/storageCompression';
+import { encodeStoredState } from '../../game/storageCompression';
 import { logInApiAccount, logOutApiAccount, signUpApiAccount, type ApiV1SessionPorts } from './sessionLifecycle';
 import { accountDebugSettingsOf, accountTimeScale } from './debugSettings';
 import { setGameplayDebugOverride } from '../../game/debugSettings';
@@ -110,6 +110,8 @@ export interface ApplicationApi {
    * it deterministically instead of waiting for the next poll tick.
    */
   pumpDeliveries: () => Promise<void>;
+  /** Resolves once the running delivery-sender cycle (if any) has finished; never starts one. */
+  whenDeliveryPumpIdle: () => Promise<void>;
   /** Starts the delivery sender's poll loop (a resilience backstop; pumps also run right after a commit that
    *  queues a job). Idempotent to call more than once. Returns a stop function. */
   startDeliveryPump: () => () => void;
@@ -160,14 +162,14 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
   // Runs entirely through `authority.runInternalTransaction`, so it is serialized against every client commit and
   // against itself; the network send (`ports.delivery.send`) happens outside that lock, so it never blocks other
   // commits, but nothing else can claim a second job while one is `sending` (the state machine itself enforces that).
-  let pumpingDeliveries = false;
+  let inFlightDeliveryPump: Promise<void> | null = null;
   let pendingDeliverySettlement: { deliveryId: string; outcome: ApiV1DeliveryOutcome } | null = null;
 
   function deliveryTransactionDependencies(identity: DesktopApiAccountIdentity | null): ApiV1InternalTransactionDependencies & { now: () => number } {
     return {
       now: ports.runtime.now,
       persist: async (snapshot, control) => {
-        if (identity) await ports.session.accounts.commit(identity, encodePersistedState(JSON.stringify(serializeGameState(snapshot))), control as DesktopApiControlMetadata);
+        if (identity) await ports.session.accounts.commit(identity, await encodeStoredState(JSON.stringify(serializeGameState(snapshot))), control as DesktopApiControlMetadata);
         else await ports.runtime.persistPlayer(snapshot);
       },
       publish: ports.runtime.publish,
@@ -209,37 +211,37 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
     if (settled?.status === 'delivered') await completeDeliveryBenefit(identity, deliveryId);
   }
 
-  async function pumpDeliveriesOnce(): Promise<void> {
-    if (pumpingDeliveries) return;
-    pumpingDeliveries = true;
-    try {
-      // Pinned for this whole tick: an identity change (logout) mid-send is a narrow edge case this does not fully
-      // solve, but every step of one tick stays internally consistent about which account it is acting for.
-      const identity = activeIdentity;
-      if (pendingDeliverySettlement) {
-        await settleClaimedDelivery(identity, pendingDeliverySettlement.deliveryId, pendingDeliverySettlement.outcome);
-        if (pendingDeliverySettlement) return;
-      }
-      const deliveredUnapplied = authority.getSnapshot().control.deliveries?.find((entry) => entry.status === 'delivered' && !entry.completionApplied);
-      if (deliveredUnapplied) await completeDeliveryBenefit(identity, deliveredUnapplied.deliveryId);
+  // A nudge while a tick is running joins that tick instead of starting a second one, so awaiting it waits for the work.
+  function pumpDeliveriesOnce(): Promise<void> {
+    inFlightDeliveryPump ??= runDeliveryPump().finally(() => { inFlightDeliveryPump = null; });
+    return inFlightDeliveryPump;
+  }
 
-      const deps = deliveryTransactionDependencies(identity);
-      const claimResult = await authority.runInternalTransaction((state, control) => {
-        const { deliveries, claimed } = claimNextDelivery(control.deliveries ?? [], deps.now());
-        if (!claimed) return null;
-        return { state, control: { ...control, deliveries }, stateChanged: false, controlChanged: true };
-      }, deps);
-      const claimed = claimResult.control.deliveries?.find((entry) => entry.status === 'sending');
-      if (!claimed) return;
-      if (!claimed.payload) {
-        await settleClaimedDelivery(identity, claimed.deliveryId, { kind: 'rejected', reason: 'missing_payload' });
-        return;
-      }
-      const outcome = await ports.delivery.send(claimed);
-      await settleClaimedDelivery(identity, claimed.deliveryId, outcome);
-    } finally {
-      pumpingDeliveries = false;
+  async function runDeliveryPump(): Promise<void> {
+    // Pinned for this whole tick: an identity change (logout) mid-send is a narrow edge case this does not fully
+    // solve, but every step of one tick stays internally consistent about which account it is acting for.
+    const identity = activeIdentity;
+    if (pendingDeliverySettlement) {
+      await settleClaimedDelivery(identity, pendingDeliverySettlement.deliveryId, pendingDeliverySettlement.outcome);
+      if (pendingDeliverySettlement) return;
     }
+    const deliveredUnapplied = authority.getSnapshot().control.deliveries?.find((entry) => entry.status === 'delivered' && !entry.completionApplied);
+    if (deliveredUnapplied) await completeDeliveryBenefit(identity, deliveredUnapplied.deliveryId);
+
+    const deps = deliveryTransactionDependencies(identity);
+    const claimResult = await authority.runInternalTransaction((state, control) => {
+      const { deliveries, claimed } = claimNextDelivery(control.deliveries ?? [], deps.now());
+      if (!claimed) return null;
+      return { state, control: { ...control, deliveries }, stateChanged: false, controlChanged: true };
+    }, deps);
+    const claimed = claimResult.control.deliveries?.find((entry) => entry.status === 'sending');
+    if (!claimed) return;
+    if (!claimed.payload) {
+      await settleClaimedDelivery(identity, claimed.deliveryId, { kind: 'rejected', reason: 'missing_payload' });
+      return;
+    }
+    const outcome = await ports.delivery.send(claimed);
+    await settleClaimedDelivery(identity, claimed.deliveryId, outcome);
   }
 
   function startDeliveryPump(): () => void {
@@ -369,7 +371,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       now: ports.runtime.now,
       notifyPopupActivity: ports.runtime.notifyPopupActivity,
       persist: async (snapshot, control) => {
-        if (identity) await ports.session.accounts.commit(identity, encodePersistedState(JSON.stringify(serializeGameState(snapshot))), control as DesktopApiControlMetadata);
+        if (identity) await ports.session.accounts.commit(identity, await encodeStoredState(JSON.stringify(serializeGameState(snapshot))), control as DesktopApiControlMetadata);
         else if ((operation === 'commit/setting/backup/import' || operation === 'commit/setting/backup/reset') && ports.runtime.persistPlayerReplacement) await ports.runtime.persistPlayerReplacement(snapshot);
         else await ports.runtime.persistPlayer(snapshot);
       },
@@ -459,6 +461,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
     authority,
     createInProcessAdapter,
     pumpDeliveries: pumpDeliveriesOnce,
+    whenDeliveryPumpIdle: () => (inFlightDeliveryPump ?? Promise.resolve()).catch(() => undefined),
     startDeliveryPump,
   };
 }

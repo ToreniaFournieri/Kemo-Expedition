@@ -1,6 +1,6 @@
 import type { GameState } from '../../types';
 import { serializeGameState } from '../../game/saveCodec';
-import { encodePersistedState } from '../../game/storageCompression';
+import { encodeStoredState } from '../../game/storageCompression';
 import { createApiRandom, withGameplayRandomSource } from '../../game/gameplayRandom';
 import { createFreshGameState } from '../../hooks/useGameState';
 import { decodeApiSavePayload } from './commitOperations';
@@ -92,7 +92,7 @@ export async function signUpApiAccount(request: Record<string, unknown>, ports: 
     const language = (LANGUAGES as readonly string[]).includes(String(request.language)) ? String(request.language) as GameState['global']['language'] : 'en';
     // The starting party is named in the account's language, which the host may not have loaded yet.
     await ensureLanguageLoaded(language);
-    const savePayload = encodePersistedState(JSON.stringify(serializeGameState(createFreshGameState(language))));
+    const savePayload = await encodeStoredState(JSON.stringify(serializeGameState(createFreshGameState(language))));
     await ports.accounts.create(identity, savePayload);
     return { ok: true, identity };
   } catch (error) {
@@ -171,7 +171,7 @@ export async function logInApiAccount(request: Record<string, unknown>, activeSe
       control.revisionHighWater = revision;
     }
     control.inGameTime = Math.max(previousInGameTime, realNow);
-    await ports.accounts.commit(account.identity, encodePersistedState(JSON.stringify(serializeGameState(accountState))), control);
+    await ports.accounts.commit(account.identity, await encodeStoredState(JSON.stringify(serializeGameState(accountState))), control);
     const imported = await ports.importGameState(accountState);
     if (!imported.state) throw new Error(imported.errorLog ?? 'account_load_failed');
     swapped = true;

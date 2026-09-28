@@ -137,6 +137,29 @@ export function canonicalizeApiValue(value: unknown): string {
   return JSON.stringify(value) ?? 'null';
 }
 
+/**
+ * Whether two values have the same `canonicalizeApiValue` form, without building either string: shared references are
+ * equal at once and the walk stops at the first difference. Change detection runs on the whole save every commit, where
+ * serializing both sides cost hundreds of milliseconds.
+ */
+export function apiValuesEqual(left: unknown, right: unknown): boolean {
+  if (left === right) return true;
+  const leftObject = left !== null && typeof left === 'object';
+  const rightObject = right !== null && typeof right === 'object';
+  if (!leftObject || !rightObject) return !leftObject && !rightObject && (JSON.stringify(left) ?? 'null') === (JSON.stringify(right) ?? 'null');
+  if (Array.isArray(left) || Array.isArray(right)) {
+    if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) return false;
+    for (let index = 0; index < left.length; index += 1) if (!apiValuesEqual(left[index], right[index])) return false;
+    return true;
+  }
+  const leftRecord = left as Record<string, unknown>;
+  const rightRecord = right as Record<string, unknown>;
+  const keys = Object.keys(leftRecord);
+  if (keys.length !== Object.keys(rightRecord).length) return false;
+  for (const key of keys) if (!Object.prototype.hasOwnProperty.call(rightRecord, key) || !apiValuesEqual(leftRecord[key], rightRecord[key])) return false;
+  return true;
+}
+
 export function canonicalizeApiV1Request(operation: string, parameters: Record<string, unknown>, uploadedFiles: Record<string, Record<string, unknown>>): string {
   const files = Object.fromEntries(Object.entries(uploadedFiles).map(([name, file]) => [name, {
     mediaType: file.mediaType,
@@ -311,8 +334,8 @@ export async function executeApiV1CommitTransaction(
     return { ok: false, error: classifyCommitError(error) };
   }
 
-  if (stagedControl.settings !== undefined || canonicalizeApiValue(outcome.settings) !== canonicalizeApiValue(settingsBefore)) stagedControl.settings = outcome.settings;
-  if (stagedControl.equipmentHistory !== undefined || canonicalizeApiValue(outcome.equipmentHistory) !== canonicalizeApiValue(equipmentHistoryBefore)) stagedControl.equipmentHistory = outcome.equipmentHistory;
+  if (stagedControl.settings !== undefined || !apiValuesEqual(outcome.settings, settingsBefore)) stagedControl.settings = outcome.settings;
+  if (stagedControl.equipmentHistory !== undefined || !apiValuesEqual(outcome.equipmentHistory, equipmentHistoryBefore)) stagedControl.equipmentHistory = outcome.equipmentHistory;
   if (outcome.resetControlEvents) {
     // SpecRef: 9.1.4.15 | Import/reset cancels queued delivery jobs and is refused while a send is in flight.
     const replacement = prepareSaveReplacement(stagedControl.deliveries ?? [], dependencies.now());
@@ -331,9 +354,11 @@ export async function executeApiV1CommitTransaction(
   if (outcome.delivery) stagedControl.deliveries = [...(stagedControl.deliveries ?? []), outcome.delivery];
   if (randomDrawCount > 0) stagedControl.rngState = apiRandom.state;
 
-  const stateChanged = canonicalizeApiValue(serializeGameState(outcome.state)) !== canonicalizeApiValue(serializeGameState(input.state));
-  const metadataChanged = canonicalizeApiValue({ deliveries: stagedControl.deliveries, elapsedCarryMs: stagedControl.elapsedCarryMs, equipmentHistory: stagedControl.equipmentHistory, popupEvents: stagedControl.popupEvents, rngState: stagedControl.rngState, settings: stagedControl.settings })
-    !== canonicalizeApiValue({ deliveries: input.control.deliveries, elapsedCarryMs: input.control.elapsedCarryMs, equipmentHistory: input.control.equipmentHistory, popupEvents: input.control.popupEvents, rngState: input.control.rngState, settings: input.control.settings });
+  const stateChanged = !apiValuesEqual(serializeGameState(outcome.state), serializeGameState(input.state));
+  const metadataChanged = !apiValuesEqual(
+    { deliveries: stagedControl.deliveries, elapsedCarryMs: stagedControl.elapsedCarryMs, equipmentHistory: stagedControl.equipmentHistory, popupEvents: stagedControl.popupEvents, rngState: stagedControl.rngState, settings: stagedControl.settings },
+    { deliveries: input.control.deliveries, elapsedCarryMs: input.control.elapsedCarryMs, equipmentHistory: input.control.equipmentHistory, popupEvents: input.control.popupEvents, rngState: input.control.rngState, settings: input.control.settings },
+  );
   const clockChanged = outcome.simulatedAt !== input.simulatedAt;
   const changed = stateChanged || metadataChanged || clockChanged;
   const previousRevision = stagedControl.revisionHighWater;
