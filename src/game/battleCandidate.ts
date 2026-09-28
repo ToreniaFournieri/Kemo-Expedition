@@ -50,6 +50,8 @@ import { DISPLAY_LOCALE } from '../i18n/displayFormat.ts';
 type BattleEnvironment = {
   terrainEffect?: TerrainEffectKey | null;
   partyStatus?: ComputedPartyStatus;
+  /** Battles share this Chunk's status, party, and enemy objects, so prepared inputs are reused. */
+  reusePreparedInput?: boolean;
 };
 
 export type BattleCandidateResolution = {
@@ -639,9 +641,13 @@ export type SeededBattleCandidateResult<T extends BattleCandidateResolution = Ba
     rngVersion: number;
 };
 
-// SpecRef: 6.1.8 | Universal C++ battle kernel | compact AFK result-only execution
+// SpecRef: 6.1.8 | Universal C++ battle kernel | prepared seeded input reuse
+// A prepared input is reused across battles that share the Chunk's party status,
+// the party, the enemy, the terrain, and the threat-bag shape; only party HP, the
+// seed, and the threat-bag entries change between them.
 type PreparedCompactBattleInput = {
   bytes: Uint8Array;
+  narration: BattleNarrationContext | null;
   partyHpOffsets: readonly number[];
   physicalBagOffset: number;
   magicalBagOffset: number;
@@ -662,9 +668,10 @@ function getPreparedCompactBattleInput(
   rngVersion: number,
   initialPartyHp: number | undefined,
   environment: BattleEnvironment,
+  outputMode: 'result-only' | 'compact' = 'result-only',
 ): PreparedCompactBattleInput {
   const status = environment.partyStatus;
-  const cacheKey = `${environment.terrainEffect ?? 'none'}:${bags.physicalThreatBag.entries.length}:${bags.magicalThreatBag.entries.length}`;
+  const cacheKey = `${outputMode}:${environment.terrainEffect ?? 'none'}:${bags.physicalThreatBag.entries.length}:${bags.magicalThreatBag.entries.length}`;
   let byEnemy: WeakMap<EnemyDef, Map<string, PreparedCompactBattleInput>> | undefined;
   if (status) {
     let byParty = compactBattleInputCache.get(status);
@@ -691,8 +698,10 @@ function getPreparedCompactBattleInput(
     [],
     initialPartyHp,
     environment,
-    BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG | BATTLE_ENGINE_FLAG_COMPACT_RESULT_OUTPUT,
-    'result-only',
+    outputMode === 'compact'
+      ? BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG
+      : BATTLE_ENGINE_FLAG_END_CHECKPOINT | BATTLE_ENGINE_FLAG_SEEDED_RNG | BATTLE_ENGINE_FLAG_COMPACT_RESULT_OUTPUT,
+    outputMode,
   );
   prepared.input.seed = seed;
   prepared.input.rngVersion = rngVersion;
@@ -706,6 +715,7 @@ function getPreparedCompactBattleInput(
   ));
   const compact = {
     bytes,
+    narration: prepared.narration,
     partyHpOffsets,
     physicalBagOffset: view.getUint32(BATTLE_INPUT_OFFSETS.physicalBagOffset, true),
     magicalBagOffset: view.getUint32(BATTLE_INPUT_OFFSETS.magicalBagOffset, true),
@@ -852,19 +862,26 @@ export function executeBattleCandidateFromSeed(
       rngVersion: output.rngVersion,
     };
   };
-  const result = outputMode === 'result-only' && compactResultOutput
-    ? consumePreparedBattleProtocolInput(
-      patchPreparedCompactBattleInput(
-        getPreparedCompactBattleInput(
-          party, enemy, bags, normalizedSeed, rngVersion, initialPartyHp, environment,
+  const usePreparedInput = (outputMode === 'result-only' && compactResultOutput)
+    || (outputMode === 'compact' && environment.reusePreparedInput === true && environment.partyStatus !== undefined);
+  const result = usePreparedInput
+    ? (() => {
+      const prepared = getPreparedCompactBattleInput(
+        party, enemy, bags, normalizedSeed, rngVersion, initialPartyHp, environment,
+        outputMode === 'compact' ? 'compact' : 'result-only',
+      );
+      narration = prepared.narration;
+      return consumePreparedBattleProtocolInput(
+        patchPreparedCompactBattleInput(
+          prepared,
+          bags,
+          normalizedSeed,
+          rngVersion,
+          initialPartyHp ?? environment.partyStatus?.partyStats.hp ?? computePartyStats(party).partyStats.hp,
         ),
-        bags,
-        normalizedSeed,
-        rngVersion,
-        initialPartyHp ?? environment.partyStatus?.partyStats.hp ?? computePartyStats(party).partyStats.hp,
-      ),
-      consumeOutput,
-    )
+        consumeOutput,
+      );
+    })()
     : (() => {
       const prepared = prepareBattleExecution(
         party, enemy, bags, [], initialPartyHp, environment,

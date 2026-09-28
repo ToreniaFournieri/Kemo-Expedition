@@ -256,7 +256,8 @@ export function resolveExpeditionBattleRoom(
       enemy,
       input.bags,
       input.currentHp,
-      { terrainEffect, partyStatus: input.context.partyStatus },
+      // AFK Chunks share one encounter cache, so their battles can reuse prepared inputs.
+      { terrainEffect, partyStatus: input.context.partyStatus, reusePreparedInput: input.encounterCache !== undefined },
       { outputMode: 'compact' },
     );
 
