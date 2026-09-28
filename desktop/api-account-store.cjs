@@ -96,6 +96,7 @@ function createApiAccountStore({ userDataPath, beforeManifestWrite = null }) {
     return record;
   }
 
+  // `control` is the control metadata object or its already-serialized JSON (the renderer sends JSON over IPC).
   function commit(identity, savePayload, control) {
     const { normalized, directory } = resolveAccount(identity);
     const manifestPath = path.join(directory, 'manifest.json');
@@ -105,7 +106,7 @@ function createApiAccountStore({ userDataPath, beforeManifestWrite = null }) {
     const saveFile = `save-${generation}.bokemo`;
     const controlFile = `control-${generation}.json`;
     writeAtomic(path.join(directory, saveFile), savePayload);
-    writeAtomic(path.join(directory, controlFile), JSON.stringify(control));
+    writeAtomic(path.join(directory, controlFile), typeof control === 'string' ? control : JSON.stringify(control));
     beforeManifestWrite?.({ identity: normalized, generation });
     writeAtomic(manifestPath, JSON.stringify({ ...manifest, identity: normalized, generation, saveFile, controlFile, updatedAt: new Date().toISOString() }));
     if (typeof manifest.saveFile === 'string' && manifest.saveFile !== saveFile) removeFile(path.join(directory, manifest.saveFile));

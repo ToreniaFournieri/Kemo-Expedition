@@ -115,6 +115,7 @@ import { useApiRead, useApiReadAllPages, useApiReadMany } from './home/useApiRea
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
 import { parseSimulationRunData, type SimulationRunData } from '../api/v1/simulationView';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
+import { serializeApiV1Control } from '../api/v1/authority';
 import type { ApiV1ClairvoyanceResource } from '../api/v1/readModels';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
 import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
@@ -571,7 +572,8 @@ export function HomeScreen({
         accounts: {
           create: (identity, savePayload) => desktop().createApiAccount(identity, savePayload),
           load: (identity) => desktop().loadApiAccount(identity),
-          commit: (identity, savePayload, control) => desktop().commitApiAccount(identity, savePayload, control),
+          // The control goes over IPC as JSON: cloning its retained receipts as objects cost more than the commit itself.
+          commit: (identity, savePayload, control) => desktop().commitApiAccount(identity, savePayload, serializeApiV1Control(control)),
         },
         player: {
           flushSave: () => apiActionsRef.current.flushSave(),
