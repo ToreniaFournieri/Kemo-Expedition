@@ -509,10 +509,15 @@ Path Parameters
 
 **2-2-3. `{p}/simulationRun`**
 
-* Runs the current expedition simulation `1,000` times and returns the result.
+* Runs the current expedition simulation `numberOfRun` times and returns the result.
 * this does not advance progression, return rewards, consume live randomness, write Diary entries, change equipment, or consume charge.
 
-* Parameters: none.
+* Parameters: 
+  * `numberOfRun`
+    * Optional.
+    * Default: 100.
+    * Integer.
+    * Range: 1 ~ 1000.
 
 * Return:
 * `overview`
