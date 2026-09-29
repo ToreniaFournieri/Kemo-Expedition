@@ -1,4 +1,5 @@
 import type { DiaryLog, DiarySettings, DiaryTrigger, GameState, Party } from '../../types';
+import { getRewardsNamedByTrigger, joinDiaryItemNames } from '../../game/diaryHeadline';
 import { formatItem } from './itemFormat';
 
 export interface SemanticDiaryText {
@@ -71,14 +72,19 @@ export function diaryEntryContent(entry: DiaryLog): DiaryEntryContent {
 
   // Old ordinary expedition entries already have structured triggers and dungeon facts. Using those is not an
   // inference from their saved battle prose; only prose-only side-quest/unlock fields take the legacy branch above.
+  // A rare-drop entry names the items the Diary tab's headline names (not the expedition's whole drop list).
+  const itemArgs = (trigger: DiaryTrigger | 'special'): Record<string, string> => {
+    const named = trigger === 'special' ? null : getRewardsNamedByTrigger(trigger, entry.expeditionLog.rewards);
+    return named && named.length > 0 ? { items: joinDiaryItemNames(named) } : {};
+  };
   return {
     format: 'semantic',
-    title: { key: `diary.title.${primaryTrigger(entry.triggers)}`, args: {} },
+    title: { key: `diary.title.${primaryTrigger(entry.triggers)}`, args: itemArgs(primaryTrigger(entry.triggers)) },
     subtitle: {
       key: 'diary.subtitle.expedition',
       args: { dungeonId: entry.expeditionLog.dungeonId, difficultyOffset: entry.expeditionLog.difficultyOffset },
     },
-    events: entry.triggers.map((trigger) => ({ key: `diary.event.${trigger}`, args: {} })),
+    events: entry.triggers.map((trigger) => ({ key: `diary.event.${trigger}`, args: itemArgs(trigger) })),
   };
 }
 

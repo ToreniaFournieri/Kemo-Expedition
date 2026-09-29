@@ -124,6 +124,19 @@ test('retreat HP ranges use exact half-open boundaries', () => {
   assert.equal(bucket(-1), 'Below10');
 });
 
+test('a run stopped by a closed Clear-Gate returns from the last room passed and never reaches the gate room', () => {
+  const rooms = createExpeditionSimulationRoomResults(1);
+  const battles = Array(7).fill({ remainingPartyHP: 100 });
+  // Seven entries: six rooms passed plus the gate's own row (room 7).
+  aggregateExpeditionSimulationRooms(rooms, 7, 'Return', battles, 100, true);
+  assert.equal(rooms[5].Return, 1);
+  assert.equal(rooms[5].reached, 1);
+  assert.equal(rooms[6].NotReached, 1);
+  assert.equal(rooms[6].reached, 0);
+  assert.equal(rooms[6].Return, 0);
+  assert.equal(rooms[6].successfulHp.Full, 0);
+});
+
 test('room aggregation assigns one status per run to every room and buckets terminal HP', () => {
   const rooms = createExpeditionSimulationRoomResults(5);
   const battles = (remainingHp: number[]) => remainingHp.map((remainingPartyHP) => ({ remainingPartyHP }));

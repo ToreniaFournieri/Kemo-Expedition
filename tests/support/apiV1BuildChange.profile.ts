@@ -32,6 +32,7 @@ function fails(state: GameState, id: number, parameters: Record<string, unknown>
 
 // Strict IDs and UI-owned immutable/duplicate rules are enforced for trusted in-process callers too.
 fails(base, characterId, { mainClassId: 'unknown' }, 'invalid_request');
+fails(base, characterId, { mainClassId: 'class.unknown' }, 'invalid_request');
 fails(base, characterId, { lineage: 'unascertained' }, 'invalid_request');
 fails(base, uniqueCharacterId, { name: 'renamed unique' }, 'illegal_action');
 // Spec 8.2.3: names are up to 20 characters.
@@ -61,6 +62,8 @@ const riskyParameters = { mainClassId: 'guardian', subClassId: 'guardian' };
 const riskyPlan = planCharacterBuildChange(base, characterId, riskyParameters);
 assert.equal(riskyPlan.requiresConfirmation, true);
 assert.ok(riskyPlan.invalidEquipment > 0 || riskyPlan.equipmentSlotsRemoved > 0);
+// `class.<id>` and bare `<id>` name the same class.
+assert.deepEqual(planCharacterBuildChange(base, characterId, { mainClassId: 'class.guardian', subClassId: 'class.guardian' }), riskyPlan);
 
 function control(): ApiV1ControlMetadata { return { revisionHighWater: 0, inGameTime: now, receipts: [], tombstones: [], confirmations: [], popupEvents: [], deliveries: [] }; }
 function dependencies(): ApiV1CommitAuthorityDependencies {

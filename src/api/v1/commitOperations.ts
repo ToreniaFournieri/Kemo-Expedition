@@ -513,7 +513,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (requested.length === 0 || requested.some((id) => !Number.isSafeInteger(id) || id < 1) || new Set(requested).size !== requested.length) throw new Error('invalid_request:items');
     const facts = getShopFacts(shopLineupInputOf(next), new Date(simulatedAt));
     // SpecRef: 9.1.3 | 3-4-3 purchaseShopItems | `lineupId` must match the current lineup, or nothing is bought.
-    if (typeof parameters.lineupId !== 'string' || parameters.lineupId.length === 0) throw new Error('invalid_request:lineupId');
+    if (typeof parameters.lineupId !== 'string' || !/^(\d+(true|false))+$/.test(parameters.lineupId)) throw new Error('invalid_request:lineupId');
     if (parameters.lineupId !== getPublicShopLineupId(facts)) throw new Error('illegal_action:lineup_changed');
     const entries = requested.map((id) => {
       const entry = facts.entries.find((candidate) => candidate.shopItemId === id);

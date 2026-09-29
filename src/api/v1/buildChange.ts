@@ -14,6 +14,9 @@ const EDITABLE_RACES = new Set<RaceId>([
   'lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian',
   'leporian', 'cervin', 'murid', 'mimorian',
 ]);
+// SpecRef: 9.1.3 | 3-3-2 changeBuild | Class IDs are accepted both bare (`guardian`) and prefixed (`class.guardian`).
+const stripClassPrefix = (id: string): string => id.startsWith('class.') ? id.slice('class.'.length) : id;
+
 const ALLOWED_PARAMETERS = new Set(['name', 'racesAndGender', 'mainClassId', 'subClassId', 'lineage', 'predisposition']);
 
 /** A warning the caller must confirm, as a stable key with numeric arguments (never localized text). */
@@ -102,12 +105,14 @@ export function planCharacterBuildChange(state: GameState, characterId: number, 
   }
   if (parameters.racesAndGender !== undefined) Object.assign(requested, parseRaceAndGender(state, character, parameters.racesAndGender));
   if (parameters.mainClassId !== undefined) {
-    if (typeof parameters.mainClassId !== 'string' || !CLASSES.some((entry) => entry.id === parameters.mainClassId)) invalid('mainClassId');
-    requested.mainClassId = parameters.mainClassId as Character['mainClassId'];
+    const classId = typeof parameters.mainClassId === 'string' ? stripClassPrefix(parameters.mainClassId) : null;
+    if (classId === null || !CLASSES.some((entry) => entry.id === classId)) invalid('mainClassId');
+    requested.mainClassId = classId as Character['mainClassId'];
   }
   if (parameters.subClassId !== undefined) {
-    if (typeof parameters.subClassId !== 'string' || !CLASSES.some((entry) => entry.id === parameters.subClassId)) invalid('subClassId');
-    requested.subClassId = parameters.subClassId as Character['subClassId'];
+    const classId = typeof parameters.subClassId === 'string' ? stripClassPrefix(parameters.subClassId) : null;
+    if (classId === null || !CLASSES.some((entry) => entry.id === classId)) invalid('subClassId');
+    requested.subClassId = classId as Character['subClassId'];
   }
   if (parameters.lineage !== undefined) {
     const lineage = typeof parameters.lineage === 'string' ? LINEAGES.find((entry) => entry.id === parameters.lineage) : undefined;

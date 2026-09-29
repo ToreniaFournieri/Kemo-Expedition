@@ -6,6 +6,7 @@ import { ENHANCEMENT_TITLES, ITEMS, SUPER_RARE_TITLES } from '../../data/items.t
 import { LINEAGES } from '../../data/lineages.ts';
 import { PREDISPOSITIONS } from '../../data/predispositions.ts';
 import { RACES } from '../../data/races.ts';
+import { getDiaryRewardHeadline } from '../../game/diaryHeadline.ts';
 import { buildDiaryProjection, DIARY_SETTING_VALID_OPTIONS, diaryEntryContent, diarySettingsView, findDiaryEntryView } from './diaryView.ts';
 import { getConditionState } from '../../game/partyCondition.ts';
 import { getDungeonById } from '../../data/dungeons.ts';
@@ -193,7 +194,7 @@ function compactObservation(state: GameState, context: ApiV1ReadContext, simulat
       notification: state.parties.map((party) => ({
         partyNumber: party.id,
         unreadDiary: party.diaryLogs.filter((entry) => !entry.isRead).length,
-        unreadDiaryTitle: party.diaryLogs.filter((entry) => !entry.isRead).map(compactDiaryTitle),
+        unreadDiaryTitle: party.diaryLogs.filter((entry) => !entry.isRead).map((entry) => compactDiaryTitle(entry, party.name)),
       })),
     },
   };
@@ -214,9 +215,15 @@ function encodeCompactText(text: string): string {
 
 // SpecRef: 9.1.3 | 2-1-1 compact | unreadDiaryTitle `<diaryEntryId>/<diaryTitle>/<diarySubtitle>/<timeStamp>`
 // The title and subtitle are the Diary tab's own (current language), escaped as compact free text (9.1.4.14).
-function compactDiaryTitle(entry: DiaryLog): string {
+// A rare-drop entry is titled with the Diary tab's own headline, which names the dropped items (`[PT1] Boss Rare acquired (Item)`).
+function compactDiaryTitle(entry: DiaryLog, partyName: string): string {
   const content = diaryEntryContent(entry);
-  const title = content.format === 'semantic' ? t(content.title.key) : content.title;
+  const namesItems = content.format === 'semantic'
+    && !entry.triggers.some((trigger) => trigger === 'godsBattle' || trigger === 'unlock' || trigger === 'sideQuest')
+    && !(entry.triggers.length === 1 && ['victory', 'return', 'defeat', 'draw', 'retreat'].includes(entry.triggers[0]));
+  const title = content.format === 'semantic'
+    ? (namesItems ? getDiaryRewardHeadline(partyName, entry.triggers, entry.expeditionLog.rewards) : null) ?? t(content.title.key)
+    : content.title;
   const subtitle = content.format === 'semantic'
     ? getDungeonById(entry.expeditionLog.dungeonId)?.name ?? String(entry.expeditionLog.dungeonId)
     : content.subtitle;

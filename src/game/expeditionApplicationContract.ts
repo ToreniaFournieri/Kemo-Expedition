@@ -56,6 +56,8 @@ export interface ExpeditionForecastResolution {
   readonly finalHp: number;
   readonly terminalBattleOutcome: ExpeditionLogEntry['outcome'] | null;
   readonly battleDiagnostics: ExpeditionForecastBattleDiagnostic[];
+  /** The run stopped at a closed Clear-Gate: the last entry is the gate's own row, a room the party never entered. */
+  readonly endedAtGate: boolean;
   /** Party EXP the run awards (every outcome awards it). */
   readonly experience: number;
   /** Items kept (a Defeat keeps none), and the items auto-sold with their Gold. */
@@ -95,11 +97,13 @@ export type RunExpeditionApplicationResult =
 export function createExpeditionForecastResolution(
   log: ExpeditionLog,
 ): ExpeditionForecastResolution {
+  const lastEntry = log.entries[log.entries.length - 1];
   return {
     outcome: log.finalOutcome,
     completedRooms: log.completedRooms,
     finalHp: log.remainingPartyHP,
     terminalBattleOutcome: log.entries[log.entries.length - 1]?.outcome ?? null,
+    endedAtGate: lastEntry?.gateInfo !== undefined && lastEntry.enemyId === undefined,
     battleDiagnostics: log.entries.map((entry) => ({
       enemyId: entry.enemyId,
       outcome: entry.outcome,

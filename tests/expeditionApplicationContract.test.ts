@@ -50,6 +50,7 @@ test('forecast resolution is a detached projection of the completed log', () => 
     completedRooms: 1,
     finalHp: 450,
     terminalBattleOutcome: 'draw',
+    endedAtGate: false,
     battleDiagnostics: [{
       enemyId: 101,
       outcome: 'draw',

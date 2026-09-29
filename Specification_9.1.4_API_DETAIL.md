@@ -494,10 +494,14 @@ definitions in 9.1.3.
   strings required by 9.1.3 and structured numeric outcome percentages for the
   overview and each room. It never exposes or advances the live random stream.
   The structured part is lossless: `counts` holds the exact terminal `clear`, `return`,
-  `draw`, `retreat`, and `defeat` counts, and each room holds every outcome, reached and
-  not-reached count and HP bucket, so a client rebuilds the whole forecast (the graph and
-  its tooltips) without rounding. Rooms no run reached (past the depth limit or a closed
-  gate) are omitted from both `detail` and `rooms`; `omittedRooms` counts them, and each
+  `draw`, `retreat`, and `defeat` counts, and `rooms` holds every outcome, not-reached
+  count and HP bucket of each room, so a client rebuilds the whole forecast (the graph and
+  its tooltips) without rounding. `rooms` is columnar to stay small: `rooms.columns` names
+  the values once and each entry of `rooms.rows` is one room as plain values in that order
+  (`floorRoom`, `notReached`, `victory`, `clear`, `return`, `draw`, `retreat`, `defeat`,
+  the eight `successfulHp.*` buckets, then the four `retreatHp.*` buckets); the reached
+  count is `runs` minus `notReached`. Rooms no run reached (past the depth limit or a
+  closed gate) are omitted from both `detail` and `rooms`; `omittedRooms` counts them, and each
   omitted room is not reached by every run. The read returns when all runs have finished; it
   reports no partial progress.
 * A run stopped by a closed Clear-Gate ends as `return`, which counts as a

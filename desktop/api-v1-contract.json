@@ -19898,141 +19898,190 @@
               }
             },
             "rooms": {
-              "type": "array",
-              "items": {
-                "additionalProperties": false,
-                "type": "object",
-                "required": [
-                  "room",
-                  "floorRoom",
-                  "reached",
-                  "notReached",
-                  "victory",
-                  "clear",
-                  "return",
-                  "draw",
-                  "retreat",
-                  "defeat",
-                  "successfulHp",
-                  "retreatHp"
-                ],
-                "properties": {
-                  "room": {
-                    "minimum": 1,
-                    "maximum": 24,
-                    "type": "integer"
-                  },
-                  "floorRoom": {
-                    "pattern": "^[1-6]f-[1-4]$",
-                    "type": "string"
-                  },
-                  "reached": {
-                    "minimum": 0,
-                    "type": "integer"
-                  },
-                  "notReached": {
-                    "minimum": 0,
-                    "type": "integer"
-                  },
-                  "victory": {
-                    "minimum": 0,
-                    "type": "integer"
-                  },
-                  "clear": {
-                    "minimum": 0,
-                    "type": "integer"
-                  },
-                  "return": {
-                    "minimum": 0,
-                    "type": "integer"
-                  },
-                  "draw": {
-                    "minimum": 0,
-                    "type": "integer"
-                  },
-                  "retreat": {
-                    "minimum": 0,
-                    "type": "integer"
-                  },
-                  "defeat": {
-                    "minimum": 0,
-                    "type": "integer"
-                  },
-                  "successfulHp": {
-                    "additionalProperties": false,
-                    "type": "object",
-                    "required": [
-                      "full",
-                      "from90",
-                      "from80",
-                      "from70",
-                      "from60",
-                      "from50",
-                      "from40",
-                      "below40"
-                    ],
-                    "properties": {
-                      "full": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "columns",
+                "rows"
+              ],
+              "properties": {
+                "columns": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "const": "floorRoom",
+                      "type": "string"
+                    },
+                    {
+                      "const": "notReached",
+                      "type": "string"
+                    },
+                    {
+                      "const": "victory",
+                      "type": "string"
+                    },
+                    {
+                      "const": "clear",
+                      "type": "string"
+                    },
+                    {
+                      "const": "return",
+                      "type": "string"
+                    },
+                    {
+                      "const": "draw",
+                      "type": "string"
+                    },
+                    {
+                      "const": "retreat",
+                      "type": "string"
+                    },
+                    {
+                      "const": "defeat",
+                      "type": "string"
+                    },
+                    {
+                      "const": "successfulHp.full",
+                      "type": "string"
+                    },
+                    {
+                      "const": "successfulHp.from90",
+                      "type": "string"
+                    },
+                    {
+                      "const": "successfulHp.from80",
+                      "type": "string"
+                    },
+                    {
+                      "const": "successfulHp.from70",
+                      "type": "string"
+                    },
+                    {
+                      "const": "successfulHp.from60",
+                      "type": "string"
+                    },
+                    {
+                      "const": "successfulHp.from50",
+                      "type": "string"
+                    },
+                    {
+                      "const": "successfulHp.from40",
+                      "type": "string"
+                    },
+                    {
+                      "const": "successfulHp.below40",
+                      "type": "string"
+                    },
+                    {
+                      "const": "retreatHp.from30",
+                      "type": "string"
+                    },
+                    {
+                      "const": "retreatHp.from20",
+                      "type": "string"
+                    },
+                    {
+                      "const": "retreatHp.from10",
+                      "type": "string"
+                    },
+                    {
+                      "const": "retreatHp.below10",
+                      "type": "string"
+                    }
+                  ],
+                  "additionalItems": false,
+                  "minItems": 20,
+                  "maxItems": 20
+                },
+                "rows": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": [
+                      {
+                        "pattern": "^[1-6]f-[1-4]$",
+                        "type": "string"
+                      },
+                      {
                         "minimum": 0,
                         "type": "integer"
                       },
-                      "from90": {
+                      {
                         "minimum": 0,
                         "type": "integer"
                       },
-                      "from80": {
+                      {
                         "minimum": 0,
                         "type": "integer"
                       },
-                      "from70": {
+                      {
                         "minimum": 0,
                         "type": "integer"
                       },
-                      "from60": {
+                      {
                         "minimum": 0,
                         "type": "integer"
                       },
-                      "from50": {
+                      {
                         "minimum": 0,
                         "type": "integer"
                       },
-                      "from40": {
+                      {
                         "minimum": 0,
                         "type": "integer"
                       },
-                      "below40": {
+                      {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
                         "minimum": 0,
                         "type": "integer"
                       }
-                    }
-                  },
-                  "retreatHp": {
-                    "additionalProperties": false,
-                    "type": "object",
-                    "required": [
-                      "from30",
-                      "from20",
-                      "from10",
-                      "below10"
                     ],
-                    "properties": {
-                      "from30": {
-                        "minimum": 0,
-                        "type": "integer"
-                      },
-                      "from20": {
-                        "minimum": 0,
-                        "type": "integer"
-                      },
-                      "from10": {
-                        "minimum": 0,
-                        "type": "integer"
-                      },
-                      "below10": {
-                        "minimum": 0,
-                        "type": "integer"
-                      }
-                    }
+                    "additionalItems": false,
+                    "minItems": 20,
+                    "maxItems": 20
                   }
                 }
               }
@@ -20300,141 +20349,190 @@
                   }
                 },
                 "rooms": {
-                  "type": "array",
-                  "items": {
-                    "additionalProperties": false,
-                    "type": "object",
-                    "required": [
-                      "room",
-                      "floorRoom",
-                      "reached",
-                      "notReached",
-                      "victory",
-                      "clear",
-                      "return",
-                      "draw",
-                      "retreat",
-                      "defeat",
-                      "successfulHp",
-                      "retreatHp"
-                    ],
-                    "properties": {
-                      "room": {
-                        "minimum": 1,
-                        "maximum": 24,
-                        "type": "integer"
-                      },
-                      "floorRoom": {
-                        "pattern": "^[1-6]f-[1-4]$",
-                        "type": "string"
-                      },
-                      "reached": {
-                        "minimum": 0,
-                        "type": "integer"
-                      },
-                      "notReached": {
-                        "minimum": 0,
-                        "type": "integer"
-                      },
-                      "victory": {
-                        "minimum": 0,
-                        "type": "integer"
-                      },
-                      "clear": {
-                        "minimum": 0,
-                        "type": "integer"
-                      },
-                      "return": {
-                        "minimum": 0,
-                        "type": "integer"
-                      },
-                      "draw": {
-                        "minimum": 0,
-                        "type": "integer"
-                      },
-                      "retreat": {
-                        "minimum": 0,
-                        "type": "integer"
-                      },
-                      "defeat": {
-                        "minimum": 0,
-                        "type": "integer"
-                      },
-                      "successfulHp": {
-                        "additionalProperties": false,
-                        "type": "object",
-                        "required": [
-                          "full",
-                          "from90",
-                          "from80",
-                          "from70",
-                          "from60",
-                          "from50",
-                          "from40",
-                          "below40"
-                        ],
-                        "properties": {
-                          "full": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "columns",
+                    "rows"
+                  ],
+                  "properties": {
+                    "columns": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "const": "floorRoom",
+                          "type": "string"
+                        },
+                        {
+                          "const": "notReached",
+                          "type": "string"
+                        },
+                        {
+                          "const": "victory",
+                          "type": "string"
+                        },
+                        {
+                          "const": "clear",
+                          "type": "string"
+                        },
+                        {
+                          "const": "return",
+                          "type": "string"
+                        },
+                        {
+                          "const": "draw",
+                          "type": "string"
+                        },
+                        {
+                          "const": "retreat",
+                          "type": "string"
+                        },
+                        {
+                          "const": "defeat",
+                          "type": "string"
+                        },
+                        {
+                          "const": "successfulHp.full",
+                          "type": "string"
+                        },
+                        {
+                          "const": "successfulHp.from90",
+                          "type": "string"
+                        },
+                        {
+                          "const": "successfulHp.from80",
+                          "type": "string"
+                        },
+                        {
+                          "const": "successfulHp.from70",
+                          "type": "string"
+                        },
+                        {
+                          "const": "successfulHp.from60",
+                          "type": "string"
+                        },
+                        {
+                          "const": "successfulHp.from50",
+                          "type": "string"
+                        },
+                        {
+                          "const": "successfulHp.from40",
+                          "type": "string"
+                        },
+                        {
+                          "const": "successfulHp.below40",
+                          "type": "string"
+                        },
+                        {
+                          "const": "retreatHp.from30",
+                          "type": "string"
+                        },
+                        {
+                          "const": "retreatHp.from20",
+                          "type": "string"
+                        },
+                        {
+                          "const": "retreatHp.from10",
+                          "type": "string"
+                        },
+                        {
+                          "const": "retreatHp.below10",
+                          "type": "string"
+                        }
+                      ],
+                      "additionalItems": false,
+                      "minItems": 20,
+                      "maxItems": 20
+                    },
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": [
+                          {
+                            "pattern": "^[1-6]f-[1-4]$",
+                            "type": "string"
+                          },
+                          {
                             "minimum": 0,
                             "type": "integer"
                           },
-                          "from90": {
+                          {
                             "minimum": 0,
                             "type": "integer"
                           },
-                          "from80": {
+                          {
                             "minimum": 0,
                             "type": "integer"
                           },
-                          "from70": {
+                          {
                             "minimum": 0,
                             "type": "integer"
                           },
-                          "from60": {
+                          {
                             "minimum": 0,
                             "type": "integer"
                           },
-                          "from50": {
+                          {
                             "minimum": 0,
                             "type": "integer"
                           },
-                          "from40": {
+                          {
                             "minimum": 0,
                             "type": "integer"
                           },
-                          "below40": {
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
                             "minimum": 0,
                             "type": "integer"
                           }
-                        }
-                      },
-                      "retreatHp": {
-                        "additionalProperties": false,
-                        "type": "object",
-                        "required": [
-                          "from30",
-                          "from20",
-                          "from10",
-                          "below10"
                         ],
-                        "properties": {
-                          "from30": {
-                            "minimum": 0,
-                            "type": "integer"
-                          },
-                          "from20": {
-                            "minimum": 0,
-                            "type": "integer"
-                          },
-                          "from10": {
-                            "minimum": 0,
-                            "type": "integer"
-                          },
-                          "below10": {
-                            "minimum": 0,
-                            "type": "integer"
-                          }
-                        }
+                        "additionalItems": false,
+                        "minItems": 20,
+                        "maxItems": 20
                       }
                     }
                   }
@@ -20518,36 +20616,54 @@
             "detail": [
               "xxxxxxx"
             ],
-            "rooms": [
-              {
-                "room": 1,
-                "floorRoom": "1f-1",
-                "reached": 0,
-                "notReached": 0,
-                "victory": 0,
-                "clear": 0,
-                "return": 0,
-                "draw": 0,
-                "retreat": 0,
-                "defeat": 0,
-                "successfulHp": {
-                  "full": 0,
-                  "from90": 0,
-                  "from80": 0,
-                  "from70": 0,
-                  "from60": 0,
-                  "from50": 0,
-                  "from40": 0,
-                  "below40": 0
-                },
-                "retreatHp": {
-                  "from30": 0,
-                  "from20": 0,
-                  "from10": 0,
-                  "below10": 0
-                }
-              }
-            ]
+            "rooms": {
+              "columns": [
+                "floorRoom",
+                "notReached",
+                "victory",
+                "clear",
+                "return",
+                "draw",
+                "retreat",
+                "defeat",
+                "successfulHp.full",
+                "successfulHp.from90",
+                "successfulHp.from80",
+                "successfulHp.from70",
+                "successfulHp.from60",
+                "successfulHp.from50",
+                "successfulHp.from40",
+                "successfulHp.below40",
+                "retreatHp.from30",
+                "retreatHp.from20",
+                "retreatHp.from10",
+                "retreatHp.below10"
+              ],
+              "rows": [
+                [
+                  "1f-1",
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              ]
+            }
           }
         }
       }

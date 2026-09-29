@@ -271,7 +271,8 @@ function diaryLog(id: string, isRead = false): DiaryLog {
 
   const attempt = (state: GameState, items: unknown, id: unknown = lineupId) => { try { applyApiV1Commit('commit/base/purchaseShopItems', state, { lineupId: id, items }, baseContext({ simulatedAt })); return ''; } catch (error) { return String(error); } };
   // The purchase names the lineup it was chosen from; any other lineup (or none) buys nothing (Spec 9.1.3 3-4-3).
-  assert.ok(attempt(richState, [{ shopItemId: 1 }], '1101110211031104').includes('illegal_action:lineup_changed'));
+  assert.ok(attempt(richState, [{ shopItemId: 1 }], '1101true1102false').includes('illegal_action:lineup_changed'));
+  assert.ok(attempt(richState, [{ shopItemId: 1 }], '1101110211031104').includes('invalid_request:lineupId'), 'a malformed lineupId is an invalid request, not a lineup change');
   assert.ok(attempt(richState, [{ shopItemId: 1 }], null).includes('invalid_request:lineupId'));
   // SpecRef: 9.1.4.11 | The failure names the rejected parameter in `details.field`.
   const { describeInvalidRequest, invalidRequestMessage } = await import('../../src/api/v1/requestErrors');

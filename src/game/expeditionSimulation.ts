@@ -98,8 +98,10 @@ export function aggregateExpeditionSimulationRooms(
   terminalStatus: ExpeditionSimulationTerminalStatus,
   battlesByRoom: readonly { remainingPartyHP: number }[],
   maxPartyHp: number,
+  endedAtGate = false,
 ): void {
-  const reachedRooms = Math.min(EXPEDITION_SIMULATION_ROOM_COUNT, Math.max(0, Math.floor(completedRooms)));
+  // A closed Clear-Gate stops the run at the door: the gate's own row is a room no one entered, so the Return belongs to the last room passed.
+  const reachedRooms = Math.min(EXPEDITION_SIMULATION_ROOM_COUNT, Math.max(0, Math.floor(completedRooms) - (endedAtGate ? 1 : 0)));
   rooms.forEach((room, index) => {
     if (index >= reachedRooms) {
       room.NotReached += 1;

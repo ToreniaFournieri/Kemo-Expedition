@@ -456,12 +456,11 @@ const responseDataSchemas = {
     totals: strict({ experience: count, itemDrops: count, dropSaleValue: count }),
     omittedRooms: count,
     detail: Type.Array(Type.String()),
-    rooms: Type.Array(strict({
-      room: Type.Integer({ minimum: 1, maximum: 24 }), floorRoom: floorRoomKey,
-      reached: count, notReached: count, victory: count, clear: count, return: count, draw: count, retreat: count, defeat: count,
-      successfulHp: strict({ full: count, from90: count, from80: count, from70: count, from60: count, from50: count, from40: count, below40: count }),
-      retreatHp: strict({ from30: count, from20: count, from10: count, below10: count }),
-    })),
+    // Each room is one row of values; `columns` states the names once, in the order of `rows` (`reached` = `runs` - `notReached`).
+    rooms: strict({
+      columns: Type.Tuple(['floorRoom', 'notReached', 'victory', 'clear', 'return', 'draw', 'retreat', 'defeat', 'successfulHp.full', 'successfulHp.from90', 'successfulHp.from80', 'successfulHp.from70', 'successfulHp.from60', 'successfulHp.from50', 'successfulHp.from40', 'successfulHp.below40', 'retreatHp.from30', 'retreatHp.from20', 'retreatHp.from10', 'retreatHp.below10'].map((name) => Type.Literal(name))),
+      rows: Type.Array(Type.Tuple([floorRoomKey, ...Array.from({ length: 19 }, () => count)])),
+    }),
   }),
   'read/expedition/{p}/chargeStock': strict({ chargeStock: Type.Integer({ minimum: 0, maximum: 6 }), chargeDuration: Type.Integer({ minimum: 0 }) }),
   'read/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }), validOptions: strict({ deityId: Type.Array(stableKey), order: Type.Array(integerId) }) }),
@@ -695,6 +694,7 @@ function sample(schema, invalid = false) {
   if (schema.const !== undefined) return schema.const;
   if (schema.anyOf) return sample(schema.anyOf[0]);
   if (schema.type === 'object') return Object.fromEntries(Object.entries(schema.properties ?? {}).filter(([key]) => (schema.required ?? []).includes(key)).map(([key, value]) => [key, sample(value)]));
+  if (schema.type === 'array' && Array.isArray(schema.items)) return schema.items.map((item) => sample(item));
   if (schema.type === 'array') return [sample(schema.items)];
   if (schema.type === 'integer' || schema.type === 'number') return schema.minimum ?? 1;
   if (schema.type === 'boolean') return true;
