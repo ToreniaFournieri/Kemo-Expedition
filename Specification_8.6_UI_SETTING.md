@@ -1,6 +1,34 @@
 ## 8. UI
 
 ### 8.6 UI_SETTING
+- **GUI:**
+  - `guiSetting`
+- **API Read:**
+  - `read/observation/setting`
+  - `read/setting/enemyEditPane`
+  - `read/setting/modeSelect`
+  - `read/setting/debug`
+  - `read/setting/delivery/{deliveryId}`
+  - `resources/developerNewsNotification`
+  - `resources/donationBox`
+  - `resources/clairvoyance/{p}`
+  - `resources/glossary`
+  - `resources/itemCompendium`
+  - `resources/characterRoster`
+  - `resources/bestiary`
+  - `resources/superRareList`
+- **API Commit:**
+  - `commit/setting/clairvoyanceReset`
+  - `commit/setting/enemyEditPane`
+  - `commit/setting/modeSelect`
+  - `commit/setting/feedback`
+  - `commit/setting/backup/export`
+  - `commit/setting/backup/import`
+  - `commit/setting/backup/reset`
+  - `commit/setting/debug`
+  - `commit/setting/markNewsAsRead`
+  - `commit/setting/uiPreferences`
+
 - Setting (設定)
   - All panes are collapsed by default and expandable.
   - The expanded/collapsed state is persisted and saved.
@@ -34,13 +62,10 @@
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.
 
-- Donation Scaling (Setting)
-  - For each god g:
-  - Let D_g be total donated gold to god g.
-  - Convert donation to tier T_g using thresholds. 
-  - Use effectiveTier = min(T_g, 10).
-  - displayRank = tierIndex + 1
-  - thresholds: [0, 500, 1200, 2200, 3600, 5500, 8000, 11000, 14500, 18500, 23000]
+- **next-rank donation amount for gods**
+  - n is rank
+　- Donation(1) = 1,000 G, Donation(n) = (3.0 - 0.1 * n) * Donation(n-1) (round off)
+  - max rank is 10.
 
 - God scaling:
   - Restoration:
@@ -294,7 +319,7 @@ HP: 312                 タイプ: 神魔
 **Mode select (モード切替)**
 
 - Language (言語)
-  - Options: 日本語 / English / 简体中文 / 繁體中文
+  - Options: 日本語 / English / 简体中文 / 繁體中文 / 한국어
   - Determine the initial language in this priority order:
     1. A supported `lang` URL parameter.
     2. The player's previously persisted language selection.
@@ -306,11 +331,13 @@ HP: 312                 タイプ: 神魔
     - `zh-CN`, `zh-SG`, `zh-Hans`, and equivalent Simplified Chinese tags → 简体中文
     - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant`, and equivalent Traditional Chinese tags → 繁體中文
     - A generic `zh` tag without a script or region → 简体中文
+    - `ko` and `ko-*` → 한국어
   - The `lang` URL parameter accepts:
     - `lang=ja` → 日本語
     - `lang=en` → English
     - `lang=zh-CN` (or `lang=zh`) → 简体中文 
     - `lang=zh-TW` → 繁體中文
+    - `lang=ko` → 한국어
     - Example: `https://toreniafournieri.github.io/Kemo-Expedition/?lang=ja`
   - Persist the selected language in local storage.
   - When the selected language changes, replace the current URL's `lang` parameter with the selected language without reloading the page. Preserve the current path, all other query parameters, and the URL fragment.
@@ -323,6 +350,25 @@ HP: 312                 タイプ: 神魔
 
 - Switch to 統計情報表示: ON/OFF (Default:OFF)
   - If ON, Show statistic line of Party pane in Expedition tab.
+
+- Game mode
+  - Default: `mode.normal`
+
+| Mode | concept |
+|--|--|
+| `mode.normal` | same spec. |
+| `mode.orca` | All enemies have `a.first-strike`0, `a.upgrade-all-abilities`1, +`N` level. `Speed of time` is `x5 boost`, theme color is set to `theme.orca`. |
+
+- `Speed of Time`:
+  - Speed of time can still be changed through the Debug Pane.
+  - The Progress Report bonus multiplies the current Speed of time by x1.2.
+  - Example: if the current speed is `x5 boost`, the effective speed becomes x6.
+
+- Enemy Level Offset
+  - `N` is configurable using a level-offset bar.
+  - Range: 0 to +20. Default 5.
+  - The Enemy Level Offset can be changed only when Debug Mode is enabled.
+  - The selected `N` value is added to the level of all enemies in `mode.orca`.
 
 - Theme color
 
@@ -356,24 +402,27 @@ HP: 312                 タイプ: 神魔
   - If Available in production is true, the theme color can be selected in the production environment.
   - All theme colors are always selectable in the development environment.
 
-- Game mode
-  - Default: `mode.normal`
 
-| Mode | concept |
-|--|--|
-| `mode.normal` | same spec. |
-| `mode.orca` | All enemies have `a.first-strike`0, `a.upgrade-all-abilities`1, +`N` level. `Speed of time` is `x5 boost`, theme color is set to `theme.orca`. |
+- macOS通知
+* API option
+  * `Application API v1`
+    * Boolean.
+    * Before enabling, display a confirmation dialog warning that local programs will be able to control the game through the API.
+    * This setting is persisted.
+    * Disabling this option resets the secret token.
+  * `secretToken`
+    * Secret token used to authenticate Application API v1 requests.
+    * Generated when Application API v1 is enabled.
+    * Keep this token confidential.
+    * Hidden by default.
+    * Click to reveal the secret token.
+  * `persistSecretToken`
+    * Boolean.
+    * Dedfault: `true`
+    * If `true`, persist the current secret token across application launches.
+    * If `false`, generate a new secret token on every application launch.
 
-- `Speed of Time`:
-  - Speed of time can still be changed through the Debug Pane.
-  - The Progress Report bonus multiplies the current Speed of time by x1.2.
-  - Example: if the current speed is `x5 boost`, the effective speed becomes x6.
 
-- Enemy Level Offset
-  - `N` is configurable using a level-offset bar.
-  - Range: 0 to +20. Default 5.
-  - The Enemy Level Offset can be changed only when Debug Mode is enabled.
-  - The selected `N` value is added to the level of all enemies in `mode.orca`.
 
 **Feedback フィードバック**
   - Send feedback to the development team.
@@ -384,6 +433,7 @@ HP: 312                 タイプ: 神魔
       - Display: 「開発チームにフィードバックを送信します。」
       - On successful submission: 「フィードバックを送信しました。」
   - Name field (Required, persist the previously entered value)
+    - Defaults to the current `userId` if one is set.
   - Category list
     - Feedback: 感想(ゲームバランスなど)
     - Question: 質問
@@ -444,7 +494,7 @@ HP: 312                 タイプ: 神魔
  
 - Clairvoyance: OFF/ON
   - if OFF, disable `Clairvoyance (未来視)` as default.
-- Speed of time: Real time / x1.2 bonus / x5 boost / x20 hyper / x100 Ultra / x∞ Unlimited
+- `Speed of time`: Real time / x1.2 bonus / x5 boost / x20 hyper / x100 Ultra / x∞ Unlimited
   - Default: Real time
   - affects side quest duration.
   - Unlimited: Immediately processes side quests using AFK emulation, without waiting for real time to pass.

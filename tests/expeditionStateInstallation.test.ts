@@ -99,9 +99,9 @@ test('committed state planner installs one expedition projection without mutatin
       autoSellProfit: 25,
       expeditionStats: {
         Clear: 1,
-        Turned_Back: 0,
-        Draw_Retreat: 0,
-        Wounded_Retreat: 0,
+        Return: 0,
+        Draw: 0,
+        Retreat: 0,
         Defeat: 0,
         donatedGold: 0,
         savedGold: 0,

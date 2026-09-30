@@ -1,4 +1,5 @@
 import type { Party } from '../types';
+import { DISPLAY_LOCALE } from '../i18n/displayFormat.ts';
 
 export const INSTANT_EXPEDITION_MAX_STOCK = 6;
 
@@ -25,7 +26,7 @@ export interface InstantExpeditionChargeDisplay {
   label: string;
 }
 
-const instantExpeditionMinuteFormatter = new Intl.NumberFormat('ja-JP');
+const instantExpeditionMinuteFormatter = new Intl.NumberFormat(DISPLAY_LOCALE);
 
 type InstantExpeditionChargeParty = Pick<Party, 'instantExpeditionStock' | 'instantExpeditionChargeStartedAt'>
   & Partial<Pick<Party, 'defeatedBossExpeditions'>>;

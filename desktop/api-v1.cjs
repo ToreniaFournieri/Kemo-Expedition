@@ -1,0 +1,621 @@
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+const http = require('node:http');
+const path = require('node:path');
+const { Readable } = require('node:stream');
+const Ajv = require('ajv');
+const catalog = require('./api-v1-contract.json');
+
+// SpecRef: 9.1.4.6 | HTTP authentication and exclusive control | loopback transport
+
+const API_PREFIX = '/api/v1';
+const API_VERSION = 'v1';
+const SCHEMA_VERSION = 1;
+const LEASE_IDLE_TIMEOUT_MS = 900_000;
+const MAX_JSON_BODY_BYTES = 1024 * 1024;
+const MAX_MULTIPART_BODY_BYTES = 32 * 1024 * 1024;
+const PUBLIC_OPERATIONS = new Set(['fundamental/status', 'help/overview', 'help/endpoints']);
+const parameterAjv = new Ajv({ allErrors: true, strict: true, coerceTypes: true, useDefaults: true });
+const bodyAjv = new Ajv({ allErrors: true, strict: true, coerceTypes: false, useDefaults: true });
+// SpecRef: 9.1.4.14 | Parameter and payload schema conventions | Concrete response catalog
+const responseAjv = new Ajv({ allErrors: true, strict: true, coerceTypes: false, useDefaults: false });
+
+function timingSafeEqualString(actual, expected) {
+  if (typeof actual !== 'string' || typeof expected !== 'string') return false;
+  const left = Buffer.from(actual);
+  const right = Buffer.from(expected);
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+
+function compileRoute(operation) {
+  const names = [];
+  const pattern = operation.path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{([^}]+)\\\}/g, (_match, name) => {
+    names.push(name);
+    return '([^/]+)';
+  });
+  return {
+    ...operation,
+    names,
+    pattern: new RegExp(`^${pattern}$`),
+    validators: {
+      pathParameters: parameterAjv.compile(operation.pathParameters),
+      query: parameterAjv.compile(operation.query),
+      body: bodyAjv.compile(operation.body),
+      response: responseAjv.compile(operation.response.data),
+      // SSE and the raw-binary backup export never go through the JSON read/commit envelope construction below.
+      envelope: operation.response.envelope ? responseAjv.compile(operation.response.envelope) : null,
+    },
+  };
+}
+
+const ROUTES = catalog.operations.map(compileRoute);
+
+function createApiV1(options) {
+  let server = null;
+  let enabled = false;
+  let bearerToken = null;
+  let port = null;
+  let descriptorPath = null;
+  let lease = null;
+  // SpecRef: 9.1.4.11 | The session token of a lease that expired from inactivity, so that client's next request is
+  // told `control_lease_expired` rather than `login_required`. Any logIn, logOut, or release clears it.
+  let expiredSessionToken = null;
+  let expiryTimer = null;
+  let shuttingDown = false;
+  let admissionClosed = false;
+  let activeOperations = 0;
+  const streams = new Set();
+
+  const nowMonotonic = () => Number(process.hrtime.bigint() / 1_000_000n);
+  // Tests shorten the idle lease; the desktop app always uses the specified fifteen minutes (9.1.4.6).
+  const leaseIdleTimeoutMs = Number.isInteger(options.leaseIdleTimeoutMs) && options.leaseIdleTimeoutMs > 0 ? options.leaseIdleTimeoutMs : LEASE_IDLE_TIMEOUT_MS;
+
+  function requestId() { return crypto.randomUUID(); }
+  function baseEnvelope(id) { return { apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, requestId: id }; }
+  function errorEnvelope(id, code, message, revision, details) {
+    return { ...baseEnvelope(id), ...(Number.isInteger(revision) ? { revision } : {}), error: { code, message, ...(details ? { details } : {}) } };
+  }
+  function sendJson(response, status, body, headers = {}) {
+    response.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...headers });
+    response.end(JSON.stringify(body));
+  }
+
+  function closeStreams(reason = 'resyncRequired') {
+    for (const stream of streams) {
+      try {
+        if (!stream.response.writableEnded) stream.response.write(`event: ${reason}\ndata: ${JSON.stringify({ apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION })}\n\n`);
+        stream.response.end();
+      } catch { /* the peer already disconnected */ }
+      clearInterval(stream.heartbeat);
+      clearInterval(stream.poll);
+    }
+    streams.clear();
+  }
+
+  // An enum is a union of `const` literals, so Ajv reports one `const` failure per literal plus the enclosing `anyOf`.
+  // Collapse those into one `enum` issue per path that lists every allowed value.
+  function collapseEnumIssues(issues) {
+    const constsByPath = new Map();
+    for (const issue of issues) {
+      if (issue.keyword !== 'const') continue;
+      if (!constsByPath.has(issue.path)) constsByPath.set(issue.path, []);
+      constsByPath.get(issue.path).push(issue.allowedValue);
+    }
+    const collapsed = [];
+    for (const issue of issues) {
+      const allowedValues = constsByPath.get(issue.path);
+      if (!allowedValues) { collapsed.push(issue); continue; }
+      if (issue.keyword !== 'const' && issue.keyword !== 'anyOf') { collapsed.push(issue); continue; }
+      if (collapsed.some(entry => entry.path === issue.path && entry.keyword === 'enum')) continue;
+      collapsed.push({ path: issue.path, keyword: 'enum', allowedValues: [...new Set(allowedValues)] });
+    }
+    return collapsed;
+  }
+
+  function validateSchema(validator, value, querySchema = null) {
+    if (validator(value)) return;
+    const validationError = Object.assign(new Error('schema_validation_failed'), { status: 400, code: 'invalid_request' });
+    const issues = collapseEnumIssues(validator.errors?.map(error => ({ path: error.instancePath, keyword: error.keyword, ...(error.params?.missingProperty ? { missingProperty: error.params.missingProperty } : {}), ...(error.params?.additionalProperty ? { additionalProperty: error.params.additionalProperty } : {}), ...(Array.isArray(error.params?.allowedValues) ? { allowedValues: error.params.allowedValues } : {}), ...('allowedValue' in (error.params ?? {}) ? { allowedValue: error.params.allowedValue } : {}) })) ?? []);
+    const field = schemaIssueField(issues[0]);
+    const hint = querySchema && field && commaJoinedArray(querySchema, field, value) ? { hint: 'repeat_parameter' } : {};
+    validationError.details = { ...(field ? { field } : {}), ...(issues[0] ? { rule: issues[0].keyword } : {}), ...hint, issues };
+    throw validationError;
+  }
+
+  // SpecRef: 9.1.4.14 | GET arrays repeat the parameter name; a comma-joined value (`a=1,2`) is one malformed element.
+  function commaJoinedArray(querySchema, field, query) {
+    const name = field.replace(/\[\d+\]$/, '');
+    const raw = query[name];
+    const values = Array.isArray(raw) ? raw : [raw];
+    if (!values.some(entry => typeof entry === 'string' && entry.includes(','))) return false;
+    const property = querySchema.properties?.[name];
+    const acceptsArray = schema => schema?.type === 'array' || (Array.isArray(schema?.type) && schema.type.includes('array')) || (schema?.anyOf ?? schema?.oneOf ?? []).some(acceptsArray);
+    return acceptsArray(property);
+  }
+
+  // SpecRef: 9.1.4.11 | `details.field` names the rejected request member, e.g. `lineupId` for `/parameters/lineupId`.
+  function schemaIssueField(issue) {
+    if (!issue) return null;
+    const segments = issue.path.split('/').slice(1).map(segment => segment.replace(/~1/g, '/').replace(/~0/g, '~'));
+    const member = issue.missingProperty ?? issue.additionalProperty;
+    if (member) segments.push(member);
+    if (segments[0] === 'parameters' && segments.length > 1) segments.shift();
+    return segments.reduce((path, segment) => /^\d+$/.test(segment) ? `${path}[${segment}]` : path ? `${path}.${segment}` : segment, '') || null;
+  }
+
+  function invalidRequestMessage(error) {
+    const details = error.details;
+    if (!details?.field) return 'The request is invalid.';
+    const issue = details.issues?.[0];
+    const problem = issue?.missingProperty ? 'is required'
+      : issue?.additionalProperty ? 'is not a known member'
+        : issue?.allowedValues ? `must be one of ${issue.allowedValues.map(value => JSON.stringify(value)).join(', ')}`
+          : `is invalid (${details.rule})`;
+    const name = details.field.replace(/\[\d+\]$/, '');
+    const hint = details.hint === 'repeat_parameter' ? ` Encode an array by repeating the parameter (\`${name}=1&${name}=2\`), not as a comma-joined value.` : '';
+    return `The request is invalid: \`${details.field}\` ${problem}.${hint}`;
+  }
+
+  // A response mismatch is an implementation drift against the operation's own catalog contract, not caller error,
+  // so it fails closed as `internal_error` before anything is written rather than leaking a malformed payload.
+  function assertAgainstCatalog(route, validator, label, value) {
+    if (validator(value)) return;
+    const issues = validator.errors?.map(error => ({ path: error.instancePath, keyword: error.keyword })) ?? [];
+    console.error(`api-v1: ${route.operationId} produced a ${label} that does not match its catalog schema`, issues);
+    throw Object.assign(new Error(`${label}_schema_mismatch`), { status: 500, code: 'internal_error' });
+  }
+  function assertResponseData(route, data) { assertAgainstCatalog(route, route.validators.response, 'response', data); }
+  function assertEnvelope(route, envelope) { if (route.validators.envelope) assertAgainstCatalog(route, route.validators.envelope, 'envelope', envelope); }
+
+  function authenticateBootstrap(request, id) {
+    const authorization = request.headers.authorization;
+    if (typeof authorization !== 'string') return { status: 401, body: errorEnvelope(id, 'authentication_required', 'Bearer authentication is required.') };
+    if (!authorization.startsWith('Bearer ') || !timingSafeEqualString(authorization.slice(7), bearerToken)) {
+      return { status: 401, body: errorEnvelope(id, 'authentication_failed', 'Bearer authentication failed.') };
+    }
+    return null;
+  }
+
+  function authenticateSession(request, id) {
+    const bootstrapFailure = authenticateBootstrap(request, id);
+    if (bootstrapFailure) return bootstrapFailure;
+    if (!lease) {
+      if (expiredSessionToken && timingSafeEqualString(request.headers['x-bokemo-session'], expiredSessionToken)) {
+        return { status: 401, body: errorEnvelope(id, 'control_lease_expired', 'The control lease expired.') };
+      }
+      return { status: 401, body: errorEnvelope(id, 'login_required', 'A control session is required.') };
+    }
+    if (nowMonotonic() >= lease.deadline && lease.pins === 0) {
+      void expireLease();
+      return { status: 401, body: errorEnvelope(id, 'control_lease_expired', 'The control lease expired.') };
+    }
+    if (!timingSafeEqualString(request.headers['x-bokemo-session'], lease.sessionToken)) {
+      return { status: 401, body: errorEnvelope(id, 'login_required', 'The session token is invalid.') };
+    }
+    if (!timingSafeEqualString(request.headers['x-bokemo-control-lease'], lease.controlLeaseToken)) {
+      return { status: 401, body: errorEnvelope(id, 'control_lease_invalid', 'The control lease is invalid.') };
+    }
+    return null;
+  }
+
+  function renewLease() {
+    if (!lease) return;
+    lease.deadline = nowMonotonic() + leaseIdleTimeoutMs;
+    lease.expiresAt = Date.now() + leaseIdleTimeoutMs;
+    scheduleExpiry();
+  }
+  function scheduleExpiry() {
+    if (expiryTimer) clearTimeout(expiryTimer);
+    if (!lease || lease.pins > 0) return;
+    expiryTimer = setTimeout(() => void expireLease(), Math.max(1, lease.deadline - nowMonotonic()));
+  }
+  async function expireLease() {
+    if (!lease || lease.pins > 0 || nowMonotonic() < lease.deadline) return scheduleExpiry();
+    const expired = lease;
+    lease = null;
+    expiredSessionToken = expired.sessionToken;
+    closeStreams();
+    try { await options.invokeApplication('fundamental/logOut', { reason: 'inactivity', identity: expired.identity }); } catch { /* durable account state remains authoritative */ }
+  }
+
+  async function readJson(request, allowEmpty = false) {
+    const chunks = [];
+    let bytes = 0;
+    for await (const chunk of request) {
+      bytes += chunk.length;
+      if (bytes > MAX_JSON_BODY_BYTES) throw Object.assign(new Error('payload_too_large'), { status: 413, code: 'payload_too_large' });
+      chunks.push(chunk);
+    }
+    if (chunks.length === 0) {
+      if (allowEmpty) return {};
+      throw Object.assign(new Error('missing_body'), { status: 400, code: 'invalid_request' });
+    }
+    const contentType = String(request.headers['content-type'] ?? '').split(';', 1)[0].trim().toLowerCase();
+    if (contentType !== 'application/json') throw Object.assign(new Error('unsupported_media_type'), { status: 415, code: 'unsupported_media_type' });
+    try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+    catch { throw Object.assign(new Error('invalid_json'), { status: 400, code: 'invalid_request' }); }
+  }
+
+  async function readMultipart(request, route) {
+    const contentType = String(request.headers['content-type'] ?? '');
+    if (!contentType.toLowerCase().startsWith('multipart/form-data;')) throw Object.assign(new Error('unsupported_media_type'), { status: 415, code: 'unsupported_media_type' });
+    const declared = Number(request.headers['content-length'] ?? 0);
+    if (declared > MAX_MULTIPART_BODY_BYTES) throw Object.assign(new Error('payload_too_large'), { status: 413, code: 'payload_too_large' });
+    const webRequest = new Request('http://127.0.0.1/upload', { method: 'POST', headers: request.headers, body: Readable.toWeb(request), duplex: 'half' });
+    let form;
+    try { form = await webRequest.formData(); } catch { throw Object.assign(new Error('invalid_multipart'), { status: 400, code: 'invalid_request' }); }
+    const metadataPart = form.getAll('metadata');
+    if (metadataPart.length !== 1) throw Object.assign(new Error('invalid_metadata_count'), { status: 400, code: 'invalid_request' });
+    const metadataText = typeof metadataPart[0] === 'string' ? metadataPart[0] : await metadataPart[0].text();
+    if (Buffer.byteLength(metadataText) > MAX_JSON_BODY_BYTES) throw Object.assign(new Error('metadata_too_large'), { status: 413, code: 'payload_too_large' });
+    let metadata;
+    try { metadata = JSON.parse(metadataText); } catch { throw Object.assign(new Error('invalid_metadata'), { status: 400, code: 'invalid_request' }); }
+    validateSchema(route.validators.body, metadata);
+    const files = {};
+    for (const [name, value] of form.entries()) {
+      if (name === 'metadata') continue;
+      if (typeof value === 'string' || files[name]) throw Object.assign(new Error('invalid_file_part'), { status: 400, code: 'invalid_request' });
+      const bytes = Buffer.from(await value.arrayBuffer());
+      const mediaType = value.type || 'application/octet-stream';
+      const validImageSignature = mediaType === 'image/png'
+        ? bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+        : mediaType === 'image/jpeg'
+          ? bytes[0] === 0xff && bytes[1] === 0xd8 && bytes.at(-2) === 0xff && bytes.at(-1) === 0xd9
+          : mediaType === 'image/webp'
+            ? bytes.subarray(0, 4).toString('ascii') === 'RIFF' && bytes.subarray(8, 12).toString('ascii') === 'WEBP'
+            : true;
+      files[name] = { mediaType, byteLength: bytes.length, sha256: crypto.createHash('sha256').update(bytes).digest('hex'), contentBase64: bytes.toString('base64'), validImageSignature };
+    }
+    if (route.operationId === 'commit/setting/backup/import') {
+      if (Object.keys(files).length !== 1 || !files.backup || files.backup.byteLength > MAX_MULTIPART_BODY_BYTES) throw Object.assign(new Error('invalid_backup'), { status: 400, code: 'invalid_request' });
+    } else {
+      const requested = metadata.parameters?.attachments ?? [];
+      if (!Array.isArray(requested) || requested.length > 4 || Object.keys(files).length !== requested.length || requested.some((name, index) => name !== `attachment${index}` || !files[name])) throw Object.assign(new Error('invalid_attachments'), { status: 400, code: 'invalid_request' });
+      let total = 0;
+      for (const file of Object.values(files)) {
+        total += file.byteLength;
+        if (file.byteLength > 8 * 1024 * 1024 || !['image/png', 'image/jpeg', 'image/webp'].includes(file.mediaType) || !file.validImageSignature) throw Object.assign(new Error('invalid_attachment'), { status: 400, code: 'invalid_request' });
+      }
+      if (total > 20 * 1024 * 1024) throw Object.assign(new Error('attachments_too_large'), { status: 413, code: 'payload_too_large' });
+    }
+    return { ...metadata, uploadedFiles: files };
+  }
+
+  function decodeQuery(url, pathParameters) {
+    const parameters = { ...pathParameters };
+    for (const key of new Set(url.searchParams.keys())) {
+      const values = url.searchParams.getAll(key);
+      parameters[key] = values.length === 1 ? values[0] : values;
+    }
+    return parameters;
+  }
+
+  async function invoke(operation, payload, id) {
+    if (admissionClosed) return { status: 503, body: errorEnvelope(id, 'runtime_unavailable', 'The API is stopping.') };
+    activeOperations += 1;
+    if (lease) { lease.pins += 1; scheduleExpiry(); }
+    try {
+      const result = await options.invokeApplication(operation.operationId, payload);
+      if (result?.error) return { status: result.status ?? 500, body: { ...baseEnvelope(id), ...(Number.isInteger(result.revision) ? { revision: result.revision } : {}), error: result.error } };
+      return { status: 200, result };
+    } catch {
+      return { status: 503, body: errorEnvelope(id, 'runtime_unavailable', 'The game authority is unavailable.') };
+    } finally {
+      activeOperations -= 1;
+      if (lease) { lease.pins = Math.max(0, lease.pins - 1); scheduleExpiry(); }
+    }
+  }
+
+  async function handle(request, response) {
+    const id = requestId();
+    let url;
+    try { url = new URL(request.url, 'http://127.0.0.1'); }
+    catch { return sendJson(response, 400, errorEnvelope(id, 'invalid_request', 'The request URL is invalid.')); }
+
+    if (request.headers.origin && request.headers.origin !== options.allowedOrigin) {
+      return sendJson(response, 401, errorEnvelope(id, 'authentication_failed', 'The request origin is not allowed.', undefined, { reason: 'origin_not_allowed' }));
+    }
+
+    // SpecRef: 9.1.4.3 | HEAD is answered like GET without a body (RFC 9110); the popup event stream has no HEAD form.
+    const isHead = request.method === 'HEAD';
+    let route = null;
+    let pathParameters = {};
+    for (const candidate of ROUTES) {
+      if (candidate.method !== (isHead ? 'GET' : request.method)) continue;
+      if (isHead && candidate.operationId === 'read/observation/popupEventStream') continue;
+      const match = candidate.pattern.exec(url.pathname);
+      if (!match) continue;
+      route = candidate;
+      try { pathParameters = Object.fromEntries(candidate.names.map((name, index) => [name, decodeURIComponent(match[index + 1])])); }
+      catch { return sendJson(response, 400, errorEnvelope(id, 'invalid_request', 'A path parameter is invalid.')); }
+      break;
+    }
+    if (!route) {
+      const pathRoute = ROUTES.find(candidate => candidate.pattern.test(url.pathname));
+      return pathRoute
+        ? sendJson(response, 405, errorEnvelope(id, 'method_not_allowed', 'The HTTP method is not allowed.'), { Allow: pathRoute.method === 'GET' && pathRoute.operationId !== 'read/observation/popupEventStream' ? 'GET, HEAD' : pathRoute.method })
+        : sendJson(response, 404, errorEnvelope(id, 'not_found', 'The endpoint does not exist.'));
+    }
+
+    if (!PUBLIC_OPERATIONS.has(route.operationId)) {
+      const failure = route.access === 'session' ? authenticateSession(request, id) : authenticateBootstrap(request, id);
+      if (failure) return sendJson(response, failure.status, failure.body);
+    }
+
+    let payload;
+    try {
+      if (route.method === 'GET') {
+        if (request.headers['content-length'] && request.headers['content-length'] !== '0') throw Object.assign(new Error('get_body'), { status: 400, code: 'invalid_request' });
+        const query = decodeQuery(url, {});
+        validateSchema(route.validators.pathParameters, pathParameters);
+        validateSchema(route.validators.query, query, route.query);
+        payload = { parameters: { ...pathParameters, ...query }, pathParameters, transport: { requestId: id, lastEventId: request.headers['last-event-id'] ?? null } };
+      } else {
+        const multipart = route.operationId === 'commit/setting/backup/import' || route.operationId === 'commit/setting/feedback';
+        const body = multipart ? await readMultipart(request, route) : await readJson(request, route.operationId === 'fundamental/logOut');
+        validateSchema(route.validators.pathParameters, pathParameters);
+        if (!multipart) validateSchema(route.validators.body, body);
+        payload = { ...body, pathParameters, transport: { requestId: id } };
+      }
+    } catch (error) {
+      const code = error.code ?? 'invalid_request';
+      const reason = typeof error.message === 'string' && error.message !== 'schema_validation_failed' ? { reason: error.message } : {};
+      return sendJson(response, error.status ?? 400, errorEnvelope(id, code, code === 'invalid_request' ? invalidRequestMessage(error) : 'The request is invalid.', undefined, error.details ?? (Object.keys(reason).length ? reason : undefined)));
+    }
+
+    if (route.operationId === 'fundamental/logIn' && lease) {
+      return sendJson(response, 409, errorEnvelope(id, 'control_unavailable', 'Another client holds control.'));
+    }
+
+    const invoked = await invoke(route, payload, id);
+    if (invoked.body) {
+      const shouldRetry = invoked.status === 429 || invoked.body.error?.code === 'operation_in_progress';
+      return sendJson(response, invoked.status, invoked.body, shouldRetry ? { 'Retry-After': '1' } : {});
+    }
+    const result = invoked.result ?? {};
+
+    if (route.operationId === 'read/observation/popupEventStream') {
+      assertResponseData(route, result.data ?? {});
+      renewLease();
+      response.writeHead(200, {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-store',
+        Connection: 'keep-alive',
+        'X-Accel-Buffering': 'no',
+      });
+      response.flushHeaders();
+      const events = Array.isArray(result.data?.events) ? result.data.events : [];
+      // No Last-Event-ID means a fresh connect: an absent cursor now reads the whole retained buffer (see
+      // applicationApi.ts), but a fresh connect starts after the current boundary and must not replay any of it —
+      // only anchor `cursor` on the newest entry so the next tick reports only what is genuinely new. A supplied
+      // Last-Event-ID is a real resume request, so its delta is replayed to the client.
+      if (request.headers['last-event-id']) {
+        for (const event of events) response.write(`id: ${event.eventId}\nevent: popup\ndata: ${JSON.stringify({ apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, ...event })}\n\n`);
+      }
+      let cursor = events.at(-1)?.eventId ?? request.headers['last-event-id'] ?? null;
+      const heartbeat = setInterval(() => { if (!response.writableEnded) response.write(': heartbeat\n\n'); }, 15_000);
+      let polling = false;
+      // Called on the 1-second poll (a resilience backstop) and immediately on `notifyPopupActivity()` (the real
+      // push path); the `polling` guard makes an overlapping call a safe no-op either way.
+      const tick = async () => {
+        if (polling || response.writableEnded) return;
+        if (!lease || nowMonotonic() >= lease.deadline) { closeStreams(); return; }
+        polling = true;
+        try {
+          const update = await options.invokeApplication(route.operationId, { parameters: {}, pathParameters: {}, transport: { requestId: requestId(), lastEventId: cursor } });
+          if (update?.error) { response.write(`event: resyncRequired\ndata: ${JSON.stringify({ apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, revision: update.revision })}\n\n`); response.end(); return; }
+          const delivered = update?.data?.events ?? [];
+          for (const event of delivered) {
+            response.write(`id: ${event.eventId}\nevent: popup\ndata: ${JSON.stringify({ apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, ...event })}\n\n`);
+            cursor = event.eventId;
+          }
+          // Only genuine delivered activity renews the lease; an empty tick behaves like a heartbeat.
+          if (delivered.length > 0) renewLease();
+        } catch { response.end(); }
+        finally { polling = false; }
+      };
+      const poll = setInterval(() => { void tick(); }, 1_000);
+      const stream = { response, heartbeat, poll, tick };
+      streams.add(stream);
+      request.once('close', () => { clearInterval(heartbeat); clearInterval(poll); streams.delete(stream); });
+      return;
+    }
+
+    if (route.operationId === 'fundamental/logIn') {
+      const now = Date.now();
+      expiredSessionToken = null;
+      lease = {
+        identity: result.identity ?? result.data,
+        sessionToken: crypto.randomBytes(32).toString('base64url'),
+        controlLeaseToken: crypto.randomBytes(32).toString('base64url'),
+        deadline: nowMonotonic() + leaseIdleTimeoutMs,
+        expiresAt: now + leaseIdleTimeoutMs,
+        pins: 0,
+      };
+      scheduleExpiry();
+      result.data = { ...(result.data ?? {}), sessionToken: lease.sessionToken, controlLeaseToken: lease.controlLeaseToken, leaseExpiresAt: new Date(lease.expiresAt).toISOString() };
+    } else if (route.operationId === 'fundamental/logOut') {
+      closeStreams();
+      lease = null;
+      expiredSessionToken = null;
+      if (expiryTimer) clearTimeout(expiryTimer);
+    } else if (route.access === 'session') renewLease();
+
+    // Import/reset atomically fence the popup-event buffer (authority.ts); close open streams synchronously here
+    // rather than waiting for their next poll tick to discover the fenced cursor.
+    if (route.operationId === 'commit/setting/backup/import' || route.operationId === 'commit/setting/backup/reset') closeStreams();
+
+    assertResponseData(route, result.data ?? {});
+
+    if (route.operationId.startsWith('commit/')) {
+      if (route.operationId === 'commit/setting/backup/export' && typeof result.data?.savePayload === 'string') {
+        const bytes = Buffer.from(result.data.savePayload, 'utf8');
+        response.writeHead(200, {
+          'Content-Type': 'application/octet-stream',
+          'Content-Disposition': 'attachment; filename="bokemo-backup.bokemo"',
+          'Cache-Control': 'no-store',
+          'X-BoKemo-Revision': String(result.revision),
+          'X-BoKemo-Schema-Version': String(SCHEMA_VERSION),
+        });
+        response.end(bytes);
+        return;
+      }
+      const commitBody = {
+        ...baseEnvelope(result.requestId ?? id), previousRevision: result.previousRevision, revision: result.revision,
+        committedAt: result.committedAt ?? new Date().toISOString(), data: result.data ?? {},
+        effects: result.effects ?? [], changedResources: result.changedResources ?? [],
+      };
+      assertEnvelope(route, commitBody);
+      return sendJson(response, 200, commitBody);
+    }
+    const cacheable = route.method === 'GET'
+      && !['fundamental/status', 'read/observation', 'read/observation/compact', 'read/observation/popupEventStream'].includes(route.operationId);
+    const etag = cacheable ? `"${Number.isInteger(result.revision) ? `rev-${result.revision}-` : ''}${crypto.createHash('sha256').update(JSON.stringify(result.data ?? {})).digest('base64url')}"` : null;
+    if (etag && request.headers['if-none-match'] === etag) {
+      response.writeHead(304, { ETag: etag, 'Cache-Control': 'private, no-cache' });
+      response.end();
+      return;
+    }
+    const readBody = {
+      ...baseEnvelope(id), ...(Number.isInteger(result.revision) ? { revision: result.revision } : {}),
+      observedAt: result.observedAt ?? new Date().toISOString(), data: result.data ?? {},
+    };
+    assertEnvelope(route, readBody);
+    return sendJson(response, 200, readBody, etag ? { ETag: etag, 'Cache-Control': 'private, no-cache' } : {});
+  }
+
+  function writeDescriptor() {
+    const directory = options.connectionDirectory;
+    fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+    fs.chmodSync(directory, 0o700);
+    descriptorPath = path.join(directory, 'api-v1-connection.json');
+    const temporary = `${descriptorPath}.tmp-${process.pid}`;
+    fs.writeFileSync(temporary, JSON.stringify({ endpoint: `http://127.0.0.1:${port}${API_PREFIX}`, token: bearerToken, apiVersion: API_VERSION }), { mode: 0o600 });
+    fs.renameSync(temporary, descriptorPath);
+    fs.chmodSync(descriptorPath, 0o600);
+  }
+  function removeDescriptor() {
+    if (!descriptorPath) return;
+    try { fs.unlinkSync(descriptorPath); } catch (error) { if (error?.code !== 'ENOENT') throw error; }
+    descriptorPath = null;
+  }
+
+  // SpecRef: 8.6 | UI_SETTING | API option; 9.1.4.6 | explicit enablement and the bootstrap token
+  // `Application API v1`, `secretToken`, and `persistSecretToken` are trusted desktop settings: an owner-only file in
+  // the profile directory, never the game save, a backup, or renderer storage.
+  const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43,}$/;
+  function settingsPath() { return path.join(options.connectionDirectory, 'api-v1-settings.json'); }
+  function readStoredSettings() {
+    const stored = { enabled: false, persistSecretToken: true, secretToken: null };
+    try {
+      const parsed = JSON.parse(fs.readFileSync(settingsPath(), 'utf8'));
+      if (typeof parsed.enabled === 'boolean') stored.enabled = parsed.enabled;
+      if (typeof parsed.persistSecretToken === 'boolean') stored.persistSecretToken = parsed.persistSecretToken;
+      if (stored.persistSecretToken && typeof parsed.secretToken === 'string' && TOKEN_PATTERN.test(parsed.secretToken)) stored.secretToken = parsed.secretToken;
+    } catch (error) {
+      if (error?.code !== 'ENOENT') console.error('api-v1: the API settings could not be read; using defaults');
+    }
+    return stored;
+  }
+  function writeStoredSettings(next) {
+    const directory = options.connectionDirectory;
+    fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+    fs.chmodSync(directory, 0o700);
+    const target = settingsPath();
+    const temporary = `${target}.tmp-${process.pid}`;
+    const record = { enabled: next.enabled, persistSecretToken: next.persistSecretToken, ...(next.persistSecretToken && next.secretToken ? { secretToken: next.secretToken } : {}) };
+    fs.writeFileSync(temporary, JSON.stringify(record), { mode: 0o600 });
+    fs.renameSync(temporary, target);
+    fs.chmodSync(target, 0o600);
+  }
+  let stored = null;
+  function storedSettings() { if (!stored) stored = readStoredSettings(); return stored; }
+  function saveStoredSettings(changes) { stored = { ...storedSettings(), ...changes }; writeStoredSettings(stored); }
+
+  async function enable() {
+    if (options.allowEnable !== true) throw new Error('api_v1_not_public');
+    if (enabled) return getSettings();
+    admissionClosed = false;
+    const current = storedSettings();
+    // A kept token is reused across launches; otherwise each enable (and each launch) creates a new one.
+    bearerToken = current.persistSecretToken && current.secretToken ? current.secretToken : crypto.randomBytes(32).toString('base64url');
+    server = http.createServer((request, response) => void handle(request, response).catch(() => {
+      if (!response.headersSent) sendJson(response, 500, errorEnvelope(requestId(), 'internal_error', 'The API request failed.'));
+    }));
+    await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
+    port = server.address().port;
+    writeDescriptor();
+    enabled = true;
+    saveStoredSettings({ enabled: true, secretToken: current.persistSecretToken ? bearerToken : null });
+    return getSettings();
+  }
+
+  /** Turning the option off stops the listener and resets the token (8.6); the choice is remembered. */
+  async function disable() {
+    await stop();
+    saveStoredSettings({ enabled: false, secretToken: null });
+    return getSettings();
+  }
+
+  /** Starts the listener at launch when the option was left on; no confirmation, since the player already confirmed. */
+  async function restore() {
+    if (options.allowEnable !== true || !storedSettings().enabled) return getSettings();
+    return enable();
+  }
+
+  /** `true` keeps the current token for later launches; `false` deletes the stored copy now (the current one stays valid). */
+  function setPersistSecretToken(value) {
+    const persist = value === true;
+    saveStoredSettings({ persistSecretToken: persist, secretToken: persist && enabled ? bearerToken : null });
+    return getSettings();
+  }
+
+  /** Only for an explicit reveal in the Setting tab through the trusted bridge (9.1.4.6). */
+  function revealSecretToken() { return enabled ? bearerToken : null; }
+
+  async function stop() {
+    admissionClosed = true;
+    const activeServer = server;
+    server = null;
+    closeStreams();
+    if (activeServer) await new Promise(resolve => activeServer.close(resolve));
+    if (lease) {
+      try { await options.invokeApplication('fundamental/logOut', { reason: 'disabled', identity: lease.identity }); } catch { /* preserve last durable account save */ }
+    }
+    lease = null;
+    expiredSessionToken = null;
+    enabled = false;
+    bearerToken = null;
+    port = null;
+    if (expiryTimer) clearTimeout(expiryTimer);
+    removeDescriptor();
+  }
+
+  function getSettings() {
+    return { supported: options.allowEnable === true, enabled, persistSecretToken: storedSettings().persistSecretToken, host: '127.0.0.1', port, apiVersion: API_VERSION, connectionFile: descriptorPath };
+  }
+
+  /** Quitting stops the listener but keeps the remembered option and token for the next launch. */
+  async function shutdown() { shuttingDown = true; await stop(); }
+
+  // SpecRef: 9.1.4.16 | Renderer loss or process death reloads the last durable state; session tokens are reacquired.
+  // The renderer owns the Application API session, so when it is lost or starts reloading the lease is released here
+  // (without a logOut round trip, which could not reach it). The client's old tokens then get `login_required`, and a new
+  // `logIn` succeeds at once instead of waiting for the idle lease to expire.
+  function releaseForRendererLoss() {
+    expiredSessionToken = null;
+    if (!lease) return;
+    lease = null;
+    if (expiryTimer) clearTimeout(expiryTimer);
+    closeStreams();
+  }
+
+  // The renderer's push signal: re-check every open popup-event stream now instead of waiting for its next poll tick.
+  function notifyPopupActivity() {
+    for (const stream of streams) void stream.tick();
+  }
+
+  return { enable, disable, restore, setPersistSecretToken, revealSecretToken, shutdown, getSettings, notifyPopupActivity, releaseForRendererLoss, get isShuttingDown() { return shuttingDown; }, get activeOperations() { return activeOperations; } };
+}
+
+module.exports = { createApiV1, API_PREFIX, API_VERSION, SCHEMA_VERSION, LEASE_IDLE_TIMEOUT_MS };

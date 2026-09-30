@@ -1,0 +1,107 @@
+const assert = require('node:assert/strict');
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const test = require('node:test');
+const { build } = require('esbuild');
+
+test('partial equipment-set loads require a confirmed choice and report per-slot results', async t => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'bokemo-api-v1-setload-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const output = path.join(directory, 'profile.mjs');
+  await build({
+    entryPoints: [path.resolve('tests/support/apiV1EquipmentSetLoad.profile.ts')], outfile: output, bundle: true, platform: 'node', format: 'esm',
+    define: {
+      'import.meta.env.DEV': 'false',
+      'import.meta.env.BASE_URL': JSON.stringify('/'),
+      __APP_VERSION__: JSON.stringify('0.9.7-test'),
+      __BUILD_NUMBER__: '0',
+      __PUBLIC_CHARACTER_IMAGE_FILES__: '[]',
+      __PUBLIC_CHIBI_IMAGE_FILES__: '[]',
+      __AUTO_EQUIPMENT_PROFILE_ENABLED__: 'false',
+      __AFK_LIVE_PROFILE_ENABLED__: 'false',
+      __AFK_LIVE_PROFILE_FIXTURE__: JSON.stringify(''),
+      __RUNTIME_DIAGNOSTICS_DEFAULT_ENABLED__: 'false',
+    },
+    plugins: [{ name: 'raw-markdown', setup(build) {
+      build.onResolve({ filter: /\.md\?raw$/ }, args => ({ path: path.resolve(args.resolveDir, args.path.slice(0, -4)), namespace: 'raw-markdown' }));
+      build.onLoad({ filter: /.*/, namespace: 'raw-markdown' }, args => ({ contents: `export default ${JSON.stringify(fs.readFileSync(args.path, 'utf8'))}`, loader: 'js' }));
+    } }],
+  });
+  const result = spawnSync(process.execPath, [output], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});
+
+test('Party equipment-set controls commit through the Application API', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const partyTab = fs.readFileSync(path.resolve('src/components/home/tabs/PartyTab.tsx'), 'utf8');
+  assert.match(partyTab, /onRenameEquipmentSet\(char\.id, set\.slot,/);
+  assert.match(partyTab, /onDeleteEquipmentSet\(char\.id, set\.slot\)/);
+  const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
+  for (const removed of ['actions.saveEquipmentSet', 'actions.renameEquipmentSet', 'actions.deleteEquipmentSet', 'actions.loadEquipmentSet']) {
+    assert.equal(home.includes(removed), false, `${removed} must not be reachable from HomeScreen`);
+  }
+  assert.match(home, /kind: 'loadSet', slot, mode/);
+});
+
+test('Party saved sets and the deity pane render from projections', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
+  const partyTag = home.slice(home.indexOf('<PartyTab'), home.indexOf('/>', home.indexOf('isDarkModeEnabled={isDarkModeEnabled}', home.indexOf('<PartyTab'))));
+  assert.match(partyTag, /savedEquipmentSets=\{savedEquipmentSetsView\}/);
+  assert.match(partyTag, /deityDonations=\{deityView\.donations\}/);
+  assert.match(partyTag, /unlockedDeities=\{deityView\.unlocked\}/);
+  assert.doesNotMatch(partyTag, /state\.global\.savedEquipmentSets|state\.global\.deityDonations|state\.global\.unlockedDeities/);
+  assert.match(home, /'resources\/donationBox'/);
+});
+
+test('Party inventory and Jewel counts render from searchItems projections', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
+  const partyTag = home.slice(home.indexOf('<PartyTab'), home.indexOf('/>', home.indexOf('isDarkModeEnabled={isDarkModeEnabled}', home.indexOf('<PartyTab'))));
+  assert.match(partyTag, /inventory=\{ownedInventoryView\}/);
+  assert.match(partyTag, /jewels=\{ownedJewelsView\}/);
+  assert.doesNotMatch(partyTag, /state\.global\.inventory|state\.global\.jewels/);
+  assert.match(home, /category: 'jewel'/);
+});
+
+test('Party pane, member list, and party selector render from the party projection', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
+  const partyTag = home.slice(home.indexOf('<PartyTab'), home.indexOf('/>', home.indexOf('isDarkModeEnabled={isDarkModeEnabled}', home.indexOf('<PartyTab'))));
+  assert.match(partyTag, /parties=\{partySummaries\}/);
+  assert.match(partyTag, /party=\{partyView\}/);
+  assert.match(partyTag, /partyStats=\{\{ hp: partyView\.maxHp \}\}/);
+  assert.doesNotMatch(partyTag, /parties=\{state\.parties\}|party=\{currentParty\}/);
+  assert.match(home, /'read\/observation\/party'/);
+  // The observation wraps the projection in `partyInfo`; reading it unwrapped crashed the renderer at startup.
+  assert.match(home, /useApiRead<\{ partyInfo: PartyProjection \}>/);
+  assert.match(home, /partyObservation\?\.partyInfo/);
+  const partyTab = fs.readFileSync(path.resolve('src/components/home/tabs/PartyTab.tsx'), 'utf8');
+  assert.doesNotMatch(partyTab, /\bParty\b[,\s]*(?:from|\})/, 'the tab no longer imports the Party domain type');
+});
+
+test('the status pane and its change notifications derive from the projected calculated status', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const partyTab = fs.readFileSync(path.resolve('src/components/home/tabs/PartyTab.tsx'), 'utf8');
+  const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
+  assert.match(home, /characterStatus=\{partyView\.characterStatus\}/);
+  assert.match(partyTab, /buildCombatTotals\(characterStatus\[selectedCharacter\]/);
+  assert.match(partyTab, /buildPartyStatsView\(characterStatus\[selectedCharacter\]\)/);
+  assert.equal(partyTab.includes('characterStats'), false, 'the tab receives no computed character stats');
+  assert.equal(/ComputedCharacterStats|computePartyStats/.test(partyTab), false);
+  assert.match(partyTab, /readStatusFacts\(characterStatus\[selectedCharacter\]\)/);
+  for (const inlined of ['getOffenseMultiplierSum', 'getEffectiveAccuracyBonus', 'getCharacterDisplayedMagicalAttackAmplifier', 'deityOffenseAmplifierBonus', 'deityDefenseAmplifierBonus', 'heavyStrikePenetPerNoA']) {
+    assert.equal(partyTab.includes(inlined), false, `${inlined} is derived by the shared game function, not inline in the tab`);
+  }
+  // One shared derivation: the read model, the tab, and the UI helpers all resolve to src/game/statusFacts.ts.
+  const shared = fs.readFileSync(path.resolve('src/components/home/homeShared.tsx'), 'utf8');
+  assert.match(shared, /from '\.\.\/\.\.\/game\/statusFacts'/);
+  assert.equal(/export function getOffenseMultiplierSum/.test(shared), false);
+});

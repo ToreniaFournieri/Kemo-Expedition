@@ -109,7 +109,7 @@
 | `a.null-death-touch` | 即死無効 | 接死が無効化する | - |
 | `a.null-burn` | 火傷無効 | 火傷を負わなくなる | - |
 | `a.null-bind` | 拘束無効 | 拘束を速やかに解くことができる | - |
-| `a.domain-breaker` | 領域破り | 領域展開を無視する(これらの領域の効果の影響を受けない:必達領域、臨海領域、残響領域、静寂領域、剣戟領域、必中狙撃領域、必中魔法領域) | - |
+| `a.domain-breaker` | 領域破り | 領域展開を無視する(これらの領域の効果の影響を受けない:必達領域、臨界領域、残響領域、静寂領域、剣戟領域、必中狙撃領域、必中魔法領域) | - |
 | `a.wind-rider` | 風乗り | 風の影響を強く受ける(強風下では遠距離攻撃回数が0.50倍(より不利)、追い風では行動順判定に+2d3(より有利)) | - |
 | `a.siege` | 攻城 | 要塞を容易に攻略できる(要塞防備による敵の有利な効果を無視できる) | - |
 | `a.coldproof` | 寒さ耐性 | 寒さにとても強い(凍傷を無効化する) | - |
@@ -157,7 +157,7 @@
 | `a.no-offense` | 受身 | 通常行動を行わなくなる(反撃などは行う) | - | self-state |
 | `a.swarm` | 群れ | 失ったHP割合に応じて、物理与ダメージがN%低下し、物理被ダメージがN%増加する | Lv1: 失ったHP1%につき0.5% | self-state |
 | `a.execution` | エクセキューション | 相手の残HPがN以下である場合、与ダメージがxM倍になる | Lv1:40%・1.5, Lv2:50%・1.8, Lv3:50%・2.0, Lv4:55%・2.1, Lv5:58%・2.2 |
-| `a.stealth` | 隠れ蓑 | HPがN%未満のとき、自身へのダメージをすべて回避する | Lv1: 12%, Lv2: 18%, Lv3: 22% | opponent-reactive |
+| `a.stealth` | 隠れ蓑 | HPがN%以下のとき、自身への近接通常攻撃のダメージをすべて回避する | Lv1: 12%, Lv2: 18%, Lv3: 22% | opponent-reactive |
 | `a.illusion` | 幻化 | 最初の遠距離攻撃を無効化する(対象範囲:N) | Lv1: 自身に1回, Lv2: 自身+パーティー1名の2回 | opponent-reactive |
 | `a.bulwark` | 壁 | 真後ろの味方への攻撃を肩代わりする(対象:N) | Lv1: 遠距離, Lv2: 遠距離＋近距離 | intercept |
 | `a.shock` | 感電 | 最初の通常近接攻撃に対して発動し、1ヒット後に攻撃を中断させる | - | interrupt |
@@ -228,7 +228,7 @@
 | `a.predator-sense` | 捕食 | 指定タイミングで発動し、相手のHPがN%未満なら命中+40する | Lv1: COMBAT4・30%, Lv2: COMBAT4・38%, Lv3: COMBAT4・44%, Lv4: COMBAT4・48%, Lv5: COMBAT4・50% | COMBAT | 3 |
 | `a.decompose` | 分解 | 指定タイミングで発動し、相手の物理防御力をxN倍にする | Lv1: COMBAT2・x6/7, Lv2: COMBAT2・x5/7, Lv3: COMBAT2・x4/7, Lv4: COMBAT2・x3/7, Lv5: COMBAT2・x2/7 | COMBAT | 2 |
 | `a.self-destruct` | 自爆 | 指定タイミングで発動し、自爆して相手に残ダメージのNを与える | Lv1: COMBAT2・1/10, Lv2: COMBAT2・3/10, Lv3: COMBAT2・5/10, Lv4: COMBAT2・7/10, Lv5: COMBAT2・100% | COMBAT | 2 |
-| `a.free` | 逃走 | 指定タイミングで発動し、戦闘から逃走する(戦闘は引分になる) | Lv1: COMBAT1, Lv2: COMBAT2, Lv3: COMBAT3, Lv4: COMBAT4, Lv5: COMBAT5 | COMBAT | 1 |
+| `a.flee` | 逃走 | 指定タイミングで発動し、戦闘から逃走する(戦闘は引分になる) | Lv1: COMBAT1, Lv2: COMBAT2, Lv3: COMBAT3, Lv4: COMBAT4, Lv5: COMBAT5 | COMBAT | 1 |
 | `a.auriferous` | 含金 | 自身が受けた攻撃回数の累計が10回に達するごとに、ドロップ抽選チケット数を+1する | - | END | 5 |
 | `a.first-aid` | 応急措置 | 各エリート戦後に、自身のHP増加基礎値とアイテムHP増加値のN%を回復する | Lv1: 2%, Lv2: 3%, Lv3: 4%, Lv4: 5%, Lv5: 6%  | END | 4 |
 
@@ -399,10 +399,6 @@
 | `God of Oblivion` | 忘却されし神 | 効果:戦闘開始時、ランダムな1名が薄れる記憶を得る。ランクが2上がるごとに、超レア報酬抽選回数が+1される。(現在:+N)| 神の存在には、ただ一人の真なる信徒で足りる。 |
 | `Goddess of Discord` | 不和の神 | 効果:戦闘開始時、ランダムな1名を⚠️敵対させる。ランクが1上がるごとに、報酬抽選回数が+1される。(現在:+N)| 調和は停滞である。混沌こそ昇華の源。 |
 
-- **next-rank donation amount for gods**
-  - n is rank
-　- Donation(1) = 1,000 G, Donation(n) = (3.0 - 0.1 * n) * Donation(n-1) (round off)
-  - max rank is 10.
 
 #### 1.1.8 m. magic
 - "魔. 魔法攻撃 (装備によって唱える魔法の種類が変わる)"

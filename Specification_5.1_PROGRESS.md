@@ -6,7 +6,7 @@
   - Steps are processed **globally**, meaning all parties update their progress simultaneously at each Step. 
   - Base duration: **15 seconds per Step**.
   - Duration modifier: **round up** after all multipliers are applied.
-  - **Debug Scaling** (applies multiplicatively to Step duration):
+  - **Debug Scaling:`Speed of time`** (applies multiplicatively to Step duration):
     - `x5 boost` → Step × **0.2** (3 seconds)
     - `x20 boost` → Step × **0.05** (0.75 seconds)
     - `x100 boost` → Step × **0.01** (0.15 seconds)
@@ -92,7 +92,7 @@ PT1 transaction begins
     - Ending Sound Sleep does not trigger auto-equipment logic.
     - A partial Chunk (<30 Cycles) **does trigger auto-equipment logic**.
 
-**f.afk-emulation-efficiency**
+**`f.afk-emulation-efficiency`**
 
 | Elapsed AFK Time | Emulation Speed | Effective Time |
 | ---------------: | --------------: | -------------: |
@@ -352,10 +352,10 @@ The application must remain interactive during AFK recovery.
 
 **Notification**
 - Format: 踏破N回/帰還Y回/引分Z回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG
-  - Key and label:Clear(踏破) / Turned_Back(帰還) / Draw_Retreat(引分) / Wounded_Retreat(撤退) / Defeat(敗北)
-    - Turned_Back: The party successfully returns without clearing the complete dungeon, including return at the selected depth limit or because the next Clear-Gate is still locked. This outcome increments the current consecutive-success count.
-    - Draw_Retreat: the last room outcome is Draw
-    - Wonded_Retreat: Victory but If the party.`d.HP` <= 30% of max HP, back to home with trophies. (excpetion: the Final Boss room) 
+  - Key and label:Clear(踏破) / Return(帰還) / Draw(引分) / Retreat(撤退) / Defeat(敗北)
+    - `Return`: The party successfully returns without clearing the complete dungeon, including return at the selected depth limit or because the next Clear-Gate is still locked. This outcome increments the current consecutive-success count.
+    - `Draw`: the last room outcome is Draw
+    - `Retreat`: Victory but If the party.`d.HP` <= 30% of max HP, back to home with trophies. (excpetion: the Final Boss room) 
 - If the value is 0, not display its text (if all zero, then no notification)
 
 ```
@@ -445,10 +445,9 @@ PT3: 貯金額: 10G
 
 * Each progression gate requires **X consecutive successful runs** to unlock. (`Clear`, `Return` outcome)
 * If the party fails a run (`Draw`, `Retreat`, `Defeat`), the current consecutive-success count is reset to 0.
-* Canonical outcome mapping: `Return` = `Turned_Back`, `Draw` = `Draw_Retreat`, and `Retreat` = `Wounded_Retreat`.
-* Evaluate the streak once at the end of each normal expedition. `Clear` or `Turned_Back` increments the next locked Clear-Gate by 1; `Draw_Retreat`, `Wounded_Retreat`, or `Defeat` resets that gate's count to 0.
-* Reaching the required count permanently unlocks that gate. Previously unlocked gates never relock. If the party reaches a still-locked gate during the run that completes its required count, that run ends as `Turned_Back` and the newly unlocked route is available from the next run.
-* When the expedition meets the Clear-Gate condition, the locked-area text changes to indicate that the gate has been cleared::
+* Evaluate the streak once at the end of each normal expedition. `Clear` increments the next locked Clear-Gate `X,4` by 1; `Return` increments it only if the run cleared room `X,3` (a `Return` that ended before clearing `X,3`, e.g. at a shallower depth limit, neither counts nor resets the streak); `Draw`, `Retreat`, or `Defeat` resets that gate's count to 0.
+* Reaching the required count permanently unlocks that gate. Previously unlocked gates never relock. If the party reaches a still-locked gate during the run that completes its required count, that run ends as `Return` and the newly unlocked route is available from the next run.
+* When the expedition meets the Clear-Gate condition, the locked-area text changes to indicate that the gate has been cleared:
 連続攻略成功 9回 で 1F-4 解放達成（次回から先に進める）
 
 **Examples**
@@ -456,12 +455,12 @@ PT3: 貯金額: 10G
 | title            | Gate `x.floor`,`x.room` | condition                                                                                           | text example         |
 | ---------------- | ----------------------- | --------------------------------------------------------------------------------------------------- | -------------------- |
 | Entering         | 1,1                     | Defeat the boss from the previous expedition (`x.expedition - 1`), except for the first expedition. | ボス撃破でヴァルンの樹林帯 開放     |
-| 1st Elite gate   | 1,4                     | Complete 7 consecutive successful runs | 連続攻略成功 7回 で 1F-4解放 |
-| 2nd Elite gate   | 2,4                     | Complete 6 consecutive successful runs | 連続攻略成功 6回 で 2F-4解放 |
-| 3rd Elite gate   | 3,4                     | Complete 5 consecutive successful runs | 連続攻略成功 5回 で 3F-4解放 |
-| 4th Elite gate   | 4,4                     | Complete 4 consecutive successful runs | 連続攻略成功 4回 で 4F-4解放 |
-| 5th Elite gate   | 5,4                     | Complete 3 consecutive successful runs | 連続攻略成功 3回 で 5F-4解放 |
-| Boss gate        | 6,4                     | Complete 2 consecutive successful runs | 連続攻略成功 2回 で ボス戦解放  |
+| 1st Elite gate   | 1,4                     | Complete 7 consecutive successful runs through 1,3. | 1F-3連続攻略成功 7回 で 1F-4解放 |
+| 2nd Elite gate   | 2,4                     | Complete 6 consecutive successful runs through 2,3.| 2F-3連続攻略成功 6回 で 2F-4解放 |
+| 3rd Elite gate   | 3,4                     | Complete 5 consecutive successful runs through 3,3.| 3F-3連続攻略成功 5回 で 3F-4解放 |
+| 4th Elite gate   | 4,4                     | Complete 4 consecutive successful runs through 4,3.| 4F-3連続攻略成功 4回 で 4F-4解放 |
+| 5th Elite gate   | 5,4                     | Complete 3 consecutive successful runs through 5,3.| 5F-3連続攻略成功 3回 で 5F-4解放 |
+| Boss gate        | 6,4                     | Complete 2 consecutive successful runs through 6,3.| 6F-3連続攻略成功 2回 で ボス戦解放  |
 | Gods battle gate | -                       | Defeat the dungeon boss at least once and satisfy the Gods Battle-specific condition.               | ボスを撃破せよ              |
 | Side quest gate  | -                       | Depends on the side quest `q.` condition. |             |
 

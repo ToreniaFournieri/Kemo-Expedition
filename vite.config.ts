@@ -20,6 +20,7 @@ const getLocaleChunkName = (id: string): string | undefined => {
   if (normalizedId.includes('/src/i18n/en.ts')) return 'locale-en';
   if (normalizedId.includes('/src/i18n/zh-CN.ts')) return 'locale-zh-CN';
   if (normalizedId.includes('/src/i18n/zh-TW.ts')) return 'locale-zh-TW';
+  if (normalizedId.includes('/src/i18n/ko.ts')) return 'locale-ko';
   return undefined;
 };
 

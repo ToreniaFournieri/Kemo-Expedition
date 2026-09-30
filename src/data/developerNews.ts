@@ -37,6 +37,7 @@ function parseDeveloperNews(markdown: string): DeveloperNewsItem[] {
   const enColumn = column('Content en');
   const zhCNColumn = column('Content zh-CN');
   const zhTWColumn = column('Content zh-TW');
+  const koColumn = column('Content ko');
 
   return rows
     .slice(2)
@@ -55,6 +56,7 @@ function parseDeveloperNews(markdown: string): DeveloperNewsItem[] {
           en: cells[enColumn] ?? '',
           'zh-CN': cells[zhCNColumn] ?? '',
           'zh-TW': cells[zhTWColumn] ?? '',
+          ko: koColumn >= 0 ? cells[koColumn] ?? '' : '',
         },
       };
     })

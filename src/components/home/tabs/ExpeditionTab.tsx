@@ -1,3 +1,4 @@
+import { renderDiaryBattle, hasDiaryBattle, semanticBattleAction, diaryBattleFlags } from '../../../game/compactDiary.ts';
 import { Fragment,memo,useEffect,useRef,useState,type Dispatch,type SetStateAction } from 'react';
 import {
 DUNGEONS,
@@ -7,37 +8,34 @@ getLocalizedExpeditionFloorConcept
 import {
 hasDefeatedDungeonBoss
 } from '../../../game/clearGate';
-import { DebugSettings,getTimeSpeedScale } from '../../../game/debugSettings';
+import { DebugSettings } from '../../../game/debugSettings';
 import { getDifficultyOffsetItemChanceTickets,getDifficultyOffsetMax,getDifficultyOffsetSuperRareChanceTickets,normalizeDifficultyOffset } from '../../../game/difficultyOffset';
 import { getItemDisplayName } from '../../../game/gameState';
-import { EXPEDITION_SIMULATION_RUN_COUNT } from '../../../game/expeditionSimulation';
-import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../../../game/instantExpedition';
-import { computePartyStats,type ComputedPartyStatus } from '../../../game/partyComputation';
+import { EXPEDITION_SIMULATION_RUN_COUNT,getExpeditionSimulationRoomCoordinate,getExpeditionSimulationXAxisLabel } from '../../../game/expeditionSimulation';
 import { t } from '../../../i18n';
-import { EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,Item,Party } from '../../../types';
+import { EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,Item } from '../../../types';
+import { expeditionStateName, type ExpeditionProjection } from '../../../api/v1/expeditionView';
+import type { ExpeditionLogView } from '../../../api/v1/expeditionLogView';
 
 
 import {
 aggregateBattleLifeDrainLogs,
 battleLogActionIncludesEnemyName,
 EnemyBestiaryBubble,
-EXPLORING_PROGRESS_TOTAL_STEPS,
 FloatingBubblePortal,
 formatAutoSellSummary,
 formatBattleLogHitDisplay,
 formatDecimal,
 formatNumber,
-getAutoSellStepCount,
 getBattleLogPhaseLabel,
 getBestiaryEnemyFromLogEntry,
-getCompactProgressItems,
 getConditionLabel,
 getDisplayedExpeditionStats,
 getDungeonEntryGateState,
 getEnemyLogBackgroundImagePath,
 getExpeditionDepthOptions,
 getExpeditionOutcomeLabel,
-getExplorationVisibleRoomCount,
+getProjectedCompactProgressItems,
 getItemInventoryDetailText,
 getItemRarityById,
 getPartyCycleStateLabel,
@@ -47,8 +45,6 @@ getRewardItemBubblePosition,
 getSliderProgressStyle,
 IOS_GLASS_BUTTON_CLASS,
 IOS_GLASS_SLIDER_CLASS,
-isGodsBattleAvailable,
-PartyCycleRuntime,
 renderBattleLogNote,
 renderBattleLogTextWithInlineChibis,
 renderEnemyLogChibiBackground,
@@ -56,10 +52,7 @@ renderEnemyNameWithMutedClass,
 renderEntryReward,
 renderTextWithRaceIcons,
 renderUiIcon,
-REST_HEAL_MAX_HP_RATIO,
-REST_HEAL_MIN_HP,
 RewardItemBubble,
-STEP_BASED_STATES,
 UiIconKey
 } from '../homeShared';
 
@@ -74,7 +67,8 @@ interface ExpeditionTabProps {
   onResetExpeditionStats: (partyIndex: number) => void;
   onSimulateExpedition: (partyIndex: number, onProgress?: (completed: number, total: number) => void) => Promise<ExpeditionSimulationResult>;
   isExpeditionStatsDisplayEnabled: boolean;
-  partyCycles: Record<number, PartyCycleRuntime>;
+  expeditionProjection: ExpeditionProjection | null;
+  expeditionLogViews: ReadonlyMap<number, ExpeditionLogView | null>;
   afkRecoveryProgressPercent: number | null;
   afkRecoveryCompletedMs: number;
   afkRecoveryTotalMs: number;
@@ -84,7 +78,6 @@ interface ExpeditionTabProps {
   expandedRoom: { partyIndex: number; roomIndex: number; latestRoomToken: string } | null;
   setExpandedRoom: Dispatch<SetStateAction<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>>;
   isDarkModeEnabled: boolean;
-  computePartyStatus?: (party: Party) => ComputedPartyStatus;
   afkPresentationVersion: number;
   throttleAfkPublications: boolean;
 }
@@ -100,7 +93,8 @@ function ExpeditionTab({
   onResetExpeditionStats,
   onSimulateExpedition,
   isExpeditionStatsDisplayEnabled,
-  partyCycles,
+  expeditionProjection,
+  expeditionLogViews,
   afkRecoveryProgressPercent,
   afkRecoveryCompletedMs,
   afkRecoveryTotalMs,
@@ -110,7 +104,6 @@ function ExpeditionTab({
   expandedRoom,
   setExpandedRoom,
   isDarkModeEnabled,
-  computePartyStatus = computePartyStats,
 }: ExpeditionTabProps) {
   const [liveProgressNowMs, setLiveProgressNowMs] = useState(() => Date.now());
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
@@ -143,9 +136,8 @@ function ExpeditionTab({
     left: number;
     maxWidth: number;
   } | null>(null);
-  const [disclosedExpeditionLogs, setDisclosedExpeditionLogs] = useState<Array<Party['lastExpeditionLog'] | null>>(() =>
-    state.parties.map((party) => party.lastExpeditionLog)
-  );
+  const projectionReceivedAtRef = useRef(Date.now());
+  useEffect(() => { projectionReceivedAtRef.current = Date.now(); }, [expeditionProjection]);
 
   useEffect(() => {
     if (afkRecoveryProgressPercent !== null) return;
@@ -154,24 +146,10 @@ function ExpeditionTab({
   }, [afkRecoveryProgressPercent]);
 
   const progressNowMs = afkRecoveryProgressPercent === null ? liveProgressNowMs : emulatedNowMs;
+  const projectionElapsedMs = afkRecoveryProgressPercent === null
+    ? Math.max(0, liveProgressNowMs - projectionReceivedAtRef.current)
+    : 0;
 
-  useEffect(() => {
-    // SpecRef: 8.3 | UI_EXPEDITION | Update Timing
-    // The engine prepares the latest expedition log while state.explore is still
-    // animating. Keep the headline floor/outcome pinned to the last disclosed
-    // log until exploration finishes so the first row does not spoil the result.
-    setDisclosedExpeditionLogs((previousLogs) => {
-      let changed = previousLogs.length !== state.parties.length;
-      const nextLogs = state.parties.map((party, index) => {
-        const cycleState = partyCycles[index]?.state ?? 'idle';
-        if (cycleState === 'explore') return previousLogs[index] ?? null;
-        const nextLog = party.lastExpeditionLog ?? null;
-        if (previousLogs[index] !== nextLog) changed = true;
-        return nextLog;
-      });
-      return changed ? nextLogs : previousLogs;
-    });
-  }, [state.parties, partyCycles]);
   const [activeRingStatusBubble, setActiveRingStatusBubble] = useState<{
     key: string;
     text: string;
@@ -179,15 +157,6 @@ function ExpeditionTab({
     left: number;
     maxWidth: number;
   } | null>(null);
-
-  const getEstimatedStartHp = (entry: ExpeditionLogEntry) => {
-    if (typeof entry.startPartyHP === 'number') {
-      return Math.min(entry.maxPartyHP, Math.max(0, entry.startPartyHP));
-    }
-    const healAmount = Math.max(0, entry.healAmount ?? 0);
-    const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
-    return Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + entry.damageTaken + attritionAmount - healAmount));
-  };
 
   const handleEnemyBestiaryBubbleToggle = (
     bubbleKey: string,
@@ -315,10 +284,9 @@ function ExpeditionTab({
     try {
       const result = await onSimulateExpedition(partyIndex, (completed, total) => {
         if (simulationRequestIdByParty.current[partyIndex] !== requestId) return;
-        setSimulationByParty((current) => ({
-          ...current,
-          [partyIndex]: { status: 'running', completed, total },
-        }));
+        setSimulationByParty((current) => current[partyIndex]?.status === 'running'
+          ? { ...current, [partyIndex]: { status: 'running', completed, total } }
+          : current);
       });
       if (simulationRequestIdByParty.current[partyIndex] !== requestId) return;
       setSimulationByParty((current) => ({
@@ -383,7 +351,7 @@ function ExpeditionTab({
             }}
             role="tooltip"
           >
-            <div className="whitespace-nowrap text-xs leading-snug text-gray-700">
+            <div className="whitespace-pre-line text-xs leading-snug text-gray-700">
               {activeSimulationResultBubble.text}
             </div>
           </div>
@@ -423,13 +391,10 @@ function ExpeditionTab({
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
         const party = state.parties[partyIndex];
         if (!party) {
-          const lockedPartyUnlockTextByIndex: Partial<Record<number, string>> = {
-            1: t('home.party.locked.clearVarunSea'),
-            2: t('home.party.locked.clearFelidyDesert'),
-            3: t('home.party.locked.clearUrsanBlaze'),
-            4: t('home.party.locked.clearProcyonNest'),
-            5: t('home.party.locked.clearLeporianMoon'),
-          };
+          // Party slots 2-6 unlock by clearing dungeons 3-7.
+          const lockedPartyUnlockTextByIndex: Partial<Record<number, string>> = Object.fromEntries(
+            [1, 2, 3, 4, 5].map((index) => [index, t('home.party.locked.clearDungeon', { dungeon: t(`data.dungeons.${index + 2}.name`) })]),
+          );
           const lockedPartyHintVisibleRequirementByIndex: Partial<Record<number, number>> = {
             1: 2,
             2: 3,
@@ -447,112 +412,95 @@ function ExpeditionTab({
           return <div key={partyIndex} className="bg-pane rounded-lg p-2"><div className="text-xs text-gray-400">PT{partyIndex + 1}: {lockedPartyText}</div></div>;
         }
 
-        const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
+        const projectedParty = expeditionProjection?.parties.find((projected) => projected.partyNumber === party.id);
+        if (!projectedParty) return null;
+        const cycleState = expeditionStateName(projectedParty.state) as Parameters<typeof getPartyCycleStateLabel>[0];
+        const selectedDungeon = DUNGEONS.find(d => d.id === projectedParty.destination);
         // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
         const isDifficultyOffsetUnlocked = hasDefeatedDungeonBoss(party, party.selectedDungeonId);
         const difficultyOffsetMax = getDifficultyOffsetMax(selectedDungeon?.expLevel ?? 88);
         const selectedDifficultyOffset = isDifficultyOffsetUnlocked
-          ? normalizeDifficultyOffset(party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId] ?? party.expeditionDifficultyOffset, difficultyOffsetMax)
+          ? normalizeDifficultyOffset(projectedParty.difficultyOffset, difficultyOffsetMax)
           : 0;
         const difficultyItemChanceTickets = getDifficultyOffsetItemChanceTickets(selectedDifficultyOffset);
         const difficultySuperRareChanceTickets = getDifficultyOffsetSuperRareChanceTickets(selectedDifficultyOffset);
         const getDifficultyOffsetBubbleText = (offset: number) => t('home.expedition.difficultyOffsetBubble', { enemyLevel: formatNumber(offset), itemChance: formatNumber(getDifficultyOffsetItemChanceTickets(offset)), superRareChance: formatNumber(getDifficultyOffsetSuperRareChanceTickets(offset)) });
-        const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
-        const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: progressNowMs, durationMs: 1000 };
-        const cycleElapsedMs = Math.max(0, progressNowMs - cycle.stateStartedAt);
-        const { partyStats } = computePartyStatus(party);
         const isLogExpanded = expandedLogParty === partyIndex;
-        const currentLog = party.lastExpeditionLog;
-        const disclosedLog = cycle.state === 'explore'
-          ? disclosedExpeditionLogs[partyIndex] ?? null
-          : currentLog;
+        const currentLog = expeditionLogViews.get(party.id) ?? null;
         const currentLogDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === currentLog?.dungeonId)?.expLevel;
         // SpecRef: 8.3 | UI_EXPEDITION | First row text / Update Timing
-        const headlineFloorName = (() => {
-          if (!disclosedLog) return selectedDungeon?.name ?? '-';
-          const latestEntry = disclosedLog.entries[disclosedLog.entries.length - 1];
-          if (!latestEntry?.floor) return disclosedLog.dungeonName;
-          return getLocalizedExpeditionFloorConcept(disclosedLog.dungeonId, latestEntry.floor)
-            ?? t('expedition.floor', { floor: formatNumber(latestEntry.floor) });
-        })();
-        const headlineState = disclosedLog
-          ? getExpeditionOutcomeLabel(disclosedLog.finalOutcome)
-          : getPartyCycleStateLabel(cycle.state);
+        const headlineFloorName = projectedParty.disclosedFloor === null
+          ? selectedDungeon?.name ?? '-'
+          : getLocalizedExpeditionFloorConcept(projectedParty.destination ?? 0, projectedParty.disclosedFloor)
+            ?? t('expedition.floor', { floor: formatNumber(projectedParty.disclosedFloor) });
+        const headlineState = projectedParty.disclosedOutcome
+          ? getExpeditionOutcomeLabel(projectedParty.disclosedOutcome)
+          : getPartyCycleStateLabel(cycleState);
         const conditionLabel = getConditionLabel(party.condition, true);
         const simulation = simulationByParty[partyIndex];
         // A locked Clear-Gate can turn a nominal "all" run back early, so use
         // the authoritative aggregate outcome instead of inferring the label
         // from the configured depth selector alone.
         const simulationUsesClearLabel = simulation?.result
-          ? simulation.result.Turned_Back === 0
-          : party.expeditionDepthLimit === 'all';
+          ? simulation.result.Return === 0
+          : projectedParty.depthLimit === 'all';
         const simulationResultText = simulation?.status === 'complete' && simulation.result
           ? t(simulationUsesClearLabel
             ? 'party.expedition.simulationResult.clear'
             : 'party.expedition.simulationResult.return', {
             success: formatDecimal((simulationUsesClearLabel
               ? simulation.result.Clear
-              : simulation.result.Turned_Back) / simulation.result.total * 100, 1),
-            draw: formatDecimal(simulation.result.Draw_Retreat / simulation.result.total * 100, 1),
-            retreat: formatDecimal(simulation.result.Wounded_Retreat / simulation.result.total * 100, 1),
+              : simulation.result.Return) / simulation.result.total * 100, 1),
+            draw: formatDecimal(simulation.result.Draw / simulation.result.total * 100, 1),
+            retreat: formatDecimal(simulation.result.Retreat / simulation.result.total * 100, 1),
             defeat: formatDecimal(simulation.result.Defeat / simulation.result.total * 100, 1),
           })
           : null;
+        const getSimulationRoomTooltip = (room: ExpeditionSimulationResult['rooms'][number]) => {
+          const percent = (value: number) => formatDecimal(value / room.total * 100, 1);
+          const coordinate = getExpeditionSimulationRoomCoordinate(room.room);
+          // A successful room has exactly one semantic outcome. Clear and Return
+          // are terminal forms of Victory, so retain their authoritative label
+          // instead of listing every successful counter in the tooltip.
+          const successfulOutcome = room.Clear > 0
+            ? { label: t('expedition.outcome.clear'), value: room.Clear }
+            : room.Return > 0
+              ? { label: t('expedition.outcome.return'), value: room.Return }
+              : { label: t('expedition.outcome.victory'), value: room.Victory };
+          return `${t('party.expedition.simulationRoomReached', {
+            room: formatNumber(room.room),
+            floor: formatNumber(coordinate.floor),
+            roomInFloor: formatNumber(coordinate.roomInFloor),
+            reached: formatNumber(room.reached),
+            total: formatNumber(room.total),
+            percent: percent(room.reached),
+          })}\n${t('party.expedition.simulationRoomBreakdown', {
+            successfulLabel: successfulOutcome.label,
+            successful: percent(successfulOutcome.value),
+            draw: percent(room.Draw),
+            retreat: percent(room.Retreat),
+            defeat: percent(room.Defeat),
+            notReached: percent(room.NotReached),
+          })}`;
+        };
 
-        const displayedEntries = (() => {
-          if (!currentLog) return [];
-          if (cycle.state !== 'explore') return currentLog.entries;
-          const visibleCount = getExplorationVisibleRoomCount(cycleElapsedMs, cycle.durationMs, currentLog.entries.length);
-          return currentLog.entries.slice(0, visibleCount);
-        })();
-
-        const displayedHp = (() => {
-          if (cycle.state !== 'explore' || !currentLog || currentLog.entries.length === 0) return party.currentHp;
-          if (displayedEntries.length === 0) return getEstimatedStartHp(currentLog.entries[0]);
-          return displayedEntries[displayedEntries.length - 1].remainingPartyHP;
-        })();
-        const hpPercent = Math.min(100, Math.round((displayedHp / Math.max(1, partyStats.hp)) * 100));
+        const displayedEntries = !currentLog ? [] : cycleState === 'explore'
+          ? currentLog.entries.slice(0, projectedParty.exploration?.revealedRoomCount ?? 0)
+          : currentLog.entries;
+        const displayedHp = projectedParty.currentHp;
+        const maximumHp = projectedParty.maximumHp;
+        const hpPercent = Math.min(100, Math.round((displayedHp / Math.max(1, maximumHp)) * 100));
         const normalizedCondition = Math.max(-400, Math.min(400, Math.floor(party.condition)));
         const conditionPercent = Math.min(100, Math.round((Math.abs(normalizedCondition) / 400) * 100));
         const isConditionPositive = normalizedCondition >= 0;
         const conditionRingStroke = isConditionPositive
           ? 'rgb(var(--color-sub) / 0.78)'
           : 'rgb(var(--color-accent) / 0.52)';
-        const sellProgressState = (() => {
-          if (cycle.state !== 'sell') return null;
-          const autoSellItems = party.lastExpeditionLog?.autoSellItems ?? [];
-          const sellStepCount = getAutoSellStepCount(party);
-          const rawSellProgress = Math.min(1, cycleElapsedMs / Math.max(1, cycle.durationMs));
-          const completedSteps = Math.min(sellStepCount, Math.floor(rawSellProgress * sellStepCount));
-          const activeStep = Math.max(0, Math.min(sellStepCount - 1, completedSteps));
-          const activeItem = autoSellItems[Math.min(activeStep, Math.max(0, autoSellItems.length - 1))];
-          return {
-            percent: (completedSteps / sellStepCount) * 100,
-            completedSteps,
-            activeStep,
-            activeItem,
-          };
-        })();
-
         const progressPercent = afkRecoveryProgressPercent ?? (() => {
-          // SpecRef: 5.1 | PROGRESS | Step Progress behavior by state
-          if (cycle.state === 'idle') return 100;
-          if (cycle.state === 'reactivate') return 100;
-          if (cycle.state === 'explore') {
-            return (Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length) / EXPLORING_PROGRESS_TOTAL_STEPS) * 100;
-          }
-          if (cycle.state === 'rest') {
-            const totalSteps = Math.max(1, cycle.restInitialTotalSteps ?? 1);
-            const healPerStep = Math.max(REST_HEAL_MIN_HP, Math.ceil(partyStats.hp * REST_HEAL_MAX_HP_RATIO));
-            const missingHp = Math.max(0, partyStats.hp - party.currentHp);
-            const remainingSteps = missingHp <= 0 ? 0 : Math.ceil(missingHp / healPerStep);
-            const completedSteps = Math.max(0, Math.min(totalSteps, totalSteps - remainingSteps));
-            return (completedSteps / totalSteps) * 100;
-          }
-          if (sellProgressState !== null) {
-            return sellProgressState.percent;
-          }
-          return Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
+          const progress = projectedParty.progress;
+          if (!progress) return 100;
+          if (progress.kind !== 'continuous' || !projectedParty.stateStartedAt || !projectedParty.stateDurationMs) return progress.mainPercent;
+          return Math.min(100, Math.max(0, (progressNowMs - Date.parse(projectedParty.stateStartedAt)) / projectedParty.stateDurationMs * 100));
         })();
         const normalizedProgressPercent = Number.isFinite(progressPercent)
           ? Math.max(0, Math.min(100, progressPercent))
@@ -562,17 +510,11 @@ function ExpeditionTab({
           : normalizedProgressPercent;
         // SpecRef: 8.3 | UI_EXPEDITION | Sub progress bar
         const subProgressPercent = (() => {
-          if (!STEP_BASED_STATES.has(cycle.state)) return null;
-          const totalStepCount = cycle.state === 'rest'
-            ? Math.max(1, cycle.restInitialTotalSteps ?? 1)
-            : cycle.state === 'sell'
-            ? getAutoSellStepCount(party)
-            : Math.max(1, currentLog?.entries.length ?? 1);
-          const stepDurationMs = cycle.state === 'rest'
-            ? Math.max(1, cycle.durationMs)
-            : Math.max(1, cycle.durationMs / totalStepCount);
-          const elapsedWithinStepMs = cycleElapsedMs % stepDurationMs;
-          return Math.min(100, (elapsedWithinStepMs / stepDurationMs) * 100);
+          const window = projectedParty.progress?.subProgress;
+          if (!window) return null;
+          const startedAt = Date.parse(window.startedAt);
+          const endsAt = Date.parse(window.endsAt);
+          return Math.min(100, Math.max(0, (progressNowMs - startedAt) / Math.max(1, endsAt - startedAt) * 100));
         })();
         const progressLabel = (() => {
           if (afkRecoveryProgressPercent !== null) {
@@ -584,51 +526,38 @@ function ExpeditionTab({
             return `${getPartyCycleStateLabel('reactivate')} ${percentText} (${formatNumber(completedSeconds)}/${formatNumber(totalSeconds)})`;
           }
           // SpecRef: 8.3 | UI_EXPEDITION | Party state progress bar
-          return getPartyCycleStateLabel(cycle.state);
+          return getPartyCycleStateLabel(cycleState);
         })();
-        const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
         // SpecRef: 8.3 | UI_EXPEDITION | Charge
-        const instantChargeState = getInstantExpeditionChargeState(
-          party,
-          progressNowMs,
-          getTimeSpeedScale(debugSettings),
-        );
-        const instantChargeDisplay = formatInstantExpeditionChargeDisplay(instantChargeState);
-        const instantChargeLabel = instantChargeDisplay.label;
-        const isInstantExpeditionStockEmpty = instantChargeState.stock <= 0;
-        const isColosseumSelected = selectedDungeon?.id === 99;
+        const projectedChargeSeconds = Math.max(0, projectedParty.chargeDuration - Math.floor(projectionElapsedMs / 1000));
+        const instantChargeCells = Array.from({ length: 6 }, (_, index) => index < projectedParty.chargeStock ? '▰' : '▱').join('');
+        const instantChargeTimerText = projectedParty.chargeStock >= 6 ? 'MAX' : formatNumber(Math.ceil(projectedChargeSeconds / 60));
+        const instantChargeLabel = `${instantChargeCells}${instantChargeTimerText}`;
         // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
-        const isPendingGodsBattleMove = cycle.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true;
-        const isPartyHpDepletedForSortie = hpForSortieCheck <= 0 || partyStats.hp <= 0;
-        const isSortieDisabled = !isColosseumSelected && (
-          !!selectedDungeonGate?.locked
-          || (isPartyHpDepletedForSortie && isInstantExpeditionStockEmpty)
-          || (cycle.state === 'explore' && isInstantExpeditionStockEmpty)
-        );
-        const canTriggerGodsBattle = cycle.state === 'explore'
-          ? cycle.isCurrentExpeditionGodsBattle === true
-          : isGodsBattleAvailable(party, party.selectedDungeonId);
-        const isGodsBattleButtonDisabled = isSortieDisabled || isPendingGodsBattleMove;
+        const isSortieDisabled = !projectedParty.controls.sortie.available;
+        const canTriggerGodsBattle = projectedParty.controls.godsBattle.available
+          || projectedParty.controls.godsBattle.unavailableReason !== 'gods_battle_unavailable';
+        const isGodsBattleButtonDisabled = !projectedParty.controls.godsBattle.available;
         const expeditionControlGridClass = canTriggerGodsBattle
           ? 'grid grid-cols-[2.75rem_minmax(0,1fr)_auto_auto_auto] items-center gap-2 text-sm text-gray-700'
           : 'grid grid-cols-[2.75rem_minmax(0,1fr)_auto_auto] items-center gap-2 text-sm text-gray-700';
         // SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
         // SpecRef: 8.3 | UI_EXPEDITION | Party Pane Visual State
-        const isGodsBattleInProgress = (
-          cycle.state === 'move'
-          || cycle.state === 'explore'
-        ) && cycle.isCurrentExpeditionGodsBattle === true;
+        const isGodsBattleInProgress = projectedParty.controls.godsBattle.unavailableReason === 'already_moving_to_gods_battle'
+          || (cycleState === 'explore' && currentLog?.entries.some((entry) => entry.godsBattle) === true);
         // SpecRef: 8.3 | UI_EXPEDITION | Progress Visual Update
-        const compactProgressItems = getCompactProgressItems(
-          party,
-          getTimeSpeedScale(debugSettings),
-          progressNowMs,
-          cycle.state,
+        const compactProgressItems = getProjectedCompactProgressItems(
+          projectedParty.destination,
+          projectedParty.clearGates,
+          projectedParty.sideQuest && {
+            ...projectedParty.sideQuest,
+            remainingMs: Math.max(0, projectedParty.sideQuest.remainingMs - projectionElapsedMs),
+          },
         );
-        const displayedExpeditionStats = getDisplayedExpeditionStats(party, cycle.state);
-        const partyPaneExpeditionId = cycle.state === 'explore'
+        const displayedExpeditionStats = getDisplayedExpeditionStats(party, cycleState);
+        const partyPaneExpeditionId = cycleState === 'explore'
           ? currentLog?.dungeonId
-          : party.selectedDungeonId;
+          : projectedParty.destination;
         const expeditionPaneBackgroundImageById: Record<number, string> = {
           1: 'Caninian-Plains.png',
           2: 'Lupinian-Taiga.png',
@@ -705,12 +634,12 @@ function ExpeditionTab({
                     event.stopPropagation();
                     handleRingStatusBubbleToggle(
                       `${party.id}:ring-status`,
-                      `HP ${formatNumber(displayedHp)} / ${formatNumber(partyStats.hp)}\n${conditionLabel}`,
+                      `HP ${formatNumber(displayedHp)} / ${formatNumber(maximumHp)}\n${conditionLabel}`,
                       event.currentTarget,
                     );
                   }}
                   aria-label={`HP ${hpPercent}%, condition ${conditionPercent}%`}
-                  title={`HP ${formatNumber(displayedHp)} / ${formatNumber(partyStats.hp)} ${conditionLabel}`}
+                  title={`HP ${formatNumber(displayedHp)} / ${formatNumber(maximumHp)} ${conditionLabel}`}
                 >
                   <svg
                     viewBox="0 0 36 36"
@@ -763,7 +692,7 @@ function ExpeditionTab({
                 <span className="min-w-0 flex-1 space-y-0 text-left">
                   <span className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-start gap-1.5 text-sm">
                     <span className={`min-w-0 truncate ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
-                      <span className="font-bold shrink-0 mr-1">{party.name}</span>
+                      <span className="font-bold shrink-0 mr-1">{projectedParty.name}</span>
                       {headlineFloorName}
                     </span>
                     <span
@@ -771,7 +700,7 @@ function ExpeditionTab({
                       title="Instant Expedition Charge"
                       aria-label={`Instant Expedition Charge ${instantChargeLabel}`}
                     >
-                      <span>{instantChargeDisplay.cells}</span><i>{instantChargeDisplay.timerText}</i>
+                      <span>{instantChargeCells}</span><i>{instantChargeTimerText}</i>
                     </span>
                     <span className="shrink-0 flex items-center gap-1.5">
                       <span className="font-medium text-gray-700 shrink-0">{headlineState}</span>
@@ -821,7 +750,7 @@ function ExpeditionTab({
               </span>
               <span className={`mt-0.5 block relative h-5 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
                 <span
-                  className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
+                  className={`absolute inset-y-0 left-0 bg-sub/20 ${cycleState === 'explore' ? '' : 'transition-[width] duration-200'}`}
                   style={{ width: `${visualProgressPercent}%`, transition: 'width 100ms linear' }}
                 />
                 <span className={`relative z-10 flex h-full items-center justify-center px-1.5 text-center leading-tight ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
@@ -850,14 +779,14 @@ function ExpeditionTab({
                     type="button"
                     onClick={() => onToggleExpeditionDestinationMode(
                       partyIndex,
-                      party.expeditionDestinationMode === 'auto' ? 'fixed' : 'auto',
+                      projectedParty.destinationMode === 'auto' ? 'fixed' : 'auto',
                     )}
                     className="w-11 px-1 py-1 text-xs font-medium whitespace-nowrap text-center"
                   >
-                    {party.expeditionDestinationMode === 'auto' ? t('party.expedition.mode.auto') : t('party.expedition.mode.fixed')}
+                    {projectedParty.destinationMode === 'auto' ? t('party.expedition.mode.auto') : t('party.expedition.mode.fixed')}
                   </button>
                   <select
-                    value={party.selectedDungeonId}
+                    value={projectedParty.destination ?? ''}
                     onChange={(e) => {
                       clearPartySimulation(partyIndex);
                       onSelectDungeon(partyIndex, Number(e.target.value));
@@ -872,14 +801,14 @@ function ExpeditionTab({
                     })}
                   </select>
                   <select
-                    value={party.expeditionDepthLimit}
+                    value={projectedParty.depthLimit}
                     onChange={(e) => {
                       clearPartySimulation(partyIndex);
                       onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit);
                     }}
                     className="w-20 sm:w-24 border border-gray-300 rounded px-2 py-1 text-sm"
                   >
-                    {getExpeditionDepthOptions(party.selectedDungeonId).map((option) => (
+                    {getExpeditionDepthOptions(projectedParty.destination ?? 0).map((option) => (
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
@@ -976,10 +905,7 @@ function ExpeditionTab({
                   </button>
                   <span className="min-w-0 text-right tabular-nums">
                     {simulation?.status === 'running'
-                      ? t('party.expedition.simulationRunning', {
-                        completed: formatNumber(simulation.completed),
-                        total: formatNumber(simulation.total),
-                      })
+                      ? `${t('party.expedition.simulationRunning')} ${simulation.completed}/${simulation.total}`
                       : simulationResultText
                       ?? (simulation?.status === 'error'
                       ? t('party.expedition.simulationError')
@@ -987,67 +913,77 @@ function ExpeditionTab({
                   </span>
                 </div>
                 {simulation?.status === 'complete' && simulation.result && simulationResultText ? (
-                  <button
-                    type="button"
-                    className="block h-3 w-full overflow-visible rounded-full bg-gray-200/70 focus:outline-none focus:ring-2 focus:ring-sub/60 focus:ring-offset-1"
-                    aria-label={simulationResultText}
-                    title={simulationResultText}
-                    onPointerDown={(event) => event.stopPropagation()}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      const key = `simulation:${partyIndex}`;
-                      if (activeSimulationResultBubble?.key === key) {
-                        setActiveSimulationResultBubble(null);
-                        return;
-                      }
-                      const rect = event.currentTarget.getBoundingClientRect();
-                      const viewportPadding = 12;
-                      const maxWidth = Math.min(420, window.innerWidth - viewportPadding * 2);
-                      setActiveSimulationResultBubble({
-                        key,
-                        text: simulationResultText,
-                        top: rect.top - 8,
-                        left: Math.min(Math.max(rect.left, viewportPadding), window.innerWidth - viewportPadding - maxWidth),
-                        maxWidth,
-                      });
-                    }}
-                  >
-                    <span className="flex h-full w-full overflow-hidden rounded-full" aria-hidden="true">
-                      <span
-                        className="h-full"
-                        style={{
-                          width: `${((simulationUsesClearLabel ? simulation.result.Clear : simulation.result.Turned_Back) / simulation.result.total) * 100}%`,
-                          backgroundColor: 'var(--outcome-success)',
-                        }}
-                      />
-                      <span
-                        className="h-full"
-                        style={{
-                          width: `${(simulation.result.Draw_Retreat / simulation.result.total) * 100}%`,
-                          backgroundColor: 'var(--outcome-draw)',
-                        }}
-                      />
-                      <span
-                        className="h-full"
-                        style={{
-                          width: `${(simulation.result.Wounded_Retreat / simulation.result.total) * 100}%`,
-                          backgroundColor: 'var(--outcome-retreat)',
-                        }}
-                      />
-                      <span
-                        className="h-full"
-                        style={{
-                          width: `${(simulation.result.Defeat / simulation.result.total) * 100}%`,
-                          backgroundColor: 'var(--outcome-defeat)',
-                        }}
-                      />
-                    </span>
-                  </button>
+                  <div className="relative pt-1" aria-label={t('party.expedition.simulationGraph')}>
+                    <div className="relative h-28 border-b border-l border-gray-400/60">
+                      <div className="pointer-events-none absolute inset-x-0 top-1/4 border-t border-dashed border-gray-300/70" />
+                      <div className="pointer-events-none absolute inset-x-0 top-1/2 border-t border-dashed border-gray-300/70" />
+                      <div className="pointer-events-none absolute inset-x-0 top-3/4 border-t border-dashed border-gray-300/70" />
+                      <div className="flex h-full items-end gap-px px-0.5">
+                        {simulation.result.rooms.map((room) => {
+                          const tooltip = getSimulationRoomTooltip(room);
+                          const key = `simulation:${partyIndex}:room:${room.room}`;
+                          const showTooltip = (target: HTMLElement) => {
+                            const rect = target.getBoundingClientRect();
+                            const viewportPadding = 12;
+                            const maxWidth = Math.min(520, window.innerWidth - viewportPadding * 2);
+                            setActiveSimulationResultBubble({
+                              key,
+                              text: tooltip,
+                              top: rect.top - 8,
+                              left: Math.min(Math.max(rect.left, viewportPadding), window.innerWidth - viewportPadding - maxWidth),
+                              maxWidth,
+                            });
+                          };
+                          const segments = [
+                            [room.successfulHp.Full, 'rgb(var(--color-sub))'],
+                            [room.successfulHp.From90, 'color-mix(in srgb, rgb(var(--color-sub)) 88%, white)'],
+                            [room.successfulHp.From80, 'color-mix(in srgb, rgb(var(--color-sub)) 84%, white)'],
+                            [room.successfulHp.From70, 'color-mix(in srgb, rgb(var(--color-sub)) 80%, white)'],
+                            [room.successfulHp.From60, 'color-mix(in srgb, rgb(var(--color-sub)) 76%, white)'],
+                            [room.successfulHp.From50, 'color-mix(in srgb, rgb(var(--color-sub)) 72%, white)'],
+                            [room.successfulHp.From40, 'color-mix(in srgb, rgb(var(--color-sub)) 68%, white)'],
+                            [room.successfulHp.Below40, 'color-mix(in srgb, rgb(var(--color-sub)) 64%, white)'],
+                            [room.Draw, 'color-mix(in srgb, color-mix(in srgb, rgb(var(--color-sub)) 50%, rgb(var(--color-accent))) 60%, white)'],
+                            [room.retreatHp.From30, 'color-mix(in srgb, rgb(var(--color-accent)) 65%, white)'],
+                            [room.retreatHp.From20, 'color-mix(in srgb, rgb(var(--color-accent)) 70%, white)'],
+                            [room.retreatHp.From10, 'color-mix(in srgb, rgb(var(--color-accent)) 75%, white)'],
+                            [room.retreatHp.Below10, 'color-mix(in srgb, rgb(var(--color-accent)) 80%, white)'],
+                            [room.Defeat, 'rgb(var(--color-accent))'],
+                            [room.NotReached, 'rgb(156 163 175 / 0.55)'],
+                          ] as const;
+                          return (
+                            <button
+                              key={room.room}
+                              type="button"
+                              className="group relative flex h-full min-w-0 flex-1 flex-col-reverse overflow-hidden rounded-t-sm focus:z-10 focus:outline-none focus:ring-2 focus:ring-sub/70"
+                              aria-label={tooltip.replace('\n', '. ')}
+                              onPointerDown={(event) => event.stopPropagation()}
+                              onMouseEnter={(event) => showTooltip(event.currentTarget)}
+                              onMouseLeave={() => setActiveSimulationResultBubble((current) => current?.key === key ? null : current)}
+                              onFocus={(event) => showTooltip(event.currentTarget)}
+                              onBlur={() => setActiveSimulationResultBubble((current) => current?.key === key ? null : current)}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                showTooltip(event.currentTarget);
+                              }}
+                            >
+                              {segments.map(([value, color], segmentIndex) => value > 0 ? (
+                                <span key={segmentIndex} className="w-full" style={{ height: `${value / room.total * 100}%`, backgroundColor: color }} />
+                              ) : null)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="flex h-5 items-start gap-px px-0.5 text-center text-[8px] leading-4 text-gray-500" aria-hidden="true">
+                      {simulation.result.rooms.map((room) => <span key={room.room} className="min-w-0 flex-1">{getExpeditionSimulationXAxisLabel(room.room)}</span>)}
+                    </div>
+                  </div>
                 ) : null}
                 {isExpeditionStatsDisplayEnabled && (
                   <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
                     <span>
-                      {t('party.expedition.stats', { clear: formatNumber(displayedExpeditionStats.Clear), returned: formatNumber(displayedExpeditionStats.Turned_Back), draw: formatNumber(displayedExpeditionStats.Draw_Retreat), retreat: formatNumber(displayedExpeditionStats.Wounded_Retreat), defeat: formatNumber(displayedExpeditionStats.Defeat), total: formatNumber(displayedExpeditionStats.Clear + displayedExpeditionStats.Turned_Back + displayedExpeditionStats.Draw_Retreat + displayedExpeditionStats.Wounded_Retreat + displayedExpeditionStats.Defeat) })}
+                      {t('party.expedition.stats', { clear: formatNumber(displayedExpeditionStats.Clear), returned: formatNumber(displayedExpeditionStats.Return), draw: formatNumber(displayedExpeditionStats.Draw), retreat: formatNumber(displayedExpeditionStats.Retreat), defeat: formatNumber(displayedExpeditionStats.Defeat), total: formatNumber(displayedExpeditionStats.Clear + displayedExpeditionStats.Return + displayedExpeditionStats.Draw + displayedExpeditionStats.Retreat + displayedExpeditionStats.Defeat) })}
                     </span>
                     <button
                       type="button"
@@ -1064,14 +1000,14 @@ function ExpeditionTab({
             {currentLog && isLogExpanded && (
               <div className="mx-1 border-t border-gray-200 pt-3">
                 <div className="space-y-2">
-                  {cycle.state !== 'explore' && (currentLog.totalExperience > 0 || currentLog.autoSellProfit > 0) && (
+                  {cycleState !== 'explore' && (currentLog.totalExperience > 0 || currentLog.autoSellProfit > 0) && (
                     <div className="text-sm text-gray-500">
                       EXP: +{formatNumber(currentLog.totalExperience)}
                       {currentLog.autoSellProfit > 0 && <span> | {formatAutoSellSummary(currentLog.autoSellProfit, currentLog.autoSellMultiplier)}</span>}
                     </div>
                   )}
 
-                  {cycle.state !== 'explore' && currentLog.rewards.length > 0 && (
+                  {cycleState !== 'explore' && currentLog.rewards.length > 0 && (
                     <div className="text-sm">
                       <span className="text-gray-500">{t('home.battle.acquiredItemsLabel')} </span>
                       {currentLog.rewards.map((item, i) => {
@@ -1101,7 +1037,7 @@ function ExpeditionTab({
                       const originalIndex = arr.length - 1 - i;
                       const latestVisibleRoomIndex = displayedEntries.length - 1;
                       const latestBattleRoomIndex = displayedEntries.reduce((lastBattleIndex, candidateEntry, candidateIndex) => {
-                        return candidateEntry.details && candidateEntry.details.length > 0
+                        return hasDiaryBattle(candidateEntry)
                           ? candidateIndex
                           : lastBattleIndex;
                       }, -1);
@@ -1128,7 +1064,7 @@ function ExpeditionTab({
                       const enemyRemainingRatio = entry.enemyHP > 0 ? (enemyRemainingAmount / entry.enemyHP) * 100 : 0;
                       const isManualExpandedRoom = expandedRoom?.partyIndex === partyIndex && expandedRoom?.latestRoomToken === latestRoomToken && expandedRoom?.roomIndex === originalIndex;
                       const hasManualSelectionForParty = expandedRoom?.partyIndex === partyIndex && expandedRoom?.latestRoomToken === latestRoomToken;
-                      const canExpandRoom = !!entry.details && entry.details.length > 0;
+                      const canExpandRoom = hasDiaryBattle(entry);
                       const isRoomExpanded = canExpandRoom && (isManualExpandedRoom || (!hasManualSelectionForParty && originalIndex === defaultExpandedRoomIndex));
 
                       return (
@@ -1240,15 +1176,15 @@ function ExpeditionTab({
                               )}
                               <div className="relative z-10">
                               <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getLocalizedExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? t('expedition.floor', { floor: formatNumber(entry.floor) })) : '-'} ${t('battleLog.title')}`}</div>
-                              {aggregateBattleLifeDrainLogs(entry.details).map((log, j, battleLogs) => {
-                                const isResurrectLog = log.note?.startsWith('(再起') || log.note?.startsWith('(即時蘇生)');
+                              {aggregateBattleLifeDrainLogs(renderDiaryBattle(entry, party.characters)).map((log, j, battleLogs) => {
+                                const isResurrectLog = log.semanticPresentation ? log.isResurrection : log.note?.startsWith('(再起') || log.note?.startsWith('(即時蘇生)');
                                 const isTriggeredLog = log.actor === 'triggered';
                                 const isPhaseAction = log.actor !== 'deity' && log.actor !== 'effect';
                                 const previousLog = j > 0 ? battleLogs[j - 1] : undefined;
-                                const isStealthEffectLog = log.actor === 'effect' && (log.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || log.action.includes('への攻撃はすべて幻だった！'));
-                                const isCounterNegationEffectLog = log.actor === 'effect' && log.action.includes('反撃無効化により');
-                                const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
-                                const previousWasCounterNegationEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('反撃無効化により');
+                                const isStealthEffectLog = diaryBattleFlags(log).stealth;
+                                const isCounterNegationEffectLog = diaryBattleFlags(log).counterNegated;
+                                const previousWasStealthEffectLog = diaryBattleFlags(previousLog).stealth;
+                                const previousWasCounterNegationEffectLog = diaryBattleFlags(previousLog).counterNegated;
                                 const previousWasInPhaseEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.phase === 'combat');
                                 const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');
                                 const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog || previousWasCounterNegationEffectLog || previousWasInPhaseEffectLog);
@@ -1300,7 +1236,9 @@ function ExpeditionTab({
                                   : '';
 
                                 let actionText: string;
-                                if (log.actor === 'effect' || log.actor === 'triggered') {
+                                if (log.semanticPresentation) {
+                                  actionText = semanticBattleAction(log);
+                                } else if (log.actor === 'effect' || log.actor === 'triggered') {
                                   actionText = log.action;
                                 } else if (isEnemy) {
                                   if (isResurrectLog) {
@@ -1397,7 +1335,7 @@ function ExpeditionTab({
                         </div>
                       );
                     })}
-                    {cycle.state === 'explore' && displayedEntries.length === 0 && (
+                    {cycleState === 'explore' && displayedEntries.length === 0 && (
                       <div className="text-xs text-gray-500">{t('expedition.exploringLogUpdate')}</div>
                     )}
                   </div>

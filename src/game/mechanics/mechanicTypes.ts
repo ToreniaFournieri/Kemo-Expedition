@@ -35,8 +35,7 @@ export interface CoreAbilityMechanicDefinition extends CoreMechanicDefinitionBas
   readonly maxLevel: number;
   readonly timing?: MechanicTiming;
   readonly presentation: {
-    readonly nameKey: string;
-    readonly labelKey?: string;
+    readonly labelKey: string;
     readonly descriptionKey: string;
   };
 }

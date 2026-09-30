@@ -89,7 +89,8 @@ test('completed presentation plan assembles the log and preserves trigger preced
   assert.equal(result.log.totalExperience, 25);
   assert.equal(result.log.remainingPartyHP, 490);
   assert.equal(result.log.autoSellItems[0]?.autoSellProfit, 75);
-  assert.ok(result.log.autoSellItems[0]?.itemName.length);
+  assert.equal(result.log.autoSellItems[0]?.itemName, '');
+  assert.ok(result.log.autoSellItems[0]?.item?.id);
   assert.equal(result.log.autoSellMultiplier, 1.5);
   assert.deepEqual(result.diaryTriggers, ['victory', 'godsBattle', 'superRare']);
   assert.equal(result.shouldRetainCompleteNarration, true);

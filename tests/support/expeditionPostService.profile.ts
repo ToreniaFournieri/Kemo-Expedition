@@ -32,6 +32,7 @@ test('post-service coordinator returns finalization and room presentation withou
     autoSoldItems: [],
     autoSellProfit: 25,
     endedWithDrawRetreat: false,
+    deepestClearedPosition: 0,
   };
   const serviceResult: ExpeditionServiceResult<ExpeditionRewardPresentation> = {
     transaction,

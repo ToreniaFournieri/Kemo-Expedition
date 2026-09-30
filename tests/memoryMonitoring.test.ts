@@ -127,7 +127,7 @@ test('desktop bridge is read-only and image probes release handlers and sources'
   const partyTab = readFileSync(new URL('../src/components/home/tabs/PartyTab.tsx', import.meta.url), 'utf8');
   const shared = readFileSync(new URL('../src/components/home/homeShared.tsx', import.meta.url), 'utf8');
   const diagnostics = readFileSync(new URL('../src/components/MemoryDiagnostics.tsx', import.meta.url), 'utf8');
-  const locales = ['en', 'ja', 'zh-CN', 'zh-TW'].map((locale) => readFileSync(new URL(`../src/i18n/${locale}.ts`, import.meta.url), 'utf8'));
+  const locales = ['en', 'ja', 'zh-CN', 'zh-TW', 'ko'].map((locale) => readFileSync(new URL(`../src/i18n/${locale}.ts`, import.meta.url), 'utf8'));
   assert.match(preload, /getMemoryMetrics: \(\) => ipcRenderer\.invoke\('desktop:get-memory-metrics'\)/);
   assert.match(main, /ipcMain\.handle\('desktop:get-memory-metrics'/);
   assert.match(main, /normalizeAppMemoryMetrics\(app\.getAppMetrics\(\), processId\)/);

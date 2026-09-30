@@ -1,12 +1,27 @@
 ## 8. UI
 
 ### 8.4 UI_BASE
+
+- **GUI:**
+  - `guiBase`
+- **API Read:**
+  - `read/observation/base`
+  
+
 - Base(拠点)
 - It has tabs inside Base tab. Shop(お店), Inventory(所持品),Ashen Route Vault(灰路の蔵) , Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
   - Default: Shop
   - not available for Workshop(工房), in this version. (Gray out)
 	
 #### 8.4.1 Shop (お店)
+- **GUI:**
+  - `guiShop`
+- **API Read:**
+  - `read/base/shopInfo`
+  - `read/base/shopItemsList`
+- **API Commit:**
+  - `commit/base/purchaseShopItems`
+  - `commit/base/paidShopRefresh`
 
 - **Function:** Sells items.
 - **Shop name:** フェリスのガラクタ屋 (Felis’s Junk Shop)
@@ -20,12 +35,15 @@
 - **Column 3:** 有償洗替 X,XXXG
 
 **Dialogue by intimacy**
-| Intimacy | Dialogue |
-|--------|----------|
-| 0–19 | 「ひょっとしたらいいお宝が眠ってるかもしれないよ？……おっと、獲物には触らんといてな。」 |
-| 20–39 | 「お、また来たのかい。うちのガラクタも、見ていくうちに味が出てくるもんさ。」 |
-| 40–79 | 「やぁ。奥の棚も見ていいよ。運が良けりゃ掘り出し物があるかもな。」 |
-| 80–99 | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
+| Intimacy | Dialogue | memo　|
+|--------|----------|-----|
+| 0–19 | 「ひょっとしたらいいお宝が眠ってるかもしれないよ？……おっと、獲物には触らんといてな。」 | |
+| 20–39 | 「お、また来たのかい。うちのガラクタも、見ていくうちに味が出てくるもんさ。」 | |
+| 40–79 | 「やぁ。奥の棚も見ていいよ。運が良けりゃ掘り出し物があるかもな。」 | |
+| 80–99 | 「来たな。あんたが好きそうな品、いくつか取っといたよ。見るかい。」 | |
+| 100–119 | 「宰相ヴァルターの野郎を成敗してくれてありがとよ。お陰で安全にレポリアンの月宮に通えるようになったよ。」 | レポリアンの月宮(data.dungeons.7.name), 宰相ヴァルター(masterData.enemyName.351) |
+| 120–139 | 「調子はどうだい？ マーレ、また次の逸品がどこに眠ってるか占ってくれない？」 | マーレ(character.default.n12) |
+| 140–Cap | 「やあフィン。遅かったね。いいもん揃えたぜ。」 | フィン(character.default.n11) |
 
 **Paid Refresh (有償洗替):**  
   - **Cost:** `200G × 2 ^ (refresh_count - 1)`  
@@ -36,17 +54,24 @@
 
 
 **Lineup**
-- **Lineup:** 5 items from Tier 1 to Tier X (**up to the highest tier whose boss the player has defeated**).
+- **Identified Lineup:**
+  -  2 items from Tier 1 to Tier X (**up to the highest tier whose boss the player has defeated**).
+
+- **Unidentified Lineup:**
+  -  5 items from Tier 1 to Tier X (**up to the highest tier whose boss the player has defeated**).
 - Boss completion must be read from the defeated-boss expedition record. Tier X is the defeated dungeon's item `tier`, not its dungeon ID.
-- Each slot must select from the generated item master entries that match its rolled tier and required rarity. The lineup must always render all 5 slots for every valid progression state.
+- Each slot must select from the generated item master entries that match its rolled tier and required rarity. The lineup must always render all 7 slots for every valid progression state.
 - Each lineup slot is treated as an individual stock entry; if the same base item appears in multiple slots, buying one slot must not sell out the other slot.
 
-| Intimacy | Lineup |
-|---|---|
-| 0–19 | 5 Common |
-| 20–39 | 1 Uncommon, 4 Common |
-| 40–79 | 1 Elite rare, 2 Uncommon, 2 Common |
-| 80–99 | 1 Boss rare, 2 Elite rare, 2 Uncommon |
+| Intimacy | Identified Lineup  | Unidentified Lineup  |
+|---|---|---|
+| 0–19 | 1 Common | 6  Common |
+| 20–39 | 2 Common |  1 Uncommon, 4 Common |
+| 40–79 | 1 Uncommon, 1 Common | 1 Elite rare, 2 Uncommon, 2 Common |
+| 80–99 | 2 Uncommon  | 1 Boss rare, 2 Elite rare, 2 Uncommon |
+| 100–119 | 1 Elite rare, 1 Uncommon | 1 Boss rare, 3 Elite rare, 1 Uncommon |
+| 120–139 | 2 Elite rare | 2 Boss rare, 2 Elite rare, 1 Uncommon |
+| 140–Cap | 1 Boss rare, 1 Elite rare | 2 Boss rare, 3 Elite rare |
 
 **Display (rarity color)**
 - Common: non-bold  
@@ -54,12 +79,23 @@
 - Elite rare: Sub color (blue)  
 - Boss rare: Accent color (dark orange)
 
-**Mystery enhancement (same as item drop logic)**
-- When the player selects an item to buy, roll:
-  - Draw 1 ticket from `g.enhancement_bag`.  
-    - If the drawn ticket ID is `0`, redraw until the ticket ID is `>= 1`.
-  - Draw 1 ticket from `g.superRare_bag`.
-- The resulting enhancement/title is **hidden until purchased** (can become a Super Rare title item).
+
+**Enhancement (Same as item drop logic)**
+- Identified Lineup:
+  - Generate enhancement and Super Rare title when the lineup refreshes. Preserve the exact item and price until purchased or refreshed. Viewing, reloading, and purchasing never reroll it.
+    - Draw `1` ticket from PT1's `g.enhancement_bag`.  
+      - If the drawn ticket ID is `0` or `1`, redraw until a ticket with ID `>= 2` is obtained.
+    - Draw `10` ticket from PT1's `g.superRare_bag`.
+      - Use the ticket with the highest ID.
+  - The resulting enhancement/title is **Open**.
+- Unidentified Lineup:
+  - When the player selects an item to buy, roll:
+    - Draw `1` ticket from PT1's `g.enhancement_bag`.  
+      - If the drawn ticket ID is `0` or `1`, redraw until a ticket with ID `>= 2` is obtained.
+    - Draw `20` ticket from PT1's `g.superRare_bag`.
+      - Use the ticket with the highest ID.
+  - The resulting enhancement/title is **hidden until purchased** (can become a Super Rare title item).
+
 - **UI examples:** `?木の盾 100G`, `?木の胸当て 100G`
 - **Notification:** 「店から 名工の木の盾 を購入した！」
   - if it is auto-sell item: 「店から 名工の木の盾 を購入して失望した(自動売却)」and sold it automatically. 
@@ -73,11 +109,23 @@
   - `paid_refresh_count` resets to `0` at each refresh time.
   - Intimacy decays by **10% (multiplicative)** at each refresh time.
 
-- Intimacy cap
-  - Intimacy is capped at **99**.
+- **Intimacy Cap**
+  - Before Defeating: `x.expedition`= 7 Boss, Intimacy is capped at `99`.
+  - After Defeating: `x.expedition`= 7 Boss, the cap increases to `199`.
 
 
 #### 8.4.2 Inventory(所持品)
+- **GUI:**
+  - `guiInventory`
+- **API Read:**
+  - `read/base/searchItems`
+  - `read/base/jewelPriorityParty`
+- **API Commit:**
+  - `commit/base/changeJewelPriorityParty`
+  - `commit/base/sellInventoryItems`
+  - `commit/base/unlockSoldItems`
+  - `commit/base/markItemsAsSeen`
+
 - Behavior:
   - Notification pops up when acquiring a new item
   - Newly acquired items are shown in bold
@@ -129,6 +177,12 @@
   - Unlock button(解除): Changes item state from `s.sold` to `s.notown`
 
 #### 8.4.3 Ashen Route Vault(灰路の蔵)
+- **GUI:**
+  - `guiAshenRouteVault`
+- **API Read:**
+  - no api
+- **API Commit:**
+  - no api
 
 - **Function:** Item purchase (debug purpose only)
 - **Shop name:** カリエスの灰路の蔵 (Caelis' Ashen Route Vault)
@@ -152,6 +206,15 @@
           - "買う": Purchases 1 unit of the selected item.
 
 #### 8.4.5 Altar (祭壇)
+- **GUI:**
+  - `guiAltar`
+- **API Read:**
+  - `read/base/altarInfo`
+  - `read/base/enemyFormList`
+- **API Commit:**
+  - `commit/base/unlockForm`
+
+
 - The Altar allows players to spend **Prana** (プラーナ) to unlock individual enemy forms for Mimorian characters.
 - Display the player’s current Prana balance.
 

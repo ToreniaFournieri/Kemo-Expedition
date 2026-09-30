@@ -7,11 +7,12 @@ import {
   type ClearGateOutcome,
 } from '../clearGateCore.ts';
 
-export type RuntimeExpeditionOutcome = 'Clear' | 'Escape' | 'Defeat' | 'Retreat';
+export type RuntimeExpeditionOutcome = 'Clear' | 'Return' | 'Defeat' | 'Retreat';
 
 export interface ResolveExpeditionOutcomeInput {
   readonly finalOutcome: RuntimeExpeditionOutcome;
   readonly endedWithDrawRetreat: boolean;
+  readonly deepestClearedPosition: number;
   readonly isGodsBattle: boolean;
   readonly dungeonId: number;
   readonly recoveredItems: readonly Item[];
@@ -34,9 +35,9 @@ export function getCanonicalClearGateOutcome(
   endedWithDrawRetreat: boolean,
 ): ClearGateOutcome {
   if (finalOutcome === 'Clear') return 'Clear';
-  if (finalOutcome === 'Escape') return 'Turned_Back';
+  if (finalOutcome === 'Return') return 'Return';
   if (finalOutcome === 'Defeat') return 'Defeat';
-  return endedWithDrawRetreat ? 'Draw_Retreat' : 'Wounded_Retreat';
+  return endedWithDrawRetreat ? 'Draw' : 'Retreat';
 }
 
 export function resolveExpeditionOutcome(input: ResolveExpeditionOutcomeInput): ExpeditionOutcomeResult {
@@ -65,6 +66,7 @@ export function resolveExpeditionOutcome(input: ResolveExpeditionOutcomeInput): 
         },
         input.dungeonId,
         canonicalGateOutcome,
+        input.deepestClearedPosition,
       );
 
   const clearGateProgress = { ...gateOutcome.progress };

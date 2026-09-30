@@ -273,3 +273,39 @@ test('teardown rejects pending durability without unhandled rejections', async (
     process.off('unhandledRejection', listener);
   }
 });
+
+test('persistNowSync makes the newest state durable without the worker and supersedes older encodes', async () => {
+  const base = loadFixture();
+  const { coordinator, workers, writes, storage } = harness();
+  const olderDurable = coordinator.requestDurable(withGold(base, 41));
+  coordinator.requestOrdinary(withGold(base, 42));
+  const staleRequest = workers[0]!.requests[0]!;
+  const quitState = withGold(base, 43);
+  assert.equal(coordinator.persistNowSync(quitState), true);
+  // Written before returning, with no worker round-trip.
+  assert.equal(writes.length, 1);
+  assert.ok(writes[0]!.startsWith('kexp-df15:'));
+  assert.deepEqual(hydrateLogSegmentedSave(writes[0]!, storage, 'save'), serializeGameState(quitState));
+  assert.equal(workers[0]!.terminated, true);
+  // Waiters for superseded revisions resolve, and a late stale response is ignored.
+  await olderDurable;
+  workers[0]!.complete(staleRequest);
+  assert.equal(writes.length, 1);
+  assert.deepEqual(coordinator.getSnapshotForTesting(), { revision: 3, durableRevision: 3, inFlightRevision: null, pendingRevision: null, storageRetryRevision: null });
+  // Repeating the same durable state is a no-op.
+  assert.equal(coordinator.persistNowSync(quitState), true);
+  assert.equal(writes.length, 1);
+  coordinator.shutdown();
+});
+
+test('persistNowSync reports a failed write and keeps the state for retry', () => {
+  const base = loadFixture();
+  const { coordinator, writes, storage } = harness({ failWrites: 1 });
+  const quitState = withGold(base, 44);
+  assert.equal(coordinator.persistNowSync(quitState), false);
+  assert.equal(writes.length, 0);
+  coordinator.retry();
+  assert.equal(writes.length, 1);
+  assert.deepEqual(hydrateLogSegmentedSave(writes[0]!, storage, 'save'), serializeGameState(quitState));
+  coordinator.shutdown();
+});

@@ -1,9 +1,8 @@
 const { app, BrowserWindow, Menu, Notification, Tray, ipcMain, nativeImage, net, protocol, screen, shell } = require('electron');
-const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
-const { prepareAiPlay, writeAiPlayReport } = require('./ai-play.cjs');
-const { createExperimentalApi } = require('./experimental-api.cjs');
+const { createApiV1 } = require('./api-v1.cjs');
+const { createApiAccountStore } = require('./api-account-store.cjs');
 const { normalizeAppMemoryMetrics } = require('./memory-metrics.cjs');
 
 const APP_HOST = 'bokemo';
@@ -22,50 +21,49 @@ let mainWindow = null;
 let partyProgressWindow = null;
 let tray = null;
 let isQuitting = false;
-let isExperimentalApiShutdownComplete = false;
-let experimentalApiShutdownPromise = null;
+let isApiShutdownComplete = false;
+let apiShutdownPromise = null;
 let latestPartyProgressSnapshot = null;
-let experimentalApiRequestId = 0;
-let experimentalApiRendererReady = false;
-const experimentalApiPendingRequests = new Map();
-const buildNumber = Number.parseInt(fs.readFileSync(path.resolve(__dirname, '..', 'build_number.txt'), 'utf8').trim(), 10);
+let apiV1RequestId = 0;
+let apiV1RendererReady = false;
+const apiV1PendingRequests = new Map();
+const apiAccountStore = createApiAccountStore({ userDataPath: app.getPath('userData') });
 
-const aiPlay = prepareAiPlay({ argv: process.argv, userData: app.getPath('userData'), environment: desktopEnvironment,
-  version: app.getVersion(), build: buildNumber,
-  reportDirectory: app.isPackaged ? path.join(app.getPath('documents'), 'BoKemo', 'AI_play_report') : path.resolve(__dirname, '..', 'AI_play_report') });
-if (aiPlay) app.setPath('userData', aiPlay.profile);
+function apiV1RendererTimeoutMs(operation) {
+  if (operation === 'fundamental/status') return 15_000;
+  if (operation === 'fundamental/logIn') return 600_000;
+  return 120_000;
+}
 
-function invokeExperimentalApiRenderer(operation, payload) {
+function invokeApiV1Renderer(operation, payload) {
   return new Promise((resolve, reject) => {
     if (!mainWindow || mainWindow.isDestroyed() || mainWindow.webContents.isLoadingMainFrame()) {
       reject(new Error('Renderer unavailable'));
       return;
     }
-    if (!experimentalApiRendererReady) {
-      resolve({ status: 'loading', revision: null });
+    if (!apiV1RendererReady) {
+      reject(new Error('Renderer not ready'));
       return;
     }
-    const requestId = ++experimentalApiRequestId;
-    const timeout = operation === 'status' ? setTimeout(() => {
-      experimentalApiPendingRequests.delete(requestId);
+    const requestId = ++apiV1RequestId;
+    // Every request is bounded so a renderer that never answers cannot hang the client or pin the lease forever
+    // (the caller maps the rejection to 503 runtime_unavailable). logIn may run a long login catch-up.
+    const timeout = setTimeout(() => {
+      apiV1PendingRequests.delete(requestId);
       reject(new Error('Renderer request timed out'));
-    }, 15_000) : null;
-    experimentalApiPendingRequests.set(requestId, { resolve, reject, timeout });
-    mainWindow.webContents.send('desktop:experimental-api-request', { requestId, operation, payload });
+    }, apiV1RendererTimeoutMs(operation));
+    apiV1PendingRequests.set(requestId, { resolve, reject, timeout });
+    mainWindow.webContents.send('desktop:api-v1-request', { requestId, operation, payload });
   });
 }
 
-const experimentalApi = createExperimentalApi({
-  environment: desktopEnvironment,
-  version: app.getVersion(),
-  build: buildNumber,
-  invokeRenderer: invokeExperimentalApiRenderer,
-  aiPlayCapabilities: aiPlay ? { mode: aiPlay.mode, regulationVersion: aiPlay.regulationVersion, rulesId: aiPlay.rulesId, countedApiCallLimit: 20000 } : null,
-  onEvaluationFinished: async () => {
-    if (!aiPlay) return;
-    const result = await invokeExperimentalApiRenderer('evaluation-report', {});
-    return result.report ? writeAiPlayReport(aiPlay, result.report) : undefined;
-  },
+const apiV1 = createApiV1({
+  // SpecRef: 9.1.4.6 | Public cutover (Stage 9.7): every desktop build offers the API option; it stays off until the
+  // player enables it (8.6), and the listener binds only to loopback.
+  allowEnable: true,
+  allowedOrigin: APP_ORIGIN,
+  connectionDirectory: path.join(app.getPath('userData'), 'api'),
+  invokeApplication: invokeApiV1Renderer,
 });
 
 // SpecRef: 9.1 | Desktop distribution | stable application origin and profile
@@ -123,17 +121,24 @@ function createWindow(options = {}) {
       nodeIntegration: false,
       sandbox: true,
       preload: PRELOAD_PATH,
-      additionalArguments: aiPlay ? ['--bokemo-ai-play=' + JSON.stringify({ evaluationId: aiPlay.evaluationId, concept: aiPlay.concept, version: aiPlay.version, build: aiPlay.build, mode: aiPlay.mode, regulationVersion: aiPlay.regulationVersion, rulesId: aiPlay.rulesId, resume: aiPlay.resume })] : [],
+      additionalArguments: [],
       backgroundThrottling: false,
     },
   });
 
   mainWindow = window;
-  window.webContents.on('did-start-loading', () => { experimentalApiRendererReady = false; });
+  // Only a real main-frame document load loses the renderer. Same-document navigations (`history.replaceState`, e.g.
+  // the language URL parameter) also fire `did-start-loading`, but the page and its API bridge keep running.
+  window.webContents.on('did-start-navigation', (details) => {
+    if (!details.isMainFrame || details.isSameDocument) return;
+    apiV1RendererReady = false;
+    apiV1.releaseForRendererLoss();
+  });
   window.webContents.on('render-process-gone', () => {
-    experimentalApiRendererReady = false;
-    for (const pending of experimentalApiPendingRequests.values()) { clearTimeout(pending.timeout); pending.reject(new Error('Renderer stopped')); }
-    experimentalApiPendingRequests.clear();
+    apiV1RendererReady = false;
+    apiV1.releaseForRendererLoss();
+    for (const pending of apiV1PendingRequests.values()) { clearTimeout(pending.timeout); pending.reject(new Error('Renderer stopped')); }
+    apiV1PendingRequests.clear();
   });
 
   window.on('close', (event) => {
@@ -438,27 +443,52 @@ ipcMain.handle('desktop:select-party-from-pane', (_event, partyId) => {
   selectPartyInMainWindow(partyId);
   return true;
 });
-ipcMain.handle('desktop:get-experimental-api-settings', () => experimentalApi.getSettings());
-ipcMain.handle('desktop:set-experimental-api-enabled', async (_event, enabled) => (
-  enabled === true ? experimentalApi.enable() : experimentalApi.disable()
-));
-ipcMain.on('desktop:experimental-api-ready', (event) => {
-  if (event.sender === mainWindow?.webContents) experimentalApiRendererReady = true;
+// SpecRef: 8.6 | UI_SETTING | API option — only the game window may change the option or reveal the secret token.
+ipcMain.handle('desktop:get-api-v1-settings', () => apiV1.getSettings());
+ipcMain.handle('desktop:set-api-v1-enabled', async (event, enabled) => {
+  if (event.sender !== mainWindow?.webContents) throw new Error('invalid_request');
+  return enabled === true ? apiV1.enable() : apiV1.disable();
 });
-ipcMain.on('desktop:experimental-api-response', (_event, message) => {
+ipcMain.handle('desktop:set-api-v1-persist-secret-token', (event, persist) => {
+  if (event.sender !== mainWindow?.webContents) throw new Error('invalid_request');
+  return apiV1.setPersistSecretToken(persist === true);
+});
+ipcMain.handle('desktop:reveal-api-v1-secret-token', (event) => {
+  if (event.sender !== mainWindow?.webContents) throw new Error('invalid_request');
+  return apiV1.revealSecretToken();
+});
+ipcMain.handle('desktop:api-v1-popup-activity', (event) => {
+  if (event.sender !== mainWindow?.webContents) return;
+  apiV1.notifyPopupActivity();
+});
+ipcMain.handle('desktop:api-account-create', (event, identity, savePayload) => {
+  if (event.sender !== mainWindow?.webContents || typeof savePayload !== 'string') throw new Error('invalid_request');
+  if (identity?.environment !== desktopEnvironment) throw new Error('invalid_environment');
+  return apiAccountStore.create(identity, savePayload);
+});
+ipcMain.handle('desktop:api-account-load', (event, identity) => {
+  if (event.sender !== mainWindow?.webContents || identity?.environment !== desktopEnvironment) throw new Error('invalid_environment');
+  return apiAccountStore.load(identity);
+});
+ipcMain.handle('desktop:api-account-commit', (event, identity, savePayload, controlJson) => {
+  if (event.sender !== mainWindow?.webContents || typeof savePayload !== 'string' || typeof controlJson !== 'string' || !controlJson.startsWith('{')) throw new Error('invalid_request');
+  if (identity?.environment !== desktopEnvironment) throw new Error('invalid_environment');
+  apiAccountStore.commit(identity, savePayload, controlJson);
+  return true;
+});
+ipcMain.on('desktop:api-v1-ready', (event) => {
+  if (event.sender === mainWindow?.webContents) apiV1RendererReady = true;
+});
+ipcMain.on('desktop:api-v1-response', (_event, message) => {
   if (_event.sender !== mainWindow?.webContents || !message || !Number.isInteger(message.requestId)) return;
-  const pending = experimentalApiPendingRequests.get(message.requestId);
+  const pending = apiV1PendingRequests.get(message.requestId);
   if (!pending) return;
   clearTimeout(pending.timeout);
-  experimentalApiPendingRequests.delete(message.requestId);
+  apiV1PendingRequests.delete(message.requestId);
   pending.resolve(message.result);
 });
 
 app.whenReady().then(() => {
-  if (aiPlay) void experimentalApi.enable().then(settings => {
-    if (process.send) process.send({ type: 'ai-play-connection', endpoint: `http://${settings.host}:${settings.port}/experimental/v1`, token: settings.token,
-      evaluationId: aiPlay.evaluationId, mode: aiPlay.mode, version: aiPlay.version, build: aiPlay.build, regulationVersion: aiPlay.regulationVersion, rulesId: aiPlay.rulesId });
-  });
   // Serving the packaged Vite output through a standard, secure custom scheme gives
   // localStorage a stable origin while preserving relative assets and query strings.
   protocol.handle('app', (request) => {
@@ -474,6 +504,8 @@ app.whenReady().then(() => {
   createPartyProgressWindow();
   const shouldStartHidden = process.argv.includes(START_HIDDEN_ARG) && process.platform === 'darwin';
   createWindow({ show: !shouldStartHidden });
+  // SpecRef: 8.6 | UI_SETTING | API option — a remembered "on" starts the listener at launch without asking again.
+  void apiV1.restore().catch(() => console.error('api-v1: the API could not be started at launch'));
   app.on('activate', () => {
     showMainWindow();
   });
@@ -481,11 +513,11 @@ app.whenReady().then(() => {
 
 app.on('before-quit', (event) => {
   isQuitting = true;
-  if (isExperimentalApiShutdownComplete) return;
+  if (isApiShutdownComplete) return;
   event.preventDefault();
-  if (!experimentalApiShutdownPromise) {
-    experimentalApiShutdownPromise = experimentalApi.shutdown().finally(() => {
-      isExperimentalApiShutdownComplete = true;
+  if (!apiShutdownPromise) {
+    apiShutdownPromise = apiV1.shutdown().finally(() => {
+      isApiShutdownComplete = true;
       app.quit();
     });
   }

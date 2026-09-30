@@ -2,8 +2,9 @@ import { StrictMode, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { translate, type TranslationParams } from './i18n';
 import './partyProgressPane.css';
+import { DISPLAY_LOCALE } from './i18n/displayFormat';
 
-const NUMBER_FORMATTER = new Intl.NumberFormat('ja-JP');
+const NUMBER_FORMATTER = new Intl.NumberFormat(DISPLAY_LOCALE);
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -48,7 +49,7 @@ function PartyProgressPane() {
   const appTitle = text('app.title');
   const theme = snapshot?.theme ?? 'dark';
   const updatedTime = useMemo(() => snapshot
-    ? new Date(snapshot.updatedAt).toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })
+    ? new Date(snapshot.updatedAt).toLocaleTimeString(DISPLAY_LOCALE, { hour: '2-digit', minute: '2-digit', hour12: false })
     : '', [language, snapshot]);
 
   useEffect(() => {

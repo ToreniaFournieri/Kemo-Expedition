@@ -1,6 +1,6 @@
 import type { Character, DiaryLog, ExpeditionLog, GameState, InventoryRecord, Party, TerrainEffectKey } from '../types';
 import type { RuntimeGameMode } from './runtimeGameMode';
-import { DIARY_LOG_RETENTION_LIMIT } from './diary.ts';
+import { DIARY_LEGACY_LOG_LOAD_LIMIT } from './diary.ts';
 
 export const AFK_CHUNK_CYCLE_COUNT = 30;
 export type AfkWorkerSimulationStrategy = 'legacy' | 'optimized';
@@ -346,7 +346,7 @@ export function hydrateAfkPartyChunkResult(
   if (!result.partyHistory || !Array.isArray(result.partyHistory.diaryLogs)) {
     invalidAfkWorkerResult('missing partyHistory');
   }
-  if (result.partyHistory.diaryLogs.length > DIARY_LOG_RETENTION_LIMIT) {
+  if (result.partyHistory.diaryLogs.length > DIARY_LEGACY_LOG_LOAD_LIMIT) {
     invalidAfkWorkerResult('Diary retention limit exceeded');
   }
   const baseDiaryLogs = baseParty.diaryLogs ?? [];
@@ -621,7 +621,7 @@ export function hydrateAfkPartyChunkContinuationWorkerState(
     throw new Error('AFK continuation party identity mismatch');
   }
   if (!job.partyHistory || !Array.isArray(job.partyHistory.diaryLogs)
-    || job.partyHistory.diaryLogs.length > DIARY_LOG_RETENTION_LIMIT) {
+    || job.partyHistory.diaryLogs.length > DIARY_LEGACY_LOG_LOAD_LIMIT) {
     throw new Error('Invalid AFK continuation Diary transfer');
   }
   const retainedDiaryLogs = retainedParty.diaryLogs ?? [];

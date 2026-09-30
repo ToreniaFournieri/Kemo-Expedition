@@ -1,18 +1,28 @@
 ## 8. UI
 
 ### 8.5 UI_DIARY
+- **GUI:**
+  - `guiDiary`
+- **API Read:**
+  - `read/observation/diary`
+  - `read/diary/{p}/diarySetting`
+  - `read/diary/diaryEntry/{diaryEntryId}`
+- **API Commit:**
+  - `commit/diary/{p}/diarySetting`
+  - `commit/diary/diaryEntry/markAsRead`
+
 - The Diary has six subcategory tabs: PT1, PT2, PT3, PT4, PT5, PT6. (Default selected tab: `PT1`, or the last selected tab if previously selected.)
 - A Party tab becomes visible only when the corresponding Party is unlocked.
 - The selected tab is highlighted using the sub-theme color.
 - If only one Party is unlocked, the subcategory tabs are hidden.
 - Diary unread badges:
-  - The main Diary tab displays a red unread badge, showing up to 99 unread entries. (Display `99+` when the count is 99 or greater.)
-  - Each Party subcategory tab also displays its own red unread badge, showing up to 24 unread entries for that Party.
+  - The main Diary tab displays a red unread badge, showing up to 49 unread entries. (Display `49+` when the count is 49 or greater.)
+  - Each Party subcategory tab also displays its own red unread badge, showing up to 12 unread entries for that Party.
   - When the user leaves a Party subcategory tab, all entries in that tab are treated as read and its red badge is removed.
   - The main Diary badge reflects the total number of unread diary entries across all Party subcategories.
 - Each Party has its own independent Diary.
-- Each Party Diary keeps a maximum of 24 entries.
-- Existing Diary entries remain unchanged until a new entry is created for that Party. Creating an entry removes only the oldest entries needed to restore the 24-entry maximum; opening, loading, or saving the game must not remove entries.
+- Each Party Diary keeps a maximum of 12 entries.
+- Existing Diary entries remain until a new entry is created for that Party. Creating an entry removes only the oldest entries needed to restore the 12-entry maximum; opening, loading, or saving the game must not remove entries.
 - The diary is updated when any of the following events occur:
   - The party is defeated.
   - The party obtains a Boss Rare or Mythic Rare item.
@@ -74,3 +84,16 @@ line 2 gray text:     02/12 21:28
 line 1: [PT1] セイラン 再生の女神 敗北          ▼
 line 2 gray text: ケイナイアン平原     02/12 21:28
 ```
+
+### Compact language-neutral records
+- New expedition and Diary records use `compactVersion: 1`. Preserve all facts necessary for the existing UI; generate narration only for expanded rooms using the current language, without combat execution or random draws.
+- Legacy records have no compact discriminator. Preserve their original text and retention; do not infer missing semantics from prose.
+- Battle storage uses a versioned envelope with historical actor identities, only narration-required ability levels, terrain, a per-battle ability dictionary, and ordered numeric event tuples. Native ABI buffers, bags, seeds beyond existing replay metadata, and numerical combat profiles are not stored in this envelope.
+- The storage tuple is `[category, opcode, presenceMask, ...values]`. This sparse event-specific layout avoids unused placeholders. Category codes are terrain=0, effect=1, action=2, reaction=3, end=4. The permanent opcode and field tables are defined in `src/game/compactBattleLog.ts`; changing their meaning requires a new format version.
+- Presence bits refer, in order, to phase, actor kind, actor ID, target ID, ability reference, attack type, flags, timing, hits, attempts, reaction/subtype, value0, value1, value2, modifier mask, auxiliary value. Flavor rows inherit omitted fields from their immediately preceding source event; for ordinary rows, omitted phase means COMBAT (2), actor kind follows the referenced actor, and other omitted fields mean zero; ability reference zero and attack type zero mean none. Flavor facts retain the original selected family/variant and its association.
+- Stored actor values are one-based references into the room actor list; the decoded IDs reference recorded actors; zero means no individual target, not enemy. Enemy identity and party-wide effects are distinct from character identities. Damage element and attack type remain separate.
+- End events retain post-battle facts, rewards with exact enhancement/Super Rare/Jewel variants, and return reasons. Titles, side quests, unlocks and gates retain semantic arguments. User-provided historical names remain unchanged.
+- Segmented records retain manifest-last durability. Backups and loading accept mixed formats; unsupported compact versions or malformed records must fail through existing save-load protections, without overwriting the save.
+- Language changes must update new titles, metadata and expanded narration immediately after the selected dictionary is loaded. Do not persist rendered strings or retain an unbounded narration cache.
+
+- Persisted expedition envelopes pool historical actors and item variants in `actorTable` and `itemTable`. Rooms carry actor reference arrays and item uses carry `diaryItemRef`; loading restores the shared facts without narration.

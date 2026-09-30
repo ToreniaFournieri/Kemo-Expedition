@@ -37,7 +37,7 @@ export function installRecoveredExpeditionRewards(
   let gold = input.gold;
   const rewards: Item[] = [];
   const rewardNames: string[] = [];
-  const rewardLogEntries: Array<{ itemName: string; autoSellProfit?: number }> = [];
+  const rewardLogEntries: Array<{ itemName: string; item: Item; autoSellProfit?: number }> = [];
   const autoSoldItems: Array<{ item: Item; profit: number }> = [];
   let highestRewardRarity: ExpeditionRewardPresentation['highestRewardRarity'];
   let hasSuperRareReward = false;
@@ -56,6 +56,7 @@ export function installRecoveredExpeditionRewards(
     gold = result.gold;
     rewardLogEntries.push({
       itemName,
+      item,
       autoSellProfit: result.wasAutoSold ? result.autoSellProfit : undefined,
     });
 

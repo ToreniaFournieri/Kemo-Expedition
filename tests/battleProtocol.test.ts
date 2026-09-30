@@ -960,6 +960,86 @@ function combatTimedInput(overrides: Partial<BattleProtocolInput> = {}): BattleP
   return { ...combatReactiveInput(), engineFlags: BATTLE_ENGINE_FLAG_COMBAT_TIMED_CHECKPOINT, ...overrides };
 }
 
+test('Stealth only nullifies low-HP normal melee attacks unless Pursuit is active', () => {
+  const base = combatNormalInput();
+  const stealthTarget = (pursuit: boolean) => executeBattleProtocol(encodeBattleProtocolInput(combatNormalInput({
+    engineFlags: BATTLE_ENGINE_FLAG_END_CHECKPOINT,
+    partyHp: 1_000,
+    partyMaxHp: 1_000,
+    enemyHp: 12,
+    enemyMaxHp: 100,
+    combatants: base.combatants.map((combatant, index) => index === 0
+      ? {
+          ...combatant,
+          hp: 12,
+          maxHp: 100,
+          rangedNoA: 0,
+          magicalNoA: 0,
+          meleeNoA: 0,
+          abilities: [{ id: 'stealth', level: 1 }],
+        }
+      : {
+          ...combatant,
+          rangedAttack: 1,
+          magicalAttack: 1,
+          meleeAttack: 1,
+          rangedNoA: 1,
+          magicalNoA: 1,
+          meleeNoA: 1,
+          abilities: pursuit ? [{ id: 'pursuit', level: 1 }] : [],
+        }),
+    randomValues: Array(32).fill(0),
+  })));
+
+  const avoided = stealthTarget(false);
+  assert.equal(avoided.protocolError, 0);
+  const attacks = avoided.events.filter((event) => event.opcode === 'attack' && event.actorId === 1);
+  assert.deepEqual(attacks.map((event) => [event.attackType, event.value0, event.hits]), [
+    ['ranged', 1, 1],
+    ['magical', 1, 1],
+    ['melee', 0, 0],
+  ]);
+  assert.ok(avoided.events.some((event) => event.opcode === 'nullified'
+    && event.abilityId === 'stealth' && event.attackType === 'melee'));
+
+  const pursued = stealthTarget(true);
+  assert.equal(pursued.protocolError, 0);
+  assert.deepEqual(
+    pursued.events.filter((event) => event.opcode === 'attack' && event.actorId === 1)
+      .map((event) => [event.attackType, event.value0, event.hits]),
+    [['ranged', 1, 1], ['magical', 1, 1], ['melee', 1, 1]],
+  );
+  assert.equal(pursued.events.some((event) => event.opcode === 'nullified' && event.abilityId === 'stealth'), false);
+});
+
+test('Stealth does not nullify reactive attacks', () => {
+  const base = combatReactiveInput();
+  const output = executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    partyHp: 12,
+    partyMaxHp: 100,
+    enemyHp: 100,
+    enemyMaxHp: 100,
+    combatants: base.combatants.map((combatant, index) => index === 0
+      ? {
+          ...combatant,
+          rangedAttack: 1,
+          rangedNoA: 1,
+          abilities: [{ id: 'counter', level: 1 }],
+        }
+      : {
+          ...combatant,
+          rangedAttack: 1,
+          rangedNoA: 1,
+          abilities: [{ id: 'stealth', level: 1 }],
+        }),
+    randomValues: Array(32).fill(0),
+  })));
+  assert.equal(output.protocolError, 0);
+  assert.ok(output.events.some((event) => event.opcode === 'attack'
+    && event.aux0 === BATTLE_ACTION_IDS.counter && event.value0 > 0));
+  assert.equal(output.events.some((event) => event.opcode === 'nullified' && event.abilityId === 'stealth'), false);
+});
+
 function endCheckpointInput(overrides: Partial<BattleProtocolInput> = {}): BattleProtocolInput {
   return { ...combatTimedInput(), engineFlags: BATTLE_ENGINE_FLAG_END_CHECKPOINT, ...overrides };
 }
@@ -1067,7 +1147,7 @@ test('END checkpoint gives simultaneous lethality to defeat and preserves exact 
 test('END checkpoint preserves forced Free draw at source position without entering END', () => {
   const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
     combatants: endCheckpointInput().combatants.map((combatant, index) => index === 0
-      ? { ...combatant, abilities: [{ id: 'free', level: 4 }] } : combatant),
+      ? { ...combatant, abilities: [{ id: 'flee', level: 4 }] } : combatant),
     randomValues: [0.875],
   })));
   assert.equal(output.outcome, 'draw');
@@ -1084,7 +1164,7 @@ test('END flavor draws use source-order zero-based array boundaries and skipped 
   for (const [random, expectedIndex] of [[0, 0], [0.999999, 9]] as const) {
     const output = executeBattleProtocol(encodeBattleProtocolInput(endCheckpointInput({
       combatants: endCheckpointInput().combatants.map((combatant, index) => index === 0
-        ? { ...combatant, abilities: [{ id: 'free', level: 4 }] } : combatant),
+        ? { ...combatant, abilities: [{ id: 'flee', level: 4 }] } : combatant),
       randomValues: [random],
     })));
     assert.equal(output.protocolError, 0);
@@ -1391,7 +1471,7 @@ test('timed melee 4 preserves Predator Sense before a Free-forced draw', () => {
     enemyHp: 20,
     enemyMaxHp: 100,
     combatants: combatTimedInput().combatants.map((combatant, index) => index === 0
-      ? { ...combatant, abilities: [{ id: 'free', level: 4 }] }
+      ? { ...combatant, abilities: [{ id: 'flee', level: 4 }] }
       : { ...combatant, abilities: [{ id: 'predator_sense', level: 1 }] }),
     randomValues: [],
   })));
@@ -1400,7 +1480,7 @@ test('timed melee 4 preserves Predator Sense before a Free-forced draw', () => {
   assert.deepEqual(
     output.events.filter((event) => event.aux0 === BATTLE_ACTION_IDS.timed_ability)
       .map((event) => event.abilityId),
-    ['predator_sense', 'free'],
+    ['predator_sense', 'flee'],
   );
   assert.equal(output.randomConsumed, 0);
 });
@@ -1413,7 +1493,7 @@ test('timed timing 4 resolves ranged Unstable Core and magic Confusion before me
       ? { ...combatant, abilities: [
           { id: 'unstable_core', level: 1 },
           { id: 'magic_confusion', level: 1 },
-          { id: 'free', level: 4 },
+          { id: 'flee', level: 4 },
         ] }
       : {
           ...combatant,
@@ -1433,11 +1513,11 @@ test('timed timing 4 resolves ranged Unstable Core and magic Confusion before me
   assert.equal(output.randomConsumed, input.randomValues.length);
   assert.equal(output.diagnosticDrawCount, input.randomValues.length);
   assert.deepEqual([output.partyHp, output.enemyHp], [100, 13]);
-  const orderedAbilities = new Set(['unstable_core', 'magic_confusion', 'predator_sense', 'free']);
+  const orderedAbilities = new Set(['unstable_core', 'magic_confusion', 'predator_sense', 'flee']);
   assert.deepEqual(
     output.events.filter((event) => event.timing === 4 && orderedAbilities.has(event.abilityId ?? ''))
       .map((event) => event.abilityId),
-    ['unstable_core', 'magic_confusion', 'predator_sense', 'free'],
+    ['unstable_core', 'magic_confusion', 'predator_sense', 'flee'],
   );
 });
 
@@ -1452,7 +1532,7 @@ test('timed melee 2 preserves Free, Decompose, Confusion, then Self Destruct and
       ? {
           ...combatant,
           abilities: [
-            { id: 'free', level: 2 },
+            { id: 'flee', level: 2 },
             { id: 'decompose', level: 1 },
             { id: 'melee_confusion', level: 3 },
             { id: 'self_destruct', level: 1 },
@@ -1688,6 +1768,27 @@ test('reactive COMBAT resolves counter, Null Counter exhaustion, and one termina
       : combatant),
   }));
   assert.ok(nullified.events.some((event) => event.opcode === 'nullified' && event.abilityId === 'null_counter'));
+});
+
+test('reactive COMBAT skips a counter when the owner has no attack of the incoming type (6.1.4.3)', () => {
+  const run = (ownerRangedNoA: number, nullCounter: boolean) => executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    partyHp: 1_000, partyMaxHp: 1_000, enemyHp: 1_000, enemyMaxHp: 1_000,
+    combatants: combatReactiveInput().combatants.map((combatant, index) => index === 0 ? {
+      ...combatant, rangedAttack: 10, rangedNoA: ownerRangedNoA, magicalNoA: 0, meleeNoA: 0,
+      abilities: [{ id: 'counter', level: 2 }],
+    } : {
+      ...combatant, rangedAttack: 10, rangedNoA: 1, magicalNoA: 0, meleeNoA: 0,
+      abilities: nullCounter ? [{ id: 'null_counter', level: 1 }] : [],
+    }),
+    randomValues: Array(32).fill(0),
+  })));
+  const counters = (output: ReturnType<typeof run>) => output.events.filter((event) => event.aux0 === BATTLE_ACTION_IDS.counter);
+  assert.ok(counters(run(1, false)).length > 0, 'a ranged owner counters a ranged hit');
+  const skipped = run(0, false);
+  assert.equal(skipped.protocolError, 0);
+  assert.deepEqual(counters(skipped), [], 'no zero-hit counter is logged');
+  assert.equal(run(0, true).events.some((event) => event.opcode === 'nullified' && event.abilityId === 'null_counter'), false,
+    'a skipped counter does not spend Null Counter');
 });
 
 test('reactive COMBAT applies close nullifiers without draws and recovery priority with bookkeeping events', () => {

@@ -1,10 +1,11 @@
-export type DetectedLanguage = 'ja' | 'en' | 'zh-CN' | 'zh-TW';
+export type DetectedLanguage = 'ja' | 'en' | 'zh-CN' | 'zh-TW' | 'ko';
 
 export function normalizeSystemLanguage(value: unknown): DetectedLanguage | null {
   if (typeof value !== 'string') return null;
   const tag = value.trim().replace(/_/g, '-').toLowerCase();
   if (tag === 'ja' || tag.startsWith('ja-')) return 'ja';
   if (tag === 'en' || tag.startsWith('en-')) return 'en';
+  if (tag === 'ko' || tag.startsWith('ko-')) return 'ko';
   if (tag !== 'zh' && !tag.startsWith('zh-')) return null;
 
   const subtags = tag.split('-').slice(1);

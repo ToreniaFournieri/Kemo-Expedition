@@ -5,12 +5,13 @@ import type {
   Item,
   TerrainEffectKey,
 } from '../types/index.ts';
+import { getRoomPosition } from './clearGateCore.ts';
 import {
   resolveExpeditionOutcome,
   type ExpeditionOutcomeResult,
 } from './expeditionEffects/expeditionOutcome.ts';
 
-export type ExpeditionFinalOutcome = 'Clear' | 'Escape' | 'Defeat' | 'Retreat';
+export type ExpeditionFinalOutcome = 'Clear' | 'Return' | 'Defeat' | 'Retreat';
 export type EnemyBattleStats = Record<number, { defeats: number; encounters: number }>;
 
 export interface CreateExpeditionTransactionInput {
@@ -69,6 +70,7 @@ export interface ExpeditionTransactionResult {
   readonly autoSoldItems: ExpeditionAutoSoldItemFact[];
   readonly autoSellProfit: number;
   readonly endedWithDrawRetreat: boolean;
+  readonly deepestClearedPosition: number;
 }
 
 export interface PlanExpeditionFinalizationInput {
@@ -90,9 +92,9 @@ export interface PlanExpeditionFinalizationInput {
 
 export interface ExpeditionStatistics {
   readonly Clear: number;
-  readonly Turned_Back: number;
-  readonly Draw_Retreat: number;
-  readonly Wounded_Retreat: number;
+  readonly Return: number;
+  readonly Draw: number;
+  readonly Retreat: number;
   readonly Defeat: number;
   readonly donatedGold: number;
   readonly savedGold: number;
@@ -146,6 +148,7 @@ export class ExpeditionTransactionAccumulator {
   private readonly autoSoldItems: ExpeditionAutoSoldItemFact[] = [];
   private totalAutoSellProfit = 0;
   private drawRetreat = false;
+  private deepestClearedPosition = 0;
 
   constructor(input: CreateExpeditionTransactionInput) {
     this.currentHp = input.initialHp;
@@ -186,6 +189,13 @@ export class ExpeditionTransactionAccumulator {
     if (input.terrainEffect) this.revealedTerrainKeys.add(input.terrainEffect);
   }
 
+  recordClearedRoom(floorNumber: number, roomInFloor: number): void {
+    this.deepestClearedPosition = Math.max(
+      this.deepestClearedPosition,
+      getRoomPosition(floorNumber, roomInFloor),
+    );
+  }
+
   recordVictoryRewards(input: RecordExpeditionVictoryRewardsInput): void {
     this.totalExperience += input.experience;
     this.bags = input.bags;
@@ -207,7 +217,7 @@ export class ExpeditionTransactionAccumulator {
       return;
     }
     this.currentHp = input.finalHp;
-    if (input.reachedDepthLimit) this.end('Escape');
+    if (input.reachedDepthLimit) this.end('Return');
   }
 
   recordDefeat(partyHp: number): void {
@@ -237,6 +247,7 @@ export class ExpeditionTransactionAccumulator {
       autoSoldItems: this.autoSoldItems.map((fact) => ({ ...fact })),
       autoSellProfit: this.totalAutoSellProfit,
       endedWithDrawRetreat: this.drawRetreat,
+      deepestClearedPosition: this.deepestClearedPosition,
     };
   }
 }
@@ -253,6 +264,7 @@ export function planExpeditionFinalization(
   const outcome = resolveExpeditionOutcome({
     finalOutcome: input.transaction.finalOutcome,
     endedWithDrawRetreat: input.transaction.endedWithDrawRetreat,
+    deepestClearedPosition: input.transaction.deepestClearedPosition,
     isGodsBattle: input.isGodsBattle,
     dungeonId: input.dungeonId,
     recoveredItems: input.transaction.recoveredItems,

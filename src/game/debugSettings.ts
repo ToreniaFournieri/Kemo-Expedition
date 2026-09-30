@@ -80,7 +80,31 @@ function normalizeDebugSettings(raw: unknown): DebugSettings {
   });
 }
 
-export function getDebugSettings(): DebugSettings {
+/** The Debug settings with every value at its default, under the current environment's Debug policy. */
+export function getDefaultDebugSettings(): DebugSettings {
+  return normalizeDebugSettings(DEFAULT_DEBUG_SETTINGS);
+}
+
+/** Normalizes a partial Debug-settings value (unknown fields dropped, defaults filled, environment policy applied). */
+export function normalizeDebugSettingsValue(raw: unknown): DebugSettings {
+  return normalizeDebugSettings(raw);
+}
+
+// SpecRef: 9.1.4.14 | debug | An API account's own debug settings
+// While an API account holds control, the gameplay rules that read Debug settings (the Gods Battle condition and the Gods'
+// strength) follow that account's own settings instead of the device's Debug pane.
+type GameplayDebugOverride = Pick<DebugSettings, 'godsBattleCondition' | 'godStrength'>;
+let gameplayDebugOverride: GameplayDebugOverride | null = null;
+
+export function setGameplayDebugOverride(settings: GameplayDebugOverride | null): void {
+  gameplayDebugOverride = settings ? { godsBattleCondition: settings.godsBattleCondition, godStrength: settings.godStrength } : null;
+}
+
+export function getGameplayDebugOverride(): GameplayDebugOverride | null {
+  return gameplayDebugOverride;
+}
+
+function readStoredDebugSettings(): DebugSettings {
   if (!canUseStorage()) return normalizeDebugSettings(DEFAULT_DEBUG_SETTINGS);
   try {
     const saved = window.localStorage.getItem(DEBUG_SETTINGS_STORAGE_KEY);
@@ -89,6 +113,11 @@ export function getDebugSettings(): DebugSettings {
   } catch {
     return normalizeDebugSettings(DEFAULT_DEBUG_SETTINGS);
   }
+}
+
+export function getDebugSettings(): DebugSettings {
+  const stored = readStoredDebugSettings();
+  return gameplayDebugOverride ? { ...stored, ...gameplayDebugOverride } : stored;
 }
 
 export function saveDebugSettings(settings: DebugSettings): void {

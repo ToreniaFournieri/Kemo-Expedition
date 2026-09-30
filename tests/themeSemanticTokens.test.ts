@@ -20,7 +20,7 @@ const notificationToast = readFileSync(new URL('../src/components/NotificationTo
 const migratedSources = [
   '../src/App.tsx',
   '../src/components/NotificationToast.tsx',
-  '../src/components/ExperimentalApiSettings.tsx',
+  '../src/components/ApiV1Settings.tsx',
   '../src/components/home/tabs/BaseTab.tsx',
   '../src/components/home/tabs/DiaryTab.tsx',
   '../src/components/home/tabs/ExpeditionTab.tsx',

@@ -31,7 +31,7 @@ export const BATTLE_ABILITY_OWNERSHIP_IDS = {
   ),
   timed_trigger: classified(
     'howl', 'ranged_confusion', 'magic_confusion', 'melee_confusion', 'unstable_core', 'soul_reap',
-    'regeneration', 'predator_sense', 'decompose', 'self_destruct', 'free', 'flying',
+    'regeneration', 'predator_sense', 'decompose', 'self_destruct', 'flee', 'flying',
     'pursuit',
   ),
   reactive_chain: classified(

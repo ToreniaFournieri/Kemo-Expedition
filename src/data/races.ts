@@ -1,4 +1,5 @@
 import { t } from '../i18n';
+import { formatBonusAbilityHelpDescription } from './bonusAbilityGlossary';
 import { Race } from '../types';
 
 export const RACES: Race[] = [
@@ -13,12 +14,12 @@ export const RACES: Race[] = [
     defaultAbility: {
       id: 'a.howl',
       get name() { return t('data.races.a_howl.name'); },
-      get description() { return t('data.races.a_howl.description'); },
+      get description() { return formatBonusAbilityHelpDescription('howl', 1); },
     },
     unlockAbility: {
       id: 'a.resurrect',
       get name() { return t('data.races.a_resurrect.name'); },
-      get description() { return t('data.races.a_resurrect.description'); },
+      get description() { return formatBonusAbilityHelpDescription('resurrect', 1); },
     },
     get unlockCondition() { return t('data.races.a_resurrect.unlockCondition'); },
     memo: 'Dog',
@@ -38,8 +39,8 @@ export const RACES: Race[] = [
     emoji: '🐺',
     icon: '/race-icons/Lupinian.png',
     stats: { vitality: 10, strength: 12, intelligence: 8, mind: 7 },
-    defaultAbility: { id: 'a.rage', get name() { return t('data.races.a_rage.name'); }, get description() { return t('data.races.a_rage.description'); } },
-    unlockAbility: { id: 'a.re-counter', get name() { return t('data.races.a_re_counter.name'); }, get description() { return t('data.races.a_re_counter.description'); } },
+    defaultAbility: { id: 'a.rage', get name() { return t('data.races.a_rage.name'); }, get description() { return formatBonusAbilityHelpDescription('rage', 1); } },
+    unlockAbility: { id: 'a.re-counter', get name() { return t('data.races.a_re_counter.name'); }, get description() { return formatBonusAbilityHelpDescription('re_counter', 1); } },
     get unlockCondition() { return t('data.races.a_re_counter.unlockCondition'); },
     memo: 'Wolf',
     bonuses: [
@@ -58,8 +59,8 @@ export const RACES: Race[] = [
     emoji: '🦊',
     icon: '/race-icons/Vulpinian.png',
     stats: { vitality: 11, strength: 10, intelligence: 12, mind: 8 },
-    defaultAbility: { id: 'a.momentum', get name() { return t('data.races.a_momentum.name'); }, get description() { return t('data.races.a_momentum.description'); } },
-    unlockAbility: { id: 'a.cunning', get name() { return t('data.races.a_cunning.name'); }, get description() { return t('data.races.a_cunning.description'); } },
+    defaultAbility: { id: 'a.momentum', get name() { return t('data.races.a_momentum.name'); }, get description() { return formatBonusAbilityHelpDescription('momentum', 1); } },
+    unlockAbility: { id: 'a.cunning', get name() { return t('data.races.a_cunning.name'); }, get description() { return formatBonusAbilityHelpDescription('cunning', 1); } },
     get unlockCondition() { return t('data.races.a_cunning.unlockCondition'); },
     memo: 'Fox',
     bonuses: [
@@ -77,8 +78,8 @@ export const RACES: Race[] = [
     emoji: '🐻',
     icon: '/race-icons/Ursan.png',
     stats: { vitality: 13, strength: 11, intelligence: 7, mind: 7 },
-    defaultAbility: { id: 'a.bulwark', get name() { return t('data.races.a_bulwark.name'); }, get description() { return t('data.races.a_bulwark.description'); } },
-    unlockAbility: { id: 'a.cyborgization1', get name() { return t('data.races.a_cyborgization1.name'); }, get description() { return t('data.races.a_cyborgization1.description'); } },
+    defaultAbility: { id: 'a.bulwark', get name() { return t('data.races.a_bulwark.name'); }, get description() { return formatBonusAbilityHelpDescription('bulwark', 1); } },
+    unlockAbility: { id: 'a.cyborgization1', get name() { return t('data.races.a_cyborgization1.name'); }, get description() { return formatBonusAbilityHelpDescription('cyborgization', 1); } },
     get unlockCondition() { return t('data.races.a_cyborgization1.unlockCondition'); },
     memo: 'Bear',
     bonuses: [
@@ -96,8 +97,8 @@ export const RACES: Race[] = [
     emoji: '😺',
     icon: '/race-icons/Felidian.png',
     stats: { vitality: 9, strength: 9, intelligence: 10, mind: 13 },
-    defaultAbility: { id: 'a.first-strike', get name() { return t('data.races.a_first_strike.name'); }, get description() { return t('data.races.a_first_strike.description'); } },
-    unlockAbility: { id: 'a.covering-fire', get name() { return t('data.races.a_covering_fire.name'); }, get description() { return t('data.races.a_covering_fire.description'); } },
+    defaultAbility: { id: 'a.first-strike', get name() { return t('data.races.a_first_strike.name'); }, get description() { return formatBonusAbilityHelpDescription('first_strike', 1); } },
+    unlockAbility: { id: 'a.covering-fire', get name() { return t('data.races.a_covering_fire.name'); }, get description() { return formatBonusAbilityHelpDescription('covering_fire', 1); } },
     get unlockCondition() { return t('data.races.a_covering_fire.unlockCondition'); },
     memo: 'Cat',
     bonuses: [
@@ -116,8 +117,8 @@ export const RACES: Race[] = [
     emoji: '🦡',
     icon: '/race-icons/Mustelid.png',
     stats: { vitality: 8, strength: 14, intelligence: 8, mind: 11 },
-    defaultAbility: { id: 'a.resonance', get name() { return t('data.races.a_resonance.name'); }, get description() { return t('data.races.a_resonance.description'); } },
-    unlockAbility: { id: 'a.peddler', get name() { return t('data.races.a_peddler.name'); }, get description() { return t('data.races.a_peddler.description'); } },
+    defaultAbility: { id: 'a.resonance', get name() { return t('data.races.a_resonance.name'); }, get description() { return formatBonusAbilityHelpDescription('resonance', 1); } },
+    unlockAbility: { id: 'a.peddler', get name() { return t('data.races.a_peddler.name'); }, get description() { return formatBonusAbilityHelpDescription('peddler', 1); } },
     get unlockCondition() { return t('data.races.a_peddler.unlockCondition'); },
     memo: 'Ferret',
     bonuses: [
@@ -136,8 +137,8 @@ export const RACES: Race[] = [
     emoji: '🐰',
     icon: '/race-icons/Leporian.png',
     stats: { vitality: 9, strength: 8, intelligence: 14, mind: 10 },
-    defaultAbility: { id: 'a.composure', get name() { return t('data.races.a_composure.name'); }, get description() { return t('data.races.a_composure.description'); } },
-    unlockAbility: { id: 'a.magical-counter', get name() { return t('data.races.a_magical_counter.name'); }, get description() { return t('data.races.a_magical_counter.description'); } },
+    defaultAbility: { id: 'a.composure', get name() { return t('data.races.a_composure.name'); }, get description() { return formatBonusAbilityHelpDescription('composure', 1); } },
+    unlockAbility: { id: 'a.magical-counter', get name() { return t('data.races.a_magical_counter.name'); }, get description() { return formatBonusAbilityHelpDescription('magical_counter', 1); } },
     get unlockCondition() { return t('data.races.a_magical_counter.unlockCondition'); },
     memo: 'Rabbit',
     bonuses: [
@@ -155,8 +156,8 @@ export const RACES: Race[] = [
     emoji: '🦌',
     icon: '/race-icons/Cervin.png',
     stats: { vitality: 8, strength: 7, intelligence: 13, mind: 11 },
-    defaultAbility: { id: 'a.focus', get name() { return t('data.races.a_focus.name'); }, get description() { return t('data.races.a_focus.description'); } },
-    unlockAbility: { id: 'a.prophecy1', get name() { return t('data.races.a_prophecy1.name'); }, get description() { return t('data.races.a_prophecy1.description'); } },
+    defaultAbility: { id: 'a.focus', get name() { return t('data.races.a_focus.name'); }, get description() { return formatBonusAbilityHelpDescription('focus', 1); } },
+    unlockAbility: { id: 'a.prophecy1', get name() { return t('data.races.a_prophecy1.name'); }, get description() { return formatBonusAbilityHelpDescription('prophecy', 1); } },
     get unlockCondition() { return t('data.races.a_prophecy1.unlockCondition'); },
     memo: 'Deer',
     bonuses: [
@@ -174,8 +175,8 @@ export const RACES: Race[] = [
     emoji: '🦝',
     icon: '/race-icons/Procyonian.png',
     stats: { vitality: 14, strength: 8, intelligence: 8, mind: 6 },
-    defaultAbility: { id: 'a.illusion', get name() { return t('data.races.a_illusion.name'); }, get description() { return t('data.races.a_illusion.description'); } },
-    unlockAbility: { id: 'a.resonance', get name() { return t('data.races.a_resonance.name'); }, get description() { return t('data.races.a_resonance.description'); } },
+    defaultAbility: { id: 'a.illusion', get name() { return t('data.races.a_illusion.name'); }, get description() { return formatBonusAbilityHelpDescription('illusion', 1); } },
+    unlockAbility: { id: 'a.resonance', get name() { return t('data.races.a_resonance.name'); }, get description() { return formatBonusAbilityHelpDescription('resonance', 1); } },
     memo: 'Tanuki',
     bonuses: [
       { type: 'equip_slot', value: 1 },
@@ -194,7 +195,7 @@ export const RACES: Race[] = [
     emoji: '🐭',
     icon: '/race-icons/Murid.png',
     stats: { vitality: 7, strength: 8, intelligence: 11, mind: 14 },
-    defaultAbility: { id: 'a.stealth', get name() { return t('data.races.a_stealth.name'); }, get description() { return t('data.races.a_stealth.description'); } },
+    defaultAbility: { id: 'a.stealth', get name() { return t('data.races.a_stealth.name'); }, get description() { return formatBonusAbilityHelpDescription('stealth', 1); } },
     memo: 'Mouse',
     bonuses: [
       { type: 'penet', value: 0.10 },
@@ -245,8 +246,8 @@ export const RACES: Race[] = [
     emoji: '🐋',
     icon: '/race-icons/Orcinian.png',
     stats: { vitality: 11, strength: 13, intelligence: 10, mind: 8 },
-    defaultAbility: { id: 'a.execution', get name() { return t('data.races.a_execution.name'); }, get description() { return t('data.races.a_execution.description'); } },
-    unlockAbility: { id: 'a.overwatch', get name() { return t('data.races.a_overwatch.name'); }, get description() { return t('data.races.a_overwatch.description'); } },
+    defaultAbility: { id: 'a.execution', get name() { return t('data.races.a_execution.name'); }, get description() { return formatBonusAbilityHelpDescription('execution', 1); } },
+    unlockAbility: { id: 'a.overwatch', get name() { return t('data.races.a_overwatch.name'); }, get description() { return formatBonusAbilityHelpDescription('overwatch', 1); } },
     memo: 'orca',
     selectable: false,
     bonuses: [
@@ -263,8 +264,8 @@ export const RACES: Race[] = [
     emoji: '🐓',
     icon: '/race-icons/Avian.png',
     stats: { vitality: 8, strength: 11, intelligence: 11, mind: 9 },
-    defaultAbility: { id: 'a.flying', get name() { return t('data.races.a_flying.name'); }, get description() { return t('data.races.a_flying.description'); } },
-    unlockAbility: { id: 'a.wind-rider', get name() { return t('data.races.a_wind_rider.name'); }, get description() { return t('data.races.a_wind_rider.description'); } },
+    defaultAbility: { id: 'a.flying', get name() { return t('data.races.a_flying.name'); }, get description() { return formatBonusAbilityHelpDescription('flying', 1); } },
+    unlockAbility: { id: 'a.wind-rider', get name() { return t('data.races.a_wind_rider.name'); }, get description() { return formatBonusAbilityHelpDescription('wind_rider', 1); } },
     memo: 'bird',
     selectable: false,
     bonuses: [

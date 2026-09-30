@@ -1,4 +1,4 @@
-import { CLASSES } from '../data/classes';
+import { CLASS_SHORT_NAMES, CLASSES } from '../data/classes';
 import { LINEAGES } from '../data/lineages';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { RACES } from '../data/races';
@@ -16,6 +16,7 @@ import type {
   Item,
   ItemCategory,
   JewelInventory,
+  JewelKey,
   SavedEquipmentEntry,
   SavedEquipmentSet,
 } from '../types';
@@ -27,26 +28,44 @@ const MELEE_CATEGORIES = new Set<ItemCategory>(['sword', 'katana', 'gauntlet']);
 const RANGED_CATEGORIES = new Set<ItemCategory>(['arrow', 'bolt', 'archery']);
 const MAGIC_CATEGORIES = new Set<ItemCategory>(['wand', 'grimoire', 'catalyst']);
 
+export type EquipmentAptitude = 'melee' | 'ranged' | 'magic';
+
+/** The combat aptitude an item category needs (`c.equip_melee`, `c.equip_ranged`, `c.equip_magic`); null for none. */
+export function getEquipmentAptitudeForCategory(category: ItemCategory): EquipmentAptitude | null {
+  if (MELEE_CATEGORIES.has(category)) return 'melee';
+  if (RANGED_CATEGORIES.has(category)) return 'ranged';
+  if (MAGIC_CATEGORIES.has(category)) return 'magic';
+  return null;
+}
+
 export type EquipmentSetLoadMode = 'exact' | 'similar';
 
 export interface EquipmentSetAvailability {
   allAvailable: boolean;
-  entries: Array<{ entry: SavedEquipmentEntry; available: boolean }>;
+  entries: Array<{
+    entry: SavedEquipmentEntry;
+    available: boolean;
+    unavailableReason: 'slot_unavailable' | 'not_equippable' | 'unavailable' | null;
+  }>;
+}
+
+/** Legacy saved sets were dense arrays; new snapshots persist the exact slot explicitly. */
+export function getSavedEquipmentSlot(entry: SavedEquipmentEntry, legacyIndex: number): number {
+  return Number.isInteger(entry.slotIndex) ? entry.slotIndex! : legacyIndex;
 }
 
 /**
- * Creates an exact, in-memory equipment state target.  Undo/Redo deliberately
- * uses the same target shape and availability evaluator as saved equipment
- * sets, so category aptitude, duplicate variants, and slot limits cannot
- * drift between the two features.
+ * Creates an exact, in-memory equipment snapshot: items, locks, and, with `includeJewels`, the Jewel assignment. Saved
+ * sets (Spec 8.2.4) and Undo/Redo states (Spec 9.1.3, 2-3-3) both record Jewels.
  */
-export function createEquipmentSetSnapshot(equipment: readonly (Item | null | undefined)[]): SavedEquipmentSet {
+export function createEquipmentSetSnapshot(equipment: readonly (Item | null | undefined)[], includeJewels = false): SavedEquipmentSet {
   return {
     slot: 0,
     name: '',
     createdAt: 0,
-    equipment: equipment.flatMap((item) => item ? [{
-      item: { ...item, jewel: item.jewel ? { ...item.jewel } : null },
+    equipment: equipment.flatMap((item, slotIndex) => item ? [{
+      slotIndex,
+      item: { ...item, jewel: includeJewels && item.jewel ? { ...item.jewel } : null },
       isLocked: item.isLocked === true,
     }] : []),
   };
@@ -127,22 +146,26 @@ function takeSimilar(inventory: InventoryRecord, entry: SavedEquipmentEntry): { 
   return candidate ? { key: candidate[0], item: { ...candidate[1].item, jewel: null } } : null;
 }
 
+/**
+ * Whether each stored item can be equipped now with its saved Jewel: the item must be in the inventory (or already
+ * worn), the character must have the aptitude, the slot must exist, and a saved Jewel must be in the Jewel inventory
+ * (or worn now) and valid for the item (Spec 8.2.4: a saved set is the whole item and Jewel combination).
+ */
 export function evaluateEquipmentSet(
   set: SavedEquipmentSet,
   character: Character,
   inventory: InventoryRecord,
+  jewels: JewelInventory,
   maxSlots: number,
 ): EquipmentSetAvailability {
-  let available = createVirtualInventory(character, inventory);
-  const entries = set.equipment.map((entry, index) => {
-    const eligible = index < maxSlots && canCharacterEquipCategory(character, entry.item.category);
-    const exact = eligible ? takeExact(available, entry) : null;
-    if (exact) available = removeItemFromInventory(available, getVariantKey(exact));
-    return { entry, available: Boolean(exact) };
-  });
-  return { allAvailable: entries.every((value) => value.available), entries };
+  return evaluateEquipmentState(set, character, inventory, jewels, maxSlots);
 }
 
+/**
+ * Loads a saved set (Spec 8.2.4). Each item is equipped with its saved Jewel when that Jewel is available. `similar`
+ * substitutes unavailable items; only for the Jewel Priority Party does it also fill items left without a Jewel,
+ * with the allocator Auto Equipment uses.
+ */
 export function applyEquipmentSet(
   set: SavedEquipmentSet,
   character: Character,
@@ -151,6 +174,7 @@ export function applyEquipmentSet(
   gold: number,
   maxSlots: number,
   mode: EquipmentSetLoadMode,
+  isJewelPriorityParty = false,
 ): { character: Character; inventory: InventoryRecord; jewels: JewelInventory; gold: number } {
   let nextInventory = inventory;
   let nextJewels = jewels;
@@ -169,7 +193,9 @@ export function applyEquipmentSet(
     { length: Math.max(character.equipment.length, maxSlots) },
     () => null,
   );
-  set.equipment.slice(0, maxSlots).forEach((entry, index) => {
+  set.equipment.forEach((entry, index) => {
+    const slotIndex = getSavedEquipmentSlot(entry, index);
+    if (slotIndex < 0 || slotIndex >= maxSlots) return;
     if (!canCharacterEquipCategory(character, entry.item.category)) return;
     const exactKey = getVariantKey(entry.item);
     const exact = takeExact(nextInventory, entry);
@@ -178,7 +204,11 @@ export function applyEquipmentSet(
       : mode === 'similar' ? takeSimilar(nextInventory, entry) : null;
     if (!candidate) return;
     nextInventory = removeItemFromInventory(nextInventory, candidate.key);
-    equipment[index] = { ...candidate.item, isLocked: entry.isLocked, jewel: null };
+    const saved = entry.item.jewel;
+    const jewel = saved && isJewelAllowedForCategory(candidate.item.category, saved.key)
+      && getJewelOwnedCount(nextJewels, saved.key, saved.rank) > 0 ? { key: saved.key, rank: saved.rank } : null;
+    if (jewel) nextJewels = removeJewelFromInventory(nextJewels, jewel.key, jewel.rank);
+    equipment[slotIndex] = { ...candidate.item, isLocked: entry.isLocked, jewel };
   });
 
   let nextCharacter: Character = {
@@ -186,46 +216,111 @@ export function applyEquipmentSet(
     equipment,
     autoEquipmentMode: character.autoEquipmentMode === 2 ? 1 : character.autoEquipmentMode,
   };
-  const reservedJewelSlots = new Set<number>();
-  // Exact set restores must preserve the stored attachment when its separately
-  // held Jewel is available. Similar loads intentionally continue through the
-  // ordinary auto-equipment assignment path (Specification 8.2.4).
-  if (mode === 'exact') {
-    set.equipment.slice(0, maxSlots).forEach((entry, slotIndex) => {
-      const item = nextCharacter.equipment[slotIndex];
-      const jewel = entry.item.jewel;
-      if (!item || !jewel || !isJewelAllowedForCategory(item.category, jewel.key)
-        || getJewelOwnedCount(nextJewels, jewel.key, jewel.rank) <= 0) return;
-      nextJewels = removeJewelFromInventory(nextJewels, jewel.key, jewel.rank);
+  if (mode === 'similar' && isJewelPriorityParty) {
+    // Only the items left without a Jewel are planned, from what the Jewel inventory still holds; a Jewel type and rank
+    // already attached to this character is not assigned twice (Spec 7.1.2.2, 8-2).
+    const attached = new Set(equipment.flatMap((item) => item?.jewel ? [`${item.jewel.key}:${item.jewel.rank}`] : []));
+    const open = { ...nextCharacter, equipment: equipment.map((item) => item && !item.jewel ? item : null) };
+    planAutoJewelAssignmentsForCharacter(open, nextJewels).forEach((assignment) => {
+      const id = `${assignment.key}:${assignment.rank}`;
+      const item = nextCharacter.equipment[assignment.slotIndex];
+      if (!item || attached.has(id) || getJewelOwnedCount(nextJewels, assignment.key, assignment.rank) <= 0) return;
+      attached.add(id);
+      nextJewels = removeJewelFromInventory(nextJewels, assignment.key, assignment.rank);
       const nextEquipment = [...nextCharacter.equipment];
-      nextEquipment[slotIndex] = { ...item, jewel: { ...jewel } };
+      nextEquipment[assignment.slotIndex] = { ...item, jewel: { key: assignment.key, rank: assignment.rank } };
       nextCharacter = { ...nextCharacter, equipment: nextEquipment };
-      reservedJewelSlots.add(slotIndex);
     });
   }
-  // Reserved Jewel slots must not participate in the generic allocator: it
-  // ranks by strength and would otherwise replace a deliberately restored
-  // lower-rank attachment with a higher-rank one.
-  const characterForAutoJewelAssignment = reservedJewelSlots.size === 0
-    ? nextCharacter
-    : {
-      ...nextCharacter,
-      equipment: nextCharacter.equipment.map((item, slotIndex) => reservedJewelSlots.has(slotIndex) && item
-        ? { ...item, jewel: null }
-        : item),
-    };
-  const assignments = planAutoJewelAssignmentsForCharacter(characterForAutoJewelAssignment, nextJewels)
-    .filter((assignment) => !reservedJewelSlots.has(assignment.slotIndex));
-  assignments.forEach((assignment) => {
-    const item = nextCharacter.equipment[assignment.slotIndex];
-    if (!item) return;
-    nextJewels = removeJewelFromInventory(nextJewels, assignment.key, assignment.rank);
-    const nextEquipment = [...nextCharacter.equipment];
-    nextEquipment[assignment.slotIndex] = { ...item, jewel: { key: assignment.key, rank: assignment.rank } };
-    nextCharacter = { ...nextCharacter, equipment: nextEquipment };
-  });
 
   return { character: nextCharacter, inventory: nextInventory, jewels: nextJewels, gold: nextGold };
+}
+
+/**
+ * Whether an Undo/Redo state can be restored exactly now (Spec 9.1.3, 2-3-3): every item must be available (in the
+ * inventory or already worn), the character must have the aptitude, the slot must exist, and every recorded Jewel must
+ * be available (in the Jewel inventory or worn now) and valid for its item. One unavailable item or Jewel makes the
+ * whole state unavailable; partial restoration is never allowed.
+ */
+export function evaluateEquipmentState(
+  state: SavedEquipmentSet,
+  character: Character,
+  inventory: InventoryRecord,
+  jewels: JewelInventory,
+  maxSlots: number,
+): EquipmentSetAvailability {
+  let availableItems = createVirtualInventory(character, inventory);
+  let availableJewels = jewels;
+  character.equipment.forEach((item) => {
+    if (item?.jewel) availableJewels = addJewelToInventory(availableJewels, item.jewel.key, item.jewel.rank);
+  });
+  const entries: EquipmentSetAvailability['entries'] = state.equipment.map((entry, index) => {
+    const slotIndex = getSavedEquipmentSlot(entry, index);
+    const slotAvailable = slotIndex >= 0 && slotIndex < maxSlots;
+    const equippable = canCharacterEquipCategory(character, entry.item.category);
+    const eligible = slotAvailable && equippable;
+    const exact = eligible ? takeExact(availableItems, entry) : null;
+    if (!exact) return {
+      entry,
+      available: false,
+      unavailableReason: !slotAvailable ? 'slot_unavailable' as const : !equippable ? 'not_equippable' as const : 'unavailable' as const,
+    };
+    const jewel = entry.item.jewel;
+    if (jewel && (!isJewelAllowedForCategory(exact.category, jewel.key) || getJewelOwnedCount(availableJewels, jewel.key, jewel.rank) <= 0)) {
+      return { entry, available: false, unavailableReason: 'unavailable' as const };
+    }
+    availableItems = removeItemFromInventory(availableItems, getVariantKey(exact));
+    if (jewel) availableJewels = removeJewelFromInventory(availableJewels, jewel.key, jewel.rank);
+    return { entry, available: true, unavailableReason: null };
+  });
+  return { allAvailable: entries.every((value) => value.available), entries };
+}
+
+/** Restores an Undo/Redo state exactly: the same items, slots, locks, and Jewel assignment. Validate with `evaluateEquipmentState` first. */
+export function applyEquipmentState(
+  state: SavedEquipmentSet,
+  character: Character,
+  inventory: InventoryRecord,
+  jewels: JewelInventory,
+  gold: number,
+  maxSlots: number,
+): { character: Character; inventory: InventoryRecord; jewels: JewelInventory; gold: number } {
+  let nextInventory = inventory;
+  let nextJewels = jewels;
+  let nextGold = gold;
+  character.equipment.forEach((item) => {
+    if (!item) return;
+    const result = addItemToInventory(nextInventory, { ...item, jewel: null }, nextGold);
+    nextInventory = result.inventory;
+    nextGold = result.gold;
+    if (item.jewel) nextJewels = addJewelToInventory(nextJewels, item.jewel.key, item.jewel.rank);
+  });
+  const equipment: (Item | null)[] = Array.from({ length: Math.max(character.equipment.length, maxSlots) }, () => null);
+  state.equipment.forEach((entry, index) => {
+    const slotIndex = getSavedEquipmentSlot(entry, index);
+    if (slotIndex < 0 || slotIndex >= maxSlots) return;
+    const exact = takeExact(nextInventory, entry);
+    if (!exact) return;
+    nextInventory = removeItemFromInventory(nextInventory, getVariantKey(exact));
+    const jewel = entry.item.jewel;
+    if (jewel) nextJewels = removeJewelFromInventory(nextJewels, jewel.key, jewel.rank);
+    equipment[slotIndex] = { ...exact, isLocked: entry.isLocked, jewel: jewel ? { ...jewel } : null };
+  });
+  return {
+    character: { ...character, equipment, autoEquipmentMode: character.autoEquipmentMode === 2 ? 1 : character.autoEquipmentMode },
+    inventory: nextInventory,
+    jewels: nextJewels,
+    gold: nextGold,
+  };
+}
+
+const SAVED_JEWEL_KEYS: readonly string[] = ['might', 'arcana', 'fort', 'ward', 'shade', 'focus'];
+
+function normalizeSavedJewel(value: unknown): Item['jewel'] {
+  if (!value || typeof value !== 'object') return null;
+  const { key, rank } = value as { key?: unknown; rank?: unknown };
+  if (typeof key !== 'string' || !SAVED_JEWEL_KEYS.includes(key) || !Number.isInteger(rank) || (rank as number) < 1 || (rank as number) > 8) return null;
+  return { key: key as JewelKey, rank: rank as number };
 }
 
 export function normalizeSavedEquipmentSets(value: unknown): SavedEquipmentSet[] {
@@ -236,12 +331,34 @@ export function normalizeSavedEquipmentSets(value: unknown): SavedEquipmentSet[]
     const candidate = raw as Partial<SavedEquipmentSet>;
     if (!Number.isInteger(candidate.slot) || candidate.slot! < 1 || candidate.slot! > MAX_SAVED_EQUIPMENT_SETS || occupied.has(candidate.slot!)) return [];
     if (typeof candidate.name !== 'string' || !Array.isArray(candidate.equipment)) return [];
-    const equipment = candidate.equipment.flatMap((entry): SavedEquipmentEntry[] => {
+    const occupiedEquipmentSlots = new Set<number>();
+    const equipment = candidate.equipment.flatMap((entry, legacyIndex): SavedEquipmentEntry[] => {
       if (!entry || typeof entry !== 'object' || !(entry as SavedEquipmentEntry).item) return [];
       const saved = entry as SavedEquipmentEntry;
-      return [{ item: { ...saved.item }, isLocked: saved.isLocked === true }];
+      const slotIndex = getSavedEquipmentSlot(saved, legacyIndex);
+      if (!Number.isSafeInteger(slotIndex) || slotIndex < 0 || occupiedEquipmentSlots.has(slotIndex)) return [];
+      occupiedEquipmentSlots.add(slotIndex);
+      // A saved set keeps each item's Jewel (Spec 8.2.4); a malformed Jewel is dropped, not the item.
+      return [{ slotIndex, item: { ...saved.item, jewel: normalizeSavedJewel(saved.item.jewel) }, isLocked: saved.isLocked === true }];
     });
     occupied.add(candidate.slot!);
     return [{ slot: candidate.slot!, name: candidate.name.slice(0, 80), createdAt: Number(candidate.createdAt) || Date.now(), equipment }];
   }).sort((a, b) => a.slot - b.slot);
+}
+
+// SpecRef: 8.2.4 | Equipment management | Saved equipment slots: default name
+// The default name of a saved set: character name, main and sub class abbreviations, lineage and predisposition
+// abbreviations, and the creation date (`MM/DD`), e.g. `リタ 剣(巡), 砂/好 09/05`. The Party pane and the API's
+// `saveEquipmentSet` without a name both use it.
+export function createDefaultEquipmentSetName(character: Pick<Character, 'name' | 'mainClassId' | 'subClassId' | 'lineageId' | 'predispositionId'>, createdAt: number): string {
+  const date = new Date(createdAt);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const lineage = LINEAGES.find((entry) => entry.id === character.lineageId) ?? LINEAGES[0];
+  const predisposition = PREDISPOSITIONS.find((entry) => entry.id === character.predispositionId) ?? PREDISPOSITIONS[0];
+  const mainShort = CLASS_SHORT_NAMES[character.mainClassId] ?? character.mainClassId;
+  const subShort = CLASS_SHORT_NAMES[character.subClassId] ?? character.subClassId;
+  const lineageShort = lineage.shortName ?? lineage.name;
+  const predispositionShort = predisposition.shortName ?? predisposition.name;
+  return `${character.name} ${mainShort}(${subShort}), ${lineageShort}/${predispositionShort} ${month}/${day}`;
 }

@@ -33,9 +33,7 @@ const rows = definitions.map((definition) => {
   const timing = definition.kind === 'ability' && definition.timing
     ? `${definition.timing.phase}${definition.timing.priority}`
     : '-';
-  const localization = definition.kind === 'ability'
-    ? [definition.presentation.nameKey, definition.presentation.labelKey, definition.presentation.descriptionKey].filter(Boolean).join('; ')
-    : `${definition.presentation.labelKey}; ${definition.presentation.descriptionKey}`;
+  const localization = `${definition.presentation.labelKey}; ${definition.presentation.descriptionKey}`;
   return `| ${cell(definition.key)} | ${definition.kind} | ${cell(definition.runtimeId)} | ${definition.wireId} | ${category} | ${ownership} | ${maxLevel} | ${timing} | ${cell(bindingSummary(definition, 'randomness'))} | ${cell(localization)} | ${cell(bindingSummary(definition, 'implementation'))} | ${cell(bindingSummary(definition, 'tests'))} |`;
 });
 

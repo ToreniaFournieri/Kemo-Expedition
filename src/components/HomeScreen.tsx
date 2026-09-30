@@ -1,11 +1,6 @@
-import { compareApiParties } from '../game/experimentalApiComparison';
-import { ExperimentalApiSettings } from './ExperimentalApiSettings';
-import { withBattleSeedSource } from '../game/battleSeedSource';
-import { gameReducer, simulateExpeditionRuns, calculateFreeActionSpend, calculatePrayerProfit, getPartyAbilityLevel as apiPartyAbility, hasActiveNonGodBattleClearGateCondition as apiHasGate } from '../hooks/useGameState';
-import { transactApiRequest, readEvaluation, evaluationSummary, requireApi, canonicalRequest, ApiValidationError, type ApiStage } from '../game/experimentalApiSession';
-import { applyApiCommand, configureParty, buildOptions, mechanicsCatalog, record as apiRecord, keys as apiKeys } from '../game/experimentalApiStrategy';
-import { resolveApiCycles } from '../game/experimentalApiCycle';
-import { createApiRandom, withGameplayRandomSource } from '../game/gameplayRandom';
+import { renderDiaryBattle, renderDiaryMetadata, renderExpeditionMetadata } from '../game/compactDiary.ts';
+import { formatDiaryUnreadBadge } from '../game/diary';
+import { gameReducer, simulateExpeditionRuns } from '../hooks/useGameState';
 import { lazy,Profiler,Suspense,useCallback,useEffect,useMemo,useRef,useState } from 'react';
 import { CLASSES } from '../data/classes';
 import { DEVELOPER_NEWS_ITEMS } from '../data/developerNews';
@@ -25,11 +20,13 @@ selectBestAutoEquipmentUpgradeCandidate,
 type EquipmentRankingCandidate,
 } from '../game/battleKernel';
 import { gameplayRandom } from '../game/gameplayRandom';
+import { ITEM_MAX_STACK } from '../game/inventoryMutation';
 import {
 isDungeonEntryUnlocked
 } from '../game/clearGate';
+import { getStoredColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import { DebugSettings,getDebugSettings,getTimeSpeedScale,isUnlimitedTimeSpeed,saveDebugSettings } from '../game/debugSettings';
-import { getDeityDepositMultiplier,getDeityStateDurationMultiplier,isNoFaithDeity,normalizeDeityName } from '../game/deity';
+import { getDeityDepositMultiplier,getDeityId,getDeityNameFromId,getDeityStateDurationMultiplier,isNoFaithDeity,normalizeDeityName } from '../game/deity';
 import { getDesktopNotificationRewardItems } from '../game/desktopNotificationRewards';
 import { getDesktopPreferences,getProcessedDiaryIds,saveProcessedDiaryIds } from '../game/desktopNotifications';
 import {
@@ -89,36 +86,58 @@ useAfkCompactBattleResultCandidate,
 useAfkRendererPartyStatsMemo,
 } from '../game/afkLiveProfile';
 import { getPeddlerTravelDurationMs } from '../game/expeditionAbilityPolicies';
-import { createEnvironmentStorageKey,getEnvironmentId,getEnvLabel,isDebugModeEnabled } from '../game/environment';
-import { buildExperimentalObservation, buildPurchaseShopItemEffects, buildRemoveAllEquipmentEffects } from '../game/experimentalApi';
-import { buildExperimentalBattleLog,buildExperimentalDiaryEntries } from '../game/experimentalApiLogs';
+import { createEnvironmentStorageKey,FEEDBACK_NAME_CHANGED_EVENT,getEnvironmentId,getEnvLabel,isDebugModeEnabled } from '../game/environment';
 import { getItemCoreConceptValue,getItemDisplayName,getLocalizedItemName } from '../game/gameState';
 import { memoryMonitor } from '../game/memoryMonitoring';
 import { formatInstantExpeditionChargeDisplay,getInstantExpeditionChargeState } from '../game/instantExpedition';
-import { planAutoJewelAssignmentsForCharacter } from '../game/jewel';
-import { computePartyStats,computeRendererPartyStats } from '../game/partyComputation';
+import { addJewelToInventory, isJewelAllowedForCategory, planAutoJewelAssignmentsForCharacter, removeJewelFromInventory } from '../game/jewel';
+import { computePartyStats } from '../game/partyComputation';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { getFreeActionStepCount } from '../game/partyStateDuration';
 import { getShopHourKey,getShopRefreshPrice } from '../game/shop';
 import { DEFAULT_ORCA_ENEMY_LEVEL_OFFSET, isRuntimeGameMode, normalizeOrcaEnemyLevelOffset, type RuntimeGameMode } from '../game/runtimeGameMode';
-import { setLanguage,t } from '../i18n';
+import { ensureLanguageLoaded,persistLanguage,setLanguage,t } from '../i18n';
 import { serializeGameState } from '../game/saveCodec';
+import { base64FromUtf8, encodePersistedState } from '../game/storageCompression';
+import { characterEditToChangeBuildParameters, type CharacterBuildOutcome } from '../api/v1/characterBuildParameters';
+import { planEquipmentIntent, type EquipmentIntent } from '../api/v1/equipmentIntents';
+import { parseInventoryStacks, parseJewelStacks, parseSavedEquipmentSet } from '../api/v1/itemFormat';
+import { buildPartySummaries, buildPartyView, type PartyProjection } from '../api/v1/partyView';
+import type { ExpeditionProjection } from '../api/v1/expeditionView';
+import type { BaseProjection, EnemyFormProjection } from '../api/v1/baseView';
+import { buildInventoryView } from '../api/v1/inventoryView';
+import { buildPartyExpeditionLogView, type ExpeditionLogView, type LatestBattleLogProjection } from '../api/v1/expeditionLogView';
+import { buildDiaryTabView, type DiaryProjection } from '../api/v1/diaryTabView';
+import { type HeaderProjection } from '../api/v1/headerView';
+import { toThemeKey, type ApiV1DisplaySettings, type ApiV1DisplaySettingWrite } from '../api/v1/modeSelect';
+import { buildSettingTabPreferences, clairvoyanceExpandedKey, GLOSSARY_TABS, PARTY_EQUIP_CATEGORY_FAMILY, partyEquipCategoryKey, SETTING_GLOSSARY_TAB_FAMILY, SETTING_PANELS, settingPanelExpandedKey, type SettingPanel } from '../api/v1/uiPreferenceCatalog';
+import { HeaderBar } from './home/HeaderBar';
+import { useApiRead, useApiReadAllPages, useApiReadMany } from './home/useApiRead';
+import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
+import { parseSimulationRunData, type SimulationRunData } from '../api/v1/simulationView';
+import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
+import { serializeApiV1Control } from '../api/v1/authority';
+import type { ApiV1ClairvoyanceResource } from '../api/v1/readModels';
+import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
+import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
 import {
 applyAutoEquipmentProfileActions,
 applyAutoEquipmentProfileActionsSequentially,
 type AfkPartyTransactionAttribution,
 } from '../hooks/useGameState';
-import { Bonus,Character,ExpeditionLogEntry,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelKey,Party,type BattleLogEntry } from '../types';
+import { Bonus,Character,DiarySettings,ExpeditionLogEntry,ExpeditionSimulationResult,GameState,getVariantKey,InventoryRecord,Item,ItemCategory,JewelInventory,JewelKey,Party,type BattleLogEntry,type RaceId } from '../types';
 import { NotificationToast } from './NotificationToast';
 import { getBrowserChromeColor, getDesktopTheme, getThemeClassName, isGameModeAvailable, THEME_CLASS_NAMES } from '../theme/theme';
+import { DISPLAY_LOCALE } from '../i18n/displayFormat.ts';
 
 
 import {
 AFK_MAX_ELAPSED_MS,
 AFK_RUNTIME_STORAGE_KEY,
 AfkSummaryStats,
+APP_BUILD_NUMBER,
 APP_VERSION,
-APPROX_CYCLE_STEP_COUNT,
+APP_VERSION_BUILD,
 AUTO_EQUIPMENT_PRIORITY_BY_CLASS,
 AUTO_EQUIPMENT_STORAGE_KEY,
 AutoEquipmentCombatStyle,
@@ -131,7 +150,9 @@ BETA_DISCORD_WEBHOOK_URL,
 buildAfkSummaryNotification,
 buildStatusTableHtmlFile,
 buildStatusTableRows,
+CHROME_CONTENT_BOTTOM_PADDING_CLASS,
 CHROME_CONTENT_PADDING_CLASS,
+CHROME_CONTENT_TOP_PADDING_CLASS,
 DARK_MODE_STORAGE_KEY,
 DarkModeSetting,
 DEV_DISCORD_WEBHOOK_URL,
@@ -149,7 +170,6 @@ getCompactProgressItems,
 getElapsedWholeSeconds,
 getExpeditionOutcomeLabel,
 getExpeditionTierDurationFactor,
-getExperimentalDiaryTitle,
 getExplorationDurationMs,
 getExplorationVisibleRoomCount,
 getInitialAutoEquipmentEnabled,
@@ -165,7 +185,6 @@ getSideQuestAssignMessage,
 getSideQuestSuccessMessage,
 hasActiveNonGodBattleClearGateCondition,
 HomeScreenProps,
-IOS_GLASS_BUTTON_CLASS,
 IOS_GLASS_TOP_TAB_CLASS,
 MAIN_TAB_ORDER,
 normalizeAutoEquipmentMode,
@@ -186,6 +205,7 @@ resolveSideQuestShortText,
 REST_HEAL_MAX_HP_RATIO,
 REST_HEAL_MIN_HP,
 rollPercentInclusive,
+sendApiV1Delivery,
 shouldAutoTriggerGodsBattle,
 SOUND_SLEEP_STEP_COUNT,
 SPEED_OF_TIME_BONUS_DURATION_MS,
@@ -202,6 +222,14 @@ const loadPartyTab = () => import('./home/tabs/PartyTab');
 const loadExpeditionTab = () => import('./home/tabs/ExpeditionTab');
 const loadBaseTab = () => import('./home/tabs/BaseTab');
 const ORCA_TIME_SPEED_OVERRIDE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.orca-time-speed-override');
+const API_PLAYER_RETURN_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.api-player-return');
+// Durable game-state checkpoint spacing while AFK recovery is active (Spec 5.1 Saving and persistence).
+const AFK_RECOVERY_CHECKPOINT_INTERVAL_MS = 15_000;
+// Local keys the Setting tab used before its retained state moved to `uiPreferences` (Build 103); read once, then removed.
+const LEGACY_SETTING_PANEL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.panel-expanded');
+const LEGACY_CLAIRVOYANCE_PARTY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.clairvoyance-party-expanded');
+const LEGACY_GLOSSARY_TAB_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.glossary-tab');
+const LEGACY_GLOSSARY_EXPANDED_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.glossary-expanded-entries');
 const loadDiaryTab = () => import('./home/tabs/DiaryTab');
 const loadSettingTab = () => import('./home/tabs/SettingTab');
 
@@ -232,6 +260,9 @@ export function preloadRemainingHomeTabs() {
   ]);
 }
 
+// SpecRef: 9.1.3 | 2-4-1 searchItems | `limit`: the Party tab needs every owned stack, so it asks for the maximum (5000).
+const SEARCH_ITEMS_LIMIT = 5000;
+
 export function HomeScreen({
   state,
   actions,
@@ -242,9 +273,6 @@ export function HomeScreen({
   const renderStartedAt = performance.now();
   const shouldOptimizeAfkRenderer = useAfkRendererPartyStatsMemo();
   const shouldUseCoordinatorAuthority = useAfkCoordinatorAuthorityCandidate();
-  const computePresentationPartyStats = shouldOptimizeAfkRenderer
-    ? computeRendererPartyStats
-    : computePartyStats;
   const prefersDocumentScroll = false;
   const [activeTab, setActiveTab] = useState<Tab>('expedition');
   const [tabTransitionDirection, setTabTransitionDirection] = useState<'forward' | 'backward'>('forward');
@@ -439,7 +467,8 @@ export function HomeScreen({
   const partyProgressDisclosedLogsRef = useRef<Array<Party['lastExpeditionLog'] | null>>(
     state.parties.map((party) => party.lastExpeditionLog),
   );
-  const [apiControlActive, setApiControlActive] = useState(Boolean(state.apiRuntime?.evaluation || window.bokemoDesktop?.aiPlay));
+  const [apiControlActive, setApiControlActive] = useState(false);
+  const [apiSessionUserId, setApiSessionUserId] = useState('');
 
   useEffect(() => {
     const enabled = __AFK_LIVE_PROFILE_ENABLED__
@@ -474,22 +503,24 @@ export function HomeScreen({
   }, [debugSettings.runtimeDiagnosticsEnabled]);
 
   useEffect(() => () => memoryMonitor.stop(), []);
-  const apiControlActiveRef = useRef(Boolean(state.apiRuntime?.evaluation || window.bokemoDesktop?.aiPlay));
-  const apiLeaseActiveRef = useRef(false);
-  const [apiLeaseActive, setApiLeaseActive] = useState(false);
+  const apiControlActiveRef = useRef(false);
   const apiStrategyEquipRef = useRef<(s: GameState, p: number, c?: number, forceFull?: boolean) => GameState>(() => { throw new Error('equipment_not_ready'); });
-  const apiRevisionRef = useRef(state.apiRuntime?.revision ?? 0);
-  const apiSimulatedAtRef = useRef(state.apiRuntime?.simulatedAt ?? Date.now());
-  const apiStateRef = useRef(state);
-  const apiStateVersionRef = useRef(0);
   const apiActionsRef = useRef(actions);
   const apiAutoEquipmentRunnerRef = useRef<AutoEquipmentRunner | null>(null);
-  const apiAutoRunRef = useRef(isAutoRepeatEnabled);
-  const apiCyclesRef = useRef(partyCycles);
-  apiStateRef.current = state;
+  const apiCycleDurationScaleRef = useRef(1);
+  const colosseumEnabledRef = useRef(false);
+  const headerRuntimeRef = useRef<{ timeSpeed: string; bonusUntilMs: number | null; autoRepeat: boolean; progressReportConfigured: boolean }>({ timeSpeed: 'realtime', bonusUntilMs: null, autoRepeat: true, progressReportConfigured: false });
+  // SpecRef: 8.3 | UI_EXPEDITION | Update Timing: the log disclosed per party (the previous one while a party explores).
+  const disclosedExpeditionLogsRef = useRef<Array<Party['lastExpeditionLog'] | null>>([]);
+  const restDurationMsRef = useRef<(party: Party) => number>(() => 1000);
+  const sortieCycleWritesRef = useRef<(writes: ApiV1PartyCycleWrite[]) => void>(() => undefined);
+  // SpecRef: 9.1.3 | Read 2-6-2 / Commit 3-6-2 modeSelect: the display settings the runtime owns outside the save.
+  const displaySettingsRef = useRef<ApiV1DisplaySettings>({ darkMode: 'system', theme: 'm.kemo', showExpeditionStats: false, autoRepeat: true });
+  const applyDisplaySettingsRef = useRef<(write: ApiV1DisplaySettingWrite) => void>(() => undefined);
+  // SpecRef: 9.1.3 | Read 2-6-3 / Commit 3-6-4 debug: the Debug pane's real settings, reported and changed through ports.
+  const apiDebugSettingsRef = useRef<DebugSettings | null>(null);
+  const applyDebugSettingsRef = useRef<(write: Partial<DebugSettings>) => void>(() => undefined);
   apiActionsRef.current = actions;
-  apiAutoRunRef.current = state.apiRuntime?.autoRun ?? isAutoRepeatEnabled;
-  apiCyclesRef.current = partyCycles;
   debugSettingsRef.current = debugSettings;
   const effectiveDebugSettings = useMemo<DebugSettings>(() => runtimeGameMode === 'mode.orca' && !hasOrcaTimeSpeedOverride
     ? { ...debugSettings, timeSpeed: 'x5' }
@@ -531,206 +562,107 @@ export function HomeScreen({
     memoryPreviousAfkActiveRef.current = afkActive;
   }, [effectiveDebugSettings.timeSpeed, isAutoRepeatEnabled, pendingAfkMs]);
 
-  useEffect(() => {
-    apiStateVersionRef.current += 1;
-  }, [state]);
-
-  const waitForApiStateUpdate = useCallback((previousVersion: number) => new Promise<void>((resolve, reject) => {
-    const startedAt = Date.now();
-    const check = () => {
-      if (apiStateVersionRef.current > previousVersion) return resolve();
-      if (Date.now() - startedAt > 10_000) return reject(new Error('state_update_timeout'));
-      window.setTimeout(check, 0);
-    };
-    check();
-  }), []);
-
-  const apiFailure = (status: number, code: string, message: string, retryable = false, details?: object) => ({
-    status,
-    error: { code, message, retryable, ...(details ? { details } : {}) },
-  });
-
-  const buildApiObservation = useCallback(() => buildExperimentalObservation(
-    apiStateRef.current,
-    apiRevisionRef.current,
-    apiAutoRunRef.current,
-    apiCyclesRef.current,
-    apiSimulatedAtRef.current,
-  ), []);
-
-  const handleExperimentalApiRequest = useCallback(async (operation: string, rawPayload: unknown) => {
-    const payload = rawPayload && typeof rawPayload === 'object' && !Array.isArray(rawPayload) ? rawPayload as Record<string, unknown> : {};
-    if (operation === 'status') return { status: apiActionsRef.current.getApiReadiness(), revision: apiRevisionRef.current };
-    if (apiActionsRef.current.getApiReadiness() !== 'ready') return { status: 'save_error', revision: null };
-    if (operation === 'set-control') {
-      const active = payload.active === true;
-      apiLeaseActiveRef.current = active;
-      setApiLeaseActive(active);
-      apiControlActiveRef.current = active || Boolean(apiStateRef.current.apiRuntime?.evaluation || window.bokemoDesktop?.aiPlay);
-      setApiControlActive(apiControlActiveRef.current);
-      lastCheckpointAtRef.current = Date.now();
-      if (!active) await apiActionsRef.current.flushSave();
-      return { status: 'ready', revision: apiRevisionRef.current };
-    }
-    if (operation === 'release') {
-      await apiActionsRef.current.flushSave();
-      apiLeaseActiveRef.current = false;
-      setApiLeaseActive(false);
-      apiControlActiveRef.current = Boolean(apiStateRef.current.apiRuntime?.evaluation || window.bokemoDesktop?.aiPlay);
-      setApiControlActive(apiControlActiveRef.current);
-      lastCheckpointAtRef.current = Date.now();
-      return { revision: apiRevisionRef.current };
-    }
-    if (!apiLeaseActiveRef.current) return apiFailure(409, 'no_active_lease', 'The renderer is not in API-controlled mode.');
-    if (operation === 'observation') return { observation: buildApiObservation() };
-
-    // SpecRef: 9.1.3 | Experimental AI API | Retained battle-log read model
-    if (operation === 'latest-battle-log') {
-      if (Object.keys(payload).some((key) => key !== 'partyId') || !Number.isSafeInteger(payload.partyId)) {
-        return apiFailure(400, 'invalid_request', 'partyId must be an integer.');
-      }
-      const party = apiStateRef.current.parties.find((entry) => entry.id === payload.partyId);
-      if (!party) return apiFailure(404, 'party_not_found', 'The target party was not found.');
-      if (!party.lastExpeditionLog) return apiFailure(404, 'battle_log_not_found', 'The party has no retained battle log.');
-      return buildExperimentalBattleLog(
-        apiRevisionRef.current,
-        party.id,
-        party.lastExpeditionLog,
-        { kind: 'latest', diaryEntryId: null },
-        getItemDisplayName,
-      );
-    }
-
-    if (operation === 'diary-entries') {
-      if (Object.keys(payload).length > 0) return apiFailure(400, 'invalid_request', 'Diary entry listing accepts no input.');
-      return buildExperimentalDiaryEntries(apiStateRef.current.parties, apiRevisionRef.current, getExperimentalDiaryTitle);
-    }
-
-    if (operation === 'diary-battle-log') {
-      if (Object.keys(payload).some((key) => key !== 'diaryEntryId') || typeof payload.diaryEntryId !== 'string' || payload.diaryEntryId.length < 1 || payload.diaryEntryId.length > 200) {
-        return apiFailure(400, 'invalid_request', 'diaryEntryId is invalid.');
-      }
-      const retainedEntry = apiStateRef.current.parties
-        .flatMap((party) => (party.diaryLogs ?? []).map((diaryLog) => ({ party, diaryLog })))
-        .find(({ diaryLog }) => diaryLog.id === payload.diaryEntryId);
-      if (!retainedEntry) return apiFailure(404, 'diary_entry_not_found', 'The Diary entry is not retained.');
-      return buildExperimentalBattleLog(
-        apiRevisionRef.current,
-        retainedEntry.party.id,
-        retainedEntry.diaryLog.expeditionLog,
-        { kind: 'diary', diaryEntryId: retainedEntry.diaryLog.id },
-        getItemDisplayName,
-      );
-    }
-
-    return apiFailure(400, 'invalid_request', 'Unsupported renderer operation.');
-  }, [buildApiObservation, effectiveDebugSettings, effectiveOrcaEnemyLevelOffset, waitForApiStateUpdate]);
-
-  // SpecRef: 9.1.3 | Experimental AI API | Evaluation transactions
-  const processExperimentalApiRequest = useCallback(async (operation: string, raw: unknown) => {
-    if (['status', 'set-control', 'release'].includes(operation)) return handleExperimentalApiRequest(operation, raw);
-    if (operation === 'renew') return { renewed: true };
-    if (['evaluation', 'evaluation-ledger', 'evaluation-report'].includes(operation)) {
-      const current = apiStateRef.current;
-      return readEvaluation(current, operation, () => ({
-        observation: { ...buildExperimentalObservation(current, current.apiRuntime!.revision, current.apiRuntime!.autoRun, {}, current.apiRuntime!.simulatedAt), observedAt: current.apiRuntime!.simulatedAt },
-        statusTable: { headers: ['PT-列', '名前, ビルド', '物防', '魔防', '回避,貫通', '攻撃', '属性耐性', 'アビリティ'], rows: buildStatusTableRows(current.parties) }
-      }));
-    }
-    if (!apiLeaseActiveRef.current) return apiFailure(409, 'no_active_lease', 'API control is required.');
-    if (apiActionsRef.current.getApiReadiness() !== 'ready') return apiFailure(503, 'save_error', 'Save loading failed.');
-    const envelope = raw && typeof raw === 'object' ? raw as Record<string, unknown> : {};
-    const idempotencyKey = typeof envelope.__idempotencyKey === 'string' ? envelope.__idempotencyKey : undefined;
-    const payload = Object.fromEntries(Object.entries(envelope).filter(([key]) => key !== '__idempotencyKey'));
-    const persist = async (next: GameState) => {
-      await apiActionsRef.current.commitApiState(next);
-      apiStateRef.current = next;
-      apiRevisionRef.current = next.apiRuntime?.revision ?? 0;
-      apiSimulatedAtRef.current = next.apiRuntime?.simulatedAt ?? apiSimulatedAtRef.current;
-      apiAutoRunRef.current = next.apiRuntime?.autoRun ?? apiAutoRunRef.current;
-    };
-    return transactApiRequest({ state: apiStateRef.current, operation, payload, idempotencyKey, persist,
-      execute: async (baseline): Promise<ApiStage> => {
-        if (operation === 'invalid-request') return { state: baseline, response: apiFailure(400, 'invalid_request', 'Invalid HTTP request input.') };
-        if (['observation', 'latest-battle-log', 'diary-entries', 'diary-battle-log'].includes(operation)) {
-          return { state: baseline, response: await handleExperimentalApiRequest(operation, payload) };
-        }
-        if (operation === 'catalog') return { state: baseline, response: { catalog: mechanicsCatalog() } };
-        const revision = baseline.apiRuntime!.revision;
-        const mutating = operation === 'command' || operation === 'sortie';
-        const expected = mutating ? payload.expectedRevision : payload.revision;
-        requireApi(Number.isInteger(expected), 'invalid_request', 'An integer revision is required.', 400);
-        if (expected !== revision) throw new ApiValidationError(apiFailure(409, 'stale_revision', 'The supplied revision is stale.', false, { currentRevision: revision }));
-        const random = createApiRandom(baseline.apiRuntime!.randomState);
-        const strategyDeps = { mode: gameModeRef.current, offset: effectiveOrcaEnemyLevelOffset };
-        const deps = { reduce: gameReducer, equip: (s: GameState, p: number, c?: number) => apiStrategyEquipRef.current(s, p, c) };
-        const observation = (s: GameState, cycles = apiCyclesRef.current) => buildExperimentalObservation(s, s.apiRuntime!.revision, s.apiRuntime!.autoRun, cycles, apiSimulatedAtRef.current);
-        if (operation === 'command') {
-          apiKeys(payload, ['expectedRevision', 'command']);
-          const command = apiRecord(payload.command);
-          const commandType = command.type;
-          const beforeObservation = commandType === 'remove_all_equipment' || commandType === 'purchase_shop_item' ? observation(baseline) : null;
-          const next = withGameplayRandomSource(random.next, () => applyApiCommand(baseline, payload.command, deps, apiSimulatedAtRef.current, strategyDeps.mode, strategyDeps.offset));
-          requireApi(canonicalRequest(next) !== canonicalRequest(baseline), 'no_change', 'The command makes no effective change.', 409);
-          next.apiRuntime = { ...next.apiRuntime!, revision: revision + 1, randomState: random.state };
-          const afterObservation = observation(next);
-          let effects: Record<string, unknown> = {};
-          if (commandType === 'remove_all_equipment') {
-            const partyId = Number(command.partyId);
-            const characterId = Number(command.characterId);
-            effects = buildRemoveAllEquipmentEffects(beforeObservation!, afterObservation, partyId, characterId);
-          } else if (commandType === 'purchase_shop_item') {
-            effects = buildPurchaseShopItemEffects(beforeObservation!, afterObservation, Number(command.partyId), String(command.lineupId), String(command.stockEntryId));
-          }
-          return { state: next, response: { command: { type: commandType, status: 'applied', previousRevision: revision, revision: revision + 1 }, effects, observation: afterObservation } };
-        }
-        requireApi(Number.isInteger(payload.partyId), 'invalid_request', 'partyId must be an integer.', 400);
-        const partyIndex = baseline.parties.findIndex(p => p.id === payload.partyId);
-        requireApi(partyIndex >= 0, 'party_not_found', 'Party not found.', 404);
-        if (operation === 'build-options') {
-          apiKeys(payload, ['revision', 'partyId', 'characterId', 'proposedChanges']);
-          requireApi(Number.isInteger(payload.characterId), 'invalid_request', 'characterId must be an integer.', 400);
-          return { state: baseline, response: buildOptions(baseline, partyIndex, Number(payload.characterId), payload.proposedChanges === undefined ? {} : apiRecord(payload.proposedChanges)) };
-        }
-        if (operation === 'party-preview' || operation === 'simulation') {
-          apiKeys(payload, ['revision', 'partyId', 'configuration']);
-          const candidate = payload.configuration === undefined ? baseline : withGameplayRandomSource(random.next, () => configureParty(structuredClone(baseline), partyIndex, payload.configuration, deps));
-          const preview = observation(candidate).parties.find(p => p.id === payload.partyId)!;
-          const previous = candidate === baseline ? preview : observation(baseline).parties.find(p => p.id === payload.partyId)!;
-          const comparison = compareApiParties(previous, preview);
-          if (operation === 'party-preview') return { state: baseline, response: { revision, partyId: payload.partyId, party: preview, comparison } };
-          const outcomes = await simulateExpeditionRuns(candidate, partyIndex, gameModeRef.current, 1_000, undefined, effectiveOrcaEnemyLevelOffset);
-          return { state: baseline, response: { revision, partyId: payload.partyId, configuration: preview, comparison, simulation: { outcomes, total: outcomes.total } } };
-        }
-        if (operation === 'sortie') {
-          apiKeys(payload, ['expectedRevision', 'partyId', 'count']);
-          requireApi(Number.isInteger(payload.count) && Number(payload.count) >= 1 && Number(payload.count) <= 100, 'invalid_request', 'count must be 1 through 100.', 400);
-          const party = baseline.parties[partyIndex];
-          requireApi(DUNGEONS.some(d => d.id === party.selectedDungeonId) && isDungeonEntryUnlocked(party, party.selectedDungeonId), 'normal_sortie_unavailable', 'Dungeon unavailable.');
-          requireApi(computePartyStats(party).partyStats.hp > 0, 'invalid_party', 'Invalid maximum HP.');
-          const result = withBattleSeedSource(() => (BigInt(Math.floor(random.next() * 4294967296)) << 32n) | BigInt(Math.floor(random.next() * 4294967296)), () => withGameplayRandomSource(random.next, () => resolveApiCycles(baseline, partyIndex, Number(payload.count), apiSimulatedAtRef.current, gameModeRef.current, effectiveOrcaEnemyLevelOffset,
-            { ...deps, equip: (s, p) => apiStrategyEquipRef.current(s, p, undefined, false), ability: apiPartyAbility, freeSpend: calculateFreeActionSpend, prayer: calculatePrayerProfit, hasGate: apiHasGate },
-            baseline.apiRuntime?.evaluation ? undefined : apiCyclesRef.current[partyIndex], getTimeSpeedScale(effectiveDebugSettings, false))));
-          result.state.apiRuntime = { ...baseline.apiRuntime!, revision: revision + 1, randomState: random.state };
-          const cycles = { ...apiCyclesRef.current, [partyIndex]: { state: 'idle' as const, stateStartedAt: apiSimulatedAtRef.current, durationMs: 1000 } };
-          return { state: result.state, actualSorties: Number(payload.count), firstWinningSortie: result.firstWinningSortie, response: { ...result.response, observation: observation(result.state, cycles) } };
-        }
-        requireApi(false, 'invalid_request', 'Unsupported operation.', 400);
+  // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | Application API
+  // The dispatcher lives in src/api/v1/applicationApi.ts; this component only supplies trusted runtime ports.
+  const apiRuntimeRef = useRef({ enemyLevelOffset: effectiveOrcaEnemyLevelOffset });
+  const simulationProgressListenerRef = useRef<((completed: number, total: number) => void) | null>(null);
+  apiRuntimeRef.current = { enemyLevelOffset: effectiveOrcaEnemyLevelOffset };
+  const applicationApiRef = useRef<ApplicationApi | null>(null);
+  if (applicationApiRef.current === null) {
+    const desktop = () => window.bokemoDesktop!;
+    applicationApiRef.current = createApplicationApi({
+      session: {
+        accounts: {
+          create: (identity, savePayload) => desktop().createApiAccount(identity, savePayload),
+          load: (identity) => desktop().loadApiAccount(identity),
+          // The control goes over IPC as JSON: cloning its retained receipts as objects cost more than the commit itself.
+          commit: (identity, savePayload, control) => desktop().commitApiAccount(identity, savePayload, serializeApiV1Control(control)),
+        },
+        player: {
+          flushSave: () => apiActionsRef.current.flushSave(),
+          exportPayload: () => apiActionsRef.current.getCompressedSavePayload(),
+          returnPayload: {
+            get: () => localStorage.getItem(API_PLAYER_RETURN_STORAGE_KEY),
+            set: (payload) => localStorage.setItem(API_PLAYER_RETURN_STORAGE_KEY, payload),
+            clear: () => localStorage.removeItem(API_PLAYER_RETURN_STORAGE_KEY),
+          },
+        },
+        importGameState: (imported) => apiActionsRef.current.importGameState(imported),
+        exportActiveAccountPayload: () => apiActionsRef.current.getCompressedSavePayload(),
+        now: () => Date.now(),
+        catchUp: {
+          maximumElapsedMs: AFK_MAX_ELAPSED_MS,
+          applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
+          yieldBetweenChunks: () => new Promise<void>((resolve) => window.setTimeout(resolve, 0)),
+          randomSeed: () => crypto.getRandomValues(new Uint32Array(1))[0],
+        },
       },
-    }).then(result => {
-      if (!result.error && operation === 'sortie' && !result.replayed) {
-        const index = apiStateRef.current.parties.findIndex(p => p.id === payload.partyId);
-        setPartyCycles(previous => ({ ...previous, [index]: { state: 'idle', stateStartedAt: Date.now(), durationMs: 1000 } }));
-      }
-      return result;
-    });
-  }, [handleExperimentalApiRequest, effectiveOrcaEnemyLevelOffset, effectiveDebugSettings]);
+      desktopAvailable: () => Boolean(window.bokemoDesktop),
+      runtime: {
+        readiness: () => apiActionsRef.current.getApiReadiness(),
+        versionBuild: () => APP_VERSION_BUILD,
+        environment: () => getEnvironmentId(),
+        gameMode: () => gameModeRef.current,
+        enemyLevelOffset: () => apiRuntimeRef.current.enemyLevelOffset,
+        cycleDurationScale: () => apiCycleDurationScaleRef.current,
+        applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
+        simulate: async (snapshot, partyIndex, count) => {
+          // SpecRef: 8.3 | Simulation Run progress is an in-process exception to the API boundary: only the Expedition
+          // pane's own in-flight request registers a listener, and it is captured at start so later runs never report into it.
+          const onProgress = simulationProgressListenerRef.current ?? undefined;
+          return simulateExpeditionRuns(snapshot, partyIndex, gameModeRef.current, count, onProgress, apiRuntimeRef.current.enemyLevelOffset);
+        },
+        persistPlayer: async (snapshot) => { await apiActionsRef.current.persistApiState(snapshot); },
+        persistPlayerReplacement: async (snapshot) => { await apiActionsRef.current.persistApiStateReplacement(snapshot); },
+        publish: async (snapshot) => { await apiActionsRef.current.publishApiState(snapshot); },
+        notifyPopupActivity: () => { void window.bokemoDesktop?.notifyApiV1PopupActivity?.(); },
+        yieldBetweenChunks: () => new Promise<void>((resolve) => window.setTimeout(resolve, 0)),
+        createOpaqueId: () => crypto.randomUUID(),
+        createRandomSeed: () => crypto.getRandomValues(new Uint32Array(1))[0],
+        now: () => Date.now(),
+        onPublicationFailure: (error) => console.error('[api-v1] durable commit could not be published to the renderer', error),
+        // SpecRef: 9.1.3 | Commit | 3-2-2 {p}/sortie: the API sortie sees and resets the live party cycle like the button does.
+        partyCycle: (partyIndex) => partyCyclesRef.current[partyIndex],
+        restDurationMs: (party) => restDurationMsRef.current(party),
+        applyPartyCycleWrites: (writes) => sortieCycleWritesRef.current(writes),
+        disclosedExpeditionLog: (partyIndex) => disclosedExpeditionLogsRef.current[partyIndex],
+        headerRuntime: () => headerRuntimeRef.current,
+        displaySettings: () => displaySettingsRef.current,
+        applyDisplaySettings: (write) => applyDisplaySettingsRef.current(write),
+        debugSettings: () => apiDebugSettingsRef.current!,
+        applyDebugSettings: (write) => applyDebugSettingsRef.current(write),
+        // SpecRef: 9.1.3 | 2-6-1/3-6-3 enemyEditPane: the Enemy Edit pane's real (device) settings; saving notifies the pane.
+        enemyEditSettings: () => getStoredColosseumEnemySettings(),
+        applyEnemyEditSettings: (settings) => saveColosseumEnemySettings(settings),
+        colosseumEnabled: () => colosseumEnabledRef.current,
+      },
+      help: { requirements: apiRequirementsDocument, detail: apiDetailDocument },
+      onSessionActive: (active, userId) => { apiControlActiveRef.current = active; setApiControlActive(active); setApiSessionUserId(active ? userId ?? '' : ''); },
+      delivery: { send: sendApiV1Delivery },
+    }, state);
+  }
+  applicationApiRef.current.syncIdleState(state);
+  const inProcessApiRef = useRef<InProcessApiAdapter | null>(null);
+  if (inProcessApiRef.current === null) inProcessApiRef.current = applicationApiRef.current.createInProcessAdapter({ restrictDuringSession: true });
+  // SpecRef: 9.1.3 | 1-3 fundamental/logIn | While logged in, the player may control the UI except commit operations.
+  // The adapter refuses UI commits during the session; handlers that mutate game or runtime state directly are no-ops.
+  const guardUiCommit = <A extends unknown[]>(handler: (...args: A) => void) => (...args: A) => {
+    if (apiControlActiveRef.current) return;
+    handler(...args);
+  };
+
+  useEffect(() => {
+    // SpecRef: 9.1.4.15 | Resilience backstop for the delivery sender; pumps also fire immediately after a commit
+    // that queues a job (applicationApi.ts). Idempotent: starting it again would just add a second harmless timer,
+    // but the ref/mount contract here already guarantees one call per live ApplicationApi instance.
+    return applicationApiRef.current!.startDeliveryPump();
+  }, []);
 
   useEffect(() => {
     const desktop = window.bokemoDesktop;
-    if (!desktop?.onExperimentalApiRequest) return;
-    return desktop.onExperimentalApiRequest(processExperimentalApiRequest);
-  }, [processExperimentalApiRequest]);
+    if (!desktop?.onApiV1Request) return;
+    return desktop.onApiV1Request((operation, payload) => applicationApiRef.current!.handle(operation, payload));
+  }, []);
 
   if (processedNativeDiaryIdsRef.current === null) {
     const storedIds = getProcessedDiaryIds();
@@ -866,6 +798,12 @@ export function HomeScreen({
       return next;
     });
   }, [runtimeGameMode]);
+  apiDebugSettingsRef.current = effectiveDebugSettings;
+  applyDebugSettingsRef.current = (write) => {
+    // The ref is updated at once so a following commit validates against the new values before the next render.
+    if (apiDebugSettingsRef.current) apiDebugSettingsRef.current = { ...apiDebugSettingsRef.current, ...write };
+    updateDebugSettings(write);
+  };
   const updateRuntimeGameMode = useCallback((mode: RuntimeGameMode) => {
     // SpecRef: 9 | Environment | /orca/ mode.orca fixed
     if (getEnvironmentId() === 'orca') {
@@ -901,6 +839,22 @@ export function HomeScreen({
   });
   const [timeSpeedNowMs, setTimeSpeedNowMs] = useState(() => Date.now());
   const hasActiveTimeSpeedBonus = timeSpeedBonusUntilMs !== null && timeSpeedNowMs < timeSpeedBonusUntilMs;
+  apiCycleDurationScaleRef.current = Math.max(0.001, getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus));
+  colosseumEnabledRef.current = effectiveDebugSettings.colosseumEnabled === true;
+  headerRuntimeRef.current = {
+    timeSpeed: effectiveDebugSettings.timeSpeed,
+    bonusUntilMs: timeSpeedBonusUntilMs,
+    autoRepeat: isAutoRepeatEnabled,
+    progressReportConfigured: Boolean({ dev: DEV_DISCORD_WEBHOOK_URL, beta: BETA_DISCORD_WEBHOOK_URL, orca: ORCA_DISCORD_WEBHOOK_URL }[getEnvironmentId() as string] ?? PROD_DISCORD_WEBHOOK_URL),
+  };
+  displaySettingsRef.current = { darkMode: darkModeSetting, theme: gameMode, showExpeditionStats: isExpeditionStatsDisplayEnabled, autoRepeat: isAutoRepeatEnabled };
+  applyDisplaySettingsRef.current = (write) => {
+    // The ref is updated at once so a following commit validates against the new values before the next render.
+    displaySettingsRef.current = { ...displaySettingsRef.current, ...write };
+    if (write.darkMode !== undefined) setDarkModeSetting(write.darkMode);
+    if (write.theme !== undefined) setGameMode(write.theme);
+    if (write.showExpeditionStats !== undefined) setIsExpeditionStatsDisplayEnabled(write.showExpeditionStats);
+  };
 
   useEffect(() => {
     try {
@@ -930,32 +884,13 @@ export function HomeScreen({
     setTimeSpeedBonusUntilMs(null);
   }, [timeSpeedBonusUntilMs, timeSpeedNowMs]);
 
-  const speedOfTimeLabel = useMemo(() => {
-    if (effectiveDebugSettings.timeSpeed === 'unlimited') return '(∞)';
-    const remainingHours = hasActiveTimeSpeedBonus && timeSpeedBonusUntilMs !== null
-      ? Math.max(0, Math.ceil((timeSpeedBonusUntilMs - timeSpeedNowMs) / (60 * 60 * 1000)))
-      : null;
-    if (runtimeGameMode === 'mode.orca' && effectiveDebugSettings.timeSpeed === 'x5') {
-      const modeSpeed = hasActiveTimeSpeedBonus ? 'x6' : 'x5';
-      return remainingHours === null
-        ? `(${modeSpeed})`
-        : `(${modeSpeed}) (${formatNumber(remainingHours)}h)`;
-    }
-    return remainingHours === null ? '' : `(${formatNumber(remainingHours)}h)`;
-  }, [effectiveDebugSettings.timeSpeed, hasActiveTimeSpeedBonus, runtimeGameMode, timeSpeedBonusUntilMs, timeSpeedNowMs]);
-
-  const speedOfTimeSymbol = useMemo(() => {
-    if (!hasActiveTimeSpeedBonus && effectiveDebugSettings.timeSpeed !== 'x1_2' && effectiveDebugSettings.timeSpeed !== 'unlimited') return '▷';
-    return '▶︎';
-  }, [effectiveDebugSettings.timeSpeed, hasActiveTimeSpeedBonus]);
-
   const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
     const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
     const party = state.parties[partyIndex];
-    const latestLog = party?.lastExpeditionLog;
+    const latestLog = party?.lastExpeditionLog ? renderExpeditionMetadata(party.lastExpeditionLog) : null;
     if (!party || !latestLog) return null;
     const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
-      const detailItems = entry.details.map((detail: BattleLogEntry) => {
+      const detailItems = renderDiaryBattle(entry, party.characters).map((detail: BattleLogEntry) => {
         const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
         const hitDisplay = formatBattleLogHitDisplay(detail);
         const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
@@ -1059,7 +994,7 @@ export function HomeScreen({
 
     const reportCreatedAtMs = Date.now();
     const now = new Date(reportCreatedAtMs);
-    const timestampFormatter = new Intl.DateTimeFormat('ja-JP', {
+    const timestampFormatter = new Intl.DateTimeFormat(DISPLAY_LOCALE, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -1151,7 +1086,7 @@ export function HomeScreen({
     ]
       .map(([key, value]) => `**${key}:** ${value}`)
       .join('\n');
-    const versionBuildEnvironmentLine = `**Version Build env:** ${APP_VERSION} (${formatNumber(state.buildNumber)}) ${environmentId}`;
+    const versionBuildEnvironmentLine = `**Version Build env:** ${APP_VERSION_BUILD} ${environmentId}`;
     const currentShopRefreshCount = state.global.shopRefreshCounts[getShopHourKey(now)] ?? 0;
     const goldAndPaidRefreshCostLine = `**Gold and Paid Refresh cost:** ${formatNumber(state.global.gold)}G (${formatNumber(getShopRefreshPrice(currentShopRefreshCount))}G)`;
     const reportMessage = `${headerLines}\n\n${ptRows.map((row) => row.join(' ')).join('\n')}\n\n${goldAndPaidRefreshCostLine}\n${versionBuildEnvironmentLine}\n${environmentLines}`;
@@ -1182,6 +1117,30 @@ export function HomeScreen({
     localStorage.setItem(partySnapshotsKey, JSON.stringify(partySnapshots));
     return true;
   }, [state]);
+
+  // SpecRef: 8.6 | UI_SETTING | Debug pane(デバッグ)
+  // Reviewed exception (docs/api-v1-implementation-plan.md, Stage 4): Report Progress still reads raw state and sends
+  // its own webhook directly; only the header's *display* of the resulting bonus is projected. Revisit once Stage 8
+  // wires a real network sender for `commit/progress/progressReport`.
+  const handleReportProgress = useCallback(async () => {
+    if (apiControlActiveRef.current) return;
+    const confirmed = window.confirm(t('home.debug.reportProgressConfirm'));
+    if (!confirmed) return;
+    try {
+      const isReported = await reportProgressForSpeedOfTime();
+      if (!isReported) {
+        window.alert(t('home.debug.reportProgressUnset'));
+        return;
+      }
+      const bonusStartedAt = Date.now();
+      setTimeSpeedNowMs(bonusStartedAt);
+      setTimeSpeedBonusUntilMs(bonusStartedAt + SPEED_OF_TIME_BONUS_DURATION_MS);
+      actions.addNotification(t('home.debug.reportProgressSuccess'), 'normal', 'stat', true);
+    } catch (error) {
+      console.error('Failed to report progress for Speed of Time:', error);
+      window.alert(t('home.debug.reportProgressFailure'));
+    }
+  }, [actions, reportProgressForSpeedOfTime]);
 
   const planAutoEquipment = useCallback((
     sourceState: GameState,
@@ -1256,6 +1215,31 @@ export function HomeScreen({
       if (simulatedInventory === sourceState.global.inventory) {
         simulatedInventory = measure('inventoryClone', () => ({ ...simulatedInventory }));
       }
+    };
+    // SpecRef: 7.1.2.2 | Evaluate jewel allocation | 8-2
+    // Planned equipment changes return displaced jewels to Inventory, so the
+    // jewel candidate pool follows the planned actions instead of the source.
+    let simulatedJewels: JewelInventory = sourceState.global.jewels;
+    const reconcileSimulatedJewels = (beforeSlots: readonly (Item | null)[], afterSlots: readonly (Item | null)[]) => {
+      const deltaByJewel = new Map<string, { key: JewelKey; rank: number; delta: number }>();
+      const count = (slots: readonly (Item | null)[], sign: number) => slots.forEach((item) => {
+        if (!item?.jewel) return;
+        const id = `${item.jewel.key}:${item.jewel.rank}`;
+        const entry = deltaByJewel.get(id) ?? { key: item.jewel.key, rank: item.jewel.rank, delta: 0 };
+        entry.delta += sign;
+        deltaByJewel.set(id, entry);
+      });
+      count(beforeSlots, 1);
+      count(afterSlots, -1);
+      deltaByJewel.forEach(({ key, rank, delta }) => {
+        if (delta === 0) return;
+        if (simulatedJewels === sourceState.global.jewels) simulatedJewels = { ...simulatedJewels };
+        for (let i = 0; i < Math.abs(delta); i += 1) {
+          simulatedJewels = delta > 0
+            ? addJewelToInventory(simulatedJewels, key, rank, 1, true)
+            : removeJewelFromInventory(simulatedJewels, key, rank, true);
+        }
+      });
     };
     let inventoryIndex: AutoEquipmentInventoryIndex | null = null;
     const getInventoryIndex = (): AutoEquipmentInventoryIndex | null => {
@@ -1746,6 +1730,7 @@ export function HomeScreen({
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.guardian;
         const maxEquipSlots = getMaxSlots(character);
         const simulatedEquipmentSlots = Array.from({ length: maxEquipSlots }, (_, index) => character.equipment[index] ?? null);
+        let jewelBaselineSlots: (Item | null)[] = [...simulatedEquipmentSlots];
         const memoryItemIds = new Set<number>();
         const memoryCBonusNames = new Set<string>();
         const replaceableSlotIndexes = simulatedEquipmentSlots
@@ -1767,17 +1752,28 @@ export function HomeScreen({
           if (resolvedCategories.length === 0) return 0;
           return resolvedCategories.reduce((sum, category) => sum + (equippedCategoryCounts[category] ?? 0), 0);
         };
+        // SpecRef: 7.1.2.2 | Initialize the simulation memory | Memory A/B hold only locked and Super Rare items.
+        // Every other equipped item is reevaluated (step 2), so it must not block its own replacement candidates.
         simulatedEquipmentSlots.forEach((item) => {
-          if (!item) return;
+          if (!item || (item.isLocked !== true && item.superRare <= 0)) return;
           memoryItemIds.add(item.id);
           addItemCBonusSignaturesToMemory(item, memoryCBonusNames);
-          if (item.isLocked === true || item.superRare > 0) {
-            equippedCategoryCounts[item.category] = (equippedCategoryCounts[item.category] ?? 0) + 1;
-          }
+          equippedCategoryCounts[item.category] = (equippedCategoryCounts[item.category] ?? 0) + 1;
         });
 
         if (autoEquipmentMode === 2) {
+          // The replaceable items rejoin the candidate pool beside Inventory, so the simulated set is built as if
+          // every replaceable slot were empty and an equipped item survives only by winning its category again.
+          const currentKeyBySlot = new Map<number, string>();
           replaceableSlotIndexes.forEach((slotIndex) => {
+            const item = simulatedEquipmentSlots[slotIndex];
+            if (!item) return;
+            currentKeyBySlot.set(slotIndex, getVariantKey(item));
+            addItemToSimulatedInventory(item.jewel ? { ...item, jewel: null } : item);
+          });
+
+          const plannedKeys: string[] = [];
+          for (let planned = 0; planned < replaceableSlotIndexes.length; planned += 1) {
             const skippedCategories = new Set<AutoEquipmentTargetCategory>();
             let resolvedSelection: { itemKey: string; targetCategory: AutoEquipmentTargetCategory } | null = null;
 
@@ -1805,18 +1801,9 @@ export function HomeScreen({
               resolvedSelection = { itemKey, targetCategory };
             }
 
-            if (!resolvedSelection) return;
-
+            if (!resolvedSelection) break;
             const variant = simulatedInventory[resolvedSelection.itemKey];
-            if (!variant) return;
-
-            const previousItem = simulatedEquipmentSlots[slotIndex];
-            const candidateValue = getAutoEquipmentSelectionValueForCharacter(character, variant.item);
-            const previousValue = previousItem ? getAutoEquipmentSelectionValueForCharacter(character, previousItem) : Number.NEGATIVE_INFINITY;
-            if (previousItem && candidateValue <= previousValue) {
-              equippedCategoryCounts[previousItem.category] = (equippedCategoryCounts[previousItem.category] ?? 0) + 1;
-              return;
-            }
+            if (!variant) break;
 
             equippedCategoryCounts[variant.item.category] = (equippedCategoryCounts[variant.item.category] ?? 0) + 1;
             if (
@@ -1826,20 +1813,73 @@ export function HomeScreen({
               resolvedFallbackTargetCounts[resolvedSelection.targetCategory] = (resolvedFallbackTargetCounts[resolvedSelection.targetCategory] ?? 0) + 1;
             }
             removeItemFromSimulatedInventory(resolvedSelection.itemKey);
-            simulatedEquipmentSlots[slotIndex] = variant.item;
             memoryItemIds.add(variant.item.id);
             addItemCBonusSignaturesToMemory(variant.item, memoryCBonusNames);
-            dispatchEquipItem(character.id, slotIndex, resolvedSelection.itemKey, partyIndex);
+            plannedKeys.push(resolvedSelection.itemKey);
+          }
+
+          // SpecRef: 7.1.2.4 | Commit: Equipment change | apply only the differences.
+          // A planned item that is already equipped stays in its slot (with its jewel); only the rest move.
+          const openSlots = new Set(replaceableSlotIndexes);
+          const incomingKeys: string[] = [];
+          plannedKeys.forEach((itemKey) => {
+            const keptSlot = replaceableSlotIndexes.find((slotIndex) => openSlots.has(slotIndex) && currentKeyBySlot.get(slotIndex) === itemKey);
+            if (keptSlot === undefined) {
+              incomingKeys.push(itemKey);
+              return;
+            }
+            openSlots.delete(keptSlot);
+          });
+
+          incomingKeys.forEach((itemKey) => {
+            const variant = sourceState.global.inventory[itemKey] ?? simulatedInventory[itemKey];
+            if (!variant) return;
+            // Prefer the slot whose outgoing item shares the category (its jewel can carry over), then an empty slot.
+            const open = replaceableSlotIndexes.filter((slotIndex) => openSlots.has(slotIndex));
+            const slotIndex = open.find((index) => simulatedEquipmentSlots[index]?.category === variant.item.category)
+              ?? open.find((index) => simulatedEquipmentSlots[index] == null)
+              ?? open[0];
+            if (slotIndex === undefined) return;
+            openSlots.delete(slotIndex);
+
+            const previousItem = simulatedEquipmentSlots[slotIndex];
+            dispatchEquipItem(character.id, slotIndex, itemKey, partyIndex);
             summary.equippedCount += 1;
+            let nextItem: Item = variant.item.jewel ? { ...variant.item, jewel: null } : variant.item;
+            // The outgoing item's jewel returns to Inventory with it; keep it on the character when it still fits.
+            if (previousItem?.jewel && isJewelAllowedForCategory(nextItem.category, previousItem.jewel.key)) {
+              dispatchAttachJewel(character.id, slotIndex, previousItem.jewel.key, previousItem.jewel.rank, partyIndex);
+              nextItem = { ...nextItem, jewel: previousItem.jewel };
+            }
+            simulatedEquipmentSlots[slotIndex] = nextItem;
             queueAutoEquipmentNotification(
               party.name,
               character.name,
               character.id,
               slotIndex,
-              variant.item,
+              nextItem,
               previousItem,
               partyIndex,
             );
+          });
+
+          // A replaceable item the plan did not reach (no missing category left for it) stays equipped unless it
+          // would duplicate an item ID or `c.*` bonus of the simulated set.
+          replaceableSlotIndexes.forEach((slotIndex) => {
+            if (!openSlots.has(slotIndex)) return;
+            const item = simulatedEquipmentSlots[slotIndex];
+            if (!item) return;
+            const itemFacts = usesItemFactCache ? getItemFacts(item) : null;
+            const cBonusNames = itemFacts?.cBonusSignatures ?? getItemCBonusSignatures(item);
+            const duplicates = memoryItemIds.has(item.id) || [...cBonusNames].some((bonusName) => memoryCBonusNames.has(bonusName));
+            if (!duplicates) {
+              memoryItemIds.add(item.id);
+              addItemCBonusSignaturesToMemory(item, memoryCBonusNames);
+              return;
+            }
+            dispatchEquipItem(character.id, slotIndex, null, partyIndex);
+            simulatedEquipmentSlots[slotIndex] = null;
+            summary.unequippedCount += 1;
           });
         }
 
@@ -1876,13 +1916,16 @@ export function HomeScreen({
           }
         });
 
+        reconcileSimulatedJewels(jewelBaselineSlots, simulatedEquipmentSlots);
+        jewelBaselineSlots = [...simulatedEquipmentSlots];
+
         if (autoEquipmentMode === 2 && isJewelPriorityParty) {
           const simulatedCharacterForJewel = {
             ...character,
             equipment: simulatedEquipmentSlots,
           };
           const assignments = measure('jewelPlanning', () => (
-            planAutoJewelAssignmentsForCharacter(simulatedCharacterForJewel, sourceState.global.jewels)
+            planAutoJewelAssignmentsForCharacter(simulatedCharacterForJewel, simulatedJewels)
           ));
           // A planned jewel can originate from another equipped slot. Detach
           // every replaced jewel first so ATTACH_JEWEL can draw that combined
@@ -1914,6 +1957,7 @@ export function HomeScreen({
             dispatchAttachJewel(character.id, assignment.slotIndex, assignment.key, assignment.rank, partyIndex);
             summary.jewelAssignmentCount += 1;
           });
+          reconcileSimulatedJewels(jewelBaselineSlots, simulatedEquipmentSlots);
         }
 
       });
@@ -1985,6 +2029,263 @@ export function HomeScreen({
     });
     return plan.summary;
   }, [actions, planAutoEquipment, state]);
+
+  // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | Party equipment controls use the Application API
+  // Equipment intents are serialized in tap order; each is planned against the newest authoritative snapshot.
+  const equipmentIntentQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const dispatchEquipmentIntent = useCallback((characterId: number, intent: EquipmentIntent) => {
+    equipmentIntentQueueRef.current = equipmentIntentQueueRef.current.then(async () => {
+      const adapter = inProcessApiRef.current;
+      if (!adapter) return;
+      const snapshot = applicationApiRef.current!.authority.getSnapshot().state;
+      let commands: ReturnType<typeof planEquipmentIntent>;
+      try {
+        commands = planEquipmentIntent(snapshot, characterId, intent);
+      } catch (error) {
+        console.error('[api-v1] Equipment intent rejected', intent.kind, error);
+        return;
+      }
+      // The manual Auto Equipment button reports what it changed; the plan is deterministic for this snapshot.
+      const partyIndex = snapshot.parties.findIndex((party) => party.characters.some((character) => character.id === characterId));
+      const notifications = intent.kind === 'runAuto' && partyIndex >= 0
+        ? planAutoEquipment(snapshot, [partyIndex], [characterId], { forceFull: true }).notifications
+        : [];
+      for (const command of commands) {
+        const response = await adapter.commit(`commit/build/character/{characterId}/${command.action}`, {
+          pathParameters: { characterId }, parameters: command.parameters, confirmed: command.confirmed,
+        });
+        if (response.error) {
+          console.error('[api-v1] Equipment command failed', command.action, response.error);
+          return;
+        }
+      }
+      for (const { message, partyIndex: notifiedPartyIndex } of notifications) {
+        if (snapshot.parties[notifiedPartyIndex]?.diarySettings.notifyAutoEquipmentPopup === false) continue;
+        actions.addNotification(message, 'normal', 'item', true, { rarity: 'common', isSuperRareItem: false });
+      }
+    });
+  }, [actions, planAutoEquipment]);
+
+  // SpecRef: 9.1.3 | Commit | 3-2-1 {p}/changeExpedition
+  // Destination, mode, depth limit, and difficulty offset changes are Application API commits, serialized in the order they
+  // are made (a slider drag issues one change per step).
+  const expeditionCommandQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const commitExpeditionChange = useCallback((partyIndex: number, parameters: Record<string, unknown>) => {
+    expeditionCommandQueueRef.current = expeditionCommandQueueRef.current.then(async () => {
+      const adapter = inProcessApiRef.current;
+      const partyNumber = applicationApiRef.current?.authority.getSnapshot().state.parties[partyIndex]?.id;
+      if (!adapter || partyNumber === undefined) return;
+      const response = await adapter.commit('commit/expedition/{p}/changeExpedition', { pathParameters: { p: partyNumber }, parameters });
+      if (response.error) console.error('[api-v1] Expedition change failed', parameters, response.error);
+    });
+  }, []);
+
+  // SpecRef: 9.1.3 | Commit | 3-2-4 {p}/resetStatistics
+  const resetExpeditionStatistics = useCallback((partyIndex: number) => {
+    expeditionCommandQueueRef.current = expeditionCommandQueueRef.current.then(async () => {
+      const adapter = inProcessApiRef.current;
+      const partyNumber = applicationApiRef.current?.authority.getSnapshot().state.parties[partyIndex]?.id;
+      if (!adapter || partyNumber === undefined) return;
+      const response = await adapter.commit('commit/expedition/{p}/resetStatistics', { pathParameters: { p: partyNumber }, parameters: {} });
+      if (response.error) console.error('[api-v1] Expedition statistics reset failed', response.error);
+    });
+  }, []);
+
+  // SpecRef: 8.2.4 | Equipment management | Undo and Redo availability comes from the equipment projection
+  const historyCharacter = currentParty.characters[selectedCharacter] ?? currentParty.characters[0];
+  const equipmentProjection = useApiRead<{ validOptions: { undoEquipment: { available: boolean }; redoEquipment: { available: boolean } } }>(
+    inProcessApiRef.current,
+    'read/build/character/{characterId}/equipment',
+    historyCharacter ? { pathParameters: { characterId: historyCharacter.id } } : null,
+    [historyCharacter?.id, historyCharacter?.equipment, state.global.inventory, state.global.jewels, currentParty.level],
+  );
+
+  // SpecRef: 8.2 | UI_PARTY | Saved equipment sets and the deity pane render from projections
+  const equipmentSetProjection = useApiRead<{ equipmentSets: Parameters<typeof parseSavedEquipmentSet>[0][] }>(
+    inProcessApiRef.current,
+    'read/build/character/{characterId}/equipmentSet',
+    historyCharacter ? { pathParameters: { characterId: historyCharacter.id }, parameters: { isEquipmentSetDetail: true } } : null,
+    [historyCharacter?.id, state.global.savedEquipmentSets],
+  );
+  const savedEquipmentSetsView = useMemo(
+    () => (equipmentSetProjection?.equipmentSets ?? []).map(parseSavedEquipmentSet),
+    [equipmentSetProjection],
+  );
+  // The owned inventory and Jewel counts are only needed while the Party tab is on screen.
+  const isPartyTabVisible = isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'party' : activeTab === 'party';
+
+  // SpecRef: 8.2 | UI_PARTY | The party pane, member list, and deity pane render from `read/observation/party`.
+  // Re-read only when a displayed fact changes: the selected party's members, level, experience, and deity, or any party's
+  // deity and member identities (the deity assignment, naming, and Mimorian rules read every party).
+  const partiesSignature = state.parties.map((party) => `${party.id}:${party.deity.name}:${party.characters.map((character) => `${character.id}/${character.name}/${character.raceId}/${character.gender}/${character.mimorianEnemyId ?? ''}`).join(',')}`).join('|');
+  const partyObservation = useApiRead<{ partyInfo: PartyProjection }>(
+    inProcessApiRef.current, 'read/observation/party', { parameters: { partyNumber: currentParty.id } },
+    [currentParty.id, currentParty.characters, currentParty.level, currentParty.experience, currentParty.deity.name, partiesSignature, state.global.unlockedMimorianEnemyIds],
+    isPartyTabVisible,
+  );
+  const partyProjection = partyObservation?.partyInfo ?? null;
+
+  // SpecRef: 8.3 | UI_EXPEDITION | The pane reads its state, clocks, HP, goals, and controls from the projection.
+  // Step-based state changes are server-gated, so refresh at the earliest projected boundary rather than deriving a
+  // future room from the already-resolved log in the renderer.
+  const isExpeditionTabVisible = isPartyExpeditionSplitViewEnabled || activeTab === 'expedition';
+  const [expeditionProjectionRefresh, setExpeditionProjectionRefresh] = useState(0);
+  const expeditionObservation = useApiRead<{ expeditionInfo: ExpeditionProjection }>(
+    inProcessApiRef.current,
+    'read/observation/expedition',
+    {},
+    [state.parties, partyCycles, pendingAfkMs, effectiveDebugSettings.timeSpeed, expeditionProjectionRefresh],
+    isExpeditionTabVisible,
+  );
+  const expeditionProjection = expeditionObservation?.expeditionInfo ?? null;
+  useEffect(() => {
+    if (!isExpeditionTabVisible || !expeditionProjection) return;
+    const now = Date.now();
+    const nextInstants = expeditionProjection.parties.flatMap((party) => [
+      party.progress?.nextChangeAt,
+      party.exploration?.nextRevealAt,
+      party.chargeStock < 6 && party.chargeDuration > 0
+        ? new Date(now + party.chargeDuration * 1000).toISOString()
+        : null,
+    ]).filter((value): value is string => value !== null).map((value) => Date.parse(value)).filter(Number.isFinite);
+    if (nextInstants.length === 0) return;
+    const timer = window.setTimeout(
+      () => setExpeditionProjectionRefresh((value) => value + 1),
+      Math.max(25, Math.min(...nextInstants) - now + 5),
+    );
+    return () => window.clearTimeout(timer);
+  }, [expeditionProjection, isExpeditionTabVisible]);
+  // SpecRef: 8.3 | UI_EXPEDITION | E3 log projection/adapter
+  // Every party's log is rendered from the API alone: an exploring party's revealed rooms come from the Expedition projection,
+  // any other party's newest disclosed log from `latestBattleLog` (public facts plus its supporting `resources`). The pane never
+  // receives, and this view never reads, the retained log from the game state. The last result stays on screen while a re-read
+  // is in flight and while the tab is hidden, so switching back never shows an empty pane.
+  const latestBattleLogInputs = useMemo(
+    () => state.parties.map((party) => ({ pathParameters: { p: party.id } })),
+    [state.parties],
+  );
+  const latestBattleLogProjections = useApiReadMany<LatestBattleLogProjection>(
+    inProcessApiRef.current,
+    'read/expedition/{p}/latestBattleLog',
+    isExpeditionTabVisible ? latestBattleLogInputs : null,
+    [state.parties, partyCycles, pendingAfkMs, expeditionProjectionRefresh],
+  );
+  const expeditionLogViews = useMemo(() => {
+    const views = new Map<number, ExpeditionLogView | null>();
+    state.parties.forEach((party, partyIndex) => {
+      const exploration = expeditionProjection?.parties.find((entry) => entry.partyNumber === party.id)?.exploration;
+      views.set(party.id, buildPartyExpeditionLogView({
+        exploration,
+        latestBattleLog: latestBattleLogProjections?.[partyIndex],
+      }));
+    });
+    return views;
+  }, [expeditionProjection, latestBattleLogProjections, state.parties]);
+  // SpecRef: 8.4 | UI_BASE | The Base panes read the Base projection and commit through the Application API.
+  // The Shop lineup rotates with the clock, so the projection is re-read when the next scheduled refresh arrives.
+  const isBaseTabVisible = isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'base' : activeTab === 'base';
+  const [baseProjectionRefresh, setBaseProjectionRefresh] = useState(0);
+  const baseObservation = useApiRead<{ baseInfo: BaseProjection }>(
+    inProcessApiRef.current, 'read/observation/base', {}, [state.global, state.parties, baseProjectionRefresh], isBaseTabVisible,
+  );
+  const baseProjection = baseObservation?.baseInfo ?? null;
+  useEffect(() => {
+    if (!isBaseTabVisible || !baseProjection) return;
+    const timer = window.setTimeout(() => setBaseProjectionRefresh((value) => value + 1), Math.max(1000, baseProjection.shop.paidRefreshCountdown * 1000 + 1000));
+    return () => window.clearTimeout(timer);
+  }, [baseProjection?.shop.refreshesAt, baseProjection?.shop.paidRefreshCountdown, isBaseTabVisible]);
+  // SpecRef: 8.4.1 | Shop (お店) | Lineup: showing the Shop for a stock period saves its lineup, so the identified rolls the player
+  // sees are the ones that are kept. The projection is re-read afterwards (state.global changes).
+  const shopLineupStockKey = `${baseProjection?.shop.refreshesAt ?? ''}-${state.global.shopRefreshCounts[getShopHourKey(new Date())] ?? 0}`;
+  const ensureShopLineupRef = useRef(actions.ensureShopLineup);
+  ensureShopLineupRef.current = actions.ensureShopLineup;
+  const hasBaseProjection = baseProjection !== null;
+  useEffect(() => {
+    if (!isBaseTabVisible || !hasBaseProjection) return;
+    ensureShopLineupRef.current();
+  }, [isBaseTabVisible, hasBaseProjection, shopLineupStockKey]);
+  const baseCommandQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const commitBase = useCallback((operation: string, parameters: Record<string, unknown>) => {
+    baseCommandQueueRef.current = baseCommandQueueRef.current.then(async () => {
+      const adapter = inProcessApiRef.current;
+      if (!adapter) return;
+      const response = await adapter.commit(operation, { parameters });
+      if (response.error) console.error('[api-v1] Base command failed', operation, parameters, response.error);
+    });
+  }, []);
+  // SpecRef: 9.1.3 | 3-4-3 purchaseShopItems | The purchase names the lineup the player saw, so a rotation in between is refused.
+  const shopLineupIdRef = useRef<string | null>(null);
+  shopLineupIdRef.current = baseProjection?.shop.lineupId ?? null;
+  const buyShopItem = useCallback((shopItemId: number) => commitBase('commit/base/purchaseShopItems', { lineupId: shopLineupIdRef.current ?? '', items: [{ shopItemId }] }), [commitBase]);
+  const refreshShop = useCallback(() => commitBase('commit/base/paidShopRefresh', {}), [commitBase]);
+  const sellInventoryItem = useCallback((itemFormat: string) => commitBase('commit/base/sellInventoryItems', { items: [itemFormat] }), [commitBase]);
+  const unlockSoldItem = useCallback((itemFormat: string) => commitBase('commit/base/unlockSoldItems', { items: [itemFormat] }), [commitBase]);
+  const changeJewelPriorityParty = useCallback((partyNumber: number | null) => commitBase('commit/base/changeJewelPriorityParty', { partyNumber: partyNumber ?? 'none' }), [commitBase]);
+  const inventoryView = useMemo(() => (baseProjection ? buildInventoryView(baseProjection) : null), [baseProjection]);
+  const jewelPriorityRead = useApiRead<{ validOptions: { partyNumber: (number | 'none')[] } }>(
+    inProcessApiRef.current, 'read/base/jewelPriorityParty', {}, [state.parties.length], isBaseTabVisible,
+  );
+  const jewelPriorityPartyNumbers = useMemo(() => (jewelPriorityRead?.validOptions.partyNumber ?? []).filter((value): value is number => value !== 'none'), [jewelPriorityRead]);
+  const unlockEnemyForm = useCallback((enemyId: number) => commitBase('commit/base/unlockForm', { enemyId }), [commitBase]);
+  // The Altar's forms are read once for every category, so switching category is instant; they are re-read after any commit
+  // (the reader subscribes) and when the Prana, the victories, or the unlocked forms change.
+  const enemyFormList = useApiRead<{ current: { enemyFormList: EnemyFormProjection[] } }>(
+    inProcessApiRef.current, 'read/base/enemyFormList', {},
+    [state.global.prana, state.global.altarVictoriesByEnemyType, state.global.unlockedMimorianEnemyIds],
+    isBaseTabVisible && activeBaseSubTab === 'altar',
+  );
+  // SpecRef: 9.1.4.17 | UI state ownership | Retained selections come from `read/observation/setting` (uiPreferences)
+  const settingObservation = useApiRead<{ settingInfo: { uiPreferences: Array<{ key: string; value: string | number | boolean }> } }>(
+    inProcessApiRef.current, 'read/observation/setting', {}, [state.global.uiPreferences], isPartyTabVisible,
+  );
+  const equipCategoryPreferences = useMemo(() => {
+    const preferences: Record<number, string> = {};
+    for (const { key, value } of settingObservation?.settingInfo.uiPreferences ?? []) {
+      if (key.startsWith(`${PARTY_EQUIP_CATEGORY_FAMILY}.`) && typeof value === 'string') preferences[Number(key.slice(PARTY_EQUIP_CATEGORY_FAMILY.length + 1))] = value;
+    }
+    return preferences;
+  }, [settingObservation]);
+  const partyView = useMemo(() => partyProjection ? buildPartyView(partyProjection) : null, [partyProjection]);
+  const partySummaries = useMemo(() => partyProjection ? buildPartySummaries(partyProjection) : [], [partyProjection]);
+
+  // `details: none` keeps each result to its base format (`<Item Format>/<quantity>` and `<jewelType>:<jewelRank>/<quantity>`).
+  const ownedItemsProjection = useApiRead<{ items: string[] }>(
+    inProcessApiRef.current, 'read/base/searchItems', { parameters: { state: 'owned', details: 'none', limit: SEARCH_ITEMS_LIMIT } }, [state.global.inventory], isPartyTabVisible,
+  );
+  const ownedJewelsProjection = useApiRead<{ items: string[] }>(
+    inProcessApiRef.current, 'read/base/searchItems', { parameters: { state: 'owned', category: 'jewel', details: 'none', limit: SEARCH_ITEMS_LIMIT } }, [state.global.jewels], isPartyTabVisible,
+  );
+  const ownedInventoryView = useMemo(() => parseInventoryStacks(ownedItemsProjection?.items ?? []), [ownedItemsProjection]);
+  const ownedJewelsView = useMemo(() => parseJewelStacks(ownedJewelsProjection?.items ?? []), [ownedJewelsProjection]);
+  const donationProjection = useApiRead<{ gods: string[] }>(
+    inProcessApiRef.current, 'resources/donationBox', {},
+    [state.global.deityDonations, state.global.unlockedDeities],
+  );
+  const deityView = useMemo(() => {
+    const donations: Record<string, number> = {};
+    const unlocked: string[] = [];
+    for (const god of donationProjection?.gods ?? []) {
+      const [id, , donated] = god.split('/');
+      const name = getDeityNameFromId(id);
+      if (name === null) continue;
+      unlocked.push(name);
+      donations[name] = Number(donated);
+    }
+    return { donations, unlocked };
+  }, [donationProjection]);
+  // SpecRef: 8.6 | UI_SETTING | Donation (寄付) — the Setting tab's donation-rank panel; `deityView` above feeds a
+  // different (Party-tab) display and only keeps the donated amount, not the rank/next-requirement this panel shows.
+  const donationRows = useMemo(() => (donationProjection?.gods ?? []).flatMap((god) => {
+    const [id, rank, donatedGold, nextRankGold] = god.split('/');
+    const deityName = getDeityNameFromId(id);
+    if (deityName === null) return [];
+    return [{
+      deityName,
+      donationGold: Number(donatedGold),
+      rank: Number(rank),
+      nextRankDonationRequirement: nextRankGold === 'MAX' ? null : Number(nextRankGold),
+    }];
+  }).sort((a, b) => (b.donationGold - a.donationGold) || a.deityName.localeCompare(b.deityName, 'ja')), [donationProjection]);
 
   useEffect(() => {
     if (!__AUTO_EQUIPMENT_PROFILE_ENABLED__) return;
@@ -2281,7 +2582,17 @@ export function HomeScreen({
     });
   }, [state.parties]);
 
-  const handleResetGame = useCallback(() => {
+  // SpecRef: 9.1.4.15 | `commit/setting/backup/reset` already produces the same `createFreshGameState(language)` the
+  // reducer's `RESET_GAME` did; `skipConfirmation: true` is right here because the Setting tab already ran its own
+  // native confirm dialog before calling this — a second internal challenge/confirm round trip would be a silent,
+  // redundant extra step the user never sees. The publish step (`persistApiStateReplacement`/`publishApiState`)
+  // already installs the fresh state, so no separate reducer dispatch is needed.
+  const handleResetGame = useCallback(async () => {
+    const result = await inProcessApiRef.current?.commit('commit/setting/backup/reset', { parameters: { skipConfirmation: true } });
+    if (result?.error) {
+      console.error('Failed to reset game state via the Application API:', result.error);
+      return;
+    }
     afkRuntimeTrace.cancelRecovery('game_reset');
     autoRepeatEnabledRef.current = true;
     setIsAutoRepeatEnabled(true);
@@ -2315,8 +2626,7 @@ export function HomeScreen({
     } catch (error) {
       console.error('Failed to clear AFK runtime state:', error);
     }
-    actions.resetGame();
-  }, [actions, state, updateAfkTraceCoordinator]);
+  }, [state, updateAfkTraceCoordinator]);
 
   useEffect(() => {
     gameModeRef.current = runtimeGameMode;
@@ -2341,7 +2651,6 @@ export function HomeScreen({
 
   const afkSummaryBaselineRef = useRef<AfkSummaryStats[] | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
-  const { partyStats, characterStats } = computePresentationPartyStats(currentParty);
 
   useEffect(() => {
     preloadRaceIcons();
@@ -2395,7 +2704,6 @@ export function HomeScreen({
     hasHydratedAfkRef.current = true;
 
     try {
-      if (apiStateRef.current.apiRuntime?.evaluation) return;
       const savedRuntime = localStorage.getItem(AFK_RUNTIME_STORAGE_KEY);
       if (!savedRuntime) return;
 
@@ -2541,7 +2849,7 @@ export function HomeScreen({
       const headlineFloorName = latestDisclosedEntry?.floor
         ? getLocalizedExpeditionFloorConcept(disclosedLog!.dungeonId, latestDisclosedEntry.floor)
           ?? t('expedition.floor', { floor: formatNumber(latestDisclosedEntry.floor) })
-        : disclosedLog?.dungeonName
+        : (disclosedLog ? renderExpeditionMetadata(disclosedLog).dungeonName : undefined)
           ?? DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId)?.name
           ?? '-';
       const chargeDisplay = formatInstantExpeditionChargeDisplay(getInstantExpeditionChargeState(
@@ -2648,7 +2956,7 @@ export function HomeScreen({
           title: droppedItemTitle || t(`desktopNotification.trigger.${primaryTrigger}`),
           body: t('desktopNotification.diaryBody', {
             party: `PT${partyIndex + 1}`,
-            dungeon: log.unlockDetail ?? log.sideQuestDetail ?? log.expeditionLog.dungeonName,
+            dungeon: renderDiaryMetadata(log).unlockDetail ?? renderDiaryMetadata(log).sideQuestDetail ?? renderExpeditionMetadata(log.expeditionLog).dungeonName,
           }),
           kind: 'diary',
           partyId: party.id,
@@ -2665,7 +2973,7 @@ export function HomeScreen({
       const partyIndex = payload.partyId === undefined
         ? state.selectedPartyIndex
         : state.parties.findIndex((party) => party.id === payload.partyId);
-      if (partyIndex >= 0) actions.selectParty(partyIndex);
+      const selectActivatedParty = () => { if (partyIndex >= 0) actions.selectParty(partyIndex); };
       if (isPartyExpeditionSplitViewEnabled) {
         setActiveWideModeSecondaryTab('diary');
       } else {
@@ -2673,7 +2981,19 @@ export function HomeScreen({
       }
       if (payload.diaryLogId) {
         setDiaryExpandedLogs((previous) => ({ ...previous, [payload.diaryLogId!]: true }));
-        actions.markDiaryLogSeen(payload.diaryLogId);
+        const partyNumber = payload.partyId ?? state.parties[partyIndex]?.id;
+        if (partyNumber !== undefined) {
+          const acknowledgement = inProcessApiRef.current?.commit('commit/diary/diaryEntry/markAsRead', {
+            parameters: { partyNumber, diaryEntryId: payload.diaryLogId },
+          });
+          if (!acknowledgement) selectActivatedParty();
+          else void acknowledgement.then((response) => {
+            if (response?.error) console.error('[api-v1] Diary notification acknowledgement failed', response.error);
+            selectActivatedParty();
+          });
+        } else selectActivatedParty();
+      } else {
+        selectActivatedParty();
       }
     });
   }, [actions, isPartyExpeditionSplitViewEnabled, state.parties, state.selectedPartyIndex]);
@@ -2704,9 +3024,9 @@ export function HomeScreen({
 
       const stats = {
         Clear: Math.max(0, party.expeditionStats.Clear - baseline.Clear),
-        Turned_Back: Math.max(0, party.expeditionStats.Turned_Back - baseline.Turned_Back),
-        Draw_Retreat: Math.max(0, party.expeditionStats.Draw_Retreat - baseline.Draw_Retreat),
-        Wounded_Retreat: Math.max(0, party.expeditionStats.Wounded_Retreat - baseline.Wounded_Retreat),
+        Return: Math.max(0, party.expeditionStats.Return - baseline.Return),
+        Draw: Math.max(0, party.expeditionStats.Draw - baseline.Draw),
+        Retreat: Math.max(0, party.expeditionStats.Retreat - baseline.Retreat),
         Defeat: Math.max(0, party.expeditionStats.Defeat - baseline.Defeat),
         donatedGold: Math.max(0, party.expeditionStats.donatedGold - baseline.donatedGold),
         savedGold: Math.max(0, party.expeditionStats.savedGold - baseline.savedGold),
@@ -3165,7 +3485,7 @@ export function HomeScreen({
         afkActiveChunkJobsRef.current.has(partyIndex)
         || afkPartyTransactionLocksRef.current.has(partyIndex)
       ) return null;
-      const cycleDurationMs = getApproxAfkCycleDurationMs(party, durationScale);
+      const cycleDurationMs = getApproxAfkCycleDurationMs(party, durationScale, { deityDonations: dispatchState.global.deityDonations });
       const remainingMs = afkRemainingMsByPartyRef.current[partyIndex] ?? 0;
       // SpecRef: 5.1 | PROGRESS | Chunk
       // Full Chunks contain 30 Cycles. At the end of recovery, every remaining
@@ -3654,10 +3974,8 @@ export function HomeScreen({
 
         const durationScale = getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus);
         const exploreDurationMultiplier = getPartyStateDurationMultiplier(party, 'explore');
-        const approximateCycleDurationMs = Math.max(
-          1,
-          Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * durationScale * exploreDurationMultiplier),
-        );
+        // The same Cycle length AFK catch-up charged, so the kept partial Cycle maps onto the same fraction.
+        const approximateCycleDurationMs = getApproxAfkCycleDurationMs(party, durationScale, { deityDonations: state.global.deityDonations });
         const partialAfkMs = Math.max(
           0,
           Math.min(
@@ -3876,11 +4194,23 @@ export function HomeScreen({
     }
   }, [getRuntimeSnapshot]);
 
+  // SpecRef: 9.1.4.15 | `skipConfirmation: true`: the Setting tab already ran its own native confirm dialogs
+  // (integrity warnings, then a final "replace the save?" confirm) before calling this — a second internal
+  // challenge/confirm round trip would be a silent, redundant extra step the user never sees. The uploaded backup
+  // is the client's own re-serialization of the already-locally-validated `nextState`, matching exactly what a real
+  // downloaded-then-reuploaded backup file's bytes would be (`commit/setting/backup/export`'s own output shape).
   const handleImportGameState = useCallback(async (nextState: GameState, rawRuntimeSnapshot?: unknown) => {
-    const result = await actions.importGameState(nextState);
-    if (!result.state) return result;
+    const backupPayload = encodePersistedState(JSON.stringify(serializeGameState(nextState)));
+    const result = await inProcessApiRef.current?.commit('commit/setting/backup/import', {
+      parameters: { skipConfirmation: true },
+      uploadedFiles: { backup: { contentBase64: base64FromUtf8(backupPayload) } },
+    });
+    if (result?.error) {
+      const error = result.error as { message?: unknown; code?: unknown };
+      return { state: null, errorLog: String(error.message ?? error.code ?? 'import_failed') };
+    }
 
-    const importedRuntime = normalizeRuntimeSnapshot(rawRuntimeSnapshot, result.state.parties.length);
+    const importedRuntime = normalizeRuntimeSnapshot(rawRuntimeSnapshot, nextState.parties.length);
     const now = Date.now();
     const nextAutoRepeatEnabled = importedRuntime?.autoRepeatEnabled ?? true;
     const nextCycles = importedRuntime?.partyCycles ?? {};
@@ -3900,7 +4230,7 @@ export function HomeScreen({
     shouldShowAfkSummaryRef.current = importedRuntime?.shouldShowAfkSummary ?? false;
     afkChunkCursorRef.current = importedRuntime?.afkChunkCursor ?? null;
     afkRemainingMsByPartyRef.current = importedRuntime?.afkRemainingMsByParty
-      ?? Object.fromEntries(result.state.parties.map((_, partyIndex) => [partyIndex, nextPendingAfkMs]));
+      ?? Object.fromEntries(nextState.parties.map((_, partyIndex) => [partyIndex, nextPendingAfkMs]));
     afkInFlightCompletedMsByPartyRef.current = {};
     shouldRebuildPartyCyclesAfterAfkRef.current = nextPendingAfkMs > 0;
     lastCheckpointAtRef.current = importedRuntime?.checkpointAt ?? now;
@@ -3912,8 +4242,8 @@ export function HomeScreen({
       console.error('Failed to replace AFK runtime state during import:', error);
       window.alert(`${t('save.writeWarning')}\n\n${error instanceof Error ? error.message : String(error)}`);
     }
-    return result;
-  }, [actions, getRuntimeSnapshot]);
+    return { state: nextState, errorLog: null };
+  }, [getRuntimeSnapshot]);
 
   useEffect(() => {
     persistAfkRuntimeState();
@@ -4347,11 +4677,29 @@ export function HomeScreen({
     };
   }, [processTimeCheckpoint]);
 
+  const isAfkRecoveryPending = pendingAfkMs > 0;
   useEffect(() => {
+    actions.setRecoverySaveMode(isAfkRecoveryPending);
+  }, [actions.setRecoverySaveMode, isAfkRecoveryPending]);
+
+  useEffect(() => {
+    let recoveryCheckpointInFlight = false;
+    let lastRecoveryCheckpointAt = performance.now();
     const id = window.setInterval(async () => {
       // SpecRef: 5.1.1.1 | AFK Recovery Performance Requirements | Saving and persistence
       // Flush authoritative game state before writing the matching AFK cursor checkpoint.
-      if (pendingAfkMsRef.current > 0) await actions.flushSave().catch(() => undefined);
+      // During recovery, checkpoints are spaced out and never overlap.
+      if (pendingAfkMsRef.current > 0) {
+        if (recoveryCheckpointInFlight
+          || performance.now() - lastRecoveryCheckpointAt < AFK_RECOVERY_CHECKPOINT_INTERVAL_MS) return;
+        recoveryCheckpointInFlight = true;
+        try {
+          await actions.flushSave().catch(() => undefined);
+        } finally {
+          recoveryCheckpointInFlight = false;
+          lastRecoveryCheckpointAt = performance.now();
+        }
+      }
       persistAfkRuntimeState();
     }, 5000);
 
@@ -4380,8 +4728,9 @@ export function HomeScreen({
     const persistLatestCheckpoint = () => {
       const now = Date.now();
       lastCheckpointAtRef.current = now;
-      // pagehide/beforeunload cannot guarantee that an asynchronous worker flush completes.
-      void actions.flushSave().catch(() => undefined);
+      // pagehide/beforeunload cannot wait for the worker, so the game state is made
+      // durable synchronously before the matching AFK cursor is written.
+      actions.saveNow();
       persistAfkRuntimeState(now);
     };
 
@@ -4400,7 +4749,7 @@ export function HomeScreen({
       window.removeEventListener('pagehide', persistLatestCheckpoint);
       document.removeEventListener('visibilitychange', handleVisibilityPersist);
     };
-  }, [actions.flushSave, persistAfkRuntimeState]);
+  }, [actions.saveNow, persistAfkRuntimeState]);
 
   // Item gain notifications after selling phase
   useEffect(() => {
@@ -4523,7 +4872,7 @@ export function HomeScreen({
       if (prevQuest && !nextQuest && !suppressNotificationsForAfkEmulation && party.diarySettings.notifySideQuestPopup) {
         const latestDiary = party.diaryLogs?.[0];
         if (latestDiary?.triggers?.includes('sideQuest')) {
-          const successMessage = getSideQuestSuccessMessage(party.name, latestDiary.sideQuestDetail);
+          const successMessage = getSideQuestSuccessMessage(party.name, renderDiaryMetadata(latestDiary).sideQuestDetail);
           if (successMessage) {
             actions.addNotification(successMessage);
           }
@@ -4572,9 +4921,11 @@ export function HomeScreen({
         });
 
         const autoSoldVariant = Object.values(state.global.inventory).find((variant) => {
-          if (variant.item.id !== itemId || variant.status !== 'sold') return false;
+          if (variant.item.id !== itemId) return false;
           const previousVariant = prevInventoryRef.current[getVariantKey(variant.item)];
-          return previousVariant?.status === 'sold' && previousVariant.count === variant.count;
+          if (!previousVariant || previousVariant.count !== variant.count) return false;
+          return (previousVariant.status === 'sold' && variant.status === 'sold')
+            || (previousVariant.status === 'owned' && variant.status === 'owned' && variant.count >= ITEM_MAX_STACK);
         });
 
         const wasAutoSold = !purchasedVariant && Boolean(autoSoldVariant);
@@ -4813,104 +5164,348 @@ export function HomeScreen({
 
     notifyExpeditionRewardsIfNeeded(party, partyIndex);
 
-    if (triggerGodsBattle && party.sideQuest) {
-      actions.cancelSideQuest(partyIndex);
-      if (party.diarySettings.notifySideQuestPopup) actions.addNotification(t('home.notification.sideQuestCancelledByGodBattle', { party: party.name }));
+    if (triggerGodsBattle && party.sideQuest && party.diarySettings.notifySideQuestPopup) {
+      actions.addNotification(t('home.notification.sideQuestCancelledByGodBattle', { party: party.name }));
     }
 
-    pendingGodsBattleByPartyRef.current[partyIndex] = false;
-    if (!isColosseumSortie) {
-      actions.consumeInstantExpeditionStock(
-        partyIndex,
-        now,
-        getTimeSpeedScale(effectiveDebugSettings, hasActiveTimeSpeedBonus),
-      );
-    }
-    if (cycle?.state === 'explore') {
-      actions.finalizeDiaryLog(partyIndex);
-    }
-    actions.clearPendingProfit(partyIndex);
-    actions.healPartyHp(partyIndex, partyStats.hp);
     // SpecRef: 5.1.1 | Party State Machine | Immediate 出撃 / 神魔戦
-    instantSortieRewardNotificationPendingRef.current[partyIndex] = true;
-    actions.resolveInstantExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, now, effectiveOrcaEnemyLevelOffset);
-    actions.rollPartySleepiness(partyIndex);
-    // SpecRef: 5.1.1 | Party State Machine | Instant full-cycle sortie
-    // Manual expeditions and Gods Battles resolve the expedition and its return tail immediately,
-    // leaving the runtime at the beginning of rest so normal rest healing still occurs.
-    const finalRestDurationMs = getStateDurationMs(party, 'rest');
-    setPartyCycles((prev) => ({
-      ...prev,
-      [partyIndex]: {
-        state: 'rest',
-        stateStartedAt: now,
-        durationMs: finalRestDurationMs,
-        restInitialTotalSteps: 1,
-        isCurrentExpeditionGodsBattle: false,
-      },
-    }));
+    // SpecRef: 9.1.3 | Commit | 3-2-2 {p}/sortie
+    // The expedition itself is the Application API's sortie: the same reducer sequence, and the reset of the live party
+    // cycle to the beginning of rest applied through `sortieCycleWritesRef` once the commit is durable. Only the popups
+    // above (refusals, start, stolen profit, pending rewards) remain here, because they are presentation.
+    const adapter = inProcessApiRef.current;
+    if (!adapter) return;
+    void adapter.commit(triggerGodsBattle ? 'commit/expedition/{p}/godsBattle' : 'commit/expedition/{p}/sortie', {
+      pathParameters: { p: party.id }, parameters: {},
+    }).then((response) => {
+      if (response.error) console.error('[api-v1] Sortie failed', response.error);
+    });
   };
   const triggerSortieRef = useRef(triggerSortie);
   triggerSortieRef.current = triggerSortie;
+  // The latest log is disclosed only once a party is no longer exploring. This mirrors the Expedition tab's own memory and
+  // gives the Application API the same no-spoiler view of `latestBattleLog` and the outcome fields.
+  useEffect(() => {
+    const previous = disclosedExpeditionLogsRef.current;
+    disclosedExpeditionLogsRef.current = state.parties.map((party, index) => (
+      partyCycles[index]?.state === 'explore' && index < previous.length
+        ? previous[index] ?? null
+        : party.lastExpeditionLog ?? null
+    ));
+  }, [state.parties, partyCycles]);
+  // The Application API's sortie (Spec 9.1.3, 3-2-2) resets the live cycle exactly as `triggerSortie` above does, and sets the
+  // same presentation flags so the reward popups follow.
+  restDurationMsRef.current = (party) => getStateDurationMs(party, 'rest');
+  sortieCycleWritesRef.current = (writes) => {
+    writes.forEach(({ partyIndex }) => {
+      pendingGodsBattleByPartyRef.current[partyIndex] = false;
+      instantSortieRewardNotificationPendingRef.current[partyIndex] = true;
+    });
+    setPartyCycles((previous) => {
+      const next = { ...previous };
+      writes.forEach(({ partyIndex, cycle }) => { next[partyIndex] = cycle; });
+      return next;
+    });
+  };
   const handleTriggerSortie = useCallback((partyIndex: number, triggerGodsBattle: boolean = false) => {
     triggerSortieRef.current(partyIndex, triggerGodsBattle);
   }, []);
+  // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun
+  // The Expedition pane's forecast is the Application API's private 1,000-run forecast, read through the trusted in-process
+  // adapter; the read returns when every run has finished, so the pane shows no running count.
   const handleSimulateExpedition = useCallback(async (
     partyIndex: number,
     onProgress?: (completed: number, total: number) => void,
-  ) => {
+  ): Promise<ExpeditionSimulationResult> => {
+    const adapter = inProcessApiRef.current;
+    const partyNumber = applicationApiRef.current?.authority.getSnapshot().state.parties[partyIndex]?.id;
+    if (!adapter || partyNumber === undefined) throw new Error('simulation_unavailable');
     memoryMonitor.setRuntime('simulation', effectiveDebugSettings.timeSpeed);
+    simulationProgressListenerRef.current = onProgress ?? null;
     try {
-      return await apiActionsRef.current.simulateExpedition(partyIndex, gameModeRef.current, onProgress, effectiveOrcaEnemyLevelOffset);
+      const response = await adapter.read('read/expedition/{p}/simulationRun', { pathParameters: { p: partyNumber }, parameters: { numberOfRun: 1_000 } });
+      if (response.error) throw new Error(String((response.error as { code?: unknown }).code));
+      return parseSimulationRunData(response.data as SimulationRunData);
     } finally {
+      if (simulationProgressListenerRef.current === (onProgress ?? null)) simulationProgressListenerRef.current = null;
       memoryMonitor.setRuntime(
         pendingAfkMsRef.current > 0 ? 'afk' : autoRepeatEnabledRef.current ? 'online' : 'idle',
         effectiveDebugSettings.timeSpeed,
       );
     }
-  }, [effectiveDebugSettings.timeSpeed, effectiveOrcaEnemyLevelOffset]);
+  }, [effectiveDebugSettings.timeSpeed]);
 
   const isDiaryTabVisible = isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'diary'
     : activeTab === 'diary';
-  const selectedDiaryPartyIndexRef = useRef(0);
-  const handleSelectedDiaryPartyIndexChange = useCallback((partyIndex: number) => {
-    selectedDiaryPartyIndexRef.current = partyIndex;
+  // SpecRef: 8.5 / 9.1.4.17 | The Diary pane receives only API summaries and retained-log projections. The shared Party
+  // selection remains persisted game state; settings and read acknowledgement are serialized Application API commits.
+  const diaryObservation = useApiRead<{ diaryInfo: DiaryProjection }>(
+    inProcessApiRef.current,
+    'read/observation/diary',
+    { parameters: { partyNumber: currentParty.id } },
+    [state.parties, currentParty.id],
+    isDiaryTabVisible,
+  );
+  const diaryProjection = diaryObservation?.diaryInfo ?? null;
+  const selectedDiaryProjection = diaryProjection?.parties.find((party) => party.partyNumber === diaryProjection.effectiveSelection.partyNumber) ?? null;
+  const diaryBattleLogInputs = useMemo(
+    () => (selectedDiaryProjection?.entries ?? []).flatMap((entry) => entry.battleLog?.availability.available
+      ? [{ pathParameters: { p: selectedDiaryProjection!.partyNumber }, parameters: { logId: entry.battleLog.logId } }]
+      : []),
+    [selectedDiaryProjection],
+  );
+  const diaryBattleLogProjections = useApiReadMany<LatestBattleLogProjection>(
+    inProcessApiRef.current,
+    'read/expedition/{p}/latestBattleLog',
+    isDiaryTabVisible ? diaryBattleLogInputs : null,
+    [state.parties, diaryProjection?.effectiveSelection.partyNumber],
+  );
+  const diaryView = useMemo(
+    () => buildDiaryTabView(diaryProjection, diaryBattleLogProjections),
+    [diaryBattleLogProjections, diaryProjection],
+  );
+  const diaryCommandQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const markDiaryEntriesRead = useCallback((partyNumber: number, diaryEntryId: string | 'ALL') => {
+    if (apiControlActiveRef.current) return;
+    diaryCommandQueueRef.current = diaryCommandQueueRef.current.then(async () => {
+      const response = await inProcessApiRef.current?.commit('commit/diary/diaryEntry/markAsRead', {
+        parameters: { partyNumber, diaryEntryId },
+      });
+      if (response?.error) console.error('[api-v1] Diary read acknowledgement failed', response.error);
+    });
   }, []);
+  const updateDiarySettings = useCallback((partyNumber: number, settings: Partial<DiarySettings>) => {
+    diaryCommandQueueRef.current = diaryCommandQueueRef.current.then(async () => {
+      const response = await inProcessApiRef.current?.commit(`commit/diary/${partyNumber}/diarySetting`, { parameters: settings });
+      if (response?.error) console.error('[api-v1] Diary settings change failed', response.error);
+    });
+  }, []);
+  const selectedDiaryPartyNumberRef = useRef(currentParty.id);
+  selectedDiaryPartyNumberRef.current = currentParty.id;
+  const selectDiaryParty = useCallback((partyNumber: number) => {
+    if (partyNumber === selectedDiaryPartyNumberRef.current) return;
+    const previousPartyNumber = selectedDiaryPartyNumberRef.current;
+    selectedDiaryPartyNumberRef.current = partyNumber;
+    // SpecRef: 9.1.3 | 1-3 logIn | Navigation remains available while UI commits are disabled.
+    if (apiControlActiveRef.current) {
+      const partyIndex = applicationApiRef.current?.authority.getSnapshot().state.parties.findIndex((party) => party.id === partyNumber) ?? -1;
+      if (partyIndex >= 0) actions.selectParty(partyIndex);
+      return;
+    }
+    diaryCommandQueueRef.current = diaryCommandQueueRef.current.then(async () => {
+      const response = await inProcessApiRef.current?.commit('commit/diary/diaryEntry/markAsRead', {
+        parameters: { partyNumber: previousPartyNumber, diaryEntryId: 'ALL' },
+      });
+      if (response?.error) {
+        console.error('[api-v1] Diary read acknowledgement failed', response.error);
+        selectedDiaryPartyNumberRef.current = previousPartyNumber;
+        return;
+      }
+      const partyIndex = applicationApiRef.current?.authority.getSnapshot().state.parties.findIndex((party) => party.id === partyNumber) ?? -1;
+      if (partyIndex >= 0) actions.selectParty(partyIndex);
+    });
+  }, [actions]);
   const prevDiaryTabVisibleRef = useRef(isDiaryTabVisible);
   useEffect(() => {
     if (prevDiaryTabVisibleRef.current && !isDiaryTabVisible) {
-      actions.markPartyDiaryLogsSeen(selectedDiaryPartyIndexRef.current);
+      markDiaryEntriesRead(selectedDiaryPartyNumberRef.current, 'ALL');
     }
     prevDiaryTabVisibleRef.current = isDiaryTabVisible;
-  }, [isDiaryTabVisible, actions]);
+  }, [isDiaryTabVisible, markDiaryEntriesRead]);
 
   const isSettingTabVisible = isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'setting'
     : activeTab === 'setting';
   const prevSettingTabVisibleRef = useRef(isSettingTabVisible);
+
+  // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
+  const developerNewsObservation = useApiRead<{ entries: Array<{ version: string; date: string; content: string; isRead: boolean }> }>(
+    inProcessApiRef.current, 'resources/developerNewsNotification', {}, [state.global.language, state.global.readDeveloperNewsItemIds], isSettingTabVisible,
+  );
+  const developerNewsEntries = developerNewsObservation?.entries ?? [];
+  // `version` omitted marks every article read, matching `commitOperations.ts`'s own default.
+  const handleMarkNewsRead = useCallback((versions?: string[]) => {
+    void inProcessApiRef.current?.commit('commit/setting/markNewsAsRead', { parameters: versions ? { version: versions } : {} });
+  }, []);
+
+  // SpecRef: 9.1.4.17 | UI state ownership | The Setting tab's retained pane expansion, per-party Clairvoyance
+  // expansion, and Glossary tab are per-save `uiPreferences` (Spec 8.6 retention rules).
+  const settingTabObservation = useApiRead<{ settingInfo: { uiPreferences: Array<{ key: string; value: string | number | boolean }> } }>(
+    inProcessApiRef.current, 'read/observation/setting', {}, [state.global.uiPreferences], isSettingTabVisible,
+  );
+  const settingTabPreferences = useMemo(
+    () => settingTabObservation ? buildSettingTabPreferences(settingTabObservation.settingInfo.uiPreferences) : null,
+    [settingTabObservation],
+  );
+  const handleSetUiPreference = useCallback((key: string, value: string | number | boolean) => {
+    void inProcessApiRef.current?.commit('commit/setting/uiPreferences', { parameters: { changes: [{ key, value }] } }).then((response) => {
+      if (response?.error) console.error('[api-v1] Setting preference change failed', response.error);
+    });
+  }, []);
+  // One-time migration of the values the Setting tab kept in local storage before Build 103. A value already stored as a
+  // preference wins; the local keys are removed once the commit succeeds (or when there is nothing to carry over).
+  const legacySettingMigrationDoneRef = useRef(false);
+  useEffect(() => {
+    if (!settingTabObservation || legacySettingMigrationDoneRef.current) return;
+    legacySettingMigrationDoneRef.current = true;
+    const stored = new Set(settingTabObservation.settingInfo.uiPreferences.map((entry) => entry.key));
+    const changes: Array<{ key: string; value: string | number | boolean }> = [];
+    const readJson = (key: string): Record<string, unknown> | null => {
+      try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) as Record<string, unknown> : null; } catch { return null; }
+    };
+    for (const [panel, expanded] of Object.entries(readJson(LEGACY_SETTING_PANEL_STORAGE_KEY) ?? {})) {
+      if ((SETTING_PANELS as readonly string[]).includes(panel) && typeof expanded === 'boolean') {
+        const key = settingPanelExpandedKey(panel as SettingPanel);
+        if (!stored.has(key)) changes.push({ key, value: expanded });
+      }
+    }
+    for (const [partyIndex, expanded] of Object.entries(readJson(LEGACY_CLAIRVOYANCE_PARTY_STORAGE_KEY) ?? {})) {
+      const partyNumber = Number(partyIndex) + 1;
+      if (Number.isInteger(partyNumber) && partyNumber >= 1 && partyNumber <= state.parties.length && typeof expanded === 'boolean') {
+        const key = clairvoyanceExpandedKey(partyNumber);
+        if (!stored.has(key)) changes.push({ key, value: expanded });
+      }
+    }
+    try {
+      const tab = localStorage.getItem(LEGACY_GLOSSARY_TAB_STORAGE_KEY);
+      if (tab && (GLOSSARY_TABS as readonly string[]).includes(tab) && !stored.has(SETTING_GLOSSARY_TAB_FAMILY)) changes.push({ key: SETTING_GLOSSARY_TAB_FAMILY, value: tab });
+    } catch { /* storage unavailable: nothing to carry over */ }
+    const removeLegacyKeys = () => {
+      try {
+        for (const key of [LEGACY_SETTING_PANEL_STORAGE_KEY, LEGACY_CLAIRVOYANCE_PARTY_STORAGE_KEY, LEGACY_GLOSSARY_TAB_STORAGE_KEY, LEGACY_GLOSSARY_EXPANDED_STORAGE_KEY]) localStorage.removeItem(key);
+      } catch { /* storage unavailable */ }
+    };
+    if (changes.length === 0) { removeLegacyKeys(); return; }
+    void inProcessApiRef.current?.commit('commit/setting/uiPreferences', { parameters: { changes } }).then((response) => {
+      if (response?.error) console.error('[api-v1] Setting preference migration failed', response.error);
+      else removeLegacyKeys();
+    });
+  }, [settingTabObservation, state.parties.length]);
+
+  // SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視)
+  const clairvoyanceInputs = useMemo(() => state.parties.map((party) => ({ pathParameters: { p: party.id } })), [state.parties]);
+  // Availability and reset access depend on the members' a.prophecy (their build and equipment) and the Debug override.
+  const clairvoyanceProjections = useApiReadMany<ApiV1ClairvoyanceResource>(
+    inProcessApiRef.current, 'resources/clairvoyance/{p}', isSettingTabVisible ? clairvoyanceInputs : null,
+    [state.parties.map((party) => party.bags), state.parties.map((party) => party.sleepinessOfPartyBag), state.parties.map((party) => party.characters), effectiveDebugSettings.clairvoyanceEnabled],
+  );
+
+  // SpecRef: 8.6 | UI_SETTING | 味方キャラクター図鑑 — every party's members, from the party observation's `parties` list.
+  const rosterObservation = useApiRead<{ partyInfo: PartyProjection }>(
+    inProcessApiRef.current, 'read/observation/party', {}, [partiesSignature], isSettingTabVisible,
+  );
+  const rosterParties = useMemo(() => (rosterObservation?.partyInfo.parties ?? []).map((party) => ({
+    id: party.partyNumber,
+    characters: party.characters.map((character) => ({ raceId: character.raceId as RaceId, gender: character.gender, isUnique: character.isUnique, name: character.name })),
+  })), [rosterObservation]);
+
+  // SpecRef: 8.6 | UI_SETTING | フィードバック — Send Feedback is a reviewed local exception. Its save-derived report lines and
+  // attachments (latest battle log and status table of the selected party) are built here, so the Setting tab receives
+  // no save object; the battle-log builder is the one Report Progress already uses.
+  const handleBuildFeedbackReport = async (latestBattleLogParty: number | null) => {
+    const files: File[] = [];
+    if (latestBattleLogParty !== null) {
+      const label = `PT${latestBattleLogParty}` as 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6';
+      const battleLog = buildLatestBattleLogHtml(label);
+      if (battleLog) files.push(battleLog);
+      const now = new Date();
+      const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+      files.push(buildStatusTableHtmlFile(buildStatusTableRows(state.parties, [latestBattleLogParty - 1]), `status-table-${label}-${timestamp}.html`, `Status table (${label})`));
+    }
+    return { versionBuild: APP_VERSION_BUILD, userId: state.global.userId, files };
+  };
+  const handleClairvoyanceReset = useCallback((partyIndex: number, changes: { resetCommonRewards?: boolean; resetRewards?: boolean; resetSideQuest?: boolean }) => {
+    const party = state.parties[partyIndex];
+    if (!party) return;
+    void inProcessApiRef.current?.commit('commit/setting/clairvoyanceReset', {
+      parameters: { partyNumber: party.id, resetCommonRewards: changes.resetCommonRewards === true, resetRewards: changes.resetRewards === true, resetSideQuest: changes.resetSideQuest === true },
+    });
+  }, [state.parties]);
+
+  // SpecRef: 8.6 | UI_SETTING | Enemy Edit Pane — only the dropdown option lists move to the API; the edited value
+  // stays on the existing localStorage-backed mechanism, since an ordinary player's `control.settings` (unlike
+  // `GameState` itself) is never durably persisted (see `persistApiStateReplacement`'s doc comment for the same
+  // distinction elsewhere in this migration).
+  const enemyEditPaneRead = useApiRead<{ validOptions: { terrainEffect: string[]; enemyType: string[] } }>(
+    inProcessApiRef.current, 'read/setting/enemyEditPane', {}, [], isSettingTabVisible && isDebugModeEnabled(),
+  );
+
+  // SpecRef: 8.6 | UI_SETTING | Large read-only reference panels. Fetch the complete resource once and let the
+  // resource's reveal flags/IDs be authoritative; presentation-only grouping, images, and localization stay local.
+  const glossaryResource = useApiReadAllPages<{ entries: Array<{ glossaryId: string; category: string; label: string; description: string }> }>(
+    inProcessApiRef.current, 'resources/glossary', 'entries', [], isSettingTabVisible,
+  );
+  const itemCompendiumResource = useApiReadAllPages<{ items: Array<{ itemId: number; revealed: boolean }> }>(
+    inProcessApiRef.current, 'resources/itemCompendium', 'items', [], isSettingTabVisible,
+  );
+  const characterRosterResource = useApiReadAllPages<{ races: Array<{ raceId: string; status: { vitality: number; strength: number; intelligence: number; mind: number }; ability: string[]; cBonus: string[]; otherBonus: string[]; defaultAbility: string | null; unlockAbility: string | null }> }>(
+    inProcessApiRef.current, 'resources/characterRoster', 'races', [], isSettingTabVisible,
+  );
+  const bestiaryResource = useApiReadAllPages<{ enemies: Array<{ enemyId: number; revealed: boolean; encounters: number; defeats: number }> }>(
+    inProcessApiRef.current, 'resources/bestiary', 'enemies', [], isSettingTabVisible,
+  );
+  const superRareResource = useApiReadAllPages<{ superRare: string[] }>(
+    inProcessApiRef.current, 'resources/superRareList', 'superRare', [], isSettingTabVisible,
+  );
+
+  // SpecRef: 8.6 | UI_SETTING | Mode select — only `language` moves to the API: it is real `GameState.global.language`
+  // (`commitOperations.ts` already handles `SET_LANGUAGE` there), unlike this panel's other fields (auto-repeat, dark
+  // mode, game mode, runtime mode, orca offset), which stay local/device state, same precedent as the header's auto-repeat.
+  const handleSetLanguage = useCallback(async (nextLanguage: GameState['global']['language']) => {
+    // `setLanguage(state.global.language)` runs unconditionally on every render (below) and throws if that
+    // language's dictionary bundle is not yet loaded — it must be pre-loaded before the commit lands, not after.
+    await ensureLanguageLoaded(nextLanguage);
+    const response = await inProcessApiRef.current?.commit('commit/setting/modeSelect', { parameters: { language: nextLanguage } });
+    if (!response || response.error) {
+      if (response?.error) console.error('[api-v1] Language change failed', response.error);
+      return;
+    }
+    // SpecRef: 8.6 | UI_SETTING | Mode select — the player's own selection is the device language: it goes to local
+    // storage and the URL's `lang` parameter. `lang` from an ad link only picks the first language; after that the
+    // player's choice wins. API accounts never write it, so their save language cannot leak into the player's.
+    persistLanguage(nextLanguage);
+  }, []);
+  // Dark mode, the theme color, and the statistics switch commit through `modeSelect`, which validates them and applies
+  // them to the runtime, so the Setting tab and the API always agree. Auto-repeat stays local (Spec 9.1.3, 3-6-2 note).
+  const commitDisplaySetting = useCallback((parameters: Record<string, unknown>) => {
+    void inProcessApiRef.current?.commit('commit/setting/modeSelect', { parameters }).then((response) => {
+      if (response?.error) console.error('[api-v1] Mode Select change failed', response.error);
+    });
+  }, []);
+
+  // SpecRef: 8.6 | UI_SETTING | 5.1 Backup (Export) — the export byte source, not the platform-specific
+  // share/download/file-picker logic around it, which stays exactly as it is in SettingTab.tsx.
+  const handleExportGameStatePayload = useCallback(async (): Promise<string> => {
+    const result = await inProcessApiRef.current?.commit('commit/setting/backup/export', { parameters: {} });
+    const savePayload = (result?.data as Record<string, unknown> | undefined)?.savePayload;
+    if (result?.error || typeof savePayload !== 'string') throw new Error('Failed to export the save through the Application API.');
+    return savePayload;
+  }, []);
+
   const isDeveloperNewsPaneExpandedRef = useRef(false);
   // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
   const handleDeveloperNewsPaneExpandedChange = useCallback((expanded: boolean) => {
     if (shouldMarkDeveloperNewsReadOnPaneChange(isDeveloperNewsPaneExpandedRef.current, expanded)) {
-      actions.markDeveloperNewsRead(DEVELOPER_NEWS_ITEMS.map((item) => item.id));
+      handleMarkNewsRead();
     }
     isDeveloperNewsPaneExpandedRef.current = expanded;
-  }, [actions]);
+  }, [handleMarkNewsRead]);
   // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
   useEffect(() => {
     if (prevSettingTabVisibleRef.current && !isSettingTabVisible && isDeveloperNewsPaneExpandedRef.current) {
-      actions.markDeveloperNewsRead(DEVELOPER_NEWS_ITEMS.map((item) => item.id));
+      handleMarkNewsRead();
     }
     prevSettingTabVisibleRef.current = isSettingTabVisible;
-  }, [isSettingTabVisible, actions]);
+  }, [isSettingTabVisible, handleMarkNewsRead]);
 
+  // SpecRef: 9.1.4.17 | UI state ownership | Newly acquired inventory highlighting
+  // Once the Inventory pane has displayed the new variants, acknowledge exactly those with `markItemsAsSeen`.
+  const displayedNewVariantKeys = isBaseTabVisible && activeBaseSubTab === 'inventory' ? inventoryView?.newVariantKeys ?? [] : [];
   useEffect(() => {
-    if (activeTab !== 'base' || activeBaseSubTab !== 'inventory') return;
-    const hasNewInventoryItems = Object.values(state.global.inventory).some((variant) => variant.isNew);
-    if (!hasNewInventoryItems) return;
-    actions.markItemsSeen();
-  }, [activeTab, activeBaseSubTab, state.global.inventory, actions]);
+    if (displayedNewVariantKeys.length === 0) return;
+    commitBase('commit/base/markItemsAsSeen', { items: displayedNewVariantKeys });
+  }, [displayedNewVariantKeys, commitBase]);
 
   setLanguage(state.global.language);
   const tabs: { id: Tab; label: string }[] = MAIN_TAB_ORDER.map((id) => ({
@@ -4938,55 +5533,127 @@ export function HomeScreen({
     count + party.diaryLogs.filter((log) => !log.isRead).length
   ), 0);
   const hasUnreadDiary = unreadDiaryCount > 0;
-  const unreadDiaryBadgeLabel = unreadDiaryCount >= 99 ? '99+' : `${unreadDiaryCount}`;
+  const unreadDiaryBadgeLabel = formatDiaryUnreadBadge(unreadDiaryCount);
   // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
   const hasUnreadDeveloperNews = DEVELOPER_NEWS_ITEMS.some((item) => !(state.global.readDeveloperNewsItemIds ?? []).includes(item.id));
   const envLabel = getEnvLabel();
   const versionLabel = envLabel
-    ? `${APP_VERSION}(${state.buildNumber}) ${envLabel}`
-    : `${APP_VERSION}(${state.buildNumber})`;
+    ? `${APP_VERSION}(${APP_BUILD_NUMBER}) ${envLabel}`
+    : `${APP_VERSION}(${APP_BUILD_NUMBER})`;
   const gameTitle = t('app.title');
+  // SpecRef: 8.1 | Window title | Append the Setting feedback name so concurrent (e.g. AI-played) runs are distinguishable.
+  const [ownerName, setOwnerName] = useState(() => {
+    try {
+      return (localStorage.getItem(createEnvironmentStorageKey('settingFeedbackName')) ?? '').trim();
+    } catch {
+      return '';
+    }
+  });
 
   useEffect(() => {
-    document.title = gameTitle;
-  }, [gameTitle]);
+    const handleNameChanged = (event: Event) => setOwnerName(String((event as CustomEvent).detail ?? '').trim());
+    window.addEventListener(FEEDBACK_NAME_CHANGED_EVENT, handleNameChanged);
+    return () => window.removeEventListener(FEEDBACK_NAME_CHANGED_EVENT, handleNameChanged);
+  }, []);
+
+  useEffect(() => {
+    // SpecRef: 8.6 | Feedback | The name field defaults to the current (API session) userId when left empty.
+    const titleName = ownerName || apiSessionUserId;
+    document.title = titleName ? `${gameTitle} ${titleName}` : gameTitle;
+  }, [gameTitle, ownerName, apiSessionUserId]);
+
+  // SpecRef: 8.1.2 | Header | The header is always visible, so its projection is always enabled (unlike a per-tab read).
+  const overview = useApiRead<{ headerInfo: HeaderProjection }>(
+    inProcessApiRef.current, 'read/observation/overview', {},
+    [state.global.gold, state.parties, effectiveDebugSettings.timeSpeed, timeSpeedBonusUntilMs, isAutoRepeatEnabled],
+  );
 
   const isPartyExpeditionSplitView = isPartyExpeditionSplitViewEnabled;
 
   const renderTabContent = (tab: Tab) => {
     if (tab === 'party') {
+      // The projection loads right after the tab opens or the party changes; nothing is drawn from another party's data.
+      if (!partyView || partyView.id !== currentParty.id) return null;
       return (
         <PartyTab
-          parties={state.parties}
+          apiAdapter={inProcessApiRef.current}
+          parties={partySummaries}
           selectedPartyIndex={safeSelectedPartyIndex}
-          party={currentParty}
-          partyStats={partyStats}
-          characterStats={characterStats}
+          party={partyView}
+          partyStats={{ hp: partyView.maxHp }}
+          characterStatus={partyView.characterStatus}
+          equipCategoryPreferences={equipCategoryPreferences}
+          onSetEquipCategory={(characterId, category) => {
+            void inProcessApiRef.current!.commit('commit/setting/uiPreferences', {
+              parameters: { changes: [{ key: partyEquipCategoryKey(characterId), value: category }] },
+            }).then((response) => {
+              if (response.error) console.error('[api-v1] Retained category change failed', response.error);
+            });
+          }}
           selectedCharacter={selectedCharacter}
           setSelectedCharacter={setSelectedCharacter}
           editingCharacter={editingCharacter}
           setEditingCharacter={setEditingCharacter}
-          onUpdateCharacter={actions.updateCharacter}
-          onReorderPartyCharacter={actions.reorderPartyCharacter}
-          onEquipItem={actions.equipItem}
-          onToggleEquipmentLock={actions.toggleEquipmentLock}
-          onAttachJewel={actions.attachJewel}
+          onChangeCharacterBuild={async (characterId, edits, request): Promise<CharacterBuildOutcome> => {
+            const failed: CharacterBuildOutcome = { status: 'error', confirmationRequired: false, warnings: [], applied: false };
+            const target = currentParty.characters.find((character) => character.id === characterId);
+            if (!target) return failed;
+            const parameters = characterEditToChangeBuildParameters(target, edits);
+            if (Object.keys(parameters).length === 0) return { status: 'ok', confirmationRequired: false, warnings: [], applied: false };
+            const response = await inProcessApiRef.current!.commit('commit/build/character/{characterId}/changeBuild', {
+              pathParameters: { characterId }, parameters: { ...parameters, ...request },
+            });
+            if (response.error) {
+              console.error('[api-v1] Character build change failed', response.error);
+              const reason = (response.error as { code?: unknown }).code;
+              actions.addNotification(t('home.notification.characterEditFailed', { character: target.name, reason: String(reason ?? 'error') }), 'normal', 'stat', false);
+              return failed;
+            }
+            const data = response.data as { confirmationRequired: boolean; warnings: CharacterBuildOutcome['warnings']; applied: boolean };
+            return { status: 'ok', confirmationRequired: data.confirmationRequired, warnings: data.warnings, applied: data.applied };
+          }}
+          onReorderPartyCharacter={(fromIndex, toIndex) => {
+            const order = currentParty.characters.map((character) => character.id);
+            const [moved] = order.splice(fromIndex, 1);
+            if (moved === undefined) return;
+            order.splice(toIndex, 0, moved);
+            void inProcessApiRef.current!.commit('commit/build/party/{p}', {
+              pathParameters: { p: currentParty.id }, parameters: { order },
+            }).then((response) => {
+              if (response.error) console.error('[api-v1] Party order change failed', response.error);
+            });
+          }}
+          onEquipItem={(characterId, slotIndex, itemKey) => dispatchEquipmentIntent(characterId, { kind: 'equip', slotIndex, itemKey })}
+          onToggleEquipmentLock={(characterId, slotIndex) => dispatchEquipmentIntent(characterId, { kind: 'toggleLock', slotIndex })}
+          onAttachJewel={(characterId, slotIndex, jewelKey, rank) => dispatchEquipmentIntent(characterId, { kind: 'attachJewel', slotIndex, jewelKey, rank })}
+          onSetAutoEquipmentMode={(characterId, mode) => dispatchEquipmentIntent(characterId, { kind: 'setMode', mode })}
           onAddStatNotifications={actions.addStatNotifications}
           onSelectParty={actions.selectParty}
-          onUpdatePartyDeity={actions.updatePartyDeity}
-          onRunAutoEquipmentForCharacter={(characterId) => runAutoEquipment([safeSelectedPartyIndex], [characterId], { forceFull: true })}
-          onRemoveAllEquipment={actions.removeAllEquipment}
-          onSaveEquipmentSet={actions.saveEquipmentSet}
-          onRenameEquipmentSet={actions.renameEquipmentSet}
-          onDeleteEquipmentSet={actions.deleteEquipmentSet}
-          onLoadEquipmentSet={actions.loadEquipmentSet}
-          onRestoreEquipmentState={actions.restoreEquipmentState}
-          savedEquipmentSets={state.global.savedEquipmentSets}
-          inventory={state.global.inventory}
-          jewels={state.global.jewels}
-          deityDonations={state.global.deityDonations}
-          unlockedDeities={state.global.unlockedDeities}
-          unlockedMimorianEnemyIds={state.global.unlockedMimorianEnemyIds}
+          onUpdatePartyDeity={(partyIndex, deityName) => {
+            const target = state.parties[partyIndex];
+            if (!target) return;
+            void inProcessApiRef.current!.commit('commit/build/party/{p}', {
+              pathParameters: { p: target.id }, parameters: { deityId: getDeityId(deityName) },
+            }).then((response) => {
+              if (response.error) console.error('[api-v1] Party deity change failed', response.error);
+            });
+          }}
+          onRunAutoEquipmentForCharacter={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'runAuto' })}
+          onRemoveAllEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'removeAll' })}
+          onSaveEquipmentSet={(characterId, name) => dispatchEquipmentIntent(characterId, { kind: 'saveSet', name })}
+          onRenameEquipmentSet={(characterId, slot, name) => dispatchEquipmentIntent(characterId, { kind: 'renameSet', slot, name })}
+          onDeleteEquipmentSet={(characterId, slot) => dispatchEquipmentIntent(characterId, { kind: 'deleteSet', slot })}
+          onLoadEquipmentSet={(characterId, slot, mode) => dispatchEquipmentIntent(characterId, { kind: 'loadSet', slot, mode })}
+          canUndoEquipment={equipmentProjection?.validOptions.undoEquipment.available === true}
+          canRedoEquipment={equipmentProjection?.validOptions.redoEquipment.available === true}
+          onUndoEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'undo' })}
+          onRedoEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'redo' })}
+          savedEquipmentSets={savedEquipmentSetsView}
+          inventory={ownedInventoryView}
+          jewels={ownedJewelsView}
+          deityDonations={deityView.donations}
+          unlockedDeities={deityView.unlocked}
+          unlockedMimorianEnemyIds={partyProjection?.unlockedMimorianEnemyIds ?? []}
           isDarkModeEnabled={isDarkModeEnabled}
         />
       );
@@ -5001,24 +5668,24 @@ export function HomeScreen({
           state={state}
           debugSettings={effectiveDebugSettings}
           emulatedNowMs={emulatedNowMs}
-          onSelectDungeon={actions.selectDungeon}
-          onToggleExpeditionDestinationMode={actions.setExpeditionDestinationMode}
-          onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
-          onSetExpeditionDifficultyOffset={actions.setExpeditionDifficultyOffset}
-          onResetExpeditionStats={actions.resetExpeditionStats}
+          onSelectDungeon={(partyIndex, dungeonId) => commitExpeditionChange(partyIndex, { destination: dungeonId })}
+          onToggleExpeditionDestinationMode={(partyIndex, mode) => commitExpeditionChange(partyIndex, { destinationMode: mode })}
+          onSetExpeditionDepthLimit={(partyIndex, depthLimit) => commitExpeditionChange(partyIndex, { depthLimit })}
+          onSetExpeditionDifficultyOffset={(partyIndex, difficultyOffset) => commitExpeditionChange(partyIndex, { difficultyOffset })}
+          onResetExpeditionStats={resetExpeditionStatistics}
           onSimulateExpedition={handleSimulateExpedition}
           isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
-          partyCycles={partyCycles}
+          expeditionProjection={expeditionProjection}
+          expeditionLogViews={expeditionLogViews}
           afkRecoveryProgressPercent={afkRecoveryProgressPercent}
           afkRecoveryCompletedMs={afkRecoveryCompletedMs}
           afkRecoveryTotalMs={afkRecoveryTotalMs}
-          onTriggerSortie={handleTriggerSortie}
+          onTriggerSortie={guardUiCommit(handleTriggerSortie)}
           expandedLogParty={expeditionExpandedLogParty}
           setExpandedLogParty={setExpeditionExpandedLogParty}
           expandedRoom={expeditionExpandedRoom}
           setExpandedRoom={setExpeditionExpandedRoom}
           isDarkModeEnabled={isDarkModeEnabled}
-          computePartyStatus={computePresentationPartyStats}
           afkPresentationVersion={afkProgressPresentationVersion}
           throttleAfkPublications={shouldOptimizeAfkRenderer}
         />
@@ -5028,26 +5695,20 @@ export function HomeScreen({
     if (tab === 'base') {
       return (
         <BaseTab
-          inventory={state.global.inventory}
-          jewels={state.global.jewels}
-          jewelAutoEquipPriorityPartyId={state.global.jewelAutoEquipPriorityPartyId ?? null}
-          parties={state.parties}
+          inventory={inventoryView}
+          jewelPriorityPartyNumbers={jewelPriorityPartyNumbers}
           gold={state.global.gold}
-          prana={state.global.prana}
-          altarVictoriesByEnemyType={state.global.altarVictoriesByEnemyType}
-          unlockedMimorianEnemyIds={state.global.unlockedMimorianEnemyIds}
-          shopPurchases={state.global.shopPurchases}
+          altar={baseProjection?.altar ?? null}
+          enemyForms={enemyFormList?.current.enemyFormList ?? null}
           debugStorePurchases={state.global.jewelShopPurchases}
-          shopRefreshCounts={state.global.shopRefreshCounts}
-          shopIntimacy={state.global.shopIntimacy}
-          shopIntimacyLastDecayAt={state.global.shopIntimacyLastDecayAt}
-          onSellStack={actions.sellStack}
-          onSetVariantStatus={actions.setVariantStatus}
-          onBuyShopItem={actions.buyShopItem}
-          onBuyDebugStoreItem={actions.buyDebugStoreItem}
-          onRefreshShopLineup={actions.refreshShopLineup}
-          onUnlockMimorianEnemy={actions.unlockMimorianEnemy}
-          onSetJewelAutoEquipPriorityParty={actions.setJewelAutoEquipPriorityParty}
+          shop={baseProjection?.shop ?? null}
+          onSellStack={sellInventoryItem}
+          onUnlockSold={unlockSoldItem}
+          onBuyShopItem={buyShopItem}
+          onBuyDebugStoreItem={guardUiCommit(actions.buyDebugStoreItem)}
+          onRefreshShopLineup={refreshShop}
+          onUnlockMimorianEnemy={unlockEnemyForm}
+          onSetJewelAutoEquipPriorityParty={changeJewelPriorityParty}
           activeSubTab={activeBaseSubTab}
           onSetActiveSubTab={setActiveBaseSubTab}
           debugSettings={debugSettings}
@@ -5058,11 +5719,10 @@ export function HomeScreen({
     if (tab === 'diary') {
       return (
         <DiaryTab
-          parties={state.parties}
-          onOpenDiaryLog={actions.markDiaryLogSeen}
-          onMarkPartyDiaryLogsSeen={actions.markPartyDiaryLogsSeen}
-          onSelectedPartyIndexChange={handleSelectedDiaryPartyIndexChange}
-          onUpdateDiarySettings={actions.updateDiarySettings}
+          diary={diaryView}
+          onOpenDiaryLog={markDiaryEntriesRead}
+          onSelectParty={selectDiaryParty}
+          onUpdateDiarySettings={updateDiarySettings}
           expandedLogs={diaryExpandedLogs}
           onSetExpandedLogs={setDiaryExpandedLogs}
           expandedRooms={diaryExpandedRooms}
@@ -5076,17 +5736,25 @@ export function HomeScreen({
 
     return (
       <SettingTab
-        gameState={state}
-        deityDonations={state.global.deityDonations}
+        developerNewsEntries={developerNewsEntries}
+        rosterParties={rosterParties}
+        onBuildFeedbackReport={handleBuildFeedbackReport}
+        defaultFeedbackName={apiSessionUserId}
+        donationRows={donationRows}
+        clairvoyanceProjections={clairvoyanceProjections}
+        enemyEditValidOptions={enemyEditPaneRead?.validOptions ?? null}
+        glossaryEntries={glossaryResource?.entries ?? null}
+        itemCompendiumEntries={itemCompendiumResource?.items ?? null}
+        characterRosterEntries={characterRosterResource?.races ?? null}
+        bestiaryEntries={bestiaryResource?.enemies ?? null}
+        superRareEntries={superRareResource?.superRare ?? null}
         onResetGame={handleResetGame}
         onImportGameState={handleImportGameState}
-        getCompressedSavePayload={actions.getCompressedSavePayload}
+        getCompressedSavePayload={handleExportGameStatePayload}
         getRuntimeSnapshot={getRuntimeSnapshot}
         onAddNotification={actions.addNotification}
-        onGrantFeedbackReward={actions.grantFeedbackReward}
-        onResetCommonBags={actions.resetCommonBags}
-        onResetUniqueBags={actions.resetUniqueBags}
-        onResetSideQuestBag={actions.resetSideQuestBag}
+        onGrantFeedbackReward={guardUiCommit(actions.grantFeedbackReward)}
+        onClairvoyanceReset={handleClairvoyanceReset}
         selectedBestiaryDungeonId={selectedBestiaryDungeonId}
         onSetSelectedBestiaryDungeonId={setSelectedBestiaryDungeonId}
         expandedBestiaryEnemies={expandedBestiaryEnemies}
@@ -5094,25 +5762,27 @@ export function HomeScreen({
         bestiaryScrollTop={bestiaryScrollTop}
         onSetBestiaryScrollTop={setBestiaryScrollTop}
         gameMode={gameMode}
-        onSetGameMode={setGameMode}
+        onSetGameMode={(mode) => commitDisplaySetting({ theme: toThemeKey(mode) })}
         runtimeGameMode={runtimeGameMode}
-        onSetRuntimeGameMode={updateRuntimeGameMode}
+        onSetRuntimeGameMode={guardUiCommit(updateRuntimeGameMode)}
         orcaEnemyLevelOffset={effectiveOrcaEnemyLevelOffset}
-        onSetOrcaEnemyLevelOffset={updateOrcaEnemyLevelOffset}
+        onSetOrcaEnemyLevelOffset={guardUiCommit(updateOrcaEnemyLevelOffset)}
         darkModeSetting={darkModeSetting}
-        onSetDarkModeSetting={setDarkModeSetting}
+        onSetDarkModeSetting={(setting) => commitDisplaySetting({ darkMode: setting })}
         isAutoRepeatEnabled={isAutoRepeatEnabled}
-        onSetAutoRepeatEnabled={setAutoRepeatEnabled}
+        onSetAutoRepeatEnabled={guardUiCommit(setAutoRepeatEnabled)}
         isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
-        onSetExpeditionStatsDisplayEnabled={setIsExpeditionStatsDisplayEnabled}
+        onSetExpeditionStatsDisplayEnabled={(enabled) => commitDisplaySetting({ showExpeditionStats: enabled })}
         debugSettings={effectiveDebugSettings}
-        onUpdateDebugSettings={updateDebugSettings}
+        onUpdateDebugSettings={guardUiCommit(updateDebugSettings)}
         partyCount={state.parties.length}
-        onPartyUnlock={actions.unlockPartySlot}
+        onPartyUnlock={guardUiCommit(actions.unlockPartySlot)}
         language={state.global.language}
-        onSetLanguage={actions.setLanguage}
-        onMarkDeveloperNewsRead={actions.markDeveloperNewsRead}
+        onSetLanguage={handleSetLanguage}
+        onMarkDeveloperNewsRead={handleMarkNewsRead}
         onNewsPaneExpandedChange={handleDeveloperNewsPaneExpandedChange}
+        settingPreferences={settingTabPreferences}
+        onSetUiPreference={handleSetUiPreference}
       />
     );
   };
@@ -5197,85 +5867,25 @@ export function HomeScreen({
       }}
     >
       {apiControlActive && (
-        <div className="fixed inset-0 z-[100] cursor-wait bg-transparent" aria-label="Experimental AI API control active">
-          {window.bokemoDesktop?.aiPlay && !apiLeaseActive && (
-            <div className="mx-auto mt-20 max-w-lg cursor-default rounded border bg-surface-card p-4 shadow">
-              <p>{evaluationSummary(state.apiRuntime?.evaluation)?.finalScore != null
-                ? t('setting.experimentalApi.aiPlayFinished', { score: formatNumber(evaluationSummary(state.apiRuntime?.evaluation)!.finalScore!) })
-                : t('setting.experimentalApi.aiPlayReady')}</p>
-              <p className="mt-2 break-all font-mono text-xs">{window.bokemoDesktop.aiPlay.evaluationId}</p>
-              <ExperimentalApiSettings />
-            </div>
-          )}
+        <div className="fixed right-3 top-[calc(env(safe-area-inset-top)+0.75rem)] z-50" aria-label="API control active">
           <button
             type="button"
-            className="absolute right-3 top-[calc(env(safe-area-inset-top)+0.75rem)] cursor-pointer rounded border border-status-error-border bg-surface-card px-3 py-2 text-xs text-status-error shadow"
-            onClick={() => void window.bokemoDesktop?.setExperimentalApiEnabled(false).then((settings) => {
-              window.dispatchEvent(new CustomEvent('bokemo-experimental-api-settings', { detail: settings }));
-            })}
+            className="cursor-pointer rounded border border-status-error-border bg-surface-card px-3 py-2 text-xs text-status-error shadow"
+            onClick={() => void window.bokemoDesktop?.setApiV1Enabled(false)}
           >
-            {t('setting.experimentalApi.disableControl')}
+            {t('setting.apiV1.disableControl')}
           </button>
         </div>
       )}
-      <div className="contents" {...(apiControlActive ? { inert: '' } : {})}>
-      {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-30 pt-[env(safe-area-inset-top)]">
-        <div className="absolute inset-0 bg-white/25 backdrop-blur-[4px]" aria-hidden="true" />
-        <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white/25 backdrop-blur-[4px]">
-          <div className="flex justify-between items-center gap-3 min-h-[44px]">
-            <div className="pl-3">
-              {/* SpecRef: 8.1.2 | Header | Game title label */}
-              <h1 className="flex items-center gap-1 text-lg font-bold">
-                <span aria-label={gameTitle}>
-                  <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>{t('home.nav.expeditionIcon')}</span>
-                  <span>{t('setting.theme.kemo')}</span>
-                  {runtimeGameMode === 'mode.orca' && <span>orca</span>}
-                </span>
-                <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
-              </h1>
-            </div>
-            <div className="flex items-center gap-2 pr-3 text-right text-sm font-medium leading-none">
-              <button
-                type="button"
-                onClick={async () => {
-                  // SpecRef: 8.6 | UI_SETTING | Debug pane(デバッグ)
-                  const confirmed = window.confirm(t('home.debug.reportProgressConfirm'));
-                  if (!confirmed) return;
-                  try {
-                    const isReported = await reportProgressForSpeedOfTime();
-                    if (!isReported) {
-                      window.alert(t('home.debug.reportProgressUnset'));
-                      return;
-                    }
-                    const bonusStartedAt = Date.now();
-                    setTimeSpeedNowMs(bonusStartedAt);
-                    setTimeSpeedBonusUntilMs(bonusStartedAt + SPEED_OF_TIME_BONUS_DURATION_MS);
-                    actions.addNotification(t('home.debug.reportProgressSuccess'), 'normal', 'stat', true);
-                  } catch (error) {
-                    console.error('Failed to report progress for Speed of Time:', error);
-                    window.alert(t('home.debug.reportProgressFailure'));
-                  }
-                }}
-                className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
-              >
-                {speedOfTimeLabel ? `${speedOfTimeSymbol} ${speedOfTimeLabel}` : speedOfTimeSymbol}
-              </button>
-              <span>{formatNumber(state.global.gold)}G</span>
-              {!isAutoRepeatEnabled && (
-                <button
-                  type="button"
-                  onClick={() => setAutoRepeatEnabled(true)}
-                  className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
-                >
-                  {t('home.header.paused')}
-                </button>
-              )}
-            </div>
-          </div>
-
-        </div>
-      </div>
+      <div className="contents">
+        <HeaderBar
+          header={overview?.headerInfo ?? null}
+          nowMs={timeSpeedNowMs}
+          gameTitle={gameTitle}
+          versionLabel={versionLabel}
+          onReportProgress={handleReportProgress}
+          onEnableAutoRepeat={guardUiCommit(() => setAutoRepeatEnabled(true))}
+        />
 
       {/* Bottom Tabs */}
       <nav
@@ -5324,7 +5934,7 @@ export function HomeScreen({
       {/* Tab Content */}
       <div
         ref={tabContentRef}
-        className={prefersDocumentScroll ? `px-4 ${CHROME_CONTENT_PADDING_CLASS}` : `flex-1 px-4 ${CHROME_CONTENT_PADDING_CLASS} ${isPartyExpeditionSplitViewEnabled ? 'overflow-hidden' : 'overflow-y-auto'}`}
+        className={prefersDocumentScroll ? `px-4 ${CHROME_CONTENT_PADDING_CLASS}` : isPartyExpeditionSplitViewEnabled ? `flex-1 px-4 ${CHROME_CONTENT_TOP_PADDING_CLASS} overflow-hidden` : `flex-1 px-4 ${CHROME_CONTENT_PADDING_CLASS} overflow-y-auto`}
         onScroll={() => {
           if (prefersDocumentScroll || isPartyExpeditionSplitViewEnabled) return;
           const currentScrollTop = tabContentRef.current?.scrollTop ?? 0;
@@ -5338,7 +5948,7 @@ export function HomeScreen({
           >
             <div
               ref={primarySplitTabContentRef}
-              className="h-full w-full min-w-0 overflow-y-auto"
+              className={`h-full w-full min-w-0 overflow-y-auto ${CHROME_CONTENT_BOTTOM_PADDING_CLASS}`}
               onScroll={() => {
                 const currentScrollTop = primarySplitTabContentRef.current?.scrollTop ?? 0;
                 tabScrollPositionsRef.current.expedition = currentScrollTop;
@@ -5348,7 +5958,7 @@ export function HomeScreen({
             </div>
             <div
               ref={secondarySplitTabContentRef}
-              className="h-full w-full min-w-0 overflow-y-auto"
+              className={`h-full w-full min-w-0 overflow-y-auto ${CHROME_CONTENT_BOTTOM_PADDING_CLASS}`}
               onScroll={() => {
                 const currentScrollTop = secondarySplitTabContentRef.current?.scrollTop ?? 0;
                 tabScrollPositionsRef.current[activeWideModeSecondaryTab] = currentScrollTop;
