@@ -51,17 +51,21 @@
 
 
 **Lineup**
-- **Lineup:** 5 items from Tier 1 to Tier X (**up to the highest tier whose boss the player has defeated**).
+- **Identified Lineup:**
+  -  2 items from Tier 1 to Tier X (**up to the highest tier whose boss the player has defeated**).
+
+- **Unidentified Lineup:**
+  -  5 items from Tier 1 to Tier X (**up to the highest tier whose boss the player has defeated**).
 - Boss completion must be read from the defeated-boss expedition record. Tier X is the defeated dungeon's item `tier`, not its dungeon ID.
 - Each slot must select from the generated item master entries that match its rolled tier and required rarity. The lineup must always render all 5 slots for every valid progression state.
 - Each lineup slot is treated as an individual stock entry; if the same base item appears in multiple slots, buying one slot must not sell out the other slot.
 
-| Intimacy | Lineup |
-|---|---|
-| 0–19 | 5 Common |
-| 20–39 | 1 Uncommon, 4 Common |
-| 40–79 | 1 Elite rare, 2 Uncommon, 2 Common |
-| 80–99 | 1 Boss rare, 2 Elite rare, 2 Uncommon |
+| Intimacy | Identified Lineup  | Unidentified Lineup  |
+|---|---|---|
+| 0–19 | 2 Common | 5  Common |
+| 20–39 | 1 Uncommon, 1 Common |  1 Uncommon, 4 Common |
+| 40–79 | 1 Elite rare, 1 Uncommon | 1 Elite rare, 2 Uncommon, 2 Common |
+| 80–99 | 1 Boss rare, 1 Elite rare | 1 Boss rare, 2 Elite rare, 2 Uncommon |
 
 **Display (rarity color)**
 - Common: non-bold  
@@ -69,12 +73,23 @@
 - Elite rare: Sub color (blue)  
 - Boss rare: Accent color (dark orange)
 
-**Mystery enhancement (same as item drop logic)**
-- When the player selects an item to buy, roll:
-  - Draw 1 ticket from `g.enhancement_bag`.  
-    - If the drawn ticket ID is `0`, redraw until the ticket ID is `>= 1`.
-  - Draw 1 ticket from `g.superRare_bag`.
-- The resulting enhancement/title is **hidden until purchased** (can become a Super Rare title item).
+
+**Enhancement (Same as item drop logic)**
+- Identified Lineup:
+  - When the player selects an item to buy, roll:
+    - Draw `1` ticket from `g.enhancement_bag`.  
+      - If the drawn ticket ID is `0` or `1`, redraw until a ticket with ID `>= 2` is obtained.
+    - Draw `10` ticket from `g.superRare_bag`.
+      - Use the ticket with the highest ID.
+  - The resulting enhancement/title is **Open**.
+- Unidentified Lineup:
+  - When the player selects an item to buy, roll:
+    - Draw `1` ticket from `g.enhancement_bag`.  
+      - If the drawn ticket ID is `0` or `1`, redraw until a ticket with ID `>= 2` is obtained.
+    - Draw `10` ticket from `g.superRare_bag`.
+      - Use the ticket with the highest ID.
+  - The resulting enhancement/title is **hidden until purchased** (can become a Super Rare title item).
+
 - **UI examples:** `?木の盾 100G`, `?木の胸当て 100G`
 - **Notification:** 「店から 名工の木の盾 を購入した！」
   - if it is auto-sell item: 「店から 名工の木の盾 を購入して失望した(自動売却)」and sold it automatically. 
