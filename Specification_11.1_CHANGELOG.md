@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 177 | 2026/09/30 | Shop notification: buying an item whose stack is already at the maximum (auto-sold) now shows the full item name with the auto-sale message instead of the base name with `x1`. |
 | 0.9.7 | 176 | 2026/09/30 | UI: bottom padding of the tab content area raised (4rem to 7rem plus safe area) so the last list item can scroll clear of the bottom navigation tabs. |
 | 0.9.7 | 175 | 2026/09/30 | Shop intimacy (Spec 8.4.1): the cap is 99 until the boss of expedition 7 is defeated and 199 afterwards; new dialogue lines for intimacy 80, 100, 120, and 140 and above (`home.shop.dialogue.intimacy100/120/140`), localized in all languages. |
 | 0.9.7 | 174 | 2026/09/30 | Shop intimacy (Spec 8.4.1): the cap rises to 199 and the lineup gains the 100-119, 120-139, and 140+ tiers; the identified slot count is 1 at intimacy 0-19 and 2 from 20 (always 7 slots in all); `shopInfo.intimacy` allows up to 199. |

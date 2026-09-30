@@ -20,6 +20,7 @@ selectBestAutoEquipmentUpgradeCandidate,
 type EquipmentRankingCandidate,
 } from '../game/battleKernel';
 import { gameplayRandom } from '../game/gameplayRandom';
+import { ITEM_MAX_STACK } from '../game/inventoryMutation';
 import {
 isDungeonEntryUnlocked
 } from '../game/clearGate';
@@ -4918,9 +4919,11 @@ export function HomeScreen({
         });
 
         const autoSoldVariant = Object.values(state.global.inventory).find((variant) => {
-          if (variant.item.id !== itemId || variant.status !== 'sold') return false;
+          if (variant.item.id !== itemId) return false;
           const previousVariant = prevInventoryRef.current[getVariantKey(variant.item)];
-          return previousVariant?.status === 'sold' && previousVariant.count === variant.count;
+          if (!previousVariant || previousVariant.count !== variant.count) return false;
+          return (previousVariant.status === 'sold' && variant.status === 'sold')
+            || (previousVariant.status === 'owned' && variant.status === 'owned' && variant.count >= ITEM_MAX_STACK);
         });
 
         const wasAutoSold = !purchasedVariant && Boolean(autoSoldVariant);
