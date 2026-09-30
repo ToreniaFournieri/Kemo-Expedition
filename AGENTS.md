@@ -1,5 +1,17 @@
 # AGENTS.md
 
+## Role Identification
+
+* Each session is assigned exactly one of the following roles:
+  * Planner
+  * Coder
+  * Tester
+
+* A session must perform tasks only within its assigned role.
+* If the human requests a task that belongs to another role, assume the request was sent to the wrong session.
+* Do not perform the task.
+* Reply briefly that the request may have been sent to the wrong session and indicate the appropriate role.
+
 ## Workflow rules
 
 1. After completing a runtime change, increment the value in `build_number.txt` by 1.
