@@ -190,8 +190,8 @@ inventory = {
   - `item_tier` = 1-8
   - `enhancement`: 0-6
   - `rarity`: common = 1, uncommon = 3, elite rare = 10, boss rare = 30, mythic rare = 300. 
-  - `super_rare`: If yes, 200, if no, 1.
-  - Round up.
+  - `super_rare`: If yes, 100, if no, 1.
+  - Round up the final calculated price to the nearest integer.
   - Selling_price = (10 + 2 x `item_tier` ) x (1 + `enhancement`/5) x `rarity` x `super_rare`
   - Unidentified Purchesing_price = (4 + 2 x `item_tier` ) x `rarity` x 10
   - Identified Purchesing_price = (4 + 2 x `item_tier` ) x `rarity`  x (1 + `enhancement`) x `super_rare` x 40
