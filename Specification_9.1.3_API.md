@@ -918,8 +918,8 @@ Path Parameters
         * `false`: currently unavailable, sold out, or unaffordable.
       * Example:
         * [
-        *  "1/0/1104/2/0/60/true",
-        *  "2/0/1102/2/0/60/true",
+        *  "1/0/1104/2/0/720/true",
+        *  "2/0/1102/2/0/720/true",
         *  "3/0/1110/?/?/80/false",
         *  "4/0/1111/?/?/100/true",
         *  "5/0/1111/?/?/100/true",
