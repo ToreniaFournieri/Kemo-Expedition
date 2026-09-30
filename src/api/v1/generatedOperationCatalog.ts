@@ -15,7 +15,7 @@ export const API_V1_OPERATIONS = [
   {"method":"GET","path":"/api/v1/read/observation/popupEventStream","access":"session","purpose":"Popup SSE stream.","operationId":"read/observation/popupEventStream"},
   {"method":"GET","path":"/api/v1/read/expedition/{p}/setting","access":"session","purpose":"Expedition settings/options.","operationId":"read/expedition/{p}/setting"},
   {"method":"GET","path":"/api/v1/read/expedition/{p}/latestBattleLog","access":"session","purpose":"Latest retained battle log.","operationId":"read/expedition/{p}/latestBattleLog"},
-  {"method":"POST","path":"/api/v1/read/expedition/{p}/simulationRun","access":"session","purpose":"Private 1,000-run forecast.","operationId":"read/expedition/{p}/simulationRun"},
+  {"method":"POST","path":"/api/v1/read/expedition/{p}/simulationRun","access":"session","purpose":"Private forecast of `numberOfRun` runs (default 100).","operationId":"read/expedition/{p}/simulationRun"},
   {"method":"GET","path":"/api/v1/read/expedition/{p}/chargeStock","access":"session","purpose":"Charge stock/status.","operationId":"read/expedition/{p}/chargeStock"},
   {"method":"GET","path":"/api/v1/read/build/party/{p}","access":"session","purpose":"Party build/options.","operationId":"read/build/party/{p}"},
   {"method":"GET","path":"/api/v1/read/build/character/{characterId}/status","access":"session","purpose":"Character build/options.","operationId":"read/build/character/{characterId}/status"},

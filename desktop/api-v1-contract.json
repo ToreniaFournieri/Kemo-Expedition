@@ -1023,7 +1023,12 @@
       "query": {
         "additionalProperties": false,
         "type": "object",
-        "properties": {}
+        "properties": {
+          "quick": {
+            "type": "boolean",
+            "default": true
+          }
+        }
       },
       "body": {
         "additionalProperties": false,
@@ -1182,7 +1187,6 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "latestSimulationResult",
                 "emptyEquipmentSlot",
                 "notification"
               ],
@@ -1415,7 +1419,6 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "latestSimulationResult",
                     "emptyEquipmentSlot",
                     "notification"
                   ],
@@ -1517,9 +1520,6 @@
               }
             ],
             "attention": {
-              "latestSimulationResult": [
-                "xxxxxxx"
-              ],
               "emptyEquipmentSlot": [
                 "xxxxxxx"
               ],
@@ -1552,7 +1552,12 @@
       "query": {
         "additionalProperties": false,
         "type": "object",
-        "properties": {}
+        "properties": {
+          "quick": {
+            "type": "boolean",
+            "default": true
+          }
+        }
       },
       "body": {
         "additionalProperties": false,
@@ -1711,7 +1716,6 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "latestSimulationResult",
                 "emptyEquipmentSlot",
                 "notification"
               ],
@@ -1944,7 +1948,6 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "latestSimulationResult",
                     "emptyEquipmentSlot",
                     "notification"
                   ],
@@ -2046,9 +2049,6 @@
               }
             ],
             "attention": {
-              "latestSimulationResult": [
-                "xxxxxxx"
-              ],
               "emptyEquipmentSlot": [
                 "xxxxxxx"
               ],
@@ -19636,7 +19636,7 @@
       "method": "POST",
       "path": "/api/v1/read/expedition/{p}/simulationRun",
       "access": "session",
-      "purpose": "Private 1,000-run forecast.",
+      "purpose": "Private forecast of `numberOfRun` runs (default 100).",
       "operationId": "read/expedition/{p}/simulationRun",
       "transport": "json",
       "pathParameters": {
@@ -19665,6 +19665,12 @@
           "expectedRevision": {
             "minimum": 0,
             "type": "integer"
+          },
+          "numberOfRun": {
+            "minimum": 1,
+            "maximum": 1000,
+            "type": "integer",
+            "default": 100
           }
         }
       },

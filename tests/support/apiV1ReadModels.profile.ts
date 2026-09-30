@@ -34,10 +34,15 @@ const context = {
   },
 };
 
-await buildApiV1ReadData('read/observation/compact', state, {}, context);
+// `quick` defaults to true: no simulation runs and `latestSimulationResult` is omitted.
+const quickCompact = await buildApiV1ReadData('read/observation/compact', state, {}, context) as { attention: Record<string, unknown> };
+assert.deepEqual(calls, []);
+assert.equal('latestSimulationResult' in quickCompact.attention, false);
+const slowCompact = await buildApiV1ReadData('read/observation/compact', state, { quick: false }, context) as { attention: { latestSimulationResult?: string[] } };
 assert.deepEqual(calls, state.parties.map((_, partyIndex) => ({ partyIndex, count: 100 })));
+assert.equal(slowCompact.attention.latestSimulationResult?.length, state.parties.length);
 calls.length = 0;
-const full = await buildApiV1ReadData('read/expedition/1/simulationRun', state, {}, context);
+const full = await buildApiV1ReadData('read/expedition/1/simulationRun', state, { numberOfRun: 1_000 }, context);
 assert.deepEqual(calls, [{ partyIndex: 0, count: 1_000 }]);
 assert.equal(full.simulatedRevision, 7);
 {
@@ -63,7 +68,7 @@ assert.equal(full.simulatedRevision, 7);
     assert.equal(room.victory + room.clear + room.return + room.draw + room.retreat + room.defeat + room.notReached, 1_000, `room ${room.floorRoom} totals`);
   }
   assert.match(data.seedDomain, /^[0-9a-f-]{36}$/);
-  const second = await buildApiV1ReadData('read/expedition/1/simulationRun', state, {}, context) as unknown as { seedDomain: string };
+  const second = await buildApiV1ReadData('read/expedition/1/simulationRun', state, { numberOfRun: 1_000 }, context) as unknown as { seedDomain: string };
   assert.notEqual(second.seedDomain, data.seedDomain, 'each forecast has its own seed domain');
 }
 calls.length = 0;

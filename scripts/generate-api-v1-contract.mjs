@@ -159,6 +159,8 @@ const pathSchemas = {
 
 const page = { limit: optional(Type.Integer({ minimum: 1, maximum: 200 }), 100), cursor: optional(stableKey) };
 const querySchemas = {
+  'read/observation': strict({ quick: optional(Type.Boolean(), true) }),
+  'read/observation/compact': strict({ quick: optional(Type.Boolean(), true) }),
   'read/observation/party': strict({ partyNumber: optional(partyNumber), characterId: optional(integerId) }),
   'read/observation/base': strict({ pane: optional(literals('shop', 'inventory', 'vault', 'workshop', 'altar')) }),
   'read/observation/diary': strict({ partyNumber: optional(partyNumber), diaryEntryId: optional(stableKey) }),
@@ -347,7 +349,7 @@ const compactObservationSchema = strict({
     party: strict({ partyNumber, level: Type.Integer({ minimum: 1, maximum: 69 }), experiencePoint: Type.String(), deity: stableKey, deityRank: Type.Integer({ minimum: 0 }), condition: compactCondition }),
     state: stableKey, lastDestination: Type.Union([integerId, Type.Null()]), lastOutcome: Type.Union([expeditionOutcome, Type.Null()]),
   })),
-  attention: strict({ latestSimulationResult: Type.Array(Type.String()), emptyEquipmentSlot: Type.Array(Type.String()), notification: Type.Array(strict({ partyNumber, unreadDiary: Type.Integer({ minimum: 0 }), unreadDiaryTitle: Type.Array(Type.String()) })) }),
+  attention: strict({ latestSimulationResult: Type.Optional(Type.Array(Type.String())), emptyEquipmentSlot: Type.Array(Type.String()), notification: Type.Array(strict({ partyNumber, unreadDiary: Type.Integer({ minimum: 0 }), unreadDiaryTitle: Type.Array(Type.String()) })) }),
 });
 // Spec 8.3 / 9.1.4.7: the Expedition pane's facts. While a party explores, `exploration` carries only the rooms revealed as
 // of the read, with `nextRevealAt` naming when the next one appears; HP, floor, and outcome never run ahead of the clock.
@@ -677,7 +679,7 @@ const commitEnvelope = (parameters) => strict({ expectedRevision: Type.Integer({
 function pathSchemaFor(operation) { const name = operation.path.match(/\{([^}]+)\}/)?.[1]; return name ? pathSchemas[name] : empty; }
 function bodySchemaFor(operation) {
   if (directBodySchemas[operation.operationId]) return directBodySchemas[operation.operationId];
-  if (operation.operationId.endsWith('/simulationRun')) return strict({ expectedRevision: optional(Type.Integer({ minimum: 0 })) });
+  if (operation.operationId.endsWith('/simulationRun')) return strict({ expectedRevision: optional(Type.Integer({ minimum: 0 })), numberOfRun: optional(Type.Integer({ minimum: 1, maximum: 1000 }), 100) });
   if (operation.operationId.startsWith('commit/')) return commitEnvelope(commitParameters[operation.operationId]);
   return empty;
 }

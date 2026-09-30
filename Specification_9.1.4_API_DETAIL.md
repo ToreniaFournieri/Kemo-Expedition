@@ -130,12 +130,13 @@ after the response has been prepared. Fundamental responses use
 * Every `GET` endpoint except the popup event stream also answers `HEAD` with
   the status and headers (including `ETag`) that `GET` would return, and no body.
   A `405` for a `GET` endpoint lists `Allow: GET, HEAD`.
-* Every compact observation request deliberately runs a new private 100-run
-  simulation for each unlocked party against the response's immutable snapshot.
-  This includes the `/read/observation` alias. It is an on-demand AI decision
+* A compact observation request with `quick=false` deliberately runs a new
+  private 100-run simulation for each unlocked party against the response's
+  immutable snapshot. `quick` defaults to `true`, which runs no simulation and
+  omits `latestSimulationResult`. This includes the `/read/observation` alias. It is an on-demand AI decision
   operation, not the UI's real-time monitoring query. Do not reuse an older
-  forecast or reduce the run count. It uses the same simulation rules as the
-  1,000-run query, with an isolated random domain and no persisted result.
+  forecast or reduce the run count. It uses the same simulation rules as
+  `simulationRun`, with an isolated random domain and no persisted result.
 * Compact observation, including its alias, returns `Cache-Control: no-store`,
   emits no ETag, and does not return 304. Other save-derived JSON reads return
   `ETag: "rev-<revision>-<projectionHash>"` and honor `If-None-Match` with
@@ -974,7 +975,7 @@ use the same operation without HTTP authentication headers.
 | GET | `/api/v1/read/observation/popupEventStream` | Session | Popup SSE stream. |
 | GET | `/api/v1/read/expedition/{p}/setting` | Session | Expedition settings/options. |
 | GET | `/api/v1/read/expedition/{p}/latestBattleLog` | Session | Latest retained battle log. |
-| POST | `/api/v1/read/expedition/{p}/simulationRun` | Session | Private 1,000-run forecast. |
+| POST | `/api/v1/read/expedition/{p}/simulationRun` | Session | Private forecast of `numberOfRun` runs (default 100). |
 | GET | `/api/v1/read/expedition/{p}/chargeStock` | Session | Charge stock/status. |
 | GET | `/api/v1/read/build/party/{p}` | Session | Party build/options. |
 | GET | `/api/v1/read/build/character/{characterId}/status` | Session | Character build/options. |
@@ -1098,9 +1099,11 @@ use the same operation without HTTP authentication headers.
   scalar to a one-element array. Empty arrays are invalid unless explicitly
   allowed. Reject duplicate IDs except repeated item variants in `equip`, where
   repetition requests multiple owned copies.
-* `simulationRun` POST accepts `{expectedRevision?: number}` directly, with no
+* `simulationRun` POST accepts `{expectedRevision?: number, numberOfRun?: number}` directly, with no
   Commit envelope or idempotency key. Omission uses the admission revision; a
   supplied mismatch returns `stale_revision` before private computation.
+  `numberOfRun` is an integer 1 ~ 1000 and defaults to 100; any other value is
+  `invalid_request`.
 * A parameter is required unless marked optional, given a default, or contained
   in an explicitly partial update. Partial updates preserve omitted members; an
   empty update is a no-op. `null` is accepted only where explicitly documented.

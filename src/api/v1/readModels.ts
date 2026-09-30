@@ -168,7 +168,7 @@ function findCharacter(state: GameState, value: unknown) {
   return null;
 }
 
-function compactObservation(state: GameState, context: ApiV1ReadContext, simulations: string[]) {
+function compactObservation(state: GameState, context: ApiV1ReadContext, simulations: string[] | null) {
   return {
     globalInfo: { gameMode: context.gameMode, inGameTime: new Date(context.inGameTime).toISOString(), gold: state.global.gold, prana: state.global.prana },
     partyInfo: state.parties.map((party, partyIndex) => ({
@@ -186,7 +186,7 @@ function compactObservation(state: GameState, context: ApiV1ReadContext, simulat
       lastOutcome: apiExpeditionOutcomeOrNull(disclosedLogOf(state, context, partyIndex)),
     })),
     attention: {
-      latestSimulationResult: simulations,
+      ...(simulations ? { latestSimulationResult: simulations } : {}),
       emptyEquipmentSlot: state.parties.flatMap((party) => party.characters.flatMap((character) => {
         const empty = Math.max(0, computePartyStats(party).characterStats.find((entry) => entry.characterId === character.id)!.maxEquipSlots - character.equipment.filter(Boolean).length);
         return empty > 0 ? [`${character.id}/${empty}`] : [];
@@ -823,16 +823,23 @@ function baseProjection(state: GameState, context: ApiV1ReadContext) {
   };
 }
 
+// SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `numberOfRun` defaults to 100 and ranges 1 ~ 1000.
+const SIMULATION_RUN_DEFAULT = 100;
+const SIMULATION_RUN_MAX = 1_000;
+
 export async function buildApiV1ReadData(operationId: string, state: GameState, parameters: Record<string, unknown>, context: ApiV1ReadContext): Promise<Record<string, unknown>> {
   if (operationId === 'read/observation' || operationId === 'read/observation/compact') {
+    // SpecRef: 9.1.3 | 2-1-1 compact | `quick` (default `true`) omits `latestSimulationResult` and runs no simulation.
+    const quick = parameters.quick === undefined || parameters.quick === true || parameters.quick === 'true';
+    if (parameters.quick !== undefined && typeof parameters.quick !== 'boolean' && parameters.quick !== 'true' && parameters.quick !== 'false') throw new Error('invalid_request:quick');
     const simulations: string[] = [];
-    for (let index = 0; index < state.parties.length; index += 1) {
+    for (let index = 0; !quick && index < state.parties.length; index += 1) {
       const result = await context.simulation?.(index, 100) as { Clear?: number; Return?: number; Draw?: number; Retreat?: number; Defeat?: number; total?: number } | undefined;
       const total = result?.total ?? 100;
       const percent = (value: number | undefined) => Math.round(((value ?? 0) / total) * 100);
       simulations.push(`PT${state.parties[index].id} / Clear ${percent(result?.Clear)}% / Return ${percent(result?.Return)}% / Draw ${percent(result?.Draw)}% / Retreat ${percent(result?.Retreat)}% / Defeat ${percent(result?.Defeat)}%`);
     }
-    return compactObservation(state, context, simulations);
+    return compactObservation(state, context, quick ? null : simulations);
   }
   if (operationId === 'read/observation/overview') return { headerInfo: overviewProjection(state, context) };
   if (operationId === 'read/observation/expedition') return { expeditionInfo: expeditionProjection(state, context) };
@@ -893,7 +900,9 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     }
     if (expedition[2] === 'simulationRun') {
       if (!context.simulation) throw new Error('runtime_unavailable');
-      return buildSimulationRunData(await context.simulation(index, 1_000) as ExpeditionSimulationResult, context.revision, crypto.randomUUID(), describeSimulationDepthReach(party));
+      const numberOfRun = parameters.numberOfRun === undefined ? SIMULATION_RUN_DEFAULT : parameters.numberOfRun;
+      if (typeof numberOfRun !== 'number' || !Number.isInteger(numberOfRun) || numberOfRun < 1 || numberOfRun > SIMULATION_RUN_MAX) throw new Error('invalid_request:numberOfRun');
+      return buildSimulationRunData(await context.simulation(index, numberOfRun) as ExpeditionSimulationResult, context.revision, crypto.randomUUID(), describeSimulationDepthReach(party));
     }
     const charge = getInstantExpeditionChargeState(party, context.inGameTime, context.chargeDurationScale ?? 1);
     return { chargeStock: charge.stock, chargeDuration: charge.remainingMs <= 0 ? 0 : Math.ceil(charge.remainingMs / 1000) };

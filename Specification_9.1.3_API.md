@@ -320,8 +320,14 @@ Path Parameters
   * Simulation results are not cached between requests and are not persisted.
   * Other observation endpoints do not trigger these simulations.
 
-* Parameters: none.
-
+* Parameters:
+  * `quick`
+    * Optional.
+    * Boolean.
+    * Default: `true`.
+    * If `true`, omits `latestSimulationResult` from the response.
+    * If `false`, includes `latestSimulationResult` in the response.
+    
 * Return:
   * `globalInfo`
     * `gameMode`
