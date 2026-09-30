@@ -1,5 +1,6 @@
 import type { Language } from '../i18n';
 import type { ExpeditionDeployStatus } from '../game/expeditionDeployment';
+import type { ShopLineupSnapshot } from '../game/shop';
 
 // Elemental Types
 export type ElementalOffense = 'none' | 'fire' | 'thunder' | 'ice';
@@ -478,6 +479,8 @@ interface GlobalState {
   revealedItemCompendiumItemIds: number[];
   revealedGlossaryAbilityIds: string[];
   revealedGlossaryTerrainKeys: TerrainEffectKey[];
+  /** The saved Shop lineup of the current stock period (SpecRef 8.4.1); null until the first one is generated. */
+  shopLineup?: ShopLineupSnapshot | null;
   shopPurchases: Record<string, string[]>;
   jewelShopPurchases: Record<string, number>;
   shopRefreshCounts: Record<string, number>;

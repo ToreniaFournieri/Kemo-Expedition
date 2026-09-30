@@ -9865,7 +9865,7 @@
                       "type": "string"
                     },
                     "entries": {
-                      "maxItems": 5,
+                      "maxItems": 7,
                       "type": "array",
                       "items": {
                         "additionalProperties": false,
@@ -9873,6 +9873,9 @@
                         "required": [
                           "shopItemId",
                           "itemId",
+                          "identified",
+                          "enhancement",
+                          "superRare",
                           "price",
                           "rarity",
                           "soldOut",
@@ -9882,12 +9885,38 @@
                         "properties": {
                           "shopItemId": {
                             "minimum": 1,
-                            "maximum": 5,
+                            "maximum": 7,
                             "type": "integer"
                           },
                           "itemId": {
                             "minimum": 1,
                             "type": "integer"
+                          },
+                          "identified": {
+                            "type": "boolean"
+                          },
+                          "enhancement": {
+                            "anyOf": [
+                              {
+                                "minimum": 0,
+                                "maximum": 6,
+                                "type": "integer"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "superRare": {
+                            "anyOf": [
+                              {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
                           },
                           "price": {
                             "minimum": 0,
@@ -10438,7 +10467,7 @@
                           "type": "string"
                         },
                         "entries": {
-                          "maxItems": 5,
+                          "maxItems": 7,
                           "type": "array",
                           "items": {
                             "additionalProperties": false,
@@ -10446,6 +10475,9 @@
                             "required": [
                               "shopItemId",
                               "itemId",
+                              "identified",
+                              "enhancement",
+                              "superRare",
                               "price",
                               "rarity",
                               "soldOut",
@@ -10455,12 +10487,38 @@
                             "properties": {
                               "shopItemId": {
                                 "minimum": 1,
-                                "maximum": 5,
+                                "maximum": 7,
                                 "type": "integer"
                               },
                               "itemId": {
                                 "minimum": 1,
                                 "type": "integer"
+                              },
+                              "identified": {
+                                "type": "boolean"
+                              },
+                              "enhancement": {
+                                "anyOf": [
+                                  {
+                                    "minimum": 0,
+                                    "maximum": 6,
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "superRare": {
+                                "anyOf": [
+                                  {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
                               },
                               "price": {
                                 "minimum": 0,
@@ -10687,6 +10745,9 @@
                   {
                     "shopItemId": 1,
                     "itemId": 1,
+                    "identified": true,
+                    "enhancement": 0,
+                    "superRare": 0,
                     "price": 0,
                     "rarity": "common",
                     "soldOut": true,
@@ -12879,7 +12940,7 @@
                       "type": "string"
                     },
                     "addedAbilities": {
-                      "maxItems": 5,
+                      "maxItems": 7,
                       "type": "array",
                       "items": {
                         "additionalProperties": false,
@@ -13462,7 +13523,7 @@
                           "type": "string"
                         },
                         "addedAbilities": {
-                          "maxItems": 5,
+                          "maxItems": 7,
                           "type": "array",
                           "items": {
                             "additionalProperties": false,
@@ -23898,15 +23959,15 @@
                   "type": "string"
                 },
                 "items": {
-                  "maxItems": 5,
+                  "maxItems": 7,
                   "type": "array",
                   "items": {
-                    "pattern": "^[1-5]/[1-9][0-9]*/[0-9]+/(true|false)$",
+                    "pattern": "^[1-7]/0/[1-9][0-9]*/(?:[0-6]|\\?)/(?:0|[1-9][0-9]*|\\?)/[0-9]+/(true|false)$",
                     "type": "string"
                   }
                 },
                 "entries": {
-                  "maxItems": 5,
+                  "maxItems": 7,
                   "type": "array",
                   "items": {
                     "additionalProperties": false,
@@ -23914,6 +23975,9 @@
                     "required": [
                       "shopItemId",
                       "itemId",
+                      "identified",
+                      "enhancement",
+                      "superRare",
                       "price",
                       "rarity",
                       "soldOut",
@@ -23923,12 +23987,38 @@
                     "properties": {
                       "shopItemId": {
                         "minimum": 1,
-                        "maximum": 5,
+                        "maximum": 7,
                         "type": "integer"
                       },
                       "itemId": {
                         "minimum": 1,
                         "type": "integer"
+                      },
+                      "identified": {
+                        "type": "boolean"
+                      },
+                      "enhancement": {
+                        "anyOf": [
+                          {
+                            "minimum": 0,
+                            "maximum": 6,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "superRare": {
+                        "anyOf": [
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
                       "price": {
                         "minimum": 0,
@@ -24001,7 +24091,7 @@
                   "type": "array",
                   "items": {
                     "minimum": 1,
-                    "maximum": 5,
+                    "maximum": 7,
                     "type": "integer"
                   }
                 }
@@ -24069,15 +24159,15 @@
                       "type": "string"
                     },
                     "items": {
-                      "maxItems": 5,
+                      "maxItems": 7,
                       "type": "array",
                       "items": {
-                        "pattern": "^[1-5]/[1-9][0-9]*/[0-9]+/(true|false)$",
+                        "pattern": "^[1-7]/0/[1-9][0-9]*/(?:[0-6]|\\?)/(?:0|[1-9][0-9]*|\\?)/[0-9]+/(true|false)$",
                         "type": "string"
                       }
                     },
                     "entries": {
-                      "maxItems": 5,
+                      "maxItems": 7,
                       "type": "array",
                       "items": {
                         "additionalProperties": false,
@@ -24085,6 +24175,9 @@
                         "required": [
                           "shopItemId",
                           "itemId",
+                          "identified",
+                          "enhancement",
+                          "superRare",
                           "price",
                           "rarity",
                           "soldOut",
@@ -24094,12 +24187,38 @@
                         "properties": {
                           "shopItemId": {
                             "minimum": 1,
-                            "maximum": 5,
+                            "maximum": 7,
                             "type": "integer"
                           },
                           "itemId": {
                             "minimum": 1,
                             "type": "integer"
+                          },
+                          "identified": {
+                            "type": "boolean"
+                          },
+                          "enhancement": {
+                            "anyOf": [
+                              {
+                                "minimum": 0,
+                                "maximum": 6,
+                                "type": "integer"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "superRare": {
+                            "anyOf": [
+                              {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
                           },
                           "price": {
                             "minimum": 0,
@@ -24172,7 +24291,7 @@
                       "type": "array",
                       "items": {
                         "minimum": 1,
-                        "maximum": 5,
+                        "maximum": 7,
                         "type": "integer"
                       }
                     }
@@ -24214,12 +24333,15 @@
               "lineupId": "xxxxxxx",
               "refreshesAt": "1970-01-01T00:00:00.000Z",
               "items": [
-                "1/1104/60/true"
+                "1/0/1104/2/0/720/true"
               ],
               "entries": [
                 {
                   "shopItemId": 1,
                   "itemId": 1,
+                  "identified": true,
+                  "enhancement": 0,
+                  "superRare": 0,
                   "price": 0,
                   "rarity": "common",
                   "soldOut": true,
@@ -26585,7 +26707,7 @@
                   "type": "string"
                 },
                 "addedAbilities": {
-                  "maxItems": 5,
+                  "maxItems": 7,
                   "type": "array",
                   "items": {
                     "additionalProperties": false,
@@ -26794,7 +26916,7 @@
                       "type": "string"
                     },
                     "addedAbilities": {
-                      "maxItems": 5,
+                      "maxItems": 7,
                       "type": "array",
                       "items": {
                         "additionalProperties": false,
@@ -39626,7 +39748,7 @@
                 "type": "string"
               },
               "addedAbilities": {
-                "maxItems": 5,
+                "maxItems": 7,
                 "type": "array",
                 "items": {
                   "additionalProperties": false,
@@ -39710,7 +39832,7 @@
                   "type": "string"
                 },
                 "addedAbilities": {
-                  "maxItems": 5,
+                  "maxItems": 7,
                   "type": "array",
                   "items": {
                     "additionalProperties": false,
@@ -39828,7 +39950,7 @@
                       "type": "string"
                     },
                     "addedAbilities": {
-                      "maxItems": 5,
+                      "maxItems": 7,
                       "type": "array",
                       "items": {
                         "additionalProperties": false,

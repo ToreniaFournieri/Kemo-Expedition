@@ -6,6 +6,10 @@ import type { LineageId, RaceId } from '../../types/index.ts';
 export interface ShopEntryProjection {
   shopItemId: number;
   itemId: number;
+  /** Identified entries show their rolled enhancement and Super Rare title; unidentified ones are `null` until bought. */
+  identified: boolean;
+  enhancement: number | null;
+  superRare: number | null;
   price: number;
   rarity: 'common' | 'uncommon' | 'eliteRare' | 'bossRare';
   soldOut: boolean;

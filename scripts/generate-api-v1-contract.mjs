@@ -222,9 +222,9 @@ const debugCurrent = {
 };
 const booleanOptions = Type.Array(Type.Boolean());
 const enemyEditAbility = strict({ abilityId: stableKey, level: Type.Integer({ minimum: 1, maximum: 5 }) });
-const enemyEdit = { enemyLevel: optional(Type.Integer({ minimum: 1, maximum: 99 })), enemyName: optional(Type.String({ minLength: 1, maxLength: 100 })), terrainEffect: optional(stableKey), enemyType: optional(stableKey), mainClass: optional(stableKey), subClass: optional(stableKey), addedAbilities: optional(Type.Array(enemyEditAbility, { maxItems: 5 })) };
+const enemyEdit = { enemyLevel: optional(Type.Integer({ minimum: 1, maximum: 99 })), enemyName: optional(Type.String({ minLength: 1, maxLength: 100 })), terrainEffect: optional(stableKey), enemyType: optional(stableKey), mainClass: optional(stableKey), subClass: optional(stableKey), addedAbilities: optional(Type.Array(enemyEditAbility, { maxItems: 7 })) };
 // Spec 9.1.3 2-6-1: the complete Enemy Edit pane a read or commit reports.
-const enemyEditCurrent = { enemyLevel: Type.Integer({ minimum: 1, maximum: 99 }), enemyName: Type.String({ minLength: 1, maxLength: 100 }), terrainEffect: stableKey, enemyType: stableKey, mainClass: stableKey, subClass: stableKey, addedAbilities: Type.Array(enemyEditAbility, { maxItems: 5 }) };
+const enemyEditCurrent = { enemyLevel: Type.Integer({ minimum: 1, maximum: 99 }), enemyName: Type.String({ minLength: 1, maxLength: 100 }), terrainEffect: stableKey, enemyType: stableKey, mainClass: stableKey, subClass: stableKey, addedAbilities: Type.Array(enemyEditAbility, { maxItems: 7 }) };
 
 const commitParameters = {
   'commit/progress/elapsed': strict({ calculateToRealTime: optional(Type.Boolean()), elapsedSeconds: optional(Type.Integer({ minimum: 60, maximum: 43200 })) }),
@@ -382,11 +382,11 @@ const characterSummary = strict({ characterId: integerId, name: Type.String({ mi
 const expeditionStatistics = strict({ clear: Type.Integer({ minimum: 0 }), return: Type.Integer({ minimum: 0 }), draw: Type.Integer({ minimum: 0 }), retreat: Type.Integer({ minimum: 0 }), defeat: Type.Integer({ minimum: 0 }), donatedGold: Type.Integer({ minimum: 0 }), savedGold: Type.Integer({ minimum: 0 }) });
 const partyProjectionSchema = strict({ effectiveSelection: strict({ partyNumber, characterId: Type.Union([integerId, Type.Null()]) }), party: strict({ partyNumber, name: Type.String({ minLength: 1 }), level: Type.Integer({ minimum: 1, maximum: 69 }), experience: Type.Integer({ minimum: 0 }), experienceToNext: Type.Integer({ minimum: 0 }), maxHp: Type.Integer({ minimum: 0 }), deityId: stableKey, deityRank: Type.Integer({ minimum: 0 }), condition: Type.Integer({ minimum: -400, maximum: 400 }), order: Type.Array(integerId), characters: Type.Array(characterSummary), statistics: expeditionStatistics }) });
 // Spec 8.4.1: the shop at the request's clock. A slot's `shopItemId` is its 1-based lineup position.
-// `<shopItemId>/<itemId>/<price>/<availability>` (Spec 9.1.3, 2-4-4).
-const shopItemString = Type.String({ pattern: '^[1-5]/[1-9][0-9]*/[0-9]+/(true|false)$' });
-sampleOverrides.set(shopItemString, '1/1104/60/true');
+// `<shopItemId>/<Item Format>/<price>/<availability>` (Spec 9.1.3, 2-4-4); an unidentified entry's enhancement and Super Rare are `?`.
+const shopItemString = Type.String({ pattern: '^[1-7]/0/[1-9][0-9]*/(?:[0-6]|\\?)/(?:0|[1-9][0-9]*|\\?)/[0-9]+/(true|false)$' });
+sampleOverrides.set(shopItemString, '1/0/1104/2/0/720/true');
 const shopRarity = literals('common', 'uncommon', 'eliteRare', 'bossRare');
-const shopEntry = strict({ shopItemId: Type.Integer({ minimum: 1, maximum: 5 }), itemId: integerId, price: Type.Integer({ minimum: 0 }), rarity: shopRarity, soldOut: Type.Boolean(), available: Type.Boolean(), unavailableReason: Type.Union([literals('sold_out', 'insufficient_gold'), Type.Null()]) });
+const shopEntry = strict({ shopItemId: Type.Integer({ minimum: 1, maximum: 7 }), itemId: integerId, identified: Type.Boolean(), enhancement: Type.Union([Type.Integer({ minimum: 0, maximum: 6 }), Type.Null()]), superRare: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]), price: Type.Integer({ minimum: 0 }), rarity: shopRarity, soldOut: Type.Boolean(), available: Type.Boolean(), unavailableReason: Type.Union([literals('sold_out', 'insufficient_gold'), Type.Null()]) });
 const shopInfoMembers = { intimacy: Type.Integer({ minimum: 0, maximum: 99 }), dialogue: semanticText, paidRefreshCountdown: Type.Integer({ minimum: 1 }), paidRefreshPrice: Type.Integer({ minimum: 0 }), paidRefresh: strict({ available: Type.Boolean(), unavailableReason: Type.Union([Type.Literal('insufficient_gold'), Type.Null()]) }) };
 // Spec 8.4.5: an Alter level per enemy category, and one entry per enemy form.
 const altarCategory = strict({ enemyType: stableKey, altarLevel: Type.Integer({ minimum: 0, maximum: 20 }), victories: count, nextLevelVictories: count, maximumLevel: Type.Boolean(), formCount: count, unlockedFormCount: count });
@@ -405,7 +405,7 @@ const inventoryVariant = strict({ variantKey: stableKey, item: itemFormat, quant
 const heldJewel = strict({ jewelKey: literals('might', 'arcana', 'fort', 'ward', 'shade', 'focus'), rank: Type.Integer({ minimum: 1, maximum: 8 }), quantity: Type.Integer({ minimum: 1 }) });
 const equippedItem = strict({ characterId: integerId, partyNumber, member: Type.Integer({ minimum: 1, maximum: 6 }), owner: strict({ name: Type.String(), raceId: stableKey, gender: literals('male', 'female'), isUnique: Type.Boolean(), lineageId: Type.Union([stableKey, Type.Null()]), mimorianEnemyId: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]) }), slotIndex: Type.Integer({ minimum: 0 }), item: itemFormat, jewel: Type.Union([Type.String({ pattern: '^(might|arcana|fort|ward|shade|focus):[1-8]$' }), Type.Null()]), active: Type.Boolean() });
 sampleOverrides.set(equippedItem.properties.jewel, null);
-const baseProjectionSchema = strict({ currencies: strict({ gold: Type.Integer({ minimum: 0 }), prana: Type.Integer({ minimum: 0 }) }), inventory: Type.Array(inventoryVariant), jewels: Type.Array(heldJewel), equippedItems: Type.Array(equippedItem), jewelPriorityParty: Type.Union([partyNumber, Type.Literal('none')]), shop: strict({ lineupId: stableKey, ...shopInfoMembers, refreshesAt: isoTimestamp, entries: Type.Array(shopEntry, { maxItems: 5 }) }), altar: altarOverview });
+const baseProjectionSchema = strict({ currencies: strict({ gold: Type.Integer({ minimum: 0 }), prana: Type.Integer({ minimum: 0 }) }), inventory: Type.Array(inventoryVariant), jewels: Type.Array(heldJewel), equippedItems: Type.Array(equippedItem), jewelPriorityParty: Type.Union([partyNumber, Type.Literal('none')]), shop: strict({ lineupId: stableKey, ...shopInfoMembers, refreshesAt: isoTimestamp, entries: Type.Array(shopEntry, { maxItems: 7 }) }), altar: altarOverview });
 const diaryProjectionSchema = strict({
   effectiveSelection: strict({ partyNumber, diaryEntryId: Type.Union([stableKey, Type.Null()]) }),
   unreadTotal: Type.Integer({ minimum: 0 }),
@@ -487,7 +487,7 @@ const responseDataSchemas = {
   'read/base/searchItems': strict({ items: Type.Array(itemStackFormat), totalCount: Type.Integer({ minimum: 0 }), truncated: Type.Boolean() }),
   'read/base/jewelPriorityParty': strict({ current: strict({ partyNumber: Type.Union([partyNumber, Type.Literal('none')]) }), validOptions: strict({ partyNumber: Type.Array(Type.Union([partyNumber, Type.Literal('none')])) }) }),
   'read/base/shopInfo': strict(shopInfoMembers),
-  'read/base/shopItemsList': strict({ current: strict({ lineupId: stableKey, refreshesAt: isoTimestamp, items: Type.Array(shopItemString, { maxItems: 5 }), entries: Type.Array(shopEntry, { maxItems: 5 }) }), validOptions: strict({ lineupId: stableKey, items: Type.Array(Type.Integer({ minimum: 1, maximum: 5 })) }) }),
+  'read/base/shopItemsList': strict({ current: strict({ lineupId: stableKey, refreshesAt: isoTimestamp, items: Type.Array(shopItemString, { maxItems: 7 }), entries: Type.Array(shopEntry, { maxItems: 7 }) }), validOptions: strict({ lineupId: stableKey, items: Type.Array(Type.Integer({ minimum: 1, maximum: 7 })) }) }),
   'read/base/altarInfo': strict({ altarOverview }),
   'read/base/enemyFormList': strict({ current: strict({ enemyFormList: Type.Array(enemyForm) }), validOptions: strict({ enemyId: Type.Array(Type.Integer({ minimum: 0 })) }) }),
   'read/diary/{p}/diarySetting': strict({ current: strict(diarySettingMembers), validOptions: diarySettingValidOptions }),

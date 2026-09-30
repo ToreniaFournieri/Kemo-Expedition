@@ -296,10 +296,11 @@ test('HomeScreen gives the header the overview projection, not raw game state or
 // the Application API or added to this map with its category and reason.
 const HOMESCREEN_REDUCER_ACTIONS = {
   // The live runtime engine (party cycle, AFK recovery, side quests, save flushing). Stage 4 kept it in HomeScreen and
-  // the reducer by decision; none of these is wired to a player control.
+  // the reducer by decision; none of these is wired to a player control. `ensureShopLineup` saves the Shop's lineup for the
+  // current stock period when the Shop is shown (Spec 8.4.1); it is not a player command.
   runtimeEngine: [
     'advanceSideQuest', 'applyAutoEquipmentActions', 'autoSelectDungeon', 'cancelSideQuest', 'commitAfkPartyChunk',
-    'commitAfkPartyTransaction', 'commitAfkPartyTransactionAuthoritatively', 'finalizeDiaryLog', 'flushSave',
+    'commitAfkPartyTransaction', 'commitAfkPartyTransactionAuthoritatively', 'ensureShopLineup', 'finalizeDiaryLog', 'flushSave',
     'getAuthoritativeState', 'healPartyHp', 'processPendingProfit', 'publishAuthoritativeState', 'rollPartySleepiness',
     'rollSideQuest', 'runExpedition', 'saveNow', 'setRecoverySaveMode', 'setSideQuestProgress', 'spendPendingProfit',
   ],

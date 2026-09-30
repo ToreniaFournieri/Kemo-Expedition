@@ -132,13 +132,16 @@ import { createEnvironmentStorageKey, getEnvironmentId } from '../game/environme
 import { addDiaryLogs } from '../game/diary';
 import { computeCharacterStats } from '../game/characterComputation';
 import {
-  getShopItemPrice,
   getShopHourKey,
-  getShopStockKey,
   getShopRefreshPrice,
+  getShopStockEntryId,
   countElapsedShopRefreshes,
   getCurrentShopRefreshDate,
+  normalizeShopLineup,
+  resolveShopLineup,
+  rollUnidentifiedShopItem,
 } from '../game/shop';
+import { shopLineupInputOf } from '../game/shopFacts';
 import { getAltarLevel, getAltarVictoriesForEnemyType, getEnemyFormPranaCost, getEnemyRequiredAltarLevel, getSuperRareItemPrana } from '../game/prana';
 import {
   addJewelToInventory,
@@ -588,6 +591,30 @@ function applyShopIntimacyDecay(global: GameState['global'], now: Date): GameSta
   };
 }
 
+// SpecRef: 8.4.1 | Shop (お店) | Enhancement (Same as item drop logic)
+/**
+ * Saves the lineup of the current stock period when it is not saved yet: the identified entries' enhancement and Super Rare
+ * title are rolled from PT1's bags exactly once, here, so viewing, reloading, and purchasing never reroll them.
+ */
+function ensureShopLineup(state: GameState, now: Date): GameState {
+  const global = applyShopIntimacyDecay(state.global, now);
+  const resolved = resolveShopLineup(shopLineupInputOf({ parties: state.parties, global }), now);
+  if (resolved.saved) return global === state.global ? state : { ...state, global };
+  const parties = resolved.bags
+    ? state.parties.map((party, index) => (index === 0 ? { ...party, bags: resolved.bags as GameState['bags'] } : party))
+    : state.parties;
+  return {
+    ...state,
+    parties,
+    global: {
+      ...global,
+      shopLineup: { stockKey: resolved.stockKey, entries: resolved.entries },
+      // Only the current stock period's sold-out marks are kept.
+      shopPurchases: resolved.stockKey in global.shopPurchases ? { [resolved.stockKey]: global.shopPurchases[resolved.stockKey] } : {},
+    },
+  };
+}
+
 // SpecRef: 9 | Environment | Save Data Isolation
 function normalizeImportedCharacter(character: Character, fallbackCharacter: Character): Character {
   // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Migration from Previous Non-Gender Data
@@ -919,6 +946,7 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
             revealedItemCompendiumItemIds: [],
             revealedGlossaryAbilityIds: [],
             revealedGlossaryTerrainKeys: [],
+            shopLineup: null,
             shopPurchases: {},
             jewelShopPurchases: {},
             shopRefreshCounts: {},
@@ -971,6 +999,10 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
               return acc;
             }, {})
           : {};
+
+        // SpecRef: 8.4.1 | Shop (お店) | The saved lineup. A save without one predates it, so its sold-out marks name a lineup that no longer exists.
+        parsed.global.shopLineup = normalizeShopLineup(parsed.global.shopLineup);
+        if (!parsed.global.shopLineup) parsed.global.shopPurchases = {};
 
         parsed.global.jewelShopPurchases = (parsed.global.jewelShopPurchases && typeof parsed.global.jewelShopPurchases === 'object')
           ? Object.entries(parsed.global.jewelShopPurchases as Record<string, unknown>).reduce<Record<string, number>>((acc, [jewelStockKey, purchaseCount]) => {
@@ -1696,6 +1728,7 @@ export function createFreshGameState(language: Language, now: number = Date.now(
       revealedItemCompendiumItemIds: [],
       revealedGlossaryAbilityIds: [],
       revealedGlossaryTerrainKeys: [],
+      shopLineup: null,
       shopPurchases: {},
       jewelShopPurchases: {},
       shopRefreshCounts: {},
@@ -1842,7 +1875,8 @@ export type GameAction =
   | { type: 'GRANT_FEEDBACK_REWARD' }
   | { type: 'UNLOCK_MIMORIAN_ENEMY'; enemyId: number }
   // `onPurchased` lets a synchronous caller (the Application API) learn the hidden enhancement/Super Rare result.
-  | { type: 'BUY_SHOP_ITEM'; itemId: number; stockItemKey: string; partyIndex?: number; now?: number; onPurchased?: (purchased: Item) => void }
+  | { type: 'ENSURE_SHOP_LINEUP'; now?: number }
+  | { type: 'BUY_SHOP_ITEM'; itemId: number; stockItemKey: string; now?: number; onPurchased?: (purchased: Item) => void }
   | { type: 'BUY_DEBUG_STORE_ITEM'; itemId: number }
   | { type: 'REFRESH_SHOP_LINEUP'; now?: number }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
@@ -1960,23 +1994,6 @@ const createExpeditionApplicationAdapters = createDefaultExpeditionApplicationAd
   getDiarySettings: getDiarySettingsWithDefaults,
   addItemToInventory,
 });
-
-function drawGuaranteedEnhancement(
-  bags: GameState['bags'],
-): { enhancement: number; bags: GameState['bags'] } {
-  let nextBags = bags;
-  let enhancement = 0;
-
-  do {
-    nextBags = refillBagIfEmpty(nextBags, 'enhancementBag');
-    const { ticket, newBag } = drawFromBag(nextBags.enhancementBag);
-    nextBags = { ...nextBags, enhancementBag: newBag };
-    enhancement = ticket;
-  } while (enhancement < 1);
-
-  return { enhancement, bags: nextBags };
-}
-
 
 export function getPartyAbilityLevel(party: Party, abilityId: string): number {
   const { characterStats } = computePartyStats(party);
@@ -3499,31 +3516,35 @@ function reduceGameState(
       };
     }
 
+    case 'ENSURE_SHOP_LINEUP': {
+      return ensureShopLineup(state, new Date(action.now ?? Date.now()));
+    }
+
     case 'BUY_SHOP_ITEM': {
       // SpecRef: 8.4.1 | Shop (お店) | Lineup
-      // SpecRef: 8.4.1 | Shop (お店) | Mystery enhancement (same as item drop logic)
+      // SpecRef: 8.4.1 | Shop (お店) | Enhancement (Same as item drop logic)
       const now = new Date(action.now ?? Date.now());
-      const globalState = applyShopIntimacyDecay(state.global, now);
-      const baseItem = getItemById(action.itemId);
-      const shopPrice = getShopItemPrice(action.itemId);
-      if (!baseItem || globalState.gold < shopPrice) return state;
-      const selectedPartyIndex = action.partyIndex ?? state.selectedPartyIndex;
-      const currentParty = state.parties[selectedPartyIndex];
-      let partyBags = normalizeImportedBags(currentParty.bags);
-
-      const hourKey = getShopHourKey(now);
-      const refreshCount = globalState.shopRefreshCounts[hourKey] ?? 0;
-      const stockKey = getShopStockKey(now, refreshCount);
-      const soldOutItemKeys = globalState.shopPurchases[stockKey] ?? [];
+      const ensured = ensureShopLineup(state, now);
+      const globalState = ensured.global;
+      const lineup = globalState.shopLineup;
+      if (!lineup) return state;
+      const stockIndex = lineup.entries.findIndex((entry, index) => getShopStockEntryId(entry.itemId, index) === action.stockItemKey);
+      const stock = lineup.entries[stockIndex];
+      const baseItem = stock ? getItemById(stock.itemId) : undefined;
+      if (!stock || !baseItem || stock.itemId !== action.itemId || globalState.gold < stock.price) return state;
+      const soldOutItemKeys = globalState.shopPurchases[lineup.stockKey] ?? [];
       if (soldOutItemKeys.includes(action.stockItemKey)) return state;
 
-      const guaranteedEnhancementResult = drawGuaranteedEnhancement(partyBags);
-      const enhancement = guaranteedEnhancementResult.enhancement;
-      partyBags = guaranteedEnhancementResult.bags;
-
-      partyBags = refillBagIfEmpty(partyBags, 'superRareBag');
-      const { ticket: superRare, newBag: newSuperRareBag } = drawFromBag(partyBags.superRareBag);
-      partyBags = { ...partyBags, superRareBag: newSuperRareBag };
+      // An identified entry keeps the result rolled with the lineup; an unidentified entry rolls now. Both use PT1's bags.
+      let pt1Bags = normalizeImportedBags(ensured.parties[0].bags);
+      let enhancement = stock.enhancement;
+      let superRare = stock.superRare;
+      if (!stock.identified) {
+        const rolled = rollUnidentifiedShopItem(pt1Bags);
+        enhancement = rolled.enhancement;
+        superRare = rolled.superRare;
+        pt1Bags = rolled.bags;
+      }
 
       const purchasedItem: Item = {
         ...baseItem,
@@ -3531,6 +3552,7 @@ function reduceGameState(
         superRare,
       };
       action.onPurchased?.(purchasedItem);
+      const currentParty = ensured.parties[ensured.selectedPartyIndex];
       const autoSellMultiplier = getCurrentPartyCunningMultiplier(currentParty);
       const inventoryResult = addItemToInventory(
         globalState.inventory,
@@ -3538,23 +3560,20 @@ function reduceGameState(
         globalState.gold,
         autoSellMultiplier,
       );
-      const updatedParties = [...state.parties];
-      updatedParties[selectedPartyIndex] = {
-        ...currentParty,
-        bags: partyBags,
-      };
+      const updatedParties = [...ensured.parties];
+      updatedParties[0] = { ...updatedParties[0], bags: pt1Bags };
 
       return {
-        ...state,
+        ...ensured,
         parties: updatedParties,
         global: {
           ...globalState,
           inventory: inventoryResult.inventory,
-          gold: inventoryResult.gold - shopPrice,
+          gold: inventoryResult.gold - stock.price,
           shopIntimacy: Math.min(99, globalState.shopIntimacy + 1),
           shopPurchases: {
             ...globalState.shopPurchases,
-            [stockKey]: [...soldOutItemKeys, action.stockItemKey],
+            [lineup.stockKey]: [...soldOutItemKeys, action.stockItemKey],
           },
         },
       };
@@ -3602,7 +3621,8 @@ function reduceGameState(
       const refreshPrice = getShopRefreshPrice(currentRefreshCount);
       if (globalState.gold < refreshPrice) return state;
 
-      return {
+      // The replacement lineup is generated and saved in the same transaction (with the intimacy the refresh leaves).
+      return ensureShopLineup({
         ...state,
         global: {
           ...globalState,
@@ -3613,7 +3633,7 @@ function reduceGameState(
             [hourKey]: currentRefreshCount + 1,
           },
         },
-      };
+      }, now);
     }
 
     case 'SET_VARIANT_STATUS': {
@@ -5060,6 +5080,11 @@ export function useGameState() {
 
     grantFeedbackReward: useCallback(() => {
       dispatch({ type: 'GRANT_FEEDBACK_REWARD' });
+    }, []),
+
+    // SpecRef: 8.4.1 | Shop (お店) | The lineup is saved when the Shop is first shown for a stock period.
+    ensureShopLineup: useCallback(() => {
+      dispatch({ type: 'ENSURE_SHOP_LINEUP' });
     }, []),
 
     buyDebugStoreItem: useCallback((itemId: number) => {

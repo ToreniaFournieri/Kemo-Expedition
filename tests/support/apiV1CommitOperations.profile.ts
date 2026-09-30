@@ -247,32 +247,39 @@ function diaryLog(id: string, isRead = false): DiaryLog {
 // 1-based position in the lineup, and the transaction's own clock (not the wall clock) decides which lineup that is.
 {
   const { getPublicShopLineupId, getShopFacts, shopLineupInputOf } = await import('../../src/game/shopFacts');
+  const { getIdentifiedShopItemPrice } = await import('../../src/game/pricing');
   const richState: GameState = { ...seed, global: { ...seed.global, gold: 1_000_000 } };
   const simulatedAt = Date.parse('2026-01-01T00:00:00.000Z');
   const facts = getShopFacts(shopLineupInputOf(richState), new Date(simulatedAt));
-  assert.deepEqual(facts.entries.map((entry) => entry.shopItemId), [1, 2, 3, 4, 5], 'a slot is its 1-based position');
+  assert.deepEqual(facts.entries.map((entry) => entry.shopItemId), [1, 2, 3, 4, 5, 6, 7], 'a slot is its 1-based position');
+  assert.deepEqual(facts.entries.map((entry) => entry.identified), [true, true, false, false, false, false, false], 'two identified slots, then five unidentified slots');
+  assert.ok(facts.entries.slice(0, 2).every((entry) => (entry.enhancement ?? 0) >= 2), 'an identified entry shows an enhancement of at least 2');
+  assert.ok(facts.entries.slice(2).every((entry) => entry.enhancement === null && entry.superRare === null), 'an unidentified entry hides both until bought');
   const entry = facts.entries[0];
-  // The lineup ID is each slot's item ID and stock availability, in slot order (Spec 9.1.3 2-4-4).
+  // The lineup ID is an opaque hash of the stock (Spec 9.1.3 2-4-4).
   const lineupId = getPublicShopLineupId(facts);
-  assert.equal(lineupId, facts.entries.map((candidate) => `${candidate.itemId}true`).join(''));
+  assert.match(lineupId, /^[0-9a-f]{16}$/);
+  assert.equal(getPublicShopLineupId(getShopFacts(shopLineupInputOf(richState), new Date(simulatedAt))), lineupId, 'reading again does not reroll the lineup');
   assert.equal(getPublicShopLineupId(getShopFacts(shopLineupInputOf({ ...richState, global: { ...richState.global, gold: 0 } }), new Date(simulatedAt))), lineupId, 'gold does not change the lineup ID');
   const bought = applyApiV1Commit('commit/base/purchaseShopItems', richState, { lineupId, items: [{ shopItemId: entry.shopItemId }] }, baseContext({ simulatedAt }));
   const data = bought.data as { items: { item: string; quantity: number }[]; goldDelta: number; pranaDelta: number };
   assert.equal(data.items.length, 1);
   assert.equal(data.items[0].quantity, 1);
   assert.match(data.items[0].item, new RegExp(`^0/${entry.itemId}/[0-6]/[0-9]+$`));
+  assert.equal(data.items[0].item, `0/${entry.itemId}/${entry.enhancement}/${entry.superRare}`, 'an identified entry gives exactly the enhancement and title it showed');
+  assert.equal(entry.price, getIdentifiedShopItemPrice(entry.itemId, entry.enhancement ?? 0, entry.superRare ?? 0), 'an identified entry is priced by its enhancement and title');
   assert.equal(data.goldDelta, bought.state.global.gold - richState.global.gold);
   assert.ok(data.goldDelta <= 0 && data.goldDelta >= -entry.price, 'the price is charged, minus any auto-sell proceeds');
   // The slot is sold out afterwards, at the same transaction time.
   const after = getShopFacts(shopLineupInputOf(bought.state), new Date(simulatedAt));
   assert.equal(after.entries.find((candidate) => candidate.stockEntryId === entry.stockEntryId)?.soldOut, true);
   const afterLineupId = getPublicShopLineupId(after);
-  assert.equal(afterLineupId, lineupId.replace(`${entry.itemId}true`, `${entry.itemId}false`), 'a sold slot changes the lineup ID');
+  assert.notEqual(afterLineupId, lineupId, 'a sold slot changes the lineup ID');
 
   const attempt = (state: GameState, items: unknown, id: unknown = lineupId) => { try { applyApiV1Commit('commit/base/purchaseShopItems', state, { lineupId: id, items }, baseContext({ simulatedAt })); return ''; } catch (error) { return String(error); } };
   // The purchase names the lineup it was chosen from; any other lineup (or none) buys nothing (Spec 9.1.3 3-4-3).
-  assert.ok(attempt(richState, [{ shopItemId: 1 }], '1101true1102false').includes('illegal_action:lineup_changed'));
-  assert.ok(attempt(richState, [{ shopItemId: 1 }], '1101110211031104').includes('invalid_request:lineupId'), 'a malformed lineupId is an invalid request, not a lineup change');
+  assert.ok(attempt(richState, [{ shopItemId: 1 }], '0123456789abcdef').includes('illegal_action:lineup_changed'));
+  assert.ok(attempt(richState, [{ shopItemId: 1 }], '').includes('invalid_request:lineupId'), 'an empty lineupId is an invalid request, not a lineup change');
   assert.ok(attempt(richState, [{ shopItemId: 1 }], null).includes('invalid_request:lineupId'));
   // SpecRef: 9.1.4.11 | The failure names the rejected parameter in `details.field`.
   const { describeInvalidRequest, invalidRequestMessage } = await import('../../src/api/v1/requestErrors');
@@ -306,6 +313,32 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.ok(attempt(richState, ['1']).includes('invalid_request'), 'a string is not a slot ID');
 }
 
+// 4a. The lineup is saved with its first use and is never rerolled: viewing, reloading, and purchasing keep every other
+// slot's item, enhancement, title, and price, even when the purchase raises intimacy across a rarity tier.
+{
+  const { getShopFacts, shopLineupInputOf } = await import('../../src/game/shopFacts');
+  const { getEffectiveShopIntimacy } = await import('../../src/game/shop');
+  const simulatedAt = Date.parse('2026-01-01T00:00:00.000Z');
+  const rich: GameState = { ...seed, global: { ...seed.global, gold: 1_000_000, shopIntimacy: 19, shopIntimacyLastDecayAt: simulatedAt } };
+  const before = getShopFacts(shopLineupInputOf(rich), new Date(simulatedAt));
+  const { getPublicShopLineupId } = await import('../../src/game/shopFacts');
+  const bought = applyApiV1Commit('commit/base/purchaseShopItems', rich, { lineupId: getPublicShopLineupId(before), items: [{ shopItemId: 3 }] }, baseContext({ simulatedAt }));
+  assert.equal(getEffectiveShopIntimacy(bought.state.global, new Date(simulatedAt)), 20, 'the purchase raised intimacy to the next tier');
+  assert.ok(bought.state.global.shopLineup, 'the lineup is saved by the purchase');
+  const after = getShopFacts(shopLineupInputOf(bought.state), new Date(simulatedAt));
+  const stable = (facts: typeof before) => facts.entries.map((entry) => [entry.itemId, entry.enhancement, entry.superRare, entry.price].join('/'));
+  assert.deepEqual(stable(after), stable(before), 'buying never rerolls the lineup, even across an intimacy tier');
+  const reloaded = JSON.parse(JSON.stringify(bought.state)) as GameState;
+  assert.deepEqual(stable(getShopFacts(shopLineupInputOf(reloaded), new Date(simulatedAt))), stable(before), 'a reload keeps the lineup');
+  // An unidentified purchase rolls its hidden result now: an enhancement of at least 2.
+  const rolled = (bought.data as { items: { item: string }[] }).items[0].item.split('/').map(Number);
+  assert.ok(rolled[2] >= 2, 'an unidentified purchase draws an enhancement of at least 2');
+  // A paid refresh replaces the lineup and saves the replacement in the same transaction.
+  const refreshed = applyApiV1Commit('commit/base/paidShopRefresh', bought.state, {}, baseContext({ simulatedAt }));
+  assert.notEqual(refreshed.state.global.shopLineup?.stockKey, bought.state.global.shopLineup?.stockKey);
+  assert.equal(refreshed.state.global.shopPurchases[refreshed.state.global.shopLineup?.stockKey ?? ''], undefined, 'the new lineup starts unsold');
+}
+
 // 4b. The paid refresh charges the displayed price at the transaction time and replaces the lineup; an unaffordable refresh
 // is refused instead of being silently ignored.
 {
@@ -336,8 +369,9 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.equal(info.dialogue.key, 'home.shop.dialogue.default');
   assert.ok(info.paidRefreshCountdown >= 1 && info.paidRefreshCountdown <= 8 * 3600);
   const list = await read('read/base/shopItemsList');
-  assert.equal(list.current.items.length, 5);
-  assert.match(list.current.items[0], /^1\/\d+\/\d+\/(true|false)$/);
+  assert.equal(list.current.items.length, 7);
+  assert.match(list.current.items[0], /^1\/0\/\d+\/[2-6]\/\d+\/\d+\/(true|false)$/, 'an identified entry shows its enhancement and title');
+  assert.match(list.current.items[2], /^3\/0\/\d+\/\?\/\?\/\d+\/(true|false)$/, 'an unidentified entry hides them with `?`');
   assert.deepEqual(list.validOptions.items, list.current.entries.filter((entry: { available: boolean }) => entry.available).map((entry: { shopItemId: number }) => entry.shopItemId));
   assert.equal(list.validOptions.lineupId, list.current.lineupId, 'validOptions holds everything purchaseShopItems needs');
   const base = await read('read/observation/base');

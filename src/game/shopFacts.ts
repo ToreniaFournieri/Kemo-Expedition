@@ -1,12 +1,11 @@
-import { buildShopLineup, getShopHourKey, getShopRefreshPrice, type ShopLineupEntry, type ShopLineupInput } from './shop';
+import { buildShopLineup, getShopHourKey, getShopRefreshPrice, SHOP_SLOT_COUNT, type ShopLineupEntry, type ShopLineupInput } from './shop';
+
+export { SHOP_SLOT_COUNT };
 
 // SpecRef: 8.4.1 | Shop (お店) | Dialogue by intimacy
 // SpecRef: 8.4.1 | Shop (お店) | Paid Refresh (有償洗替)
 // Everything the Shop pane shows and the Application API publishes about the shop at one instant, from one place, so the two
 // cannot disagree about the dialogue, the countdown, the refresh price, or which slot is which.
-
-/** The Shop's lineup has five slots; a slot's public ID is its 1-based position. */
-export const SHOP_SLOT_COUNT = 5;
 
 export type ShopDialogueKey = 'home.shop.dialogue.default' | 'home.shop.dialogue.intimacy20' | 'home.shop.dialogue.intimacy40' | 'home.shop.dialogue.intimacy80';
 
@@ -28,6 +27,10 @@ export interface ShopEntryFacts {
   shopItemId: number;
   stockEntryId: string;
   itemId: number;
+  /** Identified entries show their rolled enhancement and Super Rare title; unidentified ones hide both until bought. */
+  identified: boolean;
+  enhancement: number | null;
+  superRare: number | null;
   price: number;
   rarity: ShopLineupEntry['rarity'];
   soldOut: boolean;
@@ -51,13 +54,22 @@ export interface ShopFacts {
 
 // SpecRef: 9.1.3 | 2-4-4 shopItemsList / 3-4-3 purchaseShopItems | lineupId
 /**
- * The public ID of a lineup: each slot's item ID followed by whether it is still in stock, in slot order, concatenated
- * (e.g. `1104true1102false1110true1111true1111true`). A purchase names the lineup it was chosen from, so a rotation,
- * a refresh, or a restock in between (even one that rolls the same items) is refused instead of buying a different item.
- * Stock, not affordability, is encoded: gold changing between the read and the purchase does not change the lineup.
+ * The public ID of a lineup: an opaque hash of the stock period (which changes with every refresh), each slot's item, rolled
+ * enhancement and Super Rare title, price, and whether it is sold. A purchase names the lineup it was chosen from, so a
+ * rotation, a refresh, or a restock in between (even one that rolls the same items) is refused instead of buying a different
+ * item. Stock, not affordability, is hashed: gold changing between the read and the purchase does not change the lineup.
  */
-export function getPublicShopLineupId(facts: Pick<ShopFacts, 'entries'>): string {
-  return facts.entries.map((entry) => `${entry.itemId}${!entry.soldOut}`).join('');
+export function getPublicShopLineupId(facts: Pick<ShopFacts, 'entries' | 'lineupId'>): string {
+  const text = [facts.lineupId, ...facts.entries.map((entry) => [entry.shopItemId, entry.itemId, entry.enhancement ?? '?', entry.superRare ?? '?', entry.price, entry.soldOut ? 1 : 0].join(','))].join('|');
+  // Two 32-bit FNV-1a hashes with different offsets, so the 16 hex characters do not collide by accident.
+  let high = 0x811c9dc5;
+  let low = 0x01000193;
+  for (let index = 0; index < text.length; index += 1) {
+    const code = text.charCodeAt(index);
+    high = Math.imul(high ^ code, 0x01000193) >>> 0;
+    low = Math.imul(low ^ code, 0x85ebca6b) >>> 0;
+  }
+  return `${high.toString(16).padStart(8, '0')}${low.toString(16).padStart(8, '0')}`;
 }
 
 export function getShopFacts(input: ShopLineupInput, now: Date): ShopFacts {
@@ -77,6 +89,9 @@ export function getShopFacts(input: ShopLineupInput, now: Date): ShopFacts {
       shopItemId: getShopSlot(entry),
       stockEntryId: entry.stockEntryId,
       itemId: entry.itemId,
+      identified: entry.identified,
+      enhancement: entry.identified ? entry.item.enhancement : null,
+      superRare: entry.identified ? entry.item.superRare : null,
       price: entry.price,
       rarity: entry.rarity,
       soldOut: entry.soldOut,
@@ -86,6 +101,6 @@ export function getShopFacts(input: ShopLineupInput, now: Date): ShopFacts {
   };
 }
 
-export function shopLineupInputOf(state: { parties: ShopLineupInput['parties']; global: { gold: number; shopPurchases: ShopLineupInput['shopPurchases']; shopRefreshCounts: ShopLineupInput['shopRefreshCounts']; shopIntimacy: number; shopIntimacyLastDecayAt: number } }): ShopLineupInput {
-  return { parties: state.parties, gold: state.global.gold, shopPurchases: state.global.shopPurchases, shopRefreshCounts: state.global.shopRefreshCounts, shopIntimacy: state.global.shopIntimacy, shopIntimacyLastDecayAt: state.global.shopIntimacyLastDecayAt };
+export function shopLineupInputOf(state: { parties: ShopLineupInput['parties']; global: { gold: number; shopLineup?: ShopLineupInput['shopLineup']; shopPurchases: ShopLineupInput['shopPurchases']; shopRefreshCounts: ShopLineupInput['shopRefreshCounts']; shopIntimacy: number; shopIntimacyLastDecayAt: number } }): ShopLineupInput {
+  return { parties: state.parties, gold: state.global.gold, shopLineup: state.global.shopLineup ?? null, shopPurchases: state.global.shopPurchases, shopRefreshCounts: state.global.shopRefreshCounts, shopIntimacy: state.global.shopIntimacy, shopIntimacyLastDecayAt: state.global.shopIntimacyLastDecayAt };
 }

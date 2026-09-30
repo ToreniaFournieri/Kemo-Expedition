@@ -231,6 +231,7 @@ export interface HomeScreenProps {
     grantFeedbackReward: () => void;
     buyDebugStoreItem: (itemId: number) => void;
     markDiaryLogSeen: (logId: string) => void;
+    ensureShopLineup: () => void;
     markPartyDiaryLogsSeen: (partyIndex: number) => void;
     markDeveloperNewsRead: (itemIds: string[]) => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;

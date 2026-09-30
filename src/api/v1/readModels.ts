@@ -737,7 +737,7 @@ function shopProjection(state: GameState, nowMs: number) {
     paidRefreshPrice: facts.paidRefreshPrice,
     paidRefresh: { available: facts.paidRefreshAvailable, unavailableReason: facts.paidRefreshAvailable ? null : 'insufficient_gold' },
     refreshesAt: new Date(facts.refreshesAt).toISOString(),
-    entries: facts.entries.map((entry) => ({ shopItemId: entry.shopItemId, itemId: entry.itemId, price: entry.price, rarity: entry.rarity, soldOut: entry.soldOut, available: entry.available, unavailableReason: entry.unavailableReason })),
+    entries: facts.entries.map((entry) => ({ shopItemId: entry.shopItemId, itemId: entry.itemId, identified: entry.identified, enhancement: entry.enhancement, superRare: entry.superRare, price: entry.price, rarity: entry.rarity, soldOut: entry.soldOut, available: entry.available, unavailableReason: entry.unavailableReason })),
   };
 }
 
@@ -1030,10 +1030,10 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   }
   if (operationId === 'read/base/shopItemsList') {
     const shop = shopProjection(state, context.inGameTime);
-    // `items` are the compact `<shopItemId>/<itemId>/<price>/<availability>` strings of 9.1.3; `entries` carry the same facts
+    // `items` are the compact `<shopItemId>/<Item Format>/<price>/<availability>` strings of 9.1.3; `entries` carry the same facts
     // structured, including why a slot cannot be bought.
     return {
-      current: { lineupId: shop.lineupId, refreshesAt: shop.refreshesAt, items: shop.entries.map((entry) => `${entry.shopItemId}/${entry.itemId}/${entry.price}/${entry.available}`), entries: shop.entries },
+      current: { lineupId: shop.lineupId, refreshesAt: shop.refreshesAt, items: shop.entries.map((entry) => `${entry.shopItemId}/0/${entry.itemId}/${entry.enhancement ?? '?'}/${entry.superRare ?? '?'}/${entry.price}/${entry.available}`), entries: shop.entries },
       // `lineupId` is repeated here because `purchaseShopItems` requires it together with the `items` below.
       validOptions: { lineupId: shop.lineupId, items: shop.entries.filter((entry) => entry.available).map((entry) => entry.shopItemId) },
     };

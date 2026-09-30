@@ -726,24 +726,30 @@ definitions in 9.1.3.
   total balance before mutation. Results return affected `Item Format` values,
   quantities, and Gold/Prana deltas.
 * `purchaseShopItems` identifies entries by `shopItemId`, the 1-based position of a
-  slot in the lineup (1 to 5), at the transaction's own time. The lineup rotates with
-  the clock (02:00, 10:00, and 18:00 local time) and with paid refreshes and purchases
-  (which raise intimacy and can change the rarity mix), none of which change the
+  slot in the lineup (1 to 7: the two identified slots, then the five unidentified
+  slots), at the transaction's own time. The lineup rotates with the clock (02:00,
+  10:00, and 18:00 local time) and with paid refreshes, none of which change the
   revision. So the request names the lineup it was chosen from: `lineupId` (required)
-  is the value `shopItemsList` or the `base` projection published: for each slot in
-  order, the item ID followed by `true` while the slot is in stock or `false` once it
-  is sold, concatenated (for example `1104true1102false1110true1111true1111true`).
-  So a refresh that rolls the same items but restocks a sold slot changes the ID.
-  The availability part is stock only; Gold does not affect it, so earning or spending
-  Gold between the read and the purchase does not invalidate the ID. A
-  missing `lineupId` is `invalid_request`; one that differs from the current lineup is
+  is the value `shopItemsList` or the `base` projection published, an opaque
+  16-character hexadecimal hash of the stock period, each slot's item, rolled
+  enhancement and Super Rare title, price, and sold state. So a refresh that rolls the
+  same items still changes the ID, and so does buying a slot. The hash covers stock
+  only; Gold does not affect it, so earning or spending Gold between the read and the
+  purchase does not invalidate the ID. A missing or empty `lineupId` is
+  `invalid_request`; one that differs from the current lineup is
   `illegal_action:lineup_changed`, and nothing is bought. The request is validated whole
   against one snapshot: a malformed,
   non-positive, or duplicate ID is `invalid_request`; an ID that is not in the lineup is
   `not_found`; a sold slot is `illegal_action:sold_out`; a total above the Gold held is
-  `illegal_action:insufficient_gold`. Nothing is bought unless every entry passes. The
-  enhancement and Super Rare title are drawn while buying, from the bags of the
-  currently selected party.
+  `illegal_action:insufficient_gold`. Nothing is bought unless every entry passes.
+* The lineup is saved with the save data (`shopLineup`) the first time a stock period is
+  used, so viewing, reloading, and purchasing never reroll it, and buying (which raises
+  intimacy) or defeating a boss does not change the unbought slots. Identified slots roll
+  their enhancement (at least 2, redrawing rejected tickets) and Super Rare title (the
+  highest of 10 draws) from PT1's bags when the lineup is generated, with a random source
+  seeded by the stock period. Unidentified slots roll when bought, from PT1's bags:
+  an enhancement of at least 2 and the highest of 20 Super Rare draws. The result is
+  returned in `purchaseShopItems.items` as an `Item Format`.
 * `paidShopRefresh` charges the price shown for the current refresh count, replaces the
   lineup, and returns `{lineupId, goldDelta, paidRefreshPrice}` (`paidRefreshPrice` is
   the next refresh's price in the same period, which doubles). A refresh the player
@@ -754,9 +760,10 @@ definitions in 9.1.3.
   (`home.shop.dialogue.default`, `.intimacy20`, `.intimacy40`, `.intimacy80`),
   `paidRefreshCountdown` is whole seconds until the next scheduled refresh (at least 1),
   and `paidRefreshPrice` follows the refresh count of the current period. `shopItemsList`
-  returns the compact `<shopItemId>/<itemId>/<price>/<availability>` strings of 9.1.3 in
-  `current.items` and the same facts structured in `current.entries` (adding `rarity`,
-  `soldOut`, and `unavailableReason`: `sold_out` or `insufficient_gold`);
+  returns the compact `<shopItemId>/<Item Format>/<price>/<availability>` strings of 9.1.3 in
+  `current.items` (an unidentified entry's enhancement and Super Rare are `?`) and the same facts
+  structured in `current.entries` (adding `identified`, `enhancement` and `superRare`, which are
+  `null` while hidden, `rarity`, `soldOut`, and `unavailableReason`: `sold_out` or `insufficient_gold`);
   `validOptions.items` lists the slots that can be bought now, and
   `validOptions.lineupId` repeats `current.lineupId`, so `validOptions` holds
   everything `purchaseShopItems` needs. The `base` projection's

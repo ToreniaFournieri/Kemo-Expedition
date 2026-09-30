@@ -369,7 +369,8 @@ function ShopTab({
           : entry.rarity === 'uncommon'
             ? 'font-bold text-gray-900'
             : 'text-gray-900 font-normal';
-    return [{ key: `${entry.shopItemId}-${entry.itemId}`, shopItemId: entry.shopItemId, item: { ...item, enhancement: 0, superRare: 0 }, price: entry.price, isSoldOut: entry.soldOut, canBuy: entry.available, rarityClass }];
+    // SpecRef: 8.4.1 | Shop (お店) | Enhancement: an identified entry shows its rolled title; an unidentified one shows `?` until bought.
+    return [{ key: `${entry.shopItemId}-${entry.itemId}`, shopItemId: entry.shopItemId, identified: entry.identified, item: { ...item, enhancement: entry.enhancement ?? 0, superRare: entry.superRare ?? 0 }, price: entry.price, isSoldOut: entry.soldOut, canBuy: entry.available, rarityClass }];
   });
 
   return (
@@ -421,7 +422,7 @@ function ShopTab({
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className={`flex items-center gap-2 text-sm ${entry.rarityClass}`}>
-                  <span className="truncate">{t('common.unknown')} {getLocalizedItemName(entry.item)}</span>
+                  <span className="truncate">{entry.identified ? getItemDisplayName(entry.item) : `${t('common.unknown')} ${getLocalizedItemName(entry.item)}`}</span>
                   <span className={`shrink-0 text-xs ${entry.isSoldOut ? 'text-gray-400' : 'text-gray-500'}`}>
                     {formatNumber(entry.price)}G
                   </span>

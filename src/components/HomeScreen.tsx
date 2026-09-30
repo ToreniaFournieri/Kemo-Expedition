@@ -2191,6 +2191,16 @@ export function HomeScreen({
     const timer = window.setTimeout(() => setBaseProjectionRefresh((value) => value + 1), Math.max(1000, baseProjection.shop.paidRefreshCountdown * 1000 + 1000));
     return () => window.clearTimeout(timer);
   }, [baseProjection?.shop.refreshesAt, baseProjection?.shop.paidRefreshCountdown, isBaseTabVisible]);
+  // SpecRef: 8.4.1 | Shop (お店) | Lineup: showing the Shop for a stock period saves its lineup, so the identified rolls the player
+  // sees are the ones that are kept. The projection is re-read afterwards (state.global changes).
+  const shopLineupStockKey = `${baseProjection?.shop.refreshesAt ?? ''}-${state.global.shopRefreshCounts[getShopHourKey(new Date())] ?? 0}`;
+  const ensureShopLineupRef = useRef(actions.ensureShopLineup);
+  ensureShopLineupRef.current = actions.ensureShopLineup;
+  const hasBaseProjection = baseProjection !== null;
+  useEffect(() => {
+    if (!isBaseTabVisible || !hasBaseProjection) return;
+    ensureShopLineupRef.current();
+  }, [isBaseTabVisible, hasBaseProjection, shopLineupStockKey]);
   const baseCommandQueueRef = useRef<Promise<void>>(Promise.resolve());
   const commitBase = useCallback((operation: string, parameters: Record<string, unknown>) => {
     baseCommandQueueRef.current = baseCommandQueueRef.current.then(async () => {
