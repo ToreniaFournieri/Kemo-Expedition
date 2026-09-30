@@ -150,7 +150,9 @@ BETA_DISCORD_WEBHOOK_URL,
 buildAfkSummaryNotification,
 buildStatusTableHtmlFile,
 buildStatusTableRows,
+CHROME_CONTENT_BOTTOM_PADDING_CLASS,
 CHROME_CONTENT_PADDING_CLASS,
+CHROME_CONTENT_TOP_PADDING_CLASS,
 DARK_MODE_STORAGE_KEY,
 DarkModeSetting,
 DEV_DISCORD_WEBHOOK_URL,
@@ -5932,7 +5934,7 @@ export function HomeScreen({
       {/* Tab Content */}
       <div
         ref={tabContentRef}
-        className={prefersDocumentScroll ? `px-4 ${CHROME_CONTENT_PADDING_CLASS}` : `flex-1 px-4 ${CHROME_CONTENT_PADDING_CLASS} ${isPartyExpeditionSplitViewEnabled ? 'overflow-hidden' : 'overflow-y-auto'}`}
+        className={prefersDocumentScroll ? `px-4 ${CHROME_CONTENT_PADDING_CLASS}` : isPartyExpeditionSplitViewEnabled ? `flex-1 px-4 ${CHROME_CONTENT_TOP_PADDING_CLASS} overflow-hidden` : `flex-1 px-4 ${CHROME_CONTENT_PADDING_CLASS} overflow-y-auto`}
         onScroll={() => {
           if (prefersDocumentScroll || isPartyExpeditionSplitViewEnabled) return;
           const currentScrollTop = tabContentRef.current?.scrollTop ?? 0;
@@ -5946,7 +5948,7 @@ export function HomeScreen({
           >
             <div
               ref={primarySplitTabContentRef}
-              className="h-full w-full min-w-0 overflow-y-auto"
+              className={`h-full w-full min-w-0 overflow-y-auto ${CHROME_CONTENT_BOTTOM_PADDING_CLASS}`}
               onScroll={() => {
                 const currentScrollTop = primarySplitTabContentRef.current?.scrollTop ?? 0;
                 tabScrollPositionsRef.current.expedition = currentScrollTop;
@@ -5956,7 +5958,7 @@ export function HomeScreen({
             </div>
             <div
               ref={secondarySplitTabContentRef}
-              className="h-full w-full min-w-0 overflow-y-auto"
+              className={`h-full w-full min-w-0 overflow-y-auto ${CHROME_CONTENT_BOTTOM_PADDING_CLASS}`}
               onScroll={() => {
                 const currentScrollTop = secondarySplitTabContentRef.current?.scrollTop ?? 0;
                 tabScrollPositionsRef.current[activeWideModeSecondaryTab] = currentScrollTop;
