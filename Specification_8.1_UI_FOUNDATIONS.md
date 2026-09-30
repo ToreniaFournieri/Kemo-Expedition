@@ -1,6 +1,15 @@
 ## 8. UI
 
 ### 8.1 UI_FOUNDATIONS
+- **GUI:**
+  - `guiHeader`
+- **API Read:**
+  - `read/observation/overview`
+  - `read/observation/popupEventStream`
+
+- **API Commit:**
+  - `commit/progress/progressReport`
+
 
 - Platform: Web-based (React + TypeScript + Tailwind)
   - Style: Compact, simple, iOS-like, Liquid Glass style.
@@ -166,6 +175,7 @@
   if (p.includes("/dev/")) return "D";
   if (p.includes("/beta/")) return "β";
   return "";  };
+  if (p.includes("/orca/")) return "O";
   - Use this specification's version
 
 - Speed of Time: `▶︎ (23h)`

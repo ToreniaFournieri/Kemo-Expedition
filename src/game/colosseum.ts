@@ -89,7 +89,34 @@ export function normalizeColosseumEnemySettings(raw: unknown): ColosseumEnemySet
   };
 }
 
-export function getColosseumEnemySettings(): ColosseumEnemySettings {
+// SpecRef: 8.6 | UI_SETTING | Enemy Edit Pane: the main and sub class options
+export const COLOSSEUM_ENEMY_CLASS_OPTIONS = [
+  'duelist', 'samurai', 'sword-saint',
+  'ranger', 'striker', 'ninja',
+  'wizard', 'sage', 'alchemist',
+  'guardian', 'pilgrim', 'lord',
+] as const satisfies readonly EnemyClassId[];
+
+export function getDefaultColosseumEnemySettings(): ColosseumEnemySettings {
+  return { ...DEFAULT_COLOSSEUM_ENEMY_SETTINGS, abilities: [] };
+}
+
+// SpecRef: 9.1.3 | 2-6-1/3-6-3 enemyEditPane | An API account's own Enemy Edit pane
+// While an API account holds control, the Colosseum enemy is the account's own, not the device's Enemy Edit pane.
+let colosseumEnemyOverride: ColosseumEnemySettings | null = null;
+export function setColosseumEnemySettingsOverride(settings: ColosseumEnemySettings | null): void {
+  colosseumEnemyOverride = settings ? normalizeColosseumEnemySettings(settings) : null;
+}
+
+// The Enemy Edit pane re-renders when the device settings change outside it (an Application API commit).
+const colosseumEnemyListeners = new Set<(settings: ColosseumEnemySettings) => void>();
+export function subscribeColosseumEnemySettings(listener: (settings: ColosseumEnemySettings) => void): () => void {
+  colosseumEnemyListeners.add(listener);
+  return () => { colosseumEnemyListeners.delete(listener); };
+}
+
+/** The device's Enemy Edit pane settings, ignoring an API account's override. */
+export function getStoredColosseumEnemySettings(): ColosseumEnemySettings {
   if (!canUseStorage()) return DEFAULT_COLOSSEUM_ENEMY_SETTINGS;
   try {
     const saved = window.localStorage.getItem(COLOSSEUM_STORAGE_KEY);
@@ -100,13 +127,19 @@ export function getColosseumEnemySettings(): ColosseumEnemySettings {
   }
 }
 
+export function getColosseumEnemySettings(): ColosseumEnemySettings {
+  return colosseumEnemyOverride ?? getStoredColosseumEnemySettings();
+}
+
 export function saveColosseumEnemySettings(settings: ColosseumEnemySettings): void {
-  if (!canUseStorage()) return;
-  try {
-    window.localStorage.setItem(COLOSSEUM_STORAGE_KEY, JSON.stringify(settings));
-  } catch {
-    // noop
+  if (canUseStorage()) {
+    try {
+      window.localStorage.setItem(COLOSSEUM_STORAGE_KEY, JSON.stringify(settings));
+    } catch {
+      // noop
+    }
   }
+  for (const listener of [...colosseumEnemyListeners]) listener(settings);
 }
 
 export function buildColosseumEnemy(settings: ColosseumEnemySettings): EnemyDef {

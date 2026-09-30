@@ -44,5 +44,5 @@ export function resetBattleSeedSourceForTesting(source: BattleSeedSource | null 
   injectedSource = source;
 }
 
-// SpecRef: 9.1.3 | Experimental AI API | Evaluation transactions
+// SpecRef: 9.1.4.4 | Commit, revision, and idempotency contract | one serialized transaction
 export const withBattleSeedSource = withBattleSeedSourceForTesting;

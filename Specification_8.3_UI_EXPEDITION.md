@@ -2,6 +2,19 @@
 
 ### 8.3 UI_EXPEDITION
 
+- **GUI:**
+  - `guiExpedition`
+- **API Read:**
+  - `read/observation/expedition`
+  - `read/expedition/{p}/setting`
+  - `read/expedition/{p}/latestBattleLog`
+  - `read/expedition/{p}/simulationRun`
+  - `read/expedition/{p}/chargeStock`
+- **API Commit:**
+  - `commit/expedition/{p}/changeExpedition`
+  - `commit/expedition/{p}/sortie`
+  - `commit/expedition/{p}/godsBattle`
+
 - **Auto Destination Change Logic**
 
 **Controls:**  
@@ -50,6 +63,8 @@ and {condition ≥ 230}
     - `floor_name` uses the Japanese name from **Expedition Floor Concepts**.
     - Example: 2F-3 捕食者の縄張りまで, 2F-4 捕食者の縄張りまで, 3F-3 群生の巣盆地まで
 
+
+
 - **Simulation Run (シミュレーション実行)**
   - Pressing the `予測実行` button triggers **1000** simulated expedition runs.
   - Simulation runs have no effect on actual game progress or state:
@@ -61,19 +76,62 @@ and {condition ≥ 230}
     - Preserve the authoritative C++ outcome, final HP, enemy hit count, updated threat bags, random consumption, seed, and replay metadata.
     - Do not construct the TypeScript narration context, localize semantic events, or allocate `BattleLogEntry` objects.
     - The private simulation may use empty per-room `details` arrays because neither its expedition log nor its cloned state may be retained or displayed.
-  - Online play, Gods Battles, AFK processing, Experimental AI API sorties, latest expedition logs, and Diary logs must continue using full narrated battle results. The result-only mode must not be selected merely because execution is batched or backgrounded.
-  - The simulation is processed asynchronously.
+  - Online play, Gods Battles, AFK processing, Experimental AI API sorties, latest expedition logs, and Diary logs must retain complete compact semantic battle results and generate full localized narration when displayed. The result-only mode must not be selected merely because execution is batched or backgrounded.
+  - The simulation is processed asynchronously, with progress displayed in real time during execution. 
+    - Example: `120/1000`
   - When all runs are complete, display the aggregated result:
     - If the run reaches the expedition completion condition: `Example: 踏破45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`
     - If the run reaches the configured return depth limit: `Example: 帰還45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`
-  - UI visual: 100% stacked horizontal bar
-    - 踏破 or 帰還: Sub color, 20% lighter
-    - 引分: Sub color, 50% lighter
-    - 撤退: Accent color, 50% lighter
-    - 敗北: Accent color, 20% lighter
-    - Segment widths correspond to their respective outcome percentages.
-    - Display a floating tooltip/bubble over the bar with the full result, e.g. `踏破45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`
 
+  * **Simulation Result Graph**
+    * X-axis: expedition room number, `1–24`. 
+      * Display floor labels at the following room positions: `1`-> `1F`, `5`-> `2F`, `9`-> `3F`, `13`-> `4F`, `17`-> `5F`, `21`-> `6F`, `24` -> `B`
+    * Y-axis: Percentage of all simulation runs, ranging from 0% to 100%.
+      * Do not display Y-axis percentage labels.
+      * Display dashed horizontal guide lines at 25%, 50%, and 75%.
+    * Display one 100% stacked bar for each room.
+    * Each bar represents all simulated runs and shows their status at that room.
+    * Stack segments:
+      * `Victory`, `Clear`, or `Return`:
+        * HP ranges and colors:
+          * `100%`: Sub color
+          * `90%–<100%`: Sub color, 12% lighter
+          * `80%–<90%`: Sub color, 16% lighter
+          * `70%–<80%`: Sub color, 20% lighter
+          * `60%–<70%`: Sub color, 24% lighter
+          * `50%–<60%`: Sub color, 28% lighter
+          * `40%–<50%`: Sub color, 32% lighter
+          * `0%–<40%`: Sub color, 36% lighter
+        * `Victory` (勝利): The party wins the battle in that room (`Consequence: Victory`) and neither of the following terminal conditions is met.
+        * `Clear` (踏破): `Victory`, and the party clears all rooms of the expedition.
+        * `Return` (帰還): `Victory`, and the configured return-depth condition terminates the expedition at that room.
+      * `Draw` (引分): 50% Sub color + 50% Accent color, 40% lighter
+      * `Retreat` (撤退):
+        * HP ranges and colors:
+          * `30%–<100%`: Accent color, 35% lighter
+          * `20%–<30%`: Accent color, 30% lighter
+          * `10%–<20%`: Accent color, 25% lighter
+          * `0%–<10%`: Accent color, 20% lighter
+      * `Defeat` (敗北): Accent color
+      * `Not reached` (未到達): Gray color
+        * Represents simulated runs that do not reach that room because the run has already terminated at an earlier room.
+        * This includes earlier `Clear`, `Return`, `Draw`, `Retreat`, or `Defeat` outcomes where applicable.
+    * Each simulated run contributes exactly one segment to each room bar:
+      * If the run reaches and wins that room, count it as `Victory`, `Clear`, or `Return`.
+      * If the run reaches that room and terminates there, count its terminal outcome.
+      * If the run terminates before reaching that room, count it as `Not reached`.
+    * Therefore, each room bar must total `100%` of simulation runs.
+    * Hovering or tapping a room displays a tooltip containing:
+      * Room number
+      * Number and percentage of runs reaching the room
+      * Outcome breakdown for that room
+      * Percentage not reaching the room
+      * Example:
+        * `5F-1 (Room 17) — Reached 63.8%`
+        * `Victory 51.4% / Draw 1.2% / Retreat 3.7% / Defeat 7.5% / Not reached 36.2%`
+          * `Vicotry` or `Clear` or `Return`, only one is shown.
+    * Also display the overall aggregated result near the graph:
+      * `踏破45.1% / 引分10.0% / 撤退34.9% / 敗北10.0%`
 
 ```
 left-aligned                                    right-aligned
@@ -143,7 +201,7 @@ HP 2350 / 4680
   - Disable conditions:
     - (Party HP = 0) and (0 Charges).
     - Party is in `state.explore` and 0 Charges.
-    - "神魔戦" button is pressed and party is going to engage gods battle.
+    - "神魔戦" button is pressed and party is going to engage `Gods battle`.
   - Exception:
     - If x.exp_id = 0 (Colosseum):
     - No Instant Expedition Charge is consumed.
@@ -164,7 +222,7 @@ HP 2350 / 4680
 - The thin line progress bar is displayed under the text.
 - Each progress item uses `current / total` progress.
 - A locked Clear-Gate's compact display, progress bar, and floating bubble show `current / total` progress.
-- Normal Clear-Gate progress updates after the normal expedition outcome is finalized. A `Clear` or `Turned_Back` increments it, while `Draw_Retreat`, `Wounded_Retreat`, or `Defeat` displays the reset value, such as `0/9` for the first Elite gate.
+- Normal Clear-Gate progress updates after the normal expedition outcome is finalized. A `Clear` or `Return` increments it, while `Draw`, `Retreat`, or `Defeat` displays the reset value, such as `0/9` for the first Elite gate.
 
 **Progress calculation:**
 
@@ -198,12 +256,12 @@ HP 2350 / 4680
 		- Example: ▰▰▰▰▱▱102.
 		- If fully charged, display ▰▰▰▰▰▰MAX.
 		- If no stock is available, display ▱▱▱▱▱▱12.
-	- Pressing `出撃` or `神魔戦` button consumes 1 stock and immediately processes one full cycle:
+	- Pressing `出撃` (`sortie`) or `神魔戦` button consumes 1 stock and immediately processes one full cycle:
       - If the party is currently in `state.explore`, the current exploration is completed immediately first, then one additional full cycle is processed. (note: always end at the beginning of `state.rest` )
       - State:  `state.explore` → `state.return` → `state.rest` → `state.free_action` → `state.sound_sleep` (optical) → `state.move` → `state.explore` → `state.return` 
       - The process ends after the final `state.return` is completed.
 	- If a Gods Battle is available, the instant expedition is processed as a Gods Battle.
-  - **Special boost:** 
+  - **Charge Stock:** 
     - Each cleared expedition tier increases the maximum charge time that can be accumulated for each stock slot.
     - Charge duration is affected by Speed of Time.
       - Example: If `Speed of Time` is `x5`, the 6th stock charge time is 38.4 min instead of 192 min.
@@ -334,5 +392,5 @@ HP: 16,035
 - Unlocked party:
 
 ```
-PT4: (未開放:キョウエン 狡猾の神 撃破で開放)
+PT4: (未開放)ウルサンの炎嶺踏破で開放
 ```

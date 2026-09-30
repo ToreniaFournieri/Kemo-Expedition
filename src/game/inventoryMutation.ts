@@ -149,17 +149,23 @@ export function sellInventoryStack(
   }
 
   const soldCount = variant.count;
-  const pranaGranted = authorities.getPrana(variant.item) * soldCount;
-  const sellPrice = calculateSellPrice(variant.item) * soldCount;
+  const sale = getStackSale(variant.item, soldCount, authorities);
   return {
     inventory: {
       ...inventory,
       [key]: { ...variant, count: 0, status: 'sold' },
     },
-    gold: currentGold + (pranaGranted > 0 ? 0 : sellPrice),
-    prana: currentPrana + pranaGranted,
+    gold: currentGold + sale.gold,
+    prana: currentPrana + sale.prana,
     soldCount,
   };
+}
+
+// SpecRef: 8.4.2 | Inventory(所持品) | Sell all button(全売却)
+/** What selling `count` of an item pays: a Super Rare item pays Prana only, never Gold; every other item pays Gold only. */
+export function getStackSale(item: Item, count: number, authorities: InventorySaleAuthorities): { gold: number; prana: number } {
+  const prana = authorities.getPrana(item) * count;
+  return { gold: prana > 0 ? 0 : calculateSellPrice(item) * count, prana };
 }
 
 export function sellAllOwnedInventory(

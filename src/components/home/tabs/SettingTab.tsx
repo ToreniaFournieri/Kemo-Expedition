@@ -1,3 +1,5 @@
+import type { ApiV1ClairvoyanceResource } from '../../../api/v1/readModels';
+import { clairvoyanceExpandedKey, GLOSSARY_TABS, SETTING_GLOSSARY_TAB_FAMILY, settingPanelExpandedKey, type GlossaryTab, type SettingPanel, type SettingTabPreferences } from '../../../api/v1/uiPreferenceCatalog';
 import { Fragment,useCallback,useEffect,useMemo,useRef,useState,type ChangeEvent,type Dispatch,type MouseEvent,type ReactNode,type SetStateAction } from 'react';
 import {
 BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID,
@@ -5,7 +7,6 @@ LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES,
 type BonusAbilityGlossarySubcategoryId,
 } from '../../../data/bonusAbilityGlossary';
 import { CLASS_SHORT_NAMES } from '../../../data/classes';
-import { DEVELOPER_NEWS_ITEMS,getDeveloperNewsContent } from '../../../data/developerNews';
 import { GOD_ENEMY_PROFILES,GOD_MYTHIC_DROPS } from '../../../data/dropTables';
 import {
 DUNGEONS,
@@ -16,51 +17,41 @@ getLocalizedExpeditionFloorConcept,
 } from '../../../data/dungeons';
 import { ENEMIES,getEnemyDropCandidates } from '../../../data/enemies';
 import { GLOSSARY_SECTIONS } from '../../../data/glossary';
-import { ENHANCEMENT_TITLES,ITEMS,SUPER_RARE_TITLES } from '../../../data/items';
+import { ITEMS,SUPER_RARE_TITLES } from '../../../data/items';
 import { RACES } from '../../../data/races';
-import { createCommonRewardBag,createCommonSuperRareBag,createMythicRareRewardBag,createRareSuperRareBag,createSideQuestBag,createSleepinessPartyBag,createUncommonRewardBag,getBagEntryTickets,getBagTicketTotal,normalizeSleepinessPartyBag } from '../../../game/bags';
 import { getAbilityDescription } from '../../../game/characterComputation';
-import {
-isDungeonEntryUnlocked
-} from '../../../game/clearGate';
-import { buildColosseumEnemy,ColosseumEnemySettings,getColosseumEnemySettings,normalizeColosseumEnemySettings,saveColosseumEnemySettings } from '../../../game/colosseum';
+import { buildColosseumEnemy,COLOSSEUM_ENEMY_CLASS_OPTIONS,ColosseumEnemySettings,getStoredColosseumEnemySettings,normalizeColosseumEnemySettings,saveColosseumEnemySettings,subscribeColosseumEnemySettings } from '../../../game/colosseum';
 import { DebugSettings } from '../../../game/debugSettings';
 import { RuntimeDiagnostics } from '../../MemoryDiagnostics';
 import { addOrcaEnemyAbilities, ORCA_ENEMY_LEVEL_OFFSET_MAX, ORCA_ENEMY_LEVEL_OFFSET_MIN, RUNTIME_GAME_MODES, type RuntimeGameMode } from '../../../game/runtimeGameMode';
-import { DEITY_OPTIONS,getDeityRank,getNextRankDonationRequirement,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
+import { getDeityDisplayName } from '../../../game/deity';
 import { formatEnemyDefName } from '../../../game/enemyDisplay';
 import { getEncounterEnemyWithScaling } from '../../../game/enemyScaling';
 import { resolveEnemyPassiveAbilities } from '../../../game/enemyPassiveAbilities';
-import { createEnvironmentStorageKey,getEnvironmentId,isDebugModeEnabled } from '../../../game/environment';
-import { getProphecyControlAccess } from '../../../game/expeditionAbilityPolicies';
+import { createEnvironmentStorageKey,FEEDBACK_NAME_CHANGED_EVENT,getEnvironmentId,isDebugModeEnabled } from '../../../game/environment';
 import { completeFeedbackSubmission,FEEDBACK_REWARD_COOLDOWN_MS,getFeedbackRewardEligibility,parseFeedbackSubmissionTimestamp,type FeedbackRewardState } from '../../../game/feedbackRewards';
 import { getLocalizedEnhancementTitle,getLocalizedItemName,getLocalizedSuperRareTitle } from '../../../game/gameState';
 import { buildGodRuntimeEnemy } from '../../../game/godEnemy';
-import { computePartyStats } from '../../../game/partyComputation';
 import { hydrateGameState,serializeGameState } from '../../../game/saveCodec';
 import { decodePersistedState } from '../../../game/storageCompression';
 import { Language,SUPPORTED_LANGUAGES,t } from '../../../i18n';
-import { AbilityId,Character,Dungeon,EnemyDef,ExpeditionLogEntry,GameState,Item,NotificationCategory,NotificationStyle,Party,RaceId,TerrainEffectKey,type BattleLogEntry } from '../../../types';
+import { AbilityId,Dungeon,EnemyDef,GameState,Item,NotificationCategory,NotificationStyle,RaceId } from '../../../types';
 import { GAME_MODES, THEME_DEFINITIONS } from '../../../theme/theme';
 import { DesktopNotificationSettings } from '../../DesktopNotificationSettings';
-import { ExperimentalApiSettings } from '../../ExperimentalApiSettings';
+import { ApiV1Settings } from '../../ApiV1Settings';
+import { DISPLAY_LOCALE } from '../../../i18n/displayFormat';
 
 
 import {
-ABILITY_HELP_TEXT_KEYS,
 ABILITY_NAMES,
 APP_VERSION,
 BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META,
 buildInlineBonusEntry,
-buildStatusTableHtmlFile,
-buildStatusTableRows,
 CATEGORY_GROUPS,
 CHARACTER_IMAGE_FILES,
 DarkModeSetting,
-escapeExportHtml,
 FEEDBACK_DISCORD_WEBHOOK_URL,
 FloatingBubblePortal,
-formatBattleLogHitDisplay,
 formatBonusAbilityHelpDescription,
 formatBonusAbilityPhaseDisplay,
 formatBonuses,
@@ -93,18 +84,30 @@ TERRAIN_EFFECT_OPTIONS,
 UiIconKey
 } from '../homeShared';
 
+/** A party's members as the Character Roster needs them (`read/observation/party` → `partyInfo.parties`). */
+export interface SettingRosterCharacter { raceId: RaceId; gender: 'male' | 'female'; isUnique: boolean; name: string }
+export interface SettingRosterParty { id: number; characters: SettingRosterCharacter[] }
+
 export default function SettingTab({
-  gameState,
-  deityDonations,
+  developerNewsEntries,
+  rosterParties,
+  onBuildFeedbackReport,
+  defaultFeedbackName,
+  donationRows,
+  clairvoyanceProjections,
+  enemyEditValidOptions,
+  glossaryEntries,
+  itemCompendiumEntries,
+  characterRosterEntries,
+  bestiaryEntries,
+  superRareEntries,
   onResetGame,
   onImportGameState,
   getCompressedSavePayload,
   getRuntimeSnapshot,
   onAddNotification,
   onGrantFeedbackReward,
-  onResetCommonBags,
-  onResetUniqueBags,
-  onResetSideQuestBag,
+  onClairvoyanceReset,
   selectedBestiaryDungeonId,
   onSetSelectedBestiaryDungeonId,
   expandedBestiaryEnemies,
@@ -131,10 +134,25 @@ export default function SettingTab({
   onSetLanguage,
   onMarkDeveloperNewsRead,
   onNewsPaneExpandedChange,
+  settingPreferences,
+  onSetUiPreference,
 }: {
-  gameState: GameState;
-  deityDonations: Record<string, number>;
-  onResetGame: () => void;
+  developerNewsEntries: Array<{ version: string; date: string; content: string; isRead: boolean }>;
+  /** Every party's members for the Character Roster, from `read/observation/party` (`partyInfo.parties`). */
+  rosterParties: SettingRosterParty[];
+  /** Send Feedback (reviewed local exception): the save-derived report lines and attachments, built by HomeScreen. */
+  onBuildFeedbackReport: (latestBattleLogParty: number | null) => Promise<{ versionBuild: string; userId: string; files: File[] }>;
+  /** The current (API session) userId, or '' when none is set; the Feedback name field defaults to it. */
+  defaultFeedbackName: string;
+  donationRows: Array<{ deityName: string; donationGold: number; rank: number; nextRankDonationRequirement: number | null }>;
+  clairvoyanceProjections: ApiV1ClairvoyanceResource[] | null;
+  enemyEditValidOptions: { terrainEffect: string[]; enemyType: string[] } | null;
+  glossaryEntries: Array<{ glossaryId: string; category: string; label: string; description: string }> | null;
+  itemCompendiumEntries: Array<{ itemId: number; revealed: boolean }> | null;
+  characterRosterEntries: Array<{ raceId: string; status: { vitality: number; strength: number; intelligence: number; mind: number }; ability: string[]; cBonus: string[]; otherBonus: string[]; defaultAbility: string | null; unlockAbility: string | null }> | null;
+  bestiaryEntries: Array<{ enemyId: number; revealed: boolean; encounters: number; defeats: number }> | null;
+  superRareEntries: string[] | null;
+  onResetGame: () => Promise<void>;
   onImportGameState: (state: GameState, runtimeSnapshot?: unknown) => Promise<{ state: GameState | null; errorLog: string | null }>;
   getCompressedSavePayload: () => Promise<string>;
   getRuntimeSnapshot: () => PersistedRuntimeSnapshot;
@@ -145,9 +163,7 @@ export default function SettingTab({
     isPositive?: boolean
   ) => void;
   onGrantFeedbackReward: () => void;
-  onResetCommonBags: (partyIndex?: number) => void;
-  onResetUniqueBags: (partyIndex?: number) => void;
-  onResetSideQuestBag: (partyIndex?: number) => void;
+  onClairvoyanceReset: (partyIndex: number, changes: { resetCommonRewards?: boolean; resetRewards?: boolean; resetSideQuest?: boolean }) => void;
   selectedBestiaryDungeonId: number;
   onSetSelectedBestiaryDungeonId: Dispatch<SetStateAction<number>>;
   expandedBestiaryEnemies: Record<number, boolean>;
@@ -155,13 +171,13 @@ export default function SettingTab({
   bestiaryScrollTop: number;
   onSetBestiaryScrollTop: Dispatch<SetStateAction<number>>;
   gameMode: GameMode;
-  onSetGameMode: Dispatch<SetStateAction<GameMode>>;
+  onSetGameMode: (mode: GameMode) => void;
   runtimeGameMode: RuntimeGameMode;
   onSetRuntimeGameMode: (mode: RuntimeGameMode) => void;
   orcaEnemyLevelOffset: number;
   onSetOrcaEnemyLevelOffset: (offset: number) => void;
   darkModeSetting: DarkModeSetting;
-  onSetDarkModeSetting: Dispatch<SetStateAction<DarkModeSetting>>;
+  onSetDarkModeSetting: (setting: DarkModeSetting) => void;
   isAutoRepeatEnabled: boolean;
   onSetAutoRepeatEnabled: (enabled: boolean) => void;
   isExpeditionStatsDisplayEnabled: boolean;
@@ -174,15 +190,13 @@ export default function SettingTab({
   onSetLanguage: (language: Language) => void;
   onMarkDeveloperNewsRead: (itemIds: string[]) => void;
   onNewsPaneExpandedChange: (expanded: boolean) => void;
+  /** Retained Setting-tab preferences from `read/observation/setting` (`null` until the first read arrives). */
+  settingPreferences: SettingTabPreferences | null;
+  /** Commits one retained preference through `commit/setting/uiPreferences`. */
+  onSetUiPreference: (key: string, value: string | number | boolean) => void;
 }) {
-  type SettingPanelKey = 'news' | 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'characterRoster' | 'bestiary' | 'superRare' | 'feedback' | 'gameSetting' | 'debug';
-  type GlossaryTabKey = '能' | '基' | '固' | '増' | '機' | '信' | '魔' | '地' | '求';
-  // SpecRef: 9 | Environment | Save Data Isolation
-  const SETTING_PANEL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.panel-expanded');
-  const CLAIRVOYANCE_PARTY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.clairvoyance-party-expanded');
-  const GLOSSARY_TAB_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.glossary-tab');
-  const GLOSSARY_EXPANDED_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.setting.glossary-expanded-entries');
-  const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['能', '基', '固', '増', '機', '信', '魔', '地', '求'];
+  type SettingPanelKey = SettingPanel;
+  type GlossaryTabKey = GlossaryTab;
   const GLOSSARY_TAB_LABELS: Record<GlossaryTabKey, string> = {
     能: t('setting.glossary.tab.abilities'),
     基: t('setting.glossary.tab.baseStats'),
@@ -207,57 +221,8 @@ export default function SettingTab({
     feedback: false,
     gameSetting: false,
     debug: true,
+    enemyEdit: true,
   };
-
-  const getStoredSettingPanelState = (): Record<SettingPanelKey, boolean> => {
-    try {
-      const saved = localStorage.getItem(SETTING_PANEL_STORAGE_KEY);
-      if (!saved) return defaultSettingPanelState;
-      const parsed = JSON.parse(saved) as Partial<Record<SettingPanelKey, boolean>>;
-      return {
-        news: parsed.news === true,
-        modeSelect: parsed.modeSelect === true,
-        donation: parsed.donation === true,
-        clairvoyance: parsed.clairvoyance === true,
-        glossary: parsed.glossary === true,
-        itemCompendium: parsed.itemCompendium === true,
-        characterRoster: parsed.characterRoster === true,
-        bestiary: parsed.bestiary === true,
-        superRare: parsed.superRare === true,
-        feedback: parsed.feedback === true,
-        gameSetting: parsed.gameSetting === true,
-        debug: parsed.debug === true,
-      };
-    } catch (error) {
-      console.error('Failed to load Setting panel state:', error);
-      return defaultSettingPanelState;
-    }
-  };
-
-  const getStoredGlossaryTab = (): GlossaryTabKey => {
-    try {
-      const savedGlossaryTab = localStorage.getItem(GLOSSARY_TAB_STORAGE_KEY);
-      if (savedGlossaryTab && GLOSSARY_TABS.includes(savedGlossaryTab as GlossaryTabKey)) {
-        return savedGlossaryTab as GlossaryTabKey;
-      }
-    } catch (error) {
-      console.error('Failed to load glossary tab state:', error);
-    }
-    return '能';
-  };
-
-  const getStoredExpandedGlossaryEntries = (): Record<string, boolean> => {
-    try {
-      const savedExpandedEntries = localStorage.getItem(GLOSSARY_EXPANDED_STORAGE_KEY);
-      if (savedExpandedEntries) {
-        return JSON.parse(savedExpandedEntries) as Record<string, boolean>;
-      }
-    } catch (error) {
-      console.error('Failed to load glossary expanded entries:', error);
-    }
-    return {};
-  };
-
 
   const FEEDBACK_NAME_STORAGE_KEY = createEnvironmentStorageKey('settingFeedbackName');
   const FEEDBACK_SUBMITTED_STORAGE_KEY = createEnvironmentStorageKey('settingFeedbackSubmitted');
@@ -269,6 +234,10 @@ export default function SettingTab({
       return '';
     }
   });
+  // SpecRef: 8.6 | Feedback | Name field defaults to the current userId if one is set (a previously entered name wins).
+  useEffect(() => {
+    if (defaultFeedbackName) setFeedbackName((current) => (current.trim() ? current : defaultFeedbackName));
+  }, [defaultFeedbackName]);
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackCategory, setFeedbackCategory] = useState<'Feedback' | 'Question' | 'Feature Request' | 'Bug Report'>('Feedback');
   const [feedbackRewardState, setFeedbackRewardState] = useState<FeedbackRewardState>(() => {
@@ -292,6 +261,7 @@ export default function SettingTab({
   useEffect(() => {
     try {
       localStorage.setItem(FEEDBACK_NAME_STORAGE_KEY, feedbackName);
+      window.dispatchEvent(new CustomEvent(FEEDBACK_NAME_CHANGED_EVENT, { detail: feedbackName }));
     } catch (error) {
       console.error('Failed to persist feedback name:', error);
     }
@@ -309,7 +279,7 @@ export default function SettingTab({
 
   const formatFeedbackTimestamp = (): string => {
     const now = new Date();
-    const formatter = new Intl.DateTimeFormat('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false, timeZoneName:'short' });
+    const formatter = new Intl.DateTimeFormat(DISPLAY_LOCALE, { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false, timeZoneName:'short' });
     const parts = formatter.formatToParts(now);
     const year = parts.find((p) => p.type === 'year')?.value ?? '0000';
     const month = parts.find((p) => p.type === 'month')?.value ?? '00';
@@ -318,27 +288,6 @@ export default function SettingTab({
     const minute = parts.find((p) => p.type === 'minute')?.value ?? '00';
     const timezone = parts.find((p) => p.type === 'timeZoneName')?.value ?? 'UTC';
     return `${year}/${month}/${day} ${hour}:${minute} (${timezone})`;
-  };
-
-  const buildLatestBattleLogHtml = (partyLabel: 'PT1' | 'PT2' | 'PT3' | 'PT4' | 'PT5' | 'PT6'): File | null => {
-    const partyIndex = Number(partyLabel.replace('PT', '')) - 1;
-    const party = gameState.parties[partyIndex];
-    const latestLog = party?.lastExpeditionLog;
-    if (!party || !latestLog) return null;
-    const entriesHtml = latestLog.entries.map((entry: ExpeditionLogEntry) => {
-      const detailItems = entry.details.map((detail: BattleLogEntry) => {
-        const elementalAttributeEmoji: Record<'fire' | 'ice' | 'thunder', string> = { fire: '🔥', ice: '❄', thunder: '⚡' };
-        const hitDisplay = formatBattleLogHitDisplay(detail);
-        const damageDisplay = typeof detail.damage === 'number' && (detail.damage > 0 || detail.showZeroDamage) ? `(${detail.elementalOffense && detail.elementalOffense !== 'none' ? `${elementalAttributeEmoji[detail.elementalOffense]} ` : ''}${formatNumber(detail.damage)})` : '';
-        const noteDisplay = detail.note ? `(${detail.note})` : '';
-        return `<li>${escapeExportHtml(`${detail.action}${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ') ? ` ${[hitDisplay, damageDisplay, noteDisplay].filter(Boolean).join(' ')}` : ''}`)}</li>`;
-      }).join('');
-      return `<section><h3>Room ${escapeExportHtml(String(entry.floor ?? '-'))}-${escapeExportHtml(String(entry.roomInFloor ?? entry.room))} / ${escapeExportHtml(entry.enemyName)}</h3><p>Outcome: ${escapeExportHtml(entry.outcome)} / Damage dealt: ${escapeExportHtml(String(entry.damageDealt))} / Damage taken: ${escapeExportHtml(String(entry.damageTaken))}</p><ul>${detailItems || '<li>(No detail)</li>'}</ul></section>`;
-    }).join('\n');
-    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>KEMO EXPEDITION Latest Battle Log - ${partyLabel}</title></head><body><h1>KEMO EXPEDITION Latest Battle Log (${partyLabel})</h1><p>Dungeon: ${escapeExportHtml(latestLog.dungeonName)} / Outcome: ${escapeExportHtml(latestLog.finalOutcome)}</p><p>Total rooms: ${escapeExportHtml(String(latestLog.totalRooms))} / Completed: ${escapeExportHtml(String(latestLog.completedRooms))}</p>${entriesHtml || '<p>No entries.</p>'}</body></html>`;
-    const now = new Date();
-    const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
-    return new File([html], `latest-battle-log-${partyLabel}-${timestamp}.html`, { type: 'text/html' });
   };
 
   // SpecRef: 8.6 | UI_SETTING | フィードバック
@@ -381,12 +330,14 @@ export default function SettingTab({
         ?? userAgent.match(/Windows NT ([\d.]+)/i)?.[0]
         ?? userAgent.match(/Mac OS X ([\d_]+)/i)?.[0]?.replace(/_/g, '.')
         ?? 'unknown';
+      const latestBattleLogParty = feedbackLatestBattleLogSelection === 'None' ? null : Number(feedbackLatestBattleLogSelection.replace('PT', ''));
+      const report = await onBuildFeedbackReport(latestBattleLogParty);
       const payload = {
         content: [
           '**Feedback**',
-          `**Version Build env:** ${APP_VERSION} (${formatNumber(gameState.buildNumber)}) ${getEnvironmentId()}`,
+          `**Version Build env:** ${report.versionBuild} ${getEnvironmentId()}`,
           `**Timestamp:** ${formatFeedbackTimestamp()}`,
-          `**User ID:** ${gameState.global.userId}`,
+          `**User ID:** ${report.userId}`,
           `**browser, version:** ${browser}, ${browserVersion}`,
           `**OS version:** ${osVersion}`,
           `**Resolution:** ${formatNumber(window.innerWidth)} px, ${formatNumber(window.innerHeight)} px`,
@@ -399,23 +350,7 @@ export default function SettingTab({
       };
       const formData = new FormData();
       formData.append('payload_json', JSON.stringify(payload));
-      const generatedFiles: File[] = [await buildBackupFile()];
-      if (feedbackLatestBattleLogSelection !== 'None') {
-        const latestBattleLogFile = buildLatestBattleLogHtml(feedbackLatestBattleLogSelection);
-        if (latestBattleLogFile) {
-          generatedFiles.push(latestBattleLogFile);
-        }
-        const partyIndex = Number(feedbackLatestBattleLogSelection.replace('PT', '')) - 1;
-        const partyStatusRows = buildStatusTableRows(gameState.parties, [partyIndex]);
-        const now = new Date();
-        const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
-        const statusTableFile = buildStatusTableHtmlFile(
-          partyStatusRows,
-          `status-table-${feedbackLatestBattleLogSelection}-${timestamp}.html`,
-          `Status table (${feedbackLatestBattleLogSelection})`,
-        );
-        generatedFiles.push(statusTableFile);
-      }
+      const generatedFiles: File[] = [await buildBackupFile(), ...report.files];
       [...generatedFiles, ...feedbackFiles].forEach((file, index) => {
         formData.append(`files[${index}]`, file, file.name);
       });
@@ -450,42 +385,54 @@ export default function SettingTab({
   };
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [settingPanelExpanded, setSettingPanelExpanded] = useState<Record<SettingPanelKey, boolean>>(() => getStoredSettingPanelState());
-  const [clairvoyancePartyExpanded, setClairvoyancePartyExpanded] = useState<Record<number, boolean>>(() => {
-    try {
-      const saved = localStorage.getItem(CLAIRVOYANCE_PARTY_STORAGE_KEY);
-      if (!saved) return {};
-      const parsed = JSON.parse(saved) as Record<string, boolean>;
-      return Object.entries(parsed).reduce<Record<number, boolean>>((acc, [key, value]) => {
-        const index = Number(key);
-        if (Number.isFinite(index)) acc[index] = value === true;
-        return acc;
-      }, {});
-    } catch {
-      return {};
-    }
-  });
+  // SpecRef: 9.1.4.17 | UI state ownership | Retained pane expansion, per-party Clairvoyance expansion, and the Glossary
+  // tab are per-save `uiPreferences`. A click updates the view at once (local overlay) and commits the preference.
+  const [panelOverrides, setPanelOverrides] = useState<Partial<Record<SettingPanelKey, boolean>>>({});
+  const settingPanelExpanded = useMemo<Record<SettingPanelKey, boolean>>(
+    () => ({ ...defaultSettingPanelState, ...settingPreferences?.panelExpanded, ...panelOverrides }),
+    [settingPreferences, panelOverrides],
+  );
+  const [clairvoyanceOverrides, setClairvoyanceOverrides] = useState<Record<number, boolean>>({});
+  /** Keyed by party number (1-based). */
+  const clairvoyancePartyExpanded = useMemo<Record<number, boolean>>(
+    () => ({ ...settingPreferences?.clairvoyanceExpanded, ...clairvoyanceOverrides }),
+    [settingPreferences, clairvoyanceOverrides],
+  );
+  const toggleClairvoyanceParty = (partyNumber: number, expanded: boolean) => {
+    setClairvoyanceOverrides((prev) => ({ ...prev, [partyNumber]: expanded }));
+    onSetUiPreference(clairvoyanceExpandedKey(partyNumber), expanded);
+  };
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
-  const [colosseumEnemySettings, setColosseumEnemySettings] = useState<ColosseumEnemySettings>(() => getColosseumEnemySettings());
+  const [colosseumEnemySettings, setColosseumEnemySettings] = useState<ColosseumEnemySettings>(() => getStoredColosseumEnemySettings());
+  const colosseumEnemySettingsRef = useRef(colosseumEnemySettings);
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
-  const [glossaryTab, setGlossaryTab] = useState<GlossaryTabKey>(() => getStoredGlossaryTab());
+  const [glossaryTabOverride, setGlossaryTabOverride] = useState<GlossaryTabKey | null>(null);
+  const glossaryTab: GlossaryTabKey = glossaryTabOverride ?? settingPreferences?.glossaryTab ?? '能';
+  const setGlossaryTab = (tab: GlossaryTabKey) => {
+    setGlossaryTabOverride(tab);
+    onSetUiPreference(SETTING_GLOSSARY_TAB_FAMILY, tab);
+  };
   const [bonusAbilityGlossarySubcategory, setBonusAbilityGlossarySubcategory] = useState<BonusAbilityGlossarySubcategoryId>('passive');
-  const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>(() => getStoredExpandedGlossaryEntries());
+  // Expanded Glossary entries are local view state (8.6 retains only the tab).
+  const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>({});
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
-  const [isEnemyEditExpanded, setIsEnemyEditExpanded] = useState(true);
   const [activeAbilityHelp, setActiveAbilityHelp] = useState<{ key: string; title: string; description: string } | null>(null);
   const [abilityHelpPosition, setAbilityHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
   // SpecRef: 8.6 | UI_SETTING | Enemy Edit Pane
+  // The pane follows the device settings, including a change committed through the Application API
+  // (`commit/setting/enemyEditPane`), which saves them and notifies this subscription.
+  useEffect(() => subscribeColosseumEnemySettings((settings) => {
+    colosseumEnemySettingsRef.current = settings;
+    setColosseumEnemySettings(settings);
+  }), []);
   const updateColosseumEnemySettings = useCallback((updates: Partial<ColosseumEnemySettings>) => {
-    setColosseumEnemySettings((prev) => {
-      const nextSettings = normalizeColosseumEnemySettings({ ...prev, ...updates });
-      // Persist immediately so battle execution (which reads storage) uses the latest setting
-      // even when the player changes Enemy Edit values and starts a battle right away.
-      saveColosseumEnemySettings(nextSettings);
-      return nextSettings;
-    });
+    const nextSettings = normalizeColosseumEnemySettings({ ...colosseumEnemySettingsRef.current, ...updates });
+    // Persist immediately so battle execution (which reads storage) uses the latest setting
+    // even when the player changes Enemy Edit values and starts a battle right away. Saving notifies the
+    // subscription above, which updates this pane's state.
+    saveColosseumEnemySettings(nextSettings);
   }, []);
 
   useEffect(() => {
@@ -501,47 +448,12 @@ export default function SettingTab({
 
   const versionTag = APP_VERSION;
 
-  const getSettingPartyAbilityLevel = (party: Party, abilityId: string): number => {
-    const { characterStats } = computePartyStats(party);
-    return characterStats.reduce((maxLevel, stats) => {
-      const level = stats.abilities
-        .filter((ability) => ability.id === abilityId)
-        .reduce((abilityMax, ability) => Math.max(abilityMax, ability.level), 0);
-      return Math.max(maxLevel, level);
-    }, 0);
-  };
   const currentEnv = getEnvironmentId();
   const isBetaEnvironment = currentEnv === 'beta';
   const isOrcaEnvironment = currentEnv === 'orca';
   const debugModeEnabled = isDebugModeEnabled();
   const modeSelectionLocked = isBetaEnvironment || runtimeGameMode === 'mode.orca';
-  useEffect(() => {
-    try {
-      localStorage.setItem(SETTING_PANEL_STORAGE_KEY, JSON.stringify(settingPanelExpanded));
-    } catch (error) {
-      console.error('Failed to persist Setting panel state:', error);
-    }
-  }, [settingPanelExpanded]);
-  useEffect(() => {
-    localStorage.setItem(CLAIRVOYANCE_PARTY_STORAGE_KEY, JSON.stringify(clairvoyancePartyExpanded));
-  }, [clairvoyancePartyExpanded]);
-  useEffect(() => {
-    try {
-      localStorage.setItem(GLOSSARY_TAB_STORAGE_KEY, glossaryTab);
-    } catch (error) {
-      console.error('Failed to persist glossary tab state:', error);
-    }
-  }, [glossaryTab]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(GLOSSARY_EXPANDED_STORAGE_KEY, JSON.stringify(expandedGlossaryEntries));
-    } catch (error) {
-      console.error('Failed to persist glossary expanded entries:', error);
-    }
-  }, [expandedGlossaryEntries]);
-
-  const unreadDeveloperNewsItems = DEVELOPER_NEWS_ITEMS.filter((item) => !(gameState.global.readDeveloperNewsItemIds ?? []).includes(item.id));
+  const unreadDeveloperNewsItems = developerNewsEntries.filter((item) => !item.isRead);
   const hasUnreadDeveloperNews = unreadDeveloperNewsItems.length > 0;
 
   // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
@@ -550,7 +462,9 @@ export default function SettingTab({
   }, [settingPanelExpanded.news, onNewsPaneExpandedChange]);
 
   const toggleSettingPanel = (panelKey: SettingPanelKey) => {
-    setSettingPanelExpanded((prev) => ({ ...prev, [panelKey]: !prev[panelKey] }));
+    const expanded = !settingPanelExpanded[panelKey];
+    setPanelOverrides((prev) => ({ ...prev, [panelKey]: expanded }));
+    onSetUiPreference(settingPanelExpandedKey(panelKey), expanded);
   };
 
   // SpecRef: 8.6 | UI_SETTING | Setting (設定)
@@ -839,12 +753,6 @@ export default function SettingTab({
     bestiaryListRef.current?.scrollTo({ top: bestiaryScrollTop, behavior: 'auto' });
   }, [bestiaryScrollTop]);
 
-  const commonRewardTotal = getBagTicketTotal(createCommonRewardBag());
-  const commonEnhancementTotal = ENHANCEMENT_TITLES.reduce((sum, t) => sum + t.tickets, 0);
-  const uniqueRewardTotal = getBagTicketTotal(createUncommonRewardBag());
-  const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
-  const mythicRewardTotal = getBagTicketTotal(createMythicRareRewardBag());
-
   const confirmReset = (label: string, onConfirm: () => void) => {
     if (!window.confirm(t('setting.clairvoyance.resetConfirmation', { label }))) {
       return;
@@ -853,53 +761,11 @@ export default function SettingTab({
     onConfirm();
   };
 
-  const commonSuperRareTotal = getBagTicketTotal(createCommonSuperRareBag());
-  const rareSuperRareTotal = getBagTicketTotal(createRareSuperRareBag());
-  const superRareHitTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + (t.value > 0 ? t.tickets : 0), 0);
-  const enhancementCountTargets = [
-    { value: 1 },
-    { value: 2 },
-    { value: 3 },
-    { value: 4 },
-    { value: 5 },
-    { value: 6 },
-  ] as const;
-  const sideQuestDefaultBag = createSideQuestBag();
-  const sideQuestTotal = getBagTicketTotal(sideQuestDefaultBag);
-  const sleepinessDefaultBag = createSleepinessPartyBag();
-
-  const visibleDeityNames = new Set(
-    gameState.global.unlockedDeities
-      .map((deityName) => normalizeDeityName(deityName))
-      .filter((deityName) => !isNoFaithDeity(deityName))
-  );
-
-  const donationByDeity = DEITY_OPTIONS.reduce<Record<string, number>>((totals, deity) => {
-    const deityName = normalizeDeityName(deity.name);
-    if (!visibleDeityNames.has(deityName)) return totals;
-    totals[deityName] = deityDonations[deityName] ?? 0;
-    return totals;
-  }, {});
-
-  Object.entries(deityDonations).forEach(([deityName, donation]) => {
-    const normalizedDeityName = normalizeDeityName(deityName);
-    if (!visibleDeityNames.has(normalizedDeityName)) return;
-    donationByDeity[normalizedDeityName] = Math.max(donationByDeity[normalizedDeityName] ?? 0, donation);
-  });
-
-  const donationRows = Object.entries(donationByDeity)
-    .filter(([deityName]) => !isNoFaithDeity(deityName))
-    .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0], 'ja'))
-    .map(([deityName, donationGold]) => ({
-      deityName,
-      donationGold,
-      rank: getDeityRank(donationGold),
-      nextRankDonationRequirement: getNextRankDonationRequirement(donationGold),
-    }));
-
+  const compendiumEntryById = new Map((itemCompendiumEntries ?? []).map((entry) => [entry.itemId, entry]));
   const compendiumItems = ITEMS
     .filter(item =>
-      (debugSettings.displayAllCompendium || (gameState.global.revealedItemCompendiumItemIds ?? []).includes(item.id)) &&
+      (debugSettings.displayAllCompendium || compendiumEntryById.get(item.id)?.revealed === true) &&
+      compendiumEntryById.has(item.id) &&
       item.category === compendiumCategory &&
       matchesRarityFilter(item.id, compendiumRarityFilter)
     )
@@ -924,7 +790,7 @@ export default function SettingTab({
   const [characterRosterGenderFilter, setCharacterRosterGenderFilter] = useState<'male' | 'female' | 'unique'>('male');
 
   const availableRosterImageFiles = CHARACTER_IMAGE_FILES;
-  const getCharacterRosterImageFileName = (character: Character, partyId: number): string | null => {
+  const getCharacterRosterImageFileName = (character: SettingRosterCharacter, partyId: number): string | null => {
     const uniquePartyMemberImageByName: Partial<Record<string, string>> = {
       'ケモ': 'Unique_Kemo.png', 'ライカ': 'Unique_Laika.png', 'ルナ': 'Unique_Luna.png', 'ノクス': 'Unique_Nox.png',
       'マーレ': 'Unique_Merle.png', 'プチーツァ': 'Unique_Puchitsa.png', '蒼牙破': 'Unique_Souga-ha.png', 'レナード': 'Unique_Leonard.png',
@@ -936,8 +802,9 @@ export default function SettingTab({
     if (!raceMeta || !genderLabel) return null;
     return `${partyId}_${raceMeta.raceName}_${genderLabel}.png`;
   };
-  const selectedRosterParty = gameState.parties.find((party) => party.id === characterRosterPartyId) ?? gameState.parties[0];
+  const selectedRosterParty = rosterParties.find((party) => party.id === characterRosterPartyId) ?? rosterParties[0];
   const selectedRosterRace = RACES.find((race) => race.id === characterRosterRaceId);
+  const selectedRosterEntry = characterRosterEntries?.find((race) => race.raceId === characterRosterRaceId) ?? null;
   const activeRosterCharacter = characterRosterGenderFilter === 'unique'
     ? (selectedRosterParty?.characters ?? []).find((character) => character.raceId === characterRosterRaceId && character.isUnique) ?? null
     : {
@@ -945,7 +812,7 @@ export default function SettingTab({
       gender: characterRosterGenderFilter,
       isUnique: false,
       name: '',
-    } as Character;
+    } as SettingRosterCharacter;
   const selectedRosterImageFile = activeRosterCharacter
     ? ((): string | null => {
       const raceMeta = CHARACTER_ROSTER_RACES.find((race) => race.id === characterRosterRaceId);
@@ -977,18 +844,18 @@ export default function SettingTab({
     .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
 
   const hasRosterUniqueCharacter = useCallback((partyId: number, raceId: RaceId): boolean => {
-    const party = gameState.parties.find((entry) => entry.id === partyId);
+    const party = rosterParties.find((entry) => entry.id === partyId);
     return (party?.characters ?? []).some((character) => character.raceId === raceId && character.isUnique);
-  }, [gameState.parties]);
+  }, [rosterParties]);
   const visibleRosterRaceIds = useMemo(() => (
     CHARACTER_ROSTER_RACES
-      .filter((race) => gameState.parties.some((party) =>
+      .filter((race) => characterRosterEntries?.some((entry) => entry.raceId === race.id) && rosterParties.some((party) =>
         hasRosterGenderImage(party.id, race.id, 'male')
         || hasRosterGenderImage(party.id, race.id, 'female')
         || hasRosterUniqueCharacter(party.id, race.id),
       ))
       .map((race) => race.id)
-  ), [CHARACTER_ROSTER_RACES, gameState.parties, hasRosterGenderImage, hasRosterUniqueCharacter]);
+  ), [CHARACTER_ROSTER_RACES, characterRosterEntries, rosterParties, hasRosterGenderImage, hasRosterUniqueCharacter]);
   const visibleRosterGenders = useMemo(() => {
     const partyId = selectedRosterParty?.id ?? 1;
     const genders: Array<'male' | 'female' | 'unique'> = [];
@@ -1044,13 +911,13 @@ export default function SettingTab({
     });
   };
 
-  const revealedGlossaryAbilityIds = useMemo(
-    () => new Set(gameState.global.revealedGlossaryAbilityIds ?? []),
-    [gameState.global.revealedGlossaryAbilityIds],
+  const projectedGlossaryEntryById = useMemo(
+    () => new Map((glossaryEntries ?? []).map((entry) => [entry.glossaryId, entry])),
+    [glossaryEntries],
   );
-  const revealedGlossaryTerrainKeys = useMemo(
-    () => new Set(gameState.global.revealedGlossaryTerrainKeys ?? []),
-    [gameState.global.revealedGlossaryTerrainKeys],
+  const projectedGlossaryIds = useMemo(
+    () => new Set(projectedGlossaryEntryById.keys()),
+    [projectedGlossaryEntryById],
   );
 
   // SpecRef: 8.6 | UI_SETTING | Glossary (用語集)
@@ -1070,7 +937,15 @@ export default function SettingTab({
     };
 
     return section.id === glossarySectionIdsByTab[glossaryTab];
-  });
+  }).map((section) => ({
+    ...section,
+    entries: section.entries
+      .filter((entry) => debugSettings.displayAllGlossary || projectedGlossaryEntryById.has(entry.key))
+      .map((entry) => {
+        const projected = projectedGlossaryEntryById.get(entry.key);
+        return projected ? { ...entry, label: projected.label, description: projected.description } : entry;
+      }),
+  }));
 
 
   type GlossaryTable = {
@@ -1120,11 +995,12 @@ export default function SettingTab({
   const isColosseumBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM;
 
   // SpecRef: 8.6 | UI_SETTING | Bestiary (敵キャラクター図鑑)
+  const bestiaryEntryById = new Map((bestiaryEntries ?? []).map((entry) => [entry.enemyId, entry]));
   const unlockedBestiaryDungeonIds = new Set(
     DUNGEONS
       .filter((dungeon) => dungeon.id !== 99)
-      .filter((dungeon) => debugSettings.displayAllBestiary || gameState.parties.some((party) => (
-        isDungeonEntryUnlocked(party, dungeon.id)
+      .filter((dungeon) => debugSettings.displayAllBestiary || dungeon.id === 1 || ENEMIES.some((enemy) => (
+        enemy.poolId === dungeon.id && bestiaryEntryById.get(enemy.id)?.revealed === true
       )))
       .map((dungeon) => dungeon.id)
   );
@@ -1139,8 +1015,8 @@ export default function SettingTab({
   const getGodBestiaryDisplayEnemyId = (god: (typeof GOD_ENEMY_PROFILES)[number]): number => god.enemyId;
 
   const getGodBestiaryBattleStats = (god: (typeof GOD_ENEMY_PROFILES)[number]): { defeats: number; encounters: number } => {
-    const enemyBattleStats = gameState.global.enemyBattleStats ?? {};
-    return enemyBattleStats[god.enemyId] ?? { defeats: 0, encounters: 0 };
+    const entry = bestiaryEntryById.get(god.enemyId);
+    return entry ? { defeats: entry.defeats, encounters: entry.encounters } : { defeats: 0, encounters: 0 };
   };
 
   // SpecRef: 8.6 | UI_SETTING | Bestiary (敵キャラクター図鑑)
@@ -1353,23 +1229,23 @@ export default function SettingTab({
   };
 
   const ENEMY_CLASS_LABELS: Record<string, string> = {
-    guardian: t('setting.bestiary.enemyClass.guardian'),
-    duelist: t('setting.bestiary.enemyClass.duelist'),
-    samurai: t('setting.bestiary.enemyClass.samurai'),
-    'sword-saint': t('setting.bestiary.enemyClass.sword-saint'),
-    ranger: t('setting.bestiary.enemyClass.ranger'),
-    striker: t('setting.bestiary.enemyClass.striker'),
-    ninja: t('setting.bestiary.enemyClass.ninja'),
-    wizard: t('setting.bestiary.enemyClass.wizard'),
-    sage: t('setting.bestiary.enemyClass.sage'),
-    alchemist: t('setting.bestiary.enemyClass.alchemist'),
-    pilgrim: t('setting.bestiary.enemyClass.pilgrim'),
-    lord: t('setting.bestiary.enemyClass.lord'),
-    fighter: t('setting.bestiary.enemyClass.fighter'),
-    rogue: t('setting.bestiary.enemyClass.rogue'),
+    guardian: t('masterData.class.guardian.name'),
+    duelist: t('masterData.class.duelist.name'),
+    samurai: t('masterData.class.samurai.name'),
+    'sword-saint': t('masterData.class.sword-saint.name'),
+    ranger: t('masterData.class.ranger.name'),
+    striker: t('masterData.class.striker.name'),
+    ninja: t('masterData.class.ninja.name'),
+    wizard: t('masterData.class.wizard.name'),
+    sage: t('masterData.class.sage.name'),
+    alchemist: t('masterData.class.alchemist.name'),
+    pilgrim: t('masterData.class.pilgrim.name'),
+    lord: t('masterData.class.lord.name'),
+    fighter: t('masterData.class.fighter.name'),
+    rogue: t('masterData.class.rogue.name'),
   };
 
-  const getBestiaryEnemyBattleStats = (enemyId: number) => gameState.global.enemyBattleStats?.[enemyId] ?? { defeats: 0, encounters: 0 };
+  const getBestiaryEnemyBattleStats = (enemyId: number) => { const entry = bestiaryEntryById.get(enemyId); return entry ? { defeats: entry.defeats, encounters: entry.encounters } : { defeats: 0, encounters: 0 }; };
 
   const getBestiaryClassRows = (
     mainClassId: string,
@@ -1393,12 +1269,7 @@ export default function SettingTab({
     ];
   };
 
-  const ENEMY_EDIT_CLASS_OPTIONS = [
-    'duelist', 'samurai', 'sword-saint',
-    'ranger', 'striker', 'ninja',
-    'wizard', 'sage', 'alchemist',
-    'guardian', 'pilgrim', 'lord',
-  ] as const;
+  const ENEMY_EDIT_CLASS_OPTIONS = COLOSSEUM_ENEMY_CLASS_OPTIONS;
 
   const getDisplayEnemy = (
     enemy: EnemyDef,
@@ -1437,17 +1308,9 @@ export default function SettingTab({
     return drops.length > 0 ? drops.join(' / ') : t('common.none');
   };
 
-  const getAbilityHelpDescription = (abilityId: string, level: number): string => {
-    const bonusAbilityEntry = BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.get(abilityId as AbilityId);
-    if (bonusAbilityEntry) {
-      return formatBonusAbilityHelpDescription(abilityId as AbilityId, level);
-    }
-
-    const levelDescriptionKey = ABILITY_HELP_TEXT_KEYS[`${abilityId}:${level}`];
-    if (levelDescriptionKey) return t(levelDescriptionKey);
-    const abilityDescriptionKey = ABILITY_HELP_TEXT_KEYS[abilityId];
-    return abilityDescriptionKey ? t(abilityDescriptionKey) : t('home.abilityHelp.unconfigured');
-  };
+  const getAbilityHelpDescription = (abilityId: string, level: number): string => (
+    formatBonusAbilityHelpDescription(abilityId as AbilityId, level)
+  );
 
   const getAbilityHelpText = (abilityId: string, level: number, abilityLabel: string): { title: string; description: string } => ({
     title: abilityLabel,
@@ -1557,7 +1420,7 @@ export default function SettingTab({
               {t('app.title')} orca
             </a>
             <a
-              href={gameState.global.language === 'zh-CN'
+              href={language === 'zh-CN'
                 ? 'https://t.me/+exLhrX12vn5iMmI1'
                 : 'https://discord.gg/k9VSf2ghM'}
               target="_blank"
@@ -1567,19 +1430,19 @@ export default function SettingTab({
               {t('setting.developerNews.discordCommunity')}
             </a>
             <div className="max-h-96 overflow-y-auto overscroll-contain rounded border border-gray-200 bg-white text-sm pane-button-shadow">
-              {DEVELOPER_NEWS_ITEMS.map((item) => (
+              {developerNewsEntries.map((item) => (
                 <button
-                  key={item.id}
+                  key={item.version}
                   type="button"
-                  onClick={() => onMarkDeveloperNewsRead([item.id])}
+                  onClick={() => onMarkDeveloperNewsRead([item.version])}
                   className="block w-full space-y-1 border-b border-gray-100 p-3 text-left last:border-b-0"
                 >
                   <div className="flex items-center justify-between gap-3 text-xs text-gray-500">
                     <span className="font-semibold text-gray-700">{item.version}</span>
                     <span>{item.date}</span>
                   </div>
-                  <p className={`text-gray-700 ${unreadDeveloperNewsItems.some((unreadItem) => unreadItem.id === item.id) ? 'font-bold' : 'font-normal'}`}>
-                    {getDeveloperNewsContent(item, gameState.global.language)}
+                  <p className={`text-gray-700 ${unreadDeveloperNewsItems.some((unreadItem) => unreadItem.version === item.version) ? 'font-bold' : 'font-normal'}`}>
+                    {item.content}
                   </p>
                 </button>
               ))}
@@ -1598,7 +1461,7 @@ export default function SettingTab({
           {donationRows.length > 0 ? (
             donationRows.map(({ deityName, donationGold, rank, nextRankDonationRequirement }) => (
               <div key={deityName} className="flex items-center justify-between gap-3">
-                <span className="text-gray-700">{t('setting.donation.deityRank', { deity: deityName, rank })}</span>
+                <span className="text-gray-700">{t('setting.donation.deityRank', { deity: getDeityDisplayName(deityName), rank })}</span>
                 <span className="text-sub tabular-nums">{formatNumber(donationGold)}G <span className="text-xs text-gray-500">{t('setting.donation.nextRequirement', { amount: nextRankDonationRequirement !== null ? `${formatNumber(nextRankDonationRequirement)}G` : t('setting.donation.maxRank') })}</span></span>
               </div>
             ))
@@ -1609,105 +1472,89 @@ export default function SettingTab({
       </div>
 
       {/* SpecRef: 8.6 | UI_SETTING | Clairvoyance (未来視) */}
-      {gameState.parties.some((party) => getProphecyControlAccess(
-        getSettingPartyAbilityLevel(party, 'prophecy'),
-        debugSettings.clairvoyanceEnabled,
-      ).isVisible) && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+      {/* Availability and reset access come from `resources/clairvoyance/{p}` (Spec 9.1.3 4-2-3; 8.6). */}
+      {(clairvoyanceProjections ?? []).some((projection) => projection.available) && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderSettingPanelHeader('clairvoyance', t('setting.clairvoyance.title'))}
         {settingPanelExpanded.clairvoyance && <div className="mt-3 space-y-3">
-          {gameState.parties.map((party, partyIndex) => {
-            const prophecyLevel = getSettingPartyAbilityLevel(party, 'prophecy');
-            const { isVisible: isPaneVisible, canResetBags } = getProphecyControlAccess(
-              prophecyLevel,
-              debugSettings.clairvoyanceEnabled,
-            );
-            if (!isPaneVisible) {
+          {(clairvoyanceProjections ?? []).map((clairvoyance, partyIndex) => {
+            if (!clairvoyance.available) {
               return null;
             }
-
-            const partyBags = party.bags;
-            const isExpanded = clairvoyancePartyExpanded[partyIndex] === true;
-            return <div key={`clairvoyance-${party.id}`} className="rounded border border-gray-200 bg-white p-2 pane-button-shadow">
-              <button type="button" className="flex w-full items-center justify-between text-left font-semibold" onClick={() => setClairvoyancePartyExpanded((prev) => ({ ...prev, [partyIndex]: !isExpanded }))}>
+            const canResetBags = clairvoyance.canReset;
+            const isExpanded = clairvoyancePartyExpanded[partyIndex + 1] === true;
+            return <div key={`clairvoyance-${partyIndex + 1}`} className="rounded border border-gray-200 bg-white p-2 pane-button-shadow">
+              <button type="button" className="flex w-full items-center justify-between text-left font-semibold" onClick={() => toggleClairvoyanceParty(partyIndex + 1, !isExpanded)}>
                 <span>PT{partyIndex + 1} {isExpanded ? '▲' : '▼'}</span>
               </button>
-              {isExpanded && <div className="mt-2 space-y-3 text-sm">
+              {isExpanded && (!clairvoyance ? null : <div className="mt-2 space-y-3 text-sm">
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
                   <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('setting.clairvoyance.common')}</div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('setting.clairvoyance.commonRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.commonRewardBag))} / {formatNumber(commonRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.commonRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.commonRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.common.remaining)} / {formatNumber(clairvoyance.reward.common.total)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.common.hitsRemaining)}</span></div>
                   </div>
-                  <div>{t('setting.clairvoyance.commonEnhancement')}: {formatNumber(getBagTicketTotal(partyBags.commonEnhancementBag))} / {formatNumber(commonEnhancementTotal)}</div>
+                  <div>{t('setting.clairvoyance.commonEnhancement')}: {formatNumber(clairvoyance.enhancement.common.remaining)} / {formatNumber(clairvoyance.enhancement.common.total)}</div>
                   <div className="pl-1 text-xs text-gray-500">
-                    {enhancementCountTargets.map(({ value }) => {
-                      const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
-                      return (
-                        <div key={`common-enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
-                          <span className="tabular-nums text-right text-gray-400">{value}</span>
-                          <span>{t('setting.enhancementRemaining', { title: getLocalizedEnhancementTitle(value) })}</span>
-                          <span className="tabular-nums text-right">{formatNumber(getBagEntryTickets(partyBags.commonEnhancementBag, value))} / {formatNumber(initialCount)}</span>
-                        </div>
-                      );
-                    })}
+                    {clairvoyance.enhancement.common.tiers.map(({ tier, remaining, total }) => (
+                      <div key={`common-enhancement-${partyIndex + 1}-${tier}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
+                        <span className="tabular-nums text-right text-gray-400">{tier}</span>
+                        <span>{t('setting.enhancementRemaining', { title: getLocalizedEnhancementTitle(tier) })}</span>
+                        <span className="tabular-nums text-right">{formatNumber(remaining)} / {formatNumber(total)}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div>{t('setting.clairvoyance.commonSuperRare')}: {formatNumber(getBagTicketTotal(partyBags.commonSuperRareBag))} / {formatNumber(commonSuperRareTotal)}</div>
-                  <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.superRareRemaining')} {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.commonSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
-                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetCommonRewards'), () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetCommonRewards')}</button>}
+                  <div>{t('setting.clairvoyance.commonSuperRare')}: {formatNumber(clairvoyance.superRare.common.remaining)} / {formatNumber(clairvoyance.superRare.common.total)}</div>
+                  <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.superRareRemaining')} {formatNumber(clairvoyance.superRare.common.hitsRemaining)} / {formatNumber(clairvoyance.superRare.common.hitsTotal)}</div>
+                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetCommonRewards'), () => onClairvoyanceReset(partyIndex, { resetCommonRewards: true }))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetCommonRewards')}</button>}
                 </div>
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
                   <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('setting.clairvoyance.otherRarities')}</div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('setting.clairvoyance.uncommonRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.uncommonRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.uncommonRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.uncommonRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.uncommon.remaining)} / {formatNumber(clairvoyance.reward.uncommon.total)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.uncommon.hitsRemaining)}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('setting.clairvoyance.eliteRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.eliteRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.eliteRareRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.eliteRareRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.eliteRare.remaining)} / {formatNumber(clairvoyance.reward.eliteRare.total)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.eliteRare.hitsRemaining)}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('setting.clairvoyance.bossRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.bossRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.bossRareRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.bossRareRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.bossRare.remaining)} / {formatNumber(clairvoyance.reward.bossRare.total)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.bossRare.hitsRemaining)}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('setting.clairvoyance.mythicRareRewards')}: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.mythicRareRewardBag))} / {formatNumber(mythicRewardTotal)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.mythicRareRewardBag, 1))}</span></div>
+                    <div>{t('setting.clairvoyance.mythicRareRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.mythicRare.remaining)} / {formatNumber(clairvoyance.reward.mythicRare.total)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.mythicRare.hitsRemaining)}</span></div>
                   </div>
-                  <div>{t('setting.clairvoyance.enhancement')}: {formatNumber(getBagTicketTotal(partyBags.enhancementBag))} / {formatNumber(enhancementTotal)}</div>
+                  <div>{t('setting.clairvoyance.enhancement')}: {formatNumber(clairvoyance.enhancement.general.remaining)} / {formatNumber(clairvoyance.enhancement.general.total)}</div>
                   <div className="pl-1 text-xs text-gray-500">
-                    {enhancementCountTargets.map(({ value }) => {
-                      const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
-                      return (
-                        <div key={`enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
-                          <span className="tabular-nums text-right text-gray-400">{value}</span>
-                          <span>{t('setting.enhancementRemaining', { title: getLocalizedEnhancementTitle(value) })}</span>
-                          <span className="tabular-nums text-right">{formatNumber(getBagEntryTickets(partyBags.enhancementBag, value))} / {formatNumber(initialCount)}</span>
-                        </div>
-                      );
-                    })}
+                    {clairvoyance.enhancement.general.tiers.map(({ tier, remaining, total }) => (
+                      <div key={`enhancement-${partyIndex + 1}-${tier}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
+                        <span className="tabular-nums text-right text-gray-400">{tier}</span>
+                        <span>{t('setting.enhancementRemaining', { title: getLocalizedEnhancementTitle(tier) })}</span>
+                        <span className="tabular-nums text-right">{formatNumber(remaining)} / {formatNumber(total)}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div>{t('setting.clairvoyance.superRareEnhancement')}: {formatNumber(getBagTicketTotal(partyBags.rareSuperRareBag))} / {formatNumber(rareSuperRareTotal)}</div>
-                  <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.superRareRemaining')} {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.rareSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
-                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetRewards'), () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetRewards')}</button>}
+                  <div>{t('setting.clairvoyance.superRareEnhancement')}: {formatNumber(clairvoyance.superRare.rare.remaining)} / {formatNumber(clairvoyance.superRare.rare.total)}</div>
+                  <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.superRareRemaining')} {formatNumber(clairvoyance.superRare.rare.hitsRemaining)} / {formatNumber(clairvoyance.superRare.rare.hitsTotal)}</div>
+                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetRewards'), () => onClairvoyanceReset(partyIndex, { resetRewards: true }))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetRewards')}</button>}
                 </div>
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
                   <div className="text-xs font-semibold text-gray-700 tracking-wide">{t('setting.clairvoyance.sideQuest')}</div>
                   {/* SpecRef: 8.6 | UI_SETTING | サイドクエスト */}
-                  <div>{t('setting.clairvoyance.sideQuestDraw')}: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
+                  <div>{t('setting.clairvoyance.sideQuestDraw')}: {formatNumber(clairvoyance.sideQuest.remaining)} / {formatNumber(clairvoyance.sideQuest.total)}</div>
                   <div className="text-xs text-gray-500 text-right">
-                    {t('setting.clairvoyance.hitsRemaining')} {formatNumber(sideQuestDefaultBag.entries.reduce((sum, entry) => (
-                      entry.id > 0 ? sum + getBagEntryTickets(partyBags.sideQuestBag, entry.id) : sum
-                    ), 0))}
+                    {t('setting.clairvoyance.hitsRemaining')} {formatNumber(clairvoyance.sideQuest.hitsRemaining)}
                   </div>
-                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetSideQuest'), () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetSideQuest')}</button>}
+                  {canResetBags && <button onClick={() => confirmReset(t('setting.clairvoyance.resetSideQuest'), () => onClairvoyanceReset(partyIndex, { resetSideQuest: true }))} className="w-full py-1 bg-sub text-white rounded text-xs">{t('setting.clairvoyance.resetSideQuest')}</button>}
                 </div>
                 <div className="flex items-start justify-between gap-3">
-                  <div>{t('setting.clairvoyance.sleepinessDraw')}: {formatNumber(getBagTicketTotal(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag)))} / {formatNumber(getBagTicketTotal(sleepinessDefaultBag))}</div>
+                  <div>{t('setting.clairvoyance.sleepinessDraw')}: {formatNumber(clairvoyance.sleepiness.remaining)} / {formatNumber(clairvoyance.sleepiness.total)}</div>
                   <div className="text-xs text-gray-500 text-right">
-                    {t('setting.clairvoyance.sleepinessOutcomes', { awake: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 0)), nap: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 1)), deepSleep: formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 2)) })}
+                    {t('setting.clairvoyance.sleepinessOutcomes', { awake: formatNumber(clairvoyance.sleepiness.awake.remaining), nap: formatNumber(clairvoyance.sleepiness.nap.remaining), deepSleep: formatNumber(clairvoyance.sleepiness.deepSleep.remaining) })}
                   </div>
                 </div>
-              </div>}
+              </div>)}
             </div>;
           })}
         </div>}
@@ -1787,7 +1634,7 @@ export default function SettingTab({
                           // SpecRef: 1.0.3 | Glossary Reveal Rule | ability visibility
                           ? LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES
                             .filter((entry) => entry.subcategory === bonusAbilityGlossarySubcategory)
-                            .filter((entry) => debugSettings.displayAllGlossary || revealedGlossaryAbilityIds.has(entry.abilityId))
+                            .filter((entry) => debugSettings.displayAllGlossary || projectedGlossaryIds.has(entry.abilityId))
                             .map((entry, index) => {
                               const entryKey = `${section.id}-${entry.abilityId}-${index}`;
                               const displayLabel = getBonusAbilityGlossaryDisplayLabel(entry.abilityId);
@@ -1807,7 +1654,7 @@ export default function SettingTab({
                           : section.entries.map((entry, index) => {
                             // SpecRef: 1.0.3 | Glossary Reveal Rule | terrain visibility
                             const isTerrainGlossarySection = section.heading === '1.1.10 t. terrain effects';
-                            if (isTerrainGlossarySection && !debugSettings.displayAllGlossary && !revealedGlossaryTerrainKeys.has(entry.key as TerrainEffectKey)) {
+                            if (isTerrainGlossarySection && !debugSettings.displayAllGlossary && !projectedGlossaryIds.has(entry.key)) {
                               return null;
                             }
                             const isSideQuestGlossarySection = section.id === '2-1-9';
@@ -2031,7 +1878,7 @@ export default function SettingTab({
             </div>
           </div>
           <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
-            {gameState.parties.map((party) => (
+            {rosterParties.map((party) => (
               <button key={party.id} onClick={() => setCharacterRosterPartyId(party.id)} className={`px-2 py-1 text-xs rounded pane-button-shadow ${characterRosterPartyId === party.id ? 'bg-sub text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}>
                 PT{formatNumber(party.id)}
               </button>
@@ -2063,12 +1910,12 @@ export default function SettingTab({
               <div className="relative z-10 rounded bg-white/25 px-2 py-1 inline-block text-xs text-gray-700">{t('setting.characterRoster.race', { race: selectedRosterRace?.name ?? activeRosterCharacter.raceId })}</div>
               <div className="relative z-10 mt-auto border-t border-gray-100 pt-2 text-xs text-gray-700 bg-white/25 rounded px-2 py-1 space-y-1">
                 <div className="font-semibold">{t('setting.characterRoster.raceStats')}</div>
-                <button type="button" className="w-full text-left" title={t('setting.characterRoster.raceBaseStatsHelp')} onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', t('setting.characterRoster.baseStats', { vitality: selectedRosterRace ? formatNumber(selectedRosterRace.stats.vitality) : '-', strength: selectedRosterRace ? formatNumber(selectedRosterRace.stats.strength) : '-', intelligence: selectedRosterRace ? formatNumber(selectedRosterRace.stats.intelligence) : '-', mind: selectedRosterRace ? formatNumber(selectedRosterRace.stats.mind) : '-' }), event.currentTarget); }}>
+                <button type="button" className="w-full text-left" title={t('setting.characterRoster.raceBaseStatsHelp')} onClick={(event) => { event.preventDefault(); event.stopPropagation(); handleRosterStatusBubbleToggle('roster-base-status', t('setting.characterRoster.baseStats', { vitality: selectedRosterEntry ? formatNumber(selectedRosterEntry.status.vitality) : '-', strength: selectedRosterEntry ? formatNumber(selectedRosterEntry.status.strength) : '-', intelligence: selectedRosterEntry ? formatNumber(selectedRosterEntry.status.intelligence) : '-', mind: selectedRosterEntry ? formatNumber(selectedRosterEntry.status.mind) : '-' }), event.currentTarget); }}>
                   <span className="grid grid-cols-4 gap-1">
-                    <span className="base-stat-chip">{t('common.stat.vitality')}:{selectedRosterRace ? formatNumber(selectedRosterRace.stats.vitality) : '-'}</span>
-                    <span className="base-stat-chip">{t('common.stat.strength')}:{selectedRosterRace ? formatNumber(selectedRosterRace.stats.strength) : '-'}</span>
-                    <span className="base-stat-chip">{t('common.stat.intelligence')}:{selectedRosterRace ? formatNumber(selectedRosterRace.stats.intelligence) : '-'}</span>
-                    <span className="base-stat-chip">{t('common.stat.mind')}:{selectedRosterRace ? formatNumber(selectedRosterRace.stats.mind) : '-'}</span>
+                    <span className="base-stat-chip">{t('stat.vitality')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.vitality) : '-'}</span>
+                    <span className="base-stat-chip">{t('stat.strength')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.strength) : '-'}</span>
+                    <span className="base-stat-chip">{t('stat.intelligence')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.intelligence) : '-'}</span>
+                    <span className="base-stat-chip">{t('stat.mind')}:{selectedRosterEntry ? formatNumber(selectedRosterEntry.status.mind) : '-'}</span>
                   </span>
                 </button>
                 <div className="text-xs text-gray-900 mt-1 leading-5">
@@ -2530,13 +2377,13 @@ export default function SettingTab({
       {debugSettings.colosseumEnabled && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         <button
           type="button"
-          onClick={() => setIsEnemyEditExpanded((prev) => !prev)}
+          onClick={() => toggleSettingPanel('enemyEdit')}
           className="w-full flex items-center justify-between text-left"
         >
           <div className="text-sm font-semibold">Enemy Edit</div>
-          <span className="text-gray-500 text-xs" aria-hidden="true">{isEnemyEditExpanded ? '▲' : '▼'}</span>
+          <span className="text-gray-500 text-xs" aria-hidden="true">{settingPanelExpanded.enemyEdit ? '▲' : '▼'}</span>
         </button>
-        {isEnemyEditExpanded && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mt-3">
+        {settingPanelExpanded.enemyEdit && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mt-3">
           {/* SpecRef: 8.6 | UI_SETTING | Enemy Edit Pane */}
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {formatNumber(colosseumEnemySettings.level)}</div><input className={IOS_GLASS_SLIDER_CLASS} type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} style={getSliderProgressStyle(colosseumEnemySettings.level, 1, 99)} /></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy name</div><input className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.name} onChange={(e) => updateColosseumEnemySettings({ name: e.target.value })} /></label>
@@ -2555,7 +2402,11 @@ export default function SettingTab({
               {(TERRAIN_EFFECT_OPTIONS.find((entry) => entry.key === colosseumEnemySettings.terrainEffect)?.description) ?? t('home.terrainEffect.noneDescription')}
             </div>
           </label>
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
+          {/* SpecRef: 8.6 | UI_SETTING | `enemyType`'s option keys come from `read/setting/enemyEditPane`'s
+              `validOptions` — the same `ENEMIES` master-data-derived set the server validates against — instead of
+              this file's own hand-maintained `ENEMY_TYPE_LABELS` map, which only supplies display labels now and
+              could otherwise silently omit a new enemy type it was never updated for. */}
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{(enemyEditValidOptions?.enemyType ?? Object.keys(ENEMY_TYPE_LABELS)).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy main class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyMainClass} onChange={(e) => updateColosseumEnemySettings({ enemyMainClass: e.target.value as ColosseumEnemySettings['enemyMainClass'] })}>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy sub class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemySubClass} onChange={(e) => updateColosseumEnemySettings({ enemySubClass: e.target.value as ColosseumEnemySettings['enemySubClass'] })}><option value="none">none</option>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
           {[0, 1, 2, 3, 4].map((slot) => {
@@ -2610,7 +2461,7 @@ export default function SettingTab({
         {settingPanelExpanded.superRare && <>
         <div className="text-xs text-gray-500 mt-3 mb-2">{t('setting.superRareListCaption')}</div>
         <div className="bg-white rounded p-2 text-sm space-y-1 max-h-72 overflow-y-auto pane-button-shadow">
-          {SUPER_RARE_TITLES.filter(title => title.value > 0).map(title => {
+          {(superRareEntries ?? []).map((entry) => Number(entry.split('/', 1)[0])).map((value) => SUPER_RARE_TITLES.find((title) => title.value === value)).filter((title): title is (typeof SUPER_RARE_TITLES)[number] => !!title && title.value > 0).map(title => {
             const uniqueBonus = formatBonuses(title.bonuses ?? [], { defenseMultiplierStyle: 'friendly' });
             return (
               <div key={title.value} className="grid grid-cols-[auto,1fr] gap-x-2 border-b border-gray-100 last:border-b-0 py-1">
@@ -2786,7 +2637,7 @@ export default function SettingTab({
           </div>
 
           <DesktopNotificationSettings />
-          <ExperimentalApiSettings />
+          <ApiV1Settings />
         </div>}
       </div>
 

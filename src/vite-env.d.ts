@@ -56,7 +56,7 @@ interface DesktopPartyProgressPartySnapshot {
 interface DesktopPartyProgressSnapshot {
   schemaVersion: 1;
   environment: 'dev' | 'beta' | 'orca' | 'prod';
-  language: 'ja' | 'en' | 'zh-CN' | 'zh-TW';
+  language: 'ja' | 'en' | 'zh-CN' | 'zh-TW' | 'ko';
   updatedAt: number;
   unreadDiaryCount: number;
   theme: import('./theme/theme').DesktopTheme;
@@ -103,7 +103,6 @@ interface Window {
     sample: () => Promise<import('./game/memoryMonitoring').MemoryDiagnosticExport>;
   };
   bokemoDesktop?: {
-    aiPlay?: { evaluationId: string; concept: string; version: string; build: number; mode: "normal" | "orca"; regulationVersion: number; rulesId: string; resume: boolean } | null;
     getStatus: () => Promise<{ isMacDesktop: boolean; notificationSupported: boolean }>;
     getWindowVisibility: () => Promise<boolean>;
     getMemoryMetrics: () => Promise<DesktopProcessMemoryMetrics>;
@@ -111,9 +110,17 @@ interface Window {
     setLaunchAtLogin: (enabled: boolean) => Promise<boolean>;
     showNotification: (payload: DesktopNotificationPayload) => Promise<boolean>;
     updatePartyProgressPane: (snapshot: DesktopPartyProgressSnapshot) => Promise<boolean>;
-    getExperimentalApiSettings: () => Promise<DesktopExperimentalApiSettings>;
-    setExperimentalApiEnabled: (enabled: boolean) => Promise<DesktopExperimentalApiSettings>;
-    onExperimentalApiRequest: (callback: (operation: string, payload: unknown) => unknown | Promise<unknown>) => () => void;
+    getApiV1Settings: () => Promise<DesktopApiV1Settings>;
+    setApiV1Enabled: (enabled: boolean) => Promise<DesktopApiV1Settings>;
+    setApiV1PersistSecretToken: (persist: boolean) => Promise<DesktopApiV1Settings>;
+    /** The bootstrap token, only for an explicit reveal in the Setting tab; `null` while the API is off. */
+    revealApiV1SecretToken: () => Promise<string | null>;
+    createApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string) => Promise<DesktopApiAccountIdentity>;
+    loadApiAccount: (identity: DesktopApiAccountIdentity) => Promise<DesktopApiAccountRecord | null>;
+    /** `controlJson` is the control metadata serialized by `serializeApiV1Control`. */
+    commitApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string, controlJson: string) => Promise<boolean>;
+    onApiV1Request: (callback: (operation: string, payload: unknown) => unknown | Promise<unknown>) => () => void;
+    notifyApiV1PopupActivity: () => Promise<void>;
     onNotificationActivated: (callback: (payload: DesktopNotificationPayload) => void) => () => void;
     onPartyProgressPartyActivated: (callback: (partyId: number) => void) => () => void;
   };
@@ -137,11 +144,40 @@ interface DesktopProcessMemoryMetrics {
   }>;
 }
 
-interface DesktopExperimentalApiSettings {
+interface DesktopApiV1Settings {
   supported: boolean;
   enabled: boolean;
+  persistSecretToken: boolean;
   host: string;
   port: number | null;
-  token: string | null;
-  apiVersion: 'experimental/v1';
+  connectionFile: string | null;
+  apiVersion: 'v1';
+}
+
+interface DesktopApiAccountIdentity {
+  userId: string;
+  environment: 'dev' | 'beta' | 'orca' | 'prod' | 'desktop';
+  gameMode: 'normal' | 'orca';
+  levelOffsetForOrca?: number | null;
+}
+
+interface DesktopApiControlMetadata {
+  revisionHighWater: number;
+  inGameTime?: number;
+  receipts: import('./api/v1/authority').ApiV1Receipt[];
+  tombstones: string[];
+  popupEvents?: import('./api/v1/popupEvents').ApiV1PopupEvent[];
+  deliveries?: import('./api/v1/deliveries').ApiV1DeliveryRecord[];
+  feedbackReward?: import('./game/feedbackRewards').FeedbackRewardState;
+  equipmentHistory?: Record<string, { undo: import('./types').SavedEquipmentSet[]; redo: import('./types').SavedEquipmentSet[] }>;
+  confirmations?: import('./api/v1/authority').ApiV1Confirmation[];
+  settings?: Record<string, unknown>;
+  rngState?: number;
+  elapsedCarryMs?: Record<string, number>;
+}
+
+interface DesktopApiAccountRecord {
+  identity: DesktopApiAccountIdentity;
+  savePayload: string;
+  control: DesktopApiControlMetadata;
 }

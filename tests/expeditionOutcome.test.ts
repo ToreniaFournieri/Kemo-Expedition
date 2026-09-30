@@ -15,8 +15,9 @@ const BOSS_RARE = { id: 1401 } as Item;
 
 function resolve(overrides: Partial<Parameters<typeof resolveExpeditionOutcome>[0]> = {}) {
   return resolveExpeditionOutcome({
-    finalOutcome: 'Escape',
+    finalOutcome: 'Return',
     endedWithDrawRetreat: false,
+    deepestClearedPosition: 13,
     isGodsBattle: false,
     dungeonId: 1,
     recoveredItems: [],
@@ -29,21 +30,28 @@ function resolve(overrides: Partial<Parameters<typeof resolveExpeditionOutcome>[
 
 test('runtime outcomes map to the five canonical Clear-Gate outcomes', () => {
   assert.equal(getCanonicalClearGateOutcome('Clear', false), 'Clear');
-  assert.equal(getCanonicalClearGateOutcome('Escape', false), 'Turned_Back');
+  assert.equal(getCanonicalClearGateOutcome('Return', false), 'Return');
   assert.equal(getCanonicalClearGateOutcome('Defeat', false), 'Defeat');
-  assert.equal(getCanonicalClearGateOutcome('Retreat', true), 'Draw_Retreat');
-  assert.equal(getCanonicalClearGateOutcome('Retreat', false), 'Wounded_Retreat');
+  assert.equal(getCanonicalClearGateOutcome('Retreat', true), 'Draw');
+  assert.equal(getCanonicalClearGateOutcome('Retreat', false), 'Retreat');
 });
 
 test('a successful return unlocks the active gate and reports the transition once', () => {
   const gateKey = getEliteGateKey(1, 1);
   const required = getClearGateRequired(gateKey);
   const result = resolve({ clearGateProgress: { [String(gateKey)]: required - 1 } });
-  assert.equal(result.canonicalGateOutcome, 'Turned_Back');
+  assert.equal(result.canonicalGateOutcome, 'Return');
   assert.equal(result.clearGateProgress[String(gateKey)], required);
   assert.equal(result.clearGateStatus[gateKey], true);
   assert.equal(result.evaluatedGateKey, gateKey);
   assert.equal(result.newlyUnlockedGateKey, gateKey);
+});
+
+test('a Return before clearing the room ahead of the active gate does not advance it', () => {
+  const gateKey = getEliteGateKey(1, 1);
+  const result = resolve({ deepestClearedPosition: 12, clearGateProgress: { [String(gateKey)]: 3 } });
+  assert.equal(result.clearGateProgress[String(gateKey)], 3);
+  assert.equal(result.newlyUnlockedGateKey, null);
 });
 
 test('defeat neither counts recovered Boss Rare items nor preserves the active streak', () => {

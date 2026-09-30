@@ -1,8 +1,10 @@
 import type { RuntimeGameMode } from './runtimeGameMode.ts';
 import type {
+  EnemyDef,
   ExpeditionLog,
   ExpeditionLogEntry,
   GameState,
+  Item,
   Party,
 } from '../types/index.ts';
 import type { CommittedExpeditionStateProjection } from './expeditionStateInstallation.ts';
@@ -28,6 +30,11 @@ export interface RunExpeditionApplicationCommand {
   readonly battleOutputMode?: 'full' | 'result-only';
   readonly compactBattleResultOutput?: boolean;
   readonly resolutionMode?: ExpeditionResolutionMode;
+  /**
+   * Encounter cache shared across repeated forecasts of one party (Simulation Run),
+   * so their battles reuse enemy objects and prepared battle inputs.
+   */
+  readonly forecastEncounterCache?: Map<string, EnemyDef>;
 }
 
 /** Explicit caller-owned authorities for a future application command runner. */
@@ -49,6 +56,15 @@ export interface ExpeditionForecastResolution {
   readonly finalHp: number;
   readonly terminalBattleOutcome: ExpeditionLogEntry['outcome'] | null;
   readonly battleDiagnostics: ExpeditionForecastBattleDiagnostic[];
+  /** The run stopped at a closed Clear-Gate: the last entry is the gate's own row, a room the party never entered. */
+  readonly endedAtGate: boolean;
+  /** Party EXP the run awards (every outcome awards it). */
+  readonly experience: number;
+  /** Items kept (a Defeat keeps none), and the items auto-sold with their Gold. */
+  readonly rewards: readonly Item[];
+  readonly autoSellMultiplier: number;
+  readonly autoSellCount: number;
+  readonly autoSellProfit: number;
 }
 
 /**
@@ -81,16 +97,23 @@ export type RunExpeditionApplicationResult =
 export function createExpeditionForecastResolution(
   log: ExpeditionLog,
 ): ExpeditionForecastResolution {
+  const lastEntry = log.entries[log.entries.length - 1];
   return {
     outcome: log.finalOutcome,
     completedRooms: log.completedRooms,
     finalHp: log.remainingPartyHP,
     terminalBattleOutcome: log.entries[log.entries.length - 1]?.outcome ?? null,
+    endedAtGate: lastEntry?.gateInfo !== undefined && lastEntry.enemyId === undefined,
     battleDiagnostics: log.entries.map((entry) => ({
       enemyId: entry.enemyId,
       outcome: entry.outcome,
       remainingPartyHP: entry.remainingPartyHP,
       replayMetadata: entry.replayMetadata,
     })),
+    experience: log.totalExperience,
+    rewards: [...log.rewards],
+    autoSellMultiplier: log.autoSellMultiplier ?? 1,
+    autoSellCount: log.autoSellCount,
+    autoSellProfit: log.autoSellProfit,
   };
 }

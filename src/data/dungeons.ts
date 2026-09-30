@@ -101,7 +101,7 @@ const EXPEDITION_ENEMY_MULTIPLIERS: ExpeditionEnemyMultipliers[] = [
 ];
 
 const EXPEDITION_FLOOR_CONCEPTS: Record<number, string[]> = {
-  1: ['Wind-swept Grassland', 'Predator Territory', 'Colony Nest Basin', 'Watchtower', 'Buried Ruins Field', 'Ruined Kainanian Capital'],
+  1: ['Wind-swept Grassland', 'Predator Territory', 'Colony Nest Basin', 'Watchtower', 'Buried Ruins Field', 'Caninian Ruin-City'],
   2: ['Snow Forest', 'Rotwood Path', 'Carnivorous Plant Colony', 'Icicle Labyrinth', 'Crystal Cave', 'Crystal Palace Ruins'],
   3: ['Sunny Beach', 'Tranquil Sea', 'Shipwreck', 'Sea-erosion Gate', 'Abandoned Fishing Village', 'Vulpinian Elder Council Holy Court'],
   4: ['Silent Desert Night', 'Rocky Plateau', 'Limestone Cave', 'Night-bandit Ambush', 'Lost Jewel Pursuit', 'Temple of Abundance'],
@@ -109,7 +109,7 @@ const EXPEDITION_FLOOR_CONCEPTS: Record<number, string[]> = {
   6: ['Steam-driven Burrow', 'K9 Interstellar Spaceship Wreckage', 'Forbidden Research Facility', 'Heartless Machines', 'Masterless Bridge', 'Altar of Resonance'],
   7: ['Giant Wreckage Ring', 'Transfer Device Sector', 'Realm of Light', 'Realm of Darkness', 'Abyss', 'Moon Palace'],
   8: ['Void-scar Canyon Gate', 'Subworld', 'Another People', 'Gehenna', 'Selvin Document Archive District', 'Clairvoyant Sanctuary'],
-  9: ['Across the trenches', 'Military Road', 'Darden Field', 'Federation Encampment', 'Defensive line', 'Caninian Capital'],
+  9: ['Across the trenches', 'Military Road', 'Darsen Field', 'Federation Encampment', 'Defensive line', 'Caninian Capital'],
 };
 
 const EXPEDITION_FLOOR_TERRAIN_EFFECTS: Record<number, TerrainEffectKey[]> = {

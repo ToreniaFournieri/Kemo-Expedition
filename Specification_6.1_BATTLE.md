@@ -269,11 +269,11 @@ If `a.*` with phase = START:
   - actor.`d.HP` = 0.
   - Log: `log.self-destruct`
 
-- **free**
-  - Triggered by `a.free` and (opponent members don't have `a.pursuit`)
+- **flee**
+  - Triggered by `a.flee` and (opponent members don't have `a.pursuit`)
   - this battle is Draw.
-  - Log: `log.free`
-  - Triggered by `a.free` and opponent member has `a.pursuit`, 
+  - Log: `log.flee`
+  - Triggered by `a.flee` and opponent member has `a.pursuit`, 
   - this battle continues. 
   - Log: `log.pursuit`
 
@@ -437,9 +437,10 @@ If `a.*` with phase = START:
 **Counter**
 - If opponent.`a.counter` 
   - `f.counter`(actor:actor , opponent:opponent ,attack_type: )
-- If opponent.`a.magical-counter` and (`attack_type = magical`), `f.magical-counter`(actor:opponent, opponent:actor ,attack_type: )
+- If opponent.`a.magical-counter` and (actor.attacking.`attack_type = magical`), `f.magical-counter`(actor:opponent, opponent:actor ,attack_type: )
 - **counter-chain**
-  - If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,attack_type: )
+  - If opponent.`a.re-counter` and (opponent.`attack_type` = actor.attacking.`attack_type`), `f.re-counter`(actor:opponent , opponent:actor ,attack_type: )
+
 
 
 **Ally-follow-up**
@@ -559,8 +560,8 @@ If `a.*` with phase = START:
 	- If (`attack_type = ranged` or `attack_type = melee`) and (actor or opponent) has `a.mutual-physical-amplify`, return n
 	- If (`attack_type = ranged` or `attack_type = melee`) and (actor or opponent) has `a.mutual-physical-restraint`, return n
 	
-	- If opponent.`a.stealth` and (opponent.current_HP / opponent.max_HP) <= N and (actor doesn't have `a.glamour-breaker`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
-	- note: This is only for party member ability. enemy have this `a.stealth` ability, then Log:"enemy は神隠れした。もう攻撃はこれ以上あたらない！"
+	- If opponent.`a.stealth` and (opponent.current_HP / opponent.max_HP) <= N% and (actor doesn't have `a.pursuit`) and (opponent.`attack_type = melee` and it is normal attack), damage is set to 0. Log:"name は物陰に隠れて近接攻撃をやり過ごせたのだ！(`masterData.ability.stealth.name`効果)" //隠れ蓑
+	- note: This is only for party member ability. enemy have this `a.stealth` ability, then Log:"enemy は神隠れした。もう近接攻撃はこれ以上あたらない！(`masterData.ability.stealth.name`効果)"
 
 - `f.debuff_magical_defense_amplifier`
   - `f.debuff_magical_defense_amplifier` = 1.0
@@ -744,11 +745,11 @@ If `a.*` with phase = START:
       - Log: `log.terrain.leakage` + "(HP減少 ⚡-N)"
     - If `terrain.heatwave`: reduce 5% of **current HP**
       - Log: `log.terrain.heatwave` + "(HP減少-N)"
-    - If the party.`d.HP` <= 30% of max HP, back to home with trophies.   -> `Wonded_Retreat`
+    - If the party.`d.HP` <= 30% of max HP, back to home with trophies.   -> `Retreat`
 
   - Normal Rooms (`x.room`:1–2): Proceed to the next `x.room`.
-  - Gate Rooms (`x.room`: 3 check): At the end of Room 3, check the applicable Clear-Gate. If it was already unlocked before the run, proceed to `x.room`:4 (Elite/Boss). Otherwise, end the reachable route as `Turned_Back`; this successful run increments the consecutive-success count, and reaching the required count permanently unlocks the gate for later runs. The gated-room condition text displays only the required count, not the current streak (for example, `連続攻略成功 9回 で 1F-4解放`).
-  - At normal-expedition outcome finalization, `Clear` or `Turned_Back` increments the next locked Clear-Gate's consecutive-success count, including a successful return at the selected depth limit. `Draw_Retreat`, `Wounded_Retreat`, or `Defeat` resets that count to 0. Gates already unlocked remain unlocked.
+  - Gate Rooms (`x.room`: 3 check): At the end of Room 3, check the applicable Clear-Gate. If it was already unlocked before the run, proceed to `x.room`:4 (Elite/Boss). Otherwise, end the reachable route as `Return`; this successful run increments the consecutive-success count, and reaching the required count permanently unlocks the gate for later runs. The gated-room condition text displays only the required count, not the current streak (for example, `連続攻略成功 9回 で 1F-4解放`).
+  - At normal-expedition outcome finalization, `Clear` or `Return` increments the next locked Clear-Gate's consecutive-success count, including a successful return at the selected depth limit. `Draw`, `Retreat`, or `Defeat` resets that count to 0. Gates already unlocked remain unlocked.
   - Elite Rooms (`x.floor`:1-5, `x.room`:4): Proceed to the next floor: `x.floor` +1 , `x.room`:1.
   - Final Boss Room (`x.floor`:6, `x.room`:4): Expedition Clear! Return Home with all trophies.
 
@@ -966,8 +967,8 @@ left-alinged                                           right-aligned
 - Protocol v3 is the approved full-battle migration layout. TypeScript projects runtime game objects into complete static numerical combat profiles. Production execution supplies exactly one unsigned 64-bit seed and no random tape; the historical ordered-tape mode remains test-only for the v1 replay lineage and differential verification. Protocol v2 is insufficient for full-battle execution and must be rejected by the v3 entry point.
 - A protocol v3 input contains aggregate party and enemy current/max HP; every combatant's current/max HP, current and original ranged/magical/melee NoA, attack and defense values, per-attack accuracy potency, accuracy/evasion bonuses, physical/magical penetration, fire/thunder/ice resistance, physical/magical offense and defense amplifiers, phase bonuses, deity-derived numerical bonuses, enemy attack amplifiers, and enemy magic style; mutable abilities and ownership; terrain, deity, engine flags, seed and RNG version; physical and magical threat bags; and a test-only ordered random tape that must be empty in seeded production mode.
 - Names, translations, equipment objects, and UI-only data are excluded from protocol v3. TypeScript must resolve them into the static numerical profile before encoding and must localize the returned language-neutral semantic events after execution.
-- The production adapter supports `full` and `result-only` TypeScript output modes while retaining the same protocol-v3 C++ execution, ABI, numerical formulas, seed, random consumption, and returned authoritative state. `full` is the default and converts the semantic stream into the complete localized battle log. `result-only` skips narration-context construction and semantic-to-`BattleLogEntry` conversion but still returns outcome, final HP, enemy-hit count, updated threat bags, exact replay metadata, and event-count telemetry.
-- `result-only` may be used only when the caller's complete state and logs are private and guaranteed to be discarded, currently the Expedition Simulation Run defined in section 8.3. Online play, Gods Battles, AFK module workers, Experimental AI API sorties, latest expedition logs, and Diary logs must use `full` so every retained or displayable battle remains completely narrated.
+- The production adapter supports `full`, `compact`, and `result-only` TypeScript output modes while retaining the same protocol-v3 C++ execution, ABI, numerical formulas, seed, random consumption, and returned authoritative state. `full` converts the semantic stream into the complete localized battle log for diagnostics. Retained production battles use `compact`, which projects complete language-neutral presentation facts and selected flavor variants without generating narration. `result-only` skips narration-context construction and semantic-to-`BattleLogEntry` conversion but still returns outcome, final HP, enemy-hit count, updated threat bags, exact replay metadata, and event-count telemetry.
+- `result-only` may be used only when the caller's complete state and logs are private and guaranteed to be discarded, currently the Expedition Simulation Run defined in section 8.3. Online play, Gods Battles, AFK module workers, Experimental AI API sorties, latest expedition logs, and Diary logs must use `compact` so every retained or displayable battle can be completely narrated in the currently selected language without rerunning combat.
 - `battle_protocol_execute(inputByteLength) -> outputByteLength` is the protocol v3 shadow full-engine entry point. It validates the complete payload, resets module-local state, copies the supplied tape, resolves START, COMBAT timings 49 through 0 (normal actions and reactive chains), END, and outcome precedence, then returns aggregate HP, outcome, enemy-hit count, updated bags, exact draw diagnostics, and ordered semantic events.
 - Protocol v3 supports at most eight combatants, 4,096 supplied random values, and 4,096 semantic events. Capacity exhaustion is an explicit protocol error and output must never be silently truncated.
 - The protocol v3 production candidate invokes `battle_protocol_execute` exactly once per battle and counts it as one measured TypeScript/WebAssembly boundary call. Online execution, Gods Battles, AFK module workers, simulations, and Experimental API sorties use this same seeded adapter.

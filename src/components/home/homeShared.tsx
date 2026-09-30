@@ -1,10 +1,18 @@
-import { abilityLevelValue } from '../../game/abilityLevelScales';
+import { upgradeLegacyOutcomeKeys } from '../../game/legacyOutcomeKeys';
+import { getCharacterCombatBonusLevels } from '../../game/combatBonusLevels';
+export { getCharacterCombatBonusLevels };
+import { getConditionState } from '../../game/partyCondition';
 import { Fragment,useEffect,useState,type CSSProperties,type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ABILITY_BASE_NAMES } from '../../data/abilityNames';
 import {
-BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID,
 type BonusAbilityGlossarySubcategoryId
+} from '../../data/bonusAbilityGlossary';
+export {
+formatBonusAbilityHelpDescription,
+formatBonusAbilityPhaseDisplay,
+isBonusAbilityTimingToken,
+parseBonusAbilityLevelScale
 } from '../../data/bonusAbilityGlossary';
 import { CLASSES,CLASS_SHORT_NAMES,getClassShortName } from '../../data/classes';
 import { GOD_MYTHIC_DROPS,getGodProfileForDungeon } from '../../data/dropTables';
@@ -14,19 +22,16 @@ getLocalizedExpeditionFloorConcept
 } from '../../data/dungeons';
 import { ENEMIES,getEnemyDropCandidates } from '../../data/enemies';
 import { GLOSSARY_SECTIONS } from '../../data/glossary';
-import { ENHANCEMENT_TITLES,SUPER_RARE_TITLES,getSuperRareBonuses } from '../../data/items';
+import { SUPER_RARE_TITLES,getSuperRareBonuses } from '../../data/items';
 import { LINEAGES } from '../../data/lineages';
 import { PREDISPOSITIONS } from '../../data/predispositions';
 import { RACES } from '../../data/races';
-import { getBaseMultiplier } from '../../game/baseMultiplier';
 import { isStandaloneBattleLogName } from '../../game/battleLogNameMatch';
 import { buildAggregatedLifeDrainAction } from '../../game/battleNarration';
 import { computeCharacterStats,getAbilityDescription } from '../../game/characterComputation';
 import {
 ENTRY_GATE_REQUIRED,
 getBossGateKey,
-getClearGateProgress,
-getClearGateRequired,
 getEliteGateKey,
 getGodsBattleProgress,
 getGodsBattleRequired,
@@ -34,12 +39,19 @@ hasDefeatedDungeonBoss,
 isClearGateUnlocked,
 isDungeonEntryUnlocked,
 } from '../../game/clearGate';
+import { getExpeditionGoals, getSideQuestFacts, shouldDelayNextSpecialGoal, TIME_BASED_SIDE_QUEST_TYPES } from '../../game/expeditionGoals';
 import { formatEnemyDefName,getEnemyTypeShortName } from '../../game/enemyDisplay';
+export { shouldDelayNextSpecialGoal, TIME_BASED_SIDE_QUEST_TYPES };
+import { EXPLORING_PROGRESS_TOTAL_STEPS, getAutoSellStepCount, getExplorationVisibleRoomCount, STEP_BASED_STATES } from '../../game/partyStateProgress';
+export { EXPLORING_PROGRESS_TOTAL_STEPS, getAutoSellStepCount, getExplorationVisibleRoomCount, STEP_BASED_STATES };
 import { isEnemyTypeCBonusType } from '../../game/enemyScaling';
 import { createEnvironmentStorageKey,getEnvironmentId } from '../../game/environment';
+import type { ApiV1DeliveryOutcome, ApiV1DeliveryRecord } from '../../api/v1/deliveries';
+import { getItemRarityById } from '../../game/itemRarity';
+import { getItemDisplayMultiplier } from '../../game/itemPower';
+import { getArcMagicAbilityLevel, getArcMagicOffenseAmplifier, getBaseDefenseScale, getBaseOffenseScale, getCharacterDisplayedMagicalAttackAmplifier, getEffectiveAccuracyBonus, getOffenseMultiplierSum } from '../../game/statusFacts';
 import type { AfkPartyChunkResult } from '../../game/afkChunkCoordinator';
 import type { AutoEquipmentProfileAction } from '../../game/autoEquipmentAttribution';
-import type { EquipmentSetLoadMode } from '../../game/equipmentSets';
 import {
 AFK_MAX_EFFECTIVE_ELAPSED_MS,
 AFK_MAX_REAL_ELAPSED_MS,
@@ -58,7 +70,7 @@ REST_HEAL_MIN_HP,
 } from '../../game/restHealing';
 import { Language,t } from '../../i18n';
 import type { AfkPartyTransactionAttribution,AfkPartyTransactionPlanner } from '../../hooks/useGameState';
-import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryLog,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,ExpeditionSimulationResult,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,SavedEquipmentSet,type Ability,type BattleLogEntry } from '../../types';
+import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type BattleLogEntry } from '../../types';
 
 export function resolvePublicAssetPath(path?: string): string | null {
   if (!path) return null;
@@ -144,12 +156,12 @@ export const CHARACTER_IMAGE_FILES = new Set(__PUBLIC_CHARACTER_IMAGE_FILES__);
 
 // SpecRef: 8.2.4 | Equipment management | Image of inventory pane transaction at equipment management
 // SpecRef: 8.4.2 | Inventory(所持品) | Item list
-export function getInventoryOwnerCharacterImageSrc(character: Character, partyId: number): string | null {
+export function getInventoryOwnerCharacterImageSrc(character: Pick<Character, 'raceId' | 'isUnique' | 'gender'> & { mimorianEnemyId?: number | null; lineageId: Character['lineageId'] | null }, partyId: number): string | null {
   // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Chibi character
   if (character.raceId === 'mimorian' && character.mimorianEnemyId != null) {
     return `${import.meta.env.BASE_URL}chibi/C_E_${character.mimorianEnemyId}.png`;
   }
-  const uniqueFileName = character.isUnique
+  const uniqueFileName = character.isUnique && character.lineageId
     ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId]
     : undefined;
   if (uniqueFileName) {
@@ -184,6 +196,13 @@ export interface HomeScreenProps {
   bags: GameBags;
   actions: {
     getApiReadiness: () => 'ready' | 'save_error';
+    persistApiState: (state: GameState) => Promise<void>;
+    /** Only for `commit/setting/backup/import`/`reset`: the new state is unrelated to the current one, so it must
+     *  use the coordinator's full-replacement write (garbage-collects the prior Diary-record generation), never the
+     *  ordinary coalescing autosave `persistApiState` uses (that assumes incremental continuity from the last save,
+     *  and could otherwise leave orphaned or incorrectly-retained segment records behind). */
+    persistApiStateReplacement: (state: GameState) => Promise<void>;
+    publishApiState: (state: GameState) => Promise<void>;
     commitApiState: (state: GameState) => Promise<void>;
     selectParty: (partyIndex: number) => void;
     selectDungeon: (partyIndex: number, dungeonId: number) => void;
@@ -192,7 +211,6 @@ export interface HomeScreenProps {
     setExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
     setExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
     resetExpeditionStats: (partyIndex: number) => void;
-    simulateExpedition: (partyIndex: number, gameMode?: RuntimeGameMode, onProgress?: (completed: number, total: number) => void, enemyLevelOffset?: number) => Promise<ExpeditionSimulationResult>;
     runExpedition: (partyIndex: number, gameMode?: RuntimeGameMode, triggerGodsBattle?: boolean, simulatedAt?: number, enemyLevelOffset?: number) => void;
     resolveInstantExpedition: (partyIndex: number, gameMode?: RuntimeGameMode, triggerGodsBattle?: boolean, simulatedAt?: number, enemyLevelOffset?: number) => void;
     consumeInstantExpeditionStock: (partyIndex: number, now?: number, chargeDurationScale?: number) => void;
@@ -207,32 +225,16 @@ export interface HomeScreenProps {
     cancelSideQuest: (partyIndex: number) => void;
     advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
-    equipItem: (characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => void;
-    removeAllEquipment: (characterId: number, partyIndex?: number) => void;
-    saveEquipmentSet: (characterId: number, name: string, createdAt: number, partyIndex?: number) => void;
-    renameEquipmentSet: (slot: number, name: string) => void;
-    deleteEquipmentSet: (slot: number) => void;
-    loadEquipmentSet: (characterId: number, slot: number, mode: EquipmentSetLoadMode, partyIndex?: number) => void;
-    restoreEquipmentState: (characterId: number, set: SavedEquipmentSet, partyIndex?: number) => void;
     applyAutoEquipmentActions: (actions: AutoEquipmentProfileAction[]) => void;
-    toggleEquipmentLock: (characterId: number, slotIndex: number, partyIndex?: number) => void;
-    attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number, partyIndex?: number) => void;
-    updateCharacter: (characterId: number, updates: Partial<Character>, partyIndex?: number) => void;
     reorderPartyCharacter: (fromIndex: number, toIndex: number, partyIndex?: number) => void;
-    sellStack: (variantKey: string) => void;
     sellAllOwned: () => void;
     grantFeedbackReward: () => void;
-    unlockMimorianEnemy: (enemyId: number) => void;
-    buyShopItem: (itemId: number, stockItemKey: string) => void;
     buyDebugStoreItem: (itemId: number) => void;
-    refreshShopLineup: () => void;
-    setVariantStatus: (variantKey: string, status: 'notown') => void;
-    markItemsSeen: () => void;
     markDiaryLogSeen: (logId: string) => void;
+    ensureShopLineup: () => void;
     markPartyDiaryLogsSeen: (partyIndex: number) => void;
     markDeveloperNewsRead: (itemIds: string[]) => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
-    setJewelAutoEquipPriorityParty: (partyId: number | null) => void;
     simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: RuntimeGameMode, simulatedEndAt?: number, cycleDurationScale?: number, batchSlice?: AfkSimulationBatchSlice, enemyLevelOffset?: number) => void;
     commitAfkPartyChunk: (result: AfkPartyChunkResult) => void;
     commitAfkPartyTransaction: (
@@ -281,6 +283,8 @@ export interface HomeScreenProps {
     ) => void;
     addStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
     flushSave: () => Promise<void>;
+    saveNow: () => boolean;
+    setRecoverySaveMode: (active: boolean) => void;
   };
 }
 
@@ -409,119 +413,6 @@ export const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   reactivate: 'expedition.cycle.reactivate',
 };
 
-export const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'COMBAT' | 'END', string> = {
-  COMBAT: t('battleLog.phase.combat'),
-  END: t('common.end'),
-};
-
-export function formatBonusAbilityPhaseDisplay(value: string): string {
-  return value.replace(/COMBAT|END/g, (phase) => BONUS_ABILITY_PHASE_DISPLAY_LABELS[phase as 'COMBAT' | 'END']);
-}
-
-export function isBonusAbilityTimingToken(token: string): boolean {
-  return /^(?:COMBAT|END)\d(?:\/(?:COMBAT|END)\d)*$/.test(token);
-}
-
-export function parseBonusAbilityLevelScale(levelScale: string): { timing: string | null; value: string | null } {
-  const scaleContent = levelScale.replace(/^Lv\d+:\s*/, '').trim();
-  if (scaleContent.length === 0 || scaleContent === '-') {
-    return { timing: null, value: null };
-  }
-
-  const separatorIndex = scaleContent.indexOf('・');
-  if (separatorIndex < 0) {
-    const isTimingOnly = /^(COMBAT|END)\d/.test(scaleContent);
-    return {
-      timing: isTimingOnly ? formatBonusAbilityPhaseDisplay(scaleContent) : null,
-      value: isTimingOnly ? null : scaleContent,
-    };
-  }
-
-  const timingToken = scaleContent.slice(0, separatorIndex).trim();
-  const valueToken = scaleContent.slice(separatorIndex + 1).trim();
-
-  if (!isBonusAbilityTimingToken(timingToken)) {
-    return {
-      timing: null,
-      value: scaleContent,
-    };
-  }
-
-  return {
-    timing: timingToken.length > 0 ? formatBonusAbilityPhaseDisplay(timingToken) : null,
-    value: valueToken.length > 0 ? valueToken : null,
-  };
-}
-
-export function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number): string {
-  const entry = BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.get(abilityId);
-  if (!entry) {
-    return getAbilityDescription(abilityId, level);
-  }
-
-  const levelScale = entry.levelScale[Math.max(level - 1, 0)] ?? entry.levelScale[entry.levelScale.length - 1] ?? '';
-  if (levelScale.length === 0) {
-    return entry.description;
-  }
-
-  if (abilityId === 'execution') {
-    const executionScaleMatch = levelScale.match(/Lv\d+:\s*(\d+%)・x?([\d.]+)/);
-    if (executionScaleMatch) {
-      const [, threshold, multiplier] = executionScaleMatch;
-      return entry.description
-        .replace(/xN/g, `x${multiplier}`)
-        .replace(/xM/g, `x${multiplier}`)
-        .replace(/N/g, threshold)
-        .replace(/M/g, multiplier)
-        .replace(new RegExp(`${escapeRegExp(t('home.grammar.objectParticle'))}\\s+x`, 'g'), t('home.grammar.objectParticleX'))
-        .replace(new RegExp(`${escapeRegExp(t('home.grammar.subjectParticle'))}\\s+x`, 'g'), t('home.grammar.subjectParticleX'))
-        .replace(new RegExp(`${escapeRegExp(t('home.grammar.possessiveParticle'))}\\s+x`, 'g'), t('home.grammar.possessiveParticleX'));
-    }
-  }
-  if (abilityId === 'melee_conversion') {
-    const meleeConversionScaleMatch = levelScale.match(/Lv\d+:\s*(\d+)%・(\d+)%/);
-    if (meleeConversionScaleMatch) {
-      const [, rangedRate, magicalRate] = meleeConversionScaleMatch;
-      return entry.description
-        .replace(/N%/g, `${rangedRate}%`)
-        .replace(/M%/g, `${magicalRate}%`);
-    }
-  }
-
-  const { timing, value } = parseBonusAbilityLevelScale(levelScale);
-  let description = entry.description;
-
-  if (abilityId.endsWith('_reflect') && value && value.includes(t('home.abilityScale.reflect')) && value.includes(t('home.abilityScale.damageTaken'))) {
-    return entry.description
-      .replace(t('home.abilityDescription.reflectTemplate'), t('home.abilityDescription.reflectDistributed', { value }))
-      .replace(new RegExp(`${escapeRegExp(t('home.grammar.objectParticle'))}\\s+x`, 'g'), t('home.grammar.objectParticleX'))
-      .replace(new RegExp(`${escapeRegExp(t('home.grammar.subjectParticle'))}\\s+x`, 'g'), t('home.grammar.subjectParticleX'))
-      .replace(new RegExp(`${escapeRegExp(t('home.grammar.possessiveParticle'))}\\s+x`, 'g'), t('home.grammar.possessiveParticleX'));
-  }
-
-  if (timing) {
-    description = description
-      .replace(t('home.abilityDescription.specifiedEndTiming'), t('home.abilityDescription.resolvedEndTiming', { timing }))
-      .replace(t('home.abilityDescription.specifiedTiming'), t('home.abilityDescription.resolvedTiming', { timing }));
-  }
-
-  if (value) {
-    const normalizedValue = value.startsWith('x') ? value.slice(1) : value;
-    const signedPercentValue = normalizedValue.startsWith('+') || normalizedValue.startsWith('-') ? normalizedValue : `+${normalizedValue}`;
-    const negativePercentValue = normalizedValue.startsWith('-') ? normalizedValue : `-${normalizedValue.replace(/^\+/, '')}`;
-    description = description
-      .replace(/\+N%/g, signedPercentValue)
-      .replace(/-N%/g, negativePercentValue)
-      .replace(/N%/g, normalizedValue)
-      .replace(/xN/g, value.startsWith('x') ? value : `x${value}`)
-      .replace(/N/g, normalizedValue);
-  }
-
-  return description
-    .replace(new RegExp(`${escapeRegExp(t('home.grammar.objectParticle'))}\\s+x`, 'g'), t('home.grammar.objectParticleX'))
-    .replace(new RegExp(`${escapeRegExp(t('home.grammar.subjectParticle'))}\\s+x`, 'g'), t('home.grammar.subjectParticleX'))
-    .replace(new RegExp(`${escapeRegExp(t('home.grammar.possessiveParticle'))}\\s+x`, 'g'), t('home.grammar.possessiveParticleX'));
-}
 
 export const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   rest: 'rest',
@@ -544,21 +435,21 @@ export const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
 export function toPartyCycleState(value: unknown): PartyCycleState {
   if (typeof value !== 'string') return 'idle';
   const legacyJapaneseStateEntries: Array<[string, PartyCycleState]> = [
-    [t('home.legacyCycle.rest'), 'rest'],
-    [t('home.legacyCycle.sell'), 'sell'],
-    [t('home.legacyCycle.feast'), 'free_action'],
-    [t('home.legacyCycle.slump'), 'free_action'],
-    [t('home.legacyCycle.freeAction'), 'free_action'],
-    [t('home.legacyCycle.sleep'), 'sound_sleep'],
-    [t('home.legacyCycle.soundSleep'), 'sound_sleep'],
-    [t('home.legacyCycle.nap'), 'move'],
-    [t('home.legacyCycle.outfit'), 'move'],
-    [t('home.legacyCycle.pray'), 'pray'],
-    [t('home.legacyCycle.idle'), 'idle'],
-    [t('home.legacyCycle.move'), 'move'],
-    [t('home.legacyCycle.explore'), 'explore'],
-    [t('home.legacyCycle.return'), 'return'],
-    [t('home.legacyCycle.reactivate'), 'reactivate'],
+    [t('expedition.cycle.rest'), 'rest'],
+    [t('expedition.cycle.sell'), 'sell'],
+    [t('expedition.cycle.feast'), 'free_action'],
+    [t('expedition.cycle.slump'), 'free_action'],
+    [t('expedition.cycle.freeAction'), 'free_action'],
+    [t('expedition.cycle.sleep'), 'sound_sleep'],
+    [t('expedition.cycle.soundSleep'), 'sound_sleep'],
+    [t('expedition.cycle.nap'), 'move'],
+    [t('expedition.cycle.outfit'), 'move'],
+    [t('expedition.cycle.pray'), 'pray'],
+    [t('expedition.cycle.idle'), 'idle'],
+    [t('expedition.cycle.move'), 'move'],
+    [t('expedition.cycle.explore'), 'explore'],
+    [t('expedition.cycle.return'), 'return'],
+    [t('expedition.cycle.reactivate'), 'reactivate'],
   ];
   return LEGACY_PARTY_CYCLE_STATE_MAP[value]
     ?? legacyJapaneseStateEntries.find(([label]) => label === value)?.[1]
@@ -621,13 +512,9 @@ export function getNextPartyCycleCheckpointDelay(
 }
 export { BASE_STEP_DURATION_MS };
 export const EXPLORING_PROGRESS_STEP_MS = BASE_STEP_DURATION_MS;
-export const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
 export const SOUND_SLEEP_STEP_COUNT = 16;
 export const PRAY_STEP_COUNT = 4;
-export const STEP_BASED_STATES: ReadonlySet<PartyCycleState> = new Set(['rest', 'sell', 'explore']);
-export const APPROX_CYCLE_STEP_COUNT = 30;
 export const CHUNK_CYCLE_COUNT = 30;
-export const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
 export const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 export const AFK_MAX_ELAPSED_MS = AFK_MAX_REAL_ELAPSED_MS;
 export const REDUCER_CATCHUP_THRESHOLD_MS = BASE_STEP_DURATION_MS;
@@ -715,16 +602,8 @@ export function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { 
   };
 }
 
-// SpecRef: 5.1.1 | Party State Machine | state.sell
-export function getAutoSellStepCount(party: Party): number {
-  const autoSellItemCount = party.lastExpeditionLog?.autoSellItems?.length
-    || party.lastExpeditionLog?.autoSellCount
-    || 1;
-  return Math.max(1, autoSellItemCount);
-}
-
 // SpecRef: 8.1 | UI_FOUNDATIONS | Navigation: Minimal scene transitions, tab-centered
-export const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(4rem+env(safe-area-inset-bottom))]';
+export const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(7rem+env(safe-area-inset-bottom))]';
 export type { DarkModeSetting, GameMode } from '../../theme/theme';
 import type { DarkModeSetting, GameMode } from '../../theme/theme';
 import { isGameModeAvailable, THEME_CLASS_NAMES } from '../../theme/theme';
@@ -737,6 +616,10 @@ export const EXPEDITION_STATS_DISPLAY_STORAGE_KEY = createEnvironmentStorageKey(
 export const DARK_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-dark-mode');
 export const THEME_SYNC_EVENT = 'kemo-expedition-theme-sync';
 export const APP_VERSION = `v${__APP_VERSION__}`;
+// The running bundle's build, not the loaded save's `buildNumber` (an API account keeps the build it was saved with).
+export const APP_BUILD_NUMBER = __BUILD_NUMBER__;
+// SpecRef: 9.1.4.3 | `fundamental/status` `versionBuild`; 8.6 feedback `Version Build env` (ex. v0.7.0 (12)).
+export const APP_VERSION_BUILD = `${APP_VERSION} (${APP_BUILD_NUMBER})`;
 
 
 export function getExpeditionTierDurationFactor(expTier: number): number {
@@ -816,58 +699,20 @@ export function getExplorationDurationMs(entryCount?: number, durationMultiplier
   return Math.max(100, Math.ceil(exploredSteps * EXPLORING_PROGRESS_STEP_MS * durationMultiplier * durationScale));
 }
 
-export function getExplorationVisibleRoomCount(elapsedMs: number, durationMs: number, totalEntries: number): number {
-  if (totalEntries <= 0) return 0;
-  return Math.min(
-    totalEntries,
-    Math.max(0, Math.ceil((elapsedMs / Math.max(1, durationMs)) * totalEntries)),
-  );
-}
-
-export function getExpeditionOutcomeLabel(outcome: 'Clear' | 'Escape' | 'Defeat' | 'Retreat' | string): string {
+export function getExpeditionOutcomeLabel(outcome: 'Clear' | 'Return' | 'Defeat' | 'Retreat' | string): string {
   if (outcome === 'Clear' || outcome === 'victory') return t('expedition.outcome.clear');
-  if (outcome === 'Escape' || outcome === 'escape' || outcome === 'return') return t('expedition.outcome.return');
+  if (outcome === 'Return' || outcome === 'Escape' || outcome === 'escape' || outcome === 'return') return t('expedition.outcome.return');
   if (outcome === 'Defeat' || outcome === 'defeat') return t('expedition.outcome.defeat');
   return t('expedition.outcome.retreat');
 }
 
-export function getReturnedExpeditionOutcome(log: ExpeditionLog | null | undefined): 'Defeat' | 'Wounded_Retreat' | 'Draw_Retreat' | 'Turned_Back' | 'Clear' | undefined {
+export function getReturnedExpeditionOutcome(log: ExpeditionLog | null | undefined): 'Defeat' | 'Retreat' | 'Draw' | 'Return' | 'Clear' | undefined {
   if (!log) return undefined;
   if (log.finalOutcome === 'Defeat') return 'Defeat';
-  if (log.finalOutcome === 'Escape') return 'Turned_Back';
-  if (log.entries.length > 0 && log.entries[log.entries.length - 1].outcome === 'draw') return 'Draw_Retreat';
-  if (log.finalOutcome === 'Retreat') return 'Wounded_Retreat';
+  if (log.finalOutcome === 'Return') return 'Return';
+  if (log.entries.length > 0 && log.entries[log.entries.length - 1].outcome === 'draw') return 'Draw';
+  if (log.finalOutcome === 'Retreat') return 'Retreat';
   return 'Clear';
-}
-
-export function getExperimentalDiaryTitle(party: Party, diaryLog: DiaryLog): string {
-  const { triggers } = diaryLog;
-  if (triggers.includes('unlock')) {
-    return diaryLog.unlockHeadline
-      ? t('diary.headline.unlockNamed', { party: party.name, headline: diaryLog.unlockHeadline })
-      : t('diary.headline.unlock', { party: party.name });
-  }
-  if (triggers.includes('sideQuest')) {
-    return diaryLog.sideQuestLabel
-      ? t('diary.headline.sideQuestNamed', { party: party.name, quest: diaryLog.sideQuestLabel })
-      : t('diary.headline.sideQuest', { party: party.name });
-  }
-  if (triggers.length === 1 && triggers[0] === 'defeat') return t('diary.headline.defeat', { party: party.name });
-  if (triggers.length === 1 && triggers[0] === 'draw') return t('diary.headline.draw', { party: party.name });
-  const titleKey = triggers.includes('godsBattle') ? 'diary.title.godsBattle'
-    : triggers.includes('superRare') ? 'diary.title.superRare'
-      : triggers.includes('mythicRare') ? 'diary.title.mythicRare'
-        : triggers.includes('bossRare') ? 'diary.title.bossRare'
-          : triggers.includes('eliteRare') ? 'diary.title.eliteRare'
-            : 'diary.title.special';
-  return t('diary.headline.title', { party: party.name, title: t(titleKey) });
-}
-
-export function getEffectiveAccuracyBonus(accuracyBonus: number, abilities: ComputedCharacterStats['abilities']): number {
-  const focusLevel = abilities.find(a => a.id === 'focus')?.level ?? 0;
-  if (focusLevel <= 0) return accuracyBonus;
-  const focusMultiplier = abilityLevelValue('focus', focusLevel);
-  return Math.ceil((accuracyBonus * focusMultiplier + Number.EPSILON) * 1000) / 1000;
 }
 
 export function renderEnemyNameWithMutedClass(enemyName: string) {
@@ -890,7 +735,7 @@ export function getBestiaryEnemyFromLogEntry(entry: ExpeditionLogEntry): EnemyDe
     return ENEMIES.find((enemy) => enemy.id === entry.enemyId) ?? null;
   }
 
-  const normalizedEnemyName = entry.enemyName.replace(new RegExp(`\\s+\\((ELITE|BOSS|${escapeRegExp(t('home.godsBattle.label'))})\\)\\s*$`, 'u'), '').trim();
+  const normalizedEnemyName = stripGodsBattleSuffix(entry.enemyName.replace(/\s+\((ELITE|BOSS)\)\s*$/u, '')).trim();
   if (!normalizedEnemyName) return null;
   return ENEMIES.find((enemy) => formatEnemyDefName(enemy) === normalizedEnemyName) ?? null;
 }
@@ -1021,7 +866,7 @@ export function EnemyBestiaryBubble({
         <div>{t('combat.element')}: {elementalOffenseIcon ? renderUiIcon(elementalOffenseIcon) : t('home.enemy.noElement')} (x{formatDecimal(enemy.elementalOffenseValue, 2)})</div>
         <div>{t('combat.physicalDefense')}: {formatNumber(enemy.physicalDefense)} ({formatDecimal(enemy.physicalDefenseAmplifier * 100, 0)}%)</div>
         <div>{t('combat.magicalDefense')}: {formatNumber(enemy.magicalDefense)} ({formatDecimal(enemy.magicalDefenseAmplifier * 100, 0)}%)</div>
-        {hasMagicalAttack && <div>{t('home.enemy.accuracyLine', { label: t('home.enemy.magicalAccuracy'), decay })}</div>}
+        {hasMagicalAttack && <div>{t('home.enemy.accuracyLine', { label: t('home.party.magicalAccuracy'), decay })}</div>}
         <div>{t('combat.evasion')}: {formatNumber(Math.round(enemy.evasionBonus * 1000))}</div>
         <div>{renderElementalResistanceInline(enemy.elementalResistance)}</div>
         {(() => {
@@ -1042,12 +887,17 @@ export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-export function getCharacterBattleLogChibiSrc(party: Party, character: Character): string | null {
+type BattleLogPartyView = {
+  id: number;
+  characters: readonly (Pick<Character, 'id' | 'name' | 'raceId' | 'gender'> & Partial<Pick<Character, 'mimorianEnemyId' | 'isUnique' | 'lineageId'>>)[];
+};
+
+export function getCharacterBattleLogChibiSrc(party: Pick<BattleLogPartyView, 'id'>, character: Pick<Character, 'raceId' | 'gender'> & Partial<Pick<Character, 'mimorianEnemyId' | 'isUnique' | 'lineageId'>>): string | null {
   if (character.raceId === 'mimorian' && character.mimorianEnemyId != null) {
     return `${import.meta.env.BASE_URL}chibi/C_E_${character.mimorianEnemyId}.png`;
   }
   if (character.isUnique) {
-    const uniqueFileName = UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId];
+    const uniqueFileName = character.lineageId ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[character.lineageId] : undefined;
     return uniqueFileName ? `${import.meta.env.BASE_URL}chibi/C_${uniqueFileName}` : null;
   }
 
@@ -1069,7 +919,7 @@ export function getBattleLogEnemyNameCandidates(entry: ExpeditionLogEntry): stri
   ];
 
   return Array.from(new Set(names.flatMap((name) => {
-    const normalizedName = name.replace(new RegExp(escapeRegExp(t('home.godsBattle.parenthetical')), 'g'), '').trim();
+    const normalizedName = stripGodsBattleSuffix(name);
     if (!normalizedName) return [];
 
     const withoutTrailingMetadata = normalizedName.replace(/(?:\s*\([^()]+\))+\s*$/u, '').trim();
@@ -1099,7 +949,7 @@ export function BattleLogInlineChibi({ src, alt }: { src: string; alt: string })
 }
 
 // SpecRef: 6.1.7 | Logs | Chibi images for each character name
-export function renderBattleLogTextWithInlineChibis(action: string, party: Party, entry: ExpeditionLogEntry): ReactNode {
+export function renderBattleLogTextWithInlineChibis(action: string, party: BattleLogPartyView, entry: ExpeditionLogEntry): ReactNode {
   const markers: Array<{ label: string; src: string; alt: string; priority: number }> = [];
   const enemySrc = getEnemyBattleLogChibiSrc(entry);
   if (enemySrc) {
@@ -1109,7 +959,13 @@ export function renderBattleLogTextWithInlineChibis(action: string, party: Party
     if (new RegExp(`^${escapeRegExp(t('home.battleLog.enemyPrefix'))}`).test(action)) markers.push({ label: t('home.battleLog.enemyPrefix'), src: enemySrc, alt: `${entry.enemyName} chibi`, priority: 2 });
   }
 
-  party.characters.forEach((character: Character) => {
+  const recordedCharacters = entry.compactBattle?.actors.filter(actor => actor.kind === 'character' && actor.appearance).map(actor => {
+    const [raceId, gender, identity] = actor.appearance!;
+    return { id: actor.id, name: party.characters.find(character => character.id === actor.id)?.name ?? actor.name, raceId, gender: gender === 1 ? 'female' as const : 'male' as const,
+      isUnique: typeof identity === 'string', lineageId: (typeof identity === 'string' ? identity : 'none') as Character['lineageId'],
+      mimorianEnemyId: typeof identity === 'number' ? identity : undefined };
+  });
+  (recordedCharacters ?? party.characters).forEach((character) => {
     const src = getCharacterBattleLogChibiSrc(party, character);
     if (src && character.name.trim()) {
       markers.push({ label: character.name, src, alt: `${character.name} chibi`, priority: 1 });
@@ -1330,9 +1186,9 @@ export function renderTextWithRaceIcons(text: string, iconClassName = 'h-3.5 w-3
 
 export type AfkSummaryStats = {
   Clear: number;
-  Turned_Back: number;
-  Draw_Retreat: number;
-  Wounded_Retreat: number;
+  Return: number;
+  Draw: number;
+  Retreat: number;
   Defeat: number;
   donatedGold: number;
   savedGold: number;
@@ -1343,22 +1199,23 @@ export function isAfkSummaryStats(value: unknown): value is AfkSummaryStats {
   const stats = value as Partial<Record<keyof AfkSummaryStats, unknown>>;
   return (
     typeof stats.Clear === 'number'
-    && typeof stats.Turned_Back === 'number'
-    && typeof stats.Draw_Retreat === 'number'
-    && typeof stats.Wounded_Retreat === 'number'
+    && typeof stats.Return === 'number'
+    && typeof stats.Draw === 'number'
+    && typeof stats.Retreat === 'number'
     && typeof stats.Defeat === 'number'
     && typeof stats.donatedGold === 'number'
     && typeof stats.savedGold === 'number'
   );
 }
 
-export function normalizeAfkSummaryStats(value: unknown): AfkSummaryStats | null {
+export function normalizeAfkSummaryStats(rawValue: unknown): AfkSummaryStats | null {
+  const value = upgradeLegacyOutcomeKeys(rawValue);
   if (!isAfkSummaryStats(value)) return null;
   return {
     Clear: Math.max(0, Math.floor(value.Clear)),
-    Turned_Back: Math.max(0, Math.floor(value.Turned_Back)),
-    Draw_Retreat: Math.max(0, Math.floor(value.Draw_Retreat)),
-    Wounded_Retreat: Math.max(0, Math.floor(value.Wounded_Retreat)),
+    Return: Math.max(0, Math.floor(value.Return)),
+    Draw: Math.max(0, Math.floor(value.Draw)),
+    Retreat: Math.max(0, Math.floor(value.Retreat)),
     Defeat: Math.max(0, Math.floor(value.Defeat)),
     donatedGold: Math.max(0, Math.floor(value.donatedGold)),
     savedGold: Math.max(0, Math.floor(value.savedGold)),
@@ -1369,9 +1226,9 @@ export function normalizeAfkSummaryStats(value: unknown): AfkSummaryStats | null
 export function buildAfkSummaryNotification(stats: AfkSummaryStats): string | null {
   const summaryParts: string[] = [];
   if (stats.Clear > 0) summaryParts.push(t('home.afk.clearCount', { count: formatNumber(stats.Clear) }));
-  if (stats.Turned_Back > 0) summaryParts.push(t('home.afk.returnCount', { count: formatNumber(stats.Turned_Back) }));
-  if (stats.Draw_Retreat > 0) summaryParts.push(t('home.afk.drawCount', { count: formatNumber(stats.Draw_Retreat) }));
-  if (stats.Wounded_Retreat > 0) summaryParts.push(t('home.afk.retreatCount', { count: formatNumber(stats.Wounded_Retreat) }));
+  if (stats.Return > 0) summaryParts.push(t('home.afk.returnCount', { count: formatNumber(stats.Return) }));
+  if (stats.Draw > 0) summaryParts.push(t('home.afk.drawCount', { count: formatNumber(stats.Draw) }));
+  if (stats.Retreat > 0) summaryParts.push(t('home.afk.retreatCount', { count: formatNumber(stats.Retreat) }));
   if (stats.Defeat > 0) summaryParts.push(t('home.afk.defeatCount', { count: formatNumber(stats.Defeat) }));
 
   const financeParts: string[] = [];
@@ -1402,7 +1259,16 @@ export const RARITY_FILTER_LABELS: Record<RarityFilter, string> = {
   mythicRare: 'M',
 };
 
-export const getRarityFilterNote = (filter: RarityFilter): string => t(`party.rarity.${filter}`);
+const RARITY_FILTER_NOTE_KEYS: Record<RarityFilter, string> = {
+  all: 'party.rarity.all',
+  common: 'party.rarity.common',
+  uncommon: 'party.rarity.uncommon',
+  eliteRare: 'diary.reward.eliteRare',
+  bossRare: 'diary.reward.bossRare',
+  mythicRare: 'diary.reward.mythicRare',
+};
+
+export const getRarityFilterNote = (filter: RarityFilter): string => t(RARITY_FILTER_NOTE_KEYS[filter]);
 
 export const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRare'];
 
@@ -1440,13 +1306,13 @@ export const DIARY_DEFEAT_NOTIFICATION_OPTIONS: Array<{ value: DiaryDefeatNotifi
 
 export function getExpeditionDepthOptions(dungeonId: number): Array<{ value: ExpeditionDepthLimit; label: string }> {
   // SpecRef: 8.3 | UI_EXPEDITION | Expedition Depth Limit (探索深度)
-  const beforeBossConcept = getLocalizedExpeditionFloorConcept(dungeonId, 6) ?? t('home.floorConcept.fallback', { floor: 6 });
+  const beforeBossConcept = getLocalizedExpeditionFloorConcept(dungeonId, 6) ?? t('expedition.floor', { floor: 6 });
   const floorConceptByFloor: Record<number, string> = {
-    1: getLocalizedExpeditionFloorConcept(dungeonId, 1) ?? t('home.floorConcept.fallback', { floor: 1 }),
-    2: getLocalizedExpeditionFloorConcept(dungeonId, 2) ?? t('home.floorConcept.fallback', { floor: 2 }),
-    3: getLocalizedExpeditionFloorConcept(dungeonId, 3) ?? t('home.floorConcept.fallback', { floor: 3 }),
-    4: getLocalizedExpeditionFloorConcept(dungeonId, 4) ?? t('home.floorConcept.fallback', { floor: 4 }),
-    5: getLocalizedExpeditionFloorConcept(dungeonId, 5) ?? t('home.floorConcept.fallback', { floor: 5 }),
+    1: getLocalizedExpeditionFloorConcept(dungeonId, 1) ?? t('expedition.floor', { floor: 1 }),
+    2: getLocalizedExpeditionFloorConcept(dungeonId, 2) ?? t('expedition.floor', { floor: 2 }),
+    3: getLocalizedExpeditionFloorConcept(dungeonId, 3) ?? t('expedition.floor', { floor: 3 }),
+    4: getLocalizedExpeditionFloorConcept(dungeonId, 4) ?? t('expedition.floor', { floor: 4 }),
+    5: getLocalizedExpeditionFloorConcept(dungeonId, 5) ?? t('expedition.floor', { floor: 5 }),
   };
 
   return [
@@ -1568,7 +1434,7 @@ export function parseDiarySideQuestThreshold(value: string): DiarySideQuestThres
   return 'all';
 }
 
-export const numberFormatter = new Intl.NumberFormat('ja-JP');
+export const numberFormatter = new Intl.NumberFormat(DISPLAY_LOCALE);
 export const SPEED_OF_TIME_BONUS_DURATION_MS = (24 * 60 + 45) * 60 * 1000;
 export const SPEED_OF_TIME_BONUS_UNTIL_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-speed-of-time-bonus-until-ms');
 export const DEV_DISCORD_WEBHOOK_URL = import.meta.env.VITE_DEV_DISCORD_WEBHOOK_URL;
@@ -1576,6 +1442,50 @@ export const BETA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_BETA_DISCORD_WEBHOO
 export const ORCA_DISCORD_WEBHOOK_URL = import.meta.env.VITE_ORCA_DISCORD_WEBHOOK_URL;
 export const PROD_DISCORD_WEBHOOK_URL = import.meta.env.VITE_PROD_DISCORD_WEBHOOK_URL;
 export const FEEDBACK_DISCORD_WEBHOOK_URL = import.meta.env.VITE_FEEDBACK_DISCORD_WEBHOOK_URL;
+
+// SpecRef: 9.1.4.15 | External delivery and rewards | The Application API's `ApplicationApiPorts.delivery.send` port
+// Generalizes the same Discord-webhook POST pattern `postWebhookWithFiles` (HomeScreen's Report Progress button) and
+// `handleSendFeedback` (SettingTab's Send Feedback button) already use, for the API's own queued delivery jobs. The
+// content and attachment bytes are already frozen on `record.payload` at commit time (src/api/v1/deliveryContent.ts);
+// this only ever posts that frozen payload, never re-derives it, and is called at most once per claimed send attempt.
+export async function sendApiV1Delivery(record: ApiV1DeliveryRecord): Promise<ApiV1DeliveryOutcome> {
+  const environmentId = getEnvironmentId();
+  const webhookUrl = record.operation === 'commit/setting/feedback'
+    ? FEEDBACK_DISCORD_WEBHOOK_URL
+    : ({ dev: DEV_DISCORD_WEBHOOK_URL, beta: BETA_DISCORD_WEBHOOK_URL, orca: ORCA_DISCORD_WEBHOOK_URL }[environmentId as string] ?? PROD_DISCORD_WEBHOOK_URL);
+  // Still queued and accepted per spec's unconditional-acceptance rule; a missing webhook can never succeed, so it
+  // fails definitively instead of burning retry attempts that cannot help.
+  if (!webhookUrl) return { kind: 'rejected', reason: 'webhook_not_configured' };
+  const payload = record.payload;
+  if (!payload) return { kind: 'rejected', reason: 'missing_payload' };
+
+  const formData = new FormData();
+  formData.append('payload_json', JSON.stringify({ content: payload.content, username: payload.username }));
+  payload.attachments.forEach((attachment, index) => {
+    const bytes = Uint8Array.from(atob(attachment.contentBase64), (char) => char.charCodeAt(0));
+    formData.append(`files[${index}]`, new Blob([bytes], { type: attachment.mediaType }), attachment.name);
+  });
+
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 20_000);
+  try {
+    const response = await fetch(webhookUrl, { method: 'POST', body: formData, signal: controller.signal });
+    if (response.ok) return { kind: 'delivered' };
+    // 4xx: the recipient processed and definitively refused this exact payload (a network-level retry cannot help).
+    // 429/5xx: rate-limited or a transient server failure; safe to retry the same payload later.
+    return response.status === 429 || response.status >= 500
+      ? { kind: 'not_sent', reason: `http_${response.status}` }
+      : { kind: 'rejected', reason: `http_${response.status}` };
+  } catch (error) {
+    // Our own timeout: the request may already have reached Discord before we gave up waiting for a response, so
+    // this is genuinely ambiguous, never automatically resent. Any other failure (offline, DNS, connection refused)
+    // is treated as nothing having been sent at all, and is safe to retry.
+    if (error instanceof DOMException && error.name === 'AbortError') return { kind: 'ambiguous', reason: 'timeout_after_send' };
+    return { kind: 'not_sent', reason: 'network_error' };
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
 
 export function formatNumber(value: number): string {
   return numberFormatter.format(Math.trunc(value));
@@ -1600,7 +1510,7 @@ export function formatBattleLogHitDisplay(entry: BattleLogEntry): string {
 }
 
 export function formatDecimal(value: number, maximumFractionDigits: number, minimumFractionDigits = maximumFractionDigits): string {
-  return new Intl.NumberFormat('ja-JP', {
+  return new Intl.NumberFormat(DISPLAY_LOCALE, {
     minimumFractionDigits,
     maximumFractionDigits,
   }).format(value);
@@ -1613,14 +1523,8 @@ export function formatAutoSellSummary(autoSellProfit: number, autoSellMultiplier
   return t('home.autoSell.basic', { gold: formatNumber(autoSellProfit) });
 }
 
-export function getItemRarityById(itemId: number): ItemRarity {
-  const rarityCode = itemId % 1000;
-  if (rarityCode >= 500) return 'mythicRare';
-  if (rarityCode >= 400) return 'bossRare';
-  if (rarityCode >= 300) return 'eliteRare';
-  if (rarityCode >= 200) return 'uncommon';
-  return 'common';
-}
+export { getItemRarityById };
+export { getArcMagicAbilityLevel, getArcMagicOffenseAmplifier, getBaseDefenseScale, getBaseOffenseScale, getCharacterDisplayedMagicalAttackAmplifier, getEffectiveAccuracyBonus, getOffenseMultiplierSum };
 
 export const MYTHIC_TIER_BY_NAME = new Map(GOD_MYTHIC_DROPS.map((drop) => [drop.name, drop.tier]));
 
@@ -1722,14 +1626,6 @@ export function getDungeonEntryGateState(
   };
 }
 
-export function shouldDelayNextSpecialGoal(party: Party, cycleState?: PartyCycleState): boolean {
-  if (cycleState !== 'explore') return false;
-  const log = party.lastExpeditionLog;
-  if (!log || log.finalOutcome !== 'Clear') return false;
-  const lastEntry = log.entries[log.entries.length - 1];
-  return lastEntry?.roomType === 'battle_Boss' && lastEntry.enemyName.includes(t('home.godsBattle.parenthetical'));
-}
-
 export function getGodBattleLabel(dungeon: Dungeon): string {
   // SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
   const godProfile = getGodProfileForDungeon(dungeon.id, dungeon.name);
@@ -1749,6 +1645,24 @@ export type ProgressItemDisplay = {
   compactText: string;
   bubbleText: string;
   progressRatio: number | null;
+};
+
+export type ProjectedExpeditionGate = {
+  kind: 'eliteGate' | 'bossGate' | 'entryGate' | 'godGate' | 'godEntry';
+  dungeonId: number;
+  floor: number | null;
+  current: number;
+  required: number;
+};
+
+export type ProjectedSideQuest = {
+  id: number;
+  type: string;
+  target: number;
+  progress: number;
+  percent: number;
+  hasDeadline: boolean;
+  remainingMs: number;
 };
 
 
@@ -1856,11 +1770,7 @@ export function getSideQuestDisplay(party: Party, cycleDurationScale: number, em
     current: `${formatNumber(displayProgress)}/${formatNumber(displayTarget)}`,
   };
 
-  const safeScale = Math.max(0.001, cycleDurationScale);
-  const simulatedElapsedMs = Math.max(0, emulatedNowMs - party.sideQuest.assignedAt) / safeScale;
-  const simulatedNow = party.sideQuest.assignedAt + simulatedElapsedMs;
-  const remainingMs = Math.max(0, party.sideQuest.expiresAt - simulatedNow);
-  const hasDeadline = party.sideQuest.expiresAt < Number.MAX_SAFE_INTEGER;
+  const { remainingMs, hasDeadline } = getSideQuestFacts(party, cycleDurationScale, emulatedNowMs)!;
   const remainingLabel = !hasDeadline
     ? null
     : remainingMs >= (60 * 60 * 1000)
@@ -1878,104 +1788,145 @@ export function getSideQuestDisplay(party: Party, cycleDurationScale: number, em
   };
 }
 
-export function getCompactProgressItems(party: Party, cycleDurationScale: number, emulatedNowMs: number, cycleState?: PartyCycleState): ProgressItemDisplay[] {
-  const currentDungeon = DUNGEONS.find((d) => d.id === party.selectedDungeonId);
-  if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return [];
+/** Formats the language-neutral gate and side-quest facts returned by the Expedition projection. */
+export function getProjectedCompactProgressItems(
+  destination: number | null,
+  goals: readonly ProjectedExpeditionGate[],
+  sideQuest: ProjectedSideQuest | null,
+): ProgressItemDisplay[] {
+  const currentDungeon = DUNGEONS.find((d) => d.id === destination);
+  const items: ProgressItemDisplay[] = [];
+  const pushUnique = (item: ProgressItemDisplay) => {
+    if (!items.some((existing) => existing.compactText === item.compactText)) items.push(item);
+  };
+  for (const goal of goals) {
+    const safeRequired = Math.max(1, goal.required);
+    if (goal.kind === 'eliteGate') pushUnique({
+      key: `elite-gate:${goal.dungeonId}:${goal.floor}`,
+      compactText: t('home.progress.eliteCompact', { current: formatNumber(goal.current), required: formatNumber(goal.required), floor: goal.floor ?? 0 }),
+      bubbleText: t('home.progress.eliteBubble', { current: formatNumber(goal.current), required: formatNumber(goal.required), floor: goal.floor ?? 0 }),
+      progressRatio: Math.max(0, Math.min(goal.current, safeRequired)) / safeRequired,
+    });
+    else if (goal.kind === 'bossGate') pushUnique({
+      key: `boss-gate:${goal.dungeonId}`,
+      compactText: t('home.progress.bossClearCompact', { current: formatNumber(goal.current), required: formatNumber(goal.required) }),
+      bubbleText: t('home.progress.bossClearBubble', { current: formatNumber(goal.current), required: formatNumber(goal.required) }),
+      progressRatio: Math.max(0, Math.min(goal.current, safeRequired)) / safeRequired,
+    });
+    else if (goal.kind === 'entryGate') pushUnique({
+      key: `entry-gate:${goal.dungeonId}`,
+      compactText: t('home.progress.defeatBossCompact'),
+      bubbleText: t('home.progress.bossUnlockDungeon', { dungeon: DUNGEONS.find((d) => d.id === goal.dungeonId)?.name ?? '' }),
+      progressRatio: null,
+    });
+    else if (goal.kind === 'godGate' && currentDungeon) pushUnique({
+      key: `god-gate:${goal.dungeonId}`,
+      compactText: t('home.progress.godCompact', { collected: formatNumber(goal.current), required: formatNumber(goal.required) }),
+      bubbleText: t('home.progress.godBubble', { collected: formatNumber(goal.current), required: formatNumber(goal.required), label: getGodBattleLabel(currentDungeon) }),
+      progressRatio: Math.max(0, Math.min(goal.current, safeRequired)) / safeRequired,
+    });
+    else if (goal.kind === 'godEntry' && currentDungeon) pushUnique({
+      key: `god-entry:${goal.dungeonId}`,
+      compactText: t('home.progress.defeatBossCompact'),
+      bubbleText: t('home.progress.bossUnlockGod', { label: getGodBattleLabel(currentDungeon) }),
+      progressRatio: null,
+    });
+  }
+  if (sideQuest && currentDungeon?.floors && currentDungeon.id !== 99) {
+    const isTimeQuest = TIME_BASED_SIDE_QUEST_TYPES.has(sideQuest.type);
+    const target = isTimeQuest ? Math.floor(sideQuest.target / 60) : sideQuest.target;
+    const progress = isTimeQuest ? Math.floor(sideQuest.progress / 60) : sideQuest.progress;
+    const textByType: Record<string, string> = {
+      'q.squander': t('home.sideQuest.squander', { gold: formatNumber(target) }),
+      'q.sleeping': t('home.sideQuest.sleeping', { count: formatNumber(target) }),
+      'q.exercise': t('home.sideQuest.exercise', { minutes: formatNumber(target) }),
+      'q.embezzlement': t('home.sideQuest.embezzlement', { gold: formatNumber(target) }),
+      'q.donation': t('home.sideQuest.donation', { gold: formatNumber(target) }),
+      'q.healing': t('home.sideQuest.healing', { minutes: formatNumber(target) }),
+      'q.AFK': t('home.sideQuest.afk', { minutes: formatNumber(target) }),
+      'q.treasure-super-rare': t('home.sideQuest.treasureSuperRare'),
+      'q.treasure-boss-rare': t('home.sideQuest.treasureBossRare', { count: formatNumber(target) }),
+      'q.poor-kid': t('home.sideQuest.poorKid', { count: formatNumber(target) }),
+      'q.consecutive-wins': t('home.sideQuest.consecutiveWins', { streak: formatNumber(target) }),
+      'q.losers': t('home.sideQuest.losers'),
+      'q.savings': t('home.sideQuest.savings', { gold: formatNumber(target) }),
+    };
+    const text = textByType[sideQuest.type] ?? sideQuest.type;
+    const currentByType: Record<string, string> = {
+      'q.squander': `${formatNumber(progress)}G`, 'q.embezzlement': `${formatNumber(progress)}G`,
+      'q.donation': `${formatNumber(progress)}G`, 'q.savings': `${formatNumber(progress)}G`,
+      'q.exercise': t('home.unit.minutes', { value: formatNumber(progress) }), 'q.healing': t('home.unit.minutes', { value: formatNumber(progress) }), 'q.AFK': t('home.unit.minutes', { value: formatNumber(progress) }),
+      'q.sleeping': t('home.unit.count', { value: formatNumber(progress) }), 'q.poor-kid': t('home.unit.count', { value: formatNumber(progress) }),
+      'q.treasure-boss-rare': t('home.unit.items', { value: formatNumber(progress) }), 'q.consecutive-wins': t('home.unit.streak', { value: formatNumber(progress) }),
+    };
+    const parts = [`${sideQuest.percent}%`];
+    if (currentByType[sideQuest.type]) parts.push(currentByType[sideQuest.type]);
+    if (sideQuest.hasDeadline) parts.push(sideQuest.remainingMs >= 3_600_000
+      ? t('home.remaining.hours', { count: formatNumber(Math.ceil(sideQuest.remainingMs / 3_600_000)) })
+      : t('home.remaining.minutes', { count: formatNumber(Math.ceil(sideQuest.remainingMs / 60_000)) }));
+    pushUnique({
+      key: `side-quest:${sideQuest.type}:${text}`,
+      compactText: `📜${text}${sideQuest.hasDeadline ? ` ${getRemainingClockEmoji(sideQuest.remainingMs)}` : ''}`,
+      bubbleText: `${text}（${parts.join(', ')}）`,
+      progressRatio: Math.max(0, Math.min(1, sideQuest.progress / Math.max(1, sideQuest.target))),
+    });
+  }
+  return items;
+}
 
+export function getCompactProgressItems(party: Party, cycleDurationScale: number, emulatedNowMs: number, cycleState?: PartyCycleState): ProgressItemDisplay[] {
   // SpecRef: 8.3 | UI_EXPEDITION | Progress Visual Update
-  // Clear-Gate outcomes become visible only after the party has completed its return. Keep
-  // the compact indicator aligned with the gate text in the active expedition log.
-  const displayedParty = party.expeditionRewardsPending && party.pendingClearGateSnapshot
-    ? {
-        ...party,
-        clearGateProgress: party.pendingClearGateSnapshot.progress,
-        clearGateStatus: party.pendingClearGateSnapshot.status,
-        defeatedBossExpeditions: party.pendingClearGateSnapshot.defeatedBossExpeditions,
-      }
-    : party;
+  // The goals are selected by the shared game function (also published by the Application API); this only formats them.
+  const currentDungeon = DUNGEONS.find((d) => d.id === party.selectedDungeonId);
   const items: ProgressItemDisplay[] = [];
   const pushUniqueProgressItem = (item: ProgressItemDisplay) => {
     if (items.some((existingItem) => existingItem.compactText === item.compactText)) return;
     items.push(item);
   };
 
-  for (const floor of currentDungeon.floors) {
-    const hasEliteGate = floor.floorNumber < 6;
-    if (!hasEliteGate) continue;
-    const gateKey = getEliteGateKey(currentDungeon.id, floor.floorNumber);
-    const required = getClearGateRequired(gateKey);
-    const current = getClearGateProgress(displayedParty, gateKey);
-    const unlocked = isClearGateUnlocked(displayedParty, gateKey);
-    if (!unlocked) {
-      const safeRequired = Math.max(1, required);
-      const normalizedCurrent = Math.max(0, Math.min(current, safeRequired));
+  for (const goal of getExpeditionGoals(party, cycleState)) {
+    if (goal.kind === 'eliteGate') {
+      const safeRequired = Math.max(1, goal.required);
       pushUniqueProgressItem({
-        key: `elite-gate:${currentDungeon.id}:${floor.floorNumber}`,
-        compactText: t('home.progress.eliteCompact', { current: formatNumber(current), required: formatNumber(required), floor: floor.floorNumber }),
-        bubbleText: t('home.progress.eliteBubble', { current: formatNumber(current), required: formatNumber(required), floor: floor.floorNumber }),
-        progressRatio: normalizedCurrent / safeRequired,
+        key: `elite-gate:${goal.dungeonId}:${goal.floor}`,
+        compactText: t('home.progress.eliteCompact', { current: formatNumber(goal.current), required: formatNumber(goal.required), floor: goal.floor }),
+        bubbleText: t('home.progress.eliteBubble', { current: formatNumber(goal.current), required: formatNumber(goal.required), floor: goal.floor }),
+        progressRatio: Math.max(0, Math.min(goal.current, safeRequired)) / safeRequired,
       });
-      break;
-    }
-  }
-
-  if (items.length === 0) {
-    const bossGateKey = getBossGateKey(currentDungeon.id);
-    if (!isClearGateUnlocked(displayedParty, bossGateKey)) {
-      const required = getClearGateRequired(bossGateKey);
-      const current = getClearGateProgress(displayedParty, bossGateKey);
-      const normalizedCurrent = Math.max(0, Math.min(current, required));
+    } else if (goal.kind === 'bossGate') {
       pushUniqueProgressItem({
-        key: `boss-gate:${currentDungeon.id}`,
-        compactText: t('home.progress.bossClearCompact', { current: formatNumber(current), required: formatNumber(required) }),
-        bubbleText: t('home.progress.bossClearBubble', { current: formatNumber(current), required: formatNumber(required) }),
-        progressRatio: normalizedCurrent / required,
+        key: `boss-gate:${goal.dungeonId}`,
+        compactText: t('home.progress.bossClearCompact', { current: formatNumber(goal.current), required: formatNumber(goal.required) }),
+        bubbleText: t('home.progress.bossClearBubble', { current: formatNumber(goal.current), required: formatNumber(goal.required) }),
+        progressRatio: Math.max(0, Math.min(goal.current, goal.required)) / goal.required,
       });
-    }
-  }
-
-  if (items.length === 0) {
-    const nextDungeon = DUNGEONS.find((d) => d.id === currentDungeon.id + 1);
-    if (nextDungeon) {
-      const entryUnlocked = isDungeonEntryUnlocked(displayedParty, nextDungeon.id);
-      if (!entryUnlocked) {
-        pushUniqueProgressItem({
-          key: `entry-gate:${nextDungeon.id}`,
-          compactText: t('home.progress.defeatBossCompact'),
-          bubbleText: t('home.progress.bossUnlockDungeon', { dungeon: nextDungeon.name }),
-          progressRatio: null,
-        });
-      }
-    }
-
-    const godsRequired = getGodsBattleRequired();
-    const bossRareCollected = getGodsBattleProgress(displayedParty, currentDungeon.id);
-    const hasBossDefeat = hasDefeatedDungeonBoss(displayedParty, currentDungeon.id);
-    const godsUnlocked = bossRareCollected >= godsRequired && hasBossDefeat;
-    if (!godsUnlocked && !shouldDelayNextSpecialGoal(party, cycleState)) {
-      if (hasBossDefeat) {
-        const safeGodsRequired = Math.max(1, godsRequired);
-        const normalizedBossRareCollected = Math.max(0, Math.min(bossRareCollected, safeGodsRequired));
-        pushUniqueProgressItem({
-          key: `god-gate:${currentDungeon.id}`,
-          compactText: t('home.progress.godCompact', { collected: formatNumber(bossRareCollected), required: formatNumber(godsRequired) }),
-          bubbleText: t('home.progress.godBubble', { collected: formatNumber(bossRareCollected), required: formatNumber(godsRequired), label: getGodBattleLabel(currentDungeon) }),
-          progressRatio: normalizedBossRareCollected / safeGodsRequired,
-        });
-      } else {
-        pushUniqueProgressItem({
-          key: `god-entry:${currentDungeon.id}`,
-          compactText: t('home.progress.defeatBossCompact'),
-          bubbleText: t('home.progress.bossUnlockGod', { label: getGodBattleLabel(currentDungeon) }),
-          progressRatio: null,
-        });
-      }
+    } else if (goal.kind === 'entryGate') {
+      pushUniqueProgressItem({
+        key: `entry-gate:${goal.nextDungeonId}`,
+        compactText: t('home.progress.defeatBossCompact'),
+        bubbleText: t('home.progress.bossUnlockDungeon', { dungeon: DUNGEONS.find((d) => d.id === goal.nextDungeonId)?.name ?? '' }),
+        progressRatio: null,
+      });
+    } else if (goal.kind === 'godGate' && currentDungeon) {
+      const safeGodsRequired = Math.max(1, goal.required);
+      pushUniqueProgressItem({
+        key: `god-gate:${goal.dungeonId}`,
+        compactText: t('home.progress.godCompact', { collected: formatNumber(goal.collected), required: formatNumber(goal.required) }),
+        bubbleText: t('home.progress.godBubble', { collected: formatNumber(goal.collected), required: formatNumber(goal.required), label: getGodBattleLabel(currentDungeon) }),
+        progressRatio: Math.max(0, Math.min(goal.collected, safeGodsRequired)) / safeGodsRequired,
+      });
+    } else if (goal.kind === 'godEntry' && currentDungeon) {
+      pushUniqueProgressItem({
+        key: `god-entry:${goal.dungeonId}`,
+        compactText: t('home.progress.defeatBossCompact'),
+        bubbleText: t('home.progress.bossUnlockGod', { label: getGodBattleLabel(currentDungeon) }),
+        progressRatio: null,
+      });
     }
   }
 
   const sideQuestItem = getSideQuestDisplay(party, cycleDurationScale, emulatedNowMs);
-  if (sideQuestItem) pushUniqueProgressItem(sideQuestItem);
-
+  if (sideQuestItem && currentDungeon && currentDungeon.floors && currentDungeon.id !== 99) pushUniqueProgressItem(sideQuestItem);
   return items;
 }
 
@@ -1986,15 +1937,8 @@ export function isGodsBattleAvailable(party: Party, dungeonId: number): boolean 
 }
 
 export function getConditionLabel(condition: number, showValue: boolean): string {
-  let label = t('condition.excellent');
-  if (condition <= -350) label = t('condition.awful');
-  else if (condition <= -250) label = t('condition.bad');
-  else if (condition <= -150) label = t('condition.low');
-  else if (condition <= -50) label = t('condition.cautious');
-  else if (condition <= 50) label = t('condition.normal');
-  else if (condition <= 150) label = t('condition.steady');
-  else if (condition <= 250) label = t('condition.brisk');
-  else if (condition <= 350) label = t('condition.good');
+  // SpecRef: 7.2 | AUTO progress logic | condition key table (the same keys as the reducer and the API)
+  const label = t(getConditionState(condition));
   // SpecRef: 8.6 | UI_SETTING | Display `condition` OFF/ON
   if (!showValue) return label;
   return `${label}(${condition >= 0 ? '+' : ''}${formatNumber(condition)})`;
@@ -2017,9 +1961,9 @@ export function getDisplayedExpeditionStats(party: Party, cycleState?: PartyCycl
   return {
     ...latestStats,
     Clear: Math.max(0, latestStats.Clear - (returnOutcome === 'Clear' ? 1 : 0)),
-    Turned_Back: Math.max(0, latestStats.Turned_Back - (returnOutcome === 'Turned_Back' ? 1 : 0)),
-    Draw_Retreat: Math.max(0, latestStats.Draw_Retreat - (returnOutcome === 'Draw_Retreat' ? 1 : 0)),
-    Wounded_Retreat: Math.max(0, latestStats.Wounded_Retreat - (returnOutcome === 'Wounded_Retreat' ? 1 : 0)),
+    Return: Math.max(0, latestStats.Return - (returnOutcome === 'Return' ? 1 : 0)),
+    Draw: Math.max(0, latestStats.Draw - (returnOutcome === 'Draw' ? 1 : 0)),
+    Retreat: Math.max(0, latestStats.Retreat - (returnOutcome === 'Retreat' ? 1 : 0)),
     Defeat: Math.max(0, latestStats.Defeat - (returnOutcome === 'Defeat' ? 1 : 0)),
   };
 }
@@ -2059,32 +2003,7 @@ export function getSideQuestSuccessMessage(partyName: string, sideQuestDetail?: 
 
 // Helper to format item stats
 
-export function getItemDisplayMultiplier(item: Item, categoryMultiplier: number = 1): number {
-  const enhancementMultiplier = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
-  const superRareMultiplier = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
-  const selfCategoryBonusTypeByItemCategory: Partial<Record<ItemCategory, BonusType>> = {
-    sword: 'sword_multiplier',
-    katana: 'katana_multiplier',
-    archery: 'archery_multiplier',
-    armor: 'armor_multiplier',
-    gauntlet: 'gauntlet_multiplier',
-    wand: 'wand_multiplier',
-    robe: 'robe_multiplier',
-    shield: 'shield_multiplier',
-    bolt: 'bolt_multiplier',
-    grimoire: 'grimoire_multiplier',
-    catalyst: 'catalyst_multiplier',
-    arrow: 'arrow_multiplier',
-  };
-  const selfCategoryBonusType = selfCategoryBonusTypeByItemCategory[item.category];
-  const selfCategoryMultiplier = selfCategoryBonusType
-    ? getSuperRareBonuses(item.superRare)
-      .filter((bonus) => bonus.type === selfCategoryBonusType)
-      .reduce((total, bonus) => total * bonus.value, 1)
-    : 1;
-  const baseMultiplier = item.baseMultiplier ?? 1;
-  return enhancementMultiplier * superRareMultiplier * baseMultiplier * categoryMultiplier * selfCategoryMultiplier;
-}
+export { getItemDisplayMultiplier };
 
 export function getItemInventoryDetailText(item: Item): string {
   return `[${t(CATEGORY_NAME_KEYS[item.category] ?? 'party.categoryName.unknown')}] ${getRarityShortLabel(item.id, item.name)} ${getItemStats(item)}`;
@@ -2254,7 +2173,7 @@ export function getItemStats(item: Item, categoryMultiplier: number = 1, hpScale
   if (item.mindBonus) bParts.push(t('home.itemStat.mindFlat', { value: item.mindBonus }));
   if (item.penetBonus) cParts.push(`${t('party.bonus.penet')}+${Math.round(item.penetBonus * 100)}`);
   if (item.elementalOffense && item.elementalOffense !== 'none') {
-    const elem = { fire: t('common.element.fire.short'), ice: t('common.element.ice.short'), thunder: t('common.element.thunder.short') }[item.elementalOffense];
+    const elem = { fire: t('element.fire.short'), ice: t('element.ice.short'), thunder: t('element.thunder.short') }[item.elementalOffense];
     const elementalPercent = Math.round((item.elementalOffenseBonus ?? 0) * 100);
     eParts.push(t('home.itemStat.elementalOffensePercent', { element: elem, value: elementalPercent }));
   }
@@ -2310,57 +2229,16 @@ export function getJewelInventoryStatusText(jewelKey: JewelKey, rank: number): s
   return formatJewelStatusText(jewelKey, rank);
 }
 
-export function getOffenseMultiplierSum(
-  items: Item[],
-  kind: 'melee' | 'ranged' | 'magical',
-  initialAppliedBonusNames?: Iterable<string>
-): number {
-  const appliedBonusNames = new Set<string>(initialAppliedBonusNames ?? []);
-  const relevant = items.filter(item => {
-    if (kind === 'melee') return item.meleeAttack || item.meleeNoA || item.meleeNoABonus;
-    if (kind === 'ranged') return item.rangedAttack || item.rangedNoA || item.rangedNoABonus;
-    return item.magicalAttack || item.magicalNoA || item.magicalNoABonus;
-  });
-
-  const bonusSum = relevant.reduce((sum, item) => {
-    const baseMultiplier = item.baseMultiplier ?? 1;
-    if (baseMultiplier === 1) return sum;
-
-    const percent = Math.round((baseMultiplier - 1) * 1000) / 10;
-    const bonusName = `c.${kind}_attack+${percent}`;
-    if (appliedBonusNames.has(bonusName)) return sum;
-    appliedBonusNames.add(bonusName);
-    return sum + (baseMultiplier - 1);
-  }, 0);
-
-  return bonusSum;
-}
 
 export function hasEnemyArcMagicAbility(enemy: EnemyDef): boolean {
   return enemy.abilities.some((ability) => ability.id === 'arc_magic' && ability.level > 0);
 }
 
-export function getArcMagicAbilityLevel(abilities: Ability[]): number {
-  return abilities
-    .filter((ability) => ability.id === 'arc_magic')
-    .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0);
-}
 
 export function getEnemyArcMagicAbilityLevel(enemy: EnemyDef): number {
   return enemy.abilities
     .filter((ability) => ability.id === 'arc_magic')
     .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0);
-}
-
-export function getArcMagicOffenseAmplifier(level: number): number {
-  return abilityLevelValue('arc_magic', level);
-}
-
-// SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
-// a.arc-magic: magical offense amplifier xN (Lv1:3.0, Lv2:3.6, Lv3:4.2).
-export function getCharacterDisplayedMagicalAttackAmplifier(baseAmplifier: number, abilities: Ability[]): number {
-  const heavyStrikeAmplifier = abilities.some((ability) => ability.id === 'heavy_strike' && ability.level > 0) ? 1.4 : 1.0;
-  return baseAmplifier * heavyStrikeAmplifier * getArcMagicOffenseAmplifier(getArcMagicAbilityLevel(abilities));
 }
 
 // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
@@ -2390,15 +2268,9 @@ export function getEnemyBestiarySpellName(enemy: EnemyDef): string {
   return magicProfile.spellName;
 }
 
-export function getBaseOffenseScale(value: number): number {
-  return getBaseMultiplier(value, 'attack');
-}
 
-export function getBaseDefenseScale(value: number): number {
-  return getBaseMultiplier(value, 'defense');
-}
 
-export function getElementalOffenseHelpLines(character: Character, stats: ComputedCharacterStats): string[] {
+export function getElementalOffenseHelpLines(character: Character, stats: Pick<ComputedCharacterStats, 'maxEquipSlots' | 'elementalOffense' | 'elementalOffenseValue'>): string[] {
   const elementalSums: Record<ElementalOffense, number> = {
     none: 0,
     fire: 0,
@@ -2444,18 +2316,18 @@ export function getElementalOffenseHelpLines(character: Character, stats: Comput
 }
 
 export const MULTIPLIER_LABEL_KEYS: Record<string, string> = {
-  sword_multiplier: 'party.bonus.sword',
-  katana_multiplier: 'party.bonus.katana',
-  archery_multiplier: 'party.bonus.archery',
-  armor_multiplier: 'party.bonus.armor',
-  gauntlet_multiplier: 'party.bonus.gauntlet',
-  wand_multiplier: 'party.bonus.wand',
-  robe_multiplier: 'party.bonus.robe',
-  shield_multiplier: 'party.bonus.shield',
-  bolt_multiplier: 'party.bonus.bolt',
-  grimoire_multiplier: 'party.bonus.grimoire',
-  catalyst_multiplier: 'party.bonus.catalyst',
-  arrow_multiplier: 'party.bonus.arrow',
+  sword_multiplier: 'party.categoryShort.sword',
+  katana_multiplier: 'party.categoryShort.katana',
+  archery_multiplier: 'party.categoryShort.archery',
+  armor_multiplier: 'party.categoryShort.armor',
+  gauntlet_multiplier: 'party.categoryShort.gauntlet',
+  wand_multiplier: 'party.categoryShort.wand',
+  robe_multiplier: 'party.categoryShort.robe',
+  shield_multiplier: 'party.categoryShort.shield',
+  bolt_multiplier: 'party.categoryShort.bolt',
+  grimoire_multiplier: 'party.categoryShort.grimoire',
+  catalyst_multiplier: 'party.categoryShort.catalyst',
+  arrow_multiplier: 'party.categoryShort.arrow',
 };
 
 // Keep the translation-backed proxy intact so item ability labels resolve in the
@@ -2473,118 +2345,6 @@ export const BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META: Array<{
   { id: 'reactive', shortLabelKey: 'home.bonusAbility.subcategory.reactiveShort', labelKey: 'home.bonusAbility.subcategory.reactive' },
   { id: 'timed', shortLabelKey: 'home.bonusAbility.subcategory.timedShort', labelKey: 'home.bonusAbility.subcategory.timed' },
 ];
-
-export const ABILITY_HELP_TEXT_KEYS: Record<string, string> = {
-  'defender:1': 'home.abilityHelp.defender.1',
-  'defender:2': 'home.abilityHelp.defender.2',
-  'defender:3': 'home.abilityHelp.defender.3',
-  'counter:1': 'home.abilityHelp.counter.1',
-  'counter:2': 'home.abilityHelp.counter.2',
-  'counter:3': 'home.abilityHelp.counter.3',
-  're_attack:1': 'home.abilityHelp.re_attack.1',
-  're_attack:2': 'home.abilityHelp.re_attack.2',
-  're_attack:3': 'home.abilityHelp.re_attack.3',
-  'iaigiri:1': 'home.abilityHelp.iaigiri.1',
-  'iaigiri:2': 'home.abilityHelp.iaigiri.2',
-  'iaigiri:3': 'home.abilityHelp.iaigiri.3',
-  'command:1': 'home.abilityHelp.command.1',
-  'command:2': 'home.abilityHelp.command.2',
-  'command:3': 'home.abilityHelp.command.3',
-  'hunter:1': 'home.abilityHelp.hunter.1',
-  'hunter:2': 'home.abilityHelp.hunter.2',
-  'hunter:3': 'home.abilityHelp.hunter.3',
-  'resonance:1': 'home.abilityHelp.resonance.1',
-  'resonance:2': 'home.abilityHelp.resonance.2',
-  'resonance:3': 'home.abilityHelp.resonance.3',
-  'resonance:4': 'home.abilityHelp.resonance.4',
-  'resonance:5': 'home.abilityHelp.resonance.5',
-  'm_barrier:1': 'home.abilityHelp.m_barrier.1',
-  'm_barrier:2': 'home.abilityHelp.m_barrier.2',
-  'm_barrier:3': 'home.abilityHelp.m_barrier.3',
-  'deflection:1': 'home.abilityHelp.deflection.1',
-  'deflection:2': 'home.abilityHelp.deflection.2',
-  first_strike: 'home.abilityHelp.first_strike',
-  equation_breaker: 'home.abilityHelp.equation_breaker',
-  domain_breaker: 'home.abilityHelp.domain_breaker',
-  fire_protect_breaker: 'home.abilityHelp.fire_protect_breaker',
-  ice_protect_breaker: 'home.abilityHelp.ice_protect_breaker',
-  thunder_protect_breaker: 'home.abilityHelp.thunder_protect_breaker',
-  m_barrier_breaker: 'home.abilityHelp.m_barrier_breaker',
-  null_counter: 'home.abilityHelp.null_counter',
-  resurrect: 'home.abilityHelp.resurrect',
-  rage: 'home.abilityHelp.rage',
-  re_counter: 'home.abilityHelp.re_counter',
-  pursuit: 'home.abilityHelp.pursuit',
-  illusion_breaker: 'home.abilityHelp.illusion_breaker',
-  bulwark_breaker: 'home.abilityHelp.bulwark_breaker',
-  'illusion-breaker': 'home.abilityHelp.illusion-breaker',
-  'bulwark-breaker': 'home.abilityHelp.bulwark-breaker',
-  momentum: 'home.abilityHelp.momentum',
-  bulwark: 'home.abilityHelp.bulwark',
-  covering_fire: 'home.abilityHelp.covering_fire',
-  magical_counter: 'home.abilityHelp.magical_counter',
-  stealth: 'home.abilityHelp.stealth',
-  illusion: 'home.abilityHelp.illusion',
-  howl: 'home.abilityHelp.howl',
-  predator_sense: 'home.abilityHelp.predator_sense',
-  slow: 'home.abilityHelp.slow',
-  corrode: 'home.abilityHelp.corrode',
-  life_drain: 'home.abilityHelp.life_drain',
-  no_offense: 'home.abilityHelp.no_offense',
-  decompose: 'home.abilityHelp.decompose',
-  swarm: 'home.abilityHelp.swarm',
-  death_touch: 'home.abilityHelp.death_touch',
-  flying: 'home.abilityHelp.flying',
-  free: 'home.abilityHelp.free',
-  frostbite: 'home.abilityHelp.frostbite',
-  ice_reflect: 'home.abilityHelp.ice_reflect',
-  ice_absorb: 'home.abilityHelp.ice_absorb',
-  ice_null: 'home.abilityHelp.ice_null',
-  bind: 'home.abilityHelp.bind',
-  regeneration: 'home.abilityHelp.regeneration',
-  burn: 'home.abilityHelp.burn',
-  fire_reflect: 'home.abilityHelp.fire_reflect',
-  fire_absorb: 'home.abilityHelp.fire_absorb',
-  fire_null: 'home.abilityHelp.fire_null',
-  thunder_reflect: 'home.abilityHelp.thunder_reflect',
-  thunder_absorb: 'home.abilityHelp.thunder_absorb',
-  thunder_null: 'home.abilityHelp.thunder_null',
-  soul_reap: 'home.abilityHelp.soul_reap',
-  mutual_magic_amplify: 'home.abilityHelp.mutual_magic_amplify',
-  mutual_magic_restraint: 'home.abilityHelp.mutual_magic_restraint',
-  mutual_physical_amplify: 'home.abilityHelp.mutual_physical_amplify',
-  mutual_physical_restraint: 'home.abilityHelp.mutual_physical_restraint',
-  ranged_confusion: 'home.abilityHelp.ranged_confusion',
-  magic_confusion: 'home.abilityHelp.magic_confusion',
-  melee_confusion: 'home.abilityHelp.melee_confusion',
-  self_destruct: 'home.abilityHelp.self_destruct',
-  oblivion: 'home.abilityHelp.oblivion',
-  fading_memory: 'home.abilityHelp.fading_memory',
-  reanimate: 'home.abilityHelp.reanimate',
-  auriferous: 'home.abilityHelp.auriferous',
-  magic_seal: 'home.abilityHelp.magic_seal',
-  ambush: 'home.abilityHelp.ambush',
-  mimic: 'home.abilityHelp.mimic',
-  unforgettable: 'home.abilityHelp.unforgettable',
-  shock: 'home.abilityHelp.shock',
-  null_shock: 'home.abilityHelp.null_shock',
-  null_corrode: 'home.abilityHelp.null_corrode',
-  null_life_drain: 'home.abilityHelp.null_life_drain',
-  null_death_touch: 'home.abilityHelp.null_death_touch',
-  null_burn: 'home.abilityHelp.null_burn',
-  null_bind: 'home.abilityHelp.null_bind',
-  null_requiem: 'home.abilityHelp.null_requiem',
-  unstable_core: 'home.abilityHelp.unstable_core',
-  magical_reflect: 'home.abilityHelp.magical_reflect',
-  magical_absorb: 'home.abilityHelp.magical_absorb',
-  magical_null: 'home.abilityHelp.magical_null',
-  ranged_reflect: 'home.abilityHelp.ranged_reflect',
-  ranged_null: 'home.abilityHelp.ranged_null',
-  melee_reflect: 'home.abilityHelp.melee_reflect',
-  melee_null: 'home.abilityHelp.melee_null',
-  colossal: 'home.abilityHelp.colossal',
-  upgrade_all_abilities: 'home.abilityHelp.upgrade_all_abilities',
-};
 
 export const C_MULTIPLIER_HELP_DESCRIPTION_KEYS: Record<string, string> = {
   sword: 'home.cMultiplierHelp.sword',
@@ -2742,7 +2502,7 @@ export const UNLOCK_ABILITY_BONUS_LABEL_KEYS: Partial<Record<BonusType, string>>
 export function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'raw' | 'friendly' }): string {
   const defenseMultiplierStyle = options?.defenseMultiplierStyle ?? 'raw';
   const parts: string[] = [];
-  const percentFormatter = new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1, minimumFractionDigits: 0 });
+  const percentFormatter = new Intl.NumberFormat(DISPLAY_LOCALE, { maximumFractionDigits: 1, minimumFractionDigits: 0 });
   const formatRatePercent = (value: number): string => percentFormatter.format(Math.round(value * 1000) / 10);
   const formatSigned = (value: number): string => `${value >= 0 ? '+' : ''}${value}`;
   for (const b of bonuses) {
@@ -2921,9 +2681,7 @@ export function buildInlineBonusEntry(prefix: string, classId: string | undefine
     return {
       key: `${prefix}-${classId}-${bonus.abilityId}-${bonus.abilityLevel ?? 1}-${index}`,
       label: `${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}Lv${bonus.abilityLevel || 1}`,
-      description: BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.has(bonus.abilityId as AbilityId)
-        ? formatBonusAbilityHelpDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1)
-        : getAbilityDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1),
+      description: getAbilityDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1),
     };
   }
 
@@ -3031,45 +2789,6 @@ export const MELEE_CATEGORIES = new Set<ItemCategory>(['sword', 'katana', 'gaunt
 export const RANGED_CATEGORIES = new Set<ItemCategory>(['arrow', 'bolt', 'archery']);
 export const MAGIC_CATEGORIES = new Set<ItemCategory>(['wand', 'grimoire', 'catalyst']);
 export type CategoryGroup = typeof CATEGORY_GROUPS[number];
-
-export function getCharacterCombatBonusLevels(character: Character): { melee: boolean; ranged: boolean; magic: boolean } {
-  const race = RACES.find(r => r.id === character.raceId);
-  const mainClass = CLASSES.find(c => c.id === character.mainClassId);
-  const subClass = CLASSES.find(c => c.id === character.subClassId);
-  const predisposition = PREDISPOSITIONS.find(p => p.id === character.predispositionId);
-  const lineage = LINEAGES.find(l => l.id === character.lineageId);
-
-  if (!race || !mainClass || !subClass || !predisposition || !lineage) {
-    return { melee: false, ranged: false, magic: false };
-  }
-
-  const isMasterClass = character.mainClassId === character.subClassId;
-  const bonusSources = [
-    race.bonuses,
-    mainClass.mainSubBonuses,
-    isMasterClass ? mainClass.masterBonuses : mainClass.mainBonuses,
-    ...(isMasterClass ? [] : [subClass.mainSubBonuses]),
-    predisposition.bonuses,
-    lineage.bonuses,
-  ];
-
-  let melee = false;
-  let ranged = false;
-  let magic = false;
-  for (const bonuses of bonusSources) {
-    for (const bonus of bonuses) {
-      if (bonus.type === 'grit' || bonus.type === 'equip_melee') {
-        melee = true;
-      } else if (bonus.type === 'caster' || bonus.type === 'equip_magic') {
-        magic = true;
-      } else if (bonus.type === 'pursuit' || bonus.type === 'equip_ranged') {
-        ranged = true;
-      }
-    }
-  }
-
-  return { melee, ranged, magic };
-}
 
 export function getAvailableCategoryGroups(character: Character): CategoryGroup[] {
   const { melee, ranged, magic } = getCharacterCombatBonusLevels(character);
@@ -3215,3 +2934,5 @@ export function getNextMissingAutoEquipmentCategory(
   return null;
 }
 import { gameplayRandom } from '../../game/gameplayRandom';
+import { stripGodsBattleSuffix } from '../../game/godsBattleSuffix';
+import { DISPLAY_LOCALE } from '../../i18n/displayFormat';

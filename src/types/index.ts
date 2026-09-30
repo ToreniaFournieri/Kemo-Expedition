@@ -1,5 +1,6 @@
 import type { Language } from '../i18n';
 import type { ExpeditionDeployStatus } from '../game/expeditionDeployment';
+import type { ShopLineupSnapshot } from '../game/shop';
 
 // Elemental Types
 export type ElementalOffense = 'none' | 'fire' | 'thunder' | 'ice';
@@ -160,7 +161,7 @@ export type AbilityId =
   | 'focus' | 'prophecy' | 'stealth' | 'illusion'
   // Enemy-only abilities prepared from Enemy Master Specification
   | 'howl' | 'predator_sense' | 'slow' | 'boost' | 'corrode' | 'life_drain' | 'no_offense'
-  | 'decompose' | 'swarm' | 'death_touch' | 'flying' | 'free' | 'frostbite'
+  | 'decompose' | 'swarm' | 'death_touch' | 'flying' | 'flee' | 'frostbite'
   | 'ice_reflect' | 'ice_absorb' | 'ice_null' | 'bind' | 'regeneration' | 'burn' | 'fire_reflect' | 'fire_absorb' | 'fire_null' | 'thunder_reflect' | 'thunder_absorb' | 'thunder_null' | 'soul_reap'
   | 'mutual_magic_amplify' | 'mutual_magic_restraint' | 'ranged_confusion' | 'magic_confusion' | 'melee_confusion' | 'self_destruct' | 'oblivion' | 'fading_memory' | 'reanimate'
   | 'auriferous' | 'magic_seal' | 'ambush' | 'mimic' | 'shock' | 'null_shock' | 'mutual_physical_amplify' | 'mutual_physical_restraint'
@@ -283,6 +284,8 @@ export interface Character {
 }
 
 export interface SavedEquipmentEntry {
+  /** Exact character equipment slot. Omitted only by legacy dense saved sets. */
+  slotIndex?: number;
   item: Item;
   isLocked: boolean;
 }
@@ -292,6 +295,8 @@ export interface SavedEquipmentSet {
   name: string;
   createdAt: number;
   equipment: SavedEquipmentEntry[];
+  /** Undo/Redo history states only: the auto-equipment mode at that state. Saved sets never carry it. */
+  autoEquipmentMode?: 0 | 1 | 2;
 }
 
 // Computed character stats for battle
@@ -376,9 +381,9 @@ export interface Party {
   diarySettings: DiarySettings;
   expeditionStats: {
     Clear: number;
-    Turned_Back: number;
-    Draw_Retreat: number;
-    Wounded_Retreat: number;
+    Return: number;
+    Draw: number;
+    Retreat: number;
     Defeat: number;
     donatedGold: number;
     savedGold: number;
@@ -427,6 +432,7 @@ export type DiaryTrigger = 'victory' | 'return' | 'defeat' | 'draw' | 'retreat' 
 export type DiaryDefeatNotificationMode = 'defeatOnly' | 'defeatAndDraw' | 'defeatDrawRetreat' | 'all' | 'none';
 
 export interface DiaryLog {
+  semantic?: import('../game/compactDiary.ts').DiaryMetadata;
   id: string;
   expeditionLog: ExpeditionLog;
   triggers: DiaryTrigger[];
@@ -473,6 +479,8 @@ interface GlobalState {
   revealedItemCompendiumItemIds: number[];
   revealedGlossaryAbilityIds: string[];
   revealedGlossaryTerrainKeys: TerrainEffectKey[];
+  /** The saved Shop lineup of the current stock period (SpecRef 8.4.1); null until the first one is generated. */
+  shopLineup?: ShopLineupSnapshot | null;
   shopPurchases: Record<string, string[]>;
   jewelShopPurchases: Record<string, number>;
   shopRefreshCounts: Record<string, number>;
@@ -487,6 +495,8 @@ interface GlobalState {
   enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
   altarVictoriesByEnemyType?: Record<string, number>;
   readDeveloperNewsItemIds: string[];
+  /** Explicitly persisted UI preferences (closed catalog, Spec 9.1.4.17); changed only through `SET_UI_PREFERENCES`. */
+  uiPreferences?: Record<string, string | number | boolean>;
   language: Language;
 }
 
@@ -612,13 +622,18 @@ export interface BattleState {
 }
 
 export interface BattleLogEntry {
+  semanticPresentation?: boolean;
+  actorDisplayName?: string;
+  targetDisplayName?: string;
+  isResurrection?: boolean;
+  actionIncludesActor?: boolean;
   phase: BattlePhase;
   /** Attack capability used by a COMBAT action; phase is no longer a distance discriminator. */
   attackType?: AttackType;
   initiativeRoll?: number;
   actor: 'party' | 'enemy' | 'character' | 'effect' | 'triggered' | 'deity';
   characterId?: number;
-  effectKind?: 'life_drain' | 'terrain';
+  effectKind?: 'life_drain' | 'stealth' | 'terrain';
   effectSourceName?: string;
   effectTargetName?: string;
   effectHealAmount?: number;
@@ -697,6 +712,10 @@ export interface SuperRareTitle {
 
 // Expedition Log Types
 export interface ExpeditionLogEntry {
+  endEvents?: import('../game/compactDiary.ts').DiaryEndEvent[];
+  gateText?: import('../game/compactDiary.ts').DiaryText;
+  godsBattle?: boolean;
+  compactBattle?: import('../game/compactBattleLog.ts').CompactBattleLog;
   room: number;
   floor?: number; // Floor number (1-6)
   roomInFloor?: number; // Room within floor (1-4)
@@ -733,18 +752,21 @@ export interface ExpeditionLogEntry {
 }
 
 export interface ExpeditionLog {
+  compactVersion?: 1;
+  itemTable?: import('../game/compactDiary.ts').DiaryItem[];
+  actorTable?: import('../game/compactBattleLog.ts').CompactBattleActor[];
   dungeonId: number;
   dungeonName: string;
   difficultyOffset: number;
   totalExperience: number;
   totalRooms: number;
   completedRooms: number;
-  finalOutcome: 'Clear' | 'Escape' | 'Retreat' | 'Defeat';
+  finalOutcome: 'Clear' | 'Return' | 'Retreat' | 'Defeat';
   entries: ExpeditionLogEntry[];
   rewards: Item[];
   autoSellProfit: number;
   autoSellCount: number;
-  autoSellItems: { itemName: string; autoSellProfit: number }[];
+  autoSellItems: { itemName: string; autoSellProfit: number; item?: import('../game/compactDiary.ts').DiaryItem }[];
   autoSellMultiplier?: number;
   remainingPartyHP: number;
   maxPartyHP: number;
@@ -752,18 +774,53 @@ export interface ExpeditionLog {
 
 export interface ExpeditionSimulationResult {
   Clear: number;
-  Turned_Back: number;
-  Draw_Retreat: number;
-  Wounded_Retreat: number;
+  Return: number;
+  Draw: number;
+  Retreat: number;
   Defeat: number;
   total: number;
+  rooms: ExpeditionSimulationRoomResult[];
+  /** Sums over all runs; divide by `total` for the expected value per run. */
+  totals?: { experience: number; itemDrops: number; dropSaleValue: number };
+}
+
+export interface ExpeditionSimulationRoomResult {
+  room: number;
+  Victory: number;
+  Clear: number;
+  Return: number;
+  Draw: number;
+  Retreat: number;
+  Defeat: number;
+  NotReached: number;
+  reached: number;
+  total: number;
+  successfulHp: ExpeditionSimulationSuccessfulHpBuckets;
+  retreatHp: ExpeditionSimulationRetreatHpBuckets;
+}
+
+export interface ExpeditionSimulationSuccessfulHpBuckets {
+  Full: number;
+  From90: number;
+  From80: number;
+  From70: number;
+  From60: number;
+  From50: number;
+  From40: number;
+  Below40: number;
+}
+
+export interface ExpeditionSimulationRetreatHpBuckets {
+  From30: number;
+  From20: number;
+  From10: number;
+  Below10: number;
 }
 
 // Game State
 type GameScene = 'home';
 
 export interface GameState {
-  apiRuntime?: import('../game/experimentalApiSession').ApiRuntime;
   scene: GameScene;
   global: GlobalState;
   parties: Party[];

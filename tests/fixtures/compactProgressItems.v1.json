@@ -1,0 +1,4087 @@
+{
+ "d1/defeated/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated/allGates/god0": {
+  "items": [
+   {
+    "key": "entry-gate:2",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でルピニアンの亜寒帯 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:2",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でルピニアンの亜寒帯 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated/allGates/god2": {
+  "items": [
+   {
+    "key": "entry-gate:2",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でルピニアンの亜寒帯 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:2",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でルピニアンの亜寒帯 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated/allGates/god3": {
+  "items": [
+   {
+    "key": "entry-gate:2",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でルピニアンの亜寒帯 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:2",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でルピニアンの亜寒帯 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated1/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated1/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated1/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated1/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated1/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated1/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated1/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated1/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated1/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated1/allGates/god0": {
+  "items": [
+   {
+    "key": "god-gate:1",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔セイラン戦",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:1",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔セイラン戦",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated1/allGates/god2": {
+  "items": [
+   {
+    "key": "god-gate:1",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔セイラン戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:1",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔セイラン戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated1/allGates/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d1/defeated0/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0/allGates/god0": {
+  "items": [
+   {
+    "key": "entry-gate:2",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でルピニアンの亜寒帯 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:2",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でルピニアンの亜寒帯 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0/allGates/god2": {
+  "items": [
+   {
+    "key": "entry-gate:2",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でルピニアンの亜寒帯 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:2",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でルピニアンの亜寒帯 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0/allGates/god3": {
+  "items": [
+   {
+    "key": "entry-gate:2",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でルピニアンの亜寒帯 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:2",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でルピニアンの亜寒帯 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0+1/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0+1/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0+1/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0+1/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0+1/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0+1/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0+1/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0+1/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0+1/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:1",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0+1/allGates/god0": {
+  "items": [
+   {
+    "key": "god-gate:1",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔セイラン戦",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:1",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔セイラン戦",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0+1/allGates/god2": {
+  "items": [
+   {
+    "key": "god-gate:1",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔セイラン戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:1",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔セイラン戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "quest": null
+ },
+ "d1/defeated0+1/allGates/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d2/defeated/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated/allGates/god0": {
+  "items": [
+   {
+    "key": "entry-gate:3",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でヴァルンの海洋 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:3",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でヴァルンの海洋 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated/allGates/god2": {
+  "items": [
+   {
+    "key": "entry-gate:3",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でヴァルンの海洋 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:3",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でヴァルンの海洋 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated/allGates/god3": {
+  "items": [
+   {
+    "key": "entry-gate:3",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でヴァルンの海洋 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:3",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でヴァルンの海洋 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated2/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated2/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated2/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated2/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated2/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated2/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated2/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated2/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated2/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated2/allGates/god0": {
+  "items": [
+   {
+    "key": "god-gate:2",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔ガーヴ戦",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:2",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔ガーヴ戦",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated2/allGates/god2": {
+  "items": [
+   {
+    "key": "god-gate:2",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔ガーヴ戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:2",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔ガーヴ戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated2/allGates/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d2/defeated1/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1/allGates/god0": {
+  "items": [
+   {
+    "key": "entry-gate:3",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でヴァルンの海洋 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:3",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でヴァルンの海洋 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1/allGates/god2": {
+  "items": [
+   {
+    "key": "entry-gate:3",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でヴァルンの海洋 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:3",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でヴァルンの海洋 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1/allGates/god3": {
+  "items": [
+   {
+    "key": "entry-gate:3",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でヴァルンの海洋 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:3",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でヴァルンの海洋 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1+2/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1+2/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1+2/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1+2/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1+2/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1+2/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:2:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1+2/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1+2/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1+2/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:2",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1+2/allGates/god0": {
+  "items": [
+   {
+    "key": "god-gate:2",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔ガーヴ戦",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:2",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔ガーヴ戦",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1+2/allGates/god2": {
+  "items": [
+   {
+    "key": "god-gate:2",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔ガーヴ戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:2",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔ガーヴ戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "quest": null
+ },
+ "d2/defeated1+2/allGates/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d5/defeated/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated/allGates/god0": {
+  "items": [
+   {
+    "key": "entry-gate:6",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でプロキオン巣穴 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:6",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でプロキオン巣穴 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated/allGates/god2": {
+  "items": [
+   {
+    "key": "entry-gate:6",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でプロキオン巣穴 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:6",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でプロキオン巣穴 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated/allGates/god3": {
+  "items": [
+   {
+    "key": "entry-gate:6",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でプロキオン巣穴 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:6",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でプロキオン巣穴 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated5/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated5/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated5/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated5/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated5/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated5/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated5/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated5/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated5/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated5/allGates/god0": {
+  "items": [
+   {
+    "key": "god-gate:5",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔ドルヴァ戦",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:5",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔ドルヴァ戦",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated5/allGates/god2": {
+  "items": [
+   {
+    "key": "god-gate:5",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔ドルヴァ戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:5",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔ドルヴァ戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated5/allGates/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d5/defeated4/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4/allGates/god0": {
+  "items": [
+   {
+    "key": "entry-gate:6",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でプロキオン巣穴 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:6",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でプロキオン巣穴 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4/allGates/god2": {
+  "items": [
+   {
+    "key": "entry-gate:6",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でプロキオン巣穴 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:6",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でプロキオン巣穴 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4/allGates/god3": {
+  "items": [
+   {
+    "key": "entry-gate:6",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でプロキオン巣穴 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "entry-gate:6",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 でプロキオン巣穴 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4+5/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4+5/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4+5/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4+5/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4+5/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4+5/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:5:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4+5/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4+5/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4+5/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:5",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4+5/allGates/god0": {
+  "items": [
+   {
+    "key": "god-gate:5",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔ドルヴァ戦",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:5",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔ドルヴァ戦",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4+5/allGates/god2": {
+  "items": [
+   {
+    "key": "god-gate:5",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔ドルヴァ戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:5",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔ドルヴァ戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "quest": null
+ },
+ "d5/defeated4+5/allGates/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d8/defeated/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated/allGates/god0": {
+  "items": [
+   {
+    "key": "god-entry:8",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 で神魔フォルネ戦 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-entry:8",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 で神魔フォルネ戦 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated/allGates/god2": {
+  "items": [
+   {
+    "key": "god-entry:8",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 で神魔フォルネ戦 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-entry:8",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 で神魔フォルネ戦 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated/allGates/god3": {
+  "items": [
+   {
+    "key": "god-entry:8",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 で神魔フォルネ戦 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-entry:8",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 で神魔フォルネ戦 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated8/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated8/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated8/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated8/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated8/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated8/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated8/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated8/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated8/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated8/allGates/god0": {
+  "items": [
+   {
+    "key": "god-gate:8",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔フォルネ戦",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:8",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔フォルネ戦",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated8/allGates/god2": {
+  "items": [
+   {
+    "key": "god-gate:8",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔フォルネ戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:8",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔フォルネ戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated8/allGates/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d8/defeated7/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7/allGates/god0": {
+  "items": [
+   {
+    "key": "god-entry:8",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 で神魔フォルネ戦 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-entry:8",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 で神魔フォルネ戦 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7/allGates/god2": {
+  "items": [
+   {
+    "key": "god-entry:8",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 で神魔フォルネ戦 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-entry:8",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 で神魔フォルネ戦 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7/allGates/god3": {
+  "items": [
+   {
+    "key": "god-entry:8",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 で神魔フォルネ戦 開放",
+    "progressRatio": null
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-entry:8",
+    "compactText": "🗺️ボス撃破せよ",
+    "bubbleText": "ボス撃破 で神魔フォルネ戦 開放",
+    "progressRatio": null
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7+8/fresh/god0": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7+8/fresh/god2": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7+8/fresh/god3": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7+8/elite1/god0": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7+8/elite1/god2": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7+8/elite1/god3": {
+  "items": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:8:1",
+    "compactText": "🚪2/7 1F-4解放",
+    "bubbleText": "連続攻略成功 2/7 で 1F-4解放",
+    "progressRatio": 0.2857142857142857
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7+8/elitesDone/god0": {
+  "items": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7+8/elitesDone/god2": {
+  "items": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7+8/elitesDone/god3": {
+  "items": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "boss-gate:8",
+    "compactText": "🚪0/2 ボス戦解放",
+    "bubbleText": "連続攻略成功 0/2 で ボス戦解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7+8/allGates/god0": {
+  "items": [
+   {
+    "key": "god-gate:8",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔フォルネ戦",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:8",
+    "compactText": "🗃️0/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 0/3 で神魔フォルネ戦",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7+8/allGates/god2": {
+  "items": [
+   {
+    "key": "god-gate:8",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔フォルネ戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "scaled": [
+   {
+    "key": "god-gate:8",
+    "compactText": "🗃️2/3 神魔解放",
+    "bubbleText": "ボスレアアイテム 2/3 で神魔フォルネ戦",
+    "progressRatio": 0.6666666666666666
+   }
+  ],
+  "quest": null
+ },
+ "d8/defeated7+8/allGates/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated/fresh/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated/fresh/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated/fresh/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated/elite1/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated/elite1/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated/elite1/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated/elitesDone/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated/elitesDone/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated/elitesDone/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated/allGates/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated/allGates/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated/allGates/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated99/fresh/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated99/fresh/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated99/fresh/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated99/elite1/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated99/elite1/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated99/elite1/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated99/elitesDone/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated99/elitesDone/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated99/elitesDone/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated99/allGates/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated99/allGates/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated99/allGates/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98/fresh/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98/fresh/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98/fresh/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98/elite1/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98/elite1/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98/elite1/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98/elitesDone/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98/elitesDone/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98/elitesDone/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98/allGates/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98/allGates/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98/allGates/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98+99/fresh/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98+99/fresh/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98+99/fresh/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98+99/elite1/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98+99/elite1/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98+99/elite1/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98+99/elitesDone/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98+99/elitesDone/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98+99/elitesDone/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98+99/allGates/god0": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98+99/allGates/god2": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "d99/defeated98+99/allGates/god3": {
+  "items": [],
+  "scaled": [],
+  "quest": null
+ },
+ "pending snapshot": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪1/7 1F-4解放",
+    "bubbleText": "連続攻略成功 1/7 で 1F-4解放",
+    "progressRatio": 0.14285714285714285
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪1/7 1F-4解放",
+    "bubbleText": "連続攻略成功 1/7 で 1F-4解放",
+    "progressRatio": 0.14285714285714285
+   }
+  ],
+  "quest": null
+ },
+ "boss clear exploring": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "boss clear resting": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   }
+  ],
+  "quest": null
+ },
+ "quest q.squander": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   },
+   {
+    "key": "side-quest:q.squander:宴会で400G浪費する",
+    "compactText": "📜宴会で400G浪費する 🕑",
+    "bubbleText": "宴会で400G浪費する（25%, 100G, 残り2時間）",
+    "progressRatio": 0.25
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   },
+   {
+    "key": "side-quest:q.squander:宴会で400G浪費する",
+    "compactText": "📜宴会で400G浪費する 🕐",
+    "bubbleText": "宴会で400G浪費する（25%, 100G, 残り0分）",
+    "progressRatio": 0.25
+   }
+  ],
+  "quest": {
+   "key": "side-quest:q.squander:宴会で400G浪費する",
+   "compactText": "📜宴会で400G浪費する 🕑",
+   "bubbleText": "宴会で400G浪費する（25%, 100G, 残り2時間）",
+   "progressRatio": 0.25
+  }
+ },
+ "quest q.exercise": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   },
+   {
+    "key": "side-quest:q.exercise:15分歩く",
+    "compactText": "📜15分歩く 🕘",
+    "bubbleText": "15分歩く（33%, 5分, 残り9時間）",
+    "progressRatio": 0.3333333333333333
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   },
+   {
+    "key": "side-quest:q.exercise:15分歩く",
+    "compactText": "📜15分歩く 🕐",
+    "bubbleText": "15分歩く（33%, 5分, 残り0分）",
+    "progressRatio": 0.3333333333333333
+   }
+  ],
+  "quest": {
+   "key": "side-quest:q.exercise:15分歩く",
+   "compactText": "📜15分歩く 🕘",
+   "bubbleText": "15分歩く（33%, 5分, 残り9時間）",
+   "progressRatio": 0.3333333333333333
+  }
+ },
+ "quest q.healing": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   },
+   {
+    "key": "side-quest:q.healing:20分治療を受ける",
+    "compactText": "📜20分治療を受ける",
+    "bubbleText": "20分治療を受ける（100%, 20分）",
+    "progressRatio": 1
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   },
+   {
+    "key": "side-quest:q.healing:20分治療を受ける",
+    "compactText": "📜20分治療を受ける",
+    "bubbleText": "20分治療を受ける（100%, 20分）",
+    "progressRatio": 1
+   }
+  ],
+  "quest": {
+   "key": "side-quest:q.healing:20分治療を受ける",
+   "compactText": "📜20分治療を受ける",
+   "bubbleText": "20分治療を受ける（100%, 20分）",
+   "progressRatio": 1
+  }
+ },
+ "quest q.treasure-super-rare": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   },
+   {
+    "key": "side-quest:q.treasure-super-rare:超レアを獲得する",
+    "compactText": "📜超レアを獲得する 🕐",
+    "bubbleText": "超レアを獲得する（0%, 残り1時間）",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   },
+   {
+    "key": "side-quest:q.treasure-super-rare:超レアを獲得する",
+    "compactText": "📜超レアを獲得する 🕐",
+    "bubbleText": "超レアを獲得する（0%, 残り0分）",
+    "progressRatio": 0
+   }
+  ],
+  "quest": {
+   "key": "side-quest:q.treasure-super-rare:超レアを獲得する",
+   "compactText": "📜超レアを獲得する 🕐",
+   "bubbleText": "超レアを獲得する（0%, 残り1時間）",
+   "progressRatio": 0
+  }
+ },
+ "quest q.losers": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   },
+   {
+    "key": "side-quest:q.losers:敗北する",
+    "compactText": "📜敗北する 🕐",
+    "bubbleText": "敗北する（0%, 残り1分）",
+    "progressRatio": 0
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   },
+   {
+    "key": "side-quest:q.losers:敗北する",
+    "compactText": "📜敗北する 🕐",
+    "bubbleText": "敗北する（0%, 残り0分）",
+    "progressRatio": 0
+   }
+  ],
+  "quest": {
+   "key": "side-quest:q.losers:敗北する",
+   "compactText": "📜敗北する 🕐",
+   "bubbleText": "敗北する（0%, 残り1分）",
+   "progressRatio": 0
+  }
+ },
+ "quest q.consecutive-wins": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   },
+   {
+    "key": "side-quest:q.consecutive-wins:8連続して踏破する",
+    "compactText": "📜8連続して踏破する 🕐",
+    "bubbleText": "8連続して踏破する（37%, 3連, 残り25時間）",
+    "progressRatio": 0.375
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   },
+   {
+    "key": "side-quest:q.consecutive-wins:8連続して踏破する",
+    "compactText": "📜8連続して踏破する 🕕",
+    "bubbleText": "8連続して踏破する（37%, 3連, 残り6時間）",
+    "progressRatio": 0.375
+   }
+  ],
+  "quest": {
+   "key": "side-quest:q.consecutive-wins:8連続して踏破する",
+   "compactText": "📜8連続して踏破する 🕐",
+   "bubbleText": "8連続して踏破する（37%, 3連, 残り25時間）",
+   "progressRatio": 0.375
+  }
+ },
+ "quest q.unknown": {
+  "items": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   },
+   {
+    "key": "side-quest:q.unknown:x",
+    "compactText": "📜x 🕐",
+    "bubbleText": "x（40%, 2/5, 残り1分）",
+    "progressRatio": 0.4
+   }
+  ],
+  "scaled": [
+   {
+    "key": "elite-gate:1:1",
+    "compactText": "🚪0/7 1F-4解放",
+    "bubbleText": "連続攻略成功 0/7 で 1F-4解放",
+    "progressRatio": 0
+   },
+   {
+    "key": "side-quest:q.unknown:x",
+    "compactText": "📜x 🕐",
+    "bubbleText": "x（40%, 2/5, 残り0分）",
+    "progressRatio": 0.4
+   }
+  ],
+  "quest": {
+   "key": "side-quest:q.unknown:x",
+   "compactText": "📜x 🕐",
+   "bubbleText": "x（40%, 2/5, 残り1分）",
+   "progressRatio": 0.4
+  }
+ }
+}

@@ -152,5 +152,5 @@ test('expedition service keeps inventory installation between the two room-victo
   assert.match(runExpedition, /createExpeditionApplicationAdapters\(/);
   assert.match(rewardInstallationSource, /installRecoveredExpeditionRewards\(/);
   assert.match(presentationSource, /buildRewardLogEntries\(/);
-  assert.match(presentationSource, /buildPostBattleEffectLogs\(/);
+  assert.match(presentationSource, /postBattleEffects\.preContinuationFacts\.map/);
 });

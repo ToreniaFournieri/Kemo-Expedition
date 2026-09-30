@@ -1,6 +1,11 @@
 ## 8. UI
 
 ### 8.2 UI_PARTY
+- **GUI:**
+  - `guiParty`
+- **API Read:**
+  - `read/observation/party`
+
 - Party tab
 
 - **Party main Pane background image**
@@ -21,6 +26,13 @@
 - The image bottom edge should visually connect to the adjacent Status Pane without vertical gap.
 
 #### 8.2.1 Displays
+- **GUI:**
+  - `guiParty`
+- **API Read:** 
+  - `read/build/party/{p}`
+- **API Read:**
+  - `read/build/character/{characterId}/status`
+
 - Up to 6 parties can exist.
 - Locked parties are not displayed.
 - All unlocked parties are displayed normally and can be selected.
@@ -65,6 +77,13 @@ line2: 桃/腕  ← text over background image
 - Current status, abilities, bonuses
 
 #### 8.2.2 Party member details
+- **GUI:**
+  - `guiPartyCharacter`
+- **API Read:**
+  - `read/build/character/{characterId}/status`
+- **API Commit:**
+  - `commit/build/party/{p}`
+
 - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
 - When the player attempts to swap the order of party members, display the following confirmation dialog:
   - `選択したパーティメンバーの順番を入れ替えますか？`
@@ -174,6 +193,11 @@ Left-aligned
 ```
 
 #### 8.2.3 Character Edit Mode (selected member):
+- **GUI:**
+  - `guiCharacterEdit`
+- **API Commit:**
+  - `commit/build/character/{characterId}/changeBuild`
+
 **1. Contents**
 
 - `Unique`: Unique Character Flag. 
@@ -183,6 +207,7 @@ Left-aligned
 
 - Name [edit]
 - Editable `name` field.
+  - Up to 20-character name;
 - Toggle selection: `男` / `女` Exactly one must be selected (no null state)
   - If another member in the same party already has the same race, different gender, and `unique_character == false`, that gender option cannot be selected for the current member. (not display text 男 or 女 if cannot be selected, just bottun)
   - Mimorian characters are an exception: Only `女` may be selected.
@@ -277,6 +302,28 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 
 
 #### 8.2.4 Equipment management
+- **GUI:**
+  - `guiCharacterEdit`
+- **API Read:**
+  - `read/build/character/{characterId}/equipmentSet`
+  - `read/build/character/{characterId}/equipmentEvaluation`
+  - `read/base/searchItems`
+- **API Commit:**
+  - `commit/build/character/{characterId}/removeAllEquipment`
+  - `commit/build/character/{characterId}/removeEquipment`
+  - `commit/build/character/{characterId}/equip`
+  - `commit/build/character/{characterId}/lockEquipment`
+  - `commit/build/character/{characterId}/unlockEquipment`
+  - `commit/build/character/{characterId}/autoEquipment`
+  - `commit/build/character/{characterId}/jewelAttach`
+  - `commit/build/character/{characterId}/jewelRemove`
+  - `commit/build/character/{characterId}/saveEquipmentSet`
+  - `commit/build/character/{characterId}/loadEquipmentSet`
+  - `commit/build/character/{characterId}/deleteEquipmentSet`
+  - `commit/build/character/{characterId}/renameEquipmentSet`
+  - `commit/build/character/{characterId}/undoEquipment`
+  - `commit/build/character/{characterId}/redoEquipment`
+
 **1. Interaction Rules:**
 - **Auto-Equip:** - If there is an empty slot and the player taps an item in the inventory, that item is automatically equipped to the first available slot.
 - **Replace (Single-Tap):** - Tapping an item already in a Character Slot "selects" it. Tapping an item in the inventory while a slot is selected replaces the current item with the new one.
@@ -302,6 +349,7 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
   - When this button is pressed, all currently equipped items are unequipped.
 - **Save Equipment Set button:** (装備記憶)
   - When this button is pressed, the current equipment set is saved to a new empty saved slot.
+  - The saved set includes both equipped items and their attached jewel combinations.
 - **Load Equipment Set button:** (装備呼出▲)
   - When this button is pressed, expand the pane and display the saved equipment slots.
   - Pressing a saved slot attempts to apply the corresponding equipment set.
@@ -312,14 +360,18 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
       - The character does not have the required equipment bonus, such as `c.equip_melee`, `c.equip_ranged`, or `c.equip_magic`.
       - If the number of candidate items exceeds the character's available equipment slots, any excess items are not equipped.
   - Options:
-    - equipSet: `装備する` : Equip items, this option is visible only when all of items are available.
-    - equipSimilar: `類似のものを装備`: Equip matching items where available, and substitute unavailable items with similar items.
+    - equipSet: `装備する` :
+      - Equips the saved equipment set.
+      - This option is available only when all saved items and their associated jewel combinations are currently available.
+    - equipSimilar: `類似のものを装備`: Equip matching items and their associated jewel combinations where available, and substitute unavailable items with similar items.
     - equipExactMatchesOnly:`一致するものだけ装備`: Equip only items that exactly match the saved equipment set.
     - deleteSet: `セットを削除する`: Delete the selected set.
   - **Similar-item assignment:**
     - Super Rare prefix is excluded from substitution.
     - An item with a lower enhancement level may be used as a substitute.
-    - Jewels do not need to match exactly; suitable jewels are assigned using the same logic as Auto Equipment.
+    - Only when the party is the Jewel Priority Party:
+      - Jewels do not need to match the saved set exactly.
+      - Suitable jewels are assigned automatically using the same logic as Auto Equipment.
   - The saved equipment slot preserves the lock status of each item and restores it when the equipment set is loaded.
   - **Note:** items and jewels are stored separately in the inventory and should therefore be matched and assigned independently.
 - **Saved equipment slots:**
@@ -332,18 +384,18 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
   - Each slot can be expanded to display its equipment details.
     - Available items are displayed in black.
     - Unavailable items are displayed in gray.
-- **Auto equipment button(自動装備):** When the player presses the “自動装備” button, the auto-equipment logic is triggered immediately. This button is visible only when `m.auto_equipment` = 2 (FULL mode).
-- **three-state toggle(手動/補助/一任):** 　`m.auto_equipment` is controlled by a three-state toggle. This setting is configured per party member. Default: `2` FULL
-  - If the player performs any manual equipment change while `m.auto_equipment = 2` (FULL), then automatically set `m.auto_equipment = 1` (SEMI).
-  - The toggle cycles in the following order: `OFF (0)` → `SEMI (1)` → `FULL (2)` → `OFF (0)` ...
+- **Auto equipment button(自動装備):** When the player presses the “自動装備” button, the auto-equipment logic is triggered immediately. This button is visible only when `m.auto_equipment` = `FULL`.
+- **three-state toggle(手動/補助/一任):** 　`m.auto_equipment` is controlled by a three-state toggle. This setting is configured per party member. Default: `FULL`
+  - If the player performs any manual equipment change while `m.auto_equipment = FULL`, then automatically set `m.auto_equipment = SEMI`.
+  - The toggle cycles in the following order: `OFF` → `SEMI` → `FULL` → `OFF` ...
   
 The toggle cycles through the following modes:
 
-| Value | Mode     | label |
-| ----- | -------- | ----- | 
-| `0`   | `OFF`  | 手動 |
-| `1`   | `SEMI` | 補助 | 
-| `2`   | `FULL` | 一任 |
+| Mode     | label |
+| -------- | ----- | 
+| `OFF`  | 手動 |
+| `SEMI` | 補助 | 
+| `FULL` | 一任 |
 
 - **?:** floating bubble for help:
 
@@ -370,6 +422,7 @@ The toggle cycles through the following modes:
 **4. Lock and Unlock Item**
 - Visibility
   - The lock icon (🔒 / 🔓) is displayed only when `m.auto_equipment` = `FULL`.
+  - Internally, the lock condition remains.  
 - Default state
   - All items are Unlocked by default.
 - Lock behavior

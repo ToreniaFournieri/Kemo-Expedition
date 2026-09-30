@@ -249,7 +249,7 @@ AbilityOwnership ability_ownership(protocol::AbilityId id) {
     case protocol::AbilityId::UnstableCore: case protocol::AbilityId::SoulReap:
     case protocol::AbilityId::Regeneration: case protocol::AbilityId::PredatorSense:
     case protocol::AbilityId::Decompose: case protocol::AbilityId::SelfDestruct:
-    case protocol::AbilityId::Free:
+    case protocol::AbilityId::Flee:
     case protocol::AbilityId::Flying: case protocol::AbilityId::Pursuit:
       return AbilityOwnership::TimedTrigger;
     case protocol::AbilityId::FirstAid:
@@ -352,7 +352,7 @@ bool is_terrain_timed_or_reactive(protocol::AbilityId id) {
     case protocol::AbilityId::PredatorSense:
     case protocol::AbilityId::Decompose:
     case protocol::AbilityId::SelfDestruct:
-    case protocol::AbilityId::Free:
+    case protocol::AbilityId::Flee:
     case protocol::AbilityId::Auriferous:
     case protocol::AbilityId::FirstAid:
       return true;
@@ -1860,7 +1860,7 @@ CombatResult resolve_normal_combat(const InputHeader& input, BattleStateCore& st
         const int stealth = active_ability_level(*result.target, protocol::AbilityId::Stealth);
         const double current_target_hp = result.target->side == Side::Party ? state.party_hp : state.enemy_hp;
         const double target_max = result.target->side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
-        const bool stealth_negated = result.hits > 0 && stealth > 0 &&
+        const bool stealth_negated = action.attack_type == 3 && result.hits > 0 && stealth > 0 &&
             active_ability_level(*actor, protocol::AbilityId::Pursuit) == 0 && target_max > 0.0 &&
             current_target_hp / target_max <= (ability_scales::value(stealth, ability_scales::stealth));
         if (stealth_negated) {
@@ -2329,6 +2329,9 @@ CombatResult resolve_counter_checkpoint(const InputHeader& input, BattleStateCor
   if ((target.side == Side::Party ? state.party_hp : state.enemy_hp) <= 0.0) return CombatResult::Ok;
   const int counter_level = active_ability_level(target, protocol::AbilityId::Counter);
   if (counter_level <= 0) return CombatResult::Ok;
+  // SpecRef: 6.1.4.3 | f.counter | Failure condition: without an attack of the incoming type, the counter is skipped
+  // (no event, and no null-counter use).
+  if (action_noa(target, profile_index) <= 0.0) return CombatResult::Ok;
   if (target.side == Side::Enemy) {
     if (auto* nullifier = available_party_null_counter(state)) {
       return emit_counter_nullification(state, *nullifier, target, protocol::AbilityId::NullCounter,
@@ -2381,7 +2384,7 @@ CombatResult resolve_timed_combat_slot(const InputHeader& input, BattleStateCore
         ability == protocol::AbilityId::NullAntagonism || ability == protocol::AbilityId::UnstableCore ||
         ability == protocol::AbilityId::Regeneration || ability == protocol::AbilityId::Flying ||
         ability == protocol::AbilityId::Decompose || ability == protocol::AbilityId::SelfDestruct ||
-        ability == protocol::AbilityId::SoulReap || ability == protocol::AbilityId::Free ||
+        ability == protocol::AbilityId::SoulReap || ability == protocol::AbilityId::Flee ||
         ability == protocol::AbilityId::Pursuit;
     if (!flavored) return true;
     const u32 choice_count = ability == protocol::AbilityId::UnstableCore ? 5
@@ -2403,19 +2406,19 @@ CombatResult resolve_timed_combat_slot(const InputHeader& input, BattleStateCore
     return CombatResult::Ok;
   };
 
-  auto trigger_free = [&]() -> CombatResult {
+  auto trigger_flee = [&]() -> CombatResult {
     if (attack != 3 || timing < 1 || timing > 5) return CombatResult::Ok;
-    const int free_level = active_ability_level(enemy, protocol::AbilityId::Free);
+    const int flee_level = active_ability_level(enemy, protocol::AbilityId::Flee);
     CombatantState* party_pursuit_owner = nullptr; for (u32 i = 0; i < party_count; ++i) if (!party_pursuit_owner && active_ability_level(*parties[i], protocol::AbilityId::Pursuit) > 0) party_pursuit_owner = parties[i];
-    if (free_level > 0 && (free_level > 5 ? 5 : free_level) == timing) {
+    if (flee_level > 0 && (flee_level > 5 ? 5 : flee_level) == timing) {
       if (party_pursuit_owner) {
         if (!emit(*party_pursuit_owner, &enemy, protocol::AbilityId::Pursuit, 3)) return CombatResult::EventCapacity;
       } else {
-        if (!emit(enemy, nullptr, protocol::AbilityId::Free, 3)) return CombatResult::EventCapacity;
+        if (!emit(enemy, nullptr, protocol::AbilityId::Flee, 3)) return CombatResult::EventCapacity;
         state.forced_draw = true; return CombatResult::Ok;
       }
     }
-    for (u32 i = 0; i < party_count; ++i) { auto& owner = *parties[i]; const int level = active_ability_level(owner, protocol::AbilityId::Free); if (level <= 0 || (level > 5 ? 5 : level) != timing) continue; const bool pursued = active_ability_level(enemy, protocol::AbilityId::Pursuit) > 0; if (!emit(pursued ? enemy : owner, pursued ? &owner : nullptr, pursued ? protocol::AbilityId::Pursuit : protocol::AbilityId::Free, 3)) return CombatResult::EventCapacity; if (!pursued) { state.forced_draw = true; return CombatResult::Ok; } }
+    for (u32 i = 0; i < party_count; ++i) { auto& owner = *parties[i]; const int level = active_ability_level(owner, protocol::AbilityId::Flee); if (level <= 0 || (level > 5 ? 5 : level) != timing) continue; const bool pursued = active_ability_level(enemy, protocol::AbilityId::Pursuit) > 0; if (!emit(pursued ? enemy : owner, pursued ? &owner : nullptr, pursued ? protocol::AbilityId::Pursuit : protocol::AbilityId::Flee, 3)) return CombatResult::EventCapacity; if (!pursued) { state.forced_draw = true; return CombatResult::Ok; } }
     return CombatResult::Ok;
   };
 
@@ -2481,22 +2484,22 @@ CombatResult resolve_timed_combat_slot(const InputHeader& input, BattleStateCore
     if ((status = run(trigger_predator_sense)) != CombatResult::Ok) return status;
     if ((status = run(trigger_unstable_core)) != CombatResult::Ok) return status;
     if ((status = run(trigger_confusion)) != CombatResult::Ok) return status;
-    if ((status = run(trigger_free)) != CombatResult::Ok || state.forced_draw) return status;
+    if ((status = run(trigger_flee)) != CombatResult::Ok || state.forced_draw) return status;
   } else if (timing == 5) {
     if ((status = run(trigger_confusion)) != CombatResult::Ok) return status;
-    if ((status = run(trigger_free)) != CombatResult::Ok || state.forced_draw) return status;
+    if ((status = run(trigger_flee)) != CombatResult::Ok || state.forced_draw) return status;
   } else if (timing == 3) {
-    if ((status = run(trigger_free)) != CombatResult::Ok || state.forced_draw) return status;
+    if ((status = run(trigger_flee)) != CombatResult::Ok || state.forced_draw) return status;
     if ((status = run(trigger_regeneration)) != CombatResult::Ok) return status;
     if ((status = run(trigger_flying)) != CombatResult::Ok) return status;
   } else if (timing == 2) {
-    if ((status = run(trigger_free)) != CombatResult::Ok || state.forced_draw) return status;
+    if ((status = run(trigger_flee)) != CombatResult::Ok || state.forced_draw) return status;
     if ((status = run(trigger_decompose)) != CombatResult::Ok) return status;
     if ((status = run(trigger_confusion)) != CombatResult::Ok) return status;
     if ((status = run(trigger_self_destruct)) != CombatResult::Ok) return status;
     if ((status = run(trigger_soul_reap)) != CombatResult::Ok) return status;
   } else if (timing == 1) {
-    if ((status = run(trigger_free)) != CombatResult::Ok || state.forced_draw) return status;
+    if ((status = run(trigger_flee)) != CombatResult::Ok || state.forced_draw) return status;
     if ((status = run(trigger_confusion)) != CombatResult::Ok) return status;
   } else if (timing == 0) {
     if ((status = run(trigger_unstable_core)) != CombatResult::Ok) return status;
@@ -2564,8 +2567,12 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
     const int stealth = active_ability_level(target, protocol::AbilityId::Stealth);
     const double stealth_hp = target.side == Side::Party ? state.party_hp : state.enemy_hp;
     const double stealth_max = target.side == Side::Party ? state.party_max_hp : state.enemy_max_hp;
-    if (result.hits > 0 && stealth > 0 && active_ability_level(actor, protocol::AbilityId::Pursuit) == 0 &&
-        stealth_max > 0.0 && stealth_hp / stealth_max <= (ability_scales::value(stealth, ability_scales::stealth))) {
+    const bool normal_melee = action_id == static_cast<u32>(protocol::ActionId::NormalAttack)
+        && profile_index == 2;
+    if (normal_melee && result.hits > 0 && stealth > 0
+        && active_ability_level(actor, protocol::AbilityId::Pursuit) == 0
+        && stealth_max > 0.0
+        && stealth_hp / stealth_max <= ability_scales::value(stealth, ability_scales::stealth)) {
       result.calculated = 0.0;
       result.hits = 0;
       if (!emit_state_event(state, protocol::EventOpcode::Nullified, kCombatPhase, target.id, actor.id,

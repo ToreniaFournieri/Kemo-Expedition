@@ -1,0 +1,864 @@
+import assert from 'node:assert/strict';
+import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
+import { createFreshGameState } from '../../src/hooks/useGameState';
+import { getVariantKey, type DiaryLog, type ExpeditionLog, type GameState, type SavedEquipmentSet } from '../../src/types';
+
+// SpecRef: 9.1 | Desktop distribution | Application API
+// Isolated, transport-neutral behavioral coverage for the extracted commit-operation module: no React, no
+// Electron, no HTTP. This is the first slice of the cross-adapter fixture work described for later milestones.
+
+function baseContext(overrides: Partial<ApiV1CommitContext> = {}): ApiV1CommitContext {
+  return {
+    simulatedAt: Date.parse('2026-01-01T00:00:00.000Z'),
+    gameMode: 'mode.normal',
+    enemyLevelOffset: 0,
+    settings: {},
+    equipmentHistory: {},
+    uploadedFiles: {},
+    canonicalFiles: {},
+    applyAutoEquipment: (state) => state,
+    createDeliveryId: () => 'delivery-fixed-id',
+    now: () => Date.parse('2026-01-01T00:00:00.000Z'),
+    ...overrides,
+  };
+}
+
+const seed: GameState = createFreshGameState('ja', Date.parse('2026-01-01T00:00:00.000Z'));
+
+function diaryLog(id: string, isRead = false): DiaryLog {
+  const expeditionLog: ExpeditionLog = {
+    dungeonId: 1, compactVersion: 1, dungeonName: '', difficultyOffset: 0, totalExperience: 0, totalRooms: 0, completedRooms: 0,
+    finalOutcome: 'Return', entries: [], rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: 100, maxPartyHP: 100,
+  };
+  return { id, expeditionLog, triggers: ['return'], createdAt: Date.parse('2026-01-01T00:00:00.000Z'), isRead };
+}
+
+// 1. A simple successful mutation returns updated data without mutating the input state.
+// createFreshGameState defaults jewelAutoEquipPriorityPartyId to 1, so dispatch 'none' to
+// actually change it (and prove the resulting reference is fresh, not a no-op passthrough).
+{
+  assert.equal(seed.global.jewelAutoEquipPriorityPartyId, 1, 'fresh game state defaults jewel priority to PT1');
+  const outcome = applyApiV1Commit('commit/base/changeJewelPriorityParty', seed, { partyNumber: 'none' }, baseContext());
+  assert.equal(outcome.data && (outcome.data as { current: { partyNumber: string } }).current.partyNumber, 'none');
+  assert.equal(outcome.state.global.jewelAutoEquipPriorityPartyId, null);
+  assert.notEqual(outcome.state, seed, 'the input snapshot must not be mutated in place');
+  assert.equal(seed.global.jewelAutoEquipPriorityPartyId, 1, 'the original snapshot must remain untouched');
+}
+
+// 2. not_found is thrown (and preserved as the exact message marker) for an unresolved party lookup.
+{
+  let threw = false;
+  try {
+    applyApiV1Commit('commit/diary/99/diarySetting', seed, {}, baseContext());
+  } catch (error) {
+    threw = true;
+    assert.ok(String(error).includes('not_found'), String(error));
+  }
+  assert.ok(threw, 'expected a not_found error for an unknown party number');
+}
+
+// 3. commit/setting/modeSelect: the language commits to the save, and the reply reports real values rather than an echo
+// of the request. An API account (no display settings) reports the runtime-owned fields as null. A stale echoed copy
+// left in the control settings by an earlier build is dropped.
+// Use 'ja' rather than 'en' here: SET_LANGUAGE synchronously requires its dictionary to already be
+// loaded, and only 'ja' ships as the eagerly-bundled fallback outside the real lazy-loading UI runtime.
+{
+  const settings: Record<string, unknown> = { modeSelect: { theme: 'theme.nox', autoRepeat: false } };
+  const outcome = applyApiV1Commit('commit/setting/modeSelect', seed, { language: 'ja' }, baseContext({ settings }));
+  assert.equal(outcome.state.global.language, 'ja');
+  assert.deepEqual(outcome.data.current, { mode: 'mode.normal', enemyLevelOffset: 0, language: 'ja', darkMode: null, autoRepeat: null, showExpeditionStats: null, theme: null });
+  assert.equal(outcome.settings, settings, 'the exact injected settings object is echoed back, not a copy');
+  assert.equal(outcome.settings.modeSelect, undefined, 'the stale echoed copy is removed');
+  assert.deepEqual(outcome.displaySettingWrite, {});
+}
+
+// 3b. commit/setting/modeSelect display settings (Spec 9.1.3 3-6-2; 8.6): validated against the runtime's real values,
+// returned as a write for the caller to apply after the durable commit, and reported in `current`.
+{
+  const displaySettings = { darkMode: 'off', theme: 'm.kemo', showExpeditionStats: false, autoRepeat: false } as const;
+  const outcome = applyApiV1Commit('commit/setting/modeSelect', seed, { darkMode: 'on', theme: 'theme.laika', showExpeditionStats: true }, baseContext({ displaySettings }));
+  assert.deepEqual(outcome.displaySettingWrite, { darkMode: 'on', theme: 'm.laika', showExpeditionStats: true });
+  assert.deepEqual(outcome.data.current, { mode: 'mode.normal', enemyLevelOffset: 0, language: seed.global.language, darkMode: 'on', autoRepeat: false, showExpeditionStats: true, theme: 'theme.laika' });
+  // Setting a value the runtime already has is a valid no-op.
+  const same = applyApiV1Commit('commit/setting/modeSelect', seed, { darkMode: 'off', theme: 'theme.kemo' }, baseContext({ displaySettings }));
+  assert.deepEqual(same.displaySettingWrite, {});
+  const rejects = (parameters: Record<string, unknown>, context: Partial<ApiV1CommitContext>, why: string) => {
+    let code = '';
+    try { applyApiV1Commit('commit/setting/modeSelect', seed, parameters, baseContext(context)); } catch (error) { code = String(error); }
+    assert.ok(code.includes('illegal_action'), `${why}: ${code}`);
+  };
+  // The Node test environment resolves to `prod`, where Nox is not available in production (Spec 8.6 theme table).
+  rejects({ theme: 'theme.nox' }, { displaySettings }, 'a theme unavailable in this environment');
+  rejects({ theme: 'theme.laika' }, { displaySettings, gameMode: 'mode.orca' }, 'mode.orca locks the theme');
+  rejects({ darkMode: 'on' }, {}, 'an API account has no display settings');
+}
+
+// 4. commit/setting/modeSelect: a mismatched mode is illegal_action, not silently accepted.
+{
+  let code = '';
+  try {
+    applyApiV1Commit('commit/setting/modeSelect', seed, { mode: 'mode.orca' }, baseContext({ gameMode: 'mode.normal' }));
+  } catch (error) {
+    code = String(error);
+  }
+  assert.ok(code.includes('illegal_action'), code);
+}
+
+// 5. Debug-gated commit/setting/debug rejects with illegal_action outside dev/beta (Node test env resolves to `prod`).
+{
+  let code = '';
+  try {
+    applyApiV1Commit('commit/setting/debug', seed, { colosseumMode: true }, baseContext());
+  } catch (error) {
+    code = String(error);
+  }
+  assert.ok(code.includes('illegal_action'), code);
+}
+
+// 6. commit/setting/backup/reset produces a fresh state and signals the caller to invalidate popups/confirmations.
+{
+  const outcome = applyApiV1Commit('commit/setting/backup/reset', seed, {}, baseContext());
+  assert.equal(outcome.resetControlEvents, true);
+  assert.deepEqual(outcome.data, {});
+  assert.notEqual(outcome.state, seed);
+}
+
+// 7. commit/progress/progressReport creates a queued delivery record using the injected id/clock, not real randomness.
+{
+  const outcome = applyApiV1Commit('commit/progress/progressReport', seed, {}, baseContext());
+  assert.deepEqual(outcome.data, { deliveryId: 'delivery-fixed-id', status: 'queued' });
+  assert.ok(outcome.delivery);
+  assert.equal(outcome.delivery!.deliveryId, 'delivery-fixed-id');
+  assert.equal(outcome.delivery!.createdAt, new Date(Date.parse('2026-01-01T00:00:00.000Z')).toISOString());
+}
+
+// 8. commit/progress/elapsed advances the returned simulatedAt by exactly the accepted seconds.
+{
+  const outcome = applyApiV1Commit('commit/progress/elapsed', seed, { elapsedSeconds: 120 }, baseContext());
+  assert.equal(outcome.simulatedAt, Date.parse('2026-01-01T00:00:00.000Z') + 120_000);
+  assert.equal((outcome.data as { elapsedSeconds: number }).elapsedSeconds, 120);
+}
+
+// 9. commit/progress/elapsed rejects an out-of-range value as invalid_request (not silently clamped).
+{
+  let code = '';
+  try {
+    applyApiV1Commit('commit/progress/elapsed', seed, { elapsedSeconds: 1 }, baseContext());
+  } catch (error) {
+    code = String(error);
+  }
+  assert.ok(code.includes('invalid_elapsed'), code);
+}
+
+// 10. Diary acknowledgement is atomic, honors the optional Party scope, and rejects unknown or mismatched IDs.
+{
+  const first = diaryLog('diary-first');
+  const second = diaryLog('diary-second');
+  const diarySeed: GameState = {
+    ...structuredClone(seed),
+    parties: [
+      { ...structuredClone(seed.parties[0]), id: 1, diaryLogs: [first] },
+      { ...structuredClone(seed.parties[0]), id: 2, name: 'PT2', diaryLogs: [second] },
+    ],
+  };
+  const one = applyApiV1Commit('commit/diary/diaryEntry/markAsRead', diarySeed, { diaryEntryId: first.id, partyNumber: 1 }, baseContext());
+  assert.equal(one.state.parties[0].diaryLogs[0].isRead, true);
+  assert.equal(one.state.parties[1].diaryLogs[0].isRead, false);
+  assert.deepEqual(one.data, { diaryEntryId: [first.id], unreadTotal: 1 });
+
+  const all = applyApiV1Commit('commit/diary/diaryEntry/markAsRead', diarySeed, { diaryEntryId: 'ALL', partyNumber: 2 }, baseContext());
+  assert.equal(all.state.parties[0].diaryLogs[0].isRead, false);
+  assert.equal(all.state.parties[1].diaryLogs[0].isRead, true);
+  assert.deepEqual(all.data, { diaryEntryId: [second.id], unreadTotal: 1 });
+
+  // Only entries that were unread are affected; acknowledging an already-read entry reports nothing.
+  const again = applyApiV1Commit('commit/diary/diaryEntry/markAsRead', one.state, { diaryEntryId: [first.id, second.id] }, baseContext());
+  assert.deepEqual(again.data, { diaryEntryId: [second.id], unreadTotal: 0 });
+
+  for (const parameters of [{ diaryEntryId: 'missing' }, { diaryEntryId: second.id, partyNumber: 1 }, { diaryEntryId: [first.id, first.id] }]) {
+    assert.throws(() => applyApiV1Commit('commit/diary/diaryEntry/markAsRead', diarySeed, parameters, baseContext()), /not_found|invalid_request/);
+    assert.equal(diarySeed.parties[0].diaryLogs[0].isRead, false, 'a rejected acknowledgement does not mutate its input');
+    assert.equal(diarySeed.parties[1].diaryLogs[0].isRead, false, 'a rejected acknowledgement is atomic across parties');
+  }
+}
+
+// 10. Character equipment history: saveEquipmentSet does NOT itself touch the equipped loadout, so it is
+// deliberately excluded from undo/redo recording (see the `recordsEquipmentHistory` exclusion list in
+// commitOperations.ts). A real mutating action (removeAllEquipment) records the undo snapshot instead, and
+// undoEquipment restores it while pushing a redo snapshot; the history bag is threaded through the injected
+// context object across all three calls.
+{
+  const characterId = seed.parties[0].characters[0].id;
+  const equippedBefore = seed.parties[0].characters[0].equipment.filter((item): item is NonNullable<typeof item> => item !== null).length;
+  assert.ok(equippedBefore > 0, 'the seed character starts with at least one equipped item');
+
+  const history: ApiV1CommitContext['equipmentHistory'] = {};
+  const saveOutcome = applyApiV1Commit(`commit/build/character/${characterId}/saveEquipmentSet`, seed, { equipmentSet: { name: 'Test set' } }, baseContext({ equipmentHistory: history }));
+  assert.ok(typeof saveOutcome.data.equipmentSetId === 'number');
+  assert.equal(history[String(characterId)]?.undo.length ?? 0, 0, 'saving an equipment set does not itself record an undo snapshot');
+  const savedSet = saveOutcome.state.global.savedEquipmentSets.find((entry: SavedEquipmentSet) => entry.slot === saveOutcome.data.equipmentSetId);
+  assert.ok(savedSet, 'the saved equipment set is present in the returned state');
+
+  const removeOutcome = applyApiV1Commit(`commit/build/character/${characterId}/removeAllEquipment`, saveOutcome.state, {}, baseContext({ equipmentHistory: history }));
+  assert.equal(history[String(characterId)]?.undo.length, 1, 'a real equipment mutation records one undo snapshot');
+  assert.equal((removeOutcome.data.current as { equipment: unknown[] }).equipment.every((slot) => slot === '0'), true, 'every slot is empty after removeAllEquipment');
+
+  const undoOutcome = applyApiV1Commit(`commit/build/character/${characterId}/undoEquipment`, removeOutcome.state, {}, baseContext({ equipmentHistory: history }));
+  assert.equal(history[String(characterId)]?.undo.length, 0, 'undo consumes the recorded snapshot');
+  assert.equal(history[String(characterId)]?.redo.length, 1, 'undo pushes a redo snapshot');
+  const restoredCount = (undoOutcome.data.current as { equipment: unknown[] }).equipment.filter((slot) => slot !== 0).length;
+  assert.equal(restoredCount, equippedBefore, 'undo restores the pre-removal equipped item count');
+}
+
+// 11. An unrecognized operation is a stable invalid_request, not a silent no-op.
+{
+  let code = '';
+  try {
+    applyApiV1Commit('commit/does/not/exist', seed, {}, baseContext());
+  } catch (error) {
+    code = String(error);
+  }
+  assert.ok(code.includes('invalid_request'), code);
+}
+
+// 3. Sell results report the exact stacks and currency deltas; a bad entry sells nothing (atomic validation).
+{
+  const stack = Object.values(seed.global.inventory).find((variant) => variant.status === 'owned' && variant.count > 0)!;
+  const format = `0/${stack.item.id}/${stack.item.enhancement}/${stack.item.superRare}`;
+  const sold = applyApiV1Commit('commit/base/sellInventoryItems', seed, { items: [format] }, baseContext());
+  const data = sold.data as { items: { item: string; quantity: number }[]; goldDelta: number; pranaDelta: number };
+  assert.deepEqual(data.items, [{ item: format, quantity: stack.count }]);
+  assert.equal(data.goldDelta, sold.state.global.gold - seed.global.gold);
+  assert.equal(data.pranaDelta, sold.state.global.prana - seed.global.prana);
+  assert.equal(sold.state.global.inventory[getVariantKey(stack.item)].status, 'sold');
+  assert.equal(seed.global.inventory[getVariantKey(stack.item)].status, 'owned', 'the input snapshot is not mutated');
+
+  const failure = (items: string[]) => { try { applyApiV1Commit('commit/base/sellInventoryItems', seed, { items }, baseContext()); return ''; } catch (error) { return String(error); } };
+  assert.ok(failure([format, format]).includes('invalid_request'), 'duplicate variants are invalid');
+  assert.ok(failure([format, '0/999999/0/0']).includes('not_found'), 'an unknown variant rejects the whole request');
+  assert.ok(failure([`0/${stack.item.id}/${stack.item.enhancement}/x`]).includes('invalid_request'));
+  const alreadySold = applyApiV1Commit('commit/base/sellInventoryItems', seed, { items: [format] }, baseContext()).state;
+  let again = '';
+  try { applyApiV1Commit('commit/base/sellInventoryItems', alreadySold, { items: [format] }, baseContext()); } catch (error) { again = String(error); }
+  assert.ok(again.includes('illegal_action'), 'a sold variant cannot be sold again');
+}
+
+// 4. Purchase results report the exact drawn variants and the net currency delta; the request is atomic. A slot's ID is its
+// 1-based position in the lineup, and the transaction's own clock (not the wall clock) decides which lineup that is.
+{
+  const { getPublicShopLineupId, getShopFacts, shopLineupInputOf } = await import('../../src/game/shopFacts');
+  const { getIdentifiedShopItemPrice } = await import('../../src/game/pricing');
+  const richState: GameState = { ...seed, global: { ...seed.global, gold: 1_000_000 } };
+  const simulatedAt = Date.parse('2026-01-01T00:00:00.000Z');
+  const facts = getShopFacts(shopLineupInputOf(richState), new Date(simulatedAt));
+  assert.deepEqual(facts.entries.map((entry) => entry.shopItemId), [1, 2, 3, 4, 5, 6, 7], 'a slot is its 1-based position');
+  assert.deepEqual(facts.entries.map((entry) => entry.identified), [true, false, false, false, false, false, false], 'at intimacy 0 to 19: one identified slot, then six unidentified slots');
+  assert.ok(facts.entries.slice(0, 1).every((entry) => (entry.enhancement ?? 0) >= 2), 'an identified entry shows an enhancement of at least 2');
+  assert.ok(facts.entries.slice(1).every((entry) => entry.enhancement === null && entry.superRare === null), 'an unidentified entry hides both until bought');
+  const entry = facts.entries[0];
+  // The lineup ID is an opaque hash of the stock (Spec 9.1.3 2-4-4).
+  const lineupId = getPublicShopLineupId(facts);
+  assert.match(lineupId, /^[0-9a-f]{16}$/);
+  assert.equal(getPublicShopLineupId(getShopFacts(shopLineupInputOf(richState), new Date(simulatedAt))), lineupId, 'reading again does not reroll the lineup');
+  assert.equal(getPublicShopLineupId(getShopFacts(shopLineupInputOf({ ...richState, global: { ...richState.global, gold: 0 } }), new Date(simulatedAt))), lineupId, 'gold does not change the lineup ID');
+  const bought = applyApiV1Commit('commit/base/purchaseShopItems', richState, { lineupId, items: [{ shopItemId: entry.shopItemId }] }, baseContext({ simulatedAt }));
+  const data = bought.data as { items: { item: string; quantity: number }[]; goldDelta: number; pranaDelta: number };
+  assert.equal(data.items.length, 1);
+  assert.equal(data.items[0].quantity, 1);
+  assert.match(data.items[0].item, new RegExp(`^0/${entry.itemId}/[0-6]/[0-9]+$`));
+  assert.equal(data.items[0].item, `0/${entry.itemId}/${entry.enhancement}/${entry.superRare}`, 'an identified entry gives exactly the enhancement and title it showed');
+  assert.equal(entry.price, getIdentifiedShopItemPrice(entry.itemId, entry.enhancement ?? 0, entry.superRare ?? 0), 'an identified entry is priced by its enhancement and title');
+  assert.equal(data.goldDelta, bought.state.global.gold - richState.global.gold);
+  assert.ok(data.goldDelta <= 0 && data.goldDelta >= -entry.price, 'the price is charged, minus any auto-sell proceeds');
+  // The slot is sold out afterwards, at the same transaction time.
+  const after = getShopFacts(shopLineupInputOf(bought.state), new Date(simulatedAt));
+  assert.equal(after.entries.find((candidate) => candidate.stockEntryId === entry.stockEntryId)?.soldOut, true);
+  const afterLineupId = getPublicShopLineupId(after);
+  assert.notEqual(afterLineupId, lineupId, 'a sold slot changes the lineup ID');
+
+  const attempt = (state: GameState, items: unknown, id: unknown = lineupId) => { try { applyApiV1Commit('commit/base/purchaseShopItems', state, { lineupId: id, items }, baseContext({ simulatedAt })); return ''; } catch (error) { return String(error); } };
+  // The purchase names the lineup it was chosen from; any other lineup (or none) buys nothing (Spec 9.1.3 3-4-3).
+  assert.ok(attempt(richState, [{ shopItemId: 1 }], '0123456789abcdef').includes('illegal_action:lineup_changed'));
+  assert.ok(attempt(richState, [{ shopItemId: 1 }], '').includes('invalid_request:lineupId'), 'an empty lineupId is an invalid request, not a lineup change');
+  assert.ok(attempt(richState, [{ shopItemId: 1 }], null).includes('invalid_request:lineupId'));
+  // SpecRef: 9.1.4.11 | The failure names the rejected parameter in `details.field`.
+  const { describeInvalidRequest, invalidRequestMessage } = await import('../../src/api/v1/requestErrors');
+  const missingLineup = describeInvalidRequest(new Error(attempt(richState, [{ shopItemId: 1 }], null).replace(/^Error: /, '')));
+  assert.equal(missingLineup.field, 'lineupId');
+  assert.match(invalidRequestMessage(missingLineup, 'The commit could not be applied.'), /`lineupId` is invalid/);
+  assert.deepEqual([describeInvalidRequest(new Error('invalid_request:targetEquipment.duplicate')).field, describeInvalidRequest(new Error('invalid_request:targetEquipment.duplicate')).rule], ['targetEquipment', 'duplicate']);
+  assert.equal(describeInvalidRequest(new Error('invalid_request:duplicate_items')).field, 'items', 'older reason tokens map to their parameter');
+  assert.equal(describeInvalidRequest(new Error('invalid_request:lineupId')).reason, 'invalid_request:lineupId', 'the reason is the bare token, not a stringified Error');
+  assert.equal(describeInvalidRequest(new Error('invalid_elapsed')).field, 'elapsedSeconds');
+  assert.equal(describeInvalidRequest(new Error('something_else')).field, undefined, 'no field is invented');
+  assert.ok(attempt(richState, [{ shopItemId: 1 }, { shopItemId: 1 }]).includes('invalid_request'), 'a duplicate slot is invalid');
+  assert.ok(attempt(richState, [{ shopItemId: 0 }]).includes('invalid_request'));
+  assert.ok(attempt(richState, []).includes('invalid_request'));
+  assert.ok(attempt(richState, [{ shopItemId: 1 }, { shopItemId: 99 }]).includes('not_found'), 'an unknown slot rejects the whole request');
+  assert.ok(attempt({ ...richState, global: { ...richState.global, gold: 0 } }, [{ shopItemId: 1 }]).includes('illegal_action:insufficient_gold'));
+  assert.ok(attempt(bought.state, [{ shopItemId: 2 }]).includes('illegal_action:lineup_changed'), 'a lineup ID read before a sale is stale');
+  assert.ok(attempt(bought.state, [{ shopItemId: 1 }], afterLineupId).includes('illegal_action:sold_out'), 'a sold slot cannot be bought again');
+  // Atomic: the total must be affordable, and nothing is bought when it is not.
+  const twoPrices = facts.entries[0].price + facts.entries[1].price;
+  const short = { ...richState, global: { ...richState.global, gold: twoPrices - 1 } } as GameState;
+  assert.ok(attempt(short, [{ shopItemId: 1 }, { shopItemId: 2 }]).includes('insufficient_gold'));
+  const two = applyApiV1Commit('commit/base/purchaseShopItems', { ...richState, global: { ...richState.global, gold: twoPrices } } as GameState, { lineupId, items: [{ shopItemId: 1 }, { shopItemId: 2 }] }, baseContext({ simulatedAt }));
+  assert.equal((two.data as { items: { quantity: number }[] }).items.reduce((sum, row) => sum + row.quantity, 0), 2);
+  // `shopItemsList.validOptions.items` are bare IDs that purchaseShopItems accepts as-is (Spec 9.1.3 2-4-4).
+  const bare = applyApiV1Commit('commit/base/purchaseShopItems', { ...richState, global: { ...richState.global, gold: twoPrices } } as GameState, { lineupId, items: [1, 2] }, baseContext({ simulatedAt }));
+  assert.equal((bare.data as { items: { quantity: number }[] }).items.reduce((sum, row) => sum + row.quantity, 0), 2, 'bare IDs buy like {shopItemId} entries');
+  assert.equal(bare.state.global.gold, two.state.global.gold, 'bare IDs buy the same slots');
+  assert.ok(attempt(richState, [1, { shopItemId: 1 }]).includes('invalid_request'), 'a slot named in both forms is a duplicate');
+  assert.ok(attempt(richState, [0]).includes('invalid_request'));
+  assert.ok(attempt(richState, ['1']).includes('invalid_request'), 'a string is not a slot ID');
+}
+
+// 4a. The lineup is saved with its first use and is never rerolled: viewing, reloading, and purchasing keep every other
+// slot's item, enhancement, title, and price, even when the purchase raises intimacy across a rarity tier.
+{
+  const { getShopFacts, shopLineupInputOf } = await import('../../src/game/shopFacts');
+  const { getEffectiveShopIntimacy } = await import('../../src/game/shop');
+  const simulatedAt = Date.parse('2026-01-01T00:00:00.000Z');
+  const rich: GameState = { ...seed, global: { ...seed.global, gold: 1_000_000, shopIntimacy: 19, shopIntimacyLastDecayAt: simulatedAt } };
+  const before = getShopFacts(shopLineupInputOf(rich), new Date(simulatedAt));
+  const { getPublicShopLineupId } = await import('../../src/game/shopFacts');
+  const bought = applyApiV1Commit('commit/base/purchaseShopItems', rich, { lineupId: getPublicShopLineupId(before), items: [{ shopItemId: 3 }] }, baseContext({ simulatedAt }));
+  assert.equal(getEffectiveShopIntimacy({ ...bought.state.global, parties: bought.state.parties }, new Date(simulatedAt)), 20, 'the purchase raised intimacy to the next tier');
+  assert.ok(bought.state.global.shopLineup, 'the lineup is saved by the purchase');
+  const after = getShopFacts(shopLineupInputOf(bought.state), new Date(simulatedAt));
+  const stable = (facts: typeof before) => facts.entries.map((entry) => [entry.itemId, entry.enhancement, entry.superRare, entry.price].join('/'));
+  assert.deepEqual(stable(after), stable(before), 'buying never rerolls the lineup, even across an intimacy tier');
+  const reloaded = JSON.parse(JSON.stringify(bought.state)) as GameState;
+  assert.deepEqual(stable(getShopFacts(shopLineupInputOf(reloaded), new Date(simulatedAt))), stable(before), 'a reload keeps the lineup');
+  // An unidentified purchase rolls its hidden result now: an enhancement of at least 2.
+  const rolled = (bought.data as { items: { item: string }[] }).items[0].item.split('/').map(Number);
+  assert.ok(rolled[2] >= 2, 'an unidentified purchase draws an enhancement of at least 2');
+  // A paid refresh replaces the lineup and saves the replacement in the same transaction.
+  const refreshed = applyApiV1Commit('commit/base/paidShopRefresh', bought.state, {}, baseContext({ simulatedAt }));
+  assert.notEqual(refreshed.state.global.shopLineup?.stockKey, bought.state.global.shopLineup?.stockKey);
+  assert.equal(refreshed.state.global.shopPurchases[refreshed.state.global.shopLineup?.stockKey ?? ''], undefined, 'the new lineup starts unsold');
+}
+
+// 4a-2. The lineup always fills 7 slots, and its identified count, rarity mix, and dialogue follow the intimacy tier (Spec 8.4.1).
+// Intimacy is capped at 99 until the boss of expedition 7 is defeated, then at 199, and decays 10% per refresh.
+{
+  const { getShopFacts, getPublicShopLineupId, shopLineupInputOf } = await import('../../src/game/shopFacts');
+  const at = Date.parse('2026-01-01T03:00:00.000Z');
+  const defeated = (state: GameState): GameState => ({ ...state, parties: state.parties.map((party, index) => (index === 0 ? { ...party, defeatedBossExpeditions: { ...party.defeatedBossExpeditions, 7: true } } : party)) });
+  const plans: Array<[number, string, string, string]> = [
+    [0, 'C', 'CCCCCC', 'default'], [19, 'C', 'CCCCCC', 'default'], [20, 'CC', 'UCCCC', 'intimacy20'], [40, 'UC', 'EUUCC', 'intimacy40'],
+    [80, 'UU', 'BEEUU', 'intimacy80'], [99, 'UU', 'BEEUU', 'intimacy80'], [100, 'EU', 'BEEEU', 'intimacy100'], [120, 'EE', 'BBEEU', 'intimacy120'],
+    [140, 'BE', 'BBEEE', 'intimacy140'], [199, 'BE', 'BBEEE', 'intimacy140'],
+  ];
+  const letter: Record<string, string> = { common: 'C', uncommon: 'U', eliteRare: 'E', bossRare: 'B' };
+  for (const [intimacy, identified, unidentified, dialogue] of plans) {
+    const state = defeated({ ...seed, global: { ...seed.global, shopIntimacy: intimacy, shopIntimacyLastDecayAt: at } } as GameState);
+    const facts = getShopFacts(shopLineupInputOf(state), new Date(at));
+    const entries = facts.entries;
+    assert.equal(entries.length, 7, `intimacy ${intimacy}: all 7 slots are filled`);
+    assert.equal(entries.filter((entry) => entry.identified).length, identified.length, `intimacy ${intimacy}: identified slot count`);
+    assert.equal(entries.filter((entry) => entry.identified).map((entry) => letter[entry.rarity]).join(''), identified, `intimacy ${intimacy}: identified rarities`);
+    assert.equal(entries.filter((entry) => !entry.identified).map((entry) => letter[entry.rarity]).join(''), unidentified, `intimacy ${intimacy}: unidentified rarities`);
+    assert.equal(facts.dialogueKey, `home.shop.dialogue.${dialogue}`, `intimacy ${intimacy}: dialogue`);
+  }
+  // Before the expedition 7 boss is defeated, intimacy is capped at 99 (also for a stored value above it).
+  const locked: GameState = { ...seed, global: { ...seed.global, gold: 1_000_000, shopIntimacy: 99, shopIntimacyLastDecayAt: at } };
+  assert.equal(getShopFacts(shopLineupInputOf({ ...locked, global: { ...locked.global, shopIntimacy: 150 } }), new Date(at)).intimacy, 99, 'a stored value above the cap reads as the cap');
+  const lockedFacts = getShopFacts(shopLineupInputOf(locked), new Date(at));
+  const lockedBuy = applyApiV1Commit('commit/base/purchaseShopItems', locked, { lineupId: getPublicShopLineupId(lockedFacts), items: [{ shopItemId: 7 }] }, baseContext({ simulatedAt: at }));
+  assert.equal(lockedBuy.state.global.shopIntimacy, 99, 'a purchase cannot raise intimacy above 99 before the boss is defeated');
+  assert.equal(applyApiV1Commit('commit/base/paidShopRefresh', locked, {}, baseContext({ simulatedAt: at })).state.global.shopIntimacy, 99, 'nor can a paid refresh');
+  // After it, the cap is 199.
+  const rich = defeated({ ...locked, global: { ...locked.global, shopIntimacy: 198 } });
+  const richFacts = getShopFacts(shopLineupInputOf(rich), new Date(at));
+  assert.equal(richFacts.intimacy, 198);
+  const bought = applyApiV1Commit('commit/base/purchaseShopItems', rich, { lineupId: getPublicShopLineupId(richFacts), items: [{ shopItemId: 7 }] }, baseContext({ simulatedAt: at }));
+  assert.equal(bought.state.global.shopIntimacy, 199, 'a purchase raises intimacy to 199 after the boss is defeated');
+  assert.equal(applyApiV1Commit('commit/base/paidShopRefresh', bought.state, {}, baseContext({ simulatedAt: at })).state.global.shopIntimacy, 199, 'a paid refresh cannot raise it above 199');
+  const decayed = getShopFacts(shopLineupInputOf(bought.state), new Date(at + 8 * 3600 * 1000));
+  assert.equal(decayed.intimacy, 179, 'intimacy decays by 10% per refresh time: floor(199 x 0.9)');
+}
+
+// 4b. The paid refresh charges the displayed price at the transaction time and replaces the lineup; an unaffordable refresh
+// is refused instead of being silently ignored.
+{
+  const { getShopFacts, shopLineupInputOf } = await import('../../src/game/shopFacts');
+  const at = Date.parse('2026-01-01T03:00:00.000Z');
+  const rich: GameState = { ...seed, global: { ...seed.global, gold: 10_000 } };
+  const before = getShopFacts(shopLineupInputOf(rich), new Date(at));
+  const refreshed = applyApiV1Commit('commit/base/paidShopRefresh', rich, {}, baseContext({ simulatedAt: at }));
+  const data = refreshed.data as { lineupId: string; goldDelta: number; paidRefreshPrice: number };
+  assert.equal(data.goldDelta, -before.paidRefreshPrice, 'the displayed price is charged');
+  assert.notEqual(data.lineupId, before.lineupId, 'the lineup is replaced');
+  assert.equal(data.paidRefreshPrice, before.paidRefreshPrice * 2, 'the next refresh in the same period costs double');
+  assert.equal(refreshed.state.global.shopIntimacy, Math.min(99, before.intimacy + 2), 'a paid refresh raises intimacy by 2');
+  const poor = { ...seed, global: { ...seed.global, gold: before.paidRefreshPrice - 1 } } as GameState;
+  assert.throws(() => applyApiV1Commit('commit/base/paidShopRefresh', poor, {}, baseContext({ simulatedAt: at })), /illegal_action:insufficient_gold/);
+  // Two refreshes in a row, at one transaction time, go through the same period's count.
+  const twice = applyApiV1Commit('commit/base/paidShopRefresh', refreshed.state, {}, baseContext({ simulatedAt: at }));
+  assert.equal((twice.data as { goldDelta: number }).goldDelta, -before.paidRefreshPrice * 2);
+}
+
+// 4c. The shop reads describe the same shop: shared facts, spec compact strings, and a refresh price by refresh count.
+{
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
+  const at = Date.parse('2026-01-01T03:00:00.000Z');
+  const read = (operation: string, state: GameState = seed) => buildApiV1ReadData(operation, state, {}, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, revision: 1, inGameTime: at } as never) as Promise<any>;
+  const info = await read('read/base/shopInfo');
+  assert.equal(info.paidRefreshPrice, 200, 'the first refresh of the period costs 200G, not a price derived from intimacy');
+  assert.equal(info.dialogue.key, 'home.shop.dialogue.default');
+  assert.ok(info.paidRefreshCountdown >= 1 && info.paidRefreshCountdown <= 8 * 3600);
+  const list = await read('read/base/shopItemsList');
+  assert.equal(list.current.items.length, 7);
+  assert.match(list.current.items[0], /^1\/0\/\d+\/[2-6]\/\d+\/\d+\/(true|false)$/, 'an identified entry shows its enhancement and title');
+  assert.match(list.current.items[2], /^3\/0\/\d+\/\?\/\?\/\d+\/(true|false)$/, 'an unidentified entry hides them with `?`');
+  assert.deepEqual(list.validOptions.items, list.current.entries.filter((entry: { available: boolean }) => entry.available).map((entry: { shopItemId: number }) => entry.shopItemId));
+  assert.equal(list.validOptions.lineupId, list.current.lineupId, 'validOptions holds everything purchaseShopItems needs');
+  const base = await read('read/observation/base');
+  assert.deepEqual(base.baseInfo.shop.entries, list.current.entries);
+  assert.equal(base.baseInfo.shop.paidRefreshPrice, info.paidRefreshPrice);
+  const loved = await read('read/base/shopInfo', { ...seed, global: { ...seed.global, shopIntimacy: 90, shopIntimacyLastDecayAt: at } } as GameState);
+  assert.equal(loved.dialogue.key, 'home.shop.dialogue.intimacy80');
+}
+
+// 9. uiPreferences: a closed, typed catalog stored in the save; unknown or invalid changes reject the whole update.
+{
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
+  const characterId = seed.parties[0].characters[0].id;
+  const key = `party.equipCategory.${characterId}`;
+  const commit = (state: GameState, changes: unknown) => applyApiV1Commit('commit/setting/uiPreferences', state, { changes }, baseContext());
+  const set = commit(seed, [{ key, value: 'wand' }]);
+  assert.deepEqual((set.data as { uiPreferences: unknown }).uiPreferences, [{ key, value: 'wand' }]);
+  assert.equal(set.state.global.uiPreferences?.[key], 'wand', 'the preference lives in the save');
+  assert.equal(seed.global.uiPreferences, undefined, 'the input snapshot is untouched');
+  assert.equal(commit(set.state, [{ key, value: 'wand' }]).state, set.state, 'an unchanged value keeps the state identity (valid no-op)');
+  const read = await buildApiV1ReadData('read/observation/setting', set.state, {}, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0 } as never) as { settingInfo: { uiPreferences: unknown; uiPreferenceCatalog: Array<{ family: string; options: string[]; defaultValue: string }> } };
+  assert.deepEqual(read.settingInfo.uiPreferences, [{ key, value: 'wand' }]);
+  assert.equal(read.settingInfo.uiPreferenceCatalog[0].family, 'party.equipCategory');
+  assert.equal(read.settingInfo.uiPreferenceCatalog[0].defaultValue, 'armor');
+  assert.ok(read.settingInfo.uiPreferenceCatalog[0].options.includes('katana'));
+
+  const rejects = (changes: unknown, expected: string) => assert.throws(() => commit(seed, changes), new RegExp(expected));
+  rejects([{ key: 'party.equipCategory.999999', value: 'wand' }], 'invalid_request:key');
+  rejects([{ key: 'party.equipCategory.abc', value: 'wand' }], 'invalid_request:key');
+  rejects([{ key: 'settingPanelExpanded', value: true }], 'invalid_request:key');
+  rejects([{ key, value: 'jewel' }], 'invalid_request:value');
+  rejects([{ key, value: 3 }], 'invalid_request:value');
+  rejects([{ key, value: 'wand' }, { key, value: 'bolt' }], 'invalid_request:duplicate_key');
+  rejects([], 'invalid_request:changes');
+  // Atomic: one bad entry applies nothing.
+  assert.throws(() => commit(seed, [{ key, value: 'wand' }, { key: 'nope', value: 'x' }]));
+
+  // Setting-tab retention (Spec 8.6; 9.1.4.17): pane expansion per panel, Clairvoyance expansion per existing party number,
+  // and the single Glossary tab preference.
+  const setting = commit(seed, [
+    { key: 'setting.panelExpanded.glossary', value: true },
+    { key: 'setting.panelExpanded.enemyEdit', value: false },
+    { key: 'setting.clairvoyanceExpanded.1', value: true },
+    { key: 'setting.glossaryTab', value: '機' },
+  ]);
+  assert.equal(setting.state.global.uiPreferences?.['setting.glossaryTab'], '機');
+  assert.equal(setting.state.global.uiPreferences?.['setting.panelExpanded.enemyEdit'], false, 'the Enemy Edit pane is retained like the others');
+  const settingRead = await buildApiV1ReadData('read/observation/setting', setting.state, {}, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0 } as never) as { settingInfo: { uiPreferenceCatalog: Array<{ family: string; subject: string; subjectOptions: string[] }> } };
+  const panelFamily = settingRead.settingInfo.uiPreferenceCatalog.find((entry) => entry.family === 'setting.panelExpanded');
+  assert.equal(panelFamily?.subject, 'settingPanel');
+  assert.ok(panelFamily?.subjectOptions.includes('clairvoyance'));
+  rejects([{ key: 'setting.panelExpanded.unknownPane', value: true }], 'invalid_request:key');
+  rejects([{ key: 'setting.panelExpanded.glossary', value: 'yes' }], 'invalid_request:value');
+  rejects([{ key: `setting.clairvoyanceExpanded.${seed.parties.length + 1}`, value: true }], 'invalid_request:key');
+  rejects([{ key: 'setting.clairvoyanceExpanded.0', value: true }], 'invalid_request:key');
+  rejects([{ key: 'setting.glossaryTab', value: 'unknown' }], 'invalid_request:value');
+  rejects([{ key: 'setting.glossaryTab.1', value: '能' }], 'invalid_request:key');
+}
+
+// 9b. Setting-tab preferences are rebuilt from the published list, and the Glossary default applies only until a tab is stored.
+{
+  const { buildSettingTabPreferences } = await import('../../src/api/v1/uiPreferenceCatalog');
+  assert.deepEqual(buildSettingTabPreferences([]), { panelExpanded: {}, clairvoyanceExpanded: {}, glossaryTab: null });
+  assert.deepEqual(buildSettingTabPreferences([
+    { key: 'setting.clairvoyanceExpanded.2', value: true },
+    { key: 'setting.glossaryTab', value: '信' },
+    { key: 'setting.panelExpanded.news', value: true },
+  ]), { panelExpanded: { news: true }, clairvoyanceExpanded: { 2: true }, glossaryTab: '信' });
+}
+
+// 10. Sortie (Spec 9.1.3, 3-2-2): the same refusals and reducer sequence as pressing the Sortie button, and a party-cycle reset
+// returned as a write for the runtime to apply after the durable commit.
+{
+  const at = Date.parse('2026-01-01T00:00:00.000Z');
+  const withParty = (state: GameState, changes: Record<string, unknown>) => ({ ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, ...changes } : party) }) as GameState;
+  const charged = withParty(seed, { instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null });
+  const cycles: Record<number, { state: string; isCurrentExpeditionGodsBattle?: boolean }> = {};
+  const context = (overrides: Partial<ApiV1CommitContext> = {}) => baseContext({
+    simulatedAt: at, partyCycle: (index) => cycles[index], restDurationMs: () => 12_345, chargeDurationScale: 1, now: () => 777, ...overrides,
+  });
+  const sortie = (state: GameState, ctx: ApiV1CommitContext = context(), operation = 'commit/expedition/1/sortie') => applyApiV1Commit(operation, state, {}, ctx);
+  const refuses = (state: GameState, marker: string, operation = 'commit/expedition/1/sortie', ctx: ApiV1CommitContext = context()) => assert.throws(() => sortie(state, ctx, operation), new RegExp(`illegal_action:${marker}`), marker);
+
+  // A legal sortie consumes exactly one stock, restores HP, and resets the cycle to the beginning of rest.
+  const ok = sortie(charged);
+  assert.equal(ok.state.parties[0].instantExpeditionStock, 2, 'one stock is consumed');
+  assert.deepEqual(ok.partyCycleWrites, [{ partyIndex: 0, cycle: { state: 'rest', stateStartedAt: 777, durationMs: 12_345, restInitialTotalSteps: 1, isCurrentExpeditionGodsBattle: false } }]);
+  const sortieLogId = String((ok.data as { logId: string }).logId);
+  assert.match(sortieLogId, /^(log:1:[0-9a-z]+|diary:.+)$/, 'a sortie names its log uniquely, never `latest`');
+  if (sortieLogId.startsWith('log:')) {
+    const { retainedLogIdOf } = await import('../../src/api/v1/battleLogs');
+    assert.equal(sortieLogId, retainedLogIdOf(ok.state.parties[0].lastExpeditionLog!, ok.state.parties[0].id));
+  }
+  assert.ok(['Clear', 'Return', 'Draw', 'Retreat', 'Defeat'].includes(String((ok.data as { outcome: string }).outcome)));
+  assert.equal(charged.parties[0].instantExpeditionStock, 3, 'the input snapshot is untouched');
+  // Rewards use the Item Format of the rest of the API (`<lock>/<itemId>/<enhancement>/<superRare>`), not variant keys.
+  const rewards = (ok.data as { rewards: string[] }).rewards;
+  assert.equal(rewards.length, ok.state.parties[0].lastExpeditionLog?.rewards.length ?? 0);
+  for (const reward of rewards) assert.match(reward, /^[01]\/[1-9][0-9]*\/[0-6]\/[0-9]+$/);
+
+  // No charge, no expedition (the button refuses too).
+  refuses(withParty(seed, { instantExpeditionStock: 0, instantExpeditionChargeStartedAt: at }), 'charge_insufficient');
+  // The consumption follows the current Speed of Time: a 20x speed-up charges a slower clock the same way the UI passes its scale.
+  const scaled = sortie(charged, context({ chargeDurationScale: 0.05 }));
+  assert.equal(scaled.state.parties[0].instantExpeditionStock, 2);
+  // A destination whose entry gate is locked refuses (the button is disabled), except for the Colosseum.
+  refuses(withParty(charged, { selectedDungeonId: 2 }), 'entry_gate_locked');
+  // An exhausted party refuses; the Colosseum needs neither HP nor charge.
+  refuses(withParty(charged, { currentHp: 0 }), 'party_exhausted');
+  const colosseum = sortie(withParty(seed, { selectedDungeonId: 99, currentHp: 0, instantExpeditionStock: 0, instantExpeditionChargeStartedAt: at }));
+  assert.ok(colosseum.state.parties[0].lastExpeditionLog, 'the Colosseum sortie ran');
+  // A Gods Battle needs its gate.
+  refuses(charged, 'gods_battle_unavailable', 'commit/expedition/1/godsBattle');
+  // Exploring: the current exploration is finalized first (its pending Diary entry is settled), then the cycle is reset.
+  cycles[0] = { state: 'explore' };
+  const exploring = sortie(charged);
+  assert.equal(exploring.state.parties[0].pendingDiaryLog, null, 'the pending Diary entry is finalized');
+  assert.equal(exploring.partyCycleWrites?.[0].cycle.state, 'rest');
+  // Gods Battle: available once the boss was defeated and the gate is filled; it cancels the party's side quest, and a party
+  // already moving to a Gods Battle refuses a second one.
+  {
+    const { getGodsBattleProgressKey } = await import('../../src/game/clearGateCore');
+    const ready = withParty(charged, {
+      defeatedBossExpeditions: { 1: true },
+      clearGateProgress: { ...charged.parties[0].clearGateProgress, [getGodsBattleProgressKey(1)]: 3 },
+      selectedDungeonId: 1,
+      sideQuest: { id: 1, type: 'q.exercise', target: 5, progress: 0, deadline: at + 1e9, startedAt: at, reward: { jewelRank: 1 } },
+    });
+    cycles[0] = { state: 'move', isCurrentExpeditionGodsBattle: true };
+    refuses(ready, 'already_moving_to_gods_battle', 'commit/expedition/1/godsBattle');
+    cycles[0] = { state: 'move', isCurrentExpeditionGodsBattle: false };
+    const god = sortie(ready, context(), 'commit/expedition/1/godsBattle');
+    assert.equal(god.state.parties[0].sideQuest, null, 'a Gods Battle cancels the side quest');
+    assert.equal(god.state.parties[0].instantExpeditionStock, 2);
+    assert.equal(god.partyCycleWrites?.[0].cycle.isCurrentExpeditionGodsBattle, false);
+    // A plain sortie leaves the side quest alone.
+    assert.ok(sortie(ready).state.parties[0].sideQuest, 'a normal sortie keeps the side quest');
+    delete cycles[0];
+  }
+  // Without a runtime (an API account), nothing is read and no write is returned.
+  const accountContext = baseContext({ simulatedAt: at, chargeDurationScale: 1 });
+  const account = sortie(charged, accountContext);
+  assert.deepEqual(account.partyCycleWrites, [], 'an API account has no live cycle to reset');
+  assert.equal(account.state.parties[0].instantExpeditionStock, 2);
+}
+
+// changeExpedition validates the whole request against the shared choices (Spec 9.1.3, 3-2-1) and applies nothing on rejection.
+{
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
+  const change = (state: GameState, parameters: Record<string, unknown>, context = baseContext()) => applyApiV1Commit('commit/expedition/1/changeExpedition', state, parameters, context);
+  const rejects = (state: GameState, parameters: Record<string, unknown>, marker: string, context = baseContext()) => assert.throws(() => change(state, parameters, context), new RegExp(marker), JSON.stringify(parameters));
+  const defeated = { ...seed, parties: seed.parties.map((party, index) => index === 0 ? { ...party, defeatedBossExpeditions: { 1: true } } : party) } as GameState;
+
+  // Only the first destination is unlocked in a fresh game; the second opens once the first boss was defeated.
+  rejects(seed, { destination: 2 }, 'illegal_action:destination_locked');
+  rejects(seed, { destination: 999 }, 'invalid_destination');
+  rejects(seed, { destination: 99 }, 'illegal_action:destination_locked');
+  assert.equal(change(defeated, { destination: 2 }).state.parties[0].selectedDungeonId, 2);
+  // The Colosseum needs its Debug setting: the runtime's for the player, the API debug settings for an account.
+  assert.equal(change(seed, { destination: 99 }, baseContext({ colosseumEnabled: true })).state.parties[0].selectedDungeonId, 99);
+  assert.equal(change(seed, { destination: 99 }, baseContext({ settings: { debug: { colosseumMode: true } } })).state.parties[0].selectedDungeonId, 99);
+  rejects(seed, { destination: 99 }, 'illegal_action:destination_locked', baseContext({ colosseumEnabled: false, settings: { debug: { colosseumMode: true } } }));
+
+  // Depth limits are the fixed list; the difficulty offset is an even step, and only after the destination's boss was defeated.
+  rejects(seed, { depthLimit: '7f-1' }, 'invalid_depth_limit');
+  assert.equal(change(seed, { depthLimit: '3f-4' }).state.parties[0].expeditionDepthLimit, '3f-4');
+  rejects(seed, { difficultyOffset: 3 }, 'invalid_difficulty_offset');
+  rejects(seed, { difficultyOffset: -2 }, 'invalid_difficulty_offset');
+  rejects(seed, { difficultyOffset: 2 }, 'illegal_action:difficulty_offset_unavailable');
+  assert.equal(change(defeated, { difficultyOffset: 6 }).state.parties[0].expeditionDifficultyOffset, 6);
+  rejects(defeated, { difficultyOffset: 998 }, 'illegal_action:difficulty_offset_unavailable');
+  // A destination and its offset are one request: the offset is checked against the destination the change leaves the party at.
+  rejects(defeated, { destination: 2, difficultyOffset: 2 }, 'illegal_action:difficulty_offset_unavailable');
+  // Atomic: one invalid member rejects the valid ones too.
+  rejects(defeated, { depthLimit: '3f-4', difficultyOffset: 1 }, 'invalid_difficulty_offset');
+  assert.equal(defeated.parties[0].expeditionDepthLimit, seed.parties[0].expeditionDepthLimit, 'nothing was applied');
+
+  // The setting projection offers exactly what the commit accepts.
+  const read = async (state: GameState, extra: Record<string, unknown> = {}) => (await buildApiV1ReadData('read/expedition/1/setting', state, {}, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, revision: 1, inGameTime: 0, ...extra } as never) as { validOptions: { destination: number[]; depthLimit: string[]; difficultyOffset: { min: number; max: number; step: number } } }).validOptions;
+  const fresh = await read(seed);
+  assert.deepEqual(fresh.destination, [1]);
+  assert.deepEqual(fresh.difficultyOffset, { min: 0, max: 0, step: 2 }, 'no difficulty until the boss is defeated');
+  const opened = await read(defeated);
+  assert.deepEqual(opened.destination, [1, 2]);
+  assert.ok(opened.difficultyOffset.max > 0 && opened.difficultyOffset.max % 2 === 0);
+  assert.ok((await read(seed, { colosseumEnabled: true })).destination.includes(99));
+  for (const destination of opened.destination) assert.doesNotThrow(() => change(defeated, { destination }), `offered destination ${destination} is accepted`);
+  for (const depthLimit of opened.depthLimit) assert.doesNotThrow(() => change(defeated, { depthLimit }), depthLimit);
+  assert.doesNotThrow(() => change(defeated, { difficultyOffset: opened.difficultyOffset.max }), 'the offered maximum is accepted');
+  // The published request schema accepts every offset the gameplay can offer (up to 80); the selectable maximum is the
+  // commit's own `illegal_action` check, not a schema bound.
+  const { default: Ajv } = await import('ajv');
+  const { readFileSync } = await import('node:fs');
+  const catalog = JSON.parse(readFileSync('desktop/api-v1-contract.json', 'utf8')) as { operations: { operationId: string; body: { properties: { parameters: object } } }[] };
+  const validateRequest = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'commit/expedition/{p}/changeExpedition')!.body.properties.parameters);
+  for (const difficultyOffset of [0, 68, 70, 80, 82]) assert.equal(validateRequest({ difficultyOffset }), true, `difficultyOffset ${difficultyOffset} passes the schema`);
+  assert.equal(validateRequest({ difficultyOffset: 3 }), false);
+}
+
+// resetStatistics restores the party's expedition statistics to their defaults and touches nothing else (Spec 9.1.3, 3-2-4).
+{
+  const played = { ...seed, parties: seed.parties.map((party, index) => index === 0
+    ? { ...party, expeditionStats: { ...party.expeditionStats, Clear: 5, Return: 3, Defeat: 2, donatedGold: 900, savedGold: 400 } as never }
+    : party) } as GameState;
+  const reset = applyApiV1Commit('commit/expedition/1/resetStatistics', played, {}, baseContext());
+  assert.deepEqual(reset.data, {});
+  assert.deepEqual(reset.state.parties[0].expeditionStats, seed.parties[0].expeditionStats, 'the statistics are back to their defaults');
+  assert.equal(reset.state.parties[0].currentHp, played.parties[0].currentHp);
+  assert.equal(reset.state.global, played.global, 'nothing outside the party changes');
+  assert.notDeepEqual(played.parties[0].expeditionStats, seed.parties[0].expeditionStats, 'the fixture really differed');
+  assert.throws(() => applyApiV1Commit('commit/expedition/9/resetStatistics', played, {}, baseContext()), /not_found/);
+}
+
+// A real, freshly resolved expedition (a compact, language-neutral record) renders from the `latestBattleLog` response alone
+// exactly as the retained record itself does: names, gate and reward text, the Bestiary snapshot, and the whole narration.
+{
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
+  const { publicEnemySnapshot } = await import('../../src/api/v1/enemyStatus');
+  const { buildExpeditionLogView } = await import('../../src/api/v1/expeditionLogView');
+  const { renderExpeditionMetadata, renderDiaryBattle } = await import('../../src/game/compactDiary');
+  const at = Date.parse('2026-01-01T00:00:00.000Z');
+  const charged = { ...seed, parties: seed.parties.map((party, index) => index === 0 ? { ...party, instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null } : party) } as GameState;
+  const played = applyApiV1Commit('commit/expedition/1/sortie', charged, {}, baseContext({ simulatedAt: at, chargeDurationScale: 1 })).state;
+  const party = played.parties[0];
+  const retained = party.lastExpeditionLog!;
+  assert.equal(retained.compactVersion, 1, 'a new expedition is a compact record');
+  assert.ok(retained.entries.some((entry) => entry.compactBattle), 'it retains compact battles');
+  const response = await buildApiV1ReadData('read/expedition/1/latestBattleLog', played, {}, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, revision: 1, inGameTime: at } as never) as never;
+  const { default: Ajv } = await import('ajv');
+  const { readFileSync } = await import('node:fs');
+  const catalog = JSON.parse(readFileSync('desktop/api-v1-contract.json', 'utf8')) as { operations: { operationId: string; response: { data: object } }[] };
+  const validate = new Ajv({ strict: false, allErrors: true }).compile(catalog.operations.find((operation) => operation.operationId === 'read/expedition/{p}/latestBattleLog')!.response.data);
+  assert.ok((response as { battleLog: { rooms: { endEvents: unknown[][] }[] } }).battleLog.rooms.some(room => room.endEvents.some(event => event[0] === 2 && event.length === 2)), 'a reward without auto-sell gold exercises the optional end-event value');
+  assert.equal(validate(response), true, JSON.stringify(validate.errors?.slice(0, 5)));
+  const view = buildExpeditionLogView(response)!;
+  const expected = renderExpeditionMetadata(retained);
+  assert.equal(view.entries.length, expected.entries.length);
+  expected.entries.forEach((entry, index) => {
+    const actual = view.entries[index];
+    assert.equal(actual.enemyName, entry.enemyName, `room ${entry.room} name`);
+    assert.equal(actual.gateInfo, entry.gateInfo, `room ${entry.room} gate`);
+    assert.equal(actual.reward, entry.reward, `room ${entry.room} reward`);
+    assert.equal(Boolean(actual.godsBattle), Boolean(entry.godsBattle));
+    assert.deepEqual(actual.enemySnapshot ?? null, entry.enemySnapshot ? publicEnemySnapshot(entry.enemySnapshot) : null, `room ${entry.room} snapshot`);
+    assert.deepEqual(renderDiaryBattle(actual, party.characters), renderDiaryBattle(entry, party.characters), `room ${entry.room} narration`);
+    assert.deepEqual(actual.endEvents ?? [], entry.endEvents ?? [], `room ${entry.room} end events`);
+  });
+  const text = JSON.stringify(response);
+  for (const banned of ['seedHex', 'replayMetadata', 'randomDrawCount']) assert.equal(text.includes(banned), false, `${banned} is not published`);
+}
+
+// The Altar: forms are unlocked with Prana once the category's Alter level reaches the form's requirement; the API names why
+// a form cannot be unlocked (the reducer ignores it), and the reads offer exactly the forms the commit accepts.
+{
+  const { ENEMIES } = await import('../../src/data/enemies');
+  const { getEnemyRequiredAltarLevel, getEnemyFormPranaCost, getRequiredAltarVictories } = await import('../../src/game/prana');
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
+  const open = ENEMIES.find((enemy) => getEnemyRequiredAltarLevel(enemy) === 0)!;
+  const gated = ENEMIES.find((enemy) => getEnemyRequiredAltarLevel(enemy) > 0 && enemy.type === 'normal') ?? ENEMIES.find((enemy) => getEnemyRequiredAltarLevel(enemy) > 0)!;
+  const cost = getEnemyFormPranaCost(open);
+  const withGlobal = (changes: Record<string, unknown>) => ({ ...seed, global: { ...seed.global, ...changes } }) as GameState;
+  const unlock = (state: GameState, enemyId: number) => applyApiV1Commit('commit/base/unlockForm', state, { enemyId }, baseContext());
+  const reason = (state: GameState, enemyId: number) => { try { unlock(state, enemyId); return ''; } catch (error) { return String(error); } };
+
+  assert.match(reason(seed, 999_999), /not_found/);
+  assert.match(reason(withGlobal({ prana: 0 }), open.id), /illegal_action:insufficient_prana/);
+  const unlocked = unlock(withGlobal({ prana: cost + 3 }), open.id);
+  assert.deepEqual(unlocked.data, { enemyId: open.id, pranaDelta: -cost });
+  assert.equal(unlocked.state.global.prana, 3);
+  assert.ok(unlocked.state.global.unlockedMimorianEnemyIds.includes(open.id));
+  assert.match(reason(unlocked.state, open.id), /illegal_action:already_unlocked/);
+  // A form above the category's Alter level needs the victories of that level in that category.
+  const needed = getEnemyRequiredAltarLevel(gated);
+  assert.match(reason(withGlobal({ prana: 1_000 }), gated.id), /illegal_action:altar_level_too_low/);
+  const earned = withGlobal({ prana: 1_000, altarVictoriesByEnemyType: { [gated.enemyType]: getRequiredAltarVictories(needed) } });
+  assert.equal(unlock(earned, gated.id).state.global.unlockedMimorianEnemyIds.includes(gated.id), true);
+  // Victories of another category do not count.
+  const other = ENEMIES.find((enemy) => enemy.enemyType !== gated.enemyType)!.enemyType;
+  assert.match(reason(withGlobal({ prana: 1_000, altarVictoriesByEnemyType: { [other]: getRequiredAltarVictories(needed) } }), gated.id), /altar_level_too_low/);
+
+  const read = (state: GameState, operation: string, parameters: Record<string, unknown> = {}) => buildApiV1ReadData(operation, state, parameters, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, revision: 1, inGameTime: 0 } as never) as Promise<any>;
+  const forms = await read(earned, 'read/base/enemyFormList');
+  assert.equal(forms.current.enemyFormList.length, ENEMIES.length);
+  for (const enemyId of forms.validOptions.enemyId as number[]) assert.doesNotThrow(() => unlock(earned, enemyId), `offered form ${enemyId} is accepted`);
+  const offered = new Set(forms.validOptions.enemyId as number[]);
+  for (const form of forms.current.enemyFormList as { enemyId: number; unlockable: { available: boolean; unavailableReason: string | null } }[]) {
+    assert.equal(offered.has(form.enemyId), form.unlockable.available);
+    if (!form.unlockable.available) assert.match(reason(earned, form.enemyId), new RegExp(`illegal_action:${form.unlockable.unavailableReason}`), `form ${form.enemyId}`);
+  }
+  const filtered = await read(earned, 'read/base/enemyFormList', { enemyType: gated.enemyType });
+  assert.ok(filtered.current.enemyFormList.every((form: { enemyType: string }) => form.enemyType === gated.enemyType));
+  await assert.rejects(() => read(earned, 'read/base/enemyFormList', { enemyId: 999_999 }), /not_found/);
+  const altar = (await read(earned, 'read/base/altarInfo')).altarOverview;
+  const category = altar.categories.find((entry: { enemyType: string }) => entry.enemyType === gated.enemyType);
+  assert.equal(category.altarLevel, needed);
+  assert.equal(category.victories, getRequiredAltarVictories(needed));
+  assert.equal(category.unlockedFormCount, 0);
+  assert.equal((await read(unlocked.state, 'read/base/altarInfo')).altarOverview.unlockedEnemyIds.includes(open.id), true);
+  assert.deepEqual((await read(earned, 'read/observation/base')).baseInfo.altar, altar);
+}
+
+// The inventory projection and its commands: what selling pays is what selling does, worn items and held Jewels are listed with
+// their owners, and acknowledging new items is precise and atomic.
+{
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
+  const baseInfo = async (state: GameState) => (await buildApiV1ReadData('read/observation/base', state, {}, { environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, revision: 1, inGameTime: 0 } as never) as any).baseInfo;
+  const ownedKey = Object.keys(seed.global.inventory).find((key) => seed.global.inventory[key].status === 'owned' && seed.global.inventory[key].count > 0)!;
+  const withNew = { ...seed, global: { ...seed.global, inventory: { ...seed.global.inventory, [ownedKey]: { ...seed.global.inventory[ownedKey], isNew: true } }, jewels: { 'fort:3': 2 } } } as GameState;
+  const info = await baseInfo(withNew);
+  const row = info.inventory.find((entry: { variantKey: string }) => entry.variantKey === ownedKey);
+  assert.equal(row.isNew, true);
+  // The advertised sale is exactly what the sale does (Super Rare items pay Prana only, never Gold).
+  const sold = applyApiV1Commit('commit/base/sellInventoryItems', withNew, { items: [row.item] }, baseContext());
+  assert.deepEqual([sold.state.global.gold - withNew.global.gold, sold.state.global.prana - withNew.global.prana], [row.sale.gold, row.sale.prana]);
+  for (const entry of info.inventory as { status: string; quantity: number; sale: unknown }[]) assert.equal(entry.sale !== null, entry.status === 'owned' && entry.quantity > 0, 'only an owned stack has a sale value');
+  assert.deepEqual(info.jewels, [{ jewelKey: 'fort', rank: 3, quantity: 2 }]);
+  // Every worn item is listed with its owner, and a Jewel is listed with the item it is attached to.
+  const worn = seed.parties.flatMap((party) => party.characters.flatMap((character) => character.equipment.filter(Boolean).map((item) => [party.id, character.id, item])));
+  assert.equal(info.equippedItems.length, worn.length);
+  assert.ok(info.equippedItems.length > 0);
+  const jeweled = { ...withNew, parties: withNew.parties.map((party, index) => index === 0 ? { ...party, characters: party.characters.map((character, ci) => ci === 0 ? { ...character, equipment: character.equipment.map((item, si) => si === 0 && item ? { ...item, jewel: { key: 'might', rank: 2 } } : item) } : character) } : party) } as GameState;
+  const jeweledFirst = (await baseInfo(jeweled)).equippedItems.find((entry: { characterId: number; slotIndex: number }) => entry.characterId === jeweled.parties[0].characters[0].id && entry.slotIndex === 0);
+  assert.equal(jeweledFirst.jewel, 'might:2');
+
+  const seen = (state: GameState, items: unknown) => { try { return applyApiV1Commit('commit/base/markItemsAsSeen', state, { items }, baseContext()); } catch (error) { return String(error); } };
+  const acknowledged = seen(withNew, [ownedKey]) as ReturnType<typeof applyApiV1Commit>;
+  assert.deepEqual(acknowledged.data, { items: [ownedKey] });
+  assert.equal(acknowledged.state.global.inventory[ownedKey].isNew, false);
+  assert.deepEqual((seen(acknowledged.state, [ownedKey]) as ReturnType<typeof applyApiV1Commit>).data, { items: [] }, 'acknowledging a seen variant is a no-op');
+  assert.match(String(seen(withNew, [ownedKey, 'no-such-variant'])), /not_found/, 'an unknown variant rejects the whole request');
+  assert.match(String(seen(withNew, [ownedKey, ownedKey])), /invalid_request/);
+  assert.match(String(seen(withNew, [])), /invalid_request/);
+
+  const priority = (partyNumber: unknown) => { try { return applyApiV1Commit('commit/base/changeJewelPriorityParty', seed, { partyNumber }, baseContext()); } catch (error) { return String(error); } };
+  assert.match(String(priority(6)), /not_found/, 'a party that does not exist is refused, not quietly replaced by PT1');
+  assert.equal((priority(1) as ReturnType<typeof applyApiV1Commit>).state.global.jewelAutoEquipPriorityPartyId, 1);
+  assert.equal((priority('none') as ReturnType<typeof applyApiV1Commit>).state.global.jewelAutoEquipPriorityPartyId, null);
+}
+
+// News acknowledgement (9.1.4.9): an unknown version rejects the whole request, and only unread versions are affected.
+{
+  const { DEVELOPER_NEWS_ITEMS } = await import('../../src/data/developerNews');
+  const [first, second] = DEVELOPER_NEWS_ITEMS;
+  assert.throws(() => applyApiV1Commit('commit/setting/markNewsAsRead', seed, { version: [first.id, 'no-such-version'] }, baseContext()), /not_found/);
+  const one = applyApiV1Commit('commit/setting/markNewsAsRead', seed, { version: first.id }, baseContext());
+  assert.deepEqual(one.data.versions, [first.id]);
+  const both = applyApiV1Commit('commit/setting/markNewsAsRead', one.state, { version: [first.id, second.id] }, baseContext());
+  assert.deepEqual(both.data.versions, [second.id], 'an already-read version is not affected');
+  const noop = applyApiV1Commit('commit/setting/markNewsAsRead', both.state, { version: first.id }, baseContext());
+  assert.deepEqual(noop.data.versions, []);
+  assert.equal(noop.state, both.state, 'acknowledging only read news changes nothing');
+}
+
+// changeBuild (9.1.4.9) returns the character's complete new build `current`, not the equipment facts.
+{
+  const character = seed.parties[0].characters.find((entry) => entry.isUnique !== true)!;
+  const renamed = applyApiV1Commit(`commit/build/character/${character.id}/changeBuild`, seed, { name: 'Renamed', simulation: false }, baseContext());
+  assert.deepEqual(Object.keys(renamed.data.current as object).sort(), ['lineage', 'mainClassId', 'name', 'predisposition', 'racesAndGender', 'subClassId', 'unique']);
+  assert.equal((renamed.data.current as { name: string }).name, 'Renamed');
+  const simulated = applyApiV1Commit(`commit/build/character/${character.id}/changeBuild`, seed, { name: 'Renamed', simulation: true }, baseContext());
+  assert.equal((simulated.data.current as { name: string }).name, character.name, 'a simulation reports the unchanged build');
+}
+
+// saveEquipmentSet without a name uses the Party pane's default name (Spec 8.2.4), dated by the transaction clock.
+{
+  const { createDefaultEquipmentSetName } = await import('../../src/game/equipmentSets');
+  const character = seed.parties[0].characters[0];
+  const context = baseContext();
+  const saved = applyApiV1Commit(`commit/build/character/${character.id}/saveEquipmentSet`, seed, { equipmentSet: {} }, context);
+  const set = saved.state.global.savedEquipmentSets.find((entry) => entry.slot === saved.data.equipmentSetId)!;
+  assert.equal(set.name, createDefaultEquipmentSetName(character, context.simulatedAt));
+  assert.match(set.name, new RegExp(`^${character.name} .+\\(.+\\), .+/.+ \\d{2}/\\d{2}$`));
+}
+
+// Equipment set name errors name the violated rule, as schema length errors do.
+{
+  const { describeInvalidRequest } = await import('../../src/api/v1/requestErrors');
+  const character = seed.parties[0].characters[0];
+  const ruleOf = (parameters: Record<string, unknown>): unknown => {
+    try { applyApiV1Commit(`commit/build/character/${character.id}/saveEquipmentSet`, seed, parameters, baseContext()); } catch (error) { return describeInvalidRequest(error); }
+    return null;
+  };
+  assert.deepEqual(ruleOf({ equipmentSet: { name: 'x'.repeat(81) } }), { field: 'name', rule: 'maxLength', reason: 'invalid_request:name.maxLength' });
+  assert.deepEqual(ruleOf({ equipmentSet: { name: ' ' } }), { field: 'name', rule: 'minLength', reason: 'invalid_request:name.minLength' });
+}
+
+// commit/setting/debug for an API account reports every field, with defaults for the ones never set.
+{
+  const location = globalThis as { location?: { pathname: string } };
+  const previous = location.location;
+  location.location = { pathname: '/dev/' };
+  try {
+    const settings: Record<string, unknown> = {};
+    const outcome = applyApiV1Commit('commit/setting/debug', seed, { speedOfTime: 'x5' }, baseContext({ settings }));
+    assert.equal((outcome.data.current as Record<string, unknown>).speedOfTime, 'x5');
+    assert.equal((outcome.data.current as Record<string, unknown>).godsStrength, 'normal');
+    assert.equal(Object.keys(outcome.data.current as object).length, 12);
+    assert.deepEqual(settings.debug, { speedOfTime: 'x5' }, 'only the supplied fields are stored');
+  } finally {
+    location.location = previous;
+  }
+}
+
+// Clairvoyance reset (Spec 8.6; 9.1.3 3-6-1): the side-quest reset initializes only `t.side_quest_bag`, never the active side
+// quest's progress, and the reward reset leaves the common Super Rare bag to the common reset.
+{
+  const drawn = (bag: { entries: { id: number; tickets: number }[] }) => ({ entries: bag.entries.map((entry, index) => index === 0 ? { ...entry, tickets: Math.max(0, entry.tickets - 1) } : entry) });
+  const party = seed.parties[0];
+  const activeQuest = { id: 1, type: 'gold', target: 10, progress: 7 } as unknown as NonNullable<GameState['parties'][number]['sideQuest']>;
+  const used = { ...seed, parties: [{ ...party, sideQuest: activeQuest, bags: { ...party.bags, sideQuestBag: drawn(party.bags.sideQuestBag), commonSuperRareBag: drawn(party.bags.commonSuperRareBag), bossRareRewardBag: drawn(party.bags.bossRareRewardBag) } }, ...seed.parties.slice(1)] } as GameState;
+  const ctx = baseContext({ settings: { debug: { clairvoyance: true } } });
+  const sideQuest = applyApiV1Commit('commit/setting/clairvoyanceReset', used, { partyNumber: party.id, resetSideQuest: true }, ctx).state.parties[0];
+  assert.deepEqual(sideQuest.bags.sideQuestBag, seed.parties[0].bags.sideQuestBag, 'the side-quest bag is initialized');
+  assert.equal(sideQuest.sideQuest?.progress, 7, 'the side-quest progress is kept');
+  const rewards = applyApiV1Commit('commit/setting/clairvoyanceReset', used, { partyNumber: party.id, resetRewards: true }, ctx).state.parties[0];
+  assert.deepEqual(rewards.bags.bossRareRewardBag, seed.parties[0].bags.bossRareRewardBag, 'the party reward bags are initialized');
+  assert.deepEqual(rewards.bags.commonSuperRareBag, used.parties[0].bags.commonSuperRareBag, 'the common Super Rare bag is left to the common reset');
+}
+
+// Enemy Edit pane (Spec 9.1.3 2-6-1/3-6-3): the ordinary player's real pane is changed after the durable commit; an API
+// account keeps its own. Every field is validated first.
+{
+  const location = globalThis as { location?: { pathname: string } };
+  const previous = location.location;
+  location.location = { pathname: '/dev/' };
+  try {
+    const { getDefaultColosseumEnemySettings } = await import('../../src/game/colosseum');
+    const enemyEditSettings = getDefaultColosseumEnemySettings();
+    const player = applyApiV1Commit('commit/setting/enemyEditPane', seed, { enemyLevel: 42, mainClass: 'samurai', addedAbilities: [{ abilityId: 'a.iaigiri', level: 2 }] }, baseContext({ enemyEditSettings }));
+    assert.equal(player.enemyEditSettingWrite?.level, 42);
+    assert.equal(player.enemyEditSettingWrite?.enemyMainClass, 'samurai');
+    assert.deepEqual(player.enemyEditSettingWrite?.abilities, [{ id: 'iaigiri', level: 2 }]);
+    assert.deepEqual((player.data.current as { addedAbilities: unknown[] }).addedAbilities, [{ abilityId: 'a.iaigiri', level: 2 }]);
+    assert.equal(player.settings.enemyEditPane, undefined, 'the player pane is not copied into the control settings');
+    const unchanged = applyApiV1Commit('commit/setting/enemyEditPane', seed, { enemyLevel: enemyEditSettings.level }, baseContext({ enemyEditSettings }));
+    assert.equal(unchanged.enemyEditSettingWrite, undefined, 'an unchanged pane writes nothing');
+    for (const parameters of [{ enemyLevel: 100 }, { mainClass: 'nope' }, { terrainEffect: 'terrain.none' }, { addedAbilities: [{ abilityId: 'a.nope', level: 1 }] }, { enemyLevel: 5, subClass: 'x' }]) {
+      assert.throws(() => applyApiV1Commit('commit/setting/enemyEditPane', seed, parameters, baseContext({ enemyEditSettings })), /invalid_request/, JSON.stringify(parameters));
+    }
+    const settings: Record<string, unknown> = {};
+    const account = applyApiV1Commit('commit/setting/enemyEditPane', seed, { enemyName: 'Test' }, baseContext({ settings }));
+    assert.equal(account.enemyEditSettingWrite, undefined);
+    assert.equal((settings.enemyEditPane as { enemyName: string }).enemyName, 'Test');
+    assert.equal((account.data.current as { enemyLevel: number }).enemyLevel, enemyEditSettings.level, 'unset fields report their defaults');
+  } finally {
+    location.location = previous;
+  }
+}
+
+console.log('apiV1CommitOperations profile ok');

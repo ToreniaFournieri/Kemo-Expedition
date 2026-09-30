@@ -9,27 +9,25 @@ import { getSuperRareBonuses } from '../../../data/items';
 import { LINEAGES } from '../../../data/lineages';
 import { PREDISPOSITIONS } from '../../../data/predispositions';
 import { RACES } from '../../../data/races';
+import { buildCombatTotals, buildPartyStatsView } from '../../../api/v1/statusView';
+import { readStatusFacts } from '../../../api/v1/calculatedStatus';
+import type { InProcessApiAdapter } from '../../../api/v1/applicationApi';
+import type { CharacterBuildOutcome, CharacterBuildRequest } from '../../../api/v1/characterBuildParameters';
+import type { CalculatedStatus } from '../../../api/v1/contracts';
+import { formatEquipmentChange, type SavedEquipmentSetView } from '../../../api/v1/itemFormat';
 import { formatAttackSpeedHelp } from '../../../game/attackProfile';
 import { gameplayRandom } from '../../../game/gameplayRandom';
-import { computeCharacterStats,getUnlockedRaceAbilitiesFromBonuses } from '../../../game/characterComputation';
-import { DEITY_OPTIONS,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity,normalizeDeityName } from '../../../game/deity';
-import { replaceCharacterEquipment } from '../../../game/equipment';
-import {
-  EMPTY_EQUIPMENT_STATE_HISTORY,
-  recordEquipmentState,
-  redoEquipmentState,
-  undoEquipmentState,
-  type EquipmentStateHistory,
-} from '../../../game/equipmentHistory';
-import { createEquipmentSetSnapshot,evaluateEquipmentSet,MAX_SAVED_EQUIPMENT_SETS,type EquipmentSetLoadMode } from '../../../game/equipmentSets';
+import { DEITY_OPTIONS,getDeityDisplayName,getDeityEffectDescription,getDeityKey,getDeityRank,isNoFaithDeity } from '../../../game/deity';
+import { createDefaultEquipmentSetName,MAX_SAVED_EQUIPMENT_SETS,type EquipmentSetLoadMode } from '../../../game/equipmentSets';
+import { MAX_CHARACTER_NAME_LENGTH } from '../../../game/characterComputation';
 import { replaceFlatItemStat } from '../../../game/equipmentDisplay';
+import { getEnemyTypeShortName } from '../../../game/enemyDisplay';
 import { getItemDisplayName } from '../../../game/gameState';
 import { getJewelDisplayName,getJewelOwnedCount,JEWELS_BY_ITEM_CATEGORY } from '../../../game/jewel';
-import { resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../../game/magic';
-import { computeCharacterHpContribution,computePartyStats } from '../../../game/partyComputation';
-import { getXpToNextLevel } from '../../../game/partyLevel';
+import { getMagicStyleLabel,resolveMagicProfile,resolveSpecialMagicFromAbilities } from '../../../game/magic';
 import { t } from '../../../i18n';
-import { AbilityId,Bonus,BonusType,Character,ElementalOffense,EnemyDef,InventoryRecord,Item,JewelKey,MAX_LEVEL,Party,Race,RaceId,SavedEquipmentSet,getVariantKey,type EnemyAbility } from '../../../types';
+import type { PartySummary, PartyView } from '../../../api/v1/partyView';
+import { AbilityId,Bonus,BonusType,Character,ElementalOffense,EnemyDef,InventoryRecord,Item,JewelKey,MAX_LEVEL,Race,RaceId,getVariantKey,type EnemyAbility } from '../../../types';
 
 
 import {
@@ -53,15 +51,12 @@ getBaseOffenseScale,
 getBonusHelpDescription,
 getCharacterCategoryMultiplier,
 getCharacterCombatBonusLevels,
-getCharacterDisplayedMagicalAttackAmplifier,
 getCharacterGrowthMultiplier,
-getEffectiveAccuracyBonus,
 getElementalOffenseHelpLines,
 getInventoryOwnerCharacterImageSrc,
 getItemNameFontWeightClass,
 getItemStats,
 getJewelSlotStatusText,
-getOffenseMultiplierSum,
 getPotentialDefaultNamesByPt,
 getRaceBonusesForSelection,
 getRarityFilterNote,
@@ -69,13 +64,10 @@ getRarityShortLabel,
 IOS_GLASS_BUTTON_CLASS,
 IOS_GLASS_TAB_CLASS,
 LINEAGE_SHORT_NAME_KEYS,
-MAGIC_CATEGORIES,
 matchesRarityFilter,
-MELEE_CATEGORIES,
 normalizeAutoEquipmentMode,
 PREDISPOSITION_SHORT_NAME_KEYS,
 RaceIcon,
-RANGED_CATEGORIES,
 RARITY_FILTER_LABELS,
 RARITY_FILTER_OPTIONS,
 RarityFilter,
@@ -85,22 +77,29 @@ renderUiIcon,
 UiIconKey,
 UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE
 } from '../homeShared';
+import { EQUIPMENT_EVALUATION_LIMIT } from '../../../api/v1/requestLimits';
+import { useApiReadMany } from '../useApiRead';
+import { DISPLAY_LOCALE } from '../../../i18n/displayFormat';
 
 export default function PartyTab({
+  apiAdapter,
   parties,
   selectedPartyIndex,
   party,
   partyStats,
-  characterStats,
+  characterStatus,
+  equipCategoryPreferences,
+  onSetEquipCategory,
   selectedCharacter,
   setSelectedCharacter,
   editingCharacter,
   setEditingCharacter,
-  onUpdateCharacter,
+  onChangeCharacterBuild,
   onReorderPartyCharacter,
   onEquipItem,
   onToggleEquipmentLock,
   onAttachJewel,
+  onSetAutoEquipmentMode,
   onAddStatNotifications,
   onSelectParty,
   onUpdatePartyDeity,
@@ -110,7 +109,10 @@ export default function PartyTab({
   onRenameEquipmentSet,
   onDeleteEquipmentSet,
   onLoadEquipmentSet,
-  onRestoreEquipmentState,
+  canUndoEquipment,
+  canRedoEquipment,
+  onUndoEquipment,
+  onRedoEquipment,
   savedEquipmentSets,
   inventory,
   jewels,
@@ -119,31 +121,40 @@ export default function PartyTab({
   unlockedMimorianEnemyIds,
   isDarkModeEnabled,
 }: {
-  parties: Party[];
+  apiAdapter: InProcessApiAdapter | null;
+  parties: PartySummary[];
   selectedPartyIndex: number;
-  party: Party;
-  partyStats: ReturnType<typeof computePartyStats>['partyStats'];
-  characterStats: ReturnType<typeof computePartyStats>['characterStats'];
+  party: PartyView;
+  partyStats: { hp: number };
+  /** The projected calculated status of each member, aligned with `party.characters`. */
+  characterStatus: CalculatedStatus[];
+  /** The retained inventory category of each character, by character id (`party.equipCategory.<characterId>`). */
+  equipCategoryPreferences: Record<number, string>;
+  onSetEquipCategory: (characterId: number, category: string) => void;
   selectedCharacter: number;
   setSelectedCharacter: Dispatch<SetStateAction<number>>;
   editingCharacter: number | null;
   setEditingCharacter: Dispatch<SetStateAction<number | null>>;
-  onUpdateCharacter: (id: number, updates: Partial<Character>) => void;
+  onChangeCharacterBuild: (characterId: number, edits: Partial<Character>, request: CharacterBuildRequest) => Promise<CharacterBuildOutcome>;
   onReorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
   onToggleEquipmentLock: (characterId: number, slotIndex: number) => void;
   onAttachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number) => void;
+  onSetAutoEquipmentMode: (characterId: number, mode: AutoEquipmentMode) => void;
   onAddStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   onSelectParty: (partyIndex: number) => void;
   onUpdatePartyDeity: (partyIndex: number, deityName: string) => void;
   onRunAutoEquipmentForCharacter: (characterId: number) => void;
   onRemoveAllEquipment: (characterId: number) => void;
-  onSaveEquipmentSet: (characterId: number, name: string, createdAt: number) => void;
-  onRenameEquipmentSet: (slot: number, name: string) => void;
-  onDeleteEquipmentSet: (slot: number) => void;
+  onSaveEquipmentSet: (characterId: number, name: string) => void;
+  onRenameEquipmentSet: (characterId: number, slot: number, name: string) => void;
+  onDeleteEquipmentSet: (characterId: number, slot: number) => void;
   onLoadEquipmentSet: (characterId: number, slot: number, mode: EquipmentSetLoadMode) => void;
-  onRestoreEquipmentState: (characterId: number, set: SavedEquipmentSet) => void;
-  savedEquipmentSets: SavedEquipmentSet[];
+  canUndoEquipment: boolean;
+  canRedoEquipment: boolean;
+  onUndoEquipment: (characterId: number) => void;
+  onRedoEquipment: (characterId: number) => void;
+  savedEquipmentSets: SavedEquipmentSetView[];
   inventory: InventoryRecord;
   jewels: Record<string, number>;
   deityDonations: Record<string, number>;
@@ -152,7 +163,6 @@ export default function PartyTab({
   isDarkModeEnabled: boolean;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
-  const [equipCategory, setEquipCategory] = useState('armor');
   const [activeInlineDetailHelp, setActiveInlineDetailHelp] = useState<{ key: string; title: string; description: string } | null>(null);
   const [inlineDetailHelpPosition, setInlineDetailHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const [partyRarityFilter, setPartyRarityFilter] = useState<RarityFilter>('all');
@@ -160,72 +170,23 @@ export default function PartyTab({
   const [draggingCharacterIndex, setDraggingCharacterIndex] = useState<number | null>(null);
   const [isPartyPaneBackgroundAvailable, setIsPartyPaneBackgroundAvailable] = useState(false);
   const selectedChar = party.characters[selectedCharacter];
-  const equippedItems = selectedChar.equipment.filter((item): item is Item => item != null);
-  const unlockedRaceAbilities = getUnlockedRaceAbilitiesFromBonuses(equippedItems.flatMap((item) => item.bonuses ?? []));
+  const stats = buildPartyStatsView(characterStatus[selectedCharacter]);
 
-  // Calculate current stats for notification: HP is party-wide, others are per selected character
-  const selectedStats = characterStats[selectedCharacter];
+  // Calculate current stats for notification: HP is party-wide, others are per selected character.
+  // SpecRef: 8.1.1 | Popup Notification Logic & Display | Status Changes
+  // The totals come only from the projected calculated status, so consecutive notifications compare like with like.
   const selectedRace = RACES.find((race) => race.id === selectedChar.raceId);
-  const isSelectedRaceUnlockConditionActive = unlockedRaceAbilities.has(selectedChar.raceId);
-  const selectedIaigiriLevel = selectedStats.abilities.find(a => a.id === 'iaigiri')?.level ?? 0;
-  const selectedIaigiriMultiplier = selectedIaigiriLevel >= 3 ? 3.0 : selectedIaigiriLevel >= 2 ? 2.5 : selectedIaigiriLevel >= 1 ? 2.0 : 1.0;
-  const selectedEffectiveAccuracyBonus = getEffectiveAccuracyBonus(selectedStats.accuracyBonus, selectedStats.abilities);
-  const selectedAbilityLevels = selectedStats.abilities.reduce<Record<string, number>>((acc, ability) => {
-    acc[ability.id] = Math.max(acc[ability.id] ?? 0, ability.level);
-    return acc;
-  }, {});
-  const selectedAbilityLevelSignature = Object.entries(selectedAbilityLevels)
+  const selectedStatusFacts = readStatusFacts(characterStatus[selectedCharacter]);
+  const combatTotals = {
+    ...buildCombatTotals(characterStatus[selectedCharacter], partyStats.hp),
+    unlockRaceName: selectedRace?.name ?? '',
+    unlockAbilityName: selectedRace?.unlockAbility?.name ?? '',
+    unlockConditionActive: stats.raceUnlockActive,
+  };
+  const selectedAbilityLevelSignature = Object.entries(combatTotals.abilityLevels)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([id, level]) => `${id}:${level}`)
     .join('|');
-  const selectedPhysicalDefenseResist = Math.max(0.01, selectedStats.physicalDefenseAmplifier * selectedStats.deityDefenseAmplifierBonus.physical);
-  const selectedMagicalDefenseResist = Math.max(0.01, selectedStats.magicalDefenseAmplifier * selectedStats.deityDefenseAmplifierBonus.magical);
-  const selectedMeleeAttackAmp = ((selectedIaigiriLevel > 0
-    ? selectedIaigiriMultiplier * (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames)) * selectedStats.physicalOffenseMultiplier
-    : (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames) + selectedStats.physicalAttackCBonus) * selectedStats.physicalOffenseMultiplier
-  ) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength);
-  const selectedRangedAttackAmp = ((selectedIaigiriLevel > 0
-    ? selectedIaigiriMultiplier * (1 + selectedStats.rangedAttackCBonus + getOffenseMultiplierSum(equippedItems, 'ranged', selectedStats.offenseCBonusNames)) * selectedStats.physicalOffenseMultiplier
-    : (1 + selectedStats.rangedAttackCBonus + getOffenseMultiplierSum(equippedItems, 'ranged', selectedStats.offenseCBonusNames) + selectedStats.physicalAttackCBonus) * selectedStats.physicalOffenseMultiplier
-  ) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength);
-  const selectedMagicalAttackAmp = getCharacterDisplayedMagicalAttackAmplifier(
-    (((1 + selectedStats.magicalAttackCBonus + getOffenseMultiplierSum(equippedItems, 'magical', selectedStats.offenseCBonusNames)) * selectedStats.magicalOffenseMultiplier) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.intelligence),
-    selectedStats.abilities,
-  );
-  const combatTotals = {
-    vitality: selectedStats.baseStats.vitality,
-    strength: selectedStats.baseStats.strength,
-    intelligence: selectedStats.baseStats.intelligence,
-    mind: selectedStats.baseStats.mind,
-    // Keep offense notifications aligned with the values shown in the status panel.
-    meleeAtk: Math.round(selectedStats.meleeAttack),
-    rangedAtk: Math.round(selectedStats.rangedAttack),
-    magicalAtk: Math.round(selectedStats.magicalAttack),
-    meleeNoA: selectedStats.meleeNoA,
-    rangedNoA: selectedStats.rangedNoA,
-    magicalNoA: selectedStats.magicalNoA,
-    // Keep defense notifications aligned with the values shown in the status panel.
-    physDef: Math.round(selectedStats.physicalDefense),
-    magDef: Math.round(selectedStats.magicalDefense),
-    physicalDefenseResistPercent: Math.round(selectedPhysicalDefenseResist * 100),
-    magicalDefenseResistPercent: Math.round(selectedMagicalDefenseResist * 100),
-    fireDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.elementalDefenseMultipliers.fire) * 100),
-    iceDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.elementalDefenseMultipliers.ice) * 100),
-    thunderDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.elementalDefenseMultipliers.thunder) * 100),
-    meleeAttackAmp: selectedMeleeAttackAmp,
-    rangedAttackAmp: selectedRangedAttackAmp,
-    magicalAttackAmp: selectedMagicalAttackAmp,
-    accuracy: Math.round(selectedEffectiveAccuracyBonus * 1000),
-    evasion: Math.round(selectedStats.evasionBonus * 1000),
-    penet: Math.round(selectedStats.penetMultiplier * 100),
-    hp: Math.floor(partyStats.hp),
-    elementalOffense: selectedStats.elementalOffense,
-    elementalOffensePercent: Math.round((selectedStats.elementalOffenseValue - 1) * 100),
-    unlockRaceName: selectedRace?.name ?? '',
-    unlockAbilityName: selectedRace?.unlockAbility?.name ?? '',
-    unlockConditionActive: isSelectedRaceUnlockConditionActive,
-    abilityLevels: selectedAbilityLevels,
-  };
 
   const prevStatsRef = useRef<typeof combatTotals | null>(null);
   const prevSelectedCharRef = useRef(selectedCharacter);
@@ -312,19 +273,19 @@ export default function PartyTab({
 
       if (combatTotals.vitality !== prev.vitality) {
         const isPositive = combatTotals.vitality > prev.vitality;
-        changes.push({ message: formatStatChange('common.stat.vitality', formatNumber(prev.vitality), formatNumber(combatTotals.vitality)), isPositive });
+        changes.push({ message: formatStatChange('stat.vitality', formatNumber(prev.vitality), formatNumber(combatTotals.vitality)), isPositive });
       }
       if (combatTotals.strength !== prev.strength) {
         const isPositive = combatTotals.strength > prev.strength;
-        changes.push({ message: formatStatChange('common.stat.strength', formatNumber(prev.strength), formatNumber(combatTotals.strength)), isPositive });
+        changes.push({ message: formatStatChange('stat.strength', formatNumber(prev.strength), formatNumber(combatTotals.strength)), isPositive });
       }
       if (combatTotals.intelligence !== prev.intelligence) {
         const isPositive = combatTotals.intelligence > prev.intelligence;
-        changes.push({ message: formatStatChange('common.stat.intelligence', formatNumber(prev.intelligence), formatNumber(combatTotals.intelligence)), isPositive });
+        changes.push({ message: formatStatChange('stat.intelligence', formatNumber(prev.intelligence), formatNumber(combatTotals.intelligence)), isPositive });
       }
       if (combatTotals.mind !== prev.mind) {
         const isPositive = combatTotals.mind > prev.mind;
-        changes.push({ message: formatStatChange('common.stat.mind', formatNumber(prev.mind), formatNumber(combatTotals.mind)), isPositive });
+        changes.push({ message: formatStatChange('stat.mind', formatNumber(prev.mind), formatNumber(combatTotals.mind)), isPositive });
       }
 
       // Check all stat changes and collect them
@@ -405,7 +366,7 @@ export default function PartyTab({
       }
       if (combatTotals.magicalAttackAmp !== prev.magicalAttackAmp) {
         const isPositive = combatTotals.magicalAttackAmp > prev.magicalAttackAmp;
-        changes.push({ message: formatStatChange('home.party.help.magicalAttackMultiplierLabel', `x${formatDecimal(prev.magicalAttackAmp, 2)}`, `x${formatDecimal(combatTotals.magicalAttackAmp, 2)}`), isPositive });
+        changes.push({ message: formatStatChange('home.party.magicalAttackMultiplier', `x${formatDecimal(prev.magicalAttackAmp, 2)}`, `x${formatDecimal(combatTotals.magicalAttackAmp, 2)}`), isPositive });
       }
       if (combatTotals.magicalNoA !== prev.magicalNoA) {
         const isPositive = combatTotals.magicalNoA > prev.magicalNoA;
@@ -424,9 +385,9 @@ export default function PartyTab({
         changes.push({ message: `${t('party.bonus.penet')} ${formatNumber(prev.penet)} → ${formatNumber(combatTotals.penet)}`, isPositive });
       }
       const elementalLabels: Record<Exclude<ElementalOffense, 'none'>, string> = {
-        fire: t('common.element.fire.short'),
-        ice: t('common.element.ice.short'),
-        thunder: t('common.element.thunder.short'),
+        fire: t('element.fire.short'),
+        ice: t('element.ice.short'),
+        thunder: t('element.thunder.short'),
       };
       const prevElementPercents: Record<Exclude<ElementalOffense, 'none'>, number> = {
         fire: 0,
@@ -503,6 +464,7 @@ export default function PartyTab({
       onAddStatNotifications, selectedCharacter, selectedPartyIndex]);
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
+  const [editConfirmationWarnings, setEditConfirmationWarnings] = useState<CharacterBuildOutcome['warnings']>([]);
   const [showBaseStatHelp, setShowBaseStatHelp] = useState(false);
   const [baseStatHelpPosition, setBaseStatHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const [showAutoEquipmentHelp, setShowAutoEquipmentHelp] = useState(false);
@@ -523,7 +485,7 @@ export default function PartyTab({
     // Check for double-tap on same slot with item
     if (item && lastSlotTap && lastSlotTap.slot === slotIndex && now - lastSlotTap.time < 400) {
       // Double-tap: remove item
-      recordEquipmentChange(() => onEquipItem(char.id, slotIndex, null));
+      onEquipItem(char.id, slotIndex, null);
       setLastSlotTap(null);
       setSelectingSlot(null);
       return;
@@ -549,7 +511,7 @@ export default function PartyTab({
     const targetSlotIndex = getEquipTargetSlotIndex();
     if (targetSlotIndex === null) return;
 
-    recordEquipmentChange(() => onEquipItem(char.id, targetSlotIndex, itemKey));
+    onEquipItem(char.id, targetSlotIndex, itemKey);
     if (selectingSlot !== null) {
       setSelectingSlot(null);
     }
@@ -605,37 +567,6 @@ export default function PartyTab({
   }, [party.deity.name, editingDeity]);
 
   const char = selectedChar;
-  const stats = characterStats[selectedCharacter];
-  const [equipmentHistory, setEquipmentHistory] = useState<Record<string, EquipmentStateHistory>>({});
-  const equipmentHistoryKey = `${party.id}:${char.id}`;
-  const currentEquipmentState = () => createEquipmentSetSnapshot(char.equipment.slice(0, stats.maxEquipSlots));
-  const history = equipmentHistory[equipmentHistoryKey] ?? EMPTY_EQUIPMENT_STATE_HISTORY;
-  const undoTarget = history.undo.at(-1);
-  const redoTarget = history.redo.at(-1);
-  const undoAvailability = undoTarget ? evaluateEquipmentSet(undoTarget, char, inventory, stats.maxEquipSlots) : null;
-  const redoAvailability = redoTarget ? evaluateEquipmentSet(redoTarget, char, inventory, stats.maxEquipSlots) : null;
-  const recordEquipmentChange = (change: () => void) => {
-    const previousState = currentEquipmentState();
-    setEquipmentHistory((previous) => ({
-      ...previous,
-      [equipmentHistoryKey]: recordEquipmentState(previous[equipmentHistoryKey] ?? EMPTY_EQUIPMENT_STATE_HISTORY, previousState),
-    }));
-    change();
-  };
-  const handleUndoEquipment = () => {
-    if (!undoAvailability?.allAvailable) return;
-    const transition = undoEquipmentState(history, currentEquipmentState());
-    if (!transition) return;
-    onRestoreEquipmentState(char.id, transition.target);
-    setEquipmentHistory((previous) => ({ ...previous, [equipmentHistoryKey]: transition.history }));
-  };
-  const handleRedoEquipment = () => {
-    if (!redoAvailability?.allAvailable) return;
-    const transition = redoEquipmentState(history, currentEquipmentState());
-    if (!transition) return;
-    onRestoreEquipmentState(char.id, transition.target);
-    setEquipmentHistory((previous) => ({ ...previous, [equipmentHistoryKey]: transition.history }));
-  };
   const hpDisplayMultiplier = ((stats.baseStats.vitality + stats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(char);
   const race = RACES.find(r => r.id === char.raceId) ?? RACES[0];
   const mainClass = CLASSES.find(c => c.id === char.mainClassId) ?? CLASSES[0];
@@ -732,7 +663,7 @@ export default function PartyTab({
     });
   };
 
-  const displayedDeityName = normalizeDeityName(editingDeity ? pendingDeityName : party.deity.name);
+  const displayedDeityName = getDeityDisplayName(editingDeity ? pendingDeityName : party.deity.name);
   const displayedDeityKey = getDeityKey(displayedDeityName);
   const displayedDeityDonation = Object.entries(deityDonations).find(
     ([deityName]) => getDeityKey(deityName) === displayedDeityKey
@@ -748,30 +679,19 @@ export default function PartyTab({
 
   const handleAutoEquipmentModeCycle = () => {
     const nextMode = ((autoEquipmentMode + 1) % 3) as AutoEquipmentMode;
-    onUpdateCharacter(char.id, { autoEquipmentMode: nextMode });
+    onSetAutoEquipmentMode(char.id, nextMode);
   };
 
   const handleAutoEquipmentButtonClick = () => {
     // SpecRef: 8.2.4 | Equipment management | Auto equipment button(自動装備)
     if (autoEquipmentMode !== 2) return;
-    recordEquipmentChange(() => onRunAutoEquipmentForCharacter(char.id));
-  };
-
-  const createDefaultEquipmentSetName = (createdAt: number): string => {
-    const date = new Date(createdAt);
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const mainShort = CLASS_SHORT_NAMES[char.mainClassId] ?? char.mainClassId;
-    const subShort = CLASS_SHORT_NAMES[char.subClassId] ?? char.subClassId;
-    const lineageShort = lineage.shortName ?? lineage.name;
-    const predispositionShort = predisposition.shortName ?? predisposition.name;
-    return `${char.name} ${mainShort}(${subShort}), ${lineageShort}/${predispositionShort} ${month}/${day}`;
+    onRunAutoEquipmentForCharacter(char.id);
   };
 
   const handleSaveEquipmentSet = () => {
     if (savedEquipmentSets.length >= MAX_SAVED_EQUIPMENT_SETS) return;
     const createdAt = Date.now();
-    onSaveEquipmentSet(char.id, createDefaultEquipmentSetName(createdAt), createdAt);
+    onSaveEquipmentSet(char.id, createDefaultEquipmentSetName(char, createdAt));
     setShowSavedEquipmentSets(true);
   };
 
@@ -799,145 +719,109 @@ export default function PartyTab({
     setShowAutoEquipmentHelp(true);
   };
 
-  const getEquipSlotReductionCount = (edits: Partial<Character> | null): number => {
-    const changedKeys = getChangedEditKeys(edits);
-    if (changedKeys.length === 0) return 0;
-
-    const nextCharacter = { ...char, ...edits };
-    const nextStats = computeCharacterStats(nextCharacter, party.level);
-    return Math.max(0, stats.maxEquipSlots - nextStats.maxEquipSlots);
+  // SpecRef: 9.1.3 | Commit | 3-3-2 character/{characterId}/changeBuild
+  // The API decides whether a build change needs confirmation and reports the warnings: the edit is first simulated
+  // (nothing is committed), and only a confirmed change is committed. The tab holds no hypothetical-stats logic of its own.
+  const CHANGE_BUILD_WARNING_TEXT: Record<string, (args: Record<string, number>) => string> = {
+    'api.warning.changeBuild.equipmentSlotReduction': (args) => t('home.party.equipmentSlotReductionWarning', { count: args.count }),
+    'api.warning.changeBuild.meleeAptitudeRemoved': () => t('home.party.meleeCapabilityRemovedWarning'),
+    'api.warning.changeBuild.rangedAptitudeRemoved': () => t('home.party.rangedCapabilityRemovedWarning'),
+    'api.warning.changeBuild.magicAptitudeRemoved': () => t('home.party.magicCapabilityRemovedWarning'),
   };
+  const editConfirmWarnings = editConfirmationWarnings.map((warning) => (CHANGE_BUILD_WARNING_TEXT[warning.key] ?? (() => warning.key))(warning.args));
 
-  const hasEquippedItemInReducedSlots = (edits: Partial<Character> | null): boolean => {
-    const changedKeys = getChangedEditKeys(edits);
-    if (changedKeys.length === 0) return false;
-
-    const nextCharacter = { ...char, ...edits };
-    const nextStats = computeCharacterStats(nextCharacter, party.level);
-    if (nextStats.maxEquipSlots >= stats.maxEquipSlots) return false;
-
-    return char.equipment
-      .slice(nextStats.maxEquipSlots, stats.maxEquipSlots)
-      .some((item) => item != null);
-  };
-
-  const getCapabilityRemovalWarningState = (edits: Partial<Character> | null): { melee: boolean; ranged: boolean; magic: boolean } => {
-    const changedKeys = getChangedEditKeys(edits);
-    if (changedKeys.length === 0) {
-      return { melee: false, ranged: false, magic: false };
-    }
-
-    const nextCharacter = { ...char, ...edits };
-    const oldCombatBonuses = getCharacterCombatBonusLevels(char);
-    const nextCombatBonuses = getCharacterCombatBonusLevels(nextCharacter);
-    const lostMeleeAptitude = oldCombatBonuses.melee && !nextCombatBonuses.melee;
-    const lostRangedAptitude = oldCombatBonuses.ranged && !nextCombatBonuses.ranged;
-    const lostMagicAptitude = oldCombatBonuses.magic && !nextCombatBonuses.magic;
-
-    if (!lostMeleeAptitude && !lostRangedAptitude && !lostMagicAptitude) {
-      return { melee: false, ranged: false, magic: false };
-    }
-
-    const hasMeleeEquipment = lostMeleeAptitude && char.equipment.some((item) => item != null && MELEE_CATEGORIES.has(item.category));
-    const hasRangedEquipment = lostRangedAptitude && char.equipment.some((item) => item != null && RANGED_CATEGORIES.has(item.category));
-    const hasMagicEquipment = lostMagicAptitude && char.equipment.some((item) => item != null && MAGIC_CATEGORIES.has(item.category));
-
-    return { melee: hasMeleeEquipment, ranged: hasRangedEquipment, magic: hasMagicEquipment };
-  };
-
-  const getEditConfirmWarnings = (edits: Partial<Character> | null): string[] => {
-    const warnings: string[] = [];
-    const equipSlotReductionCount = getEquipSlotReductionCount(edits);
-    if (equipSlotReductionCount > 0) {
-      warnings.push(t('home.party.equipmentSlotReductionWarning', { count: equipSlotReductionCount }));
-    }
-
-    const capabilityWarnings = getCapabilityRemovalWarningState(edits);
-    if (capabilityWarnings.melee) {
-      warnings.push(t('home.party.meleeCapabilityRemovedWarning'));
-    }
-    if (capabilityWarnings.ranged) {
-      warnings.push(t('home.party.rangedCapabilityRemovedWarning'));
-    }
-    if (capabilityWarnings.magic) {
-      warnings.push(t('home.party.magicCapabilityRemovedWarning'));
-    }
-
-    return warnings;
-  };
-
-  const editConfirmWarnings = getEditConfirmWarnings(pendingEdits);
-
-  const completeCharacterEdit = () => {
-    const changedKeys = getChangedEditKeys(pendingEdits);
-
-    if (changedKeys.length === 0) {
-      setPendingEdits(null);
-      setEditingCharacter(null);
-      setShowEditConfirm(false);
-      return;
-    }
-
-    if (changedKeys.length === 1 && changedKeys[0] === 'name') {
-      onUpdateCharacter(char.id, { name: pendingEdits?.name ?? char.name });
-      setPendingEdits(null);
-      setEditingCharacter(null);
-      setShowEditConfirm(false);
-      return;
-    }
-
-    const equipSlotReductionCount = getEquipSlotReductionCount(pendingEdits);
-    const capabilityWarnings = getCapabilityRemovalWarningState(pendingEdits);
-    const hasCapabilityRemovals = capabilityWarnings.melee || capabilityWarnings.ranged || capabilityWarnings.magic;
-    if (equipSlotReductionCount === 0 && !hasCapabilityRemovals) {
-      onUpdateCharacter(char.id, pendingEdits ?? {});
-      setPendingEdits(null);
-      setEditingCharacter(null);
-      setShowEditConfirm(false);
-      return;
-    }
-
-    if (equipSlotReductionCount > 0 && !hasEquippedItemInReducedSlots(pendingEdits) && !hasCapabilityRemovals) {
-      onUpdateCharacter(char.id, pendingEdits ?? {});
-      setPendingEdits(null);
-      setEditingCharacter(null);
-      setShowEditConfirm(false);
-      return;
-    }
-
-    setShowEditConfirm(true);
-  };
-
-  const saveCharacterEditWithEquipmentReset = () => {
-    const changedKeys = getChangedEditKeys(pendingEdits);
-    if (changedKeys.length > 0 && pendingEdits) {
-      onUpdateCharacter(char.id, pendingEdits);
-    }
-
+  const finishCharacterEdit = () => {
     setPendingEdits(null);
     setEditingCharacter(null);
     setShowEditConfirm(false);
+    setEditConfirmationWarnings([]);
+  };
+
+  const completeCharacterEdit = async () => {
+    const changedKeys = getChangedEditKeys(pendingEdits);
+    if (changedKeys.length === 0 || !pendingEdits) return finishCharacterEdit();
+
+    // A rename never needs confirmation, so it is committed directly.
+    if (changedKeys.length === 1 && changedKeys[0] === 'name') {
+      const renamed = await onChangeCharacterBuild(char.id, { name: pendingEdits.name ?? char.name }, { simulation: false });
+      if (renamed.status === 'ok') finishCharacterEdit();
+      return;
+    }
+
+    const simulated = await onChangeCharacterBuild(char.id, pendingEdits, { simulation: true });
+    // A rejected edit keeps the editor open so the pending selections are not lost.
+    if (simulated.status === 'error') return;
+    if (simulated.confirmationRequired) {
+      setEditConfirmationWarnings(simulated.warnings);
+      setShowEditConfirm(true);
+      return;
+    }
+    const committed = await onChangeCharacterBuild(char.id, pendingEdits, { simulation: false });
+    if (committed.status === 'ok') finishCharacterEdit();
+  };
+
+  const saveCharacterEditWithEquipmentReset = async () => {
+    if (getChangedEditKeys(pendingEdits).length === 0 || !pendingEdits) return finishCharacterEdit();
+    const committed = await onChangeCharacterBuild(char.id, pendingEdits, { simulation: false, confirmation: 'yes' });
+    if (committed.status === 'ok') finishCharacterEdit();
   };
 
   const baseStatMultiplierRows = [
-    { label: t('common.stat.vitality'), value: stats.baseStats.vitality, note: t('home.party.physicalResistance'), ratio: getBaseDefenseScale(stats.baseStats.vitality) },
-    { label: t('common.stat.strength'), value: stats.baseStats.strength, note: t('home.party.physicalAttackMultiplier'), ratio: getBaseOffenseScale(stats.baseStats.strength) },
-    { label: t('common.stat.intelligence'), value: stats.baseStats.intelligence, note: t('home.party.magicalAttackMultiplier'), ratio: getBaseOffenseScale(stats.baseStats.intelligence) },
-    { label: t('common.stat.mind'), value: stats.baseStats.mind, note: t('home.party.magicalResistance'), ratio: getBaseDefenseScale(stats.baseStats.mind) },
+    { label: t('stat.vitality'), value: stats.baseStats.vitality, note: t('home.party.physicalResistance'), ratio: getBaseDefenseScale(stats.baseStats.vitality) },
+    { label: t('stat.strength'), value: stats.baseStats.strength, note: t('home.party.physicalAttackMultiplier'), ratio: getBaseOffenseScale(stats.baseStats.strength) },
+    { label: t('stat.intelligence'), value: stats.baseStats.intelligence, note: t('home.party.magicalAttackMultiplier'), ratio: getBaseOffenseScale(stats.baseStats.intelligence) },
+    { label: t('stat.mind'), value: stats.baseStats.mind, note: t('home.party.magicalResistance'), ratio: getBaseDefenseScale(stats.baseStats.mind) },
   ];
 
-  const hpContribution = computeCharacterHpContribution(char, party.level);
-  const hpBaseIncrease = hpContribution.baseHpBonus;
-  const hpItemIncrease = hpContribution.itemHpBonus;
+  const hpBaseIncrease = stats.hpBaseIncrease;
+  const hpItemIncrease = stats.hpItemIncrease;
 
   const availableCategoryGroups = getAvailableCategoryGroups(char);
   const availableCategories = availableCategoryGroups.flatMap(group => group.categories);
 
-  useEffect(() => {
-    if (!availableCategories.includes(equipCategory)) {
-      setEquipCategory(availableCategories[0] ?? 'armor');
+  // SpecRef: 8.2.4 | Equipment management | Default: 鎧 or the previously selected category of each character
+  const retainedEquipCategory = equipCategoryPreferences[char.id];
+  const equipCategory = retainedEquipCategory && availableCategories.includes(retainedEquipCategory)
+    ? retainedEquipCategory
+    : availableCategories.includes('armor') ? 'armor' : availableCategories[0] ?? 'armor';
+
+  // SpecRef: 9.1.3 | Read | 2-3-5 character/{characterId}/equipmentEvaluation
+  // Every displayed defense preview is evaluated against one immutable Application API snapshot. The tab only formats
+  // the returned deltas; it does not simulate equipment or recalculate character status.
+  const previewTargetSlot = selectingSlot ?? Array.from({ length: stats.maxEquipSlots }).findIndex((_, index) => !char.equipment[index]);
+  const equipmentChanges = useMemo(() => {
+    const changes: string[] = [];
+    char.equipment.forEach((item, slotIndex) => {
+      if (item?.category === equipCategory) changes.push(formatEquipmentChange(slotIndex, null));
+    });
+    if (previewTargetSlot >= 0) {
+      Object.values(inventory).forEach((variant) => {
+        if (variant.status === 'owned' && variant.count > 0 && variant.item.category === equipCategory) {
+          changes.push(formatEquipmentChange(previewTargetSlot, variant.item));
+        }
+      });
     }
-  }, [availableCategories, equipCategory]);
+    return [...new Set(changes)];
+  }, [char.equipment, equipCategory, inventory, previewTargetSlot]);
+  // One request carries at most EQUIPMENT_EVALUATION_LIMIT changes, so a large category is read in chunks, after a short
+  // pause so that a burst of inventory changes issues one set of requests.
+  const equipmentChangeInputs = useMemo(() => Array.from(
+    { length: Math.ceil(equipmentChanges.length / EQUIPMENT_EVALUATION_LIMIT) },
+    (_, chunk) => ({ pathParameters: { characterId: char.id }, parameters: { equipmentChanges: equipmentChanges.slice(chunk * EQUIPMENT_EVALUATION_LIMIT, (chunk + 1) * EQUIPMENT_EVALUATION_LIMIT) } }),
+  ), [char.id, equipmentChanges]);
+  const equipmentChangeProjections = useApiReadMany<{
+    calculatedEquipmentChange: Array<{ change: string; equippable: boolean; physicalDefenseDelta: number; magicalDefenseDelta: number }>;
+  }>(
+    apiAdapter,
+    'read/build/character/{characterId}/equipmentEvaluation',
+    equipmentChangeInputs,
+    [char.id, equipmentChanges.join('|')],
+    120,
+  );
+  const equipmentChangeByTarget = useMemo(
+    () => new Map((equipmentChangeProjections ?? []).flatMap((projection) => projection.calculatedEquipmentChange).map((entry) => [entry.change, entry])),
+    [equipmentChangeProjections],
+  );
 
   useEffect(() => {
     setShowBaseStatHelp(false);
@@ -950,7 +834,7 @@ export default function PartyTab({
     setInlineDetailHelpPosition(null);
   }, [selectedCharacter, editingCharacter]);
 
-  const xpToNextLevel = party.level < MAX_LEVEL ? Math.ceil(getXpToNextLevel(party.level)) : 0;
+  const xpToNextLevel = party.experienceToNext;
   const xpProgressPercent = xpToNextLevel > 0
     ? Math.min(100, Math.round((party.experience / xpToNextLevel) * 100))
     : 100;
@@ -1262,7 +1146,7 @@ export default function PartyTab({
             : undefined;
           const mimorianEnemyRank = mimorianEnemy?.type === 'boss' ? 'B' : mimorianEnemy?.type === 'elite' ? 'E' : 'N';
           const mimorianListDescriptor = mimorianEnemy
-            ? `${t(`masterData.enemyType.${mimorianEnemy.enemyType}.short`)}/${mimorianEnemyRank}`
+            ? `${getEnemyTypeShortName(mimorianEnemy.enemyType)}/${mimorianEnemyRank}`
             : '-/N';
           const uniquePreviewImageFileName = c.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[c.lineageId] : undefined;
           const previewMimorianEnemyImageSrc = c.raceId === 'mimorian' && c.mimorianEnemyId != null
@@ -1416,6 +1300,7 @@ export default function PartyTab({
                 <input
                   type="text"
                   value={pendingEdits?.name ?? char.name}
+                  maxLength={MAX_CHARACTER_NAME_LENGTH}
                   onChange={(e) => {
                     if (char.isUnique) return;
                     setPendingEdits({ ...pendingEdits, name: e.target.value });
@@ -1633,7 +1518,7 @@ export default function PartyTab({
                   <>
                     <div className="rounded border border-gray-200 bg-white/5 backdrop-blur-[1px] p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
-                        <span className="font-bold">{t('home.party.mainClass')}</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? t('party.class.masterFull') : ''} |{' '}
+                        <span className="font-bold">{t('home.party.mainClass')}</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? t('party.class.master') : ''} |{' '}
                         {selectedMainBonusEntries.map((entry, index) => (
                           <Fragment key={entry.key}>
                             {index > 0 && ', '}
@@ -1854,7 +1739,7 @@ export default function PartyTab({
                       disabled={unlockedEnemies.length === 0}
                     >
                       {enemiesForType.map((enemy) => (
-                        <option key={enemy.id} value={enemy.id}>{enemy.name} (ID: {new Intl.NumberFormat('ja-JP').format(enemy.id)})</option>
+                        <option key={enemy.id} value={enemy.id}>{enemy.name} (ID: {new Intl.NumberFormat(DISPLAY_LOCALE).format(enemy.id)})</option>
                       ))}
                     </select>
                     {unlockedEnemies.length === 0 && <span className="mt-1 block text-accent">{t('home.altar.noUnlockedForms')}</span>}
@@ -2013,34 +1898,11 @@ export default function PartyTab({
             </div>
             <div className="border-t border-gray-200 mt-2 pt-2 text-sm">
               {(() => {
-                // Calculate offense amplifiers per phase
-                const iaigiri = stats.abilities.find(a => a.id === 'iaigiri');
-                const heavyStrike = stats.abilities.find(a => a.id === 'heavy_strike');
-                const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 3 ? 3.0 : iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
-                const heavyStrikeMultiplier = heavyStrike ? 1.4 : 1.0;
-                const strengthScale = getBaseOffenseScale(stats.baseStats.strength);
-                const intelligenceScale = getBaseOffenseScale(stats.baseStats.intelligence);
+                // The amplifiers, accuracy decay, and penetration come from the projected status (shared game function).
                 const combatBonusLevels = getCharacterCombatBonusLevels(char);
                 const hasRanged = combatBonusLevels.ranged;
                 const hasMagical = combatBonusLevels.magic;
                 const hasMelee = combatBonusLevels.melee;
-                const equippedItems = char.equipment.filter((item): item is Item => item != null);
-                const baseAppliedOffenseBonusNames = stats.offenseCBonusNames;
-                const baseMultMelee = stats.meleeAttackCBonus + getOffenseMultiplierSum(
-                  equippedItems,
-                  'melee',
-                  baseAppliedOffenseBonusNames
-                );
-                const baseMultRanged = stats.rangedAttackCBonus + getOffenseMultiplierSum(
-                  equippedItems,
-                  'ranged',
-                  baseAppliedOffenseBonusNames
-                );
-                const baseMultMagical = stats.magicalAttackCBonus + getOffenseMultiplierSum(
-                  equippedItems,
-                  'magical',
-                  baseAppliedOffenseBonusNames
-                );
 
                 type StatusLine = {
                   key: string;
@@ -2053,10 +1915,7 @@ export default function PartyTab({
                 // Build offense lines
                 const offenseLines: StatusLine[] = [];
                 if (hasRanged) {
-                  const amp = ((iaigiri
-                    ? iaigiriMultiplier * (1.0 + baseMultRanged) * stats.physicalOffenseMultiplier
-                    : (1.0 + baseMultRanged + stats.physicalAttackCBonus) * stats.physicalOffenseMultiplier
-                  ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
+                  const amp = selectedStatusFacts.offenseAmplifier.ranged;
                   offenseLines.push({
                     key: 'ranged-attack',
                     text: `${t('combat.rangedAttack')}:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}${t('combat.times')}(x${formatDecimal(amp, 2)})`,
@@ -2070,10 +1929,7 @@ export default function PartyTab({
                   });
                 }
                 if (hasMagical) {
-                  const amp = getCharacterDisplayedMagicalAttackAmplifier(
-                    ((1.0 + baseMultMagical) * stats.magicalOffenseMultiplier + stats.deityOffenseAmplifierBonus) * intelligenceScale,
-                    stats.abilities,
-                  );
+                  const amp = selectedStatusFacts.offenseAmplifier.magical;
                   offenseLines.push({
                     key: 'magical-attack',
                     text: `${t('combat.magicalAttack')}:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}${t('combat.times')}(x${formatDecimal(amp, 2)})`,
@@ -2087,10 +1943,7 @@ export default function PartyTab({
                   });
                 }
                 if (hasMelee) {
-                  const amp = ((iaigiri
-                    ? iaigiriMultiplier * (1.0 + baseMultMelee) * stats.physicalOffenseMultiplier
-                    : (1.0 + baseMultMelee + stats.physicalAttackCBonus) * stats.physicalOffenseMultiplier
-                  ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
+                  const amp = selectedStatusFacts.offenseAmplifier.melee;
                   offenseLines.push({
                     key: 'melee-attack',
                     text: `${t('combat.meleeAttack')}:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}${t('combat.times')}(x${formatDecimal(amp, 2)})`,
@@ -2104,7 +1957,7 @@ export default function PartyTab({
                   });
                 }
 
-                const baseDecay = 0.90 + getEffectiveAccuracyBonus(stats.accuracyBonus, stats.abilities);
+                const baseDecay = selectedStatusFacts.accuracyDecay;
                 const decayText = `${formatDecimal(baseDecay * 100, 1)}%`;
                 const hasPhysicalAttacks = hasRanged || hasMelee;
                 if (hasPhysicalAttacks) {
@@ -2148,19 +2001,12 @@ export default function PartyTab({
                     helpTitle: t('home.party.castingSpell'),
                     helpLines: [
                       t('home.party.castingSpellValue', { spell: magicProfile.spellName }),
-                      t('home.party.magicStyleValue', { style: magicProfile.style }),
+                      t('home.party.magicStyleValue', { style: getMagicStyleLabel(magicProfile.style) }),
                       t('home.party.magicEffectValue', { effect: magicProfile.description }),
                     ],
                   });
                 }
-                const heavyStrikePenetAbility = stats.abilities.find((ability) => ability.id === 'heavy_strike' && ability.level > 0);
-                const heavyStrikePenetPerNoA = heavyStrikePenetAbility
-                  ? (heavyStrikePenetAbility.level >= 2 ? 0.015 : 0.01)
-                  : 0;
-                const heavyStrikePenetBonus = heavyStrikePenetAbility
-                  ? (Math.max(stats.rangedNoA, stats.magicalNoA, stats.meleeNoA) * heavyStrikePenetPerNoA)
-                  : 0;
-                const penetrationPercent = Math.round((stats.penetMultiplier + heavyStrikePenetBonus) * 100);
+                const penetrationPercent = Math.round(selectedStatusFacts.penetration * 100);
                 if (penetrationPercent !== 0) {
                   offenseLines.push({
                     key: 'penetration',
@@ -2174,8 +2020,8 @@ export default function PartyTab({
                 }
 
                 // Defense lines
-                const defenseAmpPhysical = Math.max(0.01, stats.physicalDefenseAmplifier * stats.deityDefenseAmplifierBonus.physical);
-                const defenseAmpMagical = Math.max(0.01, stats.magicalDefenseAmplifier * stats.deityDefenseAmplifierBonus.magical);
+                const defenseAmpPhysical = selectedStatusFacts.defenseAmplifier.physical;
+                const defenseAmpMagical = selectedStatusFacts.defenseAmplifier.magical;
                 const elementIcon: UiIconKey | null = stats.elementalOffense === 'fire' ? 'fire' :
                   stats.elementalOffense === 'thunder' ? 'thunder' :
                   stats.elementalOffense === 'ice' ? 'ice' : null;
@@ -2391,10 +2237,11 @@ export default function PartyTab({
               const bonusDisplayEntries: BonusDisplayEntry[] = [];
               const helpRows: Array<{ label: string; description: string }> = [];
               const bonusLabel = (key: string): string => t(`party.bonus.${key}`);
+              const categoryLabel = (key: string): string => t(`party.categoryShort.${key}`);
               const mulNames: Record<string, string> = {
-                sword: bonusLabel('sword'), katana: bonusLabel('katana'), archery: bonusLabel('archery'), armor: bonusLabel('armor'),
-                gauntlet: bonusLabel('gauntlet'), wand: bonusLabel('wand'), robe: bonusLabel('robe'), shield: bonusLabel('shield'),
-                bolt: bonusLabel('bolt'), grimoire: bonusLabel('grimoire'), catalyst: bonusLabel('catalyst'), arrow: bonusLabel('arrow'),
+                sword: categoryLabel('sword'), katana: categoryLabel('katana'), archery: categoryLabel('archery'), armor: categoryLabel('armor'),
+                gauntlet: categoryLabel('gauntlet'), wand: categoryLabel('wand'), robe: categoryLabel('robe'), shield: categoryLabel('shield'),
+                bolt: categoryLabel('bolt'), grimoire: categoryLabel('grimoire'), catalyst: categoryLabel('catalyst'), arrow: categoryLabel('arrow'),
                 physical_offense_multiplier_xV: bonusLabel('physical_offense_multiplier_xV'), magical_offense_multiplier_xV: bonusLabel('magical_offense_multiplier_xV'),
                 physical_defense_multiplier_xV: bonusLabel('physical_defense_multiplier_xV'), magical_defense_multiplier_xV: bonusLabel('magical_defense_multiplier_xV'),
                 fire_defense_multiplier_xV: bonusLabel('fire_defense_multiplier_xV'), ice_defense_multiplier_xV: bonusLabel('ice_defense_multiplier_xV'), thunder_defense_multiplier_xV: bonusLabel('thunder_defense_multiplier_xV')
@@ -2426,7 +2273,7 @@ export default function PartyTab({
                   helpRows.push({ label: entry.label, description: entry.description });
                 }
               };
-              const defensePercentFormatter = new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1, minimumFractionDigits: 0 });
+              const defensePercentFormatter = new Intl.NumberFormat(DISPLAY_LOCALE, { maximumFractionDigits: 1, minimumFractionDigits: 0 });
 
               for (const [key, val] of Object.entries(multipliers)) {
                 if (hiddenBonusDisplayKeys.has(key) || key === 'growth_xV') continue;
@@ -2670,9 +2517,9 @@ export default function PartyTab({
         </div>
         )}
         <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-sub">
-          <button type="button" onClick={handleUndoEquipment} disabled={!undoAvailability?.allAvailable} className="disabled:cursor-not-allowed disabled:opacity-40" aria-label="Undo equipment change">↩</button>
-          <button type="button" onClick={handleRedoEquipment} disabled={!redoAvailability?.allAvailable} className="disabled:cursor-not-allowed disabled:opacity-40" aria-label="Redo equipment change">↪</button>
-          <button type="button" onClick={() => recordEquipmentChange(() => onRemoveAllEquipment(char.id))}>
+          <button type="button" onClick={() => onUndoEquipment(char.id)} disabled={!canUndoEquipment} className="disabled:cursor-not-allowed disabled:opacity-40" aria-label="Undo equipment change">↩</button>
+          <button type="button" onClick={() => onRedoEquipment(char.id)} disabled={!canRedoEquipment} className="disabled:cursor-not-allowed disabled:opacity-40" aria-label="Redo equipment change">↪</button>
+          <button type="button" onClick={() => onRemoveAllEquipment(char.id)}>
             {t('party.equipment.removeAll')}
           </button>
           <button
@@ -2692,7 +2539,7 @@ export default function PartyTab({
             {Array.from({ length: MAX_SAVED_EQUIPMENT_SETS }, (_, index) => index + 1).map((slot) => {
               const set = savedEquipmentSets.find((candidate) => candidate.slot === slot);
               const isExpanded = expandedSavedEquipmentSlot === slot;
-              const availability = set ? evaluateEquipmentSet(set, char, inventory, stats.maxEquipSlots) : null;
+              const availability = set?.availability ?? null;
               return (
                 <div key={slot} className="text-xs">
                   <button
@@ -2712,27 +2559,27 @@ export default function PartyTab({
                         defaultValue={set.name}
                         maxLength={80}
                         aria-label={t('party.equipment.setNameAria')}
-                        onBlur={(event) => onRenameEquipmentSet(set.slot, event.currentTarget.value)}
+                        onBlur={(event) => onRenameEquipmentSet(char.id, set.slot, event.currentTarget.value)}
                         className="w-full rounded border border-gray-200 bg-white px-2 py-1 text-gray-900"
                       />
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                         {availability.allAvailable ? (
-                          <button type="button" className="font-semibold text-sub" onClick={() => recordEquipmentChange(() => onLoadEquipmentSet(char.id, set.slot, 'exact'))}>
+                          <button type="button" className="font-semibold text-sub" onClick={() => onLoadEquipmentSet(char.id, set.slot, 'exact')}>
                             {t('party.equipment.equipSet')}
                           </button>
                         ) : (
                           <>
                             <span className="text-warning">{t('party.equipment.someUnavailable')}</span>
-                            <button type="button" className="font-semibold text-sub" onClick={() => recordEquipmentChange(() => onLoadEquipmentSet(char.id, set.slot, 'similar'))}>
+                            <button type="button" className="font-semibold text-sub" onClick={() => onLoadEquipmentSet(char.id, set.slot, 'similar')}>
                               {t('party.equipment.equipSimilar')}
                             </button>
-                            <button type="button" className="font-semibold text-sub" onClick={() => recordEquipmentChange(() => onLoadEquipmentSet(char.id, set.slot, 'exact'))}>
+                            <button type="button" className="font-semibold text-sub" onClick={() => onLoadEquipmentSet(char.id, set.slot, 'exact')}>
                               {t('party.equipment.equipExactOnly')}
                             </button>
                           </>
                         )}
                         <button type="button" className="font-semibold text-danger" onClick={() => {
-                          onDeleteEquipmentSet(set.slot);
+                          onDeleteEquipmentSet(char.id, set.slot);
                           setExpandedSavedEquipmentSlot(null);
                         }}>
                           {t('party.equipment.deleteSet')}
@@ -2744,6 +2591,7 @@ export default function PartyTab({
                           <span className={getItemNameFontWeightClass(entry.item)}>{getItemDisplayName(entry.item)}</span>
                           <span> {getRarityShortLabel(entry.item.id, entry.item.name)} {renderTextWithRaceIcons(getItemStats(entry.item, getCharacterCategoryMultiplier(char, entry.item.category), hpDisplayMultiplier))}</span>
                           <span> [{t(CATEGORY_NAME_KEYS[entry.item.category] ?? 'party.categoryName.unknown')}]</span>
+                          {entry.item.jewel && <span> {getJewelSlotStatusText(entry.item.jewel.key, entry.item.jewel.rank)}</span>}
                         </div>
                       ))}
                     </div>
@@ -2792,7 +2640,7 @@ export default function PartyTab({
                       onClick={(event) => {
                         event.stopPropagation();
                         // SpecRef: 8.2.4 | Equipment management | Lock and Unlock Item
-                        recordEquipmentChange(() => onToggleEquipmentLock(char.id, slotIndex));
+                        onToggleEquipmentLock(char.id, slotIndex);
                       }}
                       className="text-base leading-none"
                       aria-label={isLocked ? t('home.equipment.unlockAria') : t('home.equipment.lockAria')}
@@ -2831,7 +2679,7 @@ export default function PartyTab({
                           return (
                             <button
                               key={rank}
-                              onClick={() => recordEquipmentChange(() => onAttachJewel(char.id, slotIndex, jewelKey, rank))}
+                              onClick={() => onAttachJewel(char.id, slotIndex, jewelKey, rank)}
                               disabled={isDisabled}
                               className={`inline-flex w-6 justify-start px-0.5 text-base leading-none tabular-nums ${owned > 0 ? 'text-black' : 'text-gray-400'} ${isCurrent ? 'font-bold text-sub' : ''}`}
                             >
@@ -2908,7 +2756,7 @@ export default function PartyTab({
           if (displayItem.isEquipped && displayItem.slotIndex !== undefined) {
             // Unequip: single tap on equipped item
             const slotIndex = displayItem.slotIndex;
-            recordEquipmentChange(() => onEquipItem(char.id, slotIndex, null));
+            onEquipItem(char.id, slotIndex, null);
           } else {
             // Equip: use existing logic
             handleInventoryItemTap(displayItem.key);
@@ -2916,28 +2764,13 @@ export default function PartyTab({
         };
 
         const applyProjectedDefenseToStatsText = (displayItem: DisplayItem, statsText: string): string => {
-          const currentPhysicalDefense = Math.round(stats.physicalDefense);
-          const currentMagicalDefense = Math.round(stats.magicalDefense);
-
-          let targetSlotIndex: number | null = null;
-          let targetItem: Item | null = null;
-
-          if (displayItem.isEquipped && displayItem.slotIndex !== undefined) {
-            targetSlotIndex = displayItem.slotIndex;
-            targetItem = null;
-          } else {
-            targetSlotIndex = getEquipTargetSlotIndex();
-            targetItem = targetSlotIndex !== null ? displayItem.item : null;
-          }
-
-          if (targetSlotIndex === null) return statsText;
-
-          const nextCharacter = replaceCharacterEquipment(char, targetSlotIndex, targetItem);
-          const nextStats = computeCharacterStats(nextCharacter, party.level);
-          const nextPhysicalDefense = Math.round(nextStats.physicalDefense);
-          const nextMagicalDefense = Math.round(nextStats.magicalDefense);
-          const physicalDefenseDelta = nextPhysicalDefense - currentPhysicalDefense;
-          const magicalDefenseDelta = nextMagicalDefense - currentMagicalDefense;
+          const targetSlotIndex = displayItem.isEquipped ? displayItem.slotIndex : getEquipTargetSlotIndex();
+          if (targetSlotIndex === undefined || targetSlotIndex === null) return statsText;
+          const target = formatEquipmentChange(targetSlotIndex, displayItem.isEquipped ? null : displayItem.item);
+          const evaluation = equipmentChangeByTarget.get(target);
+          if (!evaluation) return statsText;
+          const physicalDefenseDelta = evaluation.physicalDefenseDelta;
+          const magicalDefenseDelta = evaluation.magicalDefenseDelta;
           const displaySignMultiplier = displayItem.isEquipped ? -1 : 1;
           const displayedPhysicalDefenseDelta = physicalDefenseDelta * displaySignMultiplier;
           const displayedMagicalDefenseDelta = magicalDefenseDelta * displaySignMultiplier;
@@ -2984,7 +2817,7 @@ export default function PartyTab({
                   <div className="flex gap-2">
                     {char.equipment[selectingSlot] && (
                       <button
-                      onClick={() => { recordEquipmentChange(() => onEquipItem(char.id, selectingSlot, null)); setSelectingSlot(null); }}
+                      onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
                         className="text-xs text-accent px-2 py-1 border border-accent/40 rounded bg-white"
                       >
                         {t('party.equipment.remove')}
@@ -3015,7 +2848,7 @@ export default function PartyTab({
                     {RARITY_FILTER_LABELS[filter]}
                   </button>
                 ))}
-                <span className="text-xs text-gray-500"> {t('party.equipment.superRare')}</span>
+                <span className="text-xs text-gray-500"> {t('diary.reward.superRare')}</span>
                 <button
                   onClick={() => setPartySuperRareOnly(prev => !prev)}
                   className={`text-xs px-1.5 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
@@ -3037,7 +2870,7 @@ export default function PartyTab({
                     {group.categories.map((cat, i) => (
                       <button
                         key={cat}
-                        onClick={() => setEquipCategory(cat)}
+                        onClick={() => { if (cat !== equipCategory) onSetEquipCategory(char.id, cat); }}
                         className={`px-2 py-1 text-xs shadow-sm shadow-slate-900/10 ${
                           i === 0 ? 'rounded-l' : i === group.categories.length - 1 ? 'rounded-r' : ''
                         } ${

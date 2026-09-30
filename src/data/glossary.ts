@@ -28,22 +28,22 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "b.vitality+v",
         get label() { return t('data.glossary.2_1_2.label'); },
-        get description() { return t('data.glossary.2_1_2.description'); }
+        get description() { return t('party.bonusHelp.vitality', { value: 'v' }); }
       },
       {
         "key": "b.strength+v",
         get label() { return t('data.glossary.2.label'); },
-        get description() { return t('data.glossary.2.description'); }
+        get description() { return t('party.bonusHelp.strength', { value: 'v' }); }
       },
       {
         "key": "b.intelligence+v",
         get label() { return t('data.glossary.3.label'); },
-        get description() { return t('data.glossary.3.description'); }
+        get description() { return t('party.bonusHelp.intelligence', { value: 'v' }); }
       },
       {
         "key": "b.mind+v",
         get label() { return t('data.glossary.4.label'); },
-        get description() { return t('data.glossary.4.description'); }
+        get description() { return t('party.bonusHelp.mind', { value: 'v' }); }
       }
     ]
   },
@@ -95,37 +95,37 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "c.accuracy+v",
         get label() { return t('data.glossary.13.label'); },
-        get description() { return t('data.glossary.13.description'); }
+        get description() { return t('party.bonusHelp.accuracy'); }
       },
       {
         "key": "c.evasion+v",
         get label() { return t('data.glossary.14.label'); },
-        get description() { return t('data.glossary.14.description'); }
+        get description() { return t('party.bonusHelp.evasion'); }
       },
       {
         "key": "c.equip_slot+v",
         get label() { return t('data.glossary.15.label'); },
-        get description() { return t('data.glossary.15.description'); }
+        get description() { return t('party.bonusHelp.equip_slot', { value: 'v' }); }
       },
       {
         "key": "c.equip_melee",
         get label() { return t('data.glossary.16.label'); },
-        get description() { return t('data.glossary.16.description'); }
+        get description() { return t('party.bonusHelp.equipMelee'); }
       },
       {
         "key": "c.equip_ranged",
         get label() { return t('data.glossary.17.label'); },
-        get description() { return t('data.glossary.17.description'); }
+        get description() { return t('party.bonusHelp.equipRanged'); }
       },
       {
         "key": "c.equip_magic",
         get label() { return t('data.glossary.18.label'); },
-        get description() { return t('data.glossary.18.description'); }
+        get description() { return t('party.bonusHelp.equipMagic'); }
       },
       {
         "key": "c.penet+v",
         get label() { return t('data.glossary.19.label'); },
-        get description() { return t('data.glossary.19.description'); }
+        get description() { return t('combat.penetrationHelp', { percent: 'v' }); }
       },
       {
         "key": "c.growth_xV",
@@ -195,12 +195,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "c.deity_accuracy+v",
         get label() { return t('data.glossary.33.label'); },
-        get description() { return t('data.glossary.33.description'); }
+        get description() { return t('party.bonusHelp.accuracy'); }
       },
       {
         "key": "c.deity_evasion+v",
         get label() { return t('data.glossary.34.label'); },
-        get description() { return t('data.glossary.34.description'); }
+        get description() { return t('party.bonusHelp.evasion'); }
       },
       {
         "key": "c.fire_defense_multiplier_xV",
@@ -225,116 +225,116 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "c.antagonism",
         get label() { return t('data.glossary.39.label'); },
-        get description() { return t('data.glossary.39.description'); }
+        get description() { return t('party.bonusHelp.antagonism'); }
       },
       {
         "key": "c.unlock_caninian_ability",
-        get label() { return t('data.glossary.40.label'); },
+        get label() { return `[${t('party.bonus.unlockAbility.caninian')}]`; },
         get description() { return t('data.glossary.40.description'); }
       },
       {
         "key": "c.unlock_lupinian_ability",
-        get label() { return t('data.glossary.41.label'); },
+        get label() { return `[${t('party.bonus.unlockAbility.lupinian')}]`; },
         get description() { return t('data.glossary.41.description'); }
       },
       {
         "key": "c.unlock_vulpinian_ability",
-        get label() { return t('data.glossary.42.label'); },
+        get label() { return `[${t('party.bonus.unlockAbility.vulpinian')}]`; },
         get description() { return t('data.glossary.42.description'); }
       },
       {
         "key": "c.unlock_ursan_ability",
-        get label() { return t('data.glossary.43.label'); },
+        get label() { return `[${t('party.bonus.unlockAbility.ursan')}]`; },
         get description() { return t('data.glossary.43.description'); }
       },
       {
         "key": "c.unlock_felidian_ability",
-        get label() { return t('data.glossary.44.label'); },
+        get label() { return `[${t('party.bonus.unlockAbility.felidian')}]`; },
         get description() { return t('data.glossary.44.description'); }
       },
       {
         "key": "c.unlock_mustelid_ability",
-        get label() { return t('data.glossary.45.label'); },
+        get label() { return `[${t('party.bonus.unlockAbility.mustelid')}]`; },
         get description() { return t('data.glossary.45.description'); }
       },
       {
         "key": "c.unlock_leporian_ability",
-        get label() { return t('data.glossary.46.label'); },
+        get label() { return `[${t('party.bonus.unlockAbility.leporian')}]`; },
         get description() { return t('data.glossary.46.description'); }
       },
       {
         "key": "c.unlock_cervin_ability",
-        get label() { return t('data.glossary.47.label'); },
+        get label() { return `[${t('party.bonus.unlockAbility.cervin')}]`; },
         get description() { return t('data.glossary.47.description'); }
       },
       {
         "key": "c.unlock_murid_ability",
-        get label() { return t('data.glossary.48.label'); },
+        get label() { return `[${t('party.bonus.unlockAbility.murid')}]`; },
         get description() { return t('data.glossary.48.description'); }
       },
       {
         "key": "c.unlock_procyonian_ability",
-        get label() { return t('data.glossary.49.label'); },
+        get label() { return `[${t('party.bonus.unlockAbility.procyonian')}]`; },
         get description() { return t('data.glossary.49.description'); }
       },
       {
         "key": "c.armor_x1.x",
-        get label() { return t('data.glossary.50.label'); },
+        get label() { return t('data.glossary.categoryMultiplier.label', { category: t('party.categoryShort.armor') }); },
         get description() { return t('data.glossary.50.description'); }
       },
       {
         "key": "c.robe_x1.x",
-        get label() { return t('data.glossary.51.label'); },
+        get label() { return t('data.glossary.categoryMultiplier.label', { category: t('party.categoryShort.robe') }); },
         get description() { return t('data.glossary.51.description'); }
       },
       {
         "key": "c.shield_x1.x",
-        get label() { return t('data.glossary.52.label'); },
+        get label() { return t('data.glossary.categoryMultiplier.label', { category: t('party.categoryShort.shield') }); },
         get description() { return t('data.glossary.52.description'); }
       },
       {
         "key": "c.sword_x1.x",
-        get label() { return t('data.glossary.53.label'); },
+        get label() { return t('data.glossary.categoryMultiplier.label', { category: t('party.categoryShort.sword') }); },
         get description() { return t('data.glossary.53.description'); }
       },
       {
         "key": "c.katana_x1.x",
-        get label() { return t('data.glossary.54.label'); },
+        get label() { return t('data.glossary.categoryMultiplier.label', { category: t('party.categoryShort.katana') }); },
         get description() { return t('data.glossary.54.description'); }
       },
       {
         "key": "c.gauntlet_x1.x",
-        get label() { return t('data.glossary.55.label'); },
+        get label() { return t('data.glossary.categoryMultiplier.label', { category: t('party.categoryShort.gauntlet') }); },
         get description() { return t('data.glossary.55.description'); }
       },
       {
         "key": "c.arrow_x1.x",
-        get label() { return t('data.glossary.56.label'); },
+        get label() { return t('data.glossary.categoryMultiplier.label', { category: t('party.categoryShort.arrow') }); },
         get description() { return t('data.glossary.56.description'); }
       },
       {
         "key": "c.bolt_x1.x",
-        get label() { return t('data.glossary.57.label'); },
+        get label() { return t('data.glossary.categoryMultiplier.label', { category: t('party.categoryShort.bolt') }); },
         get description() { return t('data.glossary.57.description'); }
       },
       {
         "key": "c.archery_x1.x",
-        get label() { return t('data.glossary.58.label'); },
+        get label() { return t('data.glossary.categoryMultiplier.label', { category: t('party.categoryShort.archery') }); },
         get description() { return t('data.glossary.58.description'); }
       },
       {
         "key": "c.wand_x1.x",
-        get label() { return t('data.glossary.59.label'); },
+        get label() { return t('data.glossary.categoryMultiplier.label', { category: t('party.categoryShort.wand') }); },
         get description() { return t('data.glossary.59.description'); }
       },
       {
         "key": "c.grimoire_x1.x",
-        get label() { return t('data.glossary.60.label'); },
+        get label() { return t('data.glossary.categoryMultiplier.label', { category: t('party.categoryShort.grimoire') }); },
         get description() { return t('data.glossary.60.description'); }
       },
       {
         "key": "c.catalyst_x1.x",
-        get label() { return t('data.glossary.61.label'); },
+        get label() { return t('data.glossary.categoryMultiplier.label', { category: t('party.categoryShort.catalyst') }); },
         get description() { return t('data.glossary.61.description'); }
       }
     ]
@@ -376,17 +376,17 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       },
       {
         "key": "d.ranged_offense_amplifier",
-        get label() { return t('data.glossary.68.label'); },
+        get label() { return t('home.party.help.rangedAttackMultiplierLabel'); },
         get description() { return t('data.glossary.68.description'); }
       },
       {
         "key": "d.magical_offense_amplifier",
-        get label() { return t('data.glossary.69.label'); },
+        get label() { return t('home.party.magicalAttackMultiplier'); },
         get description() { return t('data.glossary.69.description'); }
       },
       {
         "key": "d.melee_offense_amplifier",
-        get label() { return t('data.glossary.70.label'); },
+        get label() { return t('home.party.help.meleeAttackMultiplierLabel'); },
         get description() { return t('data.glossary.70.description'); }
       },
       {
@@ -401,22 +401,22 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       },
       {
         "key": "d.physical_defense_amplifier",
-        get label() { return t('data.glossary.73.label'); },
+        get label() { return t('home.party.physicalResistance'); },
         get description() { return t('data.glossary.73.description'); }
       },
       {
         "key": "d.magical_defense_amplifier",
-        get label() { return t('data.glossary.74.label'); },
+        get label() { return t('home.party.magicalResistance'); },
         get description() { return t('data.glossary.74.description'); }
       },
       {
         "key": "d.physical_accuracy",
-        get label() { return t('data.glossary.75.label'); },
+        get label() { return t('combat.physicalAccuracy'); },
         get description() { return t('data.glossary.75.description'); }
       },
       {
         "key": "d.magical_accuracy",
-        get label() { return t('data.glossary.76.label'); },
+        get label() { return t('home.party.magicalAccuracy'); },
         get description() { return t('data.glossary.76.description'); }
       },
       {
@@ -441,7 +441,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       },
       {
         "key": "d.elemental_defense_attribute",
-        get label() { return t('data.glossary.82.label'); },
+        get label() { return t('home.elementalResistance.label'); },
         get description() { return t('data.glossary.82.description'); }
       },
       {
@@ -488,27 +488,27 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       },
       {
         "key": "f.counter",
-        get label() { return t('data.glossary.87.label'); },
+        get label() { return t('ability.counter.label'); },
         get description() { return t('data.glossary.87.description'); }
       },
       {
         "key": "f.re-counter",
-        get label() { return t('data.glossary.88.label'); },
+        get label() { return t('ability.re_counter.label'); },
         get description() { return t('data.glossary.88.description'); }
       },
       {
         "key": "f.re-attack",
-        get label() { return t('data.glossary.89.label'); },
+        get label() { return t('ability.re_attack.label'); },
         get description() { return t('data.glossary.89.description'); }
       },
       {
         "key": "f.magical-counter",
-        get label() { return t('data.glossary.90.label'); },
+        get label() { return t('ability.magical_counter.label'); },
         get description() { return t('data.glossary.90.description'); }
       },
       {
         "key": "f.covering-fire",
-        get label() { return t('data.glossary.91.label'); },
+        get label() { return t('ability.covering_fire.label'); },
         get description() { return t('data.glossary.91.description'); }
       },
       {
@@ -570,62 +570,62 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
     "entries": [
       {
         "key": "Goddess of Restoration",
-        get label() { return t('data.glossary.2_1_7.label'); },
+        get label() { return t('deity.name.GoddessOfRestoration'); },
         get description() { return t('data.glossary.2_1_7.description'); }
       },
       {
         "key": "God of Attrition",
-        get label() { return t('data.glossary.101.label'); },
+        get label() { return t('deity.name.GodOfAttrition'); },
         get description() { return t('data.glossary.101.description'); }
       },
       {
         "key": "God of Cunning",
-        get label() { return t('data.glossary.102.label'); },
+        get label() { return t('deity.name.GodOfCunning'); },
         get description() { return t('data.glossary.102.description'); }
       },
       {
         "key": "God of Fortification",
-        get label() { return t('data.glossary.103.label'); },
+        get label() { return t('deity.name.GodOfFortification'); },
         get description() { return t('data.glossary.103.description'); }
       },
       {
         "key": "Goddess of Fertility",
-        get label() { return t('data.glossary.104.label'); },
+        get label() { return t('deity.name.GoddessOfFertility'); },
         get description() { return t('data.glossary.104.description'); }
       },
       {
         "key": "God of Resonance",
-        get label() { return t('data.glossary.105.label'); },
+        get label() { return t('deity.name.GodOfResonance'); },
         get description() { return t('data.glossary.105.description'); }
       },
       {
         "key": "Goddess of Precision",
-        get label() { return t('data.glossary.106.label'); },
+        get label() { return t('deity.name.GoddessOfPrecision'); },
         get description() { return t('data.glossary.106.description'); }
       },
       {
         "key": "God of Fate",
-        get label() { return t('data.glossary.107.label'); },
+        get label() { return t('deity.name.GodOfFate'); },
         get description() { return t('data.glossary.107.description'); }
       },
       {
         "key": "God of Dusk",
-        get label() { return t('data.glossary.108.label'); },
+        get label() { return t('deity.name.GodOfDusk'); },
         get description() { return t('data.glossary.108.description'); }
       },
       {
         "key": "Goddess of Mirage",
-        get label() { return t('data.glossary.109.label'); },
+        get label() { return t('deity.name.GoddessOfMirage'); },
         get description() { return t('data.glossary.109.description'); }
       },
       {
         "key": "God of Oblivion",
-        get label() { return t('data.glossary.110.label'); },
+        get label() { return t('deity.name.GodOfOblivion'); },
         get description() { return t('data.glossary.110.description'); }
       },
       {
         "key": "Goddess of Discord",
-        get label() { return t('data.glossary.111.label'); },
+        get label() { return t('deity.name.GoddessOfDiscord'); },
         get description() { return t('data.glossary.111.description'); }
       }
     ]
@@ -637,63 +637,63 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
     "entries": [
       {
         "key": "arcane_arrows",
-        get label() { return t('data.glossary.2_1_8.label'); },
-        get description() { return t('data.glossary.2_1_8.description'); }
+        get label() { return t('magic.arcanaArrow.name'); },
+        get description() { return `${t('magic.style.multiHit')}${t('common.valueSeparator')}${t('magic.element.none')}\n${t('magic.arcanaArrow.description')}`; }
       },
       {
         "key": "fire_lance",
-        get label() { return t('data.glossary.113.label'); },
-        get description() { return t('data.glossary.113.description'); }
+        get label() { return t('magic.fireLance.name'); },
+        get description() { return `${t('magic.style.multiHit')}${t('common.valueSeparator')}${t('magic.element.fire')}\n${t('magic.fireLance.description')}`; }
       },
       {
         "key": "frost_needles",
-        get label() { return t('data.glossary.114.label'); },
-        get description() { return t('data.glossary.114.description'); }
+        get label() { return t('magic.frostNeedle.name'); },
+        get description() { return `${t('magic.style.multiHit')}${t('common.valueSeparator')}${t('magic.element.ice')}\n${t('magic.frostNeedle.description')}`; }
       },
       {
         "key": "thunder_bolts",
-        get label() { return t('data.glossary.115.label'); },
-        get description() { return t('data.glossary.115.description'); }
+        get label() { return t('magic.thunderbolt.name'); },
+        get description() { return `${t('magic.style.multiHit')}${t('common.valueSeparator')}${t('magic.element.thunder')}\n${t('magic.thunderbolt.description')}`; }
       },
       {
         "key": "hellfire_volley",
-        get label() { return t('data.glossary.116.label'); },
-        get description() { return t('data.glossary.116.description'); }
+        get label() { return t('magic.hellfire.name'); },
+        get description() { return `${t('magic.style.multiHit')}${t('common.valueSeparator')}${t('magic.element.fire')}\n${t('magic.hellfire.description')}`; }
       },
       {
         "key": "blizzard",
-        get label() { return t('data.glossary.117.label'); },
-        get description() { return t('data.glossary.117.description'); }
+        get label() { return t('magic.blizzard.name'); },
+        get description() { return `${t('magic.style.multiHit')}${t('common.valueSeparator')}${t('magic.element.ice')}\n${t('magic.blizzard.description')}`; }
       },
       {
         "key": "lightning_barrage",
-        get label() { return t('data.glossary.118.label'); },
-        get description() { return t('data.glossary.118.description'); }
+        get label() { return t('magic.lightningBarrage.name'); },
+        get description() { return `${t('magic.style.multiHit')}${t('common.valueSeparator')}${t('magic.element.thunder')}\n${t('magic.lightningBarrage.description')}`; }
       },
       {
         "key": "astral_flare",
-        get label() { return t('data.glossary.119.label'); },
-        get description() { return t('data.glossary.119.description'); }
+        get label() { return t('magic.astralFlare.name'); },
+        get description() { return `${t('ability.arc_magic.label')}${t('common.valueSeparator')}${t('magic.element.none')}\n${t('magic.astralFlare.description')}`; }
       },
       {
         "key": "pyroclasm",
-        get label() { return t('data.glossary.120.label'); },
-        get description() { return t('data.glossary.120.description'); }
+        get label() { return t('magic.pyroclasm.name'); },
+        get description() { return `${t('ability.arc_magic.label')}${t('common.valueSeparator')}${t('magic.element.fire')}\n${t('magic.pyroclasm.description')}`; }
       },
       {
         "key": "glacial_burst",
-        get label() { return t('data.glossary.121.label'); },
-        get description() { return t('data.glossary.121.description'); }
+        get label() { return t('magic.glacialBurst.name'); },
+        get description() { return `${t('ability.arc_magic.label')}${t('common.valueSeparator')}${t('magic.element.ice')}\n${t('magic.glacialBurst.description')}`; }
       },
       {
         "key": "tempest_nova",
-        get label() { return t('data.glossary.122.label'); },
-        get description() { return t('data.glossary.122.description'); }
+        get label() { return t('magic.tempestNova.name'); },
+        get description() { return `${t('ability.arc_magic.label')}${t('common.valueSeparator')}${t('magic.element.thunder')}\n${t('magic.tempestNova.description')}`; }
       },
       {
         "key": "gravity_well",
-        get label() { return t('data.glossary.123.label'); },
-        get description() { return t('data.glossary.123.description'); }
+        get label() { return t('magic.gravityWell.name'); },
+        get description() { return `${t('magic.style.percentageDamage')}${t('common.valueSeparator')}${t('magic.element.none')}\n${t('magic.gravityWell.description')}`; }
       }
     ]
   }
@@ -710,67 +710,67 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       },
       {
         "key": "q.squander",
-        get label() { return t('data.glossary.125.label'); },
+        get label() { return t('sideQuest.squander.short'); },
         get description() { return t('data.glossary.125.description'); }
       },
       {
         "key": "q.sleeping",
-        get label() { return t('data.glossary.126.label'); },
+        get label() { return t('sideQuest.sleeping.short'); },
         get description() { return t('data.glossary.126.description'); }
       },
       {
         "key": "q.exercise",
-        get label() { return t('data.glossary.127.label'); },
+        get label() { return t('sideQuest.exercise.short'); },
         get description() { return t('data.glossary.127.description'); }
       },
       {
         "key": "q.embezzlement",
-        get label() { return t('data.glossary.128.label'); },
+        get label() { return t('sideQuest.embezzlement.short'); },
         get description() { return t('data.glossary.128.description'); }
       },
       {
         "key": "q.donation",
-        get label() { return t('data.glossary.129.label'); },
+        get label() { return t('sideQuest.donation.short'); },
         get description() { return t('data.glossary.129.description'); }
       },
       {
         "key": "q.healing",
-        get label() { return t('data.glossary.130.label'); },
+        get label() { return t('sideQuest.healing.short'); },
         get description() { return t('data.glossary.130.description'); }
       },
       {
         "key": "q.AFK",
-        get label() { return t('data.glossary.131.label'); },
+        get label() { return t('sideQuest.afk.short'); },
         get description() { return t('data.glossary.131.description'); }
       },
       {
         "key": "q.treasure-super-rare",
-        get label() { return t('data.glossary.132.label'); },
+        get label() { return t('sideQuest.treasureSuperRare.short'); },
         get description() { return t('data.glossary.132.description'); }
       },
       {
         "key": "q.treasure-boss-rare",
-        get label() { return t('data.glossary.133.label'); },
+        get label() { return t('sideQuest.treasureBossRare.short'); },
         get description() { return t('data.glossary.133.description'); }
       },
       {
         "key": "q.poor-kid",
-        get label() { return t('data.glossary.134.label'); },
+        get label() { return t('sideQuest.poorKid.short'); },
         get description() { return t('data.glossary.134.description'); }
       },
       {
         "key": "q.consecutive-wins",
-        get label() { return t('data.glossary.135.label'); },
+        get label() { return t('sideQuest.consecutiveWins.short'); },
         get description() { return t('data.glossary.135.description'); }
       },
       {
         "key": "q.losers",
-        get label() { return t('data.glossary.136.label'); },
+        get label() { return t('sideQuest.losers.short'); },
         get description() { return t('data.glossary.136.description'); }
       },
       {
         "key": "q.savings",
-        get label() { return t('data.glossary.137.label'); },
+        get label() { return t('sideQuest.savings.short'); },
         get description() { return t('data.glossary.137.description'); }
       }
     ]
@@ -782,233 +782,233 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
     "entries": [
       {
         "key": "terrain.rejuvenation",
-        get label() { return t('data.glossary.2_1_10.label'); },
-        get description() { return t('data.glossary.2_1_10.description'); }
+        get label() { return t('terrainEffect.terrain.rejuvenation.label'); },
+        get description() { return t('terrainEffect.terrain.rejuvenation.description'); }
       },
       {
         "key": "terrain.exposure",
-        get label() { return t('data.glossary.139.label'); },
-        get description() { return t('data.glossary.139.description'); }
+        get label() { return t('terrainEffect.terrain.exposure.label'); },
+        get description() { return t('terrainEffect.terrain.exposure.description'); }
       },
       {
         "key": "terrain.predation",
-        get label() { return t('data.glossary.140.label'); },
-        get description() { return t('data.glossary.140.description'); }
+        get label() { return t('terrainEffect.terrain.predation.label'); },
+        get description() { return t('terrainEffect.terrain.predation.description'); }
       },
       {
         "key": "terrain.tailwind",
-        get label() { return t('data.glossary.141.label'); },
-        get description() { return t('data.glossary.141.description'); }
+        get label() { return t('terrainEffect.terrain.tailwind.label'); },
+        get description() { return t('terrainEffect.terrain.tailwind.description'); }
       },
       {
         "key": "terrain.thunderstorm",
-        get label() { return t('data.glossary.142.label'); },
-        get description() { return t('data.glossary.142.description'); }
+        get label() { return t('terrainEffect.terrain.thunderstorm.label'); },
+        get description() { return t('terrainEffect.terrain.thunderstorm.description'); }
       },
       {
         "key": "terrain.chill",
-        get label() { return t('data.glossary.143.label'); },
-        get description() { return t('data.glossary.143.description'); }
+        get label() { return t('terrainEffect.terrain.chill.label'); },
+        get description() { return t('terrainEffect.terrain.chill.description'); }
       },
       {
         "key": "terrain.rotwood",
-        get label() { return t('data.glossary.144.label'); },
-        get description() { return t('data.glossary.144.description'); }
+        get label() { return t('terrainEffect.terrain.rotwood.label'); },
+        get description() { return t('terrainEffect.terrain.rotwood.description'); }
       },
       {
         "key": "terrain.fog",
-        get label() { return t('data.glossary.145.label'); },
-        get description() { return t('data.glossary.145.description'); }
+        get label() { return t('terrainEffect.terrain.fog.label'); },
+        get description() { return t('terrainEffect.terrain.fog.description'); }
       },
       {
         "key": "terrain.vine-snare",
-        get label() { return t('data.glossary.146.label'); },
-        get description() { return t('data.glossary.146.description'); }
+        get label() { return t('terrainEffect.terrain.vine-snare.label'); },
+        get description() { return t('terrainEffect.terrain.vine-snare.description'); }
       },
       {
         "key": "terrain.crystal-zone",
-        get label() { return t('data.glossary.147.label'); },
-        get description() { return t('data.glossary.147.description'); }
+        get label() { return t('terrainEffect.terrain.crystal-zone.label'); },
+        get description() { return t('terrainEffect.terrain.crystal-zone.description'); }
       },
       {
         "key": "terrain.floor-domain",
-        get label() { return t('data.glossary.148.label'); },
-        get description() { return t('data.glossary.148.description'); }
+        get label() { return t('terrainEffect.terrain.floor-domain.label'); },
+        get description() { return t('terrainEffect.terrain.floor-domain.description'); }
       },
       {
         "key": "terrain.sunny-beach",
-        get label() { return t('data.glossary.149.label'); },
-        get description() { return t('data.glossary.149.description'); }
+        get label() { return t('terrainEffect.terrain.sunny-beach.label'); },
+        get description() { return t('terrainEffect.terrain.sunny-beach.description'); }
       },
       {
         "key": "terrain.silence-field",
-        get label() { return t('data.glossary.150.label'); },
-        get description() { return t('data.glossary.150.description'); }
+        get label() { return t('terrainEffect.terrain.silence-field.label'); },
+        get description() { return t('terrainEffect.terrain.silence-field.description'); }
       },
       {
         "key": "terrain.rough-waves",
-        get label() { return t('data.glossary.151.label'); },
-        get description() { return t('data.glossary.151.description'); }
+        get label() { return t('terrainEffect.terrain.rough-waves.label'); },
+        get description() { return t('terrainEffect.terrain.rough-waves.description'); }
       },
       {
         "key": "terrain.conduction",
-        get label() { return t('data.glossary.152.label'); },
-        get description() { return t('data.glossary.152.description'); }
+        get label() { return t('terrainEffect.terrain.conduction.label'); },
+        get description() { return t('terrainEffect.terrain.conduction.description'); }
       },
       {
         "key": "terrain.sacred-judgement",
-        get label() { return t('data.glossary.153.label'); },
-        get description() { return t('data.glossary.153.description'); }
+        get label() { return t('terrainEffect.terrain.sacred-judgement.label'); },
+        get description() { return t('terrainEffect.terrain.sacred-judgement.description'); }
       },
       {
         "key": "terrain.dry",
-        get label() { return t('data.glossary.154.label'); },
-        get description() { return t('data.glossary.154.description'); }
+        get label() { return t('terrainEffect.terrain.dry.label'); },
+        get description() { return t('terrainEffect.terrain.dry.description'); }
       },
       {
         "key": "terrain.heavy-wind",
-        get label() { return t('data.glossary.155.label'); },
-        get description() { return t('data.glossary.155.description'); }
+        get label() { return t('terrainEffect.terrain.heavy-wind.label'); },
+        get description() { return t('terrainEffect.terrain.heavy-wind.description'); }
       },
       {
         "key": "terrain.limestone-cave",
-        get label() { return t('data.glossary.156.label'); },
-        get description() { return t('data.glossary.156.description'); }
+        get label() { return t('terrainEffect.terrain.limestone-cave.label'); },
+        get description() { return t('terrainEffect.terrain.limestone-cave.description'); }
       },
       {
         "key": "terrain.frenzy",
-        get label() { return t('data.glossary.157.label'); },
-        get description() { return t('data.glossary.157.description'); }
+        get label() { return t('terrainEffect.terrain.frenzy.label'); },
+        get description() { return t('terrainEffect.terrain.frenzy.description'); }
       },
       {
         "key": "terrain.abundant",
-        get label() { return t('data.glossary.158.label'); },
-        get description() { return t('data.glossary.158.description'); }
+        get label() { return t('terrainEffect.terrain.abundant.label'); },
+        get description() { return t('terrainEffect.terrain.abundant.description'); }
       },
       {
         "key": "terrain.looping-path",
-        get label() { return t('data.glossary.159.label'); },
-        get description() { return t('data.glossary.159.description'); }
+        get label() { return t('terrainEffect.terrain.looping-path.label'); },
+        get description() { return t('terrainEffect.terrain.looping-path.description'); }
       },
       {
         "key": "terrain.ash-haze",
-        get label() { return t('data.glossary.160.label'); },
-        get description() { return t('data.glossary.160.description'); }
+        get label() { return t('terrainEffect.terrain.ash-haze.label'); },
+        get description() { return t('terrainEffect.terrain.ash-haze.description'); }
       },
       {
         "key": "terrain.enemy-high-ground",
-        get label() { return t('data.glossary.161.label'); },
-        get description() { return t('data.glossary.161.description'); }
+        get label() { return t('terrainEffect.terrain.enemy-high-ground.label'); },
+        get description() { return t('terrainEffect.terrain.enemy-high-ground.description'); }
       },
       {
         "key": "terrain.heatwave",
-        get label() { return t('data.glossary.162.label'); },
-        get description() { return t('data.glossary.162.description'); }
+        get label() { return t('terrainEffect.terrain.heatwave.label'); },
+        get description() { return t('terrainEffect.terrain.heatwave.description'); }
       },
       {
         "key": "terrain.fortified",
-        get label() { return t('data.glossary.163.label'); },
-        get description() { return t('data.glossary.163.description'); }
+        get label() { return t('terrainEffect.terrain.fortified.label'); },
+        get description() { return t('terrainEffect.terrain.fortified.description'); }
       },
       {
         "key": "terrain.burrow",
-        get label() { return t('data.glossary.164.label'); },
-        get description() { return t('data.glossary.164.description'); }
+        get label() { return t('terrainEffect.terrain.burrow.label'); },
+        get description() { return t('terrainEffect.terrain.burrow.description'); }
       },
       {
         "key": "terrain.leakage",
-        get label() { return t('data.glossary.165.label'); },
-        get description() { return t('data.glossary.165.description'); }
+        get label() { return t('terrainEffect.terrain.leakage.label'); },
+        get description() { return t('terrainEffect.terrain.leakage.description'); }
       },
       {
         "key": "terrain.deletion",
-        get label() { return t('data.glossary.166.label'); },
-        get description() { return t('data.glossary.166.description'); }
+        get label() { return t('terrainEffect.terrain.deletion.label'); },
+        get description() { return t('terrainEffect.terrain.deletion.description'); }
       },
       {
         "key": "terrain.machine-logic",
-        get label() { return t('data.glossary.167.label'); },
-        get description() { return t('data.glossary.167.description'); }
+        get label() { return t('terrainEffect.terrain.machine-logic.label'); },
+        get description() { return t('terrainEffect.terrain.machine-logic.description'); }
       },
       {
         "key": "terrain.spell-domain",
-        get label() { return t('data.glossary.168.label'); },
-        get description() { return t('data.glossary.168.description'); }
+        get label() { return t('terrainEffect.terrain.spell-domain.label'); },
+        get description() { return t('terrainEffect.terrain.spell-domain.description'); }
       },
       {
         "key": "terrain.cap-domain",
-        get label() { return t('data.glossary.169.label'); },
-        get description() { return t('data.glossary.169.description'); }
+        get label() { return t('terrainEffect.terrain.cap-domain.label'); },
+        get description() { return t('terrainEffect.terrain.cap-domain.description'); }
       },
       {
         "key": "terrain.echo-domain",
-        get label() { return t('data.glossary.170.label'); },
-        get description() { return t('data.glossary.170.description'); }
+        get label() { return t('terrainEffect.terrain.echo-domain.label'); },
+        get description() { return t('terrainEffect.terrain.echo-domain.description'); }
       },
       {
         "key": "terrain.decay",
-        get label() { return t('data.glossary.171.label'); },
-        get description() { return t('data.glossary.171.description'); }
+        get label() { return t('terrainEffect.terrain.decay.label'); },
+        get description() { return t('terrainEffect.terrain.decay.description'); }
       },
       {
         "key": "terrain.chain-lightning",
-        get label() { return t('data.glossary.172.label'); },
-        get description() { return t('data.glossary.172.description'); }
+        get label() { return t('terrainEffect.terrain.chain-lightning.label'); },
+        get description() { return t('terrainEffect.terrain.chain-lightning.description'); }
       },
       {
         "key": "terrain.light-field",
-        get label() { return t('data.glossary.173.label'); },
-        get description() { return t('data.glossary.173.description'); }
+        get label() { return t('terrainEffect.terrain.light-field.label'); },
+        get description() { return t('terrainEffect.terrain.light-field.description'); }
       },
       {
         "key": "terrain.dark-field",
-        get label() { return t('data.glossary.174.label'); },
-        get description() { return t('data.glossary.174.description'); }
+        get label() { return t('terrainEffect.terrain.dark-field.label'); },
+        get description() { return t('terrainEffect.terrain.dark-field.description'); }
       },
       {
         "key": "terrain.low-gravity",
-        get label() { return t('data.glossary.175.label'); },
-        get description() { return t('data.glossary.175.description'); }
+        get label() { return t('terrainEffect.terrain.low-gravity.label'); },
+        get description() { return t('terrainEffect.terrain.low-gravity.description'); }
       },
       {
         "key": "terrain.gravity",
-        get label() { return t('data.glossary.176.label'); },
-        get description() { return t('data.glossary.176.description'); }
+        get label() { return t('terrainEffect.terrain.gravity.label'); },
+        get description() { return t('terrainEffect.terrain.gravity.description'); }
       },
       {
         "key": "terrain.mana-burn",
-        get label() { return t('data.glossary.177.label'); },
-        get description() { return t('data.glossary.177.description'); }
+        get label() { return t('terrainEffect.terrain.mana-burn.label'); },
+        get description() { return t('terrainEffect.terrain.mana-burn.description'); }
       },
       {
         "key": "terrain.transcendence",
-        get label() { return t('data.glossary.178.label'); },
-        get description() { return t('data.glossary.178.description'); }
+        get label() { return t('terrainEffect.terrain.transcendence.label'); },
+        get description() { return t('terrainEffect.terrain.transcendence.description'); }
       },
       {
         "key": "terrain.gehenna",
-        get label() { return t('data.glossary.179.label'); },
-        get description() { return t('data.glossary.179.description'); }
+        get label() { return t('terrainEffect.terrain.gehenna.label'); },
+        get description() { return t('terrainEffect.terrain.gehenna.description'); }
       },
       {
         "key": "terrain.sanctuary",
-        get label() { return t('data.glossary.180.label'); },
-        get description() { return t('data.glossary.180.description'); }
+        get label() { return t('terrainEffect.terrain.sanctuary.label'); },
+        get description() { return t('terrainEffect.terrain.sanctuary.description'); }
       },
       {
         "key": "terrain.sniper-domain",
-        get label() { return t('data.glossary.181.label'); },
-        get description() { return t('data.glossary.181.description'); }
+        get label() { return t('terrainEffect.terrain.sniper-domain.label'); },
+        get description() { return t('terrainEffect.terrain.sniper-domain.description'); }
       },
       {
         "key": "terrain.suppression",
-        get label() { return t('data.glossary.182.label'); },
-        get description() { return t('data.glossary.182.description'); }
+        get label() { return t('terrainEffect.terrain.suppression.label'); },
+        get description() { return t('terrainEffect.terrain.suppression.description'); }
       },
       {
         "key": "terrain.duelist-domain",
-        get label() { return t('data.glossary.183.label'); },
-        get description() { return t('data.glossary.183.description'); }
+        get label() { return t('terrainEffect.terrain.duelist-domain.label'); },
+        get description() { return t('terrainEffect.terrain.duelist-domain.description'); }
       }
     ]
   }

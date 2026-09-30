@@ -201,7 +201,7 @@ test('runtime assigns full or terminal partial thirty-Cycle Chunks with per-Cycl
   assert.match(hookSource, /optimizedAbilityLevels \?\? getProfitAbilityLevels\(party\)/);
   assert.match(hookSource, /profitAbilityCache\.get\(postFinalizeParty\.id\)/);
   assert.match(hookSource, /hpBaseCache\.get\(postCycleParty\.id\)/);
-  assert.match(hookSource, /battleOutputMode: action\.workerOptimization === 'optimized'[\s\S]{0,120}\? 'result-only'/);
+  assert.match(hookSource, /AFK expeditions retain Diary and expedition logs, so they must narrate fully\.[\s\S]{0,100}battleOutputMode: 'full'/);
   assert.match(expeditionApplicationSource, /completeExpeditionPresentation\(/);
   assert.doesNotMatch(hookSource, /shouldRetainCompleteNarration[\s\S]{0,500}replayDeferredExpeditionNarrations/);
   assert.match(expeditionNarrationReplaySource, /executeBattleWithSeed\(/);
@@ -219,14 +219,6 @@ test('the atomic renderer boundary includes planning without double-counting it'
   assert.doesNotMatch(liveProfileSource, /\? autoEquipmentMs \+ atomicTransactionReactVisibilityMs/);
 });
 
-test('compact battle output is production-default with a live-profile complete-output baseline', () => {
-  assert.match(liveProfileSource, /useAfkWorkerSimulationCandidate\(\): boolean \{\s*return true;/);
-  assert.match(
-    liveProfileSource,
-    /useAfkCompactBattleResultCandidate\(\): boolean \{[\s\S]{0,520}return !__AFK_LIVE_PROFILE_ENABLED__[\s\S]{0,80}runtime\?\.variant === 'candidate'[\s\S]{0,80}runtime\?\.variant === 'authority-production';/,
-  );
-});
-
 test('coordinator authority is production-on with pre-promotion and authority profile controls', () => {
   assert.match(
     liveProfileSource,
@@ -240,17 +232,18 @@ test('coordinator authority is production-on with pre-promotion and authority pr
   assert.match(homeSource, /worker_slot_idle_before_dispatch/);
   assert.match(hookSource, /new GameStateAuthority\(initialStateRef\.current\.state, gameReducer\)/);
   assert.match(hookSource, /requestOrdinary\(latestGameStateRef\.current\)/);
-  assert.match(hookSource, /simulateExpeditionRuns\(latestGameStateRef\.current/);
+  // The forecast runs on the Application API authority's newest committed snapshot.
+  assert.match(homeSource, /simulate: async \(snapshot, partyIndex, count\) => simulateExpeditionRuns\(snapshot,/);
   assert.match(homeSource, /publishAfkAuthority\(\)[\s\S]{0,160}afkInteractionPauseStartedAtRef/);
 });
 
-test('renderer Party-status memoization is production-on and independently profileable', () => {
+test('renderer AFK publication throttling is production-on and independently profileable', () => {
   assert.match(
     liveProfileSource,
     /useAfkRendererPartyStatsMemo\(\): boolean \{\s*return !__AFK_LIVE_PROFILE_ENABLED__[\s\S]{0,160}runtime\?\.variant === 'renderer-memo'[\s\S]{0,80}runtime\?\.variant === 'candidate'[\s\S]{0,100}runtime\?\.variant === 'coordinator-authority'[\s\S]{0,100}runtime\?\.variant === 'authority-production'[\s\S]{0,100}runtime\?\.variant === 'coordinator-paced';/,
   );
-  assert.match(homeSource, /shouldOptimizeAfkRenderer = useAfkRendererPartyStatsMemo\(\)[\s\S]{0,160}computePresentationPartyStats = shouldOptimizeAfkRenderer[\s\S]{0,80}computeRendererPartyStats/);
-  assert.match(homeSource, /computePartyStatus=\{computePresentationPartyStats\}/);
+  assert.match(homeSource, /shouldOptimizeAfkRenderer = useAfkRendererPartyStatsMemo\(\)/);
+  assert.doesNotMatch(homeSource, /computePresentationPartyStats|computePartyStatus=\{/);
   assert.match(homeSource, /afkPresentationVersion=\{afkProgressPresentationVersion\}/);
   assert.match(homeSource, /throttleAfkPublications=\{shouldOptimizeAfkRenderer\}/);
 });

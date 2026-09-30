@@ -116,7 +116,7 @@ enum class AbilityId : unsigned short {
   PredatorSense = 74,
   Decompose = 75,
   SelfDestruct = 76,
-  Free = 77,
+  Flee = 77,
   Auriferous = 78,
   NoOffense = 79,
   Swarm = 80,

@@ -6,6 +6,7 @@ import en from '../src/i18n/en.ts';
 import ja from '../src/i18n/ja.ts';
 import zhCN from '../src/i18n/zh-CN.ts';
 import zhTW from '../src/i18n/zh-TW.ts';
+import ko from '../src/i18n/ko.ts';
 import { BATTLE_ABILITY_OWNERSHIP } from '../src/game/battleAbilityOwnership.ts';
 import { BATTLE_ABILITY_IDS, BATTLE_TERRAIN_IDS } from '../src/game/generated/battleProtocol.generated.ts';
 import { CORE_MECHANIC_DEFINITIONS } from '../src/game/mechanics/coreMechanics.ts';
@@ -120,7 +121,7 @@ test('every mechanic binding points to checked-in implementation and test files'
 });
 
 test('every core mechanic presentation key exists in all supported dictionaries', () => {
-  const dictionaries = { ja, en, 'zh-CN': zhCN, 'zh-TW': zhTW } as const;
+  const dictionaries = { ja, en, 'zh-CN': zhCN, 'zh-TW': zhTW, ko } as const;
   for (const definition of CORE_MECHANIC_REGISTRY.list()) {
     const keys = Object.values(definition.presentation).filter((key): key is string => typeof key === 'string');
     for (const [language, dictionary] of Object.entries(dictionaries)) {

@@ -21,7 +21,13 @@ import { loadAndValidateExpedition8Fixture } from './expedition8SaveFixture.ts';
 
 const DEV_CYCLE_DURATION_SCALE = 0.05;
 const SIMULATED_END_AT = Date.UTC(2026, 7, 16);
-const EXPECTED_FINAL_HASH = 'bbc124165873d61ed01670c556510b89cccae8f03dc808aae54233cb5847b544';
+// Compact Diary checkpoint; pre-change/current non-history state hashes were verified equal.
+// Updated when the retired apiRuntime branch was intentionally removed from
+// canonical save serialization; gameplay and compact/full parity remain gated.
+// Build 69 renamed the persisted outcome names (`Turned_Back`, `Draw_Retreat`, `Wounded_Retreat`, and the stored `Escape`) to
+// `Return`, `Draw`, `Retreat`, and `Return`. The previous pin (d60d4a82ecec04c0…) is this state with only those names changed:
+// the serialization was verified byte-for-byte equal after mapping the old names to the new ones.
+const EXPECTED_FINAL_HASH = '8f42893aeec20efce020282167144f5a48dd90c6f75cb0b590fa2649494cf590';
 
 function createSeededRandom(seed: number): () => number {
   let value = seed >>> 0 || 0x9e3779b9;
