@@ -9792,7 +9792,7 @@
                     },
                     "intimacy": {
                       "minimum": 0,
-                      "maximum": 99,
+                      "maximum": 199,
                       "type": "integer"
                     },
                     "dialogue": {
@@ -10394,7 +10394,7 @@
                         },
                         "intimacy": {
                           "minimum": 0,
-                          "maximum": 99,
+                          "maximum": 199,
                           "type": "integer"
                         },
                         "dialogue": {
@@ -23678,7 +23678,7 @@
           "properties": {
             "intimacy": {
               "minimum": 0,
-              "maximum": 99,
+              "maximum": 199,
               "type": "integer"
             },
             "dialogue": {
@@ -23793,7 +23793,7 @@
               "properties": {
                 "intimacy": {
                   "minimum": 0,
-                  "maximum": 99,
+                  "maximum": 199,
                   "type": "integer"
                 },
                 "dialogue": {

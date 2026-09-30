@@ -252,9 +252,9 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   const simulatedAt = Date.parse('2026-01-01T00:00:00.000Z');
   const facts = getShopFacts(shopLineupInputOf(richState), new Date(simulatedAt));
   assert.deepEqual(facts.entries.map((entry) => entry.shopItemId), [1, 2, 3, 4, 5, 6, 7], 'a slot is its 1-based position');
-  assert.deepEqual(facts.entries.map((entry) => entry.identified), [true, true, false, false, false, false, false], 'two identified slots, then five unidentified slots');
-  assert.ok(facts.entries.slice(0, 2).every((entry) => (entry.enhancement ?? 0) >= 2), 'an identified entry shows an enhancement of at least 2');
-  assert.ok(facts.entries.slice(2).every((entry) => entry.enhancement === null && entry.superRare === null), 'an unidentified entry hides both until bought');
+  assert.deepEqual(facts.entries.map((entry) => entry.identified), [true, false, false, false, false, false, false], 'at intimacy 0 to 19: one identified slot, then six unidentified slots');
+  assert.ok(facts.entries.slice(0, 1).every((entry) => (entry.enhancement ?? 0) >= 2), 'an identified entry shows an enhancement of at least 2');
+  assert.ok(facts.entries.slice(1).every((entry) => entry.enhancement === null && entry.superRare === null), 'an unidentified entry hides both until bought');
   const entry = facts.entries[0];
   // The lineup ID is an opaque hash of the stock (Spec 9.1.3 2-4-4).
   const lineupId = getPublicShopLineupId(facts);
@@ -337,6 +337,35 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   const refreshed = applyApiV1Commit('commit/base/paidShopRefresh', bought.state, {}, baseContext({ simulatedAt }));
   assert.notEqual(refreshed.state.global.shopLineup?.stockKey, bought.state.global.shopLineup?.stockKey);
   assert.equal(refreshed.state.global.shopPurchases[refreshed.state.global.shopLineup?.stockKey ?? ''], undefined, 'the new lineup starts unsold');
+}
+
+// 4a-2. The lineup always fills 7 slots, and its identified count and rarity mix follow the intimacy tier up to the cap of 199
+// (Spec 8.4.1 Lineup); intimacy is capped at 199 and decays 10% per refresh.
+{
+  const { getShopFacts, shopLineupInputOf } = await import('../../src/game/shopFacts');
+  const at = Date.parse('2026-01-01T03:00:00.000Z');
+  const plans: Array<[number, string, string]> = [
+    [0, 'C', 'CCCCCC'], [19, 'C', 'CCCCCC'], [20, 'CC', 'UCCCC'], [40, 'UC', 'EUUCC'], [80, 'UU', 'BEEUU'],
+    [100, 'EU', 'BEEEU'], [120, 'EE', 'BBEEU'], [140, 'BE', 'BBEEE'], [199, 'BE', 'BBEEE'],
+  ];
+  const letter: Record<string, string> = { common: 'C', uncommon: 'U', eliteRare: 'E', bossRare: 'B' };
+  for (const [intimacy, identified, unidentified] of plans) {
+    const state: GameState = { ...seed, global: { ...seed.global, shopIntimacy: intimacy, shopIntimacyLastDecayAt: at } };
+    const entries = getShopFacts(shopLineupInputOf(state), new Date(at)).entries;
+    assert.equal(entries.length, 7, `intimacy ${intimacy}: all 7 slots are filled`);
+    assert.equal(entries.filter((entry) => entry.identified).length, identified.length, `intimacy ${intimacy}: identified slot count`);
+    assert.equal(entries.filter((entry) => entry.identified).map((entry) => letter[entry.rarity]).join(''), identified, `intimacy ${intimacy}: identified rarities`);
+    assert.equal(entries.filter((entry) => !entry.identified).map((entry) => letter[entry.rarity]).join(''), unidentified, `intimacy ${intimacy}: unidentified rarities`);
+  }
+  const rich: GameState = { ...seed, global: { ...seed.global, gold: 1_000_000, shopIntimacy: 199, shopIntimacyLastDecayAt: at } };
+  const before = getShopFacts(shopLineupInputOf(rich), new Date(at));
+  assert.equal(before.intimacy, 199);
+  const bought = applyApiV1Commit('commit/base/purchaseShopItems', rich, { lineupId: (await import('../../src/game/shopFacts')).getPublicShopLineupId(before), items: [{ shopItemId: 7 }] }, baseContext({ simulatedAt: at }));
+  assert.equal(bought.state.global.shopIntimacy, 199, 'a purchase cannot raise intimacy above the cap');
+  const refreshed = applyApiV1Commit('commit/base/paidShopRefresh', rich, {}, baseContext({ simulatedAt: at }));
+  assert.equal(refreshed.state.global.shopIntimacy, 199, 'a paid refresh cannot raise intimacy above the cap');
+  const decayed = getShopFacts(shopLineupInputOf(rich), new Date(at + 8 * 3600 * 1000));
+  assert.equal(decayed.intimacy, 179, 'intimacy decays by 10% per refresh time: floor(199 x 0.9)');
 }
 
 // 4b. The paid refresh charges the displayed price at the transaction time and replaces the lineup; an unaffordable refresh

@@ -726,8 +726,8 @@ definitions in 9.1.3.
   total balance before mutation. Results return affected `Item Format` values,
   quantities, and Gold/Prana deltas.
 * `purchaseShopItems` identifies entries by `shopItemId`, the 1-based position of a
-  slot in the lineup (1 to 7: the two identified slots, then the five unidentified
-  slots), at the transaction's own time. The lineup rotates with the clock (02:00,
+  slot in the lineup (1 to 7: the identified slots, one at intimacy 0 to 19 and two from
+  20, then the unidentified slots that fill the rest), at the transaction's own time. The lineup rotates with the clock (02:00,
   10:00, and 18:00 local time) and with paid refreshes, none of which change the
   revision. So the request names the lineup it was chosen from: `lineupId` (required)
   is the value `shopItemsList` or the `base` projection published, an opaque
@@ -742,6 +742,9 @@ definitions in 9.1.3.
   non-positive, or duplicate ID is `invalid_request`; an ID that is not in the lineup is
   `not_found`; a sold slot is `illegal_action:sold_out`; a total above the Gold held is
   `illegal_action:insufficient_gold`. Nothing is bought unless every entry passes.
+* Intimacy is capped at 199. The rarity mix of the identified and unidentified slots follows
+  the tiers of Spec 8.4.1 (0, 20, 40, 80, 100, 120, and 140 and above) and always fills all
+  7 slots. `dialogue` keeps the `.intimacy80` key from 80 upward.
 * The lineup is saved with the save data (`shopLineup`) the first time a stock period is
   used, so viewing, reloading, and purchasing never reroll it, and buying (which raises
   intimacy) or defeating a boss does not change the unbought slots. Identified slots roll

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 174 | 2026/09/30 | Shop intimacy (Spec 8.4.1): the cap rises to 199 and the lineup gains the 100-119, 120-139, and 140+ tiers; the identified slot count is 1 at intimacy 0-19 and 2 from 20 (always 7 slots in all); `shopInfo.intimacy` allows up to 199. |
 | 0.9.7 | 173 | 2026/09/30 | Shop API and UI (Spec 8.4.1, 9.1.3): `shopItemsList` items use `<shopItemId>/<Item Format>/<price>/<availability>` with `?` for hidden enhancement/Super Rare, shop entries add `identified`/`enhancement`/`superRare`, slots 1-7; the Shop pane shows identified titles and saves the lineup when shown. |
 | 0.9.7 | 172 | 2026/09/30 | Shop (Spec 8.4.1): the lineup is now 7 slots (2 identified, 5 unidentified) saved with the save data; identified entries roll enhancement (2+) and Super Rare title from PT1's bags once per lineup, unidentified entries roll on purchase from PT1's bags; purchases and intimacy changes no longer reroll the lineup; `lineupId` is an opaque hash. |
 | 0.9.7 | 171 | 2026/09/30 | Item prices (Spec 3.1.6): selling price now scales with enhancement `(1 + enhancement/5)`, Super Rare multiplier is x100 (was x200), prices round up; Identified shop purchase price formula added. |

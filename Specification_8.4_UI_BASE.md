@@ -35,15 +35,15 @@
 - **Column 3:** 有償洗替 X,XXXG
 
 **Dialogue by intimacy**
-| Intimacy | Dialogue |
-|--------|----------|
-| 0–19 | 「ひょっとしたらいいお宝が眠ってるかもしれないよ？……おっと、獲物には触らんといてな。」 |
-| 20–39 | 「お、また来たのかい。うちのガラクタも、見ていくうちに味が出てくるもんさ。」 |
-| 40–79 | 「やぁ。奥の棚も見ていいよ。運が良けりゃ掘り出し物があるかもな。」 |
-| 80–99 | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
-| 100–119 | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
-| 120–139 | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
-| 140–Cap | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
+| Intimacy | Dialogue | memo　|
+|--------|----------|-----|
+| 0–19 | 「ひょっとしたらいいお宝が眠ってるかもしれないよ？……おっと、獲物には触らんといてな。」 | |
+| 20–39 | 「お、また来たのかい。うちのガラクタも、見ていくうちに味が出てくるもんさ。」 | |
+| 40–79 | 「やぁ。奥の棚も見ていいよ。運が良けりゃ掘り出し物があるかもな。」 | |
+| 80–99 | 「来たな。あんたが好きそうな品、いくつか取っといたよ。見るかい。 | |
+| 100–119 | 「宰相ヴァルターの野郎を成敗してくれてありがとよ。お陰で安全にレポリアンの月宮に通えるようになったよ。」 | レポリアンの月宮(data.dungeons.7.name), 宰相ヴァルター(masterData.enemyName.351) |
+| 120–139 | 「調子はどうだい？ マーレ、また次の逸品がどこに眠ってるか占ってくれない？」 | マーレ(character.default.n12) |
+| 140–Cap | 「やあフィン。遅かったね。いいもん揃えたぜ。」 | フィン(character.default.n11) |
 
 **Paid Refresh (有償洗替):**  
   - **Cost:** `200G × 2 ^ (refresh_count - 1)`  
@@ -109,8 +109,9 @@
   - `paid_refresh_count` resets to `0` at each refresh time.
   - Intimacy decays by **10% (multiplicative)** at each refresh time.
 
-- Intimacy cap
-  - Intimacy is capped at **199**.
+- **Intimacy Cap**
+  - Before Defeating: `x.expedition`= 7 Boss, Intimacy is capped at `99`.
+  - After Defeating: `x.expedition`= 7 Boss, the cap increases to `199`.
 
 
 #### 8.4.2 Inventory(所持品)

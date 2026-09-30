@@ -82,10 +82,10 @@ export function getShopItemPrice(itemId: number): number {
   return getTierShopItemPrice(itemId);
 }
 
-export const SHOP_IDENTIFIED_SLOT_COUNT = 2;
-export const SHOP_UNIDENTIFIED_SLOT_COUNT = 5;
-/** The Shop's lineup: identified slots first, then unidentified slots. A slot's public ID is its 1-based position. */
-export const SHOP_SLOT_COUNT = SHOP_IDENTIFIED_SLOT_COUNT + SHOP_UNIDENTIFIED_SLOT_COUNT;
+/** The Shop's lineup: identified slots first, then unidentified slots (7 in all). A slot's public ID is its 1-based position. */
+export const SHOP_SLOT_COUNT = 7;
+/** Intimacy is capped at 199 (SpecRef: 8.4.1 | Shop (お店) | Intimacy cap). */
+export const SHOP_INTIMACY_CAP = 199;
 const SHOP_IDENTIFIED_ENHANCEMENT_MINIMUM = 2;
 const SHOP_IDENTIFIED_SUPER_RARE_DRAWS = 10;
 const SHOP_UNIDENTIFIED_SUPER_RARE_DRAWS = 20;
@@ -179,12 +179,20 @@ export function rollUnidentifiedShopItem(bags: GameBags): { enhancement: number;
 }
 
 // SpecRef: 8.4.1 | Shop (お店) | Lineup
-// Rarity base codes (100 common, 200 uncommon, 300 elite rare, 400 boss rare) per slot by intimacy tier: identified, unidentified.
-function getShopRarityBases(effectiveIntimacy: number): number[] {
-  if (effectiveIntimacy >= 80) return [400, 300, 400, 300, 300, 200, 200];
-  if (effectiveIntimacy >= 40) return [300, 200, 300, 200, 200, 100, 100];
-  if (effectiveIntimacy >= 20) return [200, 100, 200, 100, 100, 100, 100];
-  return [100, 100, 100, 100, 100, 100, 100];
+// Rarity base codes (100 common, 200 uncommon, 300 elite rare, 400 boss rare) of the identified slots and of the unidentified
+// slots, by intimacy tier. The identified slots come first; every tier fills all 7 slots.
+const SHOP_RARITY_PLANS: ReadonlyArray<{ minimumIntimacy: number; identified: number[]; unidentified: number[] }> = [
+  { minimumIntimacy: 140, identified: [400, 300], unidentified: [400, 400, 300, 300, 300] },
+  { minimumIntimacy: 120, identified: [300, 300], unidentified: [400, 400, 300, 300, 200] },
+  { minimumIntimacy: 100, identified: [300, 200], unidentified: [400, 300, 300, 300, 200] },
+  { minimumIntimacy: 80, identified: [200, 200], unidentified: [400, 300, 300, 200, 200] },
+  { minimumIntimacy: 40, identified: [200, 100], unidentified: [300, 200, 200, 100, 100] },
+  { minimumIntimacy: 20, identified: [100, 100], unidentified: [200, 100, 100, 100, 100] },
+  { minimumIntimacy: 0, identified: [100], unidentified: [100, 100, 100, 100, 100, 100] },
+];
+
+function getShopRarityPlan(effectiveIntimacy: number) {
+  return SHOP_RARITY_PLANS.find((plan) => effectiveIntimacy >= plan.minimumIntimacy) ?? SHOP_RARITY_PLANS[SHOP_RARITY_PLANS.length - 1];
 }
 
 function getHighestDefeatedBossTier(parties: Party[]): number {
@@ -229,7 +237,9 @@ export function generateShopLineup(
   // that is saved (for the same bags), and a retry after a rejected request cannot roll a different lineup.
   const random = createApiRandom(lineupSeed).next;
   let bags = input.parties[0].bags;
-  const entries = getShopRarityBases(effectiveIntimacy).flatMap((rarityBase, index): ShopStockEntry[] => {
+  const rarityPlan = getShopRarityPlan(effectiveIntimacy);
+  const identifiedSlotCount = rarityPlan.identified.length;
+  const entries = [...rarityPlan.identified, ...rarityPlan.unidentified].flatMap((rarityBase, index): ShopStockEntry[] => {
     const x = Math.sin(lineupSeed + (index + 1) * 97) * 10000;
     const tier = Math.floor((x - Math.floor(x)) * highestDefeatedBossTier) + 1;
     const targetRarity = getShopItemRarity(tier * 1000 + rarityBase + 1);
@@ -240,7 +250,7 @@ export function generateShopLineup(
     const selectionSeed = Math.abs(Math.floor(Math.sin(lineupSeed + (index + 1) * 193) * 10000));
     const baseItem = tierRarityItems[selectionSeed % tierRarityItems.length];
     if (!baseItem) return [];
-    if (index >= SHOP_IDENTIFIED_SLOT_COUNT) {
+    if (index >= identifiedSlotCount) {
       return [{ itemId: baseItem.id, identified: false, enhancement: 0, superRare: 0, price: getShopItemPrice(baseItem.id) }];
     }
     const enhancementResult = drawShopEnhancement(bags, random);
