@@ -12,6 +12,8 @@ import type { ExpeditionSimulationResult, ExpeditionSimulationRoomResult, Party 
 const percent = (count: number, total: number): number => (total > 0 ? Math.round((count / total) * 1000) / 10 : 0);
 const label = (value: number): string => value.toFixed(1);
 
+const floorRoomNumber = (floorRoom: string): number => (Number(floorRoom[0]) - 1) * 4 + Number(floorRoom[floorRoom.length - 1]);
+
 /** `1f-1` .. `6f-4` for room 1..24 (four rooms per floor). */
 export function floorRoomLabel(room: number): string {
   const { floor, roomInFloor } = getExpeditionSimulationRoomCoordinate(room);
@@ -59,7 +61,23 @@ function isUnreachedRoom(room: ExpeditionSimulationRoomResult, total: number): b
   return JSON.stringify(room) === JSON.stringify(unreachedRoom(room.room, total));
 }
 
+/**
+ * The column order of `rooms.rows`: each room is one row of plain values, and the names are stated once in `rooms.columns`.
+ * `reached` is not a column; it is the run count minus `notReached`.
+ */
+export const SIMULATION_ROOM_COLUMNS = [
+  'floorRoom', 'notReached', 'victory', 'clear', 'return', 'draw', 'retreat', 'defeat',
+  'successfulHp.full', 'successfulHp.from90', 'successfulHp.from80', 'successfulHp.from70', 'successfulHp.from60', 'successfulHp.from50', 'successfulHp.from40', 'successfulHp.below40',
+  'retreatHp.from30', 'retreatHp.from20', 'retreatHp.from10', 'retreatHp.below10',
+] as const;
+
 const perRun = (sum: number, total: number): number => (total > 0 ? Math.round((sum / total) * 10) / 10 : 0);
+
+export type SimulationRoomRow = [
+  floorRoom: string, notReached: number, victory: number, clear: number, return_: number, draw: number, retreat: number, defeat: number,
+  full: number, from90: number, from80: number, from70: number, from60: number, from50: number, from40: number, below40: number,
+  from30: number, from20: number, from10: number, below10: number,
+];
 
 export function buildSimulationRunData(result: ExpeditionSimulationResult, simulatedRevision: number, seedDomain: string, depthReach: SimulationDepthReach | null = null) {
   const total = result.total;
@@ -90,23 +108,15 @@ export function buildSimulationRunData(result: ExpeditionSimulationResult, simul
       const won = room.Victory + room.Clear + room.Return;
       return `${floorRoomLabel(room.room)}/Success ${label(percent(won, total))}% / Draw ${label(percent(room.Draw, total))}% / Retreat ${label(percent(room.Retreat, total))}% / Defeat ${label(percent(room.Defeat, total))}% / Not reached ${label(percent(room.NotReached, total))}%`;
     }),
-    rooms: reachedRooms.map((room) => ({
-      room: room.room,
-      floorRoom: floorRoomLabel(room.room),
-      reached: room.reached,
-      notReached: room.NotReached,
-      victory: room.Victory,
-      clear: room.Clear,
-      return: room.Return,
-      draw: room.Draw,
-      retreat: room.Retreat,
-      defeat: room.Defeat,
-      successfulHp: {
-        full: room.successfulHp.Full, from90: room.successfulHp.From90, from80: room.successfulHp.From80, from70: room.successfulHp.From70,
-        from60: room.successfulHp.From60, from50: room.successfulHp.From50, from40: room.successfulHp.From40, below40: room.successfulHp.Below40,
-      },
-      retreatHp: { from30: room.retreatHp.From30, from20: room.retreatHp.From20, from10: room.retreatHp.From10, below10: room.retreatHp.Below10 },
-    })),
+    rooms: {
+      columns: SIMULATION_ROOM_COLUMNS,
+      rows: reachedRooms.map((room): SimulationRoomRow => [
+        floorRoomLabel(room.room), room.NotReached, room.Victory, room.Clear, room.Return, room.Draw, room.Retreat, room.Defeat,
+        room.successfulHp.Full, room.successfulHp.From90, room.successfulHp.From80, room.successfulHp.From70,
+        room.successfulHp.From60, room.successfulHp.From50, room.successfulHp.From40, room.successfulHp.Below40,
+        room.retreatHp.From30, room.retreatHp.From20, room.retreatHp.From10, room.retreatHp.Below10,
+      ]),
+    },
   };
 }
 
@@ -119,7 +129,7 @@ export type SimulationRunData = ReturnType<typeof buildSimulationRunData>;
  */
 export function parseSimulationRunData(data: SimulationRunData): ExpeditionSimulationResult {
   const total = data.runs;
-  const returnedRooms = new Set(data.rooms.map((room) => room.room));
+  const returnedRooms = new Set(data.rooms.rows.map((row) => floorRoomNumber(row[0])));
   const omittedRooms = createExpeditionSimulationRoomResults(total)
     .filter((room) => !returnedRooms.has(room.room))
     .map((room) => unreachedRoom(room.room, total));
@@ -131,22 +141,19 @@ export function parseSimulationRunData(data: SimulationRunData): ExpeditionSimul
     Defeat: data.counts.defeat,
     total,
     totals: { ...data.totals },
-    rooms: [...data.rooms.map((room) => ({
-      room: room.room,
-      Victory: room.victory,
-      Clear: room.clear,
-      Return: room.return,
-      Draw: room.draw,
-      Retreat: room.retreat,
-      Defeat: room.defeat,
-      NotReached: room.notReached,
-      reached: room.reached,
+    rooms: [...data.rooms.rows.map((row) => ({
+      room: floorRoomNumber(row[0]),
+      Victory: row[2],
+      Clear: row[3],
+      Return: row[4],
+      Draw: row[5],
+      Retreat: row[6],
+      Defeat: row[7],
+      NotReached: row[1],
+      reached: total - row[1],
       total,
-      successfulHp: {
-        Full: room.successfulHp.full, From90: room.successfulHp.from90, From80: room.successfulHp.from80, From70: room.successfulHp.from70,
-        From60: room.successfulHp.from60, From50: room.successfulHp.from50, From40: room.successfulHp.from40, Below40: room.successfulHp.below40,
-      },
-      retreatHp: { From30: room.retreatHp.from30, From20: room.retreatHp.from20, From10: room.retreatHp.from10, Below10: room.retreatHp.below10 },
+      successfulHp: { Full: row[8], From90: row[9], From80: row[10], From70: row[11], From60: row[12], From50: row[13], From40: row[14], Below40: row[15] },
+      retreatHp: { From30: row[16], From20: row[17], From10: row[18], Below10: row[19] },
     })), ...omittedRooms].sort((left, right) => left.room - right.room),
   };
 }

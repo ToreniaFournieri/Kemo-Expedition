@@ -314,8 +314,10 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       if (operation.endsWith('/simulationRun') && request.expectedRevision !== undefined && Number(request.expectedRevision) !== snapshot.control.revisionHighWater) {
         return failure(409, 'stale_revision', 'The supplied revision is stale.', { currentRevision: snapshot.control.revisionHighWater });
       }
+      // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `numberOfRun` is optional, default 100, an integer 1 ~ 1000.
+      const readParameters = operation.endsWith('/simulationRun') ? { ...parameters, ...(request.numberOfRun !== undefined ? { numberOfRun: request.numberOfRun } : {}) } : parameters;
       try {
-        const data = await buildApiV1ReadData(operation, snapshot.state, parameters, {
+        const data = await buildApiV1ReadData(operation, snapshot.state, readParameters, {
           revision: snapshot.control.revisionHighWater,
           environment: ports.runtime.environment(),
           gameMode: ports.runtime.gameMode(),

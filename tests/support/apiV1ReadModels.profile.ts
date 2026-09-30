@@ -34,10 +34,15 @@ const context = {
   },
 };
 
-await buildApiV1ReadData('read/observation/compact', state, {}, context);
+// `quick` defaults to true: no simulation runs and `latestSimulationResult` is omitted.
+const quickCompact = await buildApiV1ReadData('read/observation/compact', state, {}, context) as { attention: Record<string, unknown> };
+assert.deepEqual(calls, []);
+assert.equal('latestSimulationResult' in quickCompact.attention, false);
+const slowCompact = await buildApiV1ReadData('read/observation/compact', state, { quick: false }, context) as { attention: { latestSimulationResult?: string[] } };
 assert.deepEqual(calls, state.parties.map((_, partyIndex) => ({ partyIndex, count: 100 })));
+assert.equal(slowCompact.attention.latestSimulationResult?.length, state.parties.length);
 calls.length = 0;
-const full = await buildApiV1ReadData('read/expedition/1/simulationRun', state, {}, context);
+const full = await buildApiV1ReadData('read/expedition/1/simulationRun', state, { numberOfRun: 1_000 }, context);
 assert.deepEqual(calls, [{ partyIndex: 0, count: 1_000 }]);
 assert.equal(full.simulatedRevision, 7);
 {
@@ -46,7 +51,7 @@ assert.equal(full.simulatedRevision, 7);
   const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
   const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'read/expedition/{p}/simulationRun')!.response.data);
   assert.equal(validate(full), true, JSON.stringify(validate.errors?.slice(0, 2)));
-  const data = full as unknown as { runs: number; overview: string; detail: string[]; overviewPercent: Record<string, number>; rooms: { room: number; floorRoom: string; reached: number; notReached: number; victory: number; clear: number; defeat: number }[]; seedDomain: string };
+  const data = full as unknown as { runs: number; overview: string; detail: string[]; overviewPercent: Record<string, number>; rooms: { columns: string[]; rows: (string | number)[][] }; seedDomain: string };
   assert.equal(data.runs, 1_000);
   assert.equal(data.overview, 'Success 90.0% / Draw 4.0% / Retreat 2.0% / Defeat 4.0%');
   assert.deepEqual(data.overviewPercent, { success: 90, clear: 90, return: 0, draw: 4, retreat: 2, defeat: 4 });
@@ -54,15 +59,16 @@ assert.equal(full.simulatedRevision, 7);
   assert.equal(data.detail.length, 2);
   assert.equal(data.detail[0], '1f-1/Success 90.0% / Draw 4.0% / Retreat 2.0% / Defeat 4.0% / Not reached 0.0%');
   assert.equal(data.detail[1], '1f-2/Success 90.0% / Draw 0.0% / Retreat 0.0% / Defeat 0.0% / Not reached 10.0%');
-  assert.deepEqual(data.rooms.map((room) => room.floorRoom), ['1f-1', '1f-2']);
+  assert.deepEqual(data.rooms.rows.map((row) => row[0]), ['1f-1', '1f-2']);
+  assert.equal(data.rooms.columns.length, data.rooms.rows[0].length, 'every row has one value per named column');
   assert.equal((full as unknown as { omittedRooms: number }).omittedRooms, 22);
   // Every run is counted exactly once in every room.
-  for (const room of data.rooms as unknown as Array<Record<string, number>>) {
-    assert.equal(room.reached + room.notReached, 1_000, `room ${room.room} totals`);
-    assert.equal(room.victory + room.clear + room.return + room.draw + room.retreat + room.defeat, room.reached, `room ${room.room} outcomes`);
+  for (const row of data.rooms.rows) {
+    const room = Object.fromEntries(data.rooms.columns.map((name, index) => [name, row[index]])) as Record<string, number>;
+    assert.equal(room.victory + room.clear + room.return + room.draw + room.retreat + room.defeat + room.notReached, 1_000, `room ${room.floorRoom} totals`);
   }
   assert.match(data.seedDomain, /^[0-9a-f-]{36}$/);
-  const second = await buildApiV1ReadData('read/expedition/1/simulationRun', state, {}, context) as unknown as { seedDomain: string };
+  const second = await buildApiV1ReadData('read/expedition/1/simulationRun', state, { numberOfRun: 1_000 }, context) as unknown as { seedDomain: string };
   assert.notEqual(second.seedDomain, data.seedDomain, 'each forecast has its own seed domain');
 }
 calls.length = 0;
@@ -658,7 +664,7 @@ calls.length = 0;
   // Give every counter a distinct value so a swapped or dropped field cannot round-trip by accident.
   result.Clear = 411; result.Return = 37; result.Draw = 29; result.Retreat = 173; result.Defeat = 350;
   result.rooms.forEach((room, index) => {
-    Object.assign(room, { Victory: index + 1, Clear: index % 3, Return: index % 5, Draw: index % 7, Retreat: index % 11, Defeat: index % 13, NotReached: 1000 - index, reached: index * 7 });
+    Object.assign(room, { Victory: index + 1, Clear: index % 3, Return: index % 5, Draw: index % 7, Retreat: index % 11, Defeat: index % 13, NotReached: 1000 - index, reached: index });
     Object.assign(room.successfulHp, { Full: index, From90: index + 1, From80: index + 2, From70: index + 3, From60: index + 4, From50: index + 5, From40: index + 6, Below40: index + 7 });
     Object.assign(room.retreatHp, { From30: index + 8, From20: index + 9, From10: index + 10, Below10: index + 11 });
   });
@@ -669,7 +675,7 @@ calls.length = 0;
   // Unreached rooms are left out of the projection and rebuilt as bars no run reached.
   const shallow = fakeSimulation(1000);
   const shallowData = buildSimulationRunData(shallow as never, 3, 'seed-domain');
-  assert.equal(shallowData.rooms.length, 2);
+  assert.equal(shallowData.rooms.rows.length, 2);
   assert.deepEqual(parseSimulationRunData(shallowData).rooms, shallow.rooms, 'omitted rooms round-trip');
   assert.deepEqual(data.counts, { clear: 411, return: 37, draw: 29, retreat: 173, defeat: 350 });
   assert.deepEqual(data.expectedPerRun, { experience: 12.3, itemDrops: 2.5, dropSaleValue: 67.9 }, 'expected rewards are per-run means');
@@ -707,6 +713,29 @@ calls.length = 0;
   assert.equal(compact.attention.notification[0].unreadDiary, 1);
   const dungeonName = getDungeonById(1)!.name;
   assert.deepEqual(compact.attention.notification[0].unreadDiaryTitle, [`120/Defeat Record/${dungeonName.replace(/%/g, '%25').replace(/\//g, '%2F')}/20260916 22:04`]);
+  // A rare-drop entry is titled with the Diary tab's headline, which names the item: `[PT1] Boss Rare acquired (Item)`.
+  {
+    const { ITEMS, getItemById } = await import('../../src/data/items.ts');
+    const { diaryItemName } = await import('../../src/game/compactDiary.ts');
+    const bossRare = ITEMS.find((item) => item.id % 1000 >= 400 && item.id % 1000 < 500)!;
+    const drop = { ...getItemById(bossRare.id)!, enhancement: 0, superRare: 0 };
+    const bossEntry = { ...unreadEntry, id: '130', triggers: ['bossRare'], expeditionLog: { ...log, rewards: [drop] } } as unknown as DiaryLog;
+    const withBoss = { ...withDiary, parties: withDiary.parties.map((party, index) => index === 0 ? { ...party, diaryLogs: [bossEntry] } : party) };
+    const bossCompact = await buildApiV1ReadData('read/observation/compact', withBoss, {}, context) as typeof compact;
+    const title = decodeURIComponent(bossCompact.attention.notification[0].unreadDiaryTitle[0].split('/')[1]);
+    assert.equal(title, `[${withBoss.parties[0].name}] Boss Rare acquired (${diaryItemName(drop)})`);
+    // `diaryEntry/{id}` names the same item, and only the item the trigger is about, not the expedition's whole drop list.
+    const common = { ...getItemById(ITEMS.find((item) => item.id % 1000 < 200)!.id)!, enhancement: 0, superRare: 0 };
+    const mixed = { ...withBoss, parties: withBoss.parties.map((party, index) => index === 0 ? { ...party, diaryLogs: [{ ...bossEntry, expeditionLog: { ...log, rewards: [common, drop] } } as unknown as DiaryLog] } : party) };
+    const read = await buildApiV1ReadData('read/diary/diaryEntry/130', mixed, {}, context) as { entry: { content: { title: { args: unknown }; events: { key: string; args: unknown }[] } } };
+    assert.deepEqual(read.entry.content.title.args, { items: diaryItemName(drop) });
+    assert.deepEqual(read.entry.content.events, [{ key: 'diary.event.bossRare', args: { items: diaryItemName(drop) } }]);
+    // The list read carries the same content, so it names the same item.
+    const list = await buildApiV1ReadData('read/observation/diary', mixed, {}, context) as unknown as { diaryInfo: { parties: { entries: { content: typeof read.entry.content }[] }[] } };
+    assert.deepEqual(list.diaryInfo.parties[0].entries[0].content, read.entry.content, 'observation/diary and diaryEntry share one content shape');
+    const plain = await buildApiV1ReadData('read/diary/diaryEntry/120', withDiary, {}, context) as typeof read;
+    assert.deepEqual(plain.entry.content.title.args, {}, 'an entry that is not a rare drop carries no items');
+  }
   calls.length = 0;
 }
 

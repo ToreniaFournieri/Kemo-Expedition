@@ -1,3 +1,4 @@
+import { getDiaryRewardHeadline } from '../../../game/diaryHeadline';
 import { renderDiaryBattle, semanticBattleAction, diaryBattleFlags } from '../../../game/compactDiary.ts';
 import { Fragment,useState,type Dispatch,type SetStateAction } from 'react';
 import { GOD_ENEMY_PROFILES } from '../../../data/dropTables';
@@ -284,40 +285,8 @@ export default function DiaryTab({
       return t('diary.headline.victory', { party: partyName });
     }
 
-    if (triggers.includes('superRare') || triggers.includes('mythicRare') || triggers.includes('bossRare')) {
-      const rewardNames = rewards
-        .filter((item) => {
-          if (triggers.includes('superRare')) return item.superRare > 0;
-          if (triggers.includes('mythicRare')) return getItemRarityById(item.id) === 'mythicRare';
-          return getItemRarityById(item.id) === 'bossRare';
-        })
-        .map((item) => getItemDisplayName(item))
-        .join('、');
-      const triggerPrefix = triggers.includes('superRare')
-        ? t('diary.reward.superRare')
-        : triggers.includes('mythicRare')
-          ? t('diary.reward.mythicRare')
-          : t('diary.reward.bossRare');
-      return rewardNames
-        ? t('diary.headline.rewardNamed', { party: partyName, rewardType: triggerPrefix, rewards: rewardNames })
-        : t('diary.headline.reward', { party: partyName, rewardType: triggerPrefix });
-    }
-
-    if (triggers.includes('eliteRare')) {
-      const rewardNames = rewards
-        .filter((item) => getItemRarityById(item.id) === 'eliteRare')
-        .map((item) => getItemDisplayName(item))
-        .join('、');
-      return rewardNames ? t('diary.headline.rewardNamed', { party: partyName, rewardType: t('diary.reward.eliteRare'), rewards: rewardNames }) : t('diary.headline.reward', { party: partyName, rewardType: t('diary.reward.eliteRare') });
-    }
-
-    const fallbackBossNames = rewards
-      .filter((item) => getItemRarityById(item.id) === 'bossRare')
-      .map((item) => getItemDisplayName(item))
-      .join('、');
-    if (fallbackBossNames) {
-      return t('diary.headline.rewardNamed', { party: partyName, rewardType: t('diary.reward.bossRare'), rewards: fallbackBossNames });
-    }
+    const rewardHeadline = getDiaryRewardHeadline(partyName, triggers, rewards);
+    if (rewardHeadline) return rewardHeadline;
 
     return t('diary.headline.title', { party: partyName, title: getDiaryTitle(triggers) });
   };

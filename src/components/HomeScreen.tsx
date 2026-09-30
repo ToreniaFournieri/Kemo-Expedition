@@ -5208,7 +5208,7 @@ export function HomeScreen({
     memoryMonitor.setRuntime('simulation', effectiveDebugSettings.timeSpeed);
     simulationProgressListenerRef.current = onProgress ?? null;
     try {
-      const response = await adapter.read('read/expedition/{p}/simulationRun', { pathParameters: { p: partyNumber } });
+      const response = await adapter.read('read/expedition/{p}/simulationRun', { pathParameters: { p: partyNumber }, parameters: { numberOfRun: 1_000 } });
       if (response.error) throw new Error(String((response.error as { code?: unknown }).code));
       return parseSimulationRunData(response.data as SimulationRunData);
     } finally {

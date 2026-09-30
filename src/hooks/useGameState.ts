@@ -4696,6 +4696,7 @@ export async function simulateExpeditionRuns(
       terminalStatus,
       resolution.battleDiagnostics,
       sandbox.authoritativePartyStatus.partyStats.hp,
+      resolution.endedAtGate,
     );
 
     const completed = index + 1;
