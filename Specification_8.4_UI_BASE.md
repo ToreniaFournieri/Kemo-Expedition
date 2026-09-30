@@ -76,7 +76,7 @@
 
 **Enhancement (Same as item drop logic)**
 - Identified Lineup:
-  - When the player selects an item to buy, roll:
+  - Generate enhancement and Super Rare title when the lineup refreshes. Preserve the exact item and price until purchased or refreshed. Viewing, reloading, and purchasing never reroll it.
     - Draw `1` ticket from `g.enhancement_bag`.  
       - If the drawn ticket ID is `0` or `1`, redraw until a ticket with ID `>= 2` is obtained.
     - Draw `10` ticket from `g.superRare_bag`.
@@ -86,7 +86,7 @@
   - When the player selects an item to buy, roll:
     - Draw `1` ticket from `g.enhancement_bag`.  
       - If the drawn ticket ID is `0` or `1`, redraw until a ticket with ID `>= 2` is obtained.
-    - Draw `10` ticket from `g.superRare_bag`.
+    - Draw `20` ticket from `g.superRare_bag`.
       - Use the ticket with the highest ID.
   - The resulting enhancement/title is **hidden until purchased** (can become a Super Rare title item).
 
