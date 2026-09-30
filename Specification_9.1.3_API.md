@@ -35,8 +35,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * No item: `0`
   * `lockStatus`: `0` = unlocked, `1` = locked.
   * `itemId`: See `Specification_3.2_ITEM_MASTER_DATA.md`.
-  * `enhancement`: `0–6`. See `enhancement title` in `Specification_1.2_CONSTANTS_GLOBAL.md`.
-  * `superRare`: `0` = none; `1–N` : Represents the corresponding `superRare` title defined in `Specification_1.2_CONSTANTS_GLOBAL.md`.
+  * `enhancement`: `0–6`, or `?`. See `enhancement title` in `Specification_1.2_CONSTANTS_GLOBAL.md`.
+  * `superRare`: `0` = none; `1–N`, or `?` : Represents the corresponding `superRare` title defined in `Specification_1.2_CONSTANTS_GLOBAL.md`.
     * N represents the highest currently defined superRare ID and may increase in future versions.
 * Example:
   * `0/1101/2/0`
@@ -904,19 +904,28 @@ Path Parameters
 * Return:
   * `current`:
     * `lineupId`
-      * Format: `<1stItemId><1stItemAvailability><2ndItemId><2ndItemAvailability><3rdItemId><3rdItemAvailability><4thItemId><4thItemAvailability><5thItemId><5thItemAvailability>`
-        * Example: `1104ture1102false1110true1111true1111true`
-      * Represents both the current shop item lineup and the availability of each item.
-      * Used to verify that the shop lineup has not changed before the player purchases items.
+      * An opaque hash identifying the current shop stock.
+      * Changes when the lineup, item details, prices, or remaining stock change, and on every refresh.
+      * Does not change when the player's Gold changes.
+      * Pass this value unchanged to `purchaseShopItems`.
+      * If it no longer matches, reject with `illegal_action:lineup_changed`.
     * `items`
       * Current shop item list.
       * Format:
-        * `<shopItemId>/<itemId>/<price>/<availability>`
+        * `<shopItemId>/<Item Format>/<price>/<availability>`
       * `availability`:
         * `true`: currently purchasable.
         * `false`: currently unavailable, sold out, or unaffordable.
       * Example:
-        `["1/1104/60/true", "2/1102/60/true", "3/1110/80/false", "4/1111/100/true", "5/1111/100/true"]`
+        * [
+        *  "1/0/1104/2/0/60/true",
+        *  "2/0/1102/2/0/60/true",
+        *  "3/0/1110/?/?/80/false",
+        *  "4/0/1111/?/?/100/true",
+        *  "5/0/1111/?/?/100/true",
+        *  "6/0/1104/?/?/60/true",
+        *  "7/0/1102/?/?/60/true"
+        * ]
   * `validOptions`:
     * `items`
       * `shopItemId` values currently available for purchase.
