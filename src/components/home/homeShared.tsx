@@ -603,7 +603,7 @@ export function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { 
 }
 
 // SpecRef: 8.1 | UI_FOUNDATIONS | Navigation: Minimal scene transitions, tab-centered
-export const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(4rem+env(safe-area-inset-bottom))]';
+export const CHROME_CONTENT_PADDING_CLASS = 'pt-[calc(74px+env(safe-area-inset-top))] pb-[calc(7rem+env(safe-area-inset-bottom))]';
 export type { DarkModeSetting, GameMode } from '../../theme/theme';
 import type { DarkModeSetting, GameMode } from '../../theme/theme';
 import { isGameModeAvailable, THEME_CLASS_NAMES } from '../../theme/theme';

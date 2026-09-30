@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.7 | 176 | 2026/09/30 | UI: bottom padding of the tab content area raised (4rem to 7rem plus safe area) so the last list item can scroll clear of the bottom navigation tabs. |
 | 0.9.7 | 175 | 2026/09/30 | Shop intimacy (Spec 8.4.1): the cap is 99 until the boss of expedition 7 is defeated and 199 afterwards; new dialogue lines for intimacy 80, 100, 120, and 140 and above (`home.shop.dialogue.intimacy100/120/140`), localized in all languages. |
 | 0.9.7 | 174 | 2026/09/30 | Shop intimacy (Spec 8.4.1): the cap rises to 199 and the lineup gains the 100-119, 120-139, and 140+ tiers; the identified slot count is 1 at intimacy 0-19 and 2 from 20 (always 7 slots in all); `shopInfo.intimacy` allows up to 199. |
 | 0.9.7 | 173 | 2026/09/30 | Shop API and UI (Spec 8.4.1, 9.1.3): `shopItemsList` items use `<shopItemId>/<Item Format>/<price>/<availability>` with `?` for hidden enhancement/Super Rare, shop entries add `identified`/`enhancement`/`superRare`, slots 1-7; the Shop pane shows identified titles and saves the lineup when shown. |
