@@ -20,7 +20,7 @@ export interface ShopEntryProjection {
 export interface ShopProjection {
   lineupId: string;
   intimacy: number;
-  dialogue: { key: 'home.shop.dialogue.default' | 'home.shop.dialogue.intimacy20' | 'home.shop.dialogue.intimacy40' | 'home.shop.dialogue.intimacy80'; args: Record<string, never> };
+  dialogue: { key: 'home.shop.dialogue.default' | 'home.shop.dialogue.intimacy20' | 'home.shop.dialogue.intimacy40' | 'home.shop.dialogue.intimacy80' | 'home.shop.dialogue.intimacy100' | 'home.shop.dialogue.intimacy120' | 'home.shop.dialogue.intimacy140'; args: Record<string, never> };
   paidRefreshCountdown: number;
   paidRefreshPrice: number;
   paidRefresh: { available: boolean; unavailableReason: 'insufficient_gold' | null };

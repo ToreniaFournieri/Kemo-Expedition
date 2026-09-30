@@ -323,7 +323,7 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   const before = getShopFacts(shopLineupInputOf(rich), new Date(simulatedAt));
   const { getPublicShopLineupId } = await import('../../src/game/shopFacts');
   const bought = applyApiV1Commit('commit/base/purchaseShopItems', rich, { lineupId: getPublicShopLineupId(before), items: [{ shopItemId: 3 }] }, baseContext({ simulatedAt }));
-  assert.equal(getEffectiveShopIntimacy(bought.state.global, new Date(simulatedAt)), 20, 'the purchase raised intimacy to the next tier');
+  assert.equal(getEffectiveShopIntimacy({ ...bought.state.global, parties: bought.state.parties }, new Date(simulatedAt)), 20, 'the purchase raised intimacy to the next tier');
   assert.ok(bought.state.global.shopLineup, 'the lineup is saved by the purchase');
   const after = getShopFacts(shopLineupInputOf(bought.state), new Date(simulatedAt));
   const stable = (facts: typeof before) => facts.entries.map((entry) => [entry.itemId, entry.enhancement, entry.superRare, entry.price].join('/'));
@@ -339,32 +339,43 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.equal(refreshed.state.global.shopPurchases[refreshed.state.global.shopLineup?.stockKey ?? ''], undefined, 'the new lineup starts unsold');
 }
 
-// 4a-2. The lineup always fills 7 slots, and its identified count and rarity mix follow the intimacy tier up to the cap of 199
-// (Spec 8.4.1 Lineup); intimacy is capped at 199 and decays 10% per refresh.
+// 4a-2. The lineup always fills 7 slots, and its identified count, rarity mix, and dialogue follow the intimacy tier (Spec 8.4.1).
+// Intimacy is capped at 99 until the boss of expedition 7 is defeated, then at 199, and decays 10% per refresh.
 {
-  const { getShopFacts, shopLineupInputOf } = await import('../../src/game/shopFacts');
+  const { getShopFacts, getPublicShopLineupId, shopLineupInputOf } = await import('../../src/game/shopFacts');
   const at = Date.parse('2026-01-01T03:00:00.000Z');
-  const plans: Array<[number, string, string]> = [
-    [0, 'C', 'CCCCCC'], [19, 'C', 'CCCCCC'], [20, 'CC', 'UCCCC'], [40, 'UC', 'EUUCC'], [80, 'UU', 'BEEUU'],
-    [100, 'EU', 'BEEEU'], [120, 'EE', 'BBEEU'], [140, 'BE', 'BBEEE'], [199, 'BE', 'BBEEE'],
+  const defeated = (state: GameState): GameState => ({ ...state, parties: state.parties.map((party, index) => (index === 0 ? { ...party, defeatedBossExpeditions: { ...party.defeatedBossExpeditions, 7: true } } : party)) });
+  const plans: Array<[number, string, string, string]> = [
+    [0, 'C', 'CCCCCC', 'default'], [19, 'C', 'CCCCCC', 'default'], [20, 'CC', 'UCCCC', 'intimacy20'], [40, 'UC', 'EUUCC', 'intimacy40'],
+    [80, 'UU', 'BEEUU', 'intimacy80'], [99, 'UU', 'BEEUU', 'intimacy80'], [100, 'EU', 'BEEEU', 'intimacy100'], [120, 'EE', 'BBEEU', 'intimacy120'],
+    [140, 'BE', 'BBEEE', 'intimacy140'], [199, 'BE', 'BBEEE', 'intimacy140'],
   ];
   const letter: Record<string, string> = { common: 'C', uncommon: 'U', eliteRare: 'E', bossRare: 'B' };
-  for (const [intimacy, identified, unidentified] of plans) {
-    const state: GameState = { ...seed, global: { ...seed.global, shopIntimacy: intimacy, shopIntimacyLastDecayAt: at } };
-    const entries = getShopFacts(shopLineupInputOf(state), new Date(at)).entries;
+  for (const [intimacy, identified, unidentified, dialogue] of plans) {
+    const state = defeated({ ...seed, global: { ...seed.global, shopIntimacy: intimacy, shopIntimacyLastDecayAt: at } } as GameState);
+    const facts = getShopFacts(shopLineupInputOf(state), new Date(at));
+    const entries = facts.entries;
     assert.equal(entries.length, 7, `intimacy ${intimacy}: all 7 slots are filled`);
     assert.equal(entries.filter((entry) => entry.identified).length, identified.length, `intimacy ${intimacy}: identified slot count`);
     assert.equal(entries.filter((entry) => entry.identified).map((entry) => letter[entry.rarity]).join(''), identified, `intimacy ${intimacy}: identified rarities`);
     assert.equal(entries.filter((entry) => !entry.identified).map((entry) => letter[entry.rarity]).join(''), unidentified, `intimacy ${intimacy}: unidentified rarities`);
+    assert.equal(facts.dialogueKey, `home.shop.dialogue.${dialogue}`, `intimacy ${intimacy}: dialogue`);
   }
-  const rich: GameState = { ...seed, global: { ...seed.global, gold: 1_000_000, shopIntimacy: 199, shopIntimacyLastDecayAt: at } };
-  const before = getShopFacts(shopLineupInputOf(rich), new Date(at));
-  assert.equal(before.intimacy, 199);
-  const bought = applyApiV1Commit('commit/base/purchaseShopItems', rich, { lineupId: (await import('../../src/game/shopFacts')).getPublicShopLineupId(before), items: [{ shopItemId: 7 }] }, baseContext({ simulatedAt: at }));
-  assert.equal(bought.state.global.shopIntimacy, 199, 'a purchase cannot raise intimacy above the cap');
-  const refreshed = applyApiV1Commit('commit/base/paidShopRefresh', rich, {}, baseContext({ simulatedAt: at }));
-  assert.equal(refreshed.state.global.shopIntimacy, 199, 'a paid refresh cannot raise intimacy above the cap');
-  const decayed = getShopFacts(shopLineupInputOf(rich), new Date(at + 8 * 3600 * 1000));
+  // Before the expedition 7 boss is defeated, intimacy is capped at 99 (also for a stored value above it).
+  const locked: GameState = { ...seed, global: { ...seed.global, gold: 1_000_000, shopIntimacy: 99, shopIntimacyLastDecayAt: at } };
+  assert.equal(getShopFacts(shopLineupInputOf({ ...locked, global: { ...locked.global, shopIntimacy: 150 } }), new Date(at)).intimacy, 99, 'a stored value above the cap reads as the cap');
+  const lockedFacts = getShopFacts(shopLineupInputOf(locked), new Date(at));
+  const lockedBuy = applyApiV1Commit('commit/base/purchaseShopItems', locked, { lineupId: getPublicShopLineupId(lockedFacts), items: [{ shopItemId: 7 }] }, baseContext({ simulatedAt: at }));
+  assert.equal(lockedBuy.state.global.shopIntimacy, 99, 'a purchase cannot raise intimacy above 99 before the boss is defeated');
+  assert.equal(applyApiV1Commit('commit/base/paidShopRefresh', locked, {}, baseContext({ simulatedAt: at })).state.global.shopIntimacy, 99, 'nor can a paid refresh');
+  // After it, the cap is 199.
+  const rich = defeated({ ...locked, global: { ...locked.global, shopIntimacy: 198 } });
+  const richFacts = getShopFacts(shopLineupInputOf(rich), new Date(at));
+  assert.equal(richFacts.intimacy, 198);
+  const bought = applyApiV1Commit('commit/base/purchaseShopItems', rich, { lineupId: getPublicShopLineupId(richFacts), items: [{ shopItemId: 7 }] }, baseContext({ simulatedAt: at }));
+  assert.equal(bought.state.global.shopIntimacy, 199, 'a purchase raises intimacy to 199 after the boss is defeated');
+  assert.equal(applyApiV1Commit('commit/base/paidShopRefresh', bought.state, {}, baseContext({ simulatedAt: at })).state.global.shopIntimacy, 199, 'a paid refresh cannot raise it above 199');
+  const decayed = getShopFacts(shopLineupInputOf(bought.state), new Date(at + 8 * 3600 * 1000));
   assert.equal(decayed.intimacy, 179, 'intimacy decays by 10% per refresh time: floor(199 x 0.9)');
 }
 

@@ -357,6 +357,14 @@ function ShopTab({
     ? t('home.shop.countdown.hours', { count: Math.floor(minutesToRefresh / 60) })
     : t('home.shop.countdown.minutes', { count: minutesToRefresh });
 
+  // SpecRef: 8.4.1 | Shop (お店) | Dialogue by intimacy: the lines name the defeated Chancellor, the Moon Palace, and party
+  // members, which the client localizes from the master data (the API's dialogue key is semantic and carries no names).
+  const shopDialogueArguments = {
+    enemy: t('masterData.enemyName.351'),
+    dungeon: t('data.dungeons.7.name'),
+    character: t(shop.dialogue.key === 'home.shop.dialogue.intimacy140' ? 'character.default.n11' : 'character.default.n12'),
+  };
+
   const shopItems = shop.entries.flatMap((entry) => {
     const item = ITEMS.find((candidate) => candidate.id === entry.itemId);
     if (!item) return [];
@@ -392,7 +400,7 @@ function ShopTab({
             />
             <div className="shop-dialogue-pane__bubble space-y-1 rounded px-2 py-1">
               <p className="shop-dialogue-pane__line text-sm">
-                {t(shop.dialogue.key)}
+                {t(shop.dialogue.key, shopDialogueArguments)}
               </p>
               <p className="shop-dialogue-pane__countdown text-xs">
                 {t('home.shop.refreshCountdown', { time: countdownText })}

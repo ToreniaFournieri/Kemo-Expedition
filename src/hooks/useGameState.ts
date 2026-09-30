@@ -135,7 +135,7 @@ import {
   getShopHourKey,
   getShopRefreshPrice,
   getShopStockEntryId,
-  SHOP_INTIMACY_CAP,
+  getShopIntimacyCap,
   countElapsedShopRefreshes,
   getCurrentShopRefreshDate,
   normalizeShopLineup,
@@ -1021,7 +1021,7 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
             }, {})
           : {};
 
-        parsed.global.shopIntimacy = Math.max(0, Math.min(SHOP_INTIMACY_CAP, Math.floor(typeof parsed.global.shopIntimacy === 'number' ? parsed.global.shopIntimacy : 0)));
+        parsed.global.shopIntimacy = Math.max(0, Math.min(getShopIntimacyCap(Array.isArray(parsed.parties) ? parsed.parties : []), Math.floor(typeof parsed.global.shopIntimacy === 'number' ? parsed.global.shopIntimacy : 0)));
         parsed.global.shopIntimacyLastDecayAt = typeof parsed.global.shopIntimacyLastDecayAt === 'number'
           ? parsed.global.shopIntimacyLastDecayAt
           : Date.now();
@@ -3571,7 +3571,7 @@ function reduceGameState(
           ...globalState,
           inventory: inventoryResult.inventory,
           gold: inventoryResult.gold - stock.price,
-          shopIntimacy: Math.min(SHOP_INTIMACY_CAP, globalState.shopIntimacy + 1),
+          shopIntimacy: Math.min(getShopIntimacyCap(ensured.parties), globalState.shopIntimacy + 1),
           shopPurchases: {
             ...globalState.shopPurchases,
             [lineup.stockKey]: [...soldOutItemKeys, action.stockItemKey],
@@ -3628,7 +3628,7 @@ function reduceGameState(
         global: {
           ...globalState,
           gold: globalState.gold - refreshPrice,
-          shopIntimacy: Math.min(SHOP_INTIMACY_CAP, globalState.shopIntimacy + 2),
+          shopIntimacy: Math.min(getShopIntimacyCap(state.parties), globalState.shopIntimacy + 2),
           shopRefreshCounts: {
             ...globalState.shopRefreshCounts,
             [hourKey]: currentRefreshCount + 1,

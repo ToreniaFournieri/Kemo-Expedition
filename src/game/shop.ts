@@ -84,8 +84,15 @@ export function getShopItemPrice(itemId: number): number {
 
 /** The Shop's lineup: identified slots first, then unidentified slots (7 in all). A slot's public ID is its 1-based position. */
 export const SHOP_SLOT_COUNT = 7;
-/** Intimacy is capped at 199 (SpecRef: 8.4.1 | Shop (お店) | Intimacy cap). */
-export const SHOP_INTIMACY_CAP = 199;
+/** Intimacy is capped at 99 until the boss of expedition 7 is defeated, then at 199 (SpecRef: 8.4.1 | Shop (お店) | Intimacy Cap). */
+export const SHOP_INTIMACY_CAP_BEFORE_UNLOCK = 99;
+export const SHOP_INTIMACY_CAP_AFTER_UNLOCK = 199;
+export const SHOP_INTIMACY_UNLOCK_EXPEDITION_ID = 7;
+
+export function getShopIntimacyCap(parties: Pick<Party, 'defeatedBossExpeditions'>[]): number {
+  const unlocked = parties.some((party) => Boolean(party.defeatedBossExpeditions?.[SHOP_INTIMACY_UNLOCK_EXPEDITION_ID]));
+  return unlocked ? SHOP_INTIMACY_CAP_AFTER_UNLOCK : SHOP_INTIMACY_CAP_BEFORE_UNLOCK;
+}
 const SHOP_IDENTIFIED_ENHANCEMENT_MINIMUM = 2;
 const SHOP_IDENTIFIED_SUPER_RARE_DRAWS = 10;
 const SHOP_UNIDENTIFIED_SUPER_RARE_DRAWS = 20;
@@ -214,9 +221,10 @@ export interface ResolvedShopLineup {
 }
 
 /** Effective intimacy at `now`: the stored value decayed for every refresh time that has passed. */
-export function getEffectiveShopIntimacy(input: Pick<ShopLineupInput, 'shopIntimacy' | 'shopIntimacyLastDecayAt'>, now: Date): number {
+export function getEffectiveShopIntimacy(input: Pick<ShopLineupInput, 'shopIntimacy' | 'shopIntimacyLastDecayAt' | 'parties'>, now: Date): number {
   const elapsedRefreshes = countElapsedShopRefreshes(input.shopIntimacyLastDecayAt, now);
-  return Math.max(0, Math.floor(input.shopIntimacy * (0.9 ** elapsedRefreshes)));
+  const decayed = Math.max(0, Math.floor(input.shopIntimacy * (0.9 ** elapsedRefreshes)));
+  return Math.min(decayed, getShopIntimacyCap(input.parties));
 }
 
 // SpecRef: 8.4.1 | Shop (お店) | Lineup

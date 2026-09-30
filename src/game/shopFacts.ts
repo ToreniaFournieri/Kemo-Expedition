@@ -7,9 +7,12 @@ export { SHOP_SLOT_COUNT };
 // Everything the Shop pane shows and the Application API publishes about the shop at one instant, from one place, so the two
 // cannot disagree about the dialogue, the countdown, the refresh price, or which slot is which.
 
-export type ShopDialogueKey = 'home.shop.dialogue.default' | 'home.shop.dialogue.intimacy20' | 'home.shop.dialogue.intimacy40' | 'home.shop.dialogue.intimacy80';
+export type ShopDialogueKey = 'home.shop.dialogue.default' | 'home.shop.dialogue.intimacy20' | 'home.shop.dialogue.intimacy40' | 'home.shop.dialogue.intimacy80' | 'home.shop.dialogue.intimacy100' | 'home.shop.dialogue.intimacy120' | 'home.shop.dialogue.intimacy140';
 
 export function getShopDialogueKey(effectiveIntimacy: number): ShopDialogueKey {
+  if (effectiveIntimacy >= 140) return 'home.shop.dialogue.intimacy140';
+  if (effectiveIntimacy >= 120) return 'home.shop.dialogue.intimacy120';
+  if (effectiveIntimacy >= 100) return 'home.shop.dialogue.intimacy100';
   if (effectiveIntimacy >= 80) return 'home.shop.dialogue.intimacy80';
   if (effectiveIntimacy >= 40) return 'home.shop.dialogue.intimacy40';
   if (effectiveIntimacy >= 20) return 'home.shop.dialogue.intimacy20';

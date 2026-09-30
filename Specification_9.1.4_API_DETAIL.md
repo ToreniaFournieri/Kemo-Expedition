@@ -742,9 +742,14 @@ definitions in 9.1.3.
   non-positive, or duplicate ID is `invalid_request`; an ID that is not in the lineup is
   `not_found`; a sold slot is `illegal_action:sold_out`; a total above the Gold held is
   `illegal_action:insufficient_gold`. Nothing is bought unless every entry passes.
-* Intimacy is capped at 199. The rarity mix of the identified and unidentified slots follows
-  the tiers of Spec 8.4.1 (0, 20, 40, 80, 100, 120, and 140 and above) and always fills all
-  7 slots. `dialogue` keeps the `.intimacy80` key from 80 upward.
+* Intimacy is capped at 99 until any party has defeated the boss of expedition 7, and at 199
+  after that; the cap applies to the gains of purchases (+1) and paid refreshes (+2), to a
+  stored value read back, and to `shopInfo.intimacy`. The rarity mix of the identified and
+  unidentified slots follows the tiers of Spec 8.4.1 (0, 20, 40, 80, 100, 120, and 140 and
+  above) and always fills all 7 slots. `dialogue.key` is one of `home.shop.dialogue.default`,
+  `.intimacy20`, `.intimacy40`, `.intimacy80`, `.intimacy100`, `.intimacy120`, and `.intimacy140`;
+  `args` is empty, and a client fills the names the line mentions (the expedition 7 boss and
+  name, and a party member) from the master data.
 * The lineup is saved with the save data (`shopLineup`) the first time a stock period is
   used, so viewing, reloading, and purchasing never reroll it, and buying (which raises
   intimacy) or defeating a boss does not change the unbought slots. Identified slots roll
