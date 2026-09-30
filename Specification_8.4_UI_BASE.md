@@ -41,6 +41,9 @@
 | 20–39 | 「お、また来たのかい。うちのガラクタも、見ていくうちに味が出てくるもんさ。」 |
 | 40–79 | 「やぁ。奥の棚も見ていいよ。運が良けりゃ掘り出し物があるかもな。」 |
 | 80–99 | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
+| 100–119 | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
+| 120–139 | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
+| 140–Cap | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
 
 **Paid Refresh (有償洗替):**  
   - **Cost:** `200G × 2 ^ (refresh_count - 1)`  
@@ -62,10 +65,13 @@
 
 | Intimacy | Identified Lineup  | Unidentified Lineup  |
 |---|---|---|
-| 0–19 | 2 Common | 5  Common |
-| 20–39 | 1 Uncommon, 1 Common |  1 Uncommon, 4 Common |
-| 40–79 | 1 Elite rare, 1 Uncommon | 1 Elite rare, 2 Uncommon, 2 Common |
-| 80–99 | 1 Boss rare, 1 Elite rare | 1 Boss rare, 2 Elite rare, 2 Uncommon |
+| 0–19 | 1 Common | 6  Common |
+| 20–39 | 2 Common |  1 Uncommon, 4 Common |
+| 40–79 | 1 Uncommon, 1 Common | 1 Elite rare, 2 Uncommon, 2 Common |
+| 80–99 | 2 Uncommon  | 1 Boss rare, 2 Elite rare, 2 Uncommon |
+| 100–119 | 1 Elite rare, 1 Uncommon | 1 Boss rare, 3 Elite rare, 1 Uncommon |
+| 120–139 | 2 Elite rare | 2 Boss rare, 2 Elite rare, 1 Uncommon |
+| 140–Cap | 1 Boss rare, 1 Elite rare | 2 Boss rare, 3 Elite rare |
 
 **Display (rarity color)**
 - Common: non-bold  
@@ -104,7 +110,7 @@
   - Intimacy decays by **10% (multiplicative)** at each refresh time.
 
 - Intimacy cap
-  - Intimacy is capped at **99**.
+  - Intimacy is capped at **199**.
 
 
 #### 8.4.2 Inventory(所持品)
