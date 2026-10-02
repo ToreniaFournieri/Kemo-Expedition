@@ -23,6 +23,7 @@ interface Harness {
   displayWrites: unknown[];
   debugWrites: unknown[];
   sessionEvents: boolean[];
+  headlessEvents: boolean[];
   idleState: GameState;
   /** Moves the runtime's wall clock (the ordinary player's in-game time). */
   setNow: (value: number) => void;
@@ -33,6 +34,7 @@ function harness(normalizeImport = false): Harness {
   let runtimeNow = t0;
   const idleState = createFreshGameState('ja', t0);
   const accountState = createFreshGameState('ja', t0);
+  accountState.global.userId = 'parity-user';
   accountState.parties[0].diaryLogs = [{
     id: 'parity-diary-id',
     expeditionLog: {
@@ -55,6 +57,7 @@ function harness(normalizeImport = false): Harness {
   } as NonNullable<ReturnType<NonNullable<ApplicationApiPorts['runtime']['debugSettings']>>>;
   let display = { darkMode: 'off', theme: 'm.kemo', showExpeditionStats: false, autoRepeat: true } as NonNullable<ReturnType<NonNullable<ApplicationApiPorts['runtime']['displaySettings']>>>;
   const sessionEvents: boolean[] = [];
+  const headlessEvents: boolean[] = [];
   let counter = 0;
   let returnPayload: string | null = null;
   const account: DesktopApiAccountRecord = {
@@ -111,9 +114,9 @@ function harness(normalizeImport = false): Harness {
       now: () => runtimeNow,
     },
     help: { requirements: 'REQUIREMENTS', detail: 'DETAIL' },
-    onSessionActive: (active) => { sessionEvents.push(active); },
+    onSessionActive: (active, _userId, headless) => { sessionEvents.push(active); headlessEvents.push(active && headless === true); },
   };
-  return { failNextPersist, cycleWrites, displayWrites, debugWrites, api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, idleState, setNow: (value) => { runtimeNow = value; } };
+  return { failNextPersist, cycleWrites, displayWrites, debugWrites, api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, headlessEvents, idleState, setNow: (value) => { runtimeNow = value; } };
 }
 
 type Step = { operation: string; pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown>; mutating: boolean };
@@ -503,4 +506,28 @@ console.log('apiV1ApplicationApi profile ok');
   assert.equal(typeof (await commit('commit/base/changeJewelPriorityParty', { partyNumber: 'none' })).savePayload, 'string', 'a new session primes its own reuse eligibility');
   assert.equal((await commit('commit/base/changeJewelPriorityParty', { partyNumber: 'none' })).savePayload, null);
   location.location = previousLocation;
+}
+
+// Headless is a session presentation option: gameplay and durable state match visible sessions.
+{
+  const visible = harness();
+  const hidden = harness();
+  const invalid = await hidden.api.handle('fundamental/logIn', { ...identity, headless: 'true' }) as { error: { code: string } };
+  assert.equal(invalid.error.code, 'invalid_request');
+  assert.deepEqual(hidden.headlessEvents, [], 'failed login does not change presentation');
+  await visible.api.handle('fundamental/logIn', { ...identity });
+  await hidden.api.handle('fundamental/logIn', { ...identity, headless: true });
+  assert.deepEqual(visible.headlessEvents, [false]);
+  assert.deepEqual(hidden.headlessEvents, [true]);
+  const request = { expectedRevision: hidden.api.authority.getSnapshot().control.revisionHighWater, idempotencyKey: 'headless-elapsed', parameters: { elapsedSeconds: 60 } };
+  assert.deepEqual(await hidden.api.handle('commit/progress/elapsed', request), await visible.api.handle('commit/progress/elapsed', request));
+  assert.deepEqual(hidden.persisted, visible.persisted, 'both modes persist identical state and control');
+  hidden.failNextPersist.value = true;
+  const failedLogout = await hidden.api.handle('fundamental/logOut', {}) as { error: { code: string } };
+  assert.equal(failedLogout.error.code, 'save_failed');
+  assert.deepEqual(hidden.headlessEvents, [true], 'failed logout preserves headless');
+  await hidden.api.handle('fundamental/logOut', {});
+  assert.deepEqual(hidden.headlessEvents, [true, false]);
+  await hidden.api.handle('fundamental/logIn', { ...identity, headless: false });
+  assert.deepEqual(hidden.headlessEvents, [true, false, false]);
 }

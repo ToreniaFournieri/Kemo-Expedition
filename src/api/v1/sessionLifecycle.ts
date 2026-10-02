@@ -106,6 +106,7 @@ export async function signUpApiAccount(request: Record<string, unknown>, ports: 
  * Any failure before the swap leaves the player's runtime state untouched and clears the pending return payload.
  */
 export async function logInApiAccount(request: Record<string, unknown>, activeSession: ApiV1ActiveSession | null, ports: ApiV1SessionPorts): Promise<{ ok: true; session: ApiV1ActiveSession } | ApiV1SessionFailure> {
+  if (request.headless !== undefined && typeof request.headless !== 'boolean') return fail(400, 'invalid_request', 'headless must be a boolean.', { field: 'headless' });
   if (activeSession) return fail(409, 'control_unavailable', 'Another API account is active.');
   const identity = parseIdentity(request, false);
   const modeFailure = environmentModeFailure(identity);

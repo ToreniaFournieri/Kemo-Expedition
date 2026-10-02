@@ -48,10 +48,16 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
   const missingFieldError = (await missingField.json()).error;
   assert.deepEqual([missingField.status, missingFieldError.code, missingFieldError.details.field], [400, 'invalid_request', 'gameMode']);
   assert.match(missingFieldError.message, /`gameMode` is required/);
+  for (const headless of ['true', 1, null]) {
+    const invalid = await fetch(`${descriptor.endpoint}/fundamental/logIn`, { method: 'POST', headers: bootstrap, body: JSON.stringify({ userId: 'Taro', environment: 'desktop', gameMode: 'normal', headless }) });
+    assert.equal(invalid.status, 400);
+    const body = await invalid.json();
+    assert.equal(body.error.details.field, 'headless');
+  }
   const wrongMethod = await fetch(`${descriptor.endpoint}/fundamental/logIn`, { headers: { Authorization: `Bearer ${descriptor.token}` } });
   assert.equal(wrongMethod.status, 405);
   assert.equal(wrongMethod.headers.get('allow'), 'POST');
-  const loginResponse = await fetch(`${descriptor.endpoint}/fundamental/logIn`, { method: 'POST', headers: bootstrap, body: JSON.stringify({ userId: 'Taro', environment: 'desktop', gameMode: 'normal' }) });
+  const loginResponse = await fetch(`${descriptor.endpoint}/fundamental/logIn`, { method: 'POST', headers: bootstrap, body: JSON.stringify({ userId: 'Taro', environment: 'desktop', gameMode: 'normal', headless: true }) });
   assert.equal(loginResponse.status, 200);
   const login = await loginResponse.json();
   const session = { Authorization: `Bearer ${descriptor.token}`, 'X-BoKemo-Session': login.data.sessionToken, 'X-BoKemo-Control-Lease': login.data.controlLeaseToken };

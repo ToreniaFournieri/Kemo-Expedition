@@ -77,7 +77,7 @@ export interface ApplicationApiPorts {
   };
   help: { requirements: string; detail: string };
   /** Notifies the UI that an exclusive API session started or ended (it disables state-mutating controls). `userId` is the logged-in account's. */
-  onSessionActive: (active: boolean, userId?: string) => void;
+  onSessionActive: (active: boolean, userId?: string, headless?: boolean) => void;
   /** SpecRef: 9.1.4.15 | The actual network send for a claimed delivery job; never called more than once per claim. */
   delivery: { send: (record: ApiV1DeliveryRecord) => Promise<ApiV1DeliveryOutcome> };
 }
@@ -287,7 +287,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       accountSaveReusable = false;
       authority.replaceSnapshot({ state: session.state, control: session.control as ApiV1ControlMetadata, simulatedAt: session.simulatedAt });
       syncAccountDebugOverride();
-      ports.onSessionActive(true, session.identity.userId);
+      ports.onSessionActive(true, session.identity.userId, request.headless === true);
       return { revision: session.control.revisionHighWater, identity: session.identity, data: { ...session.identity } };
     }
 

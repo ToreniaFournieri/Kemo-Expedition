@@ -651,6 +651,10 @@
             "maximum": 20,
             "type": "integer",
             "default": 5
+          },
+          "headless": {
+            "type": "boolean",
+            "default": false
           }
         }
       },

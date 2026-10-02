@@ -120,6 +120,7 @@ interface Window {
     /** `controlJson` is the control metadata serialized by `serializeApiV1Control`. */
     commitApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string | null, controlJson: string) => Promise<boolean>;
     onApiV1Request: (callback: (operation: string, payload: unknown) => unknown | Promise<unknown>) => () => void;
+    setApiV1Headless?: (headless: boolean) => Promise<void>;
     notifyApiV1PopupActivity: () => Promise<void>;
     onNotificationActivated: (callback: (payload: DesktopNotificationPayload) => void) => () => void;
     onPartyProgressPartyActivated: (callback: (partyId: number) => void) => () => void;

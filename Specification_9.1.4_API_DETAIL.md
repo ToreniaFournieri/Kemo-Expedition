@@ -379,6 +379,15 @@ request with the same base parameters and key when no receipt exists.
 * Because the Orca environment fixes `mode.orca`, `signUp` and `logIn` in the
   `orca` environment reject `gameMode: normal` with `invalid_request`
   (`details.field: gameMode`).
+* `fundamental/logIn` accepts optional Boolean `headless` (default `false`).
+  The option is session-local and is applied only after login succeeds. In headless
+  sessions the HomeScreen presentation (tabs, header, and toasts) is unmounted, UI
+  projection reads and visual refresh timers are suspended, and the Desktop Party
+  Progress pane is hidden and receives no updates. The persistent renderer runtime,
+  Application API authority, progression, deliveries, and account persistence remain
+  alive. Logout (including lease expiry) restores the ordinary player presentation
+  only after durable account persistence and player-save restoration succeed.
+  This does not create a renderer-free engine or change stored account identity.
 * `fundamental/logIn` returns opaque `sessionToken` and `controlLeaseToken`.
   Subsequent session operations also require:
   `X-BoKemo-Session: <sessionToken>` and

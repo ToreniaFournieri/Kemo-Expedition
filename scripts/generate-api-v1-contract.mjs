@@ -266,7 +266,7 @@ const commitParameters = {
 };
 
 const directBodySchemas = {
-  'fundamental/signUp': strict({ ...identity, language: optional(language, 'ja') }), 'fundamental/logIn': strict(identity), 'fundamental/logOut': empty,
+  'fundamental/signUp': strict({ ...identity, language: optional(language, 'ja') }), 'fundamental/logIn': strict({ ...identity, headless: optional(Type.Boolean(), false) }), 'fundamental/logOut': empty,
 };
 
 // SpecRef: 9.1.4.14 | Parameter and payload schema conventions | Concrete response catalog

@@ -26,6 +26,8 @@ let apiShutdownPromise = null;
 let latestPartyProgressSnapshot = null;
 let apiV1RequestId = 0;
 let apiV1RendererReady = false;
+let apiV1Headless = false;
+let mainWindowWasVisibleBeforeHeadless = false;
 const apiV1PendingRequests = new Map();
 const apiAccountStore = createApiAccountStore({ userDataPath: app.getPath('userData') });
 
@@ -132,10 +134,12 @@ function createWindow(options = {}) {
   window.webContents.on('did-start-navigation', (details) => {
     if (!details.isMainFrame || details.isSameDocument) return;
     apiV1RendererReady = false;
+    apiV1Headless = false;
     apiV1.releaseForRendererLoss();
   });
   window.webContents.on('render-process-gone', () => {
     apiV1RendererReady = false;
+    apiV1Headless = false;
     apiV1.releaseForRendererLoss();
     for (const pending of apiV1PendingRequests.values()) { clearTimeout(pending.timeout); pending.reject(new Error('Renderer stopped')); }
     apiV1PendingRequests.clear();
@@ -179,6 +183,7 @@ function ensureDockIconVisible() {
 }
 
 function showMainWindow() {
+  if (apiV1Headless) return;
   ensureDockIconVisible();
   if (!mainWindow || mainWindow.isDestroyed()) {
     createWindow();
@@ -257,6 +262,7 @@ function createPartyProgressWindow() {
 }
 
 function togglePartyProgressWindow() {
+  if (apiV1Headless) return;
   const window = createPartyProgressWindow();
   if (window.isVisible()) {
     window.hide();
@@ -420,8 +426,22 @@ ipcMain.handle('desktop:show-notification', (_event, rawPayload) => {
   notification.show();
   return true;
 });
+ipcMain.handle('desktop:api-v1-headless', (event, headless) => {
+  if (event.sender !== mainWindow?.webContents || typeof headless !== 'boolean') return;
+  if (headless === apiV1Headless) return;
+  apiV1Headless = headless;
+  if (headless) {
+    mainWindowWasVisibleBeforeHeadless = mainWindow?.isVisible() === true;
+    mainWindow?.hide();
+    latestPartyProgressSnapshot = null;
+    partyProgressWindow?.hide();
+  } else if (mainWindowWasVisibleBeforeHeadless) {
+    mainWindow?.show();
+    mainWindowWasVisibleBeforeHeadless = false;
+  }
+});
 ipcMain.handle('desktop:update-party-progress-pane', (_event, rawSnapshot) => {
-  if (process.platform !== 'darwin') return false;
+  if (apiV1Headless || process.platform !== 'darwin') return false;
   const snapshot = normalizePartyProgressSnapshot(rawSnapshot);
   if (!snapshot) return false;
   // SpecRef: 9.1.2 | macOS menu-bar Party Progress pane | isolated minimum display snapshot

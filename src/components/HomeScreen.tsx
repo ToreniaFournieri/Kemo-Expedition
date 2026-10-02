@@ -1,6 +1,8 @@
 import { renderDiaryBattle, renderDiaryMetadata, renderExpeditionMetadata } from '../game/compactDiary.ts';
 import { formatDiaryUnreadBadge } from '../game/diary';
 import { gameReducer, simulateExpeditionRuns } from '../hooks/useGameState';
+import { flushSync } from 'react-dom';
+import type { ReactNode } from 'react';
 import { lazy,Profiler,Suspense,useCallback,useEffect,useMemo,useRef,useState } from 'react';
 import { CLASSES } from '../data/classes';
 import { DEVELOPER_NEWS_ITEMS } from '../data/developerNews';
@@ -263,13 +265,21 @@ export function preloadRemainingHomeTabs() {
 // SpecRef: 9.1.3 | 2-4-1 searchItems | `limit`: the Party tab needs every owned stack, so it asks for the maximum (5000).
 const SEARCH_ITEMS_LIMIT = 5000;
 
-export function HomeScreen({
+// The presentation has its own lifetime; the runtime and API bridge survive headless sessions.
+function HomeScreen({ render }: { render: () => ReactNode }) {
+  return render();
+}
+
+export function GameRuntimeHost({
   state,
   actions,
   notifications,
   onDismissNotification,
   onDismissAllNotifications,
-}: HomeScreenProps) {
+  uiClassName,
+}: HomeScreenProps & { uiClassName?: string }) {
+  const [headless, setHeadless] = useState(false);
+  const headlessRef = useRef(false);
   const renderStartedAt = performance.now();
   const shouldOptimizeAfkRenderer = useAfkRendererPartyStatsMemo();
   const shouldUseCoordinatorAuthority = useAfkCoordinatorAuthorityCandidate();
@@ -637,7 +647,18 @@ export function HomeScreen({
         colosseumEnabled: () => colosseumEnabledRef.current,
       },
       help: { requirements: apiRequirementsDocument, detail: apiDetailDocument },
-      onSessionActive: (active, userId) => { apiControlActiveRef.current = active; setApiControlActive(active); setApiSessionUserId(active ? userId ?? '' : ''); },
+      onSessionActive: (active, userId, requestedHeadless) => {
+        apiControlActiveRef.current = active;
+        headlessRef.current = active && requestedHeadless === true;
+        void window.bokemoDesktop?.setApiV1Headless?.(headlessRef.current);
+        lastPartyProgressSnapshotHashRef.current = '';
+        // Complete the presentation transition before returning a successful login/logout.
+        flushSync(() => {
+          setHeadless(headlessRef.current);
+          setApiControlActive(active);
+          setApiSessionUserId(active ? userId ?? '' : '');
+        });
+      },
       delivery: { send: sendApiV1Delivery },
     }, state);
   }
@@ -2096,23 +2117,23 @@ export function HomeScreen({
   const equipmentProjection = useApiRead<{ validOptions: { undoEquipment: { available: boolean }; redoEquipment: { available: boolean } } }>(
     inProcessApiRef.current,
     'read/build/character/{characterId}/equipment',
-    historyCharacter ? { pathParameters: { characterId: historyCharacter.id } } : null,
-    [historyCharacter?.id, historyCharacter?.equipment, state.global.inventory, state.global.jewels, currentParty.level],
+    !headless && historyCharacter ? { pathParameters: { characterId: historyCharacter.id } } : null,
+    [historyCharacter?.id, historyCharacter?.equipment, state.global.inventory, state.global.jewels, currentParty.level], !headless,
   );
 
   // SpecRef: 8.2 | UI_PARTY | Saved equipment sets and the deity pane render from projections
   const equipmentSetProjection = useApiRead<{ equipmentSets: Parameters<typeof parseSavedEquipmentSet>[0][] }>(
     inProcessApiRef.current,
     'read/build/character/{characterId}/equipmentSet',
-    historyCharacter ? { pathParameters: { characterId: historyCharacter.id }, parameters: { isEquipmentSetDetail: true } } : null,
-    [historyCharacter?.id, state.global.savedEquipmentSets],
+    !headless && historyCharacter ? { pathParameters: { characterId: historyCharacter.id }, parameters: { isEquipmentSetDetail: true } } : null,
+    [historyCharacter?.id, state.global.savedEquipmentSets], !headless,
   );
   const savedEquipmentSetsView = useMemo(
     () => (equipmentSetProjection?.equipmentSets ?? []).map(parseSavedEquipmentSet),
     [equipmentSetProjection],
   );
   // The owned inventory and Jewel counts are only needed while the Party tab is on screen.
-  const isPartyTabVisible = isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'party' : activeTab === 'party';
+  const isPartyTabVisible = !headless && (isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'party' : activeTab === 'party');
 
   // SpecRef: 8.2 | UI_PARTY | The party pane, member list, and deity pane render from `read/observation/party`.
   // Re-read only when a displayed fact changes: the selected party's members, level, experience, and deity, or any party's
@@ -2128,7 +2149,7 @@ export function HomeScreen({
   // SpecRef: 8.3 | UI_EXPEDITION | The pane reads its state, clocks, HP, goals, and controls from the projection.
   // Step-based state changes are server-gated, so refresh at the earliest projected boundary rather than deriving a
   // future room from the already-resolved log in the renderer.
-  const isExpeditionTabVisible = isPartyExpeditionSplitViewEnabled || activeTab === 'expedition';
+  const isExpeditionTabVisible = !headless && (isPartyExpeditionSplitViewEnabled || activeTab === 'expedition');
   const [expeditionProjectionRefresh, setExpeditionProjectionRefresh] = useState(0);
   const expeditionObservation = useApiRead<{ expeditionInfo: ExpeditionProjection }>(
     inProcessApiRef.current,
@@ -2183,7 +2204,7 @@ export function HomeScreen({
   }, [expeditionProjection, latestBattleLogProjections, state.parties]);
   // SpecRef: 8.4 | UI_BASE | The Base panes read the Base projection and commit through the Application API.
   // The Shop lineup rotates with the clock, so the projection is re-read when the next scheduled refresh arrives.
-  const isBaseTabVisible = isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'base' : activeTab === 'base';
+  const isBaseTabVisible = !headless && (isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'base' : activeTab === 'base');
   const [baseProjectionRefresh, setBaseProjectionRefresh] = useState(0);
   const baseObservation = useApiRead<{ baseInfo: BaseProjection }>(
     inProcessApiRef.current, 'read/observation/base', {}, [state.global, state.parties, baseProjectionRefresh], isBaseTabVisible,
@@ -2259,7 +2280,7 @@ export function HomeScreen({
   const ownedJewelsView = useMemo(() => parseJewelStacks(ownedJewelsProjection?.items ?? []), [ownedJewelsProjection]);
   const donationProjection = useApiRead<{ gods: string[] }>(
     inProcessApiRef.current, 'resources/donationBox', {},
-    [state.global.deityDonations, state.global.unlockedDeities],
+    [state.global.deityDonations, state.global.unlockedDeities], !headless,
   );
   const deityView = useMemo(() => {
     const donations: Record<string, number> = {};
@@ -2783,7 +2804,7 @@ export function HomeScreen({
   // SpecRef: 9.1.2 | macOS menu-bar Party Progress pane | read-only Party Progress snapshot
   useEffect(() => {
     const desktop = window.bokemoDesktop;
-    if (!desktop) return;
+    if (!desktop || headless) return;
 
     const now = Date.now();
     const parties: DesktopPartyProgressPartySnapshot[] = state.parties.map((party, partyIndex) => {
@@ -2906,7 +2927,7 @@ export function HomeScreen({
       lastPartyProgressSnapshotHashRef.current = '';
       console.error('Failed to publish Party Progress pane snapshot:', error);
     });
-  }, [gameMode, hasActiveTimeSpeedBonus, isDarkModeEnabled, partyCycles, pendingAfkMs, state.global.language, state.parties]);
+  }, [headless, gameMode, hasActiveTimeSpeedBonus, isDarkModeEnabled, partyCycles, pendingAfkMs, state.global.language, state.parties]);
 
   // SpecRef: 9.1.1 | macOS background lifecycle and native notifications | Diary-filtered native notifications
   useEffect(() => {
@@ -2932,7 +2953,7 @@ export function HomeScreen({
     const wasAfkRecovery = nativeAfkRecoveryRef.current;
     nativeAfkRecoveryRef.current = false;
     const preferences = getDesktopPreferences();
-    if (!preferences.nativeNotificationsEnabled) return;
+    if (headlessRef.current || !preferences.nativeNotificationsEnabled) return;
 
     void desktop.getWindowVisibility().then(async (isVisible) => {
       if (preferences.nativeNotificationMode === 'hiddenOnly' && isVisible) return;
@@ -5235,9 +5256,9 @@ export function HomeScreen({
     }
   }, [effectiveDebugSettings.timeSpeed]);
 
-  const isDiaryTabVisible = isPartyExpeditionSplitViewEnabled
+  const isDiaryTabVisible = !headless && (isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'diary'
-    : activeTab === 'diary';
+    : activeTab === 'diary');
   // SpecRef: 8.5 / 9.1.4.17 | The Diary pane receives only API summaries and retained-log projections. The shared Party
   // selection remains persisted game state; settings and read acknowledgement are serialized Application API commits.
   const diaryObservation = useApiRead<{ diaryInfo: DiaryProjection }>(
@@ -5314,9 +5335,9 @@ export function HomeScreen({
     prevDiaryTabVisibleRef.current = isDiaryTabVisible;
   }, [isDiaryTabVisible, markDiaryEntriesRead]);
 
-  const isSettingTabVisible = isPartyExpeditionSplitViewEnabled
+  const isSettingTabVisible = !headless && (isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'setting'
-    : activeTab === 'setting';
+    : activeTab === 'setting');
   const prevSettingTabVisibleRef = useRef(isSettingTabVisible);
 
   // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
@@ -5565,7 +5586,7 @@ export function HomeScreen({
   // SpecRef: 8.1.2 | Header | The header is always visible, so its projection is always enabled (unlike a per-tab read).
   const overview = useApiRead<{ headerInfo: HeaderProjection }>(
     inProcessApiRef.current, 'read/observation/overview', {},
-    [state.global.gold, state.parties, effectiveDebugSettings.timeSpeed, timeSpeedBonusUntilMs, isAutoRepeatEnabled],
+    [state.global.gold, state.parties, effectiveDebugSettings.timeSpeed, timeSpeedBonusUntilMs, isAutoRepeatEnabled], !headless,
   );
 
   const isPartyExpeditionSplitView = isPartyExpeditionSplitViewEnabled;
@@ -5787,7 +5808,10 @@ export function HomeScreen({
     );
   };
 
-  return (
+  if (headless) return null;
+
+  return <HomeScreen render={() => (
+    <div className={uiClassName}>
     <Suspense fallback={null}>
     <Profiler
       id="AFK recovery"
@@ -5985,7 +6009,8 @@ export function HomeScreen({
     </div>
     </Profiler>
     </Suspense>
-  );
+    </div>
+  )} />;
 }
 
 // SpecRef: 8.2 | UI_PARTY | Party tab

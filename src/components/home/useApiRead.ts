@@ -19,9 +19,9 @@ export function useApiRead<T>(
   // equipment history) cannot rely on a game-state change alone, which is published before that metadata is installed.
   const [committed, setCommitted] = useState(0);
   useEffect(() => {
-    if (!adapter) return;
+    if (!adapter || !enabled) return;
     return adapter.subscribe(() => setCommitted((count) => count + 1));
-  }, [adapter]);
+  }, [adapter, enabled]);
   useEffect(() => {
     if (!enabled) return;
     if (!adapter || !input) { setData(null); return; }
@@ -51,12 +51,13 @@ export function useApiReadMany<T>(
   dependencies: readonly unknown[],
   debounceMs = 0,
 ): T[] | null {
+  const enabled = inputs !== null;
   const [data, setData] = useState<T[] | null>(null);
   const [committed, setCommitted] = useState(0);
   useEffect(() => {
-    if (!adapter) return;
+    if (!adapter || !enabled) return;
     return adapter.subscribe(() => setCommitted((count) => count + 1));
-  }, [adapter]);
+  }, [adapter, enabled]);
   useEffect(() => {
     // Disabled (`inputs` null): do no work and keep the last result, exactly like `useApiRead`, so a hidden tab shows its previous
     // content when it is shown again instead of an empty pane while the new read is in flight.
@@ -73,7 +74,7 @@ export function useApiReadMany<T>(
     }, debounceMs);
     return () => { cancelled = true; clearTimeout(timer); };
     // The caller owns the dependency list: the projections are re-read when any listed fact changes.
-  }, [adapter, operation, committed, ...dependencies]);
+  }, [adapter, operation, enabled, committed, ...dependencies]);
   return data;
 }
 
@@ -91,9 +92,9 @@ export function useApiReadAllPages<T extends Record<string, unknown>>(
   const [data, setData] = useState<T | null>(null);
   const [committed, setCommitted] = useState(0);
   useEffect(() => {
-    if (!adapter) return;
+    if (!adapter || !enabled) return;
     return adapter.subscribe(() => setCommitted((count) => count + 1));
-  }, [adapter]);
+  }, [adapter, enabled]);
   useEffect(() => {
     if (!enabled) return;
     if (!adapter) { setData(null); return; }
