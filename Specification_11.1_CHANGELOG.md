@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.9.8 | 3 | 2026/10/02 | API account commits with unchanged game state now reuse the durable save file while atomically persisting control metadata and replay receipts; the first persistence after login writes the imported state in full to preserve normalization. |
 | 0.9.8 | 2 | 2026/09/30 | UI: in wide (two-tab) mode the two tab panes now extend to the bottom of the window instead of stopping 7rem above it, removing the empty band above the bottom navigation; the bottom clearance moved inside each scrolling pane so the last item still scrolls clear of the navigation. |
 | 0.9.8 | 1 | 2026/09/30 | Update the runtime and package release metadata to v0.9.8 and reset the release build number to 1. |
 | 0.9.7 | 177 | 2026/09/30 | Shop notification: buying an item whose stack is already at the maximum (auto-sold) now shows the full item name with the auto-sale message instead of the base name with `x1`. |

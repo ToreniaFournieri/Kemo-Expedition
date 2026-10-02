@@ -8,6 +8,7 @@ import {
   type ApiV1CommitAuthorityDependencies,
   type ApiV1CommitAuthorityInput,
   type ApiV1ControlMetadata,
+  type ApiV1PersistenceContext,
 } from '../../src/api/v1/authority';
 import { createFreshGameState } from '../../src/hooks/useGameState';
 import { stageApiV1ElapsedProgression } from '../../src/api/v1/elapsedProgression';
@@ -41,14 +42,14 @@ function input(overrides: Partial<ApiV1CommitAuthorityInput> = {}): ApiV1CommitA
 }
 
 function dependencies(overrides: Partial<ApiV1CommitAuthorityDependencies> = {}) {
-  const persisted: Array<{ state: GameState; control: ApiV1ControlMetadata }> = [];
+  const persisted: Array<{ state: GameState; control: ApiV1ControlMetadata; context: ApiV1PersistenceContext }> = [];
   const published: GameState[] = [];
   const value: ApiV1CommitAuthorityDependencies = {
     gameMode: 'mode.normal',
     enemyLevelOffset: 0,
     cycleDurationScale: 1,
     applyAutoEquipment: state => state,
-    persist: async (state, metadata) => { persisted.push({ state, control: metadata }); },
+    persist: async (state, metadata, context) => { persisted.push({ state, control: metadata, context }); },
     publish: async state => { published.push(state); },
     createOpaqueId: () => 'opaque-fixed-id',
     createRandomSeed: () => 0xa91f_0028,
@@ -71,6 +72,7 @@ function dependencies(overrides: Partial<ApiV1CommitAuthorityDependencies> = {})
   assert.equal(seed.global.jewelAutoEquipPriorityPartyId, 1, 'the immutable input is untouched');
   assert.equal(deps.persisted.length, 1);
   assert.equal(deps.published.length, 1);
+  assert.equal(deps.persisted[0].context.stateChanged, true);
 
   const replayDeps = dependencies();
   const replay = await executeApiV1CommitTransaction(input({ state: result.state, control: result.control, expectedRevision: 0 }), replayDeps.value);
@@ -118,6 +120,7 @@ function dependencies(overrides: Partial<ApiV1CommitAuthorityDependencies> = {})
   assert.equal(result.ok, true);
   if (!result.ok) throw new Error(result.error.code);
   assert.equal(result.response.revision, 0);
+  assert.equal(deps.persisted[0].context.stateChanged, false);
   assert.equal(result.response.changedResources.length, 0);
   assert.equal(result.control.receipts.length, 1);
   assert.equal(deps.persisted.length, 1);
@@ -148,6 +151,7 @@ function dependencies(overrides: Partial<ApiV1CommitAuthorityDependencies> = {})
   assert.equal(first.ok, false);
   if (first.ok) throw new Error('expected confirmation challenge');
   assert.equal(first.error.code, 'confirmation_required');
+  assert.equal(deps.persisted[0].context.stateChanged, false);
   assert.equal(first.durableControl?.revisionHighWater, 0);
   assert.equal(first.durableControl?.receipts.length, 0);
   assert.equal(first.durableControl?.confirmations?.[0].token, 'opaque-fixed-id');
@@ -545,3 +549,19 @@ for (const [thrown, code] of [['illegal_action:charge_insufficient', 'illegal_ac
 }
 
 console.log('apiV1Authority profile ok');
+
+// Internal delivery transactions use the same persistence context and retain their snapshot on save failure.
+{
+  const authority = new SerializedApplicationApiAuthority({ state: seed, control: control(), simulatedAt: fixedNow });
+  const contexts: boolean[] = [];
+  const deps = {
+    persist: async (_state: GameState, _control: ApiV1ControlMetadata, context: ApiV1PersistenceContext) => { contexts.push(context.stateChanged); },
+    publish: async () => undefined,
+  };
+  await authority.runInternalTransaction((state, metadata) => ({ state, control: { ...metadata }, stateChanged: false, controlChanged: true }), deps);
+  await authority.runInternalTransaction((state, metadata) => ({ state: { ...state, global: { ...state.global, jewelAutoEquipPriorityPartyId: null } }, control: { ...metadata }, stateChanged: true, controlChanged: true }), deps);
+  assert.deepEqual(contexts, [false, true]);
+  const before = authority.getSnapshot();
+  await authority.runInternalTransaction((state, metadata) => ({ state, control: { ...metadata }, stateChanged: false, controlChanged: true }), { ...deps, persist: async () => { throw new Error('save failure'); } });
+  assert.equal(authority.getSnapshot(), before);
+}

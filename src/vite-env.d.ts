@@ -118,7 +118,7 @@ interface Window {
     createApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string) => Promise<DesktopApiAccountIdentity>;
     loadApiAccount: (identity: DesktopApiAccountIdentity) => Promise<DesktopApiAccountRecord | null>;
     /** `controlJson` is the control metadata serialized by `serializeApiV1Control`. */
-    commitApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string, controlJson: string) => Promise<boolean>;
+    commitApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string | null, controlJson: string) => Promise<boolean>;
     onApiV1Request: (callback: (operation: string, payload: unknown) => unknown | Promise<unknown>) => () => void;
     notifyApiV1PopupActivity: () => Promise<void>;
     onNotificationActivated: (callback: (payload: DesktopNotificationPayload) => void) => () => void;

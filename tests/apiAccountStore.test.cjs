@@ -85,3 +85,58 @@ test('loading sweeps generations an earlier runtime or an interrupted commit lef
   const manifest = JSON.parse(fs.readFileSync(path.join(directory, 'manifest.json'), 'utf8'));
   assert.deepEqual(fs.readdirSync(directory).sort(), [manifest.controlFile, 'manifest.json', manifest.saveFile, 'notes.txt'].sort());
 });
+
+test('control-only commits retain save bytes, durable receipts, and identity isolation across reload and sweep', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'bokemo-api-reuse-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  let fail = false;
+  const store = createApiAccountStore({ userDataPath: root, beforeManifestWrite: () => { if (fail) throw new Error('injected_manifest_failure'); } });
+  const identity = { userId: 'Reuse', environment: 'desktop', gameMode: 'normal' };
+  const other = { ...identity, environment: 'dev' };
+  store.create(identity, 'original-save');
+  store.create(other, 'other-save');
+  const directory = store.resolveAccount(identity).directory;
+  const manifestPath = path.join(directory, 'manifest.json');
+  const original = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const control = { revisionHighWater: 0, receipts: [{ key: 'noop', response: { revision: 0 } }], confirmations: [{ token: 'reserved' }], tombstones: [] };
+  store.commit(identity, null, JSON.stringify(control));
+  const reused = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  assert.equal(reused.saveFile, original.saveFile);
+  assert.notEqual(reused.controlFile, original.controlFile);
+  assert.deepEqual(createApiAccountStore({ userDataPath: root }).load(identity).control, control);
+  assert.equal(store.load(identity).savePayload, 'original-save');
+  assert.equal(store.load(other).savePayload, 'other-save');
+  fail = true;
+  assert.throws(() => store.commit(identity, null, { ...control, revisionHighWater: 9 }), /injected_manifest_failure/);
+  assert.deepEqual(store.load(identity).control, control);
+  assert.deepEqual(fs.readdirSync(directory).sort(), [reused.saveFile, reused.controlFile, 'manifest.json'].sort());
+  fail = false;
+  store.commit(identity, 'changed-save', { ...control, revisionHighWater: 1 });
+  assert.equal(store.load(identity).savePayload, 'changed-save');
+  assert.equal(fs.existsSync(path.join(directory, original.saveFile)), false);
+  store.commit(identity, null, { ...control, revisionHighWater: 1 });
+  assert.equal(store.load(identity).savePayload, 'changed-save');
+});
+
+test('control-only commits refuse missing saves and invalid manifests before writing', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'bokemo-api-invalid-reuse-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const store = createApiAccountStore({ userDataPath: root });
+  const identity = { userId: 'Invalid', environment: 'desktop', gameMode: 'normal' };
+  assert.throws(() => store.commit(identity, null, {}), /not_found/);
+  store.create(identity, 'original-save');
+  const directory = store.resolveAccount(identity).directory;
+  const manifestPath = path.join(directory, 'manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  for (const invalid of [{ ...manifest, saveFile: '../escape' }, { ...manifest, schemaVersion: 2 }, { ...manifest, identity: { ...identity, userId: 'Other' } }]) {
+    fs.writeFileSync(manifestPath, JSON.stringify(invalid));
+    const before = fs.readdirSync(directory).sort();
+    assert.throws(() => store.commit(identity, null, {}), /invalid_manifest/);
+    assert.deepEqual(fs.readdirSync(directory).sort(), before);
+  }
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+  fs.unlinkSync(path.join(directory, manifest.saveFile));
+  const before = fs.readdirSync(directory).sort();
+  assert.throws(() => store.commit(identity, null, {}), /ENOENT/);
+  assert.deepEqual(fs.readdirSync(directory).sort(), before);
+});

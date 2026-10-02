@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createApplicationApi, type ApplicationApi, type ApplicationApiPorts } from '../../src/api/v1/applicationApi';
 import { createFreshGameState, gameReducer } from '../../src/hooks/useGameState';
 import { serializeGameState } from '../../src/game/saveCodec';
-import { encodePersistedState } from '../../src/game/storageCompression';
+import { decodePersistedState, encodePersistedState } from '../../src/game/storageCompression';
 import type { GameState } from '../../src/types';
 
 // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | HTTP and in-process adapters share one handler set
@@ -14,7 +14,8 @@ const identity: DesktopApiAccountIdentity = { userId: 'Taro', environment: 'desk
 
 interface Harness {
   api: ApplicationApi;
-  persisted: Array<{ state: GameState; control: DesktopApiControlMetadata }>;
+  failNextPersist: { value: boolean };
+  persisted: Array<{ state: GameState; control: DesktopApiControlMetadata; savePayload: string | null }>;
   persistedPlayers: GameState[];
   published: GameState[];
   playerCommitEvents: string[];
@@ -27,7 +28,8 @@ interface Harness {
   setNow: (value: number) => void;
 }
 
-function harness(): Harness {
+function harness(normalizeImport = false): Harness {
+  const failNextPersist = { value: false };
   let runtimeNow = t0;
   const idleState = createFreshGameState('ja', t0);
   const accountState = createFreshGameState('ja', t0);
@@ -65,15 +67,22 @@ function harness(): Harness {
       accounts: {
         create: async (created) => created,
         load: async () => structuredClone(account),
-        commit: async (committed, savePayload, control) => { persisted.push({ state: JSON.parse(JSON.stringify(serializeGameState(accountState))) as GameState, control: structuredClone(control) }); void committed; void savePayload; return true; },
+        commit: async (committed, savePayload, control) => {
+          void committed;
+          if (failNextPersist.value) { failNextPersist.value = false; throw new Error('injected save failure'); }
+          if (savePayload !== null) account.savePayload = savePayload;
+          account.control = structuredClone(control);
+          persisted.push({ state: JSON.parse(decodePersistedState(account.savePayload)) as GameState, control: structuredClone(control), savePayload });
+          return true;
+        },
       },
       player: {
         flushSave: async () => undefined,
         exportPayload: async () => encodePersistedState(JSON.stringify(serializeGameState(idleState))),
         returnPayload: { get: () => returnPayload, set: (payload) => { returnPayload = payload; }, clear: () => { returnPayload = null; } },
       },
-      importGameState: async (state) => ({ state, errorLog: null }),
-      exportActiveAccountPayload: async () => encodePersistedState(JSON.stringify(serializeGameState(accountState))),
+      importGameState: async (state) => ({ state: normalizeImport ? { ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, name: 'Normalized party' } : party) } : state, errorLog: null }),
+      exportActiveAccountPayload: async () => account.savePayload,
       now: () => t0,
       catchUp: { maximumElapsedMs: 3_600_000, applyAutoEquipment: (state) => state, yieldBetweenChunks: async () => undefined, randomSeed: () => 7 },
     },
@@ -104,7 +113,7 @@ function harness(): Harness {
     help: { requirements: 'REQUIREMENTS', detail: 'DETAIL' },
     onSessionActive: (active) => { sessionEvents.push(active); },
   };
-  return { cycleWrites, displayWrites, debugWrites, api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, idleState, setNow: (value) => { runtimeNow = value; } };
+  return { failNextPersist, cycleWrites, displayWrites, debugWrites, api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, idleState, setNow: (value) => { runtimeNow = value; } };
 }
 
 type Step = { operation: string; pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown>; mutating: boolean };
@@ -454,3 +463,44 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
 }
 
 console.log('apiV1ApplicationApi profile ok');
+
+// API accounts first persist import normalization; subsequent no-ops and control-only writes reuse that save.
+{
+  const location = globalThis as { location?: { pathname: string } };
+  const previousLocation = location.location;
+  location.location = { pathname: '/dev/' };
+  const h = harness(true);
+  await h.api.handle('fundamental/logIn', { ...identity });
+  assert.equal(typeof h.persisted.at(-1)?.savePayload, 'string', 'login persists a complete save');
+  assert.notEqual(h.persisted.at(-1)?.state.parties[0].name, 'Normalized party', 'login writes before runtime import normalization');
+  const adapter = h.api.createInProcessAdapter();
+  const commit = async (operation: string, parameters: Record<string, unknown> = {}) => {
+    const response = await adapter.commit(operation, { parameters }) as { error?: unknown };
+    assert.equal(response.error, undefined);
+    return h.persisted.at(-1)!;
+  };
+  h.failNextPersist.value = true;
+  const failed = await adapter.commit('commit/base/changeJewelPriorityParty', { parameters: { partyNumber: 1 } }) as { error?: { code: string } };
+  assert.equal(failed.error?.code, 'save_failed');
+  assert.notEqual(h.persisted.at(-1)?.state.parties[0].name, 'Normalized party');
+  const primed = await commit('commit/base/changeJewelPriorityParty', { partyNumber: 1 });
+  assert.equal(typeof primed.savePayload, 'string', 'first persistence after import must write normalized state, including after failure');
+  assert.equal(primed.state.parties[0].name, 'Normalized party');
+  assert.equal((await commit('commit/base/changeJewelPriorityParty', { partyNumber: 1 })).savePayload, null);
+  const revision = h.api.authority.getSnapshot().control.revisionHighWater;
+  assert.equal((await commit('commit/setting/debug', { speedOfTime: 'x5' })).savePayload, null, 'metadata-only revision changes reuse save');
+  assert.equal(h.api.authority.getSnapshot().control.revisionHighWater, revision + 1);
+  assert.equal(typeof (await commit('commit/setting/uiPreferences', { changes: [{ key: `party.equipCategory.${h.idleState.parties[0].characters[0].id}`, value: 'wand' }] })).savePayload, 'string');
+  assert.equal(typeof (await commit('commit/base/changeJewelPriorityParty', { partyNumber: 'none' })).savePayload, 'string');
+  const challenge = await adapter.commit('commit/setting/backup/reset', {}) as { error?: { code: string } };
+  assert.equal(challenge.error?.code, 'confirmation_required');
+  assert.equal(h.persisted.at(-1)?.savePayload, null);
+  await h.api.handle('fundamental/logOut', {});
+  assert.equal(typeof h.persisted.at(-1)?.savePayload, 'string', 'logout persists a complete save');
+  assert.equal(h.persisted.at(-1)?.state.parties[0].name, 'Normalized party', 'the durable logout save retains normalization');
+  await h.api.handle('fundamental/logIn', { ...identity });
+  assert.equal(h.api.authority.getSnapshot().state.parties[0].name, 'Normalized party', 'normalization survives reload');
+  assert.equal(typeof (await commit('commit/base/changeJewelPriorityParty', { partyNumber: 'none' })).savePayload, 'string', 'a new session primes its own reuse eligibility');
+  assert.equal((await commit('commit/base/changeJewelPriorityParty', { partyNumber: 'none' })).savePayload, null);
+  location.location = previousLocation;
+}

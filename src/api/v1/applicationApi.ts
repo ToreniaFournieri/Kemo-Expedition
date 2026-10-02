@@ -139,6 +139,14 @@ function resolveOperation(template: string, pathParameters: Record<string, unkno
 export function createApplicationApi(ports: ApplicationApiPorts, initialState: GameState): ApplicationApi {
   const authority = new SerializedApplicationApiAuthority({ state: initialState, control: emptyControl(), simulatedAt: ports.runtime.now() });
   let activeIdentity: DesktopApiAccountIdentity | null = null;
+  // Login imports may normalize the state after their durable write. Prime the save once before reuse.
+  let accountSaveReusable = false;
+
+  async function persistAccount(identity: DesktopApiAccountIdentity, snapshot: GameState, control: ApiV1ControlMetadata, stateChanged: boolean): Promise<void> {
+    const savePayload = stateChanged || !accountSaveReusable ? await encodeStoredState(JSON.stringify(serializeGameState(snapshot))) : null;
+    await ports.session.accounts.commit(identity, savePayload, control as DesktopApiControlMetadata);
+    accountSaveReusable = true;
+  }
   let idleSimulatedAt = ports.runtime.now();
 
   const failure = (status: number, code: string, message: string, details?: Record<string, unknown>): ApiV1ApplicationResponse => ({
@@ -168,8 +176,8 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
   function deliveryTransactionDependencies(identity: DesktopApiAccountIdentity | null): ApiV1InternalTransactionDependencies & { now: () => number } {
     return {
       now: ports.runtime.now,
-      persist: async (snapshot, control) => {
-        if (identity) await ports.session.accounts.commit(identity, await encodeStoredState(JSON.stringify(serializeGameState(snapshot))), control as DesktopApiControlMetadata);
+      persist: async (snapshot, control, { stateChanged }) => {
+        if (identity) await persistAccount(identity, snapshot, control, stateChanged);
         else await ports.runtime.persistPlayer(snapshot);
       },
       publish: ports.runtime.publish,
@@ -276,6 +284,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       if (!login.ok) return failure(login.status, login.code, login.message, login.details);
       const { session } = login;
       activeIdentity = session.identity;
+      accountSaveReusable = false;
       authority.replaceSnapshot({ state: session.state, control: session.control as ApiV1ControlMetadata, simulatedAt: session.simulatedAt });
       syncAccountDebugOverride();
       ports.onSessionActive(true, session.identity.userId);
@@ -287,6 +296,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       const logout = await logOutApiAccount(session ? { ...session, control: session.control as DesktopApiControlMetadata } : null, ports.session);
       if (!logout.ok) return failure(logout.status, logout.code, logout.message, logout.details);
       activeIdentity = null;
+      accountSaveReusable = false;
       idleSimulatedAt = ports.runtime.now();
       authority.replaceSnapshot({ state: logout.restoredState, control: emptyControl(), simulatedAt: idleSimulatedAt });
       syncAccountDebugOverride();
@@ -372,8 +382,8 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       createRandomSeed: ports.runtime.createRandomSeed,
       now: ports.runtime.now,
       notifyPopupActivity: ports.runtime.notifyPopupActivity,
-      persist: async (snapshot, control) => {
-        if (identity) await ports.session.accounts.commit(identity, await encodeStoredState(JSON.stringify(serializeGameState(snapshot))), control as DesktopApiControlMetadata);
+      persist: async (snapshot, control, { stateChanged }) => {
+        if (identity) await persistAccount(identity, snapshot, control, stateChanged);
         else if ((operation === 'commit/setting/backup/import' || operation === 'commit/setting/backup/reset') && ports.runtime.persistPlayerReplacement) await ports.runtime.persistPlayerReplacement(snapshot);
         else await ports.runtime.persistPlayer(snapshot);
       },

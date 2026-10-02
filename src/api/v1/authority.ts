@@ -80,12 +80,17 @@ export interface ApiV1CommitAuthorityInput {
   control: ApiV1ControlMetadata;
 }
 
+/** Save-state change information computed by the serialized authority, never supplied by API clients. */
+export interface ApiV1PersistenceContext {
+  stateChanged: boolean;
+}
+
 export interface ApiV1CommitAuthorityDependencies {
   gameMode: ApiV1CommitContext['gameMode'];
   enemyLevelOffset: number;
   cycleDurationScale: number;
   applyAutoEquipment: ApiV1CommitContext['applyAutoEquipment'];
-  persist: (state: GameState, control: ApiV1ControlMetadata) => Promise<void>;
+  persist: (state: GameState, control: ApiV1ControlMetadata, context: ApiV1PersistenceContext) => Promise<void>;
   publish: (state: GameState) => Promise<void>;
   /** Fired after a changed commit is durably persisted, so a transport layer can push open popup-event streams immediately instead of waiting for their next poll. */
   notifyPopupActivity?: () => void;
@@ -276,7 +281,7 @@ export async function executeApiV1CommitTransaction(
       };
       if (!reserved) stagedControl.confirmations.push(challenge);
       try {
-        await dependencies.persist(input.state, stagedControl);
+        await dependencies.persist(input.state, stagedControl, { stateChanged: false });
       } catch {
         return failure('save_failed', 'The confirmation reservation could not be persisted.');
       }
@@ -418,7 +423,7 @@ export async function executeApiV1CommitTransaction(
   }
 
   try {
-    await dependencies.persist(outcome.state, stagedControl);
+    await dependencies.persist(outcome.state, stagedControl, { stateChanged });
   } catch {
     return failure('save_failed', 'The previous account manifest remains authoritative.');
   }
@@ -458,7 +463,7 @@ export interface ApiV1InternalTransactionStep {
 }
 
 export interface ApiV1InternalTransactionDependencies {
-  persist: (state: GameState, control: ApiV1ControlMetadata) => Promise<void>;
+  persist: (state: GameState, control: ApiV1ControlMetadata, context: ApiV1PersistenceContext) => Promise<void>;
   publish: (state: GameState) => Promise<void>;
   onPublicationFailure?: (error: unknown) => void;
 }
@@ -527,7 +532,7 @@ export class SerializedApplicationApiAuthority {
       const { state, control, stateChanged, controlChanged } = result;
       if (stateChanged || controlChanged) control.revisionHighWater += 1;
       try {
-        await dependencies.persist(state, control);
+        await dependencies.persist(state, control, { stateChanged });
       } catch {
         return this.snapshot;
       }

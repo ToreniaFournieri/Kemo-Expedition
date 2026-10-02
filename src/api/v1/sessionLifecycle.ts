@@ -23,7 +23,7 @@ export interface ApiV1SessionPorts {
   accounts: {
     create: (identity: DesktopApiAccountIdentity, savePayload: string) => Promise<DesktopApiAccountIdentity>;
     load: (identity: DesktopApiAccountIdentity) => Promise<DesktopApiAccountRecord | null>;
-    commit: (identity: DesktopApiAccountIdentity, savePayload: string, control: DesktopApiControlMetadata) => Promise<boolean>;
+    commit: (identity: DesktopApiAccountIdentity, savePayload: string | null, control: DesktopApiControlMetadata) => Promise<boolean>;
   };
   /** The player's own save, which must survive an API session and be restored on logout or restart. */
   player: {

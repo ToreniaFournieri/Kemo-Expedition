@@ -46,7 +46,7 @@ function createApiAccountStore({ userDataPath, beforeManifestWrite = null }) {
   }
 
   // SpecRef: 5.1 | Records made unreachable may be deleted only after the manifest that drops them is durable.
-  // Every commit writes a new generation; without this the account directory grows by one full save and control file
+  // Every commit writes a new control generation; without this the account directory grows by one full save and control file
   // per commit (tens of GB over a long API run). Also removes generations and temporary files left by an interrupted commit.
   const GENERATION_FILE_PATTERN = /^(?:save-[0-9a-f-]{36}\.bokemo|control-[0-9a-f-]{36}\.json)(?:\.tmp-\d+-\d+)?$|^manifest\.json\.tmp-\d+-\d+$/;
 
@@ -97,15 +97,23 @@ function createApiAccountStore({ userDataPath, beforeManifestWrite = null }) {
   }
 
   // `control` is the control metadata object or its already-serialized JSON (the renderer sends JSON over IPC).
+  // A null payload is a trusted authority assertion that save state is unchanged; keep the manifest
+  // reference to the existing save while committing new control metadata and receipts atomically.
   function commit(identity, savePayload, control) {
     const { normalized, directory } = resolveAccount(identity);
     const manifestPath = path.join(directory, 'manifest.json');
     const manifest = readJson(manifestPath, null);
     if (!manifest) throw new Error('not_found');
+    if (savePayload !== null && typeof savePayload !== 'string') throw new Error('invalid_save_payload');
+    if (savePayload === null) {
+      if (manifest.schemaVersion !== 1 || !/^save-[0-9a-f-]{36}\.bokemo$/.test(manifest.saveFile ?? '') || !/^control-[0-9a-f-]{36}\.json$/.test(manifest.controlFile ?? '')
+        || JSON.stringify(validateIdentity(manifest.identity)) !== JSON.stringify(normalized)) throw new Error('invalid_manifest');
+      if (!fs.statSync(path.join(directory, manifest.saveFile)).isFile()) throw new Error('invalid_save_file');
+    }
     const generation = crypto.randomUUID();
-    const saveFile = `save-${generation}.bokemo`;
+    const saveFile = savePayload === null ? manifest.saveFile : `save-${generation}.bokemo`;
     const controlFile = `control-${generation}.json`;
-    writeAtomic(path.join(directory, saveFile), savePayload);
+    if (savePayload !== null) writeAtomic(path.join(directory, saveFile), savePayload);
     writeAtomic(path.join(directory, controlFile), typeof control === 'string' ? control : JSON.stringify(control));
     beforeManifestWrite?.({ identity: normalized, generation });
     writeAtomic(manifestPath, JSON.stringify({ ...manifest, identity: normalized, generation, saveFile, controlFile, updatedAt: new Date().toISOString() }));

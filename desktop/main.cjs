@@ -471,7 +471,7 @@ ipcMain.handle('desktop:api-account-load', (event, identity) => {
   return apiAccountStore.load(identity);
 });
 ipcMain.handle('desktop:api-account-commit', (event, identity, savePayload, controlJson) => {
-  if (event.sender !== mainWindow?.webContents || typeof savePayload !== 'string' || typeof controlJson !== 'string' || !controlJson.startsWith('{')) throw new Error('invalid_request');
+  if (event.sender !== mainWindow?.webContents || (savePayload !== null && typeof savePayload !== 'string') || typeof controlJson !== 'string' || !controlJson.startsWith('{')) throw new Error('invalid_request');
   if (identity?.environment !== desktopEnvironment) throw new Error('invalid_environment');
   apiAccountStore.commit(identity, savePayload, controlJson);
   return true;
