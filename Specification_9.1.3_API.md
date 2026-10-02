@@ -277,7 +277,7 @@ Path Parameters
     * Optional.
     * Default: `false`
     * Boolean.
-    * If `true`, runs the game in headless mode without displaying the Electron UI.
+    * In `headless` mode, the game UI is not mounted or updated. Game progression, API behavior, and persistence remain identical to normal mode.
   * `gameMode`
   * `levelOffsetForOrca`
     * Optional.
