@@ -273,6 +273,11 @@ Path Parameters
 * Parameters:
   * `userId`
   * `environment`
+  * `headless`
+    * Optional.
+    * Default: `false`
+    * Boolean.
+    * If `true`, runs the game in headless mode without displaying the Electron UI.
   * `gameMode`
   * `levelOffsetForOrca`
     * Optional.
