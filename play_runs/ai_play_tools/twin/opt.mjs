@@ -164,3 +164,50 @@ export async function anneal(m,quick,confirm,{iters=3000,seed=7,log=console.log,
   }
   loadModel(m,bestSave); return best;
 }
+
+// ---------------- Genetic algorithm ----------------
+// Genome = per character slot list of {k: variant key, j: 'key:rank'|null}. Pool totals are fixed (free + equipped at start).
+function totals(m){ const t={}; for(const [k,v] of m.pool) t[k]=v.free; for(const c of m.p.characters) for(const it of c.equipment) if(it) t[vkey(it)]=(t[vkey(it)]||0)+1; return t; }
+export function encode(m){ return m.p.characters.map((c,ci)=>{ const row=[]; for(let si=0;si<m.slots[ci];si++){ const it=c.equipment[si]; row.push(it?{k:vkey(it),j:it.jewel?it.jewel.key+':'+it.jewel.rank:null}:null);} return row; }); }
+export function decode(m,g,tot,jtot,R){ // apply genome with repair; fills dropped/invalid slots randomly from the pool
+  const left={...tot}; const jl={...jtot};
+  m.p.characters.forEach((c,ci)=>{ c.equipment=new Array(m.slots[ci]).fill(null); });
+  const holes=[];
+  g.forEach((row,ci)=>{ row.forEach((gene,si)=>{ if(!gene){ return; } const ok=left[gene.k]>0 && canEquip(m,ci,gene.k); if(!ok){ holes.push([ci,si]); return; } left[gene.k]--; const it={...m.pool.get(gene.k).item,jewel:null}; if(gene.j&&jl[gene.j]>0){ const [key,rk]=gene.j.split(':'); if(T.isJewelAllowedForCategory(it.category,key)){ it.jewel={key,rank:+rk}; jl[gene.j]--; } } m.p.characters[ci].equipment[si]=it; }); });
+  const keys=[...m.pool.keys()];
+  for(const [ci,si] of holes){ for(let t=0;t<30;t++){ const k=keys[Math.floor(R()*keys.length)]; if(left[k]>0&&canEquip(m,ci,k)){ left[k]--; m.p.characters[ci].equipment[si]={...m.pool.get(k).item,jewel:null}; break; } } }
+  for(const k of keys) m.pool.get(k).free=left[k];
+  m.jewels=jl;
+}
+export async function genetic(m,quick,confirm,{pop=24,gens=40,seed=7,log=console.log,elite=3,mutRate=0.35,nMut=3,tourn=3}={}){
+  const R=rng(seed); const tot=totals(m); const jtot={}; for(const [k,v] of Object.entries(m.jewels)) jtot[k]=v; for(const c of m.p.characters) for(const it of c.equipment) if(it&&it.jewel){ const k=it.jewel.key+':'+it.jewel.rank; jtot[k]=(jtot[k]||0)+0; }
+  // m.jewels holds FREE counts; add attached ones to get totals
+  const jt={...m.jewels}; for(const c of m.p.characters) for(const it of c.equipment) if(it&&it.jewel){ const k=it.jewel.key+':'+it.jewel.rank; jt[k]=(jt[k]||0)+1; }
+  const g0=encode(m);
+  const mutate=(g)=>{ decode(m,g,tot,jt,R); const n=1+Math.floor(R()*nMut); for(let i=0;i<n;i++){ const ci=Math.floor(R()*m.slots.length), si=Math.floor(R()*m.slots[ci]); const r=R();
+      if(r<0.25){ const u=jewelMove(m,R); }
+      else if(r<0.45){ const cj=Math.floor(R()*m.slots.length), sj=Math.floor(R()*m.slots[cj]); const a=equipped(m,ci,si), b=equipped(m,cj,sj); if((a||b)&&(!a||canEquip(m,cj,vkey(a)))&&(!b||canEquip(m,ci,vkey(b)))){ m.p.characters[ci].equipment[si]=b; m.p.characters[cj].equipment[sj]=a; } }
+      else { const keys=[...m.pool.keys()]; const tier=(k)=>Math.floor(+k.split('-')[0]/1000); const cand=[]; for(const k of keys){ if(free(m,k)>0&&canEquip(m,ci,k)) for(let w=0;w<Math.max(1,tier(k)**2);w++) cand.push(k);} if(cand.length) setSlot(m,ci,si,cand[Math.floor(R()*cand.length)]); } }
+    return encode(m); };
+  const cross=(a,b)=>{ const child=a.map((row,ci)=> (R()<0.5?a[ci]:b[ci]).map(x=>x?{...x}:null)); // per-character uniform
+    if(R()<0.5){ const ci=Math.floor(R()*child.length); for(let si=0;si<child[ci].length;si++) if(R()<0.5) child[ci][si]=(b[ci][si]?{...b[ci][si]}:null); } // slot-level mixing inside one character
+    return child; };
+  const evalQ=async(g)=>{ decode(m,g,tot,jt,R); return quick(m.state); };
+  // initial population: seed + mutants
+  let P=[{g:g0}]; while(P.length<pop){ P.push({g:mutate(P[Math.floor(R()*P.length)].g)}); }
+  for(const ind of P){ ind.q=await evalQ(ind.g); }
+  let best=null; 
+  for(let gen=0;gen<gens;gen++){
+    P.sort((a,b)=>b.q-a.q);
+    // confirm top few with the expensive objective
+    for(const ind of P.slice(0,elite+2)){ if(ind.c===undefined){ decode(m,ind.g,tot,jt,R); ind.c=await confirm(m.state); } }
+    const top=P.filter(x=>x.c!==undefined).sort((a,b)=>b.c-a.c)[0];
+    if(!best||top.c>best.c){ best={g:top.g,c:top.c}; log('gen',gen,'best confirm',best.c.toFixed(4),'quick',top.q.toFixed(4)); }
+    const next=P.slice(0,elite).map(x=>({g:x.g,q:x.q,c:x.c}));
+    const pick=()=>{ let b=null; for(let i=0;i<tourn;i++){ const x=P[Math.floor(R()*P.length)]; if(!b||x.q>b.q) b=x; } return b; };
+    while(next.length<pop){ let g=cross(pick().g,pick().g); if(R()<mutRate) g=(decode(m,g,tot,jt,R),mutate(g)); next.push({g}); }
+    for(const ind of next){ if(ind.q===undefined) ind.q=await evalQ(ind.g); }
+    P=next;
+  }
+  decode(m,best.g,tot,jt,R); return best.c;
+}

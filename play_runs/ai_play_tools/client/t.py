@@ -1,5 +1,5 @@
 import json,sys,uuid,os,urllib.request,urllib.error,time
-W=os.environ.get('BOKEMO_PLAY_DIR',os.path.dirname(os.path.abspath(__file__)))  # workspace with desc.json (written by scripts/run-api-play-session.cjs), tstate.json, batch_calls.jsonl
+W=os.environ.get('BOKEMO_PLAY_DIR',os.path.dirname(os.path.abspath(__file__)))  # workspace holding desc.json, tstate.json, batch_calls.jsonl
 D=json.load(open(W+'/desc.json'))
 SF=W+'/tstate.json'
 REC=W+'/batch_calls.jsonl'   # replayable record: every API call with input + duration
