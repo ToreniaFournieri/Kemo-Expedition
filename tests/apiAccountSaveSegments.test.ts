@@ -43,3 +43,17 @@ test('a host without the referenced logs reports a miss and a full resend recove
   assert.equal(full.defined.length, 3);
   assert.equal(decodePersistedState(await encodeApiAccountSegments(full.segments)), JSON.stringify(state));
 });
+
+test('a log referenced twice in one save is deflated once and the second reference resolves within the call', async () => {
+  forgetApiSaveSegmentsHeld();
+  const shared = makeLog(7);
+  const state = {
+    name: 'E',
+    parties: [{ id: 1, diaryLogs: [{ id: 'a', expeditionLog: shared }], pendingDiaryLog: { expeditionLog: shared }, lastExpeditionLog: shared, characters: [{ name: 'E' }] }],
+  } as never;
+  const built = buildApiSaveSegments(state);
+  assert.equal(built.defined.length, 1);
+  assert.ok(built.segments.items.filter((item) => typeof item !== 'string' && item.text === undefined).length >= 1);
+  const encoded = await encodeApiAccountSegments({ nonce: 'shared-log-fresh-host', items: built.segments.items });
+  assert.equal(decodePersistedState(encoded), JSON.stringify(state));
+});
