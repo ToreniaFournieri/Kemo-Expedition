@@ -260,6 +260,13 @@ All JSON Commit requests use this transport envelope:
   durable commit may the authority publish the final snapshot and release effects.
   Increment the public revision exactly once for a mutation, or leave it unchanged
   for a no-op. Notifications follow the existing AFK grouping rules.
+* A changed account save may be compressed by the Desktop main process instead of
+  the renderer. The renderer sends the save as ordered JSON text pieces plus
+  references to large expedition logs the main process already holds (each log's
+  text is sent once). The main process reassembles byte-identical JSON, deflates it
+  asynchronously, and stores the same internal save container, so the decoded
+  state, receipts, and manifest-last ordering are identical. If the main process
+  no longer holds a referenced log, the renderer resends every log once.
 * Failure or safe cancellation before the durable commit discards every staged
   Chunk and effect, fences outstanding worker results, and leaves the pre-request
   state, RNG, clocks, backlog, and revision unchanged. Restart does not resume a

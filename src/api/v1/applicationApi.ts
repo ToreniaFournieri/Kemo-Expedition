@@ -4,6 +4,7 @@ import { buildApiV1ReadData, type ApiV1ReadContext } from './readModels';
 import { SerializedApplicationApiAuthority, type ApiV1CommitAuthorityDependencies, type ApiV1ControlMetadata, type ApiV1InternalTransactionDependencies } from './authority';
 import { normalizeApiV1PopupEvents } from './popupEvents';
 import { serializeGameState } from '../../game/saveCodec';
+import { API_SAVE_SEGMENT_MISS, buildApiSaveSegments, forgetApiSaveSegmentsHeld, markApiSaveSegmentsHeld } from './accountSaveSegments';
 import { encodeStoredState } from '../../game/storageCompression';
 import { logInApiAccount, logOutApiAccount, signUpApiAccount, type ApiV1SessionPorts } from './sessionLifecycle';
 import { accountDebugSettingsOf, accountTimeScale } from './debugSettings';
@@ -143,8 +144,24 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
   let accountSaveReusable = false;
 
   async function persistAccount(identity: DesktopApiAccountIdentity, snapshot: GameState, control: ApiV1ControlMetadata, stateChanged: boolean): Promise<void> {
-    const savePayload = stateChanged || !accountSaveReusable ? await encodeStoredState(JSON.stringify(serializeGameState(snapshot))) : null;
-    await ports.session.accounts.commit(identity, savePayload, control as DesktopApiControlMetadata);
+    const accounts = ports.session.accounts;
+    if (stateChanged || !accountSaveReusable) {
+      const serialized = serializeGameState(snapshot);
+      if (accounts.commitSegments) {
+        for (let attempt = 0; ; attempt += 1) {
+          const { segments, defined } = buildApiSaveSegments(serialized);
+          try {
+            await accounts.commitSegments(identity, segments, control as DesktopApiControlMetadata);
+            markApiSaveSegmentsHeld(defined);
+            break;
+          } catch (error) {
+            // The host lost its compressed-log cache (restart or eviction): resend every log once.
+            if (attempt > 0 || !String((error as Error)?.message ?? error).includes(API_SAVE_SEGMENT_MISS)) throw error;
+            forgetApiSaveSegmentsHeld();
+          }
+        }
+      } else await accounts.commit(identity, await encodeStoredState(JSON.stringify(serialized)), control as DesktopApiControlMetadata);
+    } else await accounts.commit(identity, null, control as DesktopApiControlMetadata);
     accountSaveReusable = true;
   }
   let idleSimulatedAt = ports.runtime.now();

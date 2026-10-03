@@ -1,5 +1,6 @@
 import type { GameState } from '../../types';
 import { serializeGameState } from '../../game/saveCodec';
+import type { ApiSaveSegments } from './accountSaveSegments';
 import { encodeStoredState } from '../../game/storageCompression';
 import { createApiRandom, withGameplayRandomSource } from '../../game/gameplayRandom';
 import { createFreshGameState } from '../../hooks/useGameState';
@@ -24,6 +25,8 @@ export interface ApiV1SessionPorts {
     create: (identity: DesktopApiAccountIdentity, savePayload: string) => Promise<DesktopApiAccountIdentity>;
     load: (identity: DesktopApiAccountIdentity) => Promise<DesktopApiAccountRecord | null>;
     commit: (identity: DesktopApiAccountIdentity, savePayload: string | null, control: DesktopApiControlMetadata) => Promise<boolean>;
+    /** Optional: commits a segmented save that the host reassembles and compresses, keeping encoding off the caller's thread. */
+    commitSegments?: (identity: DesktopApiAccountIdentity, segments: ApiSaveSegments, control: DesktopApiControlMetadata) => Promise<boolean>;
   };
   /** The player's own save, which must survive an API session and be restored on logout or restart. */
   player: {

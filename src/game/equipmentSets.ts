@@ -179,11 +179,15 @@ export function applyEquipmentSet(
   let nextInventory = inventory;
   let nextJewels = jewels;
   let nextGold = gold;
+  // The caller's inventory is copied once, on first write; the in-place helpers then avoid a copy per slot.
+  let ownsInventory = false;
+  const ownInventory = () => { if (!ownsInventory) { nextInventory = { ...nextInventory }; ownsInventory = true; } };
 
   character.equipment.forEach((item) => {
     if (!item) return;
     const detached = { ...item, jewel: null };
-    const result = addItemToInventory(nextInventory, detached, nextGold);
+    ownInventory();
+    const result = addItemToInventory(nextInventory, detached, nextGold, 1, true);
     nextInventory = result.inventory;
     nextGold = result.gold;
     if (item.jewel) nextJewels = addJewelToInventory(nextJewels, item.jewel.key, item.jewel.rank);
@@ -203,7 +207,8 @@ export function applyEquipmentSet(
       ? { key: exactKey, item: exact }
       : mode === 'similar' ? takeSimilar(nextInventory, entry) : null;
     if (!candidate) return;
-    nextInventory = removeItemFromInventory(nextInventory, candidate.key);
+    ownInventory();
+    nextInventory = removeItemFromInventory(nextInventory, candidate.key, true);
     const saved = entry.item.jewel;
     const jewel = saved && isJewelAllowedForCategory(candidate.item.category, saved.key)
       && getJewelOwnedCount(nextJewels, saved.key, saved.rank) > 0 ? { key: saved.key, rank: saved.rank } : null;
@@ -269,7 +274,8 @@ export function evaluateEquipmentState(
     if (jewel && (!isJewelAllowedForCategory(exact.category, jewel.key) || getJewelOwnedCount(availableJewels, jewel.key, jewel.rank) <= 0)) {
       return { entry, available: false, unavailableReason: 'unavailable' as const };
     }
-    availableItems = removeItemFromInventory(availableItems, getVariantKey(exact));
+    // `availableItems` is this evaluation's private copy, so removing in place avoids copying the whole inventory per slot.
+    removeItemFromInventory(availableItems, getVariantKey(exact), true);
     if (jewel) availableJewels = removeJewelFromInventory(availableJewels, jewel.key, jewel.rank);
     return { entry, available: true, unavailableReason: null };
   });
@@ -288,9 +294,13 @@ export function applyEquipmentState(
   let nextInventory = inventory;
   let nextJewels = jewels;
   let nextGold = gold;
+  // The caller's inventory is copied once, on first write; the in-place helpers then avoid a copy per slot.
+  let ownsInventory = false;
+  const ownInventory = () => { if (!ownsInventory) { nextInventory = { ...nextInventory }; ownsInventory = true; } };
   character.equipment.forEach((item) => {
     if (!item) return;
-    const result = addItemToInventory(nextInventory, { ...item, jewel: null }, nextGold);
+    ownInventory();
+    const result = addItemToInventory(nextInventory, { ...item, jewel: null }, nextGold, 1, true);
     nextInventory = result.inventory;
     nextGold = result.gold;
     if (item.jewel) nextJewels = addJewelToInventory(nextJewels, item.jewel.key, item.jewel.rank);
@@ -301,7 +311,8 @@ export function applyEquipmentState(
     if (slotIndex < 0 || slotIndex >= maxSlots) return;
     const exact = takeExact(nextInventory, entry);
     if (!exact) return;
-    nextInventory = removeItemFromInventory(nextInventory, getVariantKey(exact));
+    ownInventory();
+    nextInventory = removeItemFromInventory(nextInventory, getVariantKey(exact), true);
     const jewel = entry.item.jewel;
     if (jewel) nextJewels = removeJewelFromInventory(nextJewels, jewel.key, jewel.rank);
     equipment[slotIndex] = { ...exact, isLocked: entry.isLocked, jewel: jewel ? { ...jewel } : null };

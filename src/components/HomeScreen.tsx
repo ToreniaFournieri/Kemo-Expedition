@@ -587,6 +587,7 @@ export function GameRuntimeHost({
           load: (identity) => desktop().loadApiAccount(identity),
           // The control goes over IPC as JSON: cloning its retained receipts as objects cost more than the commit itself.
           commit: (identity, savePayload, control) => desktop().commitApiAccount(identity, savePayload, serializeApiV1Control(control)),
+          ...(window.bokemoDesktop?.commitApiAccountSegments ? { commitSegments: (identity, segments, control) => desktop().commitApiAccountSegments!(identity, segments, serializeApiV1Control(control)) } : {}),
         },
         player: {
           flushSave: () => apiActionsRef.current.flushSave(),

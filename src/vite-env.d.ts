@@ -118,6 +118,8 @@ interface Window {
     createApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string) => Promise<DesktopApiAccountIdentity>;
     loadApiAccount: (identity: DesktopApiAccountIdentity) => Promise<DesktopApiAccountRecord | null>;
     /** `controlJson` is the control metadata serialized by `serializeApiV1Control`. */
+    /** Same as `commitApiAccount`, but the save travels as JSON text pieces and log references that the main process compresses. */
+    commitApiAccountSegments?: (identity: DesktopApiAccountIdentity, segments: import('./api/v1/accountSaveSegments').ApiSaveSegments, controlJson: string) => Promise<boolean>;
     commitApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string | null, controlJson: string) => Promise<boolean>;
     onApiV1Request: (callback: (operation: string, payload: unknown) => unknown | Promise<unknown>) => () => void;
     setApiV1Headless?: (headless: boolean) => Promise<void>;
