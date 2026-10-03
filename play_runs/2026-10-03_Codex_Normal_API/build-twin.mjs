@@ -1,0 +1,4 @@
+import { build } from 'esbuild';
+import fs from 'node:fs';
+import path from 'node:path';
+await build({entryPoints:['play_runs/2026-10-03_Codex_Normal_API/twin-entry.ts'],outfile:'/tmp/bokemo-codex-exp8/twin.mjs',bundle:true,platform:'node',format:'esm',define:{'import.meta.env.DEV':'false','import.meta.env.BASE_URL':'"/"',__APP_VERSION__:'"0.9.8"',__BUILD_NUMBER__:'12',__PUBLIC_CHARACTER_IMAGE_FILES__:'[]',__PUBLIC_CHIBI_IMAGE_FILES__:'[]',__AUTO_EQUIPMENT_PROFILE_ENABLED__:'false',__AFK_LIVE_PROFILE_ENABLED__:'false',__AFK_LIVE_PROFILE_FIXTURE__:'""',__RUNTIME_DIAGNOSTICS_DEFAULT_ENABLED__:'false'},plugins:[{name:'raw',setup(b){b.onResolve({filter:/\.md\?raw$/},a=>({path:path.resolve(a.resolveDir,a.path.slice(0,-4)),namespace:'raw'}));b.onLoad({filter:/.*/,namespace:'raw'},a=>({contents:`export default ${JSON.stringify(fs.readFileSync(a.path,'utf8'))}`,loader:'js'}));}}],logLevel:'silent'});

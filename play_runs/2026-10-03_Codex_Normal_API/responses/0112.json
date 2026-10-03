@@ -1,0 +1,1812 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "2935f8b7-065e-4e37-9133-c2304f957a01",
+  "revision": 71,
+  "observedAt": "2026-10-03T08:13:24.971Z",
+  "data": {
+    "partyInfo": {
+      "effectiveSelection": {
+        "partyNumber": 1,
+        "characterId": 6
+      },
+      "party": {
+        "partyNumber": 1,
+        "name": "PT1",
+        "level": 27,
+        "experience": 81717,
+        "experienceToNext": 264988,
+        "maxHp": 6077,
+        "deityId": "precision",
+        "deityRank": 3,
+        "condition": -344,
+        "order": [
+          6,
+          1,
+          4,
+          2,
+          3,
+          5
+        ],
+        "characters": [
+          {
+            "characterId": 6,
+            "name": "Laika",
+            "raceId": "caninian",
+            "gender": "female",
+            "mainClassId": "guardian",
+            "subClassId": "guardian",
+            "lineageId": "pioneer",
+            "predispositionId": "none",
+            "isUnique": true,
+            "mimorianEnemyId": null,
+            "calculatedStatus": {
+              "stats": [
+                {
+                  "key": "b.vitality",
+                  "value": 11,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.strength",
+                  "value": 10,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.intelligence",
+                  "value": 10,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.mind",
+                  "value": 10,
+                  "unit": "number"
+                },
+                {
+                  "key": "d.physical_defense",
+                  "value": 1127,
+                  "unit": "number"
+                },
+                {
+                  "key": "d.magical_defense",
+                  "value": 579,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.defense_amplifier.physical",
+                  "value": 0.76,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.defense_amplifier.magical",
+                  "value": 0.72,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.melee",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.ranged",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.magical",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.c_accuracy",
+                  "value": 0.018,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.accuracy_decay",
+                  "value": 0.918,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.penetration",
+                  "value": 0,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "d.accuracy_potency",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.accuracy",
+                  "value": 0.018,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.evasion",
+                  "value": -0.005,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.penet",
+                  "value": 0,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "e.none",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.fire",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.ice",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.thunder",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.equipment_slots",
+                  "value": 9,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.hp_contribution.base",
+                  "value": 1086,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.hp_contribution.item",
+                  "value": 41,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.race_unlock_active",
+                  "value": 0,
+                  "unit": "number"
+                }
+              ],
+              "abilities": [
+                {
+                  "abilityId": "a.howl",
+                  "level": 1
+                },
+                {
+                  "abilityId": "a.defender",
+                  "level": 2
+                },
+                {
+                  "abilityId": "a.seeker",
+                  "level": 1
+                }
+              ],
+              "bonuses": [
+                {
+                  "bonusId": "c.melee-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.ranged-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.magical-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.physical-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.physical-offense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.magical-offense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.physical-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.magical-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.fire-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.ice-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.thunder-defense-multiplier",
+                  "value": 1
+                }
+              ],
+              "attacks": [
+                {
+                  "attackType": "melee",
+                  "available": false,
+                  "facts": [],
+                  "speed": null
+                },
+                {
+                  "attackType": "ranged",
+                  "available": false,
+                  "facts": [],
+                  "speed": null
+                },
+                {
+                  "attackType": "magical",
+                  "available": false,
+                  "facts": [],
+                  "speed": null
+                }
+              ]
+            },
+            "equipment": [
+              "0/0/4101/6/0",
+              "1/0/4102/4/0",
+              "2/0/4101/5/0",
+              "3/0/4102/4/0",
+              "4/0/3102/5/0",
+              "5/0/3304/3/0",
+              "6/0/5101/5/0",
+              "7/0/5102/4/0",
+              "8/0/1401/0/0"
+            ],
+            "autoEquipmentMode": "SEMI"
+          },
+          {
+            "characterId": 1,
+            "name": "Kemo",
+            "raceId": "kemoria",
+            "gender": "male",
+            "mainClassId": "lord",
+            "subClassId": "lord",
+            "lineageId": "unascertained",
+            "predispositionId": "none",
+            "isUnique": true,
+            "mimorianEnemyId": null,
+            "calculatedStatus": {
+              "stats": [
+                {
+                  "key": "b.vitality",
+                  "value": 10,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.strength",
+                  "value": 10,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.intelligence",
+                  "value": 10,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.mind",
+                  "value": 10,
+                  "unit": "number"
+                },
+                {
+                  "key": "d.physical_defense",
+                  "value": 936,
+                  "unit": "number"
+                },
+                {
+                  "key": "d.magical_defense",
+                  "value": 439,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.defense_amplifier.physical",
+                  "value": 0.6,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.defense_amplifier.magical",
+                  "value": 0.72,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.melee",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.ranged",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.magical",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.c_accuracy",
+                  "value": 0.018,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.accuracy_decay",
+                  "value": 0.918,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.penetration",
+                  "value": 0,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "d.accuracy_potency",
+                  "value": 0.85,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.accuracy",
+                  "value": 0.018,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.evasion",
+                  "value": -0.005,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.penet",
+                  "value": 0,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "e.none",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.fire",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.ice",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.thunder",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.equipment_slots",
+                  "value": 12,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.hp_contribution.base",
+                  "value": 1026,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.hp_contribution.item",
+                  "value": 0,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.race_unlock_active",
+                  "value": 0,
+                  "unit": "number"
+                }
+              ],
+              "abilities": [
+                {
+                  "abilityId": "a.command",
+                  "level": 2
+                },
+                {
+                  "abilityId": "a.squander",
+                  "level": 1
+                }
+              ],
+              "bonuses": [
+                {
+                  "bonusId": "c.melee-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.ranged-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.magical-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.physical-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.physical-offense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.magical-offense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.physical-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.magical-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.fire-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.ice-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.thunder-defense-multiplier",
+                  "value": 1
+                }
+              ],
+              "attacks": [
+                {
+                  "attackType": "melee",
+                  "available": false,
+                  "facts": [],
+                  "speed": null
+                },
+                {
+                  "attackType": "ranged",
+                  "available": false,
+                  "facts": [],
+                  "speed": null
+                },
+                {
+                  "attackType": "magical",
+                  "available": false,
+                  "facts": [],
+                  "speed": null
+                }
+              ]
+            },
+            "equipment": [
+              "0/0/4101/3/0",
+              "1/0/4102/3/0",
+              "2/0/4101/3/0",
+              "3/0/3101/5/0",
+              "4/0/3102/5/0",
+              "5/0/3101/4/0",
+              "6/0/3101/4/0",
+              "7/0/3102/5/0",
+              "8/0/5101/4/0",
+              "9/0/5101/3/0",
+              "10/0/5102/4/0",
+              "11/0/2101/5/0"
+            ],
+            "autoEquipmentMode": "SEMI"
+          },
+          {
+            "characterId": 4,
+            "name": "Sota",
+            "raceId": "ursan",
+            "gender": "male",
+            "mainClassId": "ninja",
+            "subClassId": "ranger",
+            "lineageId": "abyssal_sea",
+            "predispositionId": "precise",
+            "isUnique": false,
+            "mimorianEnemyId": null,
+            "calculatedStatus": {
+              "stats": [
+                {
+                  "key": "b.vitality",
+                  "value": 13,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.strength",
+                  "value": 12,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.intelligence",
+                  "value": 7,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.mind",
+                  "value": 7,
+                  "unit": "number"
+                },
+                {
+                  "key": "d.physical_defense",
+                  "value": 149,
+                  "unit": "number"
+                },
+                {
+                  "key": "d.magical_defense",
+                  "value": 0,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.defense_amplifier.physical",
+                  "value": 0.7,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.defense_amplifier.magical",
+                  "value": 1.32,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.melee",
+                  "value": 1.45,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.ranged",
+                  "value": 2.58,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.magical",
+                  "value": 0.76,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.c_accuracy",
+                  "value": 0.068,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.accuracy_decay",
+                  "value": 0.968,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.penetration",
+                  "value": 0,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "d.accuracy_potency",
+                  "value": 0.72,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.accuracy",
+                  "value": 0.068,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.evasion",
+                  "value": -0.007,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.penet",
+                  "value": 0,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "e.ice",
+                  "value": 1.26,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.fire",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.ice",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.thunder",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.equipment_slots",
+                  "value": 10,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.hp_contribution.base",
+                  "value": 1107,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.hp_contribution.item",
+                  "value": 95,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.race_unlock_active",
+                  "value": 0,
+                  "unit": "number"
+                }
+              ],
+              "abilities": [
+                {
+                  "abilityId": "a.bulwark",
+                  "level": 1
+                },
+                {
+                  "abilityId": "a.first-strike",
+                  "level": 1
+                },
+                {
+                  "abilityId": "a.output-stabilizer",
+                  "level": 1
+                },
+                {
+                  "abilityId": "a.null-bind",
+                  "level": 1
+                }
+              ],
+              "bonuses": [
+                {
+                  "bonusId": "c.melee-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.ranged-attack",
+                  "value": 0.94
+                },
+                {
+                  "bonusId": "c.magical-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.physical-attack",
+                  "value": 0.21
+                },
+                {
+                  "bonusId": "c.physical-offense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.magical-offense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.physical-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.magical-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.fire-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.ice-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.thunder-defense-multiplier",
+                  "value": 1
+                }
+              ],
+              "attacks": [
+                {
+                  "attackType": "melee",
+                  "available": false,
+                  "facts": [
+                    {
+                      "key": "d.melee_attack",
+                      "value": 94,
+                      "unit": "number"
+                    },
+                    {
+                      "key": "d.melee_NoA",
+                      "value": 0,
+                      "unit": "number"
+                    },
+                    {
+                      "key": "d.melee_NoA.original",
+                      "value": 0,
+                      "unit": "number"
+                    }
+                  ],
+                  "speed": {
+                    "min": 1,
+                    "max": 3,
+                    "diceCount": 1,
+                    "dieSize": 3
+                  }
+                },
+                {
+                  "attackType": "ranged",
+                  "available": true,
+                  "facts": [
+                    {
+                      "key": "d.ranged_attack",
+                      "value": 701,
+                      "unit": "number"
+                    },
+                    {
+                      "key": "d.ranged_NoA",
+                      "value": 30,
+                      "unit": "number"
+                    },
+                    {
+                      "key": "d.ranged_NoA.original",
+                      "value": 30,
+                      "unit": "number"
+                    }
+                  ],
+                  "speed": {
+                    "min": 4,
+                    "max": 12,
+                    "diceCount": 4,
+                    "dieSize": 3
+                  }
+                },
+                {
+                  "attackType": "magical",
+                  "available": false,
+                  "facts": [],
+                  "speed": null
+                }
+              ]
+            },
+            "equipment": [
+              "0/0/5101/3/0",
+              "1/0/3314/4/0/focus:1",
+              "2/0/5312/1/0",
+              "3/0/2213/3/0",
+              "4/0/5217/3/0",
+              "5/0/1107/5/0/might:2",
+              "6/0/4109/4/0",
+              "7/0/2215/3/0",
+              "8/0/4107/3/0",
+              "9/0/5107/6/0"
+            ],
+            "autoEquipmentMode": "SEMI"
+          },
+          {
+            "characterId": 2,
+            "name": "Kuzunoha",
+            "raceId": "ursan",
+            "gender": "female",
+            "mainClassId": "ninja",
+            "subClassId": "ranger",
+            "lineageId": "abyssal_sea",
+            "predispositionId": "precise",
+            "isUnique": false,
+            "mimorianEnemyId": null,
+            "calculatedStatus": {
+              "stats": [
+                {
+                  "key": "b.vitality",
+                  "value": 13,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.strength",
+                  "value": 12,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.intelligence",
+                  "value": 7,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.mind",
+                  "value": 7,
+                  "unit": "number"
+                },
+                {
+                  "key": "d.physical_defense",
+                  "value": 132,
+                  "unit": "number"
+                },
+                {
+                  "key": "d.magical_defense",
+                  "value": 0,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.defense_amplifier.physical",
+                  "value": 0.7,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.defense_amplifier.magical",
+                  "value": 1.32,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.melee",
+                  "value": 1.2,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.ranged",
+                  "value": 2.32,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.magical",
+                  "value": 0.76,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.c_accuracy",
+                  "value": 0.056,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.accuracy_decay",
+                  "value": 0.956,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.penetration",
+                  "value": 0,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "d.accuracy_potency",
+                  "value": 0.61,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.accuracy",
+                  "value": 0.056,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.evasion",
+                  "value": -0.009,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.penet",
+                  "value": 0,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "e.thunder",
+                  "value": 1.12,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.fire",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.ice",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.thunder",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.equipment_slots",
+                  "value": 10,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.hp_contribution.base",
+                  "value": 1107,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.hp_contribution.item",
+                  "value": 0,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.race_unlock_active",
+                  "value": 0,
+                  "unit": "number"
+                }
+              ],
+              "abilities": [
+                {
+                  "abilityId": "a.bulwark",
+                  "level": 1
+                },
+                {
+                  "abilityId": "a.first-strike",
+                  "level": 1
+                },
+                {
+                  "abilityId": "a.output-stabilizer",
+                  "level": 1
+                },
+                {
+                  "abilityId": "a.null-bind",
+                  "level": 1
+                }
+              ],
+              "bonuses": [
+                {
+                  "bonusId": "c.melee-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.ranged-attack",
+                  "value": 0.93
+                },
+                {
+                  "bonusId": "c.magical-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.physical-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.physical-offense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.magical-offense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.physical-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.magical-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.fire-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.ice-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.thunder-defense-multiplier",
+                  "value": 1
+                }
+              ],
+              "attacks": [
+                {
+                  "attackType": "melee",
+                  "available": false,
+                  "facts": [],
+                  "speed": null
+                },
+                {
+                  "attackType": "ranged",
+                  "available": true,
+                  "facts": [
+                    {
+                      "key": "d.ranged_attack",
+                      "value": 496,
+                      "unit": "number"
+                    },
+                    {
+                      "key": "d.ranged_NoA",
+                      "value": 25,
+                      "unit": "number"
+                    },
+                    {
+                      "key": "d.ranged_NoA.original",
+                      "value": 25,
+                      "unit": "number"
+                    }
+                  ],
+                  "speed": {
+                    "min": 4,
+                    "max": 12,
+                    "diceCount": 4,
+                    "dieSize": 3
+                  }
+                },
+                {
+                  "attackType": "magical",
+                  "available": false,
+                  "facts": [],
+                  "speed": null
+                }
+              ]
+            },
+            "equipment": [
+              "0/0/5101/3/0",
+              "1/0/5217/1/0",
+              "2/0/5109/5/0",
+              "3/0/3213/3/0",
+              "4/0/4109/3/0",
+              "5/0/3109/5/0",
+              "6/0/1107/4/0",
+              "7/0/2107/5/0",
+              "8/0/5107/3/0",
+              "9/0/4108/4/0"
+            ],
+            "autoEquipmentMode": "SEMI"
+          },
+          {
+            "characterId": 3,
+            "name": "Lop",
+            "raceId": "leporian",
+            "gender": "female",
+            "mainClassId": "ninja",
+            "subClassId": "ranger",
+            "lineageId": "abyssal_sea",
+            "predispositionId": "precise",
+            "isUnique": false,
+            "mimorianEnemyId": null,
+            "calculatedStatus": {
+              "stats": [
+                {
+                  "key": "b.vitality",
+                  "value": 9,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.strength",
+                  "value": 9,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.intelligence",
+                  "value": 14,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.mind",
+                  "value": 10,
+                  "unit": "number"
+                },
+                {
+                  "key": "d.physical_defense",
+                  "value": 107,
+                  "unit": "number"
+                },
+                {
+                  "key": "d.magical_defense",
+                  "value": 0,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.defense_amplifier.physical",
+                  "value": 1.02,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.defense_amplifier.magical",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.melee",
+                  "value": 0.91,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.ranged",
+                  "value": 1.82,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.magical",
+                  "value": 1.45,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.c_accuracy",
+                  "value": 0.049,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.accuracy_decay",
+                  "value": 0.949,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.penetration",
+                  "value": 0,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "d.accuracy_potency",
+                  "value": 0.62,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.accuracy",
+                  "value": 0.049,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.evasion",
+                  "value": -0.005,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.penet",
+                  "value": 0,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "e.fire",
+                  "value": 1.21,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.fire",
+                  "value": 0.95,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.ice",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.thunder",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.equipment_slots",
+                  "value": 8,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.hp_contribution.base",
+                  "value": 745,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.hp_contribution.item",
+                  "value": 62,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.race_unlock_active",
+                  "value": 0,
+                  "unit": "number"
+                }
+              ],
+              "abilities": [
+                {
+                  "abilityId": "a.composure",
+                  "level": 1
+                },
+                {
+                  "abilityId": "a.first-strike",
+                  "level": 1
+                },
+                {
+                  "abilityId": "a.output-stabilizer",
+                  "level": 1
+                },
+                {
+                  "abilityId": "a.null-bind",
+                  "level": 1
+                }
+              ],
+              "bonuses": [
+                {
+                  "bonusId": "c.melee-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.ranged-attack",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.magical-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.physical-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.physical-offense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.magical-offense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.physical-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.magical-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.fire-defense-multiplier",
+                  "value": 0.95
+                },
+                {
+                  "bonusId": "c.ice-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.thunder-defense-multiplier",
+                  "value": 1
+                }
+              ],
+              "attacks": [
+                {
+                  "attackType": "melee",
+                  "available": false,
+                  "facts": [],
+                  "speed": null
+                },
+                {
+                  "attackType": "ranged",
+                  "available": true,
+                  "facts": [
+                    {
+                      "key": "d.ranged_attack",
+                      "value": 706,
+                      "unit": "number"
+                    },
+                    {
+                      "key": "d.ranged_NoA",
+                      "value": 14,
+                      "unit": "number"
+                    },
+                    {
+                      "key": "d.ranged_NoA.original",
+                      "value": 14,
+                      "unit": "number"
+                    }
+                  ],
+                  "speed": {
+                    "min": 4,
+                    "max": 12,
+                    "diceCount": 4,
+                    "dieSize": 3
+                  }
+                },
+                {
+                  "attackType": "magical",
+                  "available": false,
+                  "facts": [],
+                  "speed": null
+                }
+              ]
+            },
+            "equipment": [
+              "0/0/4301/0/0",
+              "1/0/5217/0/0",
+              "2/0/5109/5/0",
+              "3/0/4213/1/0",
+              "4/0/4107/3/0",
+              "5/0/2107/5/0",
+              "6/0/5213/1/0",
+              "7/0/3107/5/0"
+            ],
+            "autoEquipmentMode": "SEMI"
+          },
+          {
+            "characterId": 5,
+            "name": "Selfin",
+            "raceId": "cervin",
+            "gender": "female",
+            "mainClassId": "wizard",
+            "subClassId": "alchemist",
+            "lineageId": "utopia",
+            "predispositionId": "introspective",
+            "isUnique": false,
+            "mimorianEnemyId": null,
+            "calculatedStatus": {
+              "stats": [
+                {
+                  "key": "b.vitality",
+                  "value": 8,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.strength",
+                  "value": 7,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.intelligence",
+                  "value": 13,
+                  "unit": "number"
+                },
+                {
+                  "key": "b.mind",
+                  "value": 11,
+                  "unit": "number"
+                },
+                {
+                  "key": "d.physical_defense",
+                  "value": 90,
+                  "unit": "number"
+                },
+                {
+                  "key": "d.magical_defense",
+                  "value": 0,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.defense_amplifier.physical",
+                  "value": 1.12,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.defense_amplifier.magical",
+                  "value": 0.91,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.melee",
+                  "value": 0.76,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.ranged",
+                  "value": 0.76,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.offense_amplifier.magical",
+                  "value": 3,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.c_accuracy",
+                  "value": 0.022,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.accuracy_decay",
+                  "value": 0.922,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.penetration",
+                  "value": 0,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "d.accuracy_potency",
+                  "value": 0.44,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.accuracy",
+                  "value": 0.018,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.evasion",
+                  "value": -0.005,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "c.penet",
+                  "value": 0,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "e.fire",
+                  "value": 1.19,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.fire",
+                  "value": 0.95,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.ice",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "r.thunder",
+                  "value": 1,
+                  "unit": "ratio"
+                },
+                {
+                  "key": "f.equipment_slots",
+                  "value": 8,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.hp_contribution.base",
+                  "value": 669,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.hp_contribution.item",
+                  "value": 139,
+                  "unit": "number"
+                },
+                {
+                  "key": "f.race_unlock_active",
+                  "value": 0,
+                  "unit": "number"
+                }
+              ],
+              "abilities": [
+                {
+                  "abilityId": "a.focus",
+                  "level": 1
+                },
+                {
+                  "abilityId": "a.resonance",
+                  "level": 1
+                },
+                {
+                  "abilityId": "a.unforgettable",
+                  "level": 1
+                },
+                {
+                  "abilityId": "a.null-death-touch",
+                  "level": 1
+                }
+              ],
+              "bonuses": [
+                {
+                  "bonusId": "c.melee-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.ranged-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.magical-attack",
+                  "value": 1.27
+                },
+                {
+                  "bonusId": "c.physical-attack",
+                  "value": 0
+                },
+                {
+                  "bonusId": "c.physical-offense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.magical-offense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.physical-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.magical-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.fire-defense-multiplier",
+                  "value": 0.95
+                },
+                {
+                  "bonusId": "c.ice-defense-multiplier",
+                  "value": 1
+                },
+                {
+                  "bonusId": "c.thunder-defense-multiplier",
+                  "value": 1
+                }
+              ],
+              "attacks": [
+                {
+                  "attackType": "melee",
+                  "available": false,
+                  "facts": [],
+                  "speed": null
+                },
+                {
+                  "attackType": "ranged",
+                  "available": false,
+                  "facts": [],
+                  "speed": null
+                },
+                {
+                  "attackType": "magical",
+                  "available": true,
+                  "facts": [
+                    {
+                      "key": "d.magical_attack",
+                      "value": 1015,
+                      "unit": "number"
+                    },
+                    {
+                      "key": "d.magical_NoA",
+                      "value": 16,
+                      "unit": "number"
+                    },
+                    {
+                      "key": "d.magical_NoA.original",
+                      "value": 16,
+                      "unit": "number"
+                    }
+                  ],
+                  "speed": {
+                    "min": 3,
+                    "max": 9,
+                    "diceCount": 3,
+                    "dieSize": 3
+                  }
+                }
+              ]
+            },
+            "equipment": [
+              "0/0/4301/0/0",
+              "1/0/5317/0/0",
+              "2/0/4110/6/0/arcana:1",
+              "3/0/3110/5/0",
+              "4/0/5110/4/0",
+              "5/0/5223/3/0",
+              "6/0/2110/5/0",
+              "7/0/1110/6/0"
+            ],
+            "autoEquipmentMode": "SEMI"
+          }
+        ],
+        "statistics": {
+          "clear": 67,
+          "return": 353,
+          "draw": 397,
+          "retreat": 216,
+          "defeat": 257,
+          "donatedGold": 9166,
+          "savedGold": 33553
+        }
+      },
+      "parties": [
+        {
+          "partyNumber": 1,
+          "deityId": "precision",
+          "characters": [
+            {
+              "characterId": 6,
+              "name": "Laika",
+              "raceId": "caninian",
+              "gender": "female",
+              "isUnique": true,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 1,
+              "name": "Kemo",
+              "raceId": "kemoria",
+              "gender": "male",
+              "isUnique": true,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 4,
+              "name": "Sota",
+              "raceId": "ursan",
+              "gender": "male",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 2,
+              "name": "Kuzunoha",
+              "raceId": "ursan",
+              "gender": "female",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 3,
+              "name": "Lop",
+              "raceId": "leporian",
+              "gender": "female",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 5,
+              "name": "Selfin",
+              "raceId": "cervin",
+              "gender": "female",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            }
+          ]
+        },
+        {
+          "partyNumber": 2,
+          "deityId": "cunning",
+          "characters": [
+            {
+              "characterId": 101,
+              "name": "Leonard",
+              "raceId": "vulpinian",
+              "gender": "male",
+              "isUnique": true,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 102,
+              "name": "Orca",
+              "raceId": "orcinian",
+              "gender": "female",
+              "isUnique": true,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 103,
+              "name": "Kaima",
+              "raceId": "procyonian",
+              "gender": "male",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 104,
+              "name": "Manael",
+              "raceId": "cervin",
+              "gender": "male",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 105,
+              "name": "Reina",
+              "raceId": "felidian",
+              "gender": "female",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 106,
+              "name": "Tauro",
+              "raceId": "lupinian",
+              "gender": "male",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            }
+          ]
+        },
+        {
+          "partyNumber": 3,
+          "deityId": "fertility",
+          "characters": [
+            {
+              "characterId": 201,
+              "name": "Hamza",
+              "raceId": "ursan",
+              "gender": "male",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 202,
+              "name": "Yusuf",
+              "raceId": "caninian",
+              "gender": "male",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 203,
+              "name": "Nox",
+              "raceId": "murid",
+              "gender": "male",
+              "isUnique": true,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 204,
+              "name": "Luna",
+              "raceId": "felidian",
+              "gender": "female",
+              "isUnique": true,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 205,
+              "name": "Karim",
+              "raceId": "lupinian",
+              "gender": "male",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 206,
+              "name": "Jalil",
+              "raceId": "vulpinian",
+              "gender": "male",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            }
+          ]
+        },
+        {
+          "partyNumber": 4,
+          "deityId": "fortification",
+          "characters": [
+            {
+              "characterId": 301,
+              "name": "Mishka",
+              "raceId": "ursan",
+              "gender": "male",
+              "isUnique": true,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 302,
+              "name": "Ptitsa",
+              "raceId": "avian",
+              "gender": "male",
+              "isUnique": true,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 303,
+              "name": "Vera",
+              "raceId": "leporian",
+              "gender": "female",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 304,
+              "name": "Irina",
+              "raceId": "felidian",
+              "gender": "female",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 305,
+              "name": "Dmitri",
+              "raceId": "lupinian",
+              "gender": "male",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 306,
+              "name": "Mira",
+              "raceId": "cervin",
+              "gender": "female",
+              "isUnique": false,
+              "mimorianEnemyId": null
+            }
+          ]
+        }
+      ],
+      "unlockedMimorianEnemyIds": []
+    }
+  }
+}

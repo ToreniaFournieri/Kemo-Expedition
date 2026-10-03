@@ -1,0 +1,23 @@
+[
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:1"
+    }
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 5,
+      "jewelToSet": "might:2"
+    }
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "arcana:1"
+    }
+  }
+]

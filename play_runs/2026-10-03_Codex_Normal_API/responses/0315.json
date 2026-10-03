@@ -1,0 +1,17 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "f0d071b3-0fca-4e61-a8fe-cc0b48bf0a79",
+  "revision": 227,
+  "observedAt": "2026-10-03T08:33:26.145Z",
+  "data": {
+    "items": [
+      "focus:3/1/ability=[]/cBonus=[c.accuracy+0.006]/otherBonus=[d.physical_defense:7, d.HP:5]",
+      "ward:3/1/ability=[]/cBonus=[c.magical-defense+11]/otherBonus=[d.magical_defense:10, d.HP:10]",
+      "focus:1/1/ability=[]/cBonus=[c.accuracy+0.008]/otherBonus=[d.physical_defense:4, d.HP:3]",
+      "fort:1/1/ability=[]/cBonus=[c.physical-defense+13]/otherBonus=[d.physical_defense:6, d.HP:6]"
+    ],
+    "totalCount": 4,
+    "truncated": false
+  }
+}

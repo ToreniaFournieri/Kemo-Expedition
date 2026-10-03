@@ -1,0 +1,14 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "75edfb99-ff18-4edd-ab2f-0d0e9ab91b19",
+  "revision": 193,
+  "observedAt": "2026-10-03T08:24:08.236Z",
+  "data": {
+    "items": [
+      "arcana:1/1/ability=[]/cBonus=[c.magical-attack+22]/otherBonus=[d.magical_attack:6, d.HP:3]"
+    ],
+    "totalCount": 1,
+    "truncated": false
+  }
+}

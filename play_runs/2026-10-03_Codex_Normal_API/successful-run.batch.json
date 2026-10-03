@@ -1,0 +1,4323 @@
+[
+  {
+    "route": "/fundamental/signUp",
+    "parameters": {
+      "userId": "CodexNormal1003",
+      "environment": "prod",
+      "gameMode": "normal",
+      "language": "en"
+    },
+    "label": "original call 1",
+    "originalDurationMs": 58.054
+  },
+  {
+    "route": "/fundamental/logIn",
+    "parameters": {
+      "userId": "CodexNormal1003",
+      "environment": "prod",
+      "gameMode": "normal",
+      "headless": true
+    },
+    "label": "original call 2",
+    "originalDurationMs": 79.119
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 3",
+    "originalDurationMs": 41.935
+  },
+  {
+    "route": "/fundamental/logIn",
+    "parameters": {
+      "userId": "CodexNormal1003",
+      "environment": "prod",
+      "gameMode": "normal",
+      "headless": true
+    },
+    "label": "original call 5",
+    "originalDurationMs": 129.509
+  },
+  {
+    "route": "/commit/build/character/1/changeBuild",
+    "parameters": {
+      "mainClassId": "lord",
+      "subClassId": "lord",
+      "simulation": false,
+      "confirmation": "yes"
+    },
+    "label": "original call 6",
+    "originalDurationMs": 54.994
+  },
+  {
+    "route": "/commit/build/character/2/changeBuild",
+    "parameters": {
+      "racesAndGender": "ursan/female",
+      "mainClassId": "ninja",
+      "subClassId": "ranger",
+      "lineage": "abyssal_sea",
+      "predisposition": "precise",
+      "simulation": false,
+      "confirmation": "yes"
+    },
+    "label": "original call 7",
+    "originalDurationMs": 15.653
+  },
+  {
+    "route": "/commit/build/character/3/changeBuild",
+    "parameters": {
+      "mainClassId": "ninja",
+      "subClassId": "ranger",
+      "lineage": "abyssal_sea",
+      "predisposition": "precise",
+      "simulation": false,
+      "confirmation": "yes"
+    },
+    "label": "original call 8",
+    "originalDurationMs": 16.952
+  },
+  {
+    "route": "/commit/build/character/4/changeBuild",
+    "parameters": {
+      "racesAndGender": "ursan/male",
+      "mainClassId": "ninja",
+      "subClassId": "ranger",
+      "lineage": "abyssal_sea",
+      "predisposition": "precise",
+      "simulation": false,
+      "confirmation": "yes"
+    },
+    "label": "original call 9",
+    "originalDurationMs": 15.368
+  },
+  {
+    "route": "/commit/build/character/5/changeBuild",
+    "parameters": {
+      "mainClassId": "wizard",
+      "subClassId": "alchemist",
+      "lineage": "utopia",
+      "predisposition": "introspective",
+      "simulation": false,
+      "confirmation": "yes"
+    },
+    "label": "original call 10",
+    "originalDurationMs": 16.019
+  },
+  {
+    "route": "/commit/build/character/6/changeBuild",
+    "parameters": {
+      "mainClassId": "guardian",
+      "subClassId": "guardian",
+      "simulation": false,
+      "confirmation": "yes"
+    },
+    "label": "original call 11",
+    "originalDurationMs": 11.768
+  },
+  {
+    "route": "/commit/build/party/1",
+    "parameters": {
+      "deityId": "precision",
+      "order": [
+        6,
+        1,
+        4,
+        2,
+        3,
+        5
+      ]
+    },
+    "label": "original call 12",
+    "originalDurationMs": 8.82
+  },
+  {
+    "route": "/commit/expedition/1/changeExpedition",
+    "parameters": {
+      "destinationMode": "fixed",
+      "destination": 1,
+      "depthLimit": "all",
+      "difficultyOffset": 0
+    },
+    "label": "original call 13",
+    "originalDurationMs": 8.967
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 14",
+    "originalDurationMs": 172.782
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 16",
+    "originalDurationMs": 74.786
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 17",
+    "originalDurationMs": 9.041
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 18",
+    "originalDurationMs": 11.064
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 19",
+    "originalDurationMs": 4.277
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 20",
+    "originalDurationMs": 223.749
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 21",
+    "originalDurationMs": 227.09
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 22",
+    "originalDurationMs": 38.178
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 23",
+    "originalDurationMs": 9.194
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 24",
+    "originalDurationMs": 4.964
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 25",
+    "originalDurationMs": 3.271
+  },
+  {
+    "route": "/commit/expedition/1/changeExpedition",
+    "parameters": {
+      "destination": 2,
+      "destinationMode": "fixed",
+      "depthLimit": "all",
+      "difficultyOffset": 0
+    },
+    "label": "original call 26",
+    "originalDurationMs": 48.47
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 27",
+    "originalDurationMs": 60.634
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 28",
+    "originalDurationMs": 200.37
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 29",
+    "originalDurationMs": 4.272
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 30",
+    "originalDurationMs": 175.972
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 31",
+    "originalDurationMs": 116.181
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 32",
+    "originalDurationMs": 4.279
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 33",
+    "originalDurationMs": 113.777
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 34",
+    "originalDurationMs": 105.169
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 35",
+    "originalDurationMs": 4.072
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 36",
+    "originalDurationMs": 99.13
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 37",
+    "originalDurationMs": 80.156
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 38",
+    "originalDurationMs": 3.237
+  },
+  {
+    "route": "/commit/expedition/1/changeExpedition",
+    "parameters": {
+      "destination": 3,
+      "destinationMode": "fixed",
+      "depthLimit": "all",
+      "difficultyOffset": 0
+    },
+    "label": "original call 39",
+    "originalDurationMs": 46.834
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 40",
+    "originalDurationMs": 85.199
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 41",
+    "originalDurationMs": 139.072
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 42",
+    "originalDurationMs": 3.905
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 43",
+    "originalDurationMs": 234.167
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 44",
+    "originalDurationMs": 226.922
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 45",
+    "originalDurationMs": 4.148
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 46",
+    "originalDurationMs": 41.304
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 47",
+    "originalDurationMs": 43.642
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 48",
+    "originalDurationMs": 4.448
+  },
+  {
+    "route": "/commit/expedition/1/changeExpedition",
+    "parameters": {
+      "destination": 4,
+      "destinationMode": "fixed",
+      "depthLimit": "all",
+      "difficultyOffset": 0
+    },
+    "label": "original call 49",
+    "originalDurationMs": 46.785
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 50",
+    "originalDurationMs": 224.715
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 51",
+    "originalDurationMs": 166.169
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 52",
+    "originalDurationMs": 4.819
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 53",
+    "originalDurationMs": 46.062
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 54",
+    "originalDurationMs": 34.805
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 55",
+    "originalDurationMs": 3.679
+  },
+  {
+    "route": "/read/expedition/1/simulationRun",
+    "parameters": {
+      "numberOfRun": 1000
+    },
+    "label": "original call 56",
+    "originalDurationMs": 736.867
+  },
+  {
+    "route": "/commit/build/character/6/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 57",
+    "originalDurationMs": 51.173
+  },
+  {
+    "route": "/commit/build/character/1/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 58",
+    "originalDurationMs": 18.608
+  },
+  {
+    "route": "/commit/build/character/4/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 59",
+    "originalDurationMs": 21.59
+  },
+  {
+    "route": "/commit/build/character/2/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 60",
+    "originalDurationMs": 26.499
+  },
+  {
+    "route": "/commit/build/character/3/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 61",
+    "originalDurationMs": 16.23
+  },
+  {
+    "route": "/commit/build/character/5/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 62",
+    "originalDurationMs": 29.808
+  },
+  {
+    "route": "/commit/build/character/6/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/2101/5/0",
+        "0/3102/4/0",
+        "0/3101/3/0",
+        "0/3101/3/0",
+        "0/2102/5/0",
+        "0/3101/3/0",
+        "0/4102/2/0",
+        "0/4101/2/0"
+      ]
+    },
+    "label": "original call 63",
+    "originalDurationMs": 18.145
+  },
+  {
+    "route": "/commit/build/character/1/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/4101/6/0",
+        "0/3304/3/0",
+        "0/4101/3/0",
+        "0/3102/5/0",
+        "0/3101/4/0",
+        "0/3101/4/0",
+        "0/4102/3/0",
+        "0/3101/4/0",
+        "0/3102/4/0",
+        "0/3102/3/0",
+        "0/3103/4/0"
+      ]
+    },
+    "label": "original call 64",
+    "originalDurationMs": 22.925
+  },
+  {
+    "route": "/commit/build/character/4/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/3314/4/0",
+        "0/4109/4/0",
+        "0/3213/2/0",
+        "0/3109/4/0",
+        "0/1107/5/0",
+        "0/4108/4/0",
+        "0/2107/5/0",
+        "0/2108/6/0",
+        "0/3107/3/0"
+      ]
+    },
+    "label": "original call 65",
+    "originalDurationMs": 18.858
+  },
+  {
+    "route": "/commit/build/character/2/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/4109/3/0",
+        "0/3109/4/0",
+        "0/2109/4/0",
+        "0/1107/4/0",
+        "0/2215/3/0",
+        "0/4107/3/0",
+        "0/2107/5/0",
+        "0/2108/6/0",
+        "0/3107/3/0"
+      ]
+    },
+    "label": "original call 66",
+    "originalDurationMs": 27.431
+  },
+  {
+    "route": "/commit/build/character/3/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/3109/4/0",
+        "0/4109/2/0",
+        "0/2109/4/0",
+        "0/1107/4/0",
+        "0/2107/3/0",
+        "0/3107/3/0",
+        "0/4107/2/0"
+      ]
+    },
+    "label": "original call 67",
+    "originalDurationMs": 13.969
+  },
+  {
+    "route": "/commit/build/character/5/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/1309/3/0",
+        "0/1112/6/0",
+        "0/1110/6/0",
+        "0/3110/5/0",
+        "0/4110/3/0",
+        "0/2110/5/0",
+        "0/4110/3/0"
+      ]
+    },
+    "label": "original call 68",
+    "originalDurationMs": 17.031
+  },
+  {
+    "route": "/read/expedition/1/simulationRun",
+    "parameters": {
+      "numberOfRun": 1000
+    },
+    "label": "original call 69",
+    "originalDurationMs": 793.12
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 70",
+    "originalDurationMs": 204.656
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 71",
+    "originalDurationMs": 204.037
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 72",
+    "originalDurationMs": 6.496
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 73",
+    "originalDurationMs": 234.428
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 74",
+    "originalDurationMs": 231.648
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 75",
+    "originalDurationMs": 5.494
+  },
+  {
+    "route": "/commit/expedition/1/changeExpedition",
+    "parameters": {
+      "destination": 5,
+      "destinationMode": "fixed",
+      "depthLimit": "all",
+      "difficultyOffset": 0
+    },
+    "label": "original call 76",
+    "originalDurationMs": 46.286
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 77",
+    "originalDurationMs": 331.466
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 78",
+    "originalDurationMs": 353.968
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 79",
+    "originalDurationMs": 5.502
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 80",
+    "originalDurationMs": 36.889
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 81",
+    "originalDurationMs": 36.723
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 82",
+    "originalDurationMs": 4.927
+  },
+  {
+    "route": "/commit/build/character/6/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 83",
+    "originalDurationMs": 44.811
+  },
+  {
+    "route": "/commit/build/character/1/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 84",
+    "originalDurationMs": 18.045
+  },
+  {
+    "route": "/commit/build/character/4/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 85",
+    "originalDurationMs": 16.566
+  },
+  {
+    "route": "/commit/build/character/2/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 86",
+    "originalDurationMs": 16.124
+  },
+  {
+    "route": "/commit/build/character/3/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 87",
+    "originalDurationMs": 16.181
+  },
+  {
+    "route": "/commit/build/character/5/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 88",
+    "originalDurationMs": 15.687
+  },
+  {
+    "route": "/commit/build/character/6/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/4101/6/0",
+        "0/4102/4/0",
+        "0/4101/5/0",
+        "0/4102/4/0",
+        "0/3102/5/0",
+        "0/3304/3/0",
+        "0/5101/2/0",
+        "0/5102/2/0",
+        "0/1401/0/0"
+      ]
+    },
+    "label": "original call 89",
+    "originalDurationMs": 18.579
+  },
+  {
+    "route": "/commit/build/character/1/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/4101/3/0",
+        "0/4102/3/0",
+        "0/4101/3/0",
+        "0/3101/4/0",
+        "0/3102/4/0",
+        "0/3101/4/0",
+        "0/3101/4/0",
+        "0/3102/4/0",
+        "0/5101/2/0",
+        "0/5101/2/0",
+        "0/5102/2/0",
+        "0/2101/5/0"
+      ]
+    },
+    "label": "original call 90",
+    "originalDurationMs": 18.179
+  },
+  {
+    "route": "/commit/build/character/4/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5101/1/0",
+        "0/3314/4/0",
+        "0/5312/0/0",
+        "0/2213/3/0",
+        "0/5217/3/0",
+        "0/1107/5/0",
+        "0/4109/4/0",
+        "0/2215/3/0",
+        "0/4107/3/0",
+        "0/5107/2/0"
+      ]
+    },
+    "label": "original call 91",
+    "originalDurationMs": 25.616
+  },
+  {
+    "route": "/commit/build/character/2/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5101/1/0",
+        "0/5217/0/0",
+        "0/5109/4/0",
+        "0/3213/2/0",
+        "0/4109/3/0",
+        "0/3109/4/0",
+        "0/1107/4/0",
+        "0/2107/5/0",
+        "0/5107/2/0",
+        "0/4108/4/0"
+      ]
+    },
+    "label": "original call 92",
+    "originalDurationMs": 21.422
+  },
+  {
+    "route": "/commit/build/character/3/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/4301/0/0",
+        "0/5217/0/0",
+        "0/5109/4/0",
+        "0/4213/1/0",
+        "0/4107/3/0",
+        "0/2107/5/0",
+        "0/5213/0/0",
+        "0/3107/3/0"
+      ]
+    },
+    "label": "original call 93",
+    "originalDurationMs": 16.314
+  },
+  {
+    "route": "/commit/build/character/5/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/4301/0/0",
+        "0/5317/0/0",
+        "0/4110/6/0",
+        "0/3110/5/0",
+        "0/5110/2/0",
+        "0/5223/0/0",
+        "0/2110/5/0",
+        "0/1110/6/0"
+      ]
+    },
+    "label": "original call 94",
+    "originalDurationMs": 20.457
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 95",
+    "originalDurationMs": 5.693
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:1"
+    },
+    "label": "original call 96",
+    "originalDurationMs": 18.004
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 5,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 97",
+    "originalDurationMs": 13.372
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 98",
+    "originalDurationMs": 12.543
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 99",
+    "originalDurationMs": 447.03
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 100",
+    "originalDurationMs": 419.548
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 101",
+    "originalDurationMs": 4.479
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 102",
+    "originalDurationMs": 336.947
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 103",
+    "originalDurationMs": 379.248
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 104",
+    "originalDurationMs": 4.871
+  },
+  {
+    "route": "/commit/expedition/1/changeExpedition",
+    "parameters": {
+      "destination": 6,
+      "destinationMode": "fixed",
+      "depthLimit": "all",
+      "difficultyOffset": 0
+    },
+    "label": "original call 105",
+    "originalDurationMs": 56.58
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 106",
+    "originalDurationMs": 530.399
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 107",
+    "originalDurationMs": 568.511
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 108",
+    "originalDurationMs": 5.688
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 109",
+    "originalDurationMs": 531.792
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 110",
+    "originalDurationMs": 488.406
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 111",
+    "originalDurationMs": 4.527
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 112",
+    "originalDurationMs": 42.464
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 113",
+    "originalDurationMs": 41.128
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 114",
+    "originalDurationMs": 10.394
+  },
+  {
+    "route": "/commit/build/character/6/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 115",
+    "originalDurationMs": 58.764
+  },
+  {
+    "route": "/commit/build/character/1/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 116",
+    "originalDurationMs": 43.407
+  },
+  {
+    "route": "/commit/build/character/4/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 117",
+    "originalDurationMs": 22.618
+  },
+  {
+    "route": "/commit/build/character/2/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 118",
+    "originalDurationMs": 29.346
+  },
+  {
+    "route": "/commit/build/character/3/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 119",
+    "originalDurationMs": 34.641
+  },
+  {
+    "route": "/commit/build/character/5/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 120",
+    "originalDurationMs": 19.372
+  },
+  {
+    "route": "/commit/build/character/6/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5302/0/0",
+        "0/4101/6/0",
+        "0/5102/4/0",
+        "0/5101/5/0",
+        "0/5102/4/0",
+        "0/4102/4/0",
+        "0/4102/4/0",
+        "0/5401/0/0",
+        "0/5401/0/0"
+      ]
+    },
+    "label": "original call 121",
+    "originalDurationMs": 21.284
+  },
+  {
+    "route": "/commit/build/character/1/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5302/0/0",
+        "0/5302/0/0",
+        "0/5101/4/0",
+        "0/6102/2/0",
+        "0/4101/5/0",
+        "0/5302/0/0",
+        "0/5302/0/0",
+        "0/5302/0/0",
+        "0/6102/2/0",
+        "0/5302/0/0",
+        "0/6102/2/0",
+        "0/6102/2/0"
+      ]
+    },
+    "label": "original call 122",
+    "originalDurationMs": 28.526
+  },
+  {
+    "route": "/commit/build/character/4/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5302/0/0",
+        "0/6313/0/0",
+        "0/5107/6/0",
+        "0/6107/3/0",
+        "0/3213/3/0",
+        "0/3314/4/0",
+        "0/6213/0/0",
+        "0/3107/5/0",
+        "0/6217/0/0",
+        "0/6215/2/0"
+      ]
+    },
+    "label": "original call 123",
+    "originalDurationMs": 25.836
+  },
+  {
+    "route": "/commit/build/character/2/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5302/0/0",
+        "0/6313/0/0",
+        "0/6217/0/0",
+        "0/2213/3/0",
+        "0/6109/4/0",
+        "0/5109/5/0",
+        "0/2215/3/0",
+        "0/6107/3/0",
+        "0/6107/3/0",
+        "0/5107/3/0"
+      ]
+    },
+    "label": "original call 124",
+    "originalDurationMs": 21.425
+  },
+  {
+    "route": "/commit/build/character/3/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5302/0/0",
+        "0/6313/0/0",
+        "0/6217/0/0",
+        "0/5217/3/0",
+        "0/3213/2/0",
+        "0/5109/5/0",
+        "0/6213/0/0",
+        "0/5107/3/0"
+      ]
+    },
+    "label": "original call 125",
+    "originalDurationMs": 20.614
+  },
+  {
+    "route": "/commit/build/character/5/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6101/2/0",
+        "0/5223/3/0",
+        "0/4110/6/0",
+        "0/5110/4/0",
+        "0/3110/5/0",
+        "0/5317/0/0",
+        "0/6110/2/0",
+        "0/6219/0/0"
+      ]
+    },
+    "label": "original call 126",
+    "originalDurationMs": 31.091
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 127",
+    "originalDurationMs": 5.775
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "ward:2"
+    },
+    "label": "original call 128",
+    "originalDurationMs": 18.798
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 3,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 129",
+    "originalDurationMs": 27.16
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:1"
+    },
+    "label": "original call 130",
+    "originalDurationMs": 22.419
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 7,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 131",
+    "originalDurationMs": 21.028
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 132",
+    "originalDurationMs": 17.999
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 133",
+    "originalDurationMs": 499.604
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 134",
+    "originalDurationMs": 455.832
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 135",
+    "originalDurationMs": 5.65
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 136",
+    "originalDurationMs": 396.14
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 137",
+    "originalDurationMs": 385.27
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 138",
+    "originalDurationMs": 7.215
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 139",
+    "originalDurationMs": 450.014
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 140",
+    "originalDurationMs": 437.921
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 141",
+    "originalDurationMs": 10.689
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 142",
+    "originalDurationMs": 407.701
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 143",
+    "originalDurationMs": 520.59
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 144",
+    "originalDurationMs": 5.038
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 145",
+    "originalDurationMs": 37.557
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 146",
+    "originalDurationMs": 40.411
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 147",
+    "originalDurationMs": 4.638
+  },
+  {
+    "route": "/commit/build/character/6/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 148",
+    "originalDurationMs": 65.132
+  },
+  {
+    "route": "/commit/build/character/1/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 149",
+    "originalDurationMs": 31.208
+  },
+  {
+    "route": "/commit/build/character/4/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 150",
+    "originalDurationMs": 27.784
+  },
+  {
+    "route": "/commit/build/character/2/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 151",
+    "originalDurationMs": 21.035
+  },
+  {
+    "route": "/commit/build/character/3/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 152",
+    "originalDurationMs": 33.594
+  },
+  {
+    "route": "/commit/build/character/5/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 153",
+    "originalDurationMs": 22.756
+  },
+  {
+    "route": "/commit/build/character/6/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5302/0/0",
+        "0/5302/0/0",
+        "0/6101/3/0",
+        "0/5302/0/0",
+        "0/5102/4/0",
+        "0/5302/0/0",
+        "0/5102/4/0",
+        "0/5102/4/0",
+        "0/1401/0/0"
+      ]
+    },
+    "label": "original call 154",
+    "originalDurationMs": 20.952
+  },
+  {
+    "route": "/commit/build/character/1/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6101/5/0",
+        "0/6102/3/0",
+        "0/4101/6/0",
+        "0/5101/5/0",
+        "0/6102/3/0",
+        "0/6101/3/0",
+        "0/6102/3/0",
+        "0/6102/3/0",
+        "0/5401/0/0",
+        "0/5401/0/0",
+        "0/1401/0/0",
+        "0/1401/0/0"
+      ]
+    },
+    "label": "original call 155",
+    "originalDurationMs": 31.343
+  },
+  {
+    "route": "/commit/build/character/4/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6313/2/0",
+        "0/5107/6/0",
+        "0/6107/5/0",
+        "0/6107/5/0",
+        "0/3314/4/0",
+        "0/6213/2/0",
+        "0/3213/4/0",
+        "0/6217/2/0",
+        "0/3107/5/0",
+        "0/6109/4/0"
+      ]
+    },
+    "label": "original call 156",
+    "originalDurationMs": 24.722
+  },
+  {
+    "route": "/commit/build/character/2/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6314/0/0",
+        "0/6217/1/0",
+        "0/2213/3/0",
+        "0/6107/4/0",
+        "0/6107/3/0",
+        "0/4107/4/0",
+        "0/5107/3/0",
+        "0/6107/3/0",
+        "0/6109/4/0",
+        "0/6213/0/0"
+      ]
+    },
+    "label": "original call 157",
+    "originalDurationMs": 29.213
+  },
+  {
+    "route": "/commit/build/character/3/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6314/0/0",
+        "0/6217/1/0",
+        "0/5217/3/0",
+        "0/3213/3/0",
+        "0/6107/3/0",
+        "0/6107/3/0",
+        "0/3107/5/0",
+        "0/6213/0/0"
+      ]
+    },
+    "label": "original call 158",
+    "originalDurationMs": 33.555
+  },
+  {
+    "route": "/commit/build/character/5/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5223/3/0",
+        "0/4110/6/0",
+        "0/6110/4/0",
+        "0/5110/4/0",
+        "0/5317/0/0",
+        "0/6219/1/0",
+        "0/3110/5/0",
+        "0/6315/0/0"
+      ]
+    },
+    "label": "original call 159",
+    "originalDurationMs": 23.662
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 160",
+    "originalDurationMs": 9.596
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 0,
+      "jewelToSet": "shade:3"
+    },
+    "label": "original call 161",
+    "originalDurationMs": 26.263
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 0,
+      "jewelToSet": "ward:2"
+    },
+    "label": "original call 162",
+    "originalDurationMs": 28.106
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 0,
+      "jewelToSet": "focus:1"
+    },
+    "label": "original call 163",
+    "originalDurationMs": 24.408
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 164",
+    "originalDurationMs": 19.827
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 6,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 165",
+    "originalDurationMs": 20.951
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 166",
+    "originalDurationMs": 21.93
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 6,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 167",
+    "originalDurationMs": 22.503
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 168",
+    "originalDurationMs": 798.192
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 169",
+    "originalDurationMs": 923.136
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 170",
+    "originalDurationMs": 6.785
+  },
+  {
+    "route": "/commit/expedition/1/changeExpedition",
+    "parameters": {
+      "destination": 7,
+      "destinationMode": "fixed",
+      "depthLimit": "all",
+      "difficultyOffset": 0
+    },
+    "label": "original call 171",
+    "originalDurationMs": 59.881
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 172",
+    "originalDurationMs": 912.099
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 173",
+    "originalDurationMs": 862.523
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 174",
+    "originalDurationMs": 6.333
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 175",
+    "originalDurationMs": 41.929
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 176",
+    "originalDurationMs": 40.947
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 177",
+    "originalDurationMs": 4.657
+  },
+  {
+    "route": "/commit/build/party/1",
+    "parameters": {
+      "order": [
+        1,
+        6,
+        4,
+        2,
+        3,
+        5
+      ]
+    },
+    "label": "original call 178",
+    "originalDurationMs": 57.999
+  },
+  {
+    "route": "/commit/build/character/1/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 179",
+    "originalDurationMs": 40.005
+  },
+  {
+    "route": "/commit/build/character/6/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 180",
+    "originalDurationMs": 32.305
+  },
+  {
+    "route": "/commit/build/character/4/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 181",
+    "originalDurationMs": 34.608
+  },
+  {
+    "route": "/commit/build/character/2/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 182",
+    "originalDurationMs": 25.687
+  },
+  {
+    "route": "/commit/build/character/3/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 183",
+    "originalDurationMs": 26.278
+  },
+  {
+    "route": "/commit/build/character/5/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 184",
+    "originalDurationMs": 24.293
+  },
+  {
+    "route": "/commit/build/character/1/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6101/5/0",
+        "0/6102/4/0",
+        "0/4101/6/0",
+        "0/6101/4/0",
+        "0/6102/4/0",
+        "0/5401/0/0",
+        "0/6102/3/0",
+        "0/6103/5/0",
+        "0/6304/0/0",
+        "0/6304/0/0",
+        "0/4103/6/0",
+        "0/6408/0/0",
+        "0/7103/3/0"
+      ]
+    },
+    "label": "original call 185",
+    "originalDurationMs": 46.123
+  },
+  {
+    "route": "/commit/build/character/6/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5101/5/0",
+        "0/6102/3/0",
+        "0/6101/3/0",
+        "0/5401/0/0",
+        "0/6102/3/0",
+        "0/4102/5/0",
+        "0/5102/4/0",
+        "0/6304/0/0",
+        "0/7103/3/0",
+        "0/7103/3/0"
+      ]
+    },
+    "label": "original call 186",
+    "originalDurationMs": 37.425
+  },
+  {
+    "route": "/commit/build/character/4/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/7213/0/0",
+        "0/6313/2/0",
+        "0/5107/6/0",
+        "0/6107/5/0",
+        "0/6107/5/0",
+        "0/3314/4/0",
+        "0/2213/3/0",
+        "0/7107/2/0",
+        "0/7109/3/0",
+        "0/4107/4/0",
+        "0/6109/4/0"
+      ]
+    },
+    "label": "original call 187",
+    "originalDurationMs": 53.78
+  },
+  {
+    "route": "/commit/build/character/2/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/7213/0/0",
+        "0/7217/0/0",
+        "0/6107/4/0",
+        "0/6107/4/0",
+        "0/7107/1/0",
+        "0/7109/3/0",
+        "0/4107/4/0",
+        "0/3107/5/0",
+        "0/6109/4/0",
+        "0/5107/3/0",
+        "0/7213/0/0"
+      ]
+    },
+    "label": "original call 188",
+    "originalDurationMs": 37.304
+  },
+  {
+    "route": "/commit/build/character/3/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/7213/0/0",
+        "0/7217/0/0",
+        "0/6107/3/0",
+        "0/6107/3/0",
+        "0/7107/1/0",
+        "0/7109/2/0",
+        "0/3107/5/0",
+        "0/5107/3/0",
+        "0/6109/4/0"
+      ]
+    },
+    "label": "original call 189",
+    "originalDurationMs": 35.404
+  },
+  {
+    "route": "/commit/build/character/5/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/7223/0/0",
+        "0/2226/2/0",
+        "0/7112/3/0",
+        "0/1110/6/0",
+        "0/4110/6/0",
+        "0/6110/4/0",
+        "0/3110/6/0",
+        "0/5110/4/0",
+        "0/7110/2/0"
+      ]
+    },
+    "label": "original call 190",
+    "originalDurationMs": 26.041
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 191",
+    "originalDurationMs": 5.748
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 10,
+      "jewelToSet": "ward:2"
+    },
+    "label": "original call 192",
+    "originalDurationMs": 43.433
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 0,
+      "jewelToSet": "shade:3"
+    },
+    "label": "original call 193",
+    "originalDurationMs": 32.409
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:1"
+    },
+    "label": "original call 194",
+    "originalDurationMs": 23.15
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 195",
+    "originalDurationMs": 40.546
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 6,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 196",
+    "originalDurationMs": 30.81
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 3,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 197",
+    "originalDurationMs": 24.124
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 4,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 198",
+    "originalDurationMs": 24.304
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 199",
+    "originalDurationMs": 1069.557
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 200",
+    "originalDurationMs": 832.918
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 201",
+    "originalDurationMs": 8.434
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 202",
+    "originalDurationMs": 734.801
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 203",
+    "originalDurationMs": 821.954
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 204",
+    "originalDurationMs": 9.697
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 205",
+    "originalDurationMs": 35.712
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 206",
+    "originalDurationMs": 47.21
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 207",
+    "originalDurationMs": 6.319
+  },
+  {
+    "route": "/commit/build/character/1/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 208",
+    "originalDurationMs": 74.678
+  },
+  {
+    "route": "/commit/build/character/6/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 209",
+    "originalDurationMs": 56.573
+  },
+  {
+    "route": "/commit/build/character/4/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 210",
+    "originalDurationMs": 43.769
+  },
+  {
+    "route": "/commit/build/character/2/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 211",
+    "originalDurationMs": 48.001
+  },
+  {
+    "route": "/commit/build/character/3/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 212",
+    "originalDurationMs": 31.989
+  },
+  {
+    "route": "/commit/build/character/5/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 213",
+    "originalDurationMs": 39.033
+  },
+  {
+    "route": "/commit/build/character/1/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6101/5/0",
+        "0/6102/4/0",
+        "0/4101/6/0",
+        "0/6101/4/0",
+        "0/6102/4/0",
+        "0/5401/0/0",
+        "0/7102/2/0",
+        "0/7103/4/0",
+        "0/6304/0/0",
+        "0/6103/5/0",
+        "0/6304/0/0",
+        "0/6408/0/0",
+        "0/4103/6/0"
+      ]
+    },
+    "label": "original call 214",
+    "originalDurationMs": 36.131
+  },
+  {
+    "route": "/commit/build/character/6/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5101/5/0",
+        "0/7102/2/0",
+        "0/6101/3/0",
+        "0/5401/0/0",
+        "0/7102/2/0",
+        "0/7102/2/0",
+        "0/7102/2/0",
+        "0/6304/0/0",
+        "0/7103/3/0",
+        "0/1404/0/0"
+      ]
+    },
+    "label": "original call 215",
+    "originalDurationMs": 46.52
+  },
+  {
+    "route": "/commit/build/character/4/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/4213/4/0",
+        "0/6313/2/0",
+        "0/7107/4/0",
+        "0/6107/5/0",
+        "0/5107/6/0",
+        "0/3314/4/0",
+        "0/6107/5/0",
+        "0/7109/3/0",
+        "0/3107/5/0",
+        "0/6109/4/0",
+        "0/4107/4/0"
+      ]
+    },
+    "label": "original call 216",
+    "originalDurationMs": 52.018
+  },
+  {
+    "route": "/commit/build/character/2/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5311/2/0",
+        "0/7217/0/0",
+        "0/7107/3/0",
+        "0/6107/4/0",
+        "0/7107/3/0",
+        "0/7109/3/0",
+        "0/6107/4/0",
+        "0/6109/4/0",
+        "0/3107/5/0",
+        "0/4107/4/0",
+        "0/5107/3/0"
+      ]
+    },
+    "label": "original call 217",
+    "originalDurationMs": 39.903
+  },
+  {
+    "route": "/commit/build/character/3/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5213/2/0",
+        "0/7217/0/0",
+        "0/7107/2/0",
+        "0/7107/2/0",
+        "0/4107/4/0",
+        "0/7109/3/0",
+        "0/3107/5/0",
+        "0/5107/3/0",
+        "0/4215/3/0"
+      ]
+    },
+    "label": "original call 218",
+    "originalDurationMs": 33.64
+  },
+  {
+    "route": "/commit/build/character/5/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5223/3/0",
+        "0/7110/5/0",
+        "0/4110/6/0",
+        "0/6110/4/0",
+        "0/4223/3/0",
+        "0/3110/6/0",
+        "0/5110/4/0",
+        "0/6315/1/0",
+        "0/7317/0/0"
+      ]
+    },
+    "label": "original call 219",
+    "originalDurationMs": 33.975
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 220",
+    "originalDurationMs": 6.374
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 12,
+      "jewelToSet": "shade:3"
+    },
+    "label": "original call 221",
+    "originalDurationMs": 25.258
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 0,
+      "jewelToSet": "ward:2"
+    },
+    "label": "original call 222",
+    "originalDurationMs": 25.594
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:1"
+    },
+    "label": "original call 223",
+    "originalDurationMs": 29.19
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 4,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 224",
+    "originalDurationMs": 32.351
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 4,
+      "jewelToSet": "might:4"
+    },
+    "label": "original call 225",
+    "originalDurationMs": 27.204
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 6,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 226",
+    "originalDurationMs": 31.818
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 227",
+    "originalDurationMs": 27.762
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 5,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 228",
+    "originalDurationMs": 39.104
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 229",
+    "originalDurationMs": 950.946
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 230",
+    "originalDurationMs": 746.311
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 231",
+    "originalDurationMs": 14.21
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 232",
+    "originalDurationMs": 724.26
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 233",
+    "originalDurationMs": 689.219
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 234",
+    "originalDurationMs": 11.361
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 235",
+    "originalDurationMs": 43.262
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 236",
+    "originalDurationMs": 45.217
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 237",
+    "originalDurationMs": 5.072
+  },
+  {
+    "route": "/commit/expedition/1/changeExpedition",
+    "parameters": {
+      "destination": 8,
+      "destinationMode": "fixed",
+      "depthLimit": "all",
+      "difficultyOffset": 0
+    },
+    "label": "original call 238",
+    "originalDurationMs": 91.052
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 239",
+    "originalDurationMs": 40.883
+  },
+  {
+    "route": "/commit/build/party/1",
+    "parameters": {
+      "order": [
+        1,
+        4,
+        2,
+        6,
+        3,
+        5
+      ]
+    },
+    "label": "original call 240",
+    "originalDurationMs": 94.878
+  },
+  {
+    "route": "/commit/build/character/1/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 241",
+    "originalDurationMs": 36.876
+  },
+  {
+    "route": "/commit/build/character/4/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 242",
+    "originalDurationMs": 34.748
+  },
+  {
+    "route": "/commit/build/character/2/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 243",
+    "originalDurationMs": 40.975
+  },
+  {
+    "route": "/commit/build/character/6/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 244",
+    "originalDurationMs": 41.059
+  },
+  {
+    "route": "/commit/build/character/3/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 245",
+    "originalDurationMs": 34.925
+  },
+  {
+    "route": "/commit/build/character/5/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 246",
+    "originalDurationMs": 29.553
+  },
+  {
+    "route": "/commit/build/character/1/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6101/5/0",
+        "0/3406/0/0",
+        "0/4101/6/0",
+        "0/6101/4/0",
+        "0/7102/4/0",
+        "0/5101/5/0",
+        "0/7103/4/0",
+        "0/7304/0/0",
+        "0/7102/3/0",
+        "0/7103/4/0",
+        "0/7103/4/0",
+        "0/6103/5/0",
+        "0/4103/6/0"
+      ]
+    },
+    "label": "original call 247",
+    "originalDurationMs": 38.739
+  },
+  {
+    "route": "/commit/build/character/4/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6215/2/0",
+        "0/6313/2/0",
+        "0/5107/6/0",
+        "0/7107/4/0",
+        "0/6107/5/0",
+        "0/3314/4/0",
+        "0/3213/4/0",
+        "0/7107/4/0",
+        "0/7109/4/0",
+        "0/6109/4/0",
+        "0/6107/5/0"
+      ]
+    },
+    "label": "original call 248",
+    "originalDurationMs": 33.753
+  },
+  {
+    "route": "/commit/build/character/2/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6215/2/0",
+        "0/5109/5/0",
+        "0/7109/3/0",
+        "0/6109/4/0",
+        "0/3213/3/0",
+        "0/7107/3/0",
+        "0/6107/4/0",
+        "0/7107/3/0",
+        "0/7107/3/0",
+        "0/3107/5/0",
+        "0/6213/2/0"
+      ]
+    },
+    "label": "original call 249",
+    "originalDurationMs": 44.174
+  },
+  {
+    "route": "/commit/build/character/6/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/7101/2/0",
+        "0/7102/3/0",
+        "0/7101/2/0",
+        "0/7101/2/0",
+        "0/7102/3/0",
+        "0/5401/0/0",
+        "0/6102/4/0",
+        "0/6102/4/0",
+        "0/7103/3/0",
+        "0/7103/3/0"
+      ]
+    },
+    "label": "original call 250",
+    "originalDurationMs": 52.634
+  },
+  {
+    "route": "/commit/build/character/3/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6215/2/0",
+        "0/7217/0/0",
+        "0/6107/4/0",
+        "0/7312/0/0",
+        "0/7107/2/0",
+        "0/7109/3/0",
+        "0/3213/3/0",
+        "0/6109/4/0",
+        "0/3107/5/0"
+      ]
+    },
+    "label": "original call 251",
+    "originalDurationMs": 44.443
+  },
+  {
+    "route": "/commit/build/character/5/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6223/2/0",
+        "0/7110/5/0",
+        "0/4110/6/0",
+        "0/7317/1/0",
+        "0/3223/2/0",
+        "0/6110/4/0",
+        "0/3110/6/0",
+        "0/7219/1/0",
+        "0/5110/4/0"
+      ]
+    },
+    "label": "original call 252",
+    "originalDurationMs": 34.713
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 253",
+    "originalDurationMs": 6.225
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 11,
+      "jewelToSet": "ward:2"
+    },
+    "label": "original call 254",
+    "originalDurationMs": 39.977
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 12,
+      "jewelToSet": "shade:3"
+    },
+    "label": "original call 255",
+    "originalDurationMs": 37.806
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:1"
+    },
+    "label": "original call 256",
+    "originalDurationMs": 27.458
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "might:4"
+    },
+    "label": "original call 257",
+    "originalDurationMs": 26.292
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 9,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 258",
+    "originalDurationMs": 36.869
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 6,
+      "jewelToSet": "ward:4"
+    },
+    "label": "original call 259",
+    "originalDurationMs": 32.709
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 8,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 260",
+    "originalDurationMs": 27.509
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 261",
+    "originalDurationMs": 41.344
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 6,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 262",
+    "originalDurationMs": 29.611
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 263",
+    "originalDurationMs": 854.203
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 264",
+    "originalDurationMs": 791.927
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 265",
+    "originalDurationMs": 14.242
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 266",
+    "originalDurationMs": 39.284
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 267",
+    "originalDurationMs": 48.366
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 268",
+    "originalDurationMs": 4.7
+  },
+  {
+    "route": "/read/build/party/1",
+    "parameters": {},
+    "label": "original call 269",
+    "originalDurationMs": 39.999
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 270",
+    "originalDurationMs": 867.006
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 271",
+    "originalDurationMs": 811.793
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 272",
+    "originalDurationMs": 10.036
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 273",
+    "originalDurationMs": 672.811
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 274",
+    "originalDurationMs": 649.76
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 275",
+    "originalDurationMs": 5.736
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 276",
+    "originalDurationMs": 37.871
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 277",
+    "originalDurationMs": 41.461
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 278",
+    "originalDurationMs": 4.408
+  },
+  {
+    "route": "/commit/build/character/1/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 279",
+    "originalDurationMs": 78.897
+  },
+  {
+    "route": "/commit/build/character/4/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 280",
+    "originalDurationMs": 56.989
+  },
+  {
+    "route": "/commit/build/character/2/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 281",
+    "originalDurationMs": 40.133
+  },
+  {
+    "route": "/commit/build/character/6/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 282",
+    "originalDurationMs": 32.445
+  },
+  {
+    "route": "/commit/build/character/3/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 283",
+    "originalDurationMs": 42.055
+  },
+  {
+    "route": "/commit/build/character/5/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 284",
+    "originalDurationMs": 50.692
+  },
+  {
+    "route": "/commit/build/character/1/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5401/0/0",
+        "0/5401/0/0",
+        "0/7403/0/0",
+        "0/7403/0/0",
+        "0/1401/3/0",
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/7103/4/0",
+        "0/7103/4/0",
+        "0/1401/0/0",
+        "0/7103/4/0",
+        "0/8103/3/0",
+        "0/8103/3/0"
+      ]
+    },
+    "label": "original call 285",
+    "originalDurationMs": 45.913
+  },
+  {
+    "route": "/commit/build/character/4/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6215/2/0",
+        "0/6313/2/0",
+        "0/5107/6/0",
+        "0/7107/4/0",
+        "0/6107/5/0",
+        "0/3314/4/0",
+        "0/3213/4/0",
+        "0/8107/2/0",
+        "0/7109/4/0",
+        "0/7107/4/0",
+        "0/6109/4/0"
+      ]
+    },
+    "label": "original call 286",
+    "originalDurationMs": 42.939
+  },
+  {
+    "route": "/commit/build/character/2/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6215/2/0",
+        "0/8109/3/0",
+        "0/6107/5/0",
+        "0/7107/3/0",
+        "0/8107/2/0",
+        "0/7109/3/0",
+        "0/4107/5/0",
+        "0/6109/4/0",
+        "0/8213/0/0",
+        "0/6213/2/0",
+        "0/5109/5/0"
+      ]
+    },
+    "label": "original call 287",
+    "originalDurationMs": 37.844
+  },
+  {
+    "route": "/commit/build/character/6/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/8101/1/0",
+        "0/7102/3/0",
+        "0/7302/0/0",
+        "0/8103/3/0",
+        "0/8103/3/0",
+        "0/6103/5/0"
+      ]
+    },
+    "label": "original call 288",
+    "originalDurationMs": 41.313
+  },
+  {
+    "route": "/commit/build/character/3/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6215/2/0",
+        "0/8109/2/0",
+        "0/7107/3/0",
+        "0/6107/4/0",
+        "0/8107/2/0",
+        "0/7109/3/0",
+        "0/8213/0/0",
+        "0/3213/3/0",
+        "0/6109/4/0"
+      ]
+    },
+    "label": "original call 289",
+    "originalDurationMs": 36.488
+  },
+  {
+    "route": "/commit/build/character/5/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6223/2/0",
+        "0/7110/5/0",
+        "0/4110/6/0",
+        "0/7317/1/0",
+        "0/3223/2/0",
+        "0/6110/4/0",
+        "0/8110/2/0",
+        "0/3404/4/0",
+        "0/8112/3/0"
+      ]
+    },
+    "label": "original call 290",
+    "originalDurationMs": 35.435
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 291",
+    "originalDurationMs": 6.476
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 7,
+      "jewelToSet": "ward:2"
+    },
+    "label": "original call 292",
+    "originalDurationMs": 32.236
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 8,
+      "jewelToSet": "shade:3"
+    },
+    "label": "original call 293",
+    "originalDurationMs": 30.855
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 10,
+      "jewelToSet": "ward:4"
+    },
+    "label": "original call 294",
+    "originalDurationMs": 31.584
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:1"
+    },
+    "label": "original call 295",
+    "originalDurationMs": 33.208
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "might:4"
+    },
+    "label": "original call 296",
+    "originalDurationMs": 29.14
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 297",
+    "originalDurationMs": 60.339
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 6,
+      "jewelToSet": "might:4"
+    },
+    "label": "original call 298",
+    "originalDurationMs": 44.067
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 9,
+      "jewelToSet": "fort:1"
+    },
+    "label": "original call 299",
+    "originalDurationMs": 43.818
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 3,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 300",
+    "originalDurationMs": 35.462
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 301",
+    "originalDurationMs": 33.294
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 302",
+    "originalDurationMs": 31.404
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 7,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 303",
+    "originalDurationMs": 50.645
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 304",
+    "originalDurationMs": 768.956
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 305",
+    "originalDurationMs": 726.815
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 306",
+    "originalDurationMs": 7.302
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 307",
+    "originalDurationMs": 619.751
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 308",
+    "originalDurationMs": 653.16
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 309",
+    "originalDurationMs": 8.358
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 310",
+    "originalDurationMs": 617.941
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 311",
+    "originalDurationMs": 564.893
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 312",
+    "originalDurationMs": 5.151
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 313",
+    "originalDurationMs": 42.575
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 314",
+    "originalDurationMs": 53.787
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 315",
+    "originalDurationMs": 5.58
+  },
+  {
+    "route": "/read/observation/diary",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 316",
+    "originalDurationMs": 57.401
+  },
+  {
+    "route": "/commit/build/character/3/changeBuild",
+    "parameters": {
+      "mainClassId": "sword-saint",
+      "subClassId": "ranger",
+      "simulation": false,
+      "confirmation": "yes"
+    },
+    "label": "original call 317",
+    "originalDurationMs": 90.589
+  },
+  {
+    "route": "/commit/build/character/6/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 318",
+    "originalDurationMs": 42.407
+  },
+  {
+    "route": "/commit/build/character/6/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/8103/3/0",
+        "0/8103/3/0",
+        "0/1401/0/0"
+      ]
+    },
+    "label": "original call 319",
+    "originalDurationMs": 61.413
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 320",
+    "originalDurationMs": 8.622
+  },
+  {
+    "route": "/commit/build/character/1/jewelRemove",
+    "parameters": {
+      "targetEquipment": 8
+    },
+    "label": "original call 321",
+    "originalDurationMs": 58.199
+  },
+  {
+    "route": "/commit/build/character/1/jewelRemove",
+    "parameters": {
+      "targetEquipment": 10
+    },
+    "label": "original call 322",
+    "originalDurationMs": 72.037
+  },
+  {
+    "route": "/commit/build/character/2/jewelRemove",
+    "parameters": {
+      "targetEquipment": 2
+    },
+    "label": "original call 323",
+    "originalDurationMs": 43.628
+  },
+  {
+    "route": "/commit/build/character/2/jewelRemove",
+    "parameters": {
+      "targetEquipment": 6
+    },
+    "label": "original call 324",
+    "originalDurationMs": 52.161
+  },
+  {
+    "route": "/commit/build/character/5/jewelRemove",
+    "parameters": {
+      "targetEquipment": 7
+    },
+    "label": "original call 325",
+    "originalDurationMs": 67.751
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 8,
+      "jewelToSet": "fort:1"
+    },
+    "label": "original call 326",
+    "originalDurationMs": 65.086
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 10,
+      "jewelToSet": "ward:3"
+    },
+    "label": "original call 327",
+    "originalDurationMs": 57.328
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 11,
+      "jewelToSet": "fort:1"
+    },
+    "label": "original call 328",
+    "originalDurationMs": 42.24
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:3"
+    },
+    "label": "original call 329",
+    "originalDurationMs": 36.641
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "might:4"
+    },
+    "label": "original call 330",
+    "originalDurationMs": 33.695
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 6,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 331",
+    "originalDurationMs": 37.716
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 7,
+      "jewelToSet": "shade:3"
+    },
+    "label": "original call 332",
+    "originalDurationMs": 44.63
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 8,
+      "jewelToSet": "ward:4"
+    },
+    "label": "original call 333",
+    "originalDurationMs": 32.987
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:1"
+    },
+    "label": "original call 334",
+    "originalDurationMs": 34.261
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 5,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 335",
+    "originalDurationMs": 34.364
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 336",
+    "originalDurationMs": 823.994
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 337",
+    "originalDurationMs": 705.303
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 338",
+    "originalDurationMs": 7.71
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 339",
+    "originalDurationMs": 977.585
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 340",
+    "originalDurationMs": 888.984
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 341",
+    "originalDurationMs": 5.884
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 342",
+    "originalDurationMs": 828.827
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 343",
+    "originalDurationMs": 972.69
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 344",
+    "originalDurationMs": 10.2
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 345",
+    "originalDurationMs": 39.628
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 346",
+    "originalDurationMs": 47.457
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 347",
+    "originalDurationMs": 4.328
+  },
+  {
+    "route": "/commit/build/party/1",
+    "parameters": {
+      "order": [
+        1,
+        6,
+        4,
+        2,
+        3,
+        5
+      ]
+    },
+    "label": "original call 349",
+    "originalDurationMs": 79.421
+  },
+  {
+    "route": "/commit/build/character/1/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 350",
+    "originalDurationMs": 112.865
+  },
+  {
+    "route": "/commit/build/character/6/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 351",
+    "originalDurationMs": 55.963
+  },
+  {
+    "route": "/commit/build/character/4/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 352",
+    "originalDurationMs": 33.347
+  },
+  {
+    "route": "/commit/build/character/2/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 353",
+    "originalDurationMs": 44.567
+  },
+  {
+    "route": "/commit/build/character/3/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 354",
+    "originalDurationMs": 54.789
+  },
+  {
+    "route": "/commit/build/character/5/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 355",
+    "originalDurationMs": 51.436
+  },
+  {
+    "route": "/commit/build/character/1/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/7402/0/0",
+        "0/7109/4/0",
+        "0/7402/0/0",
+        "0/7402/0/0",
+        "0/1401/3/0",
+        "0/7403/0/0",
+        "0/6103/5/0",
+        "0/7403/0/0",
+        "0/8103/5/0",
+        "0/5401/0/0",
+        "0/7103/4/0",
+        "0/7103/4/0",
+        "0/7103/4/0"
+      ]
+    },
+    "label": "original call 356",
+    "originalDurationMs": 40.915
+  },
+  {
+    "route": "/commit/build/character/6/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/4301/4/0",
+        "0/8303/0/0",
+        "0/4301/4/0",
+        "0/8101/2/0",
+        "0/8101/2/0",
+        "0/8303/0/0",
+        "0/8303/0/0",
+        "0/8103/3/0",
+        "0/8103/3/0",
+        "0/8103/3/0"
+      ]
+    },
+    "label": "original call 357",
+    "originalDurationMs": 61.826
+  },
+  {
+    "route": "/commit/build/character/4/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6215/2/0",
+        "0/8217/0/0",
+        "0/5107/6/0",
+        "0/7107/4/0",
+        "0/6107/5/0",
+        "0/6313/2/0",
+        "0/8107/3/0",
+        "0/3213/4/0",
+        "0/3314/4/0",
+        "0/8213/1/0",
+        "0/5401/0/0"
+      ]
+    },
+    "label": "original call 358",
+    "originalDurationMs": 43.635
+  },
+  {
+    "route": "/commit/build/character/2/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6215/2/0",
+        "0/8217/0/0",
+        "0/7107/4/0",
+        "0/6107/5/0",
+        "0/8213/1/0",
+        "0/8109/4/0",
+        "0/8107/2/0",
+        "0/3213/3/0",
+        "0/7109/3/0",
+        "0/6109/4/0",
+        "0/6213/2/0"
+      ]
+    },
+    "label": "original call 359",
+    "originalDurationMs": 40.814
+  },
+  {
+    "route": "/commit/build/character/3/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6215/2/0",
+        "0/8109/4/0",
+        "0/7107/3/0",
+        "0/6107/4/0",
+        "0/8107/2/0",
+        "0/7109/3/0",
+        "0/4107/5/0",
+        "0/8213/0/0",
+        "0/6109/4/0"
+      ]
+    },
+    "label": "original call 360",
+    "originalDurationMs": 42.912
+  },
+  {
+    "route": "/commit/build/character/5/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6223/2/0",
+        "0/7110/5/0",
+        "0/8110/4/0",
+        "0/4110/6/0",
+        "0/8321/0/0",
+        "0/6111/3/0",
+        "0/6110/4/0",
+        "0/3110/6/0",
+        "0/6203/1/0"
+      ]
+    },
+    "label": "original call 361",
+    "originalDurationMs": 44.976
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 362",
+    "originalDurationMs": 5.81
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 8,
+      "jewelToSet": "ward:2"
+    },
+    "label": "original call 363",
+    "originalDurationMs": 32.904
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 10,
+      "jewelToSet": "ward:3"
+    },
+    "label": "original call 364",
+    "originalDurationMs": 41.966
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 11,
+      "jewelToSet": "shade:3"
+    },
+    "label": "original call 365",
+    "originalDurationMs": 30.258
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 12,
+      "jewelToSet": "ward:4"
+    },
+    "label": "original call 366",
+    "originalDurationMs": 31.519
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 0,
+      "jewelToSet": "fort:1"
+    },
+    "label": "original call 367",
+    "originalDurationMs": 30.573
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "fort:1"
+    },
+    "label": "original call 368",
+    "originalDurationMs": 48.591
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 3,
+      "jewelToSet": "fort:1"
+    },
+    "label": "original call 369",
+    "originalDurationMs": 48.995
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:1"
+    },
+    "label": "original call 370",
+    "originalDurationMs": 42.229
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "might:4"
+    },
+    "label": "original call 371",
+    "originalDurationMs": 41.161
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 4,
+      "jewelToSet": "might:3"
+    },
+    "label": "original call 372",
+    "originalDurationMs": 40.734
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:3"
+    },
+    "label": "original call 373",
+    "originalDurationMs": 36.332
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "might:4"
+    },
+    "label": "original call 374",
+    "originalDurationMs": 33.334
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 3,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 375",
+    "originalDurationMs": 35.197
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:1"
+    },
+    "label": "original call 376",
+    "originalDurationMs": 53.169
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 3,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 377",
+    "originalDurationMs": 52.079
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 5,
+      "jewelToSet": "focus:3"
+    },
+    "label": "original call 378",
+    "originalDurationMs": 36.298
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 6,
+      "jewelToSet": "might:4"
+    },
+    "label": "original call 379",
+    "originalDurationMs": 32.749
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 380",
+    "originalDurationMs": 38.346
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "arcana:2"
+    },
+    "label": "original call 381",
+    "originalDurationMs": 36.919
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 3,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 382",
+    "originalDurationMs": 34.204
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 7,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 383",
+    "originalDurationMs": 43.295
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 384",
+    "originalDurationMs": 825.617
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 385",
+    "originalDurationMs": 19.442
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 386",
+    "originalDurationMs": 639.671
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 387",
+    "originalDurationMs": 8.699
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 388",
+    "originalDurationMs": 698.554
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 389",
+    "originalDurationMs": 6.192
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 390",
+    "originalDurationMs": 658.848
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 391",
+    "originalDurationMs": 5.375
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 392",
+    "originalDurationMs": 39.827
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 393",
+    "originalDurationMs": 49.48
+  },
+  {
+    "route": "/read/base/searchItems",
+    "parameters": {
+      "state": "owned",
+      "category": "jewel",
+      "details": "all",
+      "limit": 5000
+    },
+    "label": "original call 394",
+    "originalDurationMs": 6.157
+  },
+  {
+    "route": "/commit/build/party/1",
+    "parameters": {
+      "order": [
+        6,
+        1,
+        4,
+        2,
+        3,
+        5
+      ]
+    },
+    "label": "original call 395",
+    "originalDurationMs": 84.994
+  },
+  {
+    "route": "/commit/build/character/6/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 396",
+    "originalDurationMs": 49.432
+  },
+  {
+    "route": "/commit/build/character/1/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 397",
+    "originalDurationMs": 56.96
+  },
+  {
+    "route": "/commit/build/character/4/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 398",
+    "originalDurationMs": 49.461
+  },
+  {
+    "route": "/commit/build/character/2/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 399",
+    "originalDurationMs": 41.631
+  },
+  {
+    "route": "/commit/build/character/3/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 400",
+    "originalDurationMs": 35.692
+  },
+  {
+    "route": "/commit/build/character/5/removeAllEquipment",
+    "parameters": {},
+    "label": "original call 401",
+    "originalDurationMs": 49.024
+  },
+  {
+    "route": "/commit/build/character/6/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/7402/0/0",
+        "0/1401/0/0",
+        "0/8301/0/0",
+        "0/1401/0/0",
+        "0/8301/0/0",
+        "0/1401/0/0",
+        "0/5103/3/0",
+        "0/7103/4/0",
+        "0/8103/3/0",
+        "0/5401/0/0"
+      ]
+    },
+    "label": "original call 402",
+    "originalDurationMs": 46.756
+  },
+  {
+    "route": "/commit/build/character/1/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/5401/0/0",
+        "0/7403/0/0",
+        "0/7403/0/0",
+        "0/1401/3/0",
+        "0/7402/0/0",
+        "0/8103/5/0",
+        "0/8303/1/0",
+        "0/8103/4/0",
+        "0/1404/0/0",
+        "0/8103/4/0",
+        "0/7103/4/0",
+        "0/7103/4/0",
+        "0/7402/0/0"
+      ]
+    },
+    "label": "original call 403",
+    "originalDurationMs": 55.888
+  },
+  {
+    "route": "/commit/build/character/4/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6215/2/0",
+        "0/8217/1/0",
+        "0/8107/4/0",
+        "0/5107/6/0",
+        "0/6313/2/0",
+        "0/7107/4/0",
+        "0/6107/5/0",
+        "0/3213/4/0",
+        "0/3314/4/0",
+        "0/8213/2/0",
+        "0/7109/4/0"
+      ]
+    },
+    "label": "original call 404",
+    "originalDurationMs": 48.067
+  },
+  {
+    "route": "/commit/build/character/2/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6215/2/0",
+        "0/8217/1/0",
+        "0/7107/4/0",
+        "0/6107/5/0",
+        "0/8107/3/0",
+        "0/8109/4/0",
+        "0/8213/1/0",
+        "0/7109/3/0",
+        "0/3213/3/0",
+        "0/8107/3/0",
+        "0/6109/4/0"
+      ]
+    },
+    "label": "original call 405",
+    "originalDurationMs": 51.093
+  },
+  {
+    "route": "/commit/build/character/3/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6215/2/0",
+        "0/8217/0/0",
+        "0/8213/1/0",
+        "0/7107/3/0",
+        "0/6107/4/0",
+        "0/8109/4/0",
+        "0/8107/2/0",
+        "0/3213/3/0",
+        "0/7109/3/0"
+      ]
+    },
+    "label": "original call 406",
+    "originalDurationMs": 47.55
+  },
+  {
+    "route": "/commit/build/character/5/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/6223/2/0",
+        "0/7110/5/0",
+        "0/8110/4/0",
+        "0/4110/6/0",
+        "0/8321/0/0",
+        "0/6110/4/0",
+        "0/3110/6/0",
+        "0/4219/4/0",
+        "0/3223/2/0"
+      ]
+    },
+    "label": "original call 407",
+    "originalDurationMs": 44.561
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 408",
+    "originalDurationMs": 6.335
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 0,
+      "jewelToSet": "shade:3"
+    },
+    "label": "original call 409",
+    "originalDurationMs": 31.715
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "ward:4"
+    },
+    "label": "original call 410",
+    "originalDurationMs": 40.205
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 7,
+      "jewelToSet": "ward:2"
+    },
+    "label": "original call 411",
+    "originalDurationMs": 52.11
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 8,
+      "jewelToSet": "ward:3"
+    },
+    "label": "original call 412",
+    "originalDurationMs": 53.481
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 5,
+      "jewelToSet": "fort:1"
+    },
+    "label": "original call 413",
+    "originalDurationMs": 34.786
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 7,
+      "jewelToSet": "fort:1"
+    },
+    "label": "original call 414",
+    "originalDurationMs": 43.809
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 8,
+      "jewelToSet": "fort:1"
+    },
+    "label": "original call 415",
+    "originalDurationMs": 40.912
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 9,
+      "jewelToSet": "fort:3"
+    },
+    "label": "original call 416",
+    "originalDurationMs": 33.117
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:1"
+    },
+    "label": "original call 417",
+    "originalDurationMs": 41.214
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 3,
+      "jewelToSet": "might:3"
+    },
+    "label": "original call 418",
+    "originalDurationMs": 45.427
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 6,
+      "jewelToSet": "might:4"
+    },
+    "label": "original call 419",
+    "originalDurationMs": 36.484
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:3"
+    },
+    "label": "original call 420",
+    "originalDurationMs": 45.726
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 421",
+    "originalDurationMs": 34.394
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 3,
+      "jewelToSet": "might:4"
+    },
+    "label": "original call 422",
+    "originalDurationMs": 50.539
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:1"
+    },
+    "label": "original call 423",
+    "originalDurationMs": 33.453
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 3,
+      "jewelToSet": "might:2"
+    },
+    "label": "original call 424",
+    "originalDurationMs": 38.618
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 4,
+      "jewelToSet": "might:4"
+    },
+    "label": "original call 425",
+    "originalDurationMs": 34.362
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 0,
+      "jewelToSet": "focus:3"
+    },
+    "label": "original call 426",
+    "originalDurationMs": 37.379
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 427",
+    "originalDurationMs": 37.258
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 428",
+    "originalDurationMs": 40.989
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 3,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 429",
+    "originalDurationMs": 37.103
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 5,
+      "jewelToSet": "arcana:1"
+    },
+    "label": "original call 430",
+    "originalDurationMs": 45.854
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 6,
+      "jewelToSet": "arcana:2"
+    },
+    "label": "original call 431",
+    "originalDurationMs": 53.541
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 432",
+    "originalDurationMs": 821.203
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 433",
+    "originalDurationMs": 7.633
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 434",
+    "originalDurationMs": 720.149
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 435",
+    "originalDurationMs": 12.569
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 436",
+    "originalDurationMs": 622.279
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 437",
+    "originalDurationMs": 5.579
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 438",
+    "originalDurationMs": 558.535
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 439",
+    "originalDurationMs": 5.115
+  },
+  {
+    "route": "/read/expedition/1/simulationRun",
+    "parameters": {
+      "numberOfRun": 1000
+    },
+    "label": "original call 440",
+    "originalDurationMs": 1725.461
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 441",
+    "originalDurationMs": 39.998
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 442",
+    "originalDurationMs": 992.659
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 443",
+    "originalDurationMs": 23.393
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 444",
+    "originalDurationMs": 743.543
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 445",
+    "originalDurationMs": 11.288
+  },
+  {
+    "route": "/commit/progress/elapsed",
+    "parameters": {
+      "elapsedSeconds": 43200
+    },
+    "label": "original call 446",
+    "originalDurationMs": 759.938
+  },
+  {
+    "route": "/read/observation/expedition",
+    "parameters": {},
+    "label": "original call 447",
+    "originalDurationMs": 9.567
+  },
+  {
+    "route": "/read/observation/diary",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 448",
+    "originalDurationMs": 55.589
+  },
+  {
+    "route": "/read/expedition/1/setting",
+    "parameters": {},
+    "label": "original call 449",
+    "originalDurationMs": 48.011
+  },
+  {
+    "route": "/fundamental/status",
+    "parameters": {},
+    "label": "original call 450",
+    "originalDurationMs": 36.169
+  },
+  {
+    "route": "/read/observation/party",
+    "parameters": {
+      "partyNumber": 1
+    },
+    "label": "original call 451",
+    "originalDurationMs": 40.842
+  },
+  {
+    "route": "/read/expedition/1/latestBattleLog",
+    "parameters": {
+      "logId": "diary:1794455996924-vzigmo"
+    },
+    "label": "original call 452",
+    "originalDurationMs": 84.753
+  }
+]

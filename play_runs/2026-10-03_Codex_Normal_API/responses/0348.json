@@ -1,0 +1,10 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "89ad2921-06d9-429d-b0f4-44e7da1d3957",
+  "revision": 251,
+  "error": {
+    "code": "not_found",
+    "message": "The requested projection is unavailable."
+  }
+}

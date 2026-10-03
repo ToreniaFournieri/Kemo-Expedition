@@ -1,0 +1,3750 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "5974d4a7-3711-46c2-8a23-285ef80f4642",
+  "revision": 227,
+  "observedAt": "2026-10-03T08:39:54.932Z",
+  "data": {
+    "diaryInfo": {
+      "effectiveSelection": {
+        "partyNumber": 1,
+        "diaryEntryId": null
+      },
+      "unreadTotal": 72,
+      "parties": [
+        {
+          "partyNumber": 1,
+          "name": "PT1",
+          "unreadCount": 12,
+          "characters": [
+            {
+              "characterId": 1,
+              "name": "Kemo",
+              "raceId": "kemoria",
+              "gender": "male",
+              "isUnique": true,
+              "lineageId": "unascertained",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 4,
+              "name": "Sota",
+              "raceId": "ursan",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "abyssal_sea",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 2,
+              "name": "Kuzunoha",
+              "raceId": "ursan",
+              "gender": "female",
+              "isUnique": false,
+              "lineageId": "abyssal_sea",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 6,
+              "name": "Laika",
+              "raceId": "caninian",
+              "gender": "female",
+              "isUnique": true,
+              "lineageId": "pioneer",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 3,
+              "name": "Lop",
+              "raceId": "leporian",
+              "gender": "female",
+              "isUnique": false,
+              "lineageId": "abyssal_sea",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 5,
+              "name": "Selfin",
+              "raceId": "cervin",
+              "gender": "female",
+              "isUnique": false,
+              "lineageId": "utopia",
+              "mimorianEnemyId": null
+            }
+          ],
+          "settings": {
+            "superRareThreshold": "all",
+            "bossThreshold": "all",
+            "mythicThreshold": "all",
+            "rareThreshold": 5,
+            "sideQuestThreshold": "all",
+            "notifyGodsBattle": true,
+            "defeatNotificationMode": "defeatOnly",
+            "notifyCyclePopup": true,
+            "notifyItemDropPopup": true,
+            "notifyAutoEquipmentPopup": true,
+            "notifySideQuestPopup": true
+          },
+          "entries": [
+            {
+              "diaryEntryId": "1793729603924-21yzoj",
+              "partyNumber": 1,
+              "occurredAt": "2026-11-03T18:13:23.924Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 8,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793729603924-21yzoj",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 8,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793728335924-l5gc6m",
+              "partyNumber": 1,
+              "occurredAt": "2026-11-03T17:52:15.924Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 8,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793728335924-l5gc6m",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 8,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793727067924-rnqlsd",
+              "partyNumber": 1,
+              "occurredAt": "2026-11-03T17:31:07.924Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 8,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793727067924-rnqlsd",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 8,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793725799924-0n5uhf",
+              "partyNumber": 1,
+              "occurredAt": "2026-11-03T17:09:59.924Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 8,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793725799924-0n5uhf",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 8,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793724531924-0k0ixr",
+              "partyNumber": 1,
+              "occurredAt": "2026-11-03T16:48:51.924Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 8,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793724531924-0k0ixr",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 8,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793723449924-hjhmlf",
+              "partyNumber": 1,
+              "occurredAt": "2026-11-03T16:30:49.924Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 8,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793723449924-hjhmlf",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 8,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793722367924-x3sqop",
+              "partyNumber": 1,
+              "occurredAt": "2026-11-03T16:12:47.924Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 8,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793722367924-x3sqop",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 8,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793720203924-rvebnf",
+              "partyNumber": 1,
+              "occurredAt": "2026-11-03T15:36:43.924Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 8,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793720203924-rvebnf",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 8,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793718039924-nwpbfd",
+              "partyNumber": 1,
+              "occurredAt": "2026-11-03T15:00:39.924Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 8,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793718039924-nwpbfd",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 8,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793715875924-he18lm",
+              "partyNumber": 1,
+              "occurredAt": "2026-11-03T14:24:35.924Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 8,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793715875924-he18lm",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 8,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793714793924-dqydeu",
+              "partyNumber": 1,
+              "occurredAt": "2026-11-03T14:06:33.924Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 8,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793714793924-dqydeu",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 8,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793713711924-uzriyu",
+              "partyNumber": 1,
+              "occurredAt": "2026-11-03T13:48:31.924Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 8,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793713711924-uzriyu",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 8,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            }
+          ]
+        },
+        {
+          "partyNumber": 2,
+          "name": "PT2",
+          "unreadCount": 12,
+          "characters": [
+            {
+              "characterId": 101,
+              "name": "Leonard",
+              "raceId": "vulpinian",
+              "gender": "male",
+              "isUnique": true,
+              "lineageId": "meddlesome_fox",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 102,
+              "name": "Orca",
+              "raceId": "orcinian",
+              "gender": "female",
+              "isUnique": true,
+              "lineageId": "rowdy_orca_girl",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 103,
+              "name": "Kaima",
+              "raceId": "procyonian",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "frozen_forest",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 104,
+              "name": "Manael",
+              "raceId": "cervin",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "utopia",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 105,
+              "name": "Reina",
+              "raceId": "felidian",
+              "gender": "female",
+              "isUnique": false,
+              "lineageId": "machina",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 106,
+              "name": "Tauro",
+              "raceId": "lupinian",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "windcross",
+              "mimorianEnemyId": null
+            }
+          ],
+          "settings": {
+            "superRareThreshold": "all",
+            "bossThreshold": "all",
+            "mythicThreshold": "all",
+            "rareThreshold": 5,
+            "sideQuestThreshold": "all",
+            "notifyGodsBattle": true,
+            "defeatNotificationMode": "defeatOnly",
+            "notifyCyclePopup": true,
+            "notifyItemDropPopup": true,
+            "notifyAutoEquipmentPopup": true,
+            "notifySideQuestPopup": true
+          },
+          "entries": [
+            {
+              "diaryEntryId": "1793734900843-1pmwwj",
+              "partyNumber": 2,
+              "occurredAt": "2026-11-03T19:41:40.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793734900843-1pmwwj",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793733456843-65jzrm",
+              "partyNumber": 2,
+              "occurredAt": "2026-11-03T19:17:36.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793733456843-65jzrm",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793727676843-ib39tz",
+              "partyNumber": 2,
+              "occurredAt": "2026-11-03T17:41:16.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793727676843-ib39tz",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793724786843-xoy0k6",
+              "partyNumber": 2,
+              "occurredAt": "2026-11-03T16:53:06.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793724786843-xoy0k6",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793720451843-svgsa9",
+              "partyNumber": 2,
+              "occurredAt": "2026-11-03T15:40:51.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Bastet Kaftan"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Bastet Kaftan"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793720451843-svgsa9",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/4205/2/0",
+                "0/4317/0/0",
+                "0/4405/0/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793714671843-0fba70",
+              "partyNumber": 2,
+              "occurredAt": "2026-11-03T14:04:31.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793714671843-0fba70",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793711781843-mej68w",
+              "partyNumber": 2,
+              "occurredAt": "2026-11-03T13:16:21.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793711781843-mej68w",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793710336843-pkih4n",
+              "partyNumber": 2,
+              "occurredAt": "2026-11-03T12:52:16.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793710336843-pkih4n",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793708891843-b1tor9",
+              "partyNumber": 2,
+              "occurredAt": "2026-11-03T12:28:11.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793708891843-b1tor9",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793704556843-cwiux3",
+              "partyNumber": 2,
+              "occurredAt": "2026-11-03T11:15:56.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Fleetfang Arrow"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Fleetfang Arrow"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793704556843-cwiux3",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/4109/3/0",
+                "0/4110/3/0",
+                "0/4320/0/0",
+                "0/4402/0/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793703111843-uep4xf",
+              "partyNumber": 2,
+              "occurredAt": "2026-11-03T10:51:51.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793703111843-uep4xf",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793701666843-31b5o1",
+              "partyNumber": 2,
+              "occurredAt": "2026-11-03T10:27:46.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793701666843-31b5o1",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            }
+          ]
+        },
+        {
+          "partyNumber": 3,
+          "name": "PT3",
+          "unreadCount": 12,
+          "characters": [
+            {
+              "characterId": 201,
+              "name": "Hamza",
+              "raceId": "ursan",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "firmament",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 202,
+              "name": "Yusuf",
+              "raceId": "caninian",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "firmament",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 203,
+              "name": "Nox",
+              "raceId": "murid",
+              "gender": "male",
+              "isUnique": true,
+              "lineageId": "phantom_thief",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 204,
+              "name": "Luna",
+              "raceId": "felidian",
+              "gender": "female",
+              "isUnique": true,
+              "lineageId": "crescent_jade",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 205,
+              "name": "Karim",
+              "raceId": "lupinian",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "frozen_forest",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 206,
+              "name": "Jalil",
+              "raceId": "vulpinian",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "adaptation",
+              "mimorianEnemyId": null
+            }
+          ],
+          "settings": {
+            "superRareThreshold": "all",
+            "bossThreshold": "all",
+            "mythicThreshold": "all",
+            "rareThreshold": 5,
+            "sideQuestThreshold": "all",
+            "notifyGodsBattle": true,
+            "defeatNotificationMode": "defeatOnly",
+            "notifyCyclePopup": true,
+            "notifyItemDropPopup": true,
+            "notifyAutoEquipmentPopup": true,
+            "notifySideQuestPopup": true
+          },
+          "entries": [
+            {
+              "diaryEntryId": "1793736240843-drkair",
+              "partyNumber": 3,
+              "occurredAt": "2026-11-03T20:04:00.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Masterwork Fleetfang Arrow"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Masterwork Fleetfang Arrow"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793736240843-drkair",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/4301/0/0",
+                "0/4402/1/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793734956843-pkwz3d",
+              "partyNumber": 3,
+              "occurredAt": "2026-11-03T19:42:36.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793734956843-pkwz3d",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793733668843-06ca09",
+              "partyNumber": 3,
+              "occurredAt": "2026-11-03T19:21:08.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793733668843-06ca09",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793732276843-atom3f",
+              "partyNumber": 3,
+              "occurredAt": "2026-11-03T18:57:56.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793732276843-atom3f",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793730882843-xijckz",
+              "partyNumber": 3,
+              "occurredAt": "2026-11-03T18:34:42.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793730882843-xijckz",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793728094843-mzu7hi",
+              "partyNumber": 3,
+              "occurredAt": "2026-11-03T17:48:14.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793728094843-mzu7hi",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793726700843-p94ybw",
+              "partyNumber": 3,
+              "occurredAt": "2026-11-03T17:25:00.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793726700843-p94ybw",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793725306843-50oami",
+              "partyNumber": 3,
+              "occurredAt": "2026-11-03T17:01:46.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793725306843-50oami",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793721124843-mdpypl",
+              "partyNumber": 3,
+              "occurredAt": "2026-11-03T15:52:04.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793721124843-mdpypl",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793719730843-mz67eb",
+              "partyNumber": 3,
+              "occurredAt": "2026-11-03T15:28:50.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793719730843-mz67eb",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793716942843-8pen7y",
+              "partyNumber": 3,
+              "occurredAt": "2026-11-03T14:42:22.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793716942843-8pen7y",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793715548843-6ajm5c",
+              "partyNumber": 3,
+              "occurredAt": "2026-11-03T14:19:08.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Demonic Bastet Kaftan"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Demonic Bastet Kaftan"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793715548843-6ajm5c",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/4405/2/0",
+                "0/4219/2/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            }
+          ]
+        },
+        {
+          "partyNumber": 4,
+          "name": "PT4",
+          "unreadCount": 12,
+          "characters": [
+            {
+              "characterId": 301,
+              "name": "Mishka",
+              "raceId": "ursan",
+              "gender": "male",
+              "isUnique": true,
+              "lineageId": "apostate",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 302,
+              "name": "Ptitsa",
+              "raceId": "avian",
+              "gender": "male",
+              "isUnique": true,
+              "lineageId": "flamebound_grove",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 303,
+              "name": "Vera",
+              "raceId": "leporian",
+              "gender": "female",
+              "isUnique": false,
+              "lineageId": "abyssal_sea",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 304,
+              "name": "Irina",
+              "raceId": "felidian",
+              "gender": "female",
+              "isUnique": false,
+              "lineageId": "firmament",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 305,
+              "name": "Dmitri",
+              "raceId": "lupinian",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "machina",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 306,
+              "name": "Mira",
+              "raceId": "cervin",
+              "gender": "female",
+              "isUnique": false,
+              "lineageId": "utopia",
+              "mimorianEnemyId": null
+            }
+          ],
+          "settings": {
+            "superRareThreshold": "all",
+            "bossThreshold": "all",
+            "mythicThreshold": "all",
+            "rareThreshold": 5,
+            "sideQuestThreshold": "all",
+            "notifyGodsBattle": true,
+            "defeatNotificationMode": "defeatOnly",
+            "notifyCyclePopup": true,
+            "notifyItemDropPopup": true,
+            "notifyAutoEquipmentPopup": true,
+            "notifySideQuestPopup": true
+          },
+          "entries": [
+            {
+              "diaryEntryId": "1793734800843-po8uid",
+              "partyNumber": 4,
+              "occurredAt": "2026-11-03T19:40:00.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793734800843-po8uid",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793733103843-4w5ohi",
+              "partyNumber": 4,
+              "occurredAt": "2026-11-03T19:11:43.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793733103843-4w5ohi",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793729703843-uu6mtm",
+              "partyNumber": 4,
+              "occurredAt": "2026-11-03T18:15:03.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Fleetfang Arrow"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Fleetfang Arrow"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793729703843-uu6mtm",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/4215/1/0",
+                "0/4105/3/0",
+                "0/4201/1/0",
+                "0/4402/0/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793726303843-hstmx5",
+              "partyNumber": 4,
+              "occurredAt": "2026-11-03T17:18:23.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793726303843-hstmx5",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793724603843-qrsk3a",
+              "partyNumber": 4,
+              "occurredAt": "2026-11-03T16:50:03.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793724603843-qrsk3a",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793722903843-bmy3jo",
+              "partyNumber": 4,
+              "occurredAt": "2026-11-03T16:21:43.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793722903843-bmy3jo",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793719503843-gjdtnd",
+              "partyNumber": 4,
+              "occurredAt": "2026-11-03T15:25:03.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793719503843-gjdtnd",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793716103843-flmuck",
+              "partyNumber": 4,
+              "occurredAt": "2026-11-03T14:28:23.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793716103843-flmuck",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793714403843-0k5nft",
+              "partyNumber": 4,
+              "occurredAt": "2026-11-03T14:00:03.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793714403843-0k5nft",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793711003843-hn7ssv",
+              "partyNumber": 4,
+              "occurredAt": "2026-11-03T13:03:23.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793711003843-hn7ssv",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793709303843-vrqqsi",
+              "partyNumber": 4,
+              "occurredAt": "2026-11-03T12:35:03.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Sharpsight Bolt"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Sharpsight Bolt"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793709303843-vrqqsi",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/4110/3/0",
+                "0/4108/3/0",
+                "0/4221/0/0",
+                "0/4106/3/0",
+                "0/4403/0/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793707603843-1t981o",
+              "partyNumber": 4,
+              "occurredAt": "2026-11-03T12:06:43.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793707603843-1t981o",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            }
+          ]
+        },
+        {
+          "partyNumber": 5,
+          "name": "PT5",
+          "unreadCount": 12,
+          "characters": [
+            {
+              "characterId": 401,
+              "name": "Hagakure",
+              "raceId": "procyonian",
+              "gender": "male",
+              "isUnique": true,
+              "lineageId": "hidden_grail",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 402,
+              "name": "Sougaha",
+              "raceId": "lupinian",
+              "gender": "male",
+              "isUnique": true,
+              "lineageId": "almighty",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 403,
+              "name": "Kagehige",
+              "raceId": "felidian",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "abyssal_sea",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 404,
+              "name": "Kudakiba",
+              "raceId": "murid",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "firmament",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 405,
+              "name": "Shimofumi",
+              "raceId": "caninian",
+              "gender": "female",
+              "isUnique": false,
+              "lineageId": "frozen_forest",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 406,
+              "name": "Kitsunebi",
+              "raceId": "vulpinian",
+              "gender": "female",
+              "isUnique": false,
+              "lineageId": "utopia",
+              "mimorianEnemyId": null
+            }
+          ],
+          "settings": {
+            "superRareThreshold": "all",
+            "bossThreshold": "all",
+            "mythicThreshold": "all",
+            "rareThreshold": 5,
+            "sideQuestThreshold": "all",
+            "notifyGodsBattle": true,
+            "defeatNotificationMode": "defeatOnly",
+            "notifyCyclePopup": true,
+            "notifyItemDropPopup": true,
+            "notifyAutoEquipmentPopup": true,
+            "notifySideQuestPopup": true
+          },
+          "entries": [
+            {
+              "diaryEntryId": "1793735850843-9k5fyg",
+              "partyNumber": 5,
+              "occurredAt": "2026-11-03T19:57:30.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793735850843-9k5fyg",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793732820843-x82zqa",
+              "partyNumber": 5,
+              "occurredAt": "2026-11-03T19:07:00.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793732820843-x82zqa",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793731484843-lzdnhz",
+              "partyNumber": 5,
+              "occurredAt": "2026-11-03T18:44:44.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793731484843-lzdnhz",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793730144843-bfiwvg",
+              "partyNumber": 5,
+              "occurredAt": "2026-11-03T18:22:24.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793730144843-bfiwvg",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793722104843-iz2rry",
+              "partyNumber": 5,
+              "occurredAt": "2026-11-03T16:08:24.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793722104843-iz2rry",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793720764843-a7mbgv",
+              "partyNumber": 5,
+              "occurredAt": "2026-11-03T15:46:04.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793720764843-a7mbgv",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793719424843-9umito",
+              "partyNumber": 5,
+              "occurredAt": "2026-11-03T15:23:44.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793719424843-9umito",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793718084843-46z0vm",
+              "partyNumber": 5,
+              "occurredAt": "2026-11-03T15:01:24.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793718084843-46z0vm",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793710044843-z3qpts",
+              "partyNumber": 5,
+              "occurredAt": "2026-11-03T12:47:24.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793710044843-z3qpts",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793706024843-nvfhc8",
+              "partyNumber": 5,
+              "occurredAt": "2026-11-03T11:40:24.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793706024843-nvfhc8",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793703344843-9odzvh",
+              "partyNumber": 5,
+              "occurredAt": "2026-11-03T10:55:44.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793703344843-9odzvh",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793696644843-667yg4",
+              "partyNumber": 5,
+              "occurredAt": "2026-11-03T09:04:04.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.defeat",
+                  "args": {}
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 4,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.defeat",
+                    "args": {}
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793696644843-667yg4",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "defeat"
+              ],
+              "expedition": {
+                "dungeonId": 4,
+                "difficultyOffset": 0
+              },
+              "rewards": [],
+              "sideQuest": null,
+              "unlock": null
+            }
+          ]
+        },
+        {
+          "partyNumber": 6,
+          "name": "PT6",
+          "unreadCount": 12,
+          "characters": [
+            {
+              "characterId": 501,
+              "name": "Marcus",
+              "raceId": "ursan",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "fragment",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 502,
+              "name": "Lancelot",
+              "raceId": "caninian",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "abyssal_sea",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 503,
+              "name": "Finn",
+              "raceId": "leporian",
+              "gender": "male",
+              "isUnique": true,
+              "lineageId": "unexpected_prince(ss)",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 504,
+              "name": "Percival",
+              "raceId": "procyonian",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "adaptation",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 505,
+              "name": "Merle",
+              "raceId": "cervin",
+              "gender": "female",
+              "isUnique": true,
+              "lineageId": "incarnation",
+              "mimorianEnemyId": null
+            },
+            {
+              "characterId": 506,
+              "name": "Sam",
+              "raceId": "murid",
+              "gender": "male",
+              "isUnique": false,
+              "lineageId": "utopia",
+              "mimorianEnemyId": null
+            }
+          ],
+          "settings": {
+            "superRareThreshold": "all",
+            "bossThreshold": "all",
+            "mythicThreshold": "all",
+            "rareThreshold": 5,
+            "sideQuestThreshold": "all",
+            "notifyGodsBattle": true,
+            "defeatNotificationMode": "defeatOnly",
+            "notifyCyclePopup": true,
+            "notifyItemDropPopup": true,
+            "notifyAutoEquipmentPopup": true,
+            "notifySideQuestPopup": true
+          },
+          "entries": [
+            {
+              "diaryEntryId": "1793700540843-in7zo3",
+              "partyNumber": 6,
+              "occurredAt": "2026-11-03T10:09:00.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Thunder Rite"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 3,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Thunder Rite"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793700540843-in7zo3",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 3,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/3110/4/0",
+                "0/3207/2/0",
+                "0/3102/3/0",
+                "0/3407/0/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793646225843-0ws7pg",
+              "partyNumber": 6,
+              "occurredAt": "2026-11-02T19:03:45.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Wolfclaw Bolt"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 2,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Wolfclaw Bolt"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793646225843-0ws7pg",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 2,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/2224/0/0",
+                "0/2220/0/0",
+                "0/2406/0/0",
+                "0/2222/0/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793638165843-1qx3ve",
+              "partyNumber": 6,
+              "occurredAt": "2026-11-02T16:49:25.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Wolfclaw Bolt"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 2,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Wolfclaw Bolt"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793638165843-1qx3ve",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 2,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/2110/2/0",
+                "0/2101/2/0",
+                "0/2106/2/0",
+                "0/2205/0/0",
+                "0/2406/0/0",
+                "0/2111/2/0",
+                "0/2222/0/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793626075843-2s6py2",
+              "partyNumber": 6,
+              "occurredAt": "2026-11-02T13:27:55.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Wolfhair Arrow"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 2,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Wolfhair Arrow"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793626075843-2s6py2",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 2,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/2308/0/0",
+                "0/2102/2/0",
+                "0/2104/3/0",
+                "0/2101/5/0",
+                "0/2111/2/0",
+                "0/2209/0/0",
+                "0/2213/0/0",
+                "0/2401/0/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793616000843-33ns7e",
+              "partyNumber": 6,
+              "occurredAt": "2026-11-02T10:40:00.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Bluewolf Staff"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 2,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Bluewolf Staff"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793616000843-33ns7e",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 2,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/2221/1/0",
+                "0/2219/1/0",
+                "0/2403/0/0",
+                "0/2213/0/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793609955843-w57slf",
+              "partyNumber": 6,
+              "occurredAt": "2026-11-02T08:59:15.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Demonic Wolfclaw Bolt"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 2,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Demonic Wolfclaw Bolt"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793609955843-w57slf",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 2,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/2215/0/0",
+                "0/2302/0/0",
+                "0/2406/2/0",
+                "0/2107/3/0",
+                "0/2109/2/0",
+                "0/2110/2/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793604060843-9x86p0",
+              "partyNumber": 6,
+              "occurredAt": "2026-11-02T07:21:00.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Azure Ward-Talisman"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 2,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Azure Ward-Talisman"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793604060843-9x86p0",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 2,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/2220/0/0",
+                "0/2111/3/0",
+                "0/2111/3/0",
+                "0/2205/0/0",
+                "0/2402/0/0",
+                "0/2110/3/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793589140843-2qjgox",
+              "partyNumber": 6,
+              "occurredAt": "2026-11-02T03:12:20.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Wolfhair Arrow"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 2,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Wolfhair Arrow"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793589140843-2qjgox",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 2,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/2111/4/0",
+                "0/2112/3/0",
+                "0/2304/0/0",
+                "0/2224/0/0",
+                "0/2110/2/0",
+                "0/2223/0/0",
+                "0/2401/0/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793587275843-5w4mfz",
+              "partyNumber": 6,
+              "occurredAt": "2026-11-02T02:41:15.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Demonic Wolfclaw Bolt"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 2,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Demonic Wolfclaw Bolt"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793587275843-5w4mfz",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 2,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/2222/0/0",
+                "0/2108/3/0",
+                "0/2205/0/0",
+                "0/2406/2/0",
+                "0/2110/2/0",
+                "0/2106/2/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793572355843-huao47",
+              "partyNumber": 6,
+              "occurredAt": "2026-11-01T22:32:35.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Wolfhide Coldcloak"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 2,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Wolfhide Coldcloak"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793572355843-huao47",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 2,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/2219/0/0",
+                "0/2111/2/0",
+                "0/2105/2/0",
+                "0/2405/0/0",
+                "0/2301/0/0",
+                "0/2107/2/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793563025843-rhkh71",
+              "partyNumber": 6,
+              "occurredAt": "2026-11-01T19:57:05.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Wolfclaw Bolt"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 2,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Wolfclaw Bolt"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793563025843-rhkh71",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 2,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/2110/2/0",
+                "0/2101/2/0",
+                "0/2219/0/0",
+                "0/2112/2/0",
+                "0/2109/4/0",
+                "0/2215/0/0",
+                "0/2105/2/0",
+                "0/2406/0/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            },
+            {
+              "diaryEntryId": "1793559810843-izq2z1",
+              "partyNumber": 6,
+              "occurredAt": "2026-11-01T19:03:30.843Z",
+              "unread": true,
+              "content": {
+                "format": "semantic",
+                "title": {
+                  "key": "diary.title.bossRare",
+                  "args": {
+                    "items": "Lupinian Fur Bow"
+                  }
+                },
+                "subtitle": {
+                  "key": "diary.subtitle.expedition",
+                  "args": {
+                    "dungeonId": 2,
+                    "difficultyOffset": 0
+                  }
+                },
+                "events": [
+                  {
+                    "key": "diary.event.bossRare",
+                    "args": {
+                      "items": "Lupinian Fur Bow"
+                    }
+                  }
+                ]
+              },
+              "battleLog": {
+                "logId": "diary:1793559810843-izq2z1",
+                "availability": {
+                  "available": true,
+                  "unavailableReason": null
+                }
+              },
+              "triggers": [
+                "bossRare"
+              ],
+              "expedition": {
+                "dungeonId": 2,
+                "difficultyOffset": 0
+              },
+              "rewards": [
+                "0/2103/2/0",
+                "0/2222/0/0",
+                "0/2205/0/0",
+                "0/2407/0/0"
+              ],
+              "sideQuest": null,
+              "unlock": null
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

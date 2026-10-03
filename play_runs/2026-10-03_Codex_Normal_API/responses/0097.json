@@ -1,0 +1,37 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "e087eda8-83db-45c8-b6fd-c09d285026d8",
+  "previousRevision": 60,
+  "revision": 61,
+  "committedAt": "2026-10-03T08:13:05.161Z",
+  "data": {
+    "jewelAttachReport": {
+      "slotIndex": 5,
+      "attached": "might:2",
+      "replaced": null
+    },
+    "current": {
+      "mode": "SEMI",
+      "equipment": [
+        "0/0/5101/1/0",
+        "1/0/3314/4/0/focus:1",
+        "2/0/5312/0/0",
+        "3/0/2213/3/0",
+        "4/0/5217/3/0",
+        "5/0/1107/5/0/might:2",
+        "6/0/4109/4/0",
+        "7/0/2215/3/0",
+        "8/0/4107/3/0",
+        "9/0/5107/2/0"
+      ],
+      "undoAvailable": true,
+      "redoAvailable": false
+    }
+  },
+  "effects": [],
+  "changedResources": [
+    "read/observation/party",
+    "read/observation/base"
+  ]
+}

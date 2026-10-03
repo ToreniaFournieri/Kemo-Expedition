@@ -1,0 +1,32 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "e8d33264-e6f3-4649-8bc8-db89d17aa537",
+  "previousRevision": 102,
+  "revision": 103,
+  "committedAt": "2026-10-03T08:16:00.049Z",
+  "data": {
+    "warnings": [],
+    "current": {
+      "mode": "SEMI",
+      "equipment": [
+        "0/0/5302/0/0",
+        "1/0/5302/0/0",
+        "2/0/6101/3/0",
+        "3/0/5302/0/0",
+        "4/0/5102/4/0",
+        "5/0/5302/0/0",
+        "6/0/5102/4/0",
+        "7/0/5102/4/0",
+        "8/0/1401/0/0"
+      ],
+      "undoAvailable": true,
+      "redoAvailable": false
+    }
+  },
+  "effects": [],
+  "changedResources": [
+    "read/observation/party",
+    "read/observation/base"
+  ]
+}
