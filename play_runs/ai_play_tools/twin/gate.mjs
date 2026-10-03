@@ -1,6 +1,6 @@
 // Exact gate objective via forecast sims: k*ln(success) with a small progress term for smoothness.
 import {T,sim,summarize} from './lib.mjs'; import {GATE_K} from './stages.mjs'; import {targetRooms} from './wall.mjs';
-export function gateObjective({d,f,N=150,seed=77,pi=0,wProg=0.3,floor=0.005}){
+export function gateObjective({d,f,N=150,seed=77,pi=0,wProg=+(process.env.WPROG||0.3),floor=0.005}){
   const k=f<=6?GATE_K[f]:1; const Tn=targetRooms(f);
   return async(state)=>{
     const p=state.parties[pi]; const saved={g:p.clearGateStatus,d:p.selectedDungeonId,l:p.expeditionDepthLimit};

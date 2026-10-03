@@ -2,10 +2,11 @@
 import {T} from './lib.mjs'; import * as O from './opt.mjs'; import {wallObjective} from './wall.mjs'; import {writeFileSync,readFileSync} from 'node:fs'; import {SC} from './wallopt2.mjs'; import {gateObjective,multiGate,bossObjective} from './gate.mjs'; import {stageObjective} from './stageopt.mjs'; import {bossOnlyObjective,roomOnlyObjective} from './bossonly.mjs';
 const [,,file,dd,f,seedA,itersA,out,startPlan,scen]=process.argv;
 const s=T.loadSave(file); const m=O.buildModel(s,0);
+if(scen&&scen.startsWith('ord:')){ const ids=scen.slice(4).split(',').map(Number); const byId=new Map(m.p.characters.map(c=>[c.id,c])); m.p.characters=ids.map(i=>byId.get(i)); m.slots=m.p.characters.map((c,i)=>T.computeCharacterStatsInParty(m.p,i).maxEquipSlots); }
 const beforeJ=O.snapshotJ(m); const free0={...m.jewels};
 import {replay} from './replay.mjs';
 if(startPlan&&startPlan!=='none'){ const j=JSON.parse(readFileSync(startPlan,'utf8')); replay(m,j.calls); }
-(SC[scen||'base'])(m);
+if(!(scen&&scen.startsWith('ord:'))) (SC[scen||'base'])(m);
 const wB=+(process.env.WBOSS||0); let quick=wallObjective({d:+dd,f:+f,N:+(process.env.NQ||32),seed:7,wBoss:wB}), confirm=wallObjective({d:+dd,f:+f,N:+(process.env.NC||96),seed:11,wBoss:wB});
 if(process.env.OBJ==='stages'){ quick=stageObjective(+dd,{n:+(process.env.NQ||100),seed:7,stop:+(process.env.STOP||0.5)}); confirm=stageObjective(+dd,{n:+(process.env.NC||300),seed:11,stop:+(process.env.STOP||0.5)}); }
 if(process.env.OBJ==='combo'){ // gate5 + bossGate + boss together
