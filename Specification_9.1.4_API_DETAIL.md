@@ -267,6 +267,14 @@ All JSON Commit requests use this transport envelope:
   asynchronously, and stores the same internal save container, so the decoded
   state, receipts, and manifest-last ordering are identical. If the main process
   no longer holds a referenced log, the renderer resends every log once.
+* Retained idempotency receipts (at most 4,096) are stored in an append-only journal
+  next to the control file instead of inside it. A commit sends only the receipts
+  added at the end and the number evicted from the front; the manifest records the
+  journal's valid byte length, evicted count, and live count, so bytes appended by a
+  commit that never reached its manifest are ignored. The journal is rewritten when
+  more than 4,096 receipts have been evicted, and a mismatch between the renderer's
+  and the host's journal picture triggers one full resend. Accounts whose receipts
+  are inside the control file remain readable.
 * Failure or safe cancellation before the durable commit discards every staged
   Chunk and effect, fences outstanding worker results, and leaves the pre-request
   state, RNG, clocks, backlog, and revision unchanged. Restart does not resume a

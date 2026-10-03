@@ -187,10 +187,20 @@ export function computeCharacterHpContribution(
   };
 }
 
+// Party members are replaced, never edited in place, so the HP bonus total of one characters array at one party level is
+// reusable: every equipment commit asks for the previous party's HP, which the preceding commit just computed as the next.
+const bonusHpByCharacters = new WeakMap<object, { level: number; bonusHp: number }>();
+
 export function computePartyMaxHp(party: Party): number {
-  let bonusHp = 0;
-  for (const character of party.characters) {
-    bonusHp += computeCharacterHpContribution(character, party.level).totalHpBonus;
+  const cached = bonusHpByCharacters.get(party.characters);
+  let bonusHp: number;
+  if (cached && cached.level === party.level) bonusHp = cached.bonusHp;
+  else {
+    bonusHp = 0;
+    for (const character of party.characters) {
+      bonusHp += computeCharacterHpContribution(character, party.level).totalHpBonus;
+    }
+    bonusHpByCharacters.set(party.characters, { level: party.level, bonusHp });
   }
   return Math.floor(bonusHp * getDeityPartyHpMultiplier(party.deity.name, party.deityGold ?? 0));
 }

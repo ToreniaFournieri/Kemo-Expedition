@@ -180,16 +180,24 @@ const receiptJsonCache = new WeakMap<ApiV1Receipt, string>();
  * The control metadata as JSON (equivalent to `JSON.stringify(control)`, with `receipts` last). Each retained receipt is immutable, so its
  * JSON is built once and reused: re-serializing all 4096 receipts on every commit dominated the account commit cost.
  */
+export function apiV1ReceiptJson(receipt: ApiV1Receipt): string {
+  let json = receiptJsonCache.get(receipt);
+  if (json === undefined) {
+    json = JSON.stringify(receipt);
+    receiptJsonCache.set(receipt, json);
+  }
+  return json;
+}
+
+/** The control metadata as JSON without its receipts, which the account journal stores separately. */
+export function serializeApiV1ControlWithoutReceipts(control: ApiV1ControlMetadata): string {
+  const { receipts: _receipts, ...rest } = control;
+  return JSON.stringify(rest);
+}
+
 export function serializeApiV1Control(control: ApiV1ControlMetadata): string {
   const { receipts, ...rest } = control;
-  const receiptsJson = receipts.map((receipt) => {
-    let json = receiptJsonCache.get(receipt);
-    if (json === undefined) {
-      json = JSON.stringify(receipt);
-      receiptJsonCache.set(receipt, json);
-    }
-    return json;
-  }).join(',');
+  const receiptsJson = receipts.map(apiV1ReceiptJson).join(',');
   const restJson = JSON.stringify(rest);
   return `${restJson.slice(0, -1)}${restJson.length > 2 ? ',' : ''}"receipts":[${receiptsJson}]}`;
 }

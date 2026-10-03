@@ -491,18 +491,18 @@ ipcMain.handle('desktop:api-account-load', (event, identity) => {
   if (event.sender !== mainWindow?.webContents || identity?.environment !== desktopEnvironment) throw new Error('invalid_environment');
   return apiAccountStore.load(identity);
 });
-ipcMain.handle('desktop:api-account-commit', (event, identity, savePayload, controlJson) => {
+ipcMain.handle('desktop:api-account-commit', (event, identity, savePayload, controlJson, receiptSync = null) => {
   if (event.sender !== mainWindow?.webContents || (savePayload !== null && typeof savePayload !== 'string') || typeof controlJson !== 'string' || !controlJson.startsWith('{')) throw new Error('invalid_request');
   if (identity?.environment !== desktopEnvironment) throw new Error('invalid_environment');
-  apiAccountStore.commit(identity, savePayload, controlJson);
+  apiAccountStore.commit(identity, savePayload, controlJson, receiptSync);
   return true;
 });
 // The renderer sends the save as text pieces plus references to expedition logs this process already compressed;
 // deflate runs here so the renderer stays responsive between API calls.
-ipcMain.handle('desktop:api-account-commit-segments', async (event, identity, segments, controlJson) => {
+ipcMain.handle('desktop:api-account-commit-segments', async (event, identity, segments, controlJson, receiptSync = null) => {
   if (event.sender !== mainWindow?.webContents || typeof controlJson !== 'string' || !controlJson.startsWith('{')) throw new Error('invalid_request');
   if (identity?.environment !== desktopEnvironment) throw new Error('invalid_environment');
-  apiAccountStore.commit(identity, await encodeApiAccountSegments(segments), controlJson);
+  apiAccountStore.commit(identity, await encodeApiAccountSegments(segments), controlJson, receiptSync);
   return true;
 });
 ipcMain.on('desktop:api-v1-ready', (event) => {

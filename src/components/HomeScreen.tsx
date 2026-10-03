@@ -118,7 +118,8 @@ import { useApiRead, useApiReadAllPages, useApiReadMany } from './home/useApiRea
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
 import { parseSimulationRunData, type SimulationRunData } from '../api/v1/simulationView';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
-import { serializeApiV1Control } from '../api/v1/authority';
+import { apiV1ReceiptJson, serializeApiV1ControlWithoutReceipts } from '../api/v1/authority';
+import { ApiReceiptJournalTracker, RECEIPT_JOURNAL_MISMATCH, type ApiReceiptSync } from '../api/v1/receiptJournalSync';
 import type { ApiV1ClairvoyanceResource } from '../api/v1/readModels';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
 import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
@@ -266,6 +267,27 @@ export function preloadRemainingHomeTabs() {
 const SEARCH_ITEMS_LIMIT = 5000;
 
 // The presentation has its own lifetime; the runtime and API bridge survive headless sessions.
+const apiReceiptJournal = new ApiReceiptJournalTracker(apiV1ReceiptJson);
+
+/** Sends control metadata with receipts as a journal change; a host that disagrees about its journal gets one full resend. */
+async function commitControlWithReceiptJournal(
+  identity: DesktopApiAccountIdentity,
+  control: DesktopApiControlMetadata,
+  send: (controlJson: string, sync: ApiReceiptSync) => Promise<boolean>,
+): Promise<boolean> {
+  const accountKey = JSON.stringify(identity);
+  const controlJson = serializeApiV1ControlWithoutReceipts(control);
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      const committed = await send(controlJson, apiReceiptJournal.plan(accountKey, control.receipts, attempt > 0));
+      apiReceiptJournal.confirm(accountKey, control.receipts);
+      return committed;
+    } catch (error) {
+      if (attempt > 0 || !String((error as Error)?.message ?? error).includes(RECEIPT_JOURNAL_MISMATCH)) throw error;
+    }
+  }
+}
+
 function HomeScreen({ render }: { render: () => ReactNode }) {
   return render();
 }
@@ -585,9 +607,9 @@ export function GameRuntimeHost({
         accounts: {
           create: (identity, savePayload) => desktop().createApiAccount(identity, savePayload),
           load: (identity) => desktop().loadApiAccount(identity),
-          // The control goes over IPC as JSON: cloning its retained receipts as objects cost more than the commit itself.
-          commit: (identity, savePayload, control) => desktop().commitApiAccount(identity, savePayload, serializeApiV1Control(control)),
-          ...(window.bokemoDesktop?.commitApiAccountSegments ? { commitSegments: (identity, segments, control) => desktop().commitApiAccountSegments!(identity, segments, serializeApiV1Control(control)) } : {}),
+          // The control goes over IPC as JSON without its receipts; receipts follow the host's append-only journal.
+          commit: (identity, savePayload, control) => commitControlWithReceiptJournal(identity, control, (controlJson, sync) => desktop().commitApiAccount(identity, savePayload, controlJson, sync)),
+          ...(window.bokemoDesktop?.commitApiAccountSegments ? { commitSegments: (identity, segments, control) => commitControlWithReceiptJournal(identity, control, (controlJson, sync) => desktop().commitApiAccountSegments!(identity, segments, controlJson, sync)) } : {}),
         },
         player: {
           flushSave: () => apiActionsRef.current.flushSave(),

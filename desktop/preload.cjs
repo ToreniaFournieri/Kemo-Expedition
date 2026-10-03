@@ -14,8 +14,8 @@ contextBridge.exposeInMainWorld('bokemoDesktop', {
   revealApiV1SecretToken: () => ipcRenderer.invoke('desktop:reveal-api-v1-secret-token'),
   createApiAccount: (identity, savePayload) => ipcRenderer.invoke('desktop:api-account-create', identity, savePayload),
   loadApiAccount: (identity) => ipcRenderer.invoke('desktop:api-account-load', identity),
-  commitApiAccountSegments: (identity, segments, controlJson) => ipcRenderer.invoke('desktop:api-account-commit-segments', identity, segments, controlJson),
-  commitApiAccount: (identity, savePayload, controlJson) => ipcRenderer.invoke('desktop:api-account-commit', identity, savePayload, controlJson),
+  commitApiAccountSegments: (identity, segments, controlJson, receiptSync) => ipcRenderer.invoke('desktop:api-account-commit-segments', identity, segments, controlJson, receiptSync),
+  commitApiAccount: (identity, savePayload, controlJson, receiptSync) => ipcRenderer.invoke('desktop:api-account-commit', identity, savePayload, controlJson, receiptSync),
   onApiV1Request: (callback) => {
     const listener = (_event, request) => {
       Promise.resolve(callback(request.operation, request.payload))

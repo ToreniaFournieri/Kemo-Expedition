@@ -140,3 +140,56 @@ test('control-only commits refuse missing saves and invalid manifests before wri
   assert.throws(() => store.commit(identity, null, {}), /ENOENT/);
   assert.deepEqual(fs.readdirSync(directory).sort(), before);
 });
+
+test('receipt journal appends, evicts, compacts, and survives interrupted commits', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'bokemo-api-journal-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  let fail = false;
+  const store = createApiAccountStore({ userDataPath: root, beforeManifestWrite: () => { if (fail) throw new Error('injected_manifest_failure'); } });
+  const identity = { userId: 'Journal', environment: 'desktop', gameMode: 'normal' };
+  store.create(identity, 'save-0');
+  const directory = store.resolveAccount(identity).directory;
+  const receipt = number => ({ key: `k${number}`, operation: 'op', canonical: '{}', response: { revision: number, text: 'line\nbreak' } });
+  const lines = (from, to) => Array.from({ length: to - from }, (_, index) => JSON.stringify(receipt(from + index)));
+  const control = revision => JSON.stringify({ revisionHighWater: revision, tombstones: [] });
+  const receiptsOf = () => store.load(identity).control.receipts.map(value => value.key);
+  const names = () => fs.readdirSync(directory).filter(name => name.startsWith('receipts-'));
+
+  assert.throws(() => store.commit(identity, null, control(1), { baseCount: 0, evicted: 0, appended: lines(0, 1) }), /receipt_journal_mismatch/);
+  store.commit(identity, null, control(1), { full: true, baseCount: 0, evicted: 0, appended: lines(0, 3) });
+  assert.deepEqual(receiptsOf(), ['k0', 'k1', 'k2']);
+  assert.deepEqual(store.load(identity).control.receipts[0], receipt(0));
+  store.commit(identity, 'save-1', control(2), { baseCount: 3, evicted: 1, appended: lines(3, 5) });
+  assert.deepEqual(receiptsOf(), ['k1', 'k2', 'k3', 'k4']);
+  assert.equal(names().length, 1);
+
+  // A mismatched picture is refused without touching the durable state.
+  assert.throws(() => store.commit(identity, null, control(3), { baseCount: 9, evicted: 0, appended: lines(5, 6) }), /receipt_journal_mismatch/);
+  assert.deepEqual(receiptsOf(), ['k1', 'k2', 'k3', 'k4']);
+
+  // Bytes appended by a commit that never reached its manifest are ignored and overwritten.
+  fail = true;
+  assert.throws(() => store.commit(identity, null, control(3), { baseCount: 4, evicted: 0, appended: lines(5, 7) }), /injected_manifest_failure/);
+  fail = false;
+  assert.deepEqual(receiptsOf(), ['k1', 'k2', 'k3', 'k4']);
+  store.commit(identity, null, control(3), { baseCount: 4, evicted: 2, appended: lines(5, 6) });
+  assert.deepEqual(receiptsOf(), ['k3', 'k4', 'k5']);
+
+  // Evicting past the compaction threshold rewrites a fresh journal and removes the old file.
+  const before = names()[0];
+  let next = 6;
+  let base = 3;
+  for (let step = 0; step < 5000; step += 1) {
+    store.commit(identity, null, control(10 + step), { baseCount: base, evicted: 1, appended: lines(next, next + 1) });
+    next += 1;
+  }
+  assert.equal(receiptsOf().length, 3);
+  assert.deepEqual(receiptsOf(), [`k${next - 3}`, `k${next - 2}`, `k${next - 1}`]);
+  assert.equal(names().length, 1);
+  assert.notEqual(names()[0], before);
+
+  // A commit without a sync (receipts inside the control) retires the journal.
+  store.commit(identity, null, JSON.stringify({ revisionHighWater: 99, tombstones: [], receipts: [receipt(7)] }));
+  assert.deepEqual(receiptsOf(), ['k7']);
+  assert.equal(names().length, 0);
+});

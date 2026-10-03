@@ -2261,7 +2261,8 @@ function syncPartyCurrentHpAfterMaxHpChange(
   const previousMaxHp = cachedPreviousMaxHp ?? measureAutoEquipmentReducerWork(
     autoEquipmentContext,
     'partyStatsMs',
-    () => autoEquipmentContext?.hpStrategy === 'whole_party_max_hp'
+    // `computePartyStats(...).partyStats.hp` is `computePartyMaxHp`; without a strategy context only the HP is needed.
+    () => !autoEquipmentContext || autoEquipmentContext.hpStrategy === 'whole_party_max_hp'
       ? computePartyMaxHp(previousParty)
       : computePartyStats(previousParty).partyStats.hp,
   );
@@ -2280,7 +2281,7 @@ function syncPartyCurrentHpAfterMaxHpChange(
   const nextMaxHp = measureAutoEquipmentReducerWork(
     autoEquipmentContext,
     'partyStatsMs',
-    () => autoEquipmentContext?.hpStrategy === 'whole_party_max_hp'
+    () => !autoEquipmentContext || autoEquipmentContext.hpStrategy === 'whole_party_max_hp'
       ? computePartyMaxHp(nextParty)
       : computePartyStats(nextParty).partyStats.hp,
   );
