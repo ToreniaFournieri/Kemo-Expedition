@@ -1,0 +1,2 @@
+# Native compressed saves must retain their exact bytes.
+*.bokemo binary

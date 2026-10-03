@@ -1,0 +1,24 @@
+{
+  "name": "Expedition 8 floor 5 equipment update and live forecast",
+  "checkpoint": "checkpoint-683.bokemo",
+  "checkpointSha256": "4b9890065bf18bbb2bfa9ab39ed12976b5253ab79e19f0d13071dc2e234cb4ca",
+  "firstSourceIndex": 684,
+  "lastSourceIndex": 720,
+  "calls": 37,
+  "recordedTotalMs": 3374.264986,
+  "expectedForecast": {
+    "clear": 0,
+    "return": 245,
+    "draw": 0,
+    "retreat": 497,
+    "defeat": 258
+  },
+  "recordedRuntime": {
+    "systemStatus": "ready",
+    "versionBuild": "v0.9.8 (12)",
+    "environment": "prod"
+  },
+  "initialGameDays": 36,
+  "timingDefinition": "Client monotonic wall time from fetch start until full response body received; excludes local JSON parsing, journaling, offline analysis, and shell/tool overhead.",
+  "replayStatus": "validated offline; not replayed against a second live profile"
+}

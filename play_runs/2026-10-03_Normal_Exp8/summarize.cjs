@@ -1,0 +1,21 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const crypto=require('node:crypto');
+const root=process.env.BOKEMO_ARTIFACT_DIR||__dirname;
+const rows=fs.readFileSync(path.join(root,'api-calls.jsonl'),'utf8').trim().split('\n').map(JSON.parse);
+const quantile=(a,p)=>{const x=[...a].sort((a,b)=>a-b);return x[Math.min(x.length-1,Math.floor((x.length-1)*p))]||0;};
+const grouped=new Map();
+for(const row of rows){const operation=row.route.split('?')[0].replace(/character\/\d+/,'character/{id}').replace(/party\/\d+/,'party/{p}').replace(/expedition\/\d+/,'expedition/{p}');const group=grouped.get(operation)||[];group.push(row);grouped.set(operation,group);}
+const operations=[...grouped].map(([operation,calls])=>({operation,calls:calls.length,errors:calls.filter(x=>x.status!==200).length,totalMs:calls.reduce((s,x)=>s+x.durationMs,0),medianMs:quantile(calls.map(x=>x.durationMs),.5),p95Ms:quantile(calls.map(x=>x.durationMs),.95),maxMs:Math.max(...calls.map(x=>x.durationMs)),responseBytes:calls.reduce((s,x)=>s+x.responseBytes,0)})).sort((a,b)=>b.totalMs-a.totalMs);
+const phases=[...new Set(rows.map(x=>x.phase))].map(phase=>{const calls=rows.filter(x=>x.phase===phase);return {phase,calls:calls.length,totalMs:calls.reduce((s,x)=>s+x.durationMs,0)};});
+const status=rows.find(x=>x.route==='fundamental/status').output.data;
+const clock=rows.filter(x=>x.route==='commit/progress/elapsed').map(x=>({call:x.index,phase:x.phase,...x.output.data}));
+const firstClock=rows.find(x=>x.route==='read/observation/compact').output.data.globalInfo.inGameTime;
+const summary={runtime:status,userId:'CodexN8Oct03',mode:'normal',startedInGameAt:firstClock,finalInGameAt:clock.at(-1)?.inGameTime,advancedSeconds:clock.reduce((s,x)=>s+x.elapsedSeconds,0),calls:rows.length,errors:rows.filter(x=>x.status!==200).map(x=>({index:x.index,route:x.route,status:x.status,error:x.output.error})),apiTotalMs:rows.reduce((s,x)=>s+x.durationMs,0),timingDefinition:'Client monotonic wall time from fetch start until full response body received; excludes local JSON parsing, journaling, offline analysis, and shell/tool overhead.',operations,phases,clock};
+fs.writeFileSync(path.join(root,'summary.json'),JSON.stringify(summary,null,2));
+fs.writeFileSync(path.join(root,'api-call-timings.csv'),'index,phase,method,route,status,durationMs,responseBytes,revision\n'+rows.map(x=>[x.index,x.phase,x.method,JSON.stringify(x.route),x.status,x.durationMs,x.responseBytes,x.revision??''].join(',')).join('\n')+'\n');
+fs.writeFileSync(path.join(root,'api-operation-timings.csv'),'operation,calls,errors,totalMs,medianMs,p95Ms,maxMs,responseBytes\n'+operations.map(x=>Object.values(x).join(',')).join('\n')+'\n');
+const repo=path.resolve(__dirname,'../..');
+const sources=['build_number.txt','package.json','src/hooks/useGameState.ts','src/game/characterComputation.ts','src/game/partyComputation.ts','src/game/battleKernelBinary.ts','src/api/v1/applicationApi.ts','desktop/api-v1.cjs'];
+fs.writeFileSync(path.join(root,'source-hashes.json'),JSON.stringify(Object.fromEntries(sources.map(name=>[name,crypto.createHash('sha256').update(fs.readFileSync(path.join(repo,name))).digest('hex')])),null,2));
+console.log(JSON.stringify({calls:summary.calls,errors:summary.errors.length,days:summary.advancedSeconds/86400,apiTotalMs:summary.apiTotalMs}));

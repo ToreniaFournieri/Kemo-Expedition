@@ -1,0 +1,1316 @@
+{
+  "runtime": {
+    "systemStatus": "ready",
+    "versionBuild": "v0.9.8 (12)",
+    "environment": "prod"
+  },
+  "userId": "CodexN8Oct03",
+  "mode": "normal",
+  "startedInGameAt": "2026-10-03T09:23:28.287Z",
+  "finalInGameAt": "2026-11-14T09:23:28.287Z",
+  "advancedSeconds": 3628800,
+  "calls": 747,
+  "errors": [
+    {
+      "index": 491,
+      "route": "commit/build/character/5/jewelAttach",
+      "status": 409,
+      "error": {
+        "code": "illegal_action",
+        "message": "The action is unavailable.",
+        "details": {
+          "reason": "illegal_action:jewel_not_owned"
+        }
+      }
+    },
+    {
+      "index": 549,
+      "route": "read/expedition/1/simulationRun",
+      "status": 400,
+      "error": {
+        "code": "invalid_request",
+        "message": "The request is invalid: `times` is not a known member.",
+        "details": {
+          "field": "times",
+          "rule": "additionalProperties",
+          "issues": [
+            {
+              "path": "",
+              "keyword": "additionalProperties",
+              "additionalProperty": "times"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "apiTotalMs": 98679.06161500004,
+  "timingDefinition": "Client monotonic wall time from fetch start until full response body received; excludes local JSON parsing, journaling, offline analysis, and shell/tool overhead.",
+  "operations": [
+    {
+      "operation": "commit/progress/elapsed",
+      "calls": 84,
+      "errors": 0,
+      "totalMs": 59811.780994000015,
+      "medianMs": 753.6358349999999,
+      "p95Ms": 1083.738797,
+      "maxMs": 1601.548456,
+      "responseBytes": 39620
+    },
+    {
+      "operation": "commit/setting/backup/export",
+      "calls": 15,
+      "errors": 0,
+      "totalMs": 9272.516495999998,
+      "medianMs": 603.247001,
+      "p95Ms": 679.042375,
+      "maxMs": 704.6979329999999,
+      "responseBytes": 11975527
+    },
+    {
+      "operation": "read/expedition/{p}/simulationRun",
+      "calls": 6,
+      "errors": 1,
+      "totalMs": 5805.303565,
+      "medianMs": 951.411785,
+      "p95Ms": 1624.078997,
+      "maxMs": 1676.115545,
+      "responseBytes": 14392
+    },
+    {
+      "operation": "commit/build/character/{id}/equip",
+      "calls": 161,
+      "errors": 0,
+      "totalMs": 5799.369277999951,
+      "medianMs": 38.554753000000346,
+      "p95Ms": 62.04729999999108,
+      "maxMs": 119.09863499998755,
+      "responseBytes": 79503
+    },
+    {
+      "operation": "commit/build/character/{id}/jewelAttach",
+      "calls": 152,
+      "errors": 1,
+      "totalMs": 5748.98784200008,
+      "medianMs": 36.76555999999982,
+      "p95Ms": 53.73251400000299,
+      "maxMs": 72.48547700000199,
+      "responseBytes": 89294
+    },
+    {
+      "operation": "commit/build/character/{id}/removeAllEquipment",
+      "calls": 148,
+      "errors": 0,
+      "totalMs": 5307.092924999993,
+      "medianMs": 33.71103900000162,
+      "p95Ms": 64.45038999999815,
+      "maxMs": 223.26335599999948,
+      "responseBytes": 55838
+    },
+    {
+      "operation": "read/observation/expedition",
+      "calls": 52,
+      "errors": 0,
+      "totalMs": 2390.603455,
+      "medianMs": 45.77263500000001,
+      "p95Ms": 72.439119,
+      "maxMs": 123.01947599999998,
+      "responseBytes": 128614
+    },
+    {
+      "operation": "read/observation/party",
+      "calls": 31,
+      "errors": 0,
+      "totalMs": 948.7059290000141,
+      "medianMs": 39.485192999999995,
+      "p95Ms": 49.36540099999999,
+      "maxMs": 54.212355,
+      "responseBytes": 626743
+    },
+    {
+      "operation": "commit/build/party/{p}",
+      "calls": 11,
+      "errors": 0,
+      "totalMs": 704.1597970000097,
+      "medianMs": 56.21266800000012,
+      "p95Ms": 94.14490900000237,
+      "maxMs": 99.61457800000062,
+      "responseBytes": 3461
+    },
+    {
+      "operation": "commit/build/character/{id}/jewelRemove",
+      "calls": 14,
+      "errors": 0,
+      "totalMs": 584.8266870000004,
+      "medianMs": 38.694709999999986,
+      "p95Ms": 52.197002999999995,
+      "maxMs": 55.2746530000004,
+      "responseBytes": 7352
+    },
+    {
+      "operation": "commit/expedition/{p}/changeExpedition",
+      "calls": 8,
+      "errors": 0,
+      "totalMs": 484.6287300000001,
+      "medianMs": 62.23774300000001,
+      "p95Ms": 84.94183900000002,
+      "maxMs": 89.93486100000001,
+      "responseBytes": 3276
+    },
+    {
+      "operation": "read/base/searchItems",
+      "calls": 39,
+      "errors": 0,
+      "totalMs": 374.767952,
+      "medianMs": 6.673836000000023,
+      "p95Ms": 35.554728,
+      "maxMs": 46.026250000000005,
+      "responseBytes": 181131
+    },
+    {
+      "operation": "commit/build/character/{id}/removeEquipment",
+      "calls": 6,
+      "errors": 0,
+      "totalMs": 361.0650380000002,
+      "medianMs": 52.66209600000002,
+      "p95Ms": 71.48378000000002,
+      "maxMs": 90.73263500000007,
+      "responseBytes": 2922
+    },
+    {
+      "operation": "commit/expedition/{p}/sortie",
+      "calls": 3,
+      "errors": 0,
+      "totalMs": 273.590368,
+      "medianMs": 103.39122999999998,
+      "p95Ms": 103.39122999999998,
+      "maxMs": 115.67249400000001,
+      "responseBytes": 1332
+    },
+    {
+      "operation": "commit/build/character/{id}/changeBuild",
+      "calls": 6,
+      "errors": 0,
+      "totalMs": 155.242014999999,
+      "medianMs": 10.562879999999993,
+      "p95Ms": 55.362020999999004,
+      "maxMs": 56.343126,
+      "responseBytes": 17724
+    },
+    {
+      "operation": "fundamental/logIn",
+      "calls": 1,
+      "errors": 0,
+      "totalMs": 106.33959899999996,
+      "medianMs": 106.33959899999996,
+      "p95Ms": 106.33959899999996,
+      "maxMs": 106.33959899999996,
+      "responseBytes": 412
+    },
+    {
+      "operation": "fundamental/status",
+      "calls": 1,
+      "errors": 0,
+      "totalMs": 103.17096099999999,
+      "medianMs": 103.17096099999999,
+      "p95Ms": 103.17096099999999,
+      "maxMs": 103.17096099999999,
+      "responseBytes": 210
+    },
+    {
+      "operation": "read/expedition/{p}/latestBattleLog",
+      "calls": 1,
+      "errors": 0,
+      "totalMs": 96.51005500000002,
+      "medianMs": 96.51005500000002,
+      "p95Ms": 96.51005500000002,
+      "maxMs": 96.51005500000002,
+      "responseBytes": 109464
+    },
+    {
+      "operation": "read/observation/diary",
+      "calls": 1,
+      "errors": 0,
+      "totalMs": 88.49540000000002,
+      "medianMs": 88.49540000000002,
+      "p95Ms": 88.49540000000002,
+      "maxMs": 88.49540000000002,
+      "responseBytes": 49287
+    },
+    {
+      "operation": "commit/base/sellInventoryItems",
+      "calls": 1,
+      "errors": 0,
+      "totalMs": 68.020431,
+      "medianMs": 68.020431,
+      "p95Ms": 68.020431,
+      "maxMs": 68.020431,
+      "responseBytes": 2861
+    },
+    {
+      "operation": "read/observation/setting",
+      "calls": 1,
+      "errors": 0,
+      "totalMs": 59.785623,
+      "medianMs": 59.785623,
+      "p95Ms": 59.785623,
+      "maxMs": 59.785623,
+      "responseBytes": 1786
+    },
+    {
+      "operation": "read/base/shopItemsList",
+      "calls": 1,
+      "errors": 0,
+      "totalMs": 46.549289,
+      "medianMs": 46.549289,
+      "p95Ms": 46.549289,
+      "maxMs": 46.549289,
+      "responseBytes": 1710
+    },
+    {
+      "operation": "read/observation/compact",
+      "calls": 1,
+      "errors": 0,
+      "totalMs": 44.14671299999999,
+      "medianMs": 44.14671299999999,
+      "p95Ms": 44.14671299999999,
+      "maxMs": 44.14671299999999,
+      "responseBytes": 568
+    },
+    {
+      "operation": "fundamental/signUp",
+      "calls": 1,
+      "errors": 0,
+      "totalMs": 20.838888999999995,
+      "medianMs": 20.838888999999995,
+      "p95Ms": 20.838888999999995,
+      "maxMs": 20.838888999999995,
+      "responseBytes": 254
+    },
+    {
+      "operation": "commit/base/purchaseShopItems",
+      "calls": 1,
+      "errors": 0,
+      "totalMs": 15.109556999999995,
+      "medianMs": 15.109556999999995,
+      "p95Ms": 15.109556999999995,
+      "maxMs": 15.109556999999995,
+      "responseBytes": 468
+    },
+    {
+      "operation": "read/expedition/{p}/setting",
+      "calls": 1,
+      "errors": 0,
+      "totalMs": 7.454026999999996,
+      "medianMs": 7.454026999999996,
+      "p95Ms": 7.454026999999996,
+      "maxMs": 7.454026999999996,
+      "responseBytes": 446
+    }
+  ],
+  "phases": [
+    {
+      "phase": "manual",
+      "calls": 49,
+      "totalMs": 4108.3261680000005
+    },
+    {
+      "phase": "opening-build",
+      "calls": 14,
+      "totalMs": 187.57696499999997
+    },
+    {
+      "phase": "equipment-optimization",
+      "calls": 18,
+      "totalMs": 206.96664600000037
+    },
+    {
+      "phase": "D1",
+      "calls": 18,
+      "totalMs": 509.9504350000001
+    },
+    {
+      "phase": "D2",
+      "calls": 18,
+      "totalMs": 542.800869
+    },
+    {
+      "phase": "D2-boss",
+      "calls": 1,
+      "totalMs": 282.48913400000004
+    },
+    {
+      "phase": "D3",
+      "calls": 18,
+      "totalMs": 525.4369929999987
+    },
+    {
+      "phase": "D4",
+      "calls": 20,
+      "totalMs": 1359.399125
+    },
+    {
+      "phase": "D4-boss",
+      "calls": 1,
+      "totalMs": 375.63637
+    },
+    {
+      "phase": "D5",
+      "calls": 18,
+      "totalMs": 1045.997171
+    },
+    {
+      "phase": "D5-floor4",
+      "calls": 16,
+      "totalMs": 792.1729459999999
+    },
+    {
+      "phase": "D5-boss",
+      "calls": 19,
+      "totalMs": 1160.1402290000028
+    },
+    {
+      "phase": "surplus-autosale",
+      "calls": 1,
+      "totalMs": 68.020431
+    },
+    {
+      "phase": "D6",
+      "calls": 19,
+      "totalMs": 765.0927719999918
+    },
+    {
+      "phase": "D6-floor3",
+      "calls": 21,
+      "totalMs": 2006.5510789999912
+    },
+    {
+      "phase": "D6-floor4",
+      "calls": 1,
+      "totalMs": 736.25686
+    },
+    {
+      "phase": "D6-floor5",
+      "calls": 1,
+      "totalMs": 697.727783
+    },
+    {
+      "phase": "D6-boss",
+      "calls": 43,
+      "totalMs": 3229.6350470000266
+    },
+    {
+      "phase": "D6-boss-gate",
+      "calls": 24,
+      "totalMs": 1748.9692549999563
+    },
+    {
+      "phase": "D7",
+      "calls": 24,
+      "totalMs": 2503.1250880000434
+    },
+    {
+      "phase": "D7-floor4",
+      "calls": 24,
+      "totalMs": 1991.9427759999894
+    },
+    {
+      "phase": "D7-floor5",
+      "calls": 29,
+      "totalMs": 7676.434460999999
+    },
+    {
+      "phase": "D7-floor5-upgrade",
+      "calls": 22,
+      "totalMs": 921.3909919999896
+    },
+    {
+      "phase": "D7-boss-gate",
+      "calls": 25,
+      "totalMs": 2788.3869590000027
+    },
+    {
+      "phase": "D7-checkpoint",
+      "calls": 1,
+      "totalMs": 547.314526
+    },
+    {
+      "phase": "D7-boss",
+      "calls": 23,
+      "totalMs": 2529.6778960000006
+    },
+    {
+      "phase": "D7-boss-upgrade",
+      "calls": 19,
+      "totalMs": 1424.074155000059
+    },
+    {
+      "phase": "D7-caster-fix",
+      "calls": 4,
+      "totalMs": 712.6321159999983
+    },
+    {
+      "phase": "D7-boss-final",
+      "calls": 2,
+      "totalMs": 1099.163861
+    },
+    {
+      "phase": "D8-entry",
+      "calls": 2,
+      "totalMs": 838.5776739999999
+    },
+    {
+      "phase": "D8-initial-build",
+      "calls": 22,
+      "totalMs": 1765.2797079999973
+    },
+    {
+      "phase": "D8-progression",
+      "calls": 54,
+      "totalMs": 34280.47254700002
+    },
+    {
+      "phase": "D8-floor2-upgrade",
+      "calls": 22,
+      "totalMs": 1637.0662630000047
+    },
+    {
+      "phase": "D8-floor2-verification",
+      "calls": 2,
+      "totalMs": 996.244531
+    },
+    {
+      "phase": "D8-floor4-upgrade",
+      "calls": 29,
+      "totalMs": 1923.7991919999859
+    },
+    {
+      "phase": "D8-floor5-formation",
+      "calls": 2,
+      "totalMs": 659.4596690000001
+    },
+    {
+      "phase": "D8-floor5-upgrade",
+      "calls": 20,
+      "totalMs": 1553.670736999998
+    },
+    {
+      "phase": "D8-floor5-caster",
+      "calls": 1,
+      "totalMs": 615.720079
+    },
+    {
+      "phase": "D8-floor5-support",
+      "calls": 14,
+      "totalMs": 1273.2463769999954
+    },
+    {
+      "phase": "D8-floor5-attacker-HP",
+      "calls": 1,
+      "totalMs": 650.5842749999999
+    },
+    {
+      "phase": "D8-floor5-deity",
+      "calls": 1,
+      "totalMs": 679.042375
+    },
+    {
+      "phase": "D8-floor5-refreshed",
+      "calls": 35,
+      "totalMs": 1695.4940550000174
+    },
+    {
+      "phase": "D8-floor5-latest",
+      "calls": 37,
+      "totalMs": 2357.8208299999997
+    },
+    {
+      "phase": "D8-floor5-latest-validation",
+      "calls": 1,
+      "totalMs": 1676.115545
+    },
+    {
+      "phase": "D8-floor5-live-check",
+      "calls": 1,
+      "totalMs": 1624.078997
+    },
+    {
+      "phase": "D8-instant-final",
+      "calls": 4,
+      "totalMs": 281.553307
+    },
+    {
+      "phase": "D8-boss-progression",
+      "calls": 2,
+      "totalMs": 840.3418690000001
+    },
+    {
+      "phase": "final-verification",
+      "calls": 3,
+      "totalMs": 192.45948200000004
+    },
+    {
+      "phase": "final-save",
+      "calls": 1,
+      "totalMs": 594.7449949999999
+    }
+  ],
+  "clock": [
+    {
+      "call": 31,
+      "phase": "manual",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-03T21:23:28.287Z"
+    },
+    {
+      "call": 46,
+      "phase": "D1",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-04T09:23:28.287Z"
+    },
+    {
+      "call": 47,
+      "phase": "D1",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-04T21:23:28.287Z"
+    },
+    {
+      "call": 66,
+      "phase": "D2",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-05T09:23:28.287Z"
+    },
+    {
+      "call": 67,
+      "phase": "D2",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-05T21:23:28.287Z"
+    },
+    {
+      "call": 85,
+      "phase": "D2-boss",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-06T09:23:28.287Z"
+    },
+    {
+      "call": 88,
+      "phase": "D3",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-06T21:23:28.287Z"
+    },
+    {
+      "call": 89,
+      "phase": "D3",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-07T09:23:28.287Z"
+    },
+    {
+      "call": 108,
+      "phase": "D4",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-07T21:23:28.287Z"
+    },
+    {
+      "call": 109,
+      "phase": "D4",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-08T09:23:28.287Z"
+    },
+    {
+      "call": 127,
+      "phase": "D4",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-08T21:23:28.287Z"
+    },
+    {
+      "call": 128,
+      "phase": "D4",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-09T09:23:28.287Z"
+    },
+    {
+      "call": 130,
+      "phase": "D4-boss",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-09T21:23:28.287Z"
+    },
+    {
+      "call": 133,
+      "phase": "D5",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-10T09:23:28.287Z"
+    },
+    {
+      "call": 151,
+      "phase": "D5",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-10T21:23:28.287Z"
+    },
+    {
+      "call": 168,
+      "phase": "D5-floor4",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-11T09:23:28.287Z"
+    },
+    {
+      "call": 170,
+      "phase": "D5-boss",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-11T21:23:28.287Z"
+    },
+    {
+      "call": 190,
+      "phase": "D5-boss",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-12T09:23:28.287Z"
+    },
+    {
+      "call": 193,
+      "phase": "D6",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-12T21:23:28.287Z"
+    },
+    {
+      "call": 213,
+      "phase": "D6-floor3",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-13T09:23:28.287Z"
+    },
+    {
+      "call": 214,
+      "phase": "D6-floor3",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-13T21:23:28.287Z"
+    },
+    {
+      "call": 234,
+      "phase": "D6-floor3",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-14T09:23:28.287Z"
+    },
+    {
+      "call": 236,
+      "phase": "D6-floor4",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-14T21:23:28.287Z"
+    },
+    {
+      "call": 238,
+      "phase": "D6-floor5",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-15T09:23:28.287Z"
+    },
+    {
+      "call": 262,
+      "phase": "D6-boss",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-15T21:23:28.287Z"
+    },
+    {
+      "call": 263,
+      "phase": "D6-boss",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-16T09:23:28.287Z"
+    },
+    {
+      "call": 288,
+      "phase": "D6-boss-gate",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-16T21:23:28.287Z"
+    },
+    {
+      "call": 289,
+      "phase": "D6-boss-gate",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-17T09:23:28.287Z"
+    },
+    {
+      "call": 309,
+      "phase": "D6-boss",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-17T21:23:28.287Z"
+    },
+    {
+      "call": 312,
+      "phase": "D7",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-18T09:23:28.287Z"
+    },
+    {
+      "call": 336,
+      "phase": "D7",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-18T21:23:28.287Z"
+    },
+    {
+      "call": 361,
+      "phase": "D7-floor4",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-19T09:23:28.287Z"
+    },
+    {
+      "call": 386,
+      "phase": "D7-floor5",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-19T21:23:28.287Z"
+    },
+    {
+      "call": 387,
+      "phase": "D7-floor5",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-20T09:23:28.287Z"
+    },
+    {
+      "call": 411,
+      "phase": "D7-floor5",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-20T21:23:28.287Z"
+    },
+    {
+      "call": 412,
+      "phase": "D7-floor5",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-21T09:23:28.287Z"
+    },
+    {
+      "call": 414,
+      "phase": "D7-floor5",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-21T21:23:28.287Z"
+    },
+    {
+      "call": 415,
+      "phase": "D7-floor5",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-22T09:23:28.287Z"
+    },
+    {
+      "call": 441,
+      "phase": "D7-boss-gate",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-22T21:23:28.287Z"
+    },
+    {
+      "call": 442,
+      "phase": "D7-boss-gate",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-23T09:23:28.287Z"
+    },
+    {
+      "call": 445,
+      "phase": "D7-boss",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-23T21:23:28.287Z"
+    },
+    {
+      "call": 492,
+      "phase": "D7-boss-final",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-24T09:23:28.287Z"
+    },
+    {
+      "call": 495,
+      "phase": "D8-entry",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-24T21:23:28.287Z"
+    },
+    {
+      "call": 518,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-25T09:23:28.287Z"
+    },
+    {
+      "call": 520,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-25T21:23:28.287Z"
+    },
+    {
+      "call": 521,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-26T09:23:28.287Z"
+    },
+    {
+      "call": 522,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-26T21:23:28.287Z"
+    },
+    {
+      "call": 524,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-27T09:23:28.287Z"
+    },
+    {
+      "call": 525,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-27T21:23:28.287Z"
+    },
+    {
+      "call": 551,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-28T09:23:28.287Z"
+    },
+    {
+      "call": 552,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-28T21:23:28.287Z"
+    },
+    {
+      "call": 553,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-29T09:23:28.287Z"
+    },
+    {
+      "call": 554,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-29T21:23:28.287Z"
+    },
+    {
+      "call": 556,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-30T09:23:28.287Z"
+    },
+    {
+      "call": 557,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-30T21:23:28.287Z"
+    },
+    {
+      "call": 558,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-31T09:23:28.287Z"
+    },
+    {
+      "call": 559,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-10-31T21:23:28.287Z"
+    },
+    {
+      "call": 590,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-01T09:23:28.287Z"
+    },
+    {
+      "call": 591,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-01T21:23:28.287Z"
+    },
+    {
+      "call": 592,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-02T09:23:28.287Z"
+    },
+    {
+      "call": 632,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-02T21:23:28.287Z"
+    },
+    {
+      "call": 633,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-03T09:23:28.287Z"
+    },
+    {
+      "call": 634,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-03T21:23:28.287Z"
+    },
+    {
+      "call": 635,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-04T09:23:28.287Z"
+    },
+    {
+      "call": 673,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-04T21:23:28.287Z"
+    },
+    {
+      "call": 674,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-05T09:23:28.287Z"
+    },
+    {
+      "call": 675,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-05T21:23:28.287Z"
+    },
+    {
+      "call": 676,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-06T09:23:28.287Z"
+    },
+    {
+      "call": 678,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-06T21:23:28.287Z"
+    },
+    {
+      "call": 679,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-07T09:23:28.287Z"
+    },
+    {
+      "call": 680,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-07T21:23:28.287Z"
+    },
+    {
+      "call": 681,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-08T09:23:28.287Z"
+    },
+    {
+      "call": 721,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-08T21:23:28.287Z"
+    },
+    {
+      "call": 722,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-09T09:23:28.287Z"
+    },
+    {
+      "call": 723,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-09T21:23:28.287Z"
+    },
+    {
+      "call": 725,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-10T09:23:28.287Z"
+    },
+    {
+      "call": 726,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-10T21:23:28.287Z"
+    },
+    {
+      "call": 728,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-11T09:23:28.287Z"
+    },
+    {
+      "call": 729,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-11T21:23:28.287Z"
+    },
+    {
+      "call": 732,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-12T09:23:28.287Z"
+    },
+    {
+      "call": 733,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-12T21:23:28.287Z"
+    },
+    {
+      "call": 735,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-13T09:23:28.287Z"
+    },
+    {
+      "call": 736,
+      "phase": "D8-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-13T21:23:28.287Z"
+    },
+    {
+      "call": 742,
+      "phase": "D8-boss-progression",
+      "requestedElapsedSeconds": 43200,
+      "acceptedElapsedSeconds": 43200,
+      "cappedElapsedSeconds": 43200,
+      "elapsedSeconds": 43200,
+      "inGameTime": "2026-11-14T09:23:28.287Z"
+    }
+  ]
+}
