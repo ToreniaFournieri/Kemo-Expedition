@@ -266,7 +266,7 @@ export interface HomeScreenProps {
     };
     resetGame: () => void;
     importGameState: (state: GameState) => Promise<{ state: GameState | null; errorLog: string | null }>;
-    getCompressedSavePayload: () => Promise<string>;
+    getCompressedSavePayload: (encoding?: 'portable' | 'stored') => Promise<string>;
     resetCommonBags: () => void;
     resetUniqueBags: () => void;
     resetCommonSuperRareBag: () => void;

@@ -275,6 +275,9 @@ All JSON Commit requests use this transport envelope:
   more than 4,096 receipts have been evicted, and a mismatch between the renderer's
   and the host's journal picture triggers one full resend. Accounts whose receipts
   are inside the control file remain readable.
+* The player's return save (written at login) and the account save written at logout are
+  read back only by this runtime, so they use the internal storage encoding. Only
+  exported backups use the portable codec.
 * Failure or safe cancellation before the durable commit discards every staged
   Chunk and effect, fences outstanding worker results, and leaves the pre-request
   state, RNG, clocks, backlog, and revision unchanged. Restart does not resume a

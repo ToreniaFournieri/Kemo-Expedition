@@ -613,7 +613,8 @@ export function GameRuntimeHost({
         },
         player: {
           flushSave: () => apiActionsRef.current.flushSave(),
-          exportPayload: () => apiActionsRef.current.getCompressedSavePayload(),
+          // Both payloads are read back only by this runtime, so they use the fast internal encoding, not the backup codec.
+          exportPayload: () => apiActionsRef.current.getCompressedSavePayload('stored'),
           returnPayload: {
             get: () => localStorage.getItem(API_PLAYER_RETURN_STORAGE_KEY),
             set: (payload) => localStorage.setItem(API_PLAYER_RETURN_STORAGE_KEY, payload),
@@ -621,7 +622,7 @@ export function GameRuntimeHost({
           },
         },
         importGameState: (imported) => apiActionsRef.current.importGameState(imported),
-        exportActiveAccountPayload: () => apiActionsRef.current.getCompressedSavePayload(),
+        exportActiveAccountPayload: () => apiActionsRef.current.getCompressedSavePayload('stored'),
         now: () => Date.now(),
         catchUp: {
           maximumElapsedMs: AFK_MAX_ELAPSED_MS,

@@ -5219,11 +5219,11 @@ export function useGameState() {
       }
     }, []),
 
-    getCompressedSavePayload: useCallback(async (): Promise<string> => {
+    getCompressedSavePayload: useCallback(async (encoding: 'portable' | 'stored' = 'portable'): Promise<string> => {
       await persistenceCoordinatorRef.current?.requestDurable(latestGameStateRef.current);
       const coordinator = persistenceCoordinatorRef.current;
       if (!coordinator) throw new Error('Persistence coordinator was unavailable.');
-      return coordinator.createExportPayload(latestGameStateRef.current);
+      return coordinator.createExportPayload(latestGameStateRef.current, encoding);
     }, []),
 
     resetCommonBags: useCallback((partyIndex?: number) => {

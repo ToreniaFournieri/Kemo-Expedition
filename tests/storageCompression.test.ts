@@ -54,7 +54,7 @@ test('corrupted deflate storage payloads fail loudly', () => {
 
 test('autosaves use deflate storage while exported backups keep the portable codec', () => {
   assert.match(workerSource, /request\.codec === 'portable'[\s\S]*encodePersistedState[\s\S]*encodeStoredState/);
-  assert.match(persistenceSource, /createExportPayload[\s\S]*codec: 'portable'/);
+  assert.match(persistenceSource, /createExportPayload\(state: GameState, encoding: 'portable' \| 'stored' = 'portable'\)[\s\S]*codec: 'portable' as const/);
   assert.match(persistenceSource, /const encodedPayload = encodeStoredStateSync\(jsonPayload\)/);
 });
 
