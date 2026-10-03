@@ -1,6 +1,6 @@
 # API performance plan: heavy repeated calls (party / equipment / commits)
 
-Status: items 1c, 1b-equivalent (segmented transfer), and part of 3 are done (builds 6-8, see changelog). Remaining: read cache, receipt journal, 2a, 4. Results so far on the 490-call D8 workflow: 13.0 s -> 3.8 s; mutating commit 95 -> 18 ms.
+Status: items 1c, 1b-equivalent (segmented transfer), and part of 3 are done (builds 6-8, see changelog). Dropped: the read cache (post-commit reads measure 0.5-3.5 ms; the earlier 8-11 ms "party read" was the party-reorder commit sharing the `{p}` name). Remaining: receipt journal (small), 2a, and 4 (simulation). Results so far on the 490-call D8 workflow: 13.0 s -> 3.8 s; mutating commit 95 -> 18 ms.
 
 Findings since the plan: expedition logs are ~95% of the D8 save and keep object identity, so they are stringified/transferred/compressed once (done). The profile also showed per-slot whole-inventory copies in equipment Undo/Redo evaluation (done). The receipt list is already capped at 4,096, so its cost saturates (~12-15 ms per no-op at 2.6 MB) rather than growing without bound. Numbers come from `tests/performance/` runs on 2026-10-03 (Desktop, D8 save, 7.7 MB JSON, 400-call workflow unless noted).
 
@@ -51,3 +51,6 @@ Use `node tests/performance/apiV1Benchmark.mjs --party-throughput --fixtures=d8 
 - May a commit be acknowledged before the full save is rewritten (1a), provided crash recovery reproduces identical state?
 - Is a receipt retention limit acceptable (2b alternative)?
 - Is a sectioned save container (1b) acceptable, with old single-blob saves still loadable?
+
+## Status after builds 6-8
+D8 mutating commit is ~18 ms: renderer ~6, IPC ~3, main encode ~5 + store ~2.5. Each remaining piece is a few ms. The largest latencies left are simulation-bound: `simulationRun` x1000 (~0.9 s), `observation quick=false` (0.4-0.65 s), 12 h elapsed progression (~290 ms). Next candidates: run per-party simulations in parallel workers; profile the battle kernel per simulated battle.
