@@ -127,4 +127,6 @@ app.on('browser-window-created',(_event,window)=>{
   }catch(error){console.error('BENCHMARK_FAILED',error.stack||error);save();clearTimeout(timeout);deliveryServer.close();app.exit(1);}
  });
 });
+// Test runs start the app hidden (macOS) so repeated launches do not flash windows.
+if (!process.argv.includes('--hidden')) process.argv.push('--hidden');
 require('./desktop/main.cjs');

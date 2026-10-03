@@ -120,4 +120,6 @@ app.on('browser-window-created', (_event, window) => {
   });
 });
 
+// Test runs start the app hidden (macOS) so repeated launches do not flash windows.
+if (!process.argv.includes('--hidden')) process.argv.push('--hidden');
 require('../desktop/main.cjs');
