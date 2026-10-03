@@ -54,3 +54,6 @@ Use `node tests/performance/apiV1Benchmark.mjs --party-throughput --fixtures=d8 
 
 ## Status after builds 6-8
 D8 mutating commit is ~18 ms: renderer ~6, IPC ~3, main encode ~5 + store ~2.5. Each remaining piece is a few ms. The largest latencies left are simulation-bound: `simulationRun` x1000 (~0.9 s), `observation quick=false` (0.4-0.65 s), 12 h elapsed progression (~290 ms). Next candidates: run per-party simulations in parallel workers; profile the battle kernel per simulated battle.
+
+## Battle/simulation profile (option 2, 2026-10-03)
+CPU profile of `simulationRun` x1000 on D8 (~0.95 s): about half is the WASM battle kernel and its protocol boundary (~330 ms of ~700 ms); the rest is spread flat across reward drops (~110 ms), room resolution, bag/preparation work and result assembly, with no single JS function above ~6%. Reward drops copy a 13-key bag object per draw but depend on exact RNG order. A tried optimization (memoizing per-run bag normalization) gave no measurable gain and was reverted. Conclusion: no cheap single-function win remains; the lever is parallelism (independent runs across workers), tracked as the next option.
