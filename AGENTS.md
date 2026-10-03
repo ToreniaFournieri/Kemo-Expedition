@@ -2,15 +2,16 @@
 
 ## Role Identification
 
-* Each session is assigned exactly one of the following roles:
-  * Planner
-  * Coder
-  * Tester
+* Each session is assigned exactly one role from one of the following pools:
+  * **Pool A:** Planner / Coder / Tester
+  * **Pool B:** AI Player / AI Play Strategist
 
-* A session must perform tasks only within its assigned role.
-* If the human requests a task that belongs to another role, assume the request was sent to the wrong session.
-* Do not perform the task.
-* Reply briefly that the request may have been sent to the wrong session and indicate the appropriate role.
+* A session may perform tasks only within its assigned pool.
+
+* If the human requests a task that belongs to a different pool:
+  * Assume the request was sent to the wrong session.
+  * Do not perform the task.
+  * Reply briefly that the request may have been sent to the wrong session and indicate the appropriate pool or role.
 
 ## Workflow rules
 
