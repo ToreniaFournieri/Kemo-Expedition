@@ -1,0 +1,16 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "e1a79aac-f205-4ce8-b658-b9ce9ff98acb",
+  "revision": 0,
+  "observedAt": "2026-10-03T06:40:03.680Z",
+  "data": {
+    "userId": "CodexNormal1003",
+    "environment": "prod",
+    "gameMode": "normal",
+    "levelOffsetForOrca": null,
+    "sessionToken": "[REDACTED]",
+    "controlLeaseToken": "[REDACTED]",
+    "leaseExpiresAt": "2026-10-03T06:55:03.680Z"
+  }
+}

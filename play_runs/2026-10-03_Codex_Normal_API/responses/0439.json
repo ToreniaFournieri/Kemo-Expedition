@@ -1,0 +1,229 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "c0e04afd-1a96-4efd-83e7-e10c4129d9b5",
+  "revision": 329,
+  "observedAt": "2026-10-03T08:49:55.193Z",
+  "data": {
+    "expeditionInfo": {
+      "parties": [
+        {
+          "partyNumber": 1,
+          "name": "PT1",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 23129,
+          "maximumHp": 23129,
+          "disclosedFloor": 5,
+          "disclosedOutcome": "Defeat",
+          "destination": 8,
+          "destinationMode": "fixed",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 3,
+          "chargeDuration": 2880,
+          "clearGates": [
+            {
+              "kind": "bossGate",
+              "dungeonId": 8,
+              "floor": null,
+              "current": 0,
+              "required": 2
+            }
+          ],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": false,
+              "unavailableReason": "gods_battle_unavailable"
+            }
+          }
+        },
+        {
+          "partyNumber": 2,
+          "name": "PT2",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 6354,
+          "maximumHp": 6354,
+          "disclosedFloor": 6,
+          "disclosedOutcome": "Clear",
+          "destination": 4,
+          "destinationMode": "auto",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 6,
+          "chargeDuration": 0,
+          "clearGates": [],
+          "sideQuest": {
+            "id": 2,
+            "type": "q.sleeping",
+            "target": 1,
+            "progress": 0,
+            "percent": 0,
+            "hasDeadline": true,
+            "remainingMs": 29071000
+          },
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": true,
+              "unavailableReason": null
+            }
+          }
+        },
+        {
+          "partyNumber": 3,
+          "name": "PT3",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 7927,
+          "maximumHp": 7927,
+          "disclosedFloor": 6,
+          "disclosedOutcome": "Defeat",
+          "destination": 4,
+          "destinationMode": "auto",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 6,
+          "chargeDuration": 0,
+          "clearGates": [],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": true,
+              "unavailableReason": null
+            }
+          }
+        },
+        {
+          "partyNumber": 4,
+          "name": "PT4",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 6231,
+          "maximumHp": 6231,
+          "disclosedFloor": 6,
+          "disclosedOutcome": "Clear",
+          "destination": 4,
+          "destinationMode": "auto",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 6,
+          "chargeDuration": 0,
+          "clearGates": [],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": true,
+              "unavailableReason": null
+            }
+          }
+        },
+        {
+          "partyNumber": 5,
+          "name": "PT5",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 6131,
+          "maximumHp": 6131,
+          "disclosedFloor": 6,
+          "disclosedOutcome": "Clear",
+          "destination": 4,
+          "destinationMode": "auto",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 6,
+          "chargeDuration": 0,
+          "clearGates": [],
+          "sideQuest": {
+            "id": 9,
+            "type": "q.treasure-boss-rare",
+            "target": 3,
+            "progress": 0,
+            "percent": 0,
+            "hasDeadline": true,
+            "remainingMs": 51914000
+          },
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": true,
+              "unavailableReason": null
+            }
+          }
+        },
+        {
+          "partyNumber": 6,
+          "name": "PT6",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 5566,
+          "maximumHp": 5566,
+          "disclosedFloor": 6,
+          "disclosedOutcome": "Defeat",
+          "destination": 4,
+          "destinationMode": "auto",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 6,
+          "chargeDuration": 0,
+          "clearGates": [],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": true,
+              "unavailableReason": null
+            }
+          }
+        }
+      ]
+    }
+  }
+}

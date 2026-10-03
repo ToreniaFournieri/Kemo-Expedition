@@ -1,0 +1,28 @@
+{
+  "partyNumber": 1,
+  "numberOfRun": 1000,
+  "preconditions": {
+    "equipment": [{ "characterId": 1, "slot": 3, "item": "0/1401/3/0" }],
+    "ownedItems": [{ "item": "0/8103/3/0", "quantity": 1 }]
+  },
+  "candidates": [
+    { "name": "Kemo vitality armor baseline", "steps": [] },
+    {
+      "name": "Replace one vitality armor with a tier 8 shield",
+      "steps": [
+        {
+          "route": "/commit/build/character/1/equip",
+          "parameters": { "targetEquipment": "0/8103/3/0", "targetSlot": 3 },
+          "label": "equipment test: one-slot shield replacement"
+        }
+      ]
+    }
+  ],
+  "restoreSteps": [
+    {
+      "route": "/commit/build/character/1/equip",
+      "parameters": { "targetEquipment": "0/1401/3/0", "targetSlot": 3 },
+      "label": "equipment test: restore original vitality armor"
+    }
+  ]
+}

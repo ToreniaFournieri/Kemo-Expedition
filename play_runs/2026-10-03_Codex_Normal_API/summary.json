@@ -1,0 +1,124 @@
+{
+  "account": "CodexNormal1003",
+  "environment": "prod",
+  "gameMode": "normal",
+  "versionBuild": "v0.9.8 (12)",
+  "signupAt": "2026-10-03T06:40:03.563Z",
+  "documentedBossVictoryAt": "2026-11-12T03:59:56.924Z",
+  "documentedBossVictoryDays": 39.88881204861111,
+  "verifiedAt": "2026-11-12T08:04:50.843Z",
+  "verifiedDays": 40.058880555555554,
+  "explicitElapsedSeconds": 3456000,
+  "apiCalls": 452,
+  "apiCallsThroughGoalObservation": 447,
+  "successfulCalls": 449,
+  "errors": [
+    {
+      "call": 4,
+      "route": "/commit/build/character/1/changeBuild",
+      "code": "control_lease_expired",
+      "message": "The control lease expired."
+    },
+    {
+      "call": 15,
+      "route": "/read/observation/expedition",
+      "code": "invalid_request",
+      "message": "The request is invalid: `partyNumber` is not a known member.",
+      "details": {
+        "field": "partyNumber",
+        "rule": "additionalProperties",
+        "issues": [
+          {
+            "path": "",
+            "keyword": "additionalProperties",
+            "additionalProperty": "partyNumber"
+          }
+        ]
+      }
+    },
+    {
+      "call": 348,
+      "route": "/read/expedition/1/latestBattleLog",
+      "code": "not_found",
+      "message": "The requested projection is unavailable."
+    }
+  ],
+  "cumulativeApiDurationMs": 58711.95200000001,
+  "medianApiDurationMs": 38.178,
+  "p95ApiDurationMs": 768.956,
+  "timingDefinition": "Fetch start through response-body receipt; excludes parsing, file writes, tool approvals, offline CPU, installation and idle wall time.",
+  "boss": {
+    "logId": "diary:1794455996924-vzigmo",
+    "enemyId": 387,
+    "outcome": "Clear",
+    "completedRooms": 24,
+    "maximumHp": 23129,
+    "remainingHp": 9742
+  },
+  "categories": [
+    {
+      "name": "fundamental",
+      "calls": 4,
+      "apiDurationMs": 302.851,
+      "medianMs": 58.054,
+      "p95Ms": 129.509
+    },
+    {
+      "name": "observation reads",
+      "calls": 78,
+      "apiDurationMs": 1374.2849999999999,
+      "medianMs": 8.434,
+      "p95Ms": 46.062
+    },
+    {
+      "name": "build commits",
+      "calls": 245,
+      "apiDurationMs": 9124.016000000001,
+      "medianMs": 35.404,
+      "p95Ms": 61.413
+    },
+    {
+      "name": "destination commits",
+      "calls": 8,
+      "apiDurationMs": 404.855,
+      "medianMs": 46.834,
+      "p95Ms": 91.052
+    },
+    {
+      "name": "elapsed commits",
+      "calls": 80,
+      "apiDurationMs": 43369.721,
+      "medianMs": 564.893,
+      "p95Ms": 950.946
+    },
+    {
+      "name": "inventory reads",
+      "calls": 30,
+      "apiDurationMs": 663.517,
+      "medianMs": 6.319,
+      "p95Ms": 49.48
+    },
+    {
+      "name": "simulation forecasts",
+      "calls": 3,
+      "apiDurationMs": 3255.4480000000003,
+      "medianMs": 793.12,
+      "p95Ms": 1725.461
+    },
+    {
+      "name": "other reads",
+      "calls": 4,
+      "apiDurationMs": 217.25900000000001,
+      "medianMs": 44.496,
+      "p95Ms": 84.753
+    }
+  ],
+  "priorReportComparison": {
+    "priorVersionBuild": "v0.9.8 (2)",
+    "priorDaysApprox": 44.8,
+    "priorCalls": 557,
+    "daysReductionPercent": 10.962473105778772,
+    "callsReductionPercent": 18.850987432675044,
+    "controlledBenchmark": false
+  }
+}

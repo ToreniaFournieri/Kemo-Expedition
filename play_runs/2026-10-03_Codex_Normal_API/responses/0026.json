@@ -1,0 +1,23 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "2f06a41a-4199-4f30-9343-1f1c61c00e65",
+  "previousRevision": 11,
+  "revision": 12,
+  "committedAt": "2026-10-03T08:06:16.323Z",
+  "data": {
+    "current": {
+      "destination": 2,
+      "destinationMode": "fixed",
+      "depthLimit": "all",
+      "difficultyOffset": 0
+    }
+  },
+  "effects": [],
+  "changedResources": [
+    "read/observation/overview",
+    "read/observation/expedition",
+    "read/observation/base",
+    "read/observation/diary"
+  ]
+}

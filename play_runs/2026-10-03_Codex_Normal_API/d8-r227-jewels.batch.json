@@ -1,0 +1,102 @@
+[
+  {
+    "route": "/commit/build/character/1/jewelRemove",
+    "parameters": {
+      "targetEquipment": 8
+    }
+  },
+  {
+    "route": "/commit/build/character/1/jewelRemove",
+    "parameters": {
+      "targetEquipment": 10
+    }
+  },
+  {
+    "route": "/commit/build/character/2/jewelRemove",
+    "parameters": {
+      "targetEquipment": 2
+    }
+  },
+  {
+    "route": "/commit/build/character/2/jewelRemove",
+    "parameters": {
+      "targetEquipment": 6
+    }
+  },
+  {
+    "route": "/commit/build/character/5/jewelRemove",
+    "parameters": {
+      "targetEquipment": 7
+    }
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 8,
+      "jewelToSet": "fort:1"
+    }
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 10,
+      "jewelToSet": "ward:3"
+    }
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 11,
+      "jewelToSet": "fort:1"
+    }
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:3"
+    }
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "might:4"
+    }
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 6,
+      "jewelToSet": "might:2"
+    }
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 7,
+      "jewelToSet": "shade:3"
+    }
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 8,
+      "jewelToSet": "ward:4"
+    }
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:1"
+    }
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 5,
+      "jewelToSet": "arcana:1"
+    }
+  }
+]

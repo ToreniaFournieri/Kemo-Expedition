@@ -1,0 +1,16 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "dd296b68-a162-4be2-9f6a-7aebbeac120a",
+  "revision": 197,
+  "observedAt": "2026-10-03T08:30:35.453Z",
+  "data": {
+    "items": [
+      "might:4/1/ability=[]/cBonus=[c.physical-attack+18]/otherBonus=[d.melee_attack:27, d.ranged_attack:20]",
+      "fort:1/1/ability=[]/cBonus=[c.physical-defense+13]/otherBonus=[d.physical_defense:6, d.HP:6]",
+      "arcana:1/1/ability=[]/cBonus=[c.magical-attack+22]/otherBonus=[d.magical_attack:6, d.HP:3]"
+    ],
+    "totalCount": 3,
+    "truncated": false
+  }
+}

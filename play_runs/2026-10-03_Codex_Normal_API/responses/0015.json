@@ -1,0 +1,20 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "503a8470-bd47-4054-b8c3-cd68b6c45c86",
+  "error": {
+    "code": "invalid_request",
+    "message": "The request is invalid: `partyNumber` is not a known member.",
+    "details": {
+      "field": "partyNumber",
+      "rule": "additionalProperties",
+      "issues": [
+        {
+          "path": "",
+          "keyword": "additionalProperties",
+          "additionalProperty": "partyNumber"
+        }
+      ]
+    }
+  }
+}

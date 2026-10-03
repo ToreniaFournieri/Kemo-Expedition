@@ -1,0 +1,9 @@
+{
+  "partyNumber": 1,
+  "numberOfRun": 1000,
+  "candidates": [
+    { "name": "current loadout baseline", "steps": [] },
+    { "name": "baseline noise sample", "steps": [] }
+  ],
+  "restoreSteps": []
+}

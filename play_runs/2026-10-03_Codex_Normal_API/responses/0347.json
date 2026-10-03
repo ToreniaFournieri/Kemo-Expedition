@@ -1,0 +1,18 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "5bc282e9-c7bd-45c3-ae70-e61c10350ffe",
+  "revision": 251,
+  "observedAt": "2026-10-03T08:42:16.421Z",
+  "data": {
+    "items": [
+      "might:4/1/ability=[]/cBonus=[c.physical-attack+18]/otherBonus=[d.melee_attack:27, d.ranged_attack:20]",
+      "focus:3/1/ability=[]/cBonus=[c.accuracy+0.006]/otherBonus=[d.physical_defense:7, d.HP:5]",
+      "might:3/1/ability=[]/cBonus=[c.physical-attack+19]/otherBonus=[d.melee_attack:21, d.ranged_attack:16]",
+      "arcana:2/1/ability=[]/cBonus=[c.magical-attack+21]/otherBonus=[d.magical_attack:8, d.HP:4]",
+      "fort:1/1/ability=[]/cBonus=[c.physical-defense+13]/otherBonus=[d.physical_defense:6, d.HP:6]"
+    ],
+    "totalCount": 5,
+    "truncated": false
+  }
+}

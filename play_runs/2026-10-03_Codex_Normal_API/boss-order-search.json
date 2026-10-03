@@ -1,0 +1,98 @@
+[
+  {
+    "order": [
+      6,
+      1,
+      4,
+      2,
+      3,
+      5
+    ],
+    "gate": 0.08,
+    "bossClear": 0.055,
+    "bossArrival": 0.079,
+    "expectedGateAttempts": 168.75,
+    "expectedBossAttempts": 18.181818181818183,
+    "expectedTotalAttempts": 186.9318181818182
+  },
+  {
+    "order": [
+      1,
+      6,
+      4,
+      2,
+      3,
+      5
+    ],
+    "gate": 0.067,
+    "bossClear": 0.026,
+    "bossArrival": 0.059,
+    "expectedGateAttempts": 237.69213633325901,
+    "expectedBossAttempts": 38.46153846153846,
+    "expectedTotalAttempts": 276.1536747947975
+  },
+  {
+    "order": [
+      1,
+      4,
+      2,
+      6,
+      3,
+      5
+    ],
+    "gate": 0.051,
+    "bossClear": 0.018,
+    "bossArrival": 0.04,
+    "expectedGateAttempts": 404.07535563244915,
+    "expectedBossAttempts": 55.55555555555556,
+    "expectedTotalAttempts": 459.6309111880047
+  },
+  {
+    "order": [
+      1,
+      4,
+      2,
+      3,
+      6,
+      5
+    ],
+    "gate": 0.044,
+    "bossClear": 0.013,
+    "bossArrival": 0.042,
+    "expectedGateAttempts": 539.2561983471076,
+    "expectedBossAttempts": 76.92307692307692,
+    "expectedTotalAttempts": 616.1792752701845
+  },
+  {
+    "order": [
+      1,
+      2,
+      4,
+      3,
+      6,
+      5
+    ],
+    "gate": 0.042,
+    "bossClear": 0.015,
+    "bossArrival": 0.043,
+    "expectedGateAttempts": 590.7029478458049,
+    "expectedBossAttempts": 66.66666666666667,
+    "expectedTotalAttempts": 657.3696145124716
+  },
+  {
+    "order": [
+      1,
+      3,
+      4,
+      2,
+      6,
+      5
+    ],
+    "gate": 0.022,
+    "bossClear": 0.012,
+    "bossArrival": 0.038,
+    "expectedGateAttempts": 2111.5702479338847,
+    "expectedBossAttempts": 83.33333333333333,
+    "expectedTotalAttempts": 2194.903581267218
+  }
+]

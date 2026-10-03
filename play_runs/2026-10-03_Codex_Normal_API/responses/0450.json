@@ -1,0 +1,11 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "d923fbb3-4c3c-4de8-8e8a-c9f2fde3b7b9",
+  "observedAt": "2026-10-03T08:53:48.396Z",
+  "data": {
+    "systemStatus": "ready",
+    "versionBuild": "v0.9.8 (12)",
+    "environment": "prod"
+  }
+}
