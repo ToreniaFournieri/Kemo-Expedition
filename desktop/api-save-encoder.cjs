@@ -67,6 +67,8 @@ async function encodeApiAccountSegments(segments) {
   if (segments.nonce !== cacheNonce) { cacheNonce = segments.nonce; cache = new Map(); cacheBytes = 0; }
   const pieces = [];
   const defined = [];
+  // Logs defined earlier in this same call: a later bare `{id}` reference to one of them is not in `cache` yet.
+  const local = new Map();
   let pendingText = '';
   const flushText = () => { if (pendingText) { pieces.push(deflatePiece(pendingText, API_ACCOUNT_DEFLATE_LEVEL)); pendingText = ''; } };
   for (const item of segments.items) {
@@ -76,11 +78,14 @@ async function encodeApiAccountSegments(segments) {
     if (typeof item.text === 'string') {
       const id = item.id;
       const text = item.text;
-      pieces.push(deflatePiece(text, LOG_DEFLATE_LEVEL).then((deflated) => { defined.push([id, deflated, text.length]); return deflated; }));
+      const piece = deflatePiece(text, LOG_DEFLATE_LEVEL).then((deflated) => { defined.push([id, deflated, text.length]); return deflated; });
+      local.set(id, piece);
+      pieces.push(piece);
     } else {
       const held = cache.get(item.id);
-      if (!held) throw new Error(SEGMENT_MISS);
-      pieces.push(held.deflated);
+      const piece = held ? held.deflated : local.get(item.id);
+      if (!piece) throw new Error(SEGMENT_MISS);
+      pieces.push(piece);
     }
   }
   flushText();
