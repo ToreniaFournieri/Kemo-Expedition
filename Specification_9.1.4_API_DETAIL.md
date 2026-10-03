@@ -233,6 +233,11 @@ All JSON Commit requests use this transport envelope:
   snapshot and resolve the request's target time once. Run the shared section 5.1
   progression logic against a private staged state, including game clocks, RNG
   and bags, inventory, currencies, equipment, pending backlog, and retained logs.
+* Each staged Chunk retains its own computation caches independently of inventory
+  ownership. Immutable API inventory writes can reuse encounter/prepared battle
+  inputs and unchanged profit/HP bases without sharing mutable inventory overlays.
+  Caches do not cross Chunk or transaction boundaries; level/character changes
+  invalidate derived bases, and current deity multipliers remain live.
 * Preserve section 5.1's worker-arrival FIFO ordering, per-party barriers,
   automatic-equipment timing, distinct coordinator snapshots, and completion
   acknowledgements inside that staged transaction. Each internal Chunk version

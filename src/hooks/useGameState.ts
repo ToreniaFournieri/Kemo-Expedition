@@ -842,7 +842,7 @@ export class AfkInventoryOverlay {
 }
 
 interface AfkChunkReducerContext {
-  inventoryOverlay: AfkInventoryOverlay;
+  inventoryOverlay?: AfkInventoryOverlay;
   encounterCache: Map<string, EnemyDef>;
   profitAbilityCache: Map<number, { partyLevel: number; characters: Party['characters']; levels: ProfitAbilityLevels }>;
   hpBaseCache: Map<number, { partyLevel: number; characters: Party['characters']; bonusHp: number }>;
@@ -4389,6 +4389,8 @@ export function simulateAfkPartyChunkForWorker(
     inventoryStrategy?: 'immutable' | 'overlay';
     workerOptimization?: AfkWorkerSimulationStrategy;
     compactBattleResultOutput?: boolean;
+    /** Reference path for verifying Chunk-local cache reuse independently of inventory ownership. */
+    chunkComputationCache?: 'shared' | 'none';
     workerAttribution?: AfkWorkerPhaseAttribution;
   },
 ): GameState {
@@ -4421,10 +4423,13 @@ export function simulateAfkPartyChunkForWorker(
     };
   }
   if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(options.workerAttribution, 'statusSnapshotMs', statusSnapshotStartedAt);
-  const afkChunkContext: AfkChunkReducerContext | undefined = options.inventoryStrategy === 'immutable'
+  const workerOptimization = options.workerOptimization ?? 'optimized';
+  // Computation caches belong to the Chunk, independently of inventory ownership. API elapsed
+  // keeps immutable inventory writes while reusing the same enemy inputs and unchanged HP/ability bases.
+  const afkChunkContext: AfkChunkReducerContext | undefined = options.inventoryStrategy === 'immutable' && (workerOptimization === 'legacy' || options.chunkComputationCache === 'none')
     ? undefined
     : {
-      inventoryOverlay: new AfkInventoryOverlay(state.global.inventory),
+      ...(options.inventoryStrategy === 'immutable' ? {} : { inventoryOverlay: new AfkInventoryOverlay(state.global.inventory) }),
       encounterCache: new Map(),
       profitAbilityCache: new Map(),
       hpBaseCache: new Map(),
@@ -4432,7 +4437,6 @@ export function simulateAfkPartyChunkForWorker(
         ? { workerAttribution: options.workerAttribution }
         : {}),
     };
-  const workerOptimization = options.workerOptimization ?? 'optimized';
   if (workerOptimization === 'optimized') {
     const workingState = gameReducer(state, {
       type: 'SIMULATE_AFK',
@@ -4452,7 +4456,7 @@ export function simulateAfkPartyChunkForWorker(
       workerAttribution: options.workerAttribution,
       onOperationComplete: options.onProgress,
     }, undefined, afkChunkContext);
-    if (afkChunkContext) {
+    if (afkChunkContext?.inventoryOverlay) {
       const inventoryDeltaStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && options.workerAttribution ? performance.now() : 0;
       afkInventoryDeltaByState.set(workingState, afkChunkContext.inventoryOverlay.createDelta());
       if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(options.workerAttribution, 'inventoryDeltaMs', inventoryDeltaStartedAt);
@@ -4481,7 +4485,7 @@ export function simulateAfkPartyChunkForWorker(
     }, undefined, afkChunkContext);
     options.onProgress?.(operationIndex + 1, operationCount);
   }
-  if (afkChunkContext) {
+  if (afkChunkContext?.inventoryOverlay) {
     const inventoryDeltaStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && options.workerAttribution ? performance.now() : 0;
     afkInventoryDeltaByState.set(workingState, afkChunkContext.inventoryOverlay.createDelta());
     if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(options.workerAttribution, 'inventoryDeltaMs', inventoryDeltaStartedAt);

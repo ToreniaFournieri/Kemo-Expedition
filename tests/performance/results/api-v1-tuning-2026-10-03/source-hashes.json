@@ -1,0 +1,18 @@
+{
+  "baseline": {
+    "src/hooks/useGameState.ts": "468d213a021534e4cc2f00b106ef1e4ebf6c17b1231d02d0bf588f49a262a466",
+    "src/game/storageCompression.ts": "531b20c2403321e4c14c87e1a0d7414118c9b42974c248da1975a91b2f29a66c"
+  },
+  "cache": {
+    "src/hooks/useGameState.ts": "cb4ad725e53cf297cf4817a8590c37fe93d5b1c773246dc43c668b16b9f58dd0",
+    "src/game/storageCompression.ts": "531b20c2403321e4c14c87e1a0d7414118c9b42974c248da1975a91b2f29a66c"
+  },
+  "combined": {
+    "src/hooks/useGameState.ts": "cb4ad725e53cf297cf4817a8590c37fe93d5b1c773246dc43c668b16b9f58dd0",
+    "src/game/storageCompression.ts": "e039f358a649491747ae7a343fe3971fc2061164a37745676aab64a4af009281"
+  },
+  "promotedBuild5": {
+    "src/hooks/useGameState.ts": "cb4ad725e53cf297cf4817a8590c37fe93d5b1c773246dc43c668b16b9f58dd0",
+    "src/game/storageCompression.ts": "e039f358a649491747ae7a343fe3971fc2061164a37745676aab64a4af009281"
+  }
+}
