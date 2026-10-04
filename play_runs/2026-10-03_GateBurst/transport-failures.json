@@ -1,0 +1,5 @@
+{
+  "count": 2,
+  "reason": "Connection failures while the Electron API runtime was stopped during the interruption; no HTTP response received.",
+  "timestamps": "Not retained by the response-only client ledger."
+}
