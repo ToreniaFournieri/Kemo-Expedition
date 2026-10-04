@@ -3363,6 +3363,7 @@ const ko = {
   'setting.bestiary.tab.nest': '소',
   'setting.bestiary.tab.moon': '월',
   'setting.bestiary.tab.valley': '곡',
+  'setting.bestiary.tab.reminiscence': '억',
   'setting.bestiary.tab.gods': '신',
   'setting.bestiary.tab.colosseum': '특',
   'setting.glossary.collapseEntry': '{label} 접기',

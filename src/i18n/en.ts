@@ -3373,6 +3373,7 @@ const en = {
   'setting.bestiary.tab.nest': 'Nest',
   'setting.bestiary.tab.moon': 'Moon',
   'setting.bestiary.tab.valley': 'Valley',
+  'setting.bestiary.tab.reminiscence': 'Recall',
   'setting.bestiary.tab.gods': 'Gods',
   'setting.bestiary.tab.colosseum': 'Special',
   'setting.glossary.collapseEntry': 'Collapse {label}',
