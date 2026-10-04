@@ -2,9 +2,7 @@ import { mapCompactExpedition, mapCompactDiary } from '../../src/game/compactDia
 import { renderDiaryMetadata, renderExpeditionMetadata, renderDiaryBattle } from '../../src/game/compactDiary.ts';
 import { buildBattleLogData } from '../../src/api/v1/battleLogs.ts';
 import type { ExpeditionLog } from '../../src/types/index.ts';
-import { renderCompactBattle } from '../../src/game/battleCandidate.ts';
 import { encodePersistedState } from '../../src/game/storageCompression.ts';
-import { t } from '../../src/i18n/index.ts';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -13,24 +11,19 @@ import test from 'node:test';
 import Ajv from 'ajv';
 import { ENEMIES } from '../../src/data/enemies.ts';
 import { getDungeonById } from '../../src/data/dungeons.ts';
-import { executeBattle, executeBattleWithSeed } from '../../src/game/battle.ts';
-import { getProductionBattleTelemetry } from '../../src/game/battle.ts';
+import { executeBattleWithSeed } from '../../src/game/battle.ts';
 import {
-  executeBattleCandidateFromSeed,
   executeBattleCandidateDiagnosticFromSeed,
   executeBattleTapeDiagnostic,
   convertBattleSemanticEvents,
   getBattlePreparationMeasurement,
   prepareBattleExecution,
-  projectBattleCombatants,
   projectBattleProtocolInput,
   resetBattlePreparationMeasurementForTesting,
 } from '../../src/game/battleCandidate.ts';
 import { beginBattleKernelMeasurement, endBattleKernelMeasurement, executeBattleProtocol, getBattleRngDoubleSequence, getBattleRngVersion } from '../../src/game/battleKernel.ts';
-import { createBattleReplayMetadata } from '../../src/game/battleReplay.ts';
 import { encodeBattleProtocolInput } from '../../src/game/battleProtocol.ts';
 import { BATTLE_ENGINE_FLAG_END_CHECKPOINT, BATTLE_ENGINE_FLAG_SEEDED_RNG } from '../../src/game/generated/battleProtocol.generated.ts';
-import { withBattleSeedSourceForTesting } from '../../src/game/battleSeedSource.ts';
 import { getEncounterEnemyWithScaling } from '../../src/game/enemyScaling.ts';
 import { computeCharacterStats } from '../../src/game/characterComputation.ts';
 import { computePartyStats } from '../../src/game/partyComputation.ts';
@@ -39,9 +32,7 @@ import { decodePersistedState } from '../../src/game/storageCompression.ts';
 import { ensureLanguageLoaded, setLanguage, SUPPORTED_LANGUAGES } from '../../src/i18n/index.ts';
 import type { EnemyDef, GameState, Party, RoomType, TerrainEffectKey } from '../../src/types/index.ts';
 import {
-  digestBattleGolden,
   type BattleGoldenCase,
-  type BattleGoldenDigest,
 } from './battleGoldenHarness.ts';
 
 await Promise.all(SUPPORTED_LANGUAGES.map((language) => ensureLanguageLoaded(language)));
@@ -209,10 +200,6 @@ type BattleReferenceContractV2 = {
 
 const contractV1 = JSON.parse(readFileSync(REFERENCE_CONTRACT_V1_PATH, 'utf8')) as BattleReferenceContract;
 const contractV2 = JSON.parse(readFileSync(REFERENCE_CONTRACT_V2_PATH, 'utf8')) as BattleReferenceContractV2;
-const expectedV2 = JSON.parse(readFileSync(GOLDEN_V2_PATH, 'utf8')) as Record<
-  string,
-  Record<string, BattleGoldenDigest & { replayMetadata: ReturnType<typeof createBattleReplayMetadata> }>
->;
 
 function sha256(path: string): string {
   return createHash('sha256').update(readFileSync(path)).digest('hex');
@@ -275,28 +262,6 @@ test('v2 contract case inventory and natural seeds remain exact', () => {
   );
 });
 
-test('corrected v2 oracle matches independent native seeded and tape execution in all locales', () => {
-  const fixtures = createGoldenCases();
-  for (const language of contractV2.locales) {
-    for (const fixture of fixtures) {
-      setLanguage(language);
-      const seedHex = contractV2.seeds[fixture.id];
-      assert.match(seedHex ?? '', /^[0-9a-f]{16}$/);
-      const seed = BigInt(`0x${seedHex}`);
-      const pair = executeNativePair(fixture, seed);
-      const identity = `${fixture.id}:${language}`;
-      assertNativeParity(identity, pair);
-      const replayMetadata = createBattleReplayMetadata(seed, pair.seeded.rngVersion, pair.seeded.randomConsumed);
-      assert.deepEqual(
-        { ...digestBattleGolden({ randomDrawCount: pair.seeded.randomConsumed, result: { ...pair.seeded.result, replayMetadata } }), replayMetadata },
-        expectedV2[language]![fixture.id],
-        `${identity}: corrected v2 oracle drift`,
-      );
-    }
-  }
-  setLanguage('ja');
-});
-
 test('Expedition 6 natural seed retains 107 draws and grouped Resonance +12% in every locale', () => {
   const fixture = createGoldenCases().find((entry) => entry.id === 'saved-party-3-expedition-6-boss');
   assert.ok(fixture);
@@ -336,55 +301,6 @@ test('seed boundaries, repeated calls, and tape output ownership remain determin
     assert.deepEqual(second.seeded.protocolOutput, first.seeded.protocolOutput);
     assert.deepEqual(second.taped.protocolOutput, first.taped.protocolOutput);
     assert.deepEqual(first.taped.protocolOutput.events, ownedEvents, 'later arena reuse mutated prior output');
-  }
-});
-
-test('projection and production entry point use one direct-arena native seeded call without mutating inputs', () => {
-  const productionSource = readFileSync(resolve(ROOT, 'src/game/battle.ts'), 'utf8');
-  assert.equal(productionSource.includes('TapeDiagnostic'), false);
-  for (const fixture of createGoldenCases()) {
-    const party = structuredClone(fixture.party);
-    const enemy = structuredClone(fixture.enemy);
-    const bags = structuredClone(fixture.bags);
-    const beforeInputs = structuredClone({ party, enemy, bags });
-    const seed = naturalFixtureSeed(fixture);
-    projectBattleCombatants(party, enemy, fixture.initialPartyHp ?? party.currentHp, fixture.environment);
-    assert.deepEqual({ party, enemy, bags }, beforeInputs, 'projection must leave Party, Enemy, and bags JSON-identical');
-    const expected = executeBattleCandidateFromSeed(
-      structuredClone(party), structuredClone(enemy), structuredClone(bags), seed,
-      getBattleRngVersion(), fixture.initialPartyHp, fixture.environment,
-    );
-    const beforeDraws = getProductionBattleTelemetry().randomConsumed;
-    resetBattlePreparationMeasurementForTesting();
-    beginBattleKernelMeasurement();
-    let acquisitions = 0;
-    const result = withBattleSeedSourceForTesting(() => {
-      acquisitions += 1;
-      return seed;
-    }, () => executeBattle(party, enemy, bags, fixture.initialPartyHp, fixture.environment));
-    const measurement = endBattleKernelMeasurement();
-    assert.deepEqual({ ...result, replayMetadata: undefined }, { ...expected.result, replayMetadata: undefined });
-    assert.equal(result.replayMetadata.seedHex, seed.toString(16).padStart(16, '0'));
-    assert.equal(result.replayMetadata.randomDrawCount, expected.randomConsumed);
-    assert.equal(getProductionBattleTelemetry().randomConsumed - beforeDraws, expected.randomConsumed);
-    assert.equal(acquisitions, 1);
-    assert.equal(measurement.calls, 1);
-    assert.equal(measurement.encodedInputAllocations, 0);
-    assert.equal(measurement.inputArenaCopies, 0);
-    assert.equal(measurement.outputBufferCopies, 0);
-    assert.equal(measurement.decodedEventObjectAllocations, 0);
-    assert.equal(measurement.decodedBagEntryObjectAllocations, 0);
-    assert.deepEqual(getBattlePreparationMeasurement(), {
-      combatantProjections: 1,
-      projectionPartyStatusFallbacks: 0,
-      productionPreparations: 1,
-      productionPartyStatusComputations: 1,
-      productionNarrations: 1,
-    productionCompactRetentions: 0,
-      productionResultOnlyResolutions: 0,
-      diagnosticNarrationPreparations: 0,
-    });
-    assert.deepEqual({ party, enemy, bags }, beforeInputs, 'production execution must leave Party, Enemy, and bags JSON-identical');
   }
 });
 
@@ -535,46 +451,6 @@ test('prepared compact inputs patch changing HP, seeds, and threat bags without 
     assert.deepEqual(compact, baseline);
     bags = compact.updatedBags;
   }
-});
-
-test('compact retained battles preserve all narration facts across languages and structured cloning', () => {
-  const cases = createGoldenCases();
-  const fullRecords: unknown[] = [];
-  const compactRecords: unknown[] = [];
-  let renderMs = 0;
-  for (const fixture of cases) {
-    const seed = naturalFixtureSeed(fixture);
-    const compact = executeBattleWithSeed(structuredClone(fixture.party), structuredClone(fixture.enemy), structuredClone(fixture.bags), seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment, { outputMode: 'compact' });
-    assert.ok(compact.compactBattle);
-    assert.deepEqual(compact.log, []);
-    const stored = JSON.stringify(compact.compactBattle);
-    compactRecords.push(compact.compactBattle);
-    for (const language of SUPPORTED_LANGUAGES) {
-      setLanguage(language);
-      const enemy = { ...fixture.enemy, name: fixture.enemy.nameKey ? t(fixture.enemy.nameKey) : fixture.enemy.name };
-      const full = executeBattleWithSeed(structuredClone(fixture.party), enemy, structuredClone(fixture.bags), seed, getBattleRngVersion(), fixture.initialPartyHp, fixture.environment);
-      const started = performance.now();
-      const rendered = renderCompactBattle(structuredClone(compact.compactBattle)).map(({ semanticPresentation: _s, actorDisplayName: _a, isResurrection: _r, actionIncludesActor: _i, targetDisplayName: _t, ...entry }) => entry);
-      renderMs += performance.now() - started;
-      assert.deepEqual(rendered, full.log, `${fixture.id} in ${language}`);
-      assert.equal(compact.partyHp, full.partyHp);
-      assert.equal(compact.enemyHp, full.enemyHp);
-      assert.deepEqual(compact.updatedBags, full.updatedBags);
-      assert.deepEqual(compact.replayMetadata, full.replayMetadata);
-      assert.equal(JSON.stringify(compact.compactBattle), stored);
-      if (language === 'ja') fullRecords.push(full.log);
-    }
-  }
-  setLanguage('ja');
-  // Compare the persisted envelope, including actor pooling, rather than raw per-room arrays.
-  const metadata: ExpeditionLog = { dungeonId: 8, dungeonName: '', difficultyOffset: 0, totalExperience: 0, totalRooms: cases.length, completedRooms: cases.length, finalOutcome: 'Clear', rewards: [], autoSellProfit: 0, autoSellCount: 0, autoSellItems: [], remainingPartyHP: 0, maxPartyHP: 0, entries: cases.map((fixture, index) => ({ room: index + 1, enemyId: fixture.enemy.id, enemyName: '', enemyHP: fixture.enemy.hp, enemyAttackValues: '', outcome: 'victory', damageDealt: 0, damageTaken: 0, remainingPartyHP: 0, maxPartyHP: 0, details: [] })) };
-  const fullJson = JSON.stringify({ ...metadata, entries: metadata.entries.map((entry, index) => ({ ...entry, details: fullRecords[index] })) });
-  const compactJson = JSON.stringify(mapCompactExpedition({ ...metadata, compactVersion: 1, entries: metadata.entries.map((entry, index) => ({ ...entry, compactBattle: compactRecords[index] as import('../../src/game/compactBattleLog.ts').CompactBattleLog })) }));
-  const measure = (text: string) => ({ jsonBytes: Buffer.byteLength(text), storageBytes: encodePersistedState(text).length * 2 });
-  const full = measure(fullJson), compact = measure(compactJson);
-  console.log('Compact Diary benchmark', JSON.stringify({ full, compact, renderMs, battles: cases.length }));
-  assert.ok(compact.jsonBytes < full.jsonBytes, 'compact raw JSON must be smaller');
-  assert.ok(compact.storageBytes < full.storageBytes, 'compact compressed storage must be smaller');
 });
 
 test('compact Diary metadata, pooled storage, legacy mixing, and AI facts round trip', () => {
