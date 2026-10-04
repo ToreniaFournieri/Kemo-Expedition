@@ -1,0 +1,1 @@
+{"apiVersion":"v1","schemaVersion":1,"requestId":"05739ed4-e02a-4c1c-b044-a643c05c77db","previousRevision":214,"revision":215,"committedAt":"2026-10-04T08:28:51.245Z","data":{"current":{"deityId":"mirage","order":[6,1,2,4,3,5]}},"effects":[],"changedResources":["read/observation/party","read/observation/base"]}

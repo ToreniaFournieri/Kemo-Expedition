@@ -1,0 +1,1 @@
+{"apiVersion":"v1","schemaVersion":1,"requestId":"68651353-b3bb-4af9-8d80-e78a3dc7ee0b","previousRevision":300,"revision":301,"committedAt":"2026-10-04T08:52:21.741Z","data":{"current":{"deityId":"fertility","order":[6,1,2,4,3,5]}},"effects":[],"changedResources":["read/observation/party","read/observation/base"]}

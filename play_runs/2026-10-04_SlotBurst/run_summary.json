@@ -1,0 +1,858 @@
+{
+  "account": "SlotBurst1004",
+  "version": "v0.10.1 (1) source/spec",
+  "packageVersion": "0.9.8",
+  "mode": "prod/normal",
+  "bossDefeated": true,
+  "killTime": "2026-11-06T10:32:41.870Z",
+  "gameElapsedSeconds": 2863615,
+  "gameElapsedDays": 33.14369212962963,
+  "stopClock": "2026-11-06T11:05:46.870Z",
+  "stopElapsedDays": 33.166666666666664,
+  "totalAttempts": 533,
+  "successful": 531,
+  "errors": [
+    {
+      "n": 190,
+      "t": "2026-10-04T08:04:24.699Z",
+      "label": "apply",
+      "method": "POST",
+      "route": "/commit/build/character/1/removeEquipment",
+      "parameters": {
+        "targetEquipment": [
+          5,
+          7,
+          8,
+          10
+        ]
+      },
+      "status": 401,
+      "ms": 54,
+      "revision": 150,
+      "inGameTime": "2026-10-12T07:05:46.870Z",
+      "error": "control_lease_expired"
+    },
+    {
+      "n": 532,
+      "t": "2026-10-04T09:46:16.420Z",
+      "label": "",
+      "method": "GET",
+      "route": "/read/expedition/1/latestBattleLog",
+      "parameters": {
+        "diaryEntryId": "1793961161870-zjyv4f"
+      },
+      "status": 400,
+      "ms": 40,
+      "revision": 433,
+      "inGameTime": "2026-11-06T11:05:46.870Z",
+      "error": "invalid_request"
+    }
+  ],
+  "apiSeconds": 70.766,
+  "categories": {
+    "Other": 21,
+    "Build/equipment/jewels": 318,
+    "Elapsed": 82,
+    "Expedition observations": 70,
+    "Exports": 42
+  },
+  "wallFromSignupSeconds": 9652.229,
+  "level": 33,
+  "formation": [
+    6,
+    1,
+    2,
+    4,
+    3,
+    5
+  ],
+  "faith": "Goddess of Fertility",
+  "hp": 20335,
+  "characters": [
+    {
+      "id": 6,
+      "name": "Laika",
+      "race": "caninian",
+      "main": "guardian",
+      "sub": "guardian",
+      "lineage": "pioneer",
+      "predisposition": "none",
+      "characterId": 6,
+      "row": 1,
+      "baseStats": {
+        "vitality": 11,
+        "strength": 10,
+        "intelligence": 10,
+        "mind": 12
+      },
+      "rangedAttack": 0,
+      "magicalAttack": 0,
+      "meleeAttack": 0,
+      "rangedNoA": 0,
+      "magicalNoA": 0,
+      "meleeNoA": 0,
+      "physicalDefense": 1517,
+      "magicalDefense": 504,
+      "physicalDefenseAmplifier": 0.7735,
+      "magicalDefenseAmplifier": 0.581,
+      "maxEquipSlots": 10,
+      "abilities": [
+        {
+          "id": "howl",
+          "name": "遠吠え1",
+          "level": 1,
+          "description": "戦闘フェーズ8タイミングで発動し、相手の次の攻撃回数をx5/7倍にする"
+        },
+        {
+          "id": "defender",
+          "name": "防人2",
+          "level": 2,
+          "description": "自身より後列の味方への物理ダメージをx3/5倍にする"
+        },
+        {
+          "id": "seeker",
+          "name": "探究者1",
+          "level": 1,
+          "description": "魔導書の効果を増加する(レベル毎に+0.50%)"
+        }
+      ],
+      "penetMultiplier": 0,
+      "originalRangedNoA": 0,
+      "originalMagicalNoA": 0,
+      "originalMeleeNoA": 0,
+      "elementalOffense": "none",
+      "elementalOffenseValue": 1,
+      "accuracyPotency": 1,
+      "accuracyBonus": 0,
+      "evasionBonus": 0.019,
+      "meleeAttackCBonus": 0,
+      "rangedAttackCBonus": 0,
+      "magicalAttackCBonus": 0,
+      "physicalAttackCBonus": 0,
+      "physicalOffenseMultiplier": 1,
+      "magicalOffenseMultiplier": 1,
+      "physicalDefenseMultiplier": 1,
+      "magicalDefenseMultiplier": 1,
+      "elementalDefenseMultipliers": {
+        "fire": 1.5,
+        "thunder": 1,
+        "ice": 1
+      },
+      "offenseCBonusNames": [],
+      "deityOffenseAmplifierBonus": 0,
+      "deityDefenseAmplifierBonus": {
+        "physical": 1,
+        "magical": 1
+      },
+      "hasAntagonism": false
+    },
+    {
+      "id": 1,
+      "name": "Kemo",
+      "race": "kemoria",
+      "main": "lord",
+      "sub": "lord",
+      "lineage": "unascertained",
+      "predisposition": "none",
+      "characterId": 1,
+      "row": 2,
+      "baseStats": {
+        "vitality": 12,
+        "strength": 10,
+        "intelligence": 10,
+        "mind": 12
+      },
+      "rangedAttack": 0,
+      "magicalAttack": 0,
+      "meleeAttack": 0,
+      "rangedNoA": 0,
+      "magicalNoA": 0,
+      "meleeNoA": 0,
+      "physicalDefense": 2485,
+      "magicalDefense": 722,
+      "physicalDefenseAmplifier": 0.6059,
+      "magicalDefenseAmplifier": 0.6806,
+      "maxEquipSlots": 13,
+      "abilities": [
+        {
+          "id": "command",
+          "name": "指揮2",
+          "level": 2,
+          "description": "自身より後列の味方が与える物理ダメージをx1.5倍にする"
+        },
+        {
+          "id": "squander",
+          "name": "浪費1",
+          "level": 1,
+          "description": "宴会で消費するゴールドがx1.3倍になる"
+        }
+      ],
+      "penetMultiplier": 0,
+      "originalRangedNoA": 0,
+      "originalMagicalNoA": 0,
+      "originalMeleeNoA": 0,
+      "elementalOffense": "none",
+      "elementalOffenseValue": 1,
+      "accuracyPotency": 0.85,
+      "accuracyBonus": 0,
+      "evasionBonus": 0.024,
+      "meleeAttackCBonus": 0,
+      "rangedAttackCBonus": 0,
+      "magicalAttackCBonus": 0,
+      "physicalAttackCBonus": 0,
+      "physicalOffenseMultiplier": 1,
+      "magicalOffenseMultiplier": 1,
+      "physicalDefenseMultiplier": 1,
+      "magicalDefenseMultiplier": 1,
+      "elementalDefenseMultipliers": {
+        "fire": 1.5,
+        "thunder": 1,
+        "ice": 0.98
+      },
+      "offenseCBonusNames": [
+        "c.ice_defense_2"
+      ],
+      "deityOffenseAmplifierBonus": 0,
+      "deityDefenseAmplifierBonus": {
+        "physical": 1,
+        "magical": 1
+      },
+      "hasAntagonism": false
+    },
+    {
+      "id": 2,
+      "name": "Kuzunoha",
+      "race": "ursan",
+      "main": "ninja",
+      "sub": "ranger",
+      "lineage": "abyssal_sea",
+      "predisposition": "precise",
+      "characterId": 2,
+      "row": 3,
+      "baseStats": {
+        "vitality": 13,
+        "strength": 12,
+        "intelligence": 7,
+        "mind": 7
+      },
+      "rangedAttack": 2037,
+      "magicalAttack": 0,
+      "meleeAttack": 71,
+      "rangedNoA": 28,
+      "magicalNoA": 0,
+      "meleeNoA": 0,
+      "physicalDefense": 37,
+      "magicalDefense": 0,
+      "physicalDefenseAmplifier": 0.76,
+      "magicalDefenseAmplifier": 1.32,
+      "maxEquipSlots": 11,
+      "abilities": [
+        {
+          "id": "bulwark",
+          "name": "壁1",
+          "level": 1,
+          "description": "真後ろの味方への攻撃を肩代わりする(対象:遠距離)"
+        },
+        {
+          "id": "first_strike",
+          "name": "先制攻撃1",
+          "level": 1,
+          "description": "行動が少し(+1~3)速くなる"
+        },
+        {
+          "id": "output_stabilizer",
+          "name": "攻撃安定化",
+          "level": 1,
+          "description": "いつでも安定して攻撃を行う（地形効果による攻撃回数の変動を受けなくなる）"
+        },
+        {
+          "id": "null_bind",
+          "name": "拘束無効",
+          "level": 1,
+          "description": "拘束を速やかに解くことができる"
+        }
+      ],
+      "penetMultiplier": 0.12,
+      "originalRangedNoA": 28,
+      "originalMagicalNoA": 0,
+      "originalMeleeNoA": 0,
+      "elementalOffense": "thunder",
+      "elementalOffenseValue": 1.12,
+      "accuracyPotency": 0.7224999999999999,
+      "accuracyBonus": 0.07,
+      "evasionBonus": 0,
+      "meleeAttackCBonus": 0,
+      "rangedAttackCBonus": 1.05,
+      "magicalAttackCBonus": 0,
+      "physicalAttackCBonus": 0.22,
+      "physicalOffenseMultiplier": 1,
+      "magicalOffenseMultiplier": 1,
+      "physicalDefenseMultiplier": 1,
+      "magicalDefenseMultiplier": 1,
+      "elementalDefenseMultipliers": {
+        "fire": 1.5,
+        "thunder": 1,
+        "ice": 0.98
+      },
+      "offenseCBonusNames": [
+        "c.ranged_attack+0.18",
+        "c.ranged_attack+0.17",
+        "c.ranged_attack+0.19",
+        "c.ranged_attack+0.2",
+        "c.ice_defense_2",
+        "c.ranged_attack+0.16",
+        "c.ranged_attack+0.15",
+        "c.physical_attack+22"
+      ],
+      "deityOffenseAmplifierBonus": 0,
+      "deityDefenseAmplifierBonus": {
+        "physical": 1,
+        "magical": 1
+      },
+      "hasAntagonism": false
+    },
+    {
+      "id": 4,
+      "name": "Sota",
+      "race": "ursan",
+      "main": "ninja",
+      "sub": "ranger",
+      "lineage": "abyssal_sea",
+      "predisposition": "precise",
+      "characterId": 4,
+      "row": 4,
+      "baseStats": {
+        "vitality": 13,
+        "strength": 12,
+        "intelligence": 7,
+        "mind": 7
+      },
+      "rangedAttack": 1870,
+      "magicalAttack": 0,
+      "meleeAttack": 134,
+      "rangedNoA": 29,
+      "magicalNoA": 0,
+      "meleeNoA": 0,
+      "physicalDefense": 0,
+      "magicalDefense": 0,
+      "physicalDefenseAmplifier": 0.76,
+      "magicalDefenseAmplifier": 1.32,
+      "maxEquipSlots": 11,
+      "abilities": [
+        {
+          "id": "bulwark",
+          "name": "壁1",
+          "level": 1,
+          "description": "真後ろの味方への攻撃を肩代わりする(対象:遠距離)"
+        },
+        {
+          "id": "first_strike",
+          "name": "先制攻撃1",
+          "level": 1,
+          "description": "行動が少し(+1~3)速くなる"
+        },
+        {
+          "id": "output_stabilizer",
+          "name": "攻撃安定化",
+          "level": 1,
+          "description": "いつでも安定して攻撃を行う（地形効果による攻撃回数の変動を受けなくなる）"
+        },
+        {
+          "id": "null_bind",
+          "name": "拘束無効",
+          "level": 1,
+          "description": "拘束を速やかに解くことができる"
+        }
+      ],
+      "penetMultiplier": 0.12,
+      "originalRangedNoA": 29,
+      "originalMagicalNoA": 0,
+      "originalMeleeNoA": 0,
+      "elementalOffense": "thunder",
+      "elementalOffenseValue": 1.12,
+      "accuracyPotency": 0.6141249999999999,
+      "accuracyBonus": 0.049,
+      "evasionBonus": 0,
+      "meleeAttackCBonus": 0,
+      "rangedAttackCBonus": 1.08,
+      "magicalAttackCBonus": 0,
+      "physicalAttackCBonus": 0.21,
+      "physicalOffenseMultiplier": 1,
+      "magicalOffenseMultiplier": 1,
+      "physicalDefenseMultiplier": 1,
+      "magicalDefenseMultiplier": 1,
+      "elementalDefenseMultipliers": {
+        "fire": 1.5,
+        "thunder": 1,
+        "ice": 1
+      },
+      "offenseCBonusNames": [
+        "c.ranged_attack+0.22",
+        "c.ranged_attack+0.16",
+        "c.ranged_attack+0.15",
+        "c.ranged_attack+0.18",
+        "c.ranged_attack+0.17",
+        "c.ranged_attack+0.2",
+        "c.physical_attack+21"
+      ],
+      "deityOffenseAmplifierBonus": 0,
+      "deityDefenseAmplifierBonus": {
+        "physical": 1,
+        "magical": 1
+      },
+      "hasAntagonism": false
+    },
+    {
+      "id": 3,
+      "name": "Lop",
+      "race": "leporian",
+      "main": "sword-saint",
+      "sub": "ranger",
+      "lineage": "abyssal_sea",
+      "predisposition": "devoted",
+      "characterId": 3,
+      "row": 5,
+      "baseStats": {
+        "vitality": 9,
+        "strength": 8,
+        "intelligence": 14,
+        "mind": 10
+      },
+      "rangedAttack": 2531,
+      "magicalAttack": 0,
+      "meleeAttack": 131,
+      "rangedNoA": 19,
+      "magicalNoA": 0,
+      "meleeNoA": 0,
+      "physicalDefense": 0,
+      "magicalDefense": 0,
+      "physicalDefenseAmplifier": 1.1,
+      "magicalDefenseAmplifier": 1,
+      "maxEquipSlots": 11,
+      "abilities": [
+        {
+          "id": "composure",
+          "name": "平静1",
+          "level": 1,
+          "description": "命中率が+10%加算される"
+        },
+        {
+          "id": "re_attack",
+          "name": "連撃1",
+          "level": 1,
+          "description": "攻撃時に追加攻撃を行う(攻撃回数がx0.5倍になる)"
+        },
+        {
+          "id": "first_aid",
+          "name": "応急措置1",
+          "level": 1,
+          "description": "各エリート戦後に、自身のHP増加基礎値とアイテムHP増加値の2%を回復する"
+        },
+        {
+          "id": "null_bind",
+          "name": "拘束無効",
+          "level": 1,
+          "description": "拘束を速やかに解くことができる"
+        }
+      ],
+      "penetMultiplier": 0.12,
+      "originalRangedNoA": 19,
+      "originalMagicalNoA": 0,
+      "originalMeleeNoA": 0,
+      "elementalOffense": "thunder",
+      "elementalOffenseValue": 1.18,
+      "accuracyPotency": 0.6220062499999999,
+      "accuracyBonus": 0.022,
+      "evasionBonus": 0,
+      "meleeAttackCBonus": 0,
+      "rangedAttackCBonus": 1.08,
+      "magicalAttackCBonus": 0,
+      "physicalAttackCBonus": 0.22,
+      "physicalOffenseMultiplier": 1,
+      "magicalOffenseMultiplier": 1,
+      "physicalDefenseMultiplier": 1,
+      "magicalDefenseMultiplier": 1,
+      "elementalDefenseMultipliers": {
+        "fire": 1.2000000000000002,
+        "thunder": 1,
+        "ice": 1
+      },
+      "offenseCBonusNames": [
+        "c.fire_defense_multiplier_xV_0.8",
+        "c.ranged_attack+0.18",
+        "c.ranged_attack+0.2",
+        "c.ranged_attack+0.16",
+        "c.ranged_attack+0.17",
+        "c.ranged_attack+0.22",
+        "c.ranged_attack+0.15",
+        "c.physical_attack+22"
+      ],
+      "deityOffenseAmplifierBonus": 0,
+      "deityDefenseAmplifierBonus": {
+        "physical": 1,
+        "magical": 1
+      },
+      "hasAntagonism": false
+    },
+    {
+      "id": 5,
+      "name": "Selfin",
+      "race": "cervin",
+      "main": "alchemist",
+      "sub": "wizard",
+      "lineage": "oath",
+      "predisposition": "nimble",
+      "characterId": 5,
+      "row": 6,
+      "baseStats": {
+        "vitality": 8,
+        "strength": 8,
+        "intelligence": 13,
+        "mind": 11
+      },
+      "rangedAttack": 0,
+      "magicalAttack": 1949,
+      "meleeAttack": 0,
+      "rangedNoA": 0,
+      "magicalNoA": 41,
+      "meleeNoA": 0,
+      "physicalDefense": 0,
+      "magicalDefense": 0,
+      "physicalDefenseAmplifier": 1.2,
+      "magicalDefenseAmplifier": 0.91,
+      "maxEquipSlots": 11,
+      "abilities": [
+        {
+          "id": "focus",
+          "name": "集中1",
+          "level": 1,
+          "description": "命中ボーナスの効果がx1.2倍になる"
+        },
+        {
+          "id": "arcane_stability",
+          "name": "術式安定1",
+          "level": 1,
+          "description": "魔法/物理攻撃の命中率は55%を下回らない"
+        },
+        {
+          "id": "boost",
+          "name": "加速1",
+          "level": 1,
+          "description": "自身の行動順を1増加させる"
+        },
+        {
+          "id": "requiem",
+          "name": "鎮魂歌",
+          "level": 1,
+          "description": "即時蘇生が一度発動した相手に攻撃が命中した時、相手を即死させる"
+        }
+      ],
+      "penetMultiplier": 0,
+      "originalRangedNoA": 0,
+      "originalMagicalNoA": 41,
+      "originalMeleeNoA": 0,
+      "elementalOffense": "thunder",
+      "elementalOffenseValue": 1.21,
+      "accuracyPotency": 0.44370531249999995,
+      "accuracyBonus": 0,
+      "evasionBonus": 0.01,
+      "meleeAttackCBonus": 0,
+      "rangedAttackCBonus": 0,
+      "magicalAttackCBonus": 1.4699999999999998,
+      "physicalAttackCBonus": 0,
+      "physicalOffenseMultiplier": 1,
+      "magicalOffenseMultiplier": 1,
+      "physicalDefenseMultiplier": 1,
+      "magicalDefenseMultiplier": 1,
+      "elementalDefenseMultipliers": {
+        "fire": 1.5,
+        "thunder": 0.744,
+        "ice": 1
+      },
+      "offenseCBonusNames": [
+        "c.thunder_defense_multiplier_xV_0.8",
+        "c.magical_attack+0.15",
+        "c.magical_attack+0.16",
+        "c.magical_attack+0.17",
+        "c.magical_attack+0.21",
+        "c.thunder_defense_7",
+        "c.magical_attack+0.2",
+        "c.magical_attack+0.18",
+        "c.magical_attack+22",
+        "c.magical_attack+18"
+      ],
+      "deityOffenseAmplifierBonus": 0,
+      "deityDefenseAmplifierBonus": {
+        "physical": 1,
+        "magical": 1
+      },
+      "hasAntagonism": false
+    }
+  ],
+  "bossRoom": {
+    "room": 24,
+    "floor": 6,
+    "roomInFloor": 4,
+    "roomType": "battle_Boss",
+    "enemyId": 387,
+    "enemyMaximumHp": 166309,
+    "outcome": "victory",
+    "damageDealt": 166309,
+    "damageTaken": 8537,
+    "startingPartyHp": 11219,
+    "remainingPartyHp": 2682,
+    "maximumPartyHp": 20335,
+    "healAmount": null,
+    "attritionAmount": null,
+    "eventFormat": "compact-v1",
+    "terrain": "terrain.sanctuary",
+    "actors": [
+      {
+        "id": 2147484035,
+        "kind": "enemy",
+        "enemyId": 387
+      },
+      {
+        "id": 6,
+        "kind": "character",
+        "characterId": 6,
+        "name": "Laika"
+      },
+      {
+        "id": 1,
+        "kind": "character",
+        "characterId": 1,
+        "name": "Kemo"
+      },
+      {
+        "id": 2,
+        "kind": "character",
+        "characterId": 2,
+        "name": "Kuzunoha"
+      },
+      {
+        "id": 4,
+        "kind": "character",
+        "characterId": 4,
+        "name": "Sota"
+      },
+      {
+        "id": 3,
+        "kind": "character",
+        "characterId": 3,
+        "name": "Lop"
+      },
+      {
+        "id": 5,
+        "kind": "character",
+        "characterId": 5,
+        "name": "Selfin"
+      }
+    ],
+    "modifiers": [],
+    "events": [
+      [
+        0,
+        9,
+        0,
+        4,
+        0,
+        "none",
+        0,
+        0,
+        43,
+        {
+          "phase": 1,
+          "flags": 8
+        }
+      ],
+      [
+        1,
+        7,
+        6,
+        5,
+        0,
+        "none",
+        0,
+        0,
+        2,
+        {
+          "phase": 1,
+          "ability": "defender",
+          "subtype": 15
+        }
+      ],
+      [
+        1,
+        7,
+        1,
+        5,
+        0,
+        "none",
+        0,
+        0,
+        2,
+        {
+          "phase": 1,
+          "ability": "command",
+          "subtype": 15
+        }
+      ],
+      [
+        1,
+        3,
+        2147484035,
+        5,
+        0,
+        "none",
+        0,
+        0,
+        1,
+        {
+          "phase": 1,
+          "ability": "magic_seal",
+          "subtype": 15
+        }
+      ],
+      [
+        2,
+        11,
+        2,
+        9,
+        2147484035,
+        "thunder",
+        10,
+        28,
+        67400,
+        {
+          "attackType": "ranged",
+          "reaction": 1
+        }
+      ],
+      [
+        2,
+        11,
+        4,
+        9,
+        2147484035,
+        "thunder",
+        7,
+        29,
+        42196,
+        {
+          "attackType": "ranged",
+          "reaction": 1
+        }
+      ],
+      [
+        2,
+        9,
+        2147484035,
+        9,
+        1,
+        "none",
+        5,
+        10,
+        5,
+        {
+          "attackType": "ranged",
+          "reaction": 1
+        }
+      ],
+      [
+        2,
+        9,
+        2147484035,
+        9,
+        6,
+        "none",
+        10,
+        22,
+        10,
+        {
+          "attackType": "ranged",
+          "reaction": 1
+        }
+      ],
+      [
+        2,
+        9,
+        2147484035,
+        9,
+        2,
+        "none",
+        4,
+        8,
+        6064,
+        {
+          "attackType": "ranged",
+          "reaction": 1
+        }
+      ],
+      [
+        2,
+        9,
+        2147484035,
+        9,
+        5,
+        "none",
+        1,
+        1,
+        2458,
+        {
+          "attackType": "ranged",
+          "reaction": 1
+        }
+      ],
+      [
+        1,
+        9,
+        2147484035,
+        16,
+        2147484035,
+        "none",
+        0,
+        8,
+        0,
+        {
+          "attackType": "magical",
+          "ability": "magic_seal",
+          "subtype": 1,
+          "flags": 1
+        }
+      ],
+      [
+        2,
+        9,
+        5,
+        9,
+        2147484035,
+        "thunder",
+        26,
+        41,
+        45838,
+        {
+          "attackType": "magical",
+          "reaction": 1
+        }
+      ],
+      [
+        2,
+        8,
+        3,
+        9,
+        2147484035,
+        "thunder",
+        8,
+        19,
+        53168,
+        {
+          "attackType": "ranged",
+          "reaction": 1,
+          "sourceValue": 10875
+        }
+      ]
+    ],
+    "endEvents": []
+  }
+}
