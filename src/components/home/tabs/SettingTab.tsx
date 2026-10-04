@@ -985,11 +985,12 @@ export default function SettingTab({
     6: t('setting.bestiary.tab.nest'),
     7: t('setting.bestiary.tab.moon'),
     8: t('setting.bestiary.tab.valley'),
-    9: t('setting.bestiary.tab.gods'),
+    9: t('setting.bestiary.tab.reminiscence'),
+    98: t('setting.bestiary.tab.gods'),
     99: t('setting.bestiary.tab.colosseum'),
   };
 
-  const BESTIARY_SPECIAL_DUNGEON_ID_GODS = 9;
+  const BESTIARY_SPECIAL_DUNGEON_ID_GODS = 98; // must not collide with any DUNGEONS id
   const BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM = 99;
   const isGodBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_GODS;
   const isColosseumBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM;

@@ -3371,6 +3371,7 @@ const zhCN = {
   'setting.bestiary.tab.nest': '巢',
   'setting.bestiary.tab.moon': '月',
   'setting.bestiary.tab.valley': '谷',
+  'setting.bestiary.tab.reminiscence': '忆',
   'setting.bestiary.tab.gods': '神',
   'setting.bestiary.tab.colosseum': '特',
   'setting.glossary.collapseEntry': '收起{label}',
