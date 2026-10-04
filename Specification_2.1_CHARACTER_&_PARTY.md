@@ -51,16 +51,16 @@
 
 | races | Japanese name | category | concept | availability | PT1:Prairie Courier, green | PT2:Tropical seaside expedition traveler, aqua | PT3:Desert adventurer outfit | PT4: Pyrepeak, red and black | PT5: Steam punk, brown | PT6:Lerporian Moon Palace, Maid/Moon Steward, indigo |
 |------|----------------|----------|--------|--------------|------|------|------|------|------|------|
-| Lupinian | ルピニアン | 肉食 | 🐺Wolf, lively | Y | - | blue and white, aqua splash pattern | Arabian Wolf, Full moon sand silver, indigo | - | Arctic wolf | Manded Wolf |
-| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox, sly, smiling| Y | - | Rüppell’s Fox, Burnt crimson | Corsac Fox, | - | snow fox | Fennec Fox |
-| Felidian | フェリディアン | 肉食 | 😺Cat, agile | Y | - | Siamese cat | Sand Cat, crystalline | - | MIkeneko | Maine Coon |
+| Lupinian | ルピニアン | 肉食 | 🐺Wolf | Y | - | blue and white, aqua splash pattern | Arabian Wolf, Full moon sand silver, indigo | - | Arctic wolf | Manded Wolf |
+| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox | Y | - | Rüppell’s Fox, Burnt crimson | Corsac Fox, | - | snow fox | Fennec Fox |
+| Felidian | フェリディアン | 肉食 | 😺Cat | Y | - | Siamese cat | Sand Cat, crystalline | - | MIkeneko | Maine Coon |
 | Mustelid | マステリド | 肉食 | 🦡Ferret | N | - | - | - | - | - | - |
-| Caninian | ケイナイアン | 雑食 | 🐶Dog, curious | Y | - | Carolina Dog | Saluki, Palm Oasis Green, Lapis Turquoise | - | Border collie | Siberian Husky |
-| Ursan | ウルサン | 雑食 | 🐻Bear, Strong and imposing. Bold  | Y | - | Sun Bear | Sloth Bear, yellow | - | Panda | Tukinowaguma |
-| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki, A little timid | Y | - | blue and white, aqua stripe pattern | Ring-tailed Coati, dusty cream with dark dune stripes, brown | Red panda | Tanuki | Pristinailurus |
-| Leporian | レポリアン | 草食 | 🐰Rabbit, cheerful personality | Y | - | Cinnamon Rabbit | Desert Cottontail, deep green | - | Dwarf Hotot | Holland Lop |
-| Cervin | セルヴィン | 草食 | 🦌Deer, modest | Y | - | Axis Deer | Dorcas Gazelle, yellow-green | - | Reindeer | White-tailed Deer + Reindeer |
-| Murid | ミュリッド | 草食 | 🐭Mouse, energetic, jumps | Y | - | Harvest Mouse, warm harvest-mouse brown fur with subtle coral reef speckle markings in pale aqua and soft coral pink, yellow | Jerboa, warm dune-brown fur with pale sandstone speckles | - | - | Dormouse |
+| Caninian | ケイナイアン | 雑食 | 🐶Dog | Y | - | Carolina Dog | Saluki, Palm Oasis Green, Lapis Turquoise | - | Border collie | Siberian Husky |
+| Ursan | ウルサン | 雑食 | 🐻Bear | Y | - | Sun Bear | Sloth Bear, yellow | - | Panda | Tukinowaguma |
+| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki | Y | - | blue and white, aqua stripe pattern | Ring-tailed Coati, dusty cream with dark dune stripes, brown | Red panda | Tanuki | Pristinailurus |
+| Leporian | レポリアン | 草食 | 🐰Rabbit | Y | - | Cinnamon Rabbit | Desert Cottontail, deep green | - | Dwarf Hotot | Holland Lop |
+| Cervin | セルヴィン | 草食 | 🦌Deer | Y | - | Axis Deer | Dorcas Gazelle, yellow-green | - | Reindeer | White-tailed Deer + Reindeer |
+| Murid | ミュリッド | 草食 | 🐭Mouse | Y | - | Harvest Mouse, warm harvest-mouse brown fur with subtle coral reef speckle markings in pale aqua and soft coral pink, yellow | Jerboa, warm dune-brown fur with pale sandstone speckles | - | - | Dormouse |
 | Mimorian | ミモリアン | 雑食 | shapeshifter | Y | - | - | - | - | - | - |
 | Caprion | カプリオン | 草食 | 🐐Goat | N | - | - | - | - | - | - |
 | Kemoria | ケモリア | 雑食 | origin | N | - | - | - | - | - | - |
@@ -97,13 +97,13 @@
 | `blaze_peak` | 焔嶺 | 焔 | 動乱 | `a.null-burn`, `c.gauntlet_x1.2`, `c.armor_x1.2`, `c.fire-defense-multiplier_x4/5` | `true` |
 | `abyssal_sea` | 深海 | 海 | 狩猟 | `a.null-bind`, `c.arrow_x1.2`, `c.catalyst_x1.2` | `true` |
 | `firmament` | 天穹 | 穹 | 狩猟 | `a.siege`, `c.bolt_x1.2`, `c.shield_x1.2` | `true` |
-| `frozen_forest` | 凍森 | 凍 | 狩猟 | a.coldproof`1, `c.archery_x1.2`, `c.robe_x1.2`, `c.ice-defense-multiplier_x4/5` | `true` |
+| `frozen_forest` | 凍森 | 凍 | 狩猟 | `a.coldproof`1, `c.archery_x1.2`, `c.robe_x1.2`, `c.ice-defense-multiplier_x4/5` | `true` |
 | `utopia` | 桃源 | 桃 | 学識 | `a.null-death-touch`, `c.wand_x1.2`, `c.bolt_x1.2` | `true` |
 | `machina` | 機骸 | 機 | 学識 | `a.null-shock`, `c.grimoire_x1.2`, `c.gauntlet_x1.2` | `true` |
 | `adaptation` | 適応 | 適 | 学識 | `c.catalyst_x1.2`, `c.archery_x1.2`,　`c.evasion+20`, `c.thunder-defense-multiplier_x3/4` | `true` |
-| `fragment` | 断章 | 断 | 生存 | `a.unforgettable`, `c.armor_x1.2`, `c.wand_x1.2` | `true` |
-| `windcross` | 風渡 | 風 | 生存 | `a.wind-rider`, `c.robe_x1.2`, `c.katana_x1.2` | `true` |
-| `oath` | 誓約 | 誓 | 生存 | `a.requiem`, `c.shield_x1.2`, `c.sword_x1.2` | `true` |
+| `fragment` | 断章 | 断 | 生存 | `c.equip-slot+1`, `a.unforgettable`, `c.shield_x1.2` | `true` |
+| `windcross` | 風渡 | 風 | 生存 | `c.equip-slot+1`, `a.wind-rider`, `c.robe_x1.2` | `true` |
+| `oath` | 誓約 | 誓 | 生存 | `c.equip-slot+2`, `a.requiem` | `true` |
 | `unascertained` | 不詳 | 不 | - | `c.equip-slot+3` | `false` |
 | `pioneer` | 先駆者 | 先 | - | `c.wand_x1.3`, `a.seeker`1 | `false` |
 | `almighty` | 全能 | 全 | - | `c.growth_x1.3`, `c.sword_x1.3`, `c.arrow_x1.3`, `c.wand_x1.3`, `b.vitality+1`, `b.strength+1`, `b.intelligence+1`, `b.mind+1` | `false` |
@@ -127,13 +127,13 @@
 
 | predisposition | Japanese | short | category | bonus | selectable |
 |-----|-----|---|-----|-----------|--------|
-| `aggressive` | 好戦| 好 | 外向的 | `c.sword_x1.1`, `c.bolt_x1.1`, `c.physical-offense-multiplier_x1.1` | `true` |
-| `inquisitive` | 探求 | 探 | 外向的 | `c.arrow_x1.1`, `c.grimoire_x1.1`, `c.magical-offense-multiplier_x1.1` | `true` |
-| `amiable` | 親和 | 和 | 外向的 | `c.gauntlet_x1.1`, `c.bolt_x1.1`, `c.magical_defense+0.10` | `true` |
-| `stubborn` | 頑固 | 頑 | 内向的 | `c.shield_x1.1`, `c.physical_defense+0.10`, `b.vitality+1` | `true` |
+| `aggressive` | 好戦| 好 | 外向的 | `c.sword_x1.1`, `c.bolt_x1.1`, `c.physical-offense-multiplier_x1.1`, `c.penet+0.050` | `true` |
+| `inquisitive` | 探求 | 探 | 外向的 | `c.arrow_x1.1`, `c.grimoire_x1.1`, `c.penet+0.050`, `c.magical-offense-multiplier_x1.1` | `true` |
+| `amiable` | 親和 | 和 | 外向的 | `c.gauntlet_x1.1`, `c.bolt_x1.1`, `c.penet+0.050`, `c.magical_defense+0.10` | `true` |
+| `stubborn` | 頑固 | 頑 | 内向的 | `c.equip-slot+1`, `c.shield_x1.1`, `c.physical_defense+0.10`, `b.vitality+1` | `true` |
 | `evasive` | 責任回避 | 避 | 内向的 | `a.null-antagonism`, `c.evasion+0.020`, `c.robe_x1.1` | `true` |
 | `introspective` | 内省 | 内 | 内向的 | `a.unforgettable`, `c.wand_x1.1`, `c.armor_x1.1`,  | `true` |
-| `devoted` | 献身 | 献 | 適応 | `a.first-aid`1, `c.shield_x1.1`, `c.fire-defense-multiplier_x4/5` | `true` |
+| `devoted` | 献身 | 献 | 適応 | `c.equip-slot+2`, `a.first-aid`1, `c.shield_x1.1`, `c.fire-defense-multiplier_x4/5` | `true` |
 | `serene` | 冷静 | 冷 | 適応 | `a.equation-breaker`, `c.growth_x1.1`, `c.catalyst_x1.1`, `c.ice-defense-multiplier_x4/5` | `true` |
 | `nimble` | 軽快 | 軽 | 適応 | `a.boost`1, `c.evasion+0.010`, `c.katana_x1.1`, `c.thunder-defense-multiplier_x4/5` | `true` |
 | `perceptive` | 看破 | 看 | 機知 | `a.true-sight`, `c.penet+0.100`, `c.bolt_x1.1`, `b.intelligence+1` | `true` |
