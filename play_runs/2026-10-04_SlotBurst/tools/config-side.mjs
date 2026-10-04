@@ -1,0 +1,1 @@
+import {Client} from './client.mjs';const c=new Client(),p=Number(process.argv[2]);for(let i=1;i<=6;i++)await c.commit(`build/character/${(p-1)*100+i}/autoEquipment`,{mode:'FULL',immediateAutoEquipment:true});

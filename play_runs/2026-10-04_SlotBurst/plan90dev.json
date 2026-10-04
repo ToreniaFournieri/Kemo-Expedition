@@ -1,0 +1,457 @@
+{
+ "save": "play_runs/2026-10-04_SlotBurst/cp89.kemoz",
+ "builds": [
+  {
+   "id": 3,
+   "predisposition": "devoted"
+  },
+  {
+   "id": 5,
+   "predisposition": "devoted"
+  }
+ ],
+ "order": [
+  6,
+  1,
+  4,
+  2,
+  3,
+  5
+ ],
+ "eq": {
+  "1": [
+   {
+    "item": "0/3101/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3101/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3405/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3101/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3101/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/4102/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/4101/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3102/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3102/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/4101/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3102/3/0",
+    "jewel": null
+   }
+  ],
+  "2": [
+   {
+    "item": "0/4213/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/4107/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3314/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3217/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/4107/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/4107/2/0",
+    "jewel": null
+   }
+  ],
+  "3": [
+   {
+    "item": "0/3314/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2213/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/4107/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3217/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3107/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2213/0/0",
+    "jewel": null
+   }
+  ],
+  "4": [
+   {
+    "item": "0/3213/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/4213/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3313/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3215/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3217/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3213/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3109/4/0",
+    "jewel": null
+   }
+  ],
+  "5": [
+   {
+    "item": "0/3316/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/4110/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1112/6/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3223/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3110/6/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2110/5/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3317/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1110/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2110/5/0",
+    "jewel": null
+   }
+  ],
+  "6": [
+   {
+    "item": "0/3203/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3101/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/4301/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3203/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3302/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3101/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3102/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3101/3/0",
+    "jewel": null
+   }
+  ]
+ },
+ "initialEq": {
+  "1": [
+   {
+    "item": "0/3101/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2101/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3102/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2101/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2101/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3102/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3201/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3102/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3102/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1401/1/0",
+    "jewel": null
+   }
+  ],
+  "2": [
+   {
+    "item": "0/1107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2213/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2312/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3314/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3109/5/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3108/3/0",
+    "jewel": null
+   }
+  ],
+  "3": [
+   {
+    "item": "0/3213/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3109/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3213/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3213/0/0",
+    "jewel": null
+   }
+  ],
+  "4": [
+   {
+    "item": "0/3213/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3313/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3215/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3217/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3213/1/0",
+    "jewel": null
+   }
+  ],
+  "5": [
+   {
+    "item": "0/3316/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2110/5/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1112/6/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3223/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3110/6/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2110/5/0",
+    "jewel": null
+   }
+  ],
+  "6": [
+   {
+    "item": "0/3203/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3101/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3302/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3102/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3101/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3101/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3102/3/0",
+    "jewel": null
+   }
+  ]
+ },
+ "initialOrder": [
+  6,
+  1,
+  4,
+  2,
+  3,
+  5
+ ]
+}
