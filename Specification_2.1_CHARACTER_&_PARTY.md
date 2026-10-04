@@ -34,15 +34,15 @@
 
 | races      |体,力,知,精| default ability　 | unlock ability       | c. bonus      | selectable |
 |------------|-----------|-------------------|----------------------|--------------|------------|
-| Lupinian   |10,12, 8, 7| `a.rage`1         | `a.re-counter`1      | `c.katana_x1.3`,   `c.wand_x1.2`,     `c.equip_slot+1`, `c.ice-defense-multiplier_x2/3`| `true` |
-| Vulpinian  |11,10,12, 8| `a.momentum`1     | `a.cunning`1         | `c.sword_x1.3`,    `c.grimoire_x1.2`, `c.equip_slot+1`| `true` |
-| Felidian   | 9, 9,10,13| `a.first-strike`1 | `a.covering-fire`1   | `c.robe_x1.3`,     `c.sword_x1.1`,    `c.arrow_x1.1`, `c.fire-defense-multiplier_x2/3`| `true` |
+| Lupinian   |10,13, 8, 7| `a.rage`1         | `a.re-counter`1      | `c.katana_x1.3`,   `c.wand_x1.2`,     `c.equip_slot+1`, `c.ice-defense-multiplier_x2/3`| `true` |
+| Vulpinian  |10,11,12, 8| `a.momentum`1     | `a.cunning`1         | `c.sword_x1.3`,    `c.grimoire_x1.2`, `c.equip_slot+1`| `true` |
+| Felidian   | 9,10,10,13| `a.first-strike`1 | `a.covering-fire`1   | `c.robe_x1.3`,     `c.sword_x1.1`,    `c.arrow_x1.1`, `c.fire-defense-multiplier_x2/3`| `true` |
 | Caninian   |10,10,10,10| `a.howl`1        | `a.resurrect`1       | `c.shield_x1.3`,   `c.gauntlet_x1.2`, `c.archery_x1.1`, `c.growth_x1.1`| `true` |
 | Ursan      |13,11, 7, 7| `a.bulwark`1      | `a.cyborgization`1   | `c.catalyst_x1.3`, `c.katana_x1.1`,   `c.equip_slot+2`| `true` |
 | Procyonian |14, 8, 8, 6| `a.illusion`1        | `a.resonance`1  | `c.grimoire_x1.3`, `c.katana_x1.2`,   `c.robe_x1.2`,  `c.equip_slot+1`, `c.thunder-defense-multiplier_x2/3` | `true` |
 | Leporian   | 9, 8,14,10| `a.composure`1    | `a.magical-counter`1 | `c.arrow_x1.3`,  `c.sword_x1.2`,    `c.armor_x1.3`| `true` |
-| Cervin     | 8, 7,13,11| `a.focus`1        | `a.prophecy`1        | `c.wand_x1.3`,     `c.gauntlet_x1.2`, `c.shield_x1.2`| `true` |
-| Murid      | 7, 8,11,14| `a.stealth`1      | (none)               | `c.bolt_x1.3`,     `c.grimoire_x1.3`  `c.penet+0.10` | `true` |
+| Cervin     | 8, 8,13,11| `a.focus`1        | `a.prophecy`1        | `c.wand_x1.3`,     `c.gauntlet_x1.2`, `c.shield_x1.2`| `true` |
+| Murid      | 7, 8,11,14| `a.stealth`1      | (none)               | `c.bolt_x1.3`,     `c.grimoire_x1.3`  `c.penet+0.20` | `true` |
 | Kemoria    |10,10,10,10| (none)            | (none)               | `c.growth_x1.2`, `c.equip_ranged`, `c.equip_melee`  | `false` |
 | Orcinian   |11,13,10, 8| `a.execution` 1   | `a.overwatch`1       | `c.archery_x1.2`, `c.catalyst_x1.2`, `c.equip_slot+2` | `false` |
 | Avian      | 8,11,11, 9| `a.flying`1       | `a.wind-rider`1       | `c.gauntlet_x1.3`, `c.penet+0.15`  | `false` |
@@ -92,15 +92,15 @@
 
 | lineage |　Text | short | category | bonus | selectable |
 |--------|-----|------|----------|-------|------|
-| `sandstorm` | 砂塵 | 砂 | 動乱 | `a.null-corrode`, `c.sword_x1.2`, `c.grimoire_x1.2` | `true` |
-| `ashen_capital` | 灰都 | 灰 | 動乱 | `a.null-life-drain`, `c.katana_x1.2`, `c.arrow_x1.2` | `true` |
-| `blaze_peak` | 焔嶺 | 焔 | 動乱 | `a.null-burn`, `c.gauntlet_x1.2`, `c.armor_x1.2`, `c.fire-defense-multiplier_x4/5` | `true` |
-| `abyssal_sea` | 深海 | 海 | 狩猟 | `a.null-bind`, `c.arrow_x1.2`, `c.catalyst_x1.2` | `true` |
-| `firmament` | 天穹 | 穹 | 狩猟 | `a.siege`, `c.bolt_x1.2`, `c.shield_x1.2` | `true` |
-| `frozen_forest` | 凍森 | 凍 | 狩猟 | `a.coldproof`1, `c.archery_x1.2`, `c.robe_x1.2`, `c.ice-defense-multiplier_x4/5` | `true` |
-| `utopia` | 桃源 | 桃 | 学識 | `a.null-death-touch`, `c.wand_x1.2`, `c.bolt_x1.2` | `true` |
-| `machina` | 機骸 | 機 | 学識 | `a.null-shock`, `c.grimoire_x1.2`, `c.gauntlet_x1.2` | `true` |
-| `adaptation` | 適応 | 適 | 学識 | `c.catalyst_x1.2`, `c.archery_x1.2`,　`c.evasion+20`, `c.thunder-defense-multiplier_x3/4` | `true` |
+| `sandstorm` | 砂塵 | 砂 | 動乱 | `a.null-corrode`, `c.sword_x1.2`, `c.grimoire_x1.2`, `c.evasion+0.005`  | `true` |
+| `ashen_capital` | 灰都 | 灰 | 動乱 | `a.null-life-drain`, `c.katana_x1.2`, `c.arrow_x1.2`, `c.growth_x1.1` | `true` |
+| `blaze_peak` | 焔嶺 | 焔 | 動乱 | `a.null-burn`, `c.gauntlet_x1.2`, `c.armor_x1.2`, `c.evasion+0.005`, `c.fire-defense-multiplier_x4/5` | `true` |
+| `abyssal_sea` | 深海 | 海 | 狩猟 | `a.null-bind`, `c.arrow_x1.2`, `c.catalyst_x1.2`, `c.accuracy+0.005` | `true` |
+| `firmament` | 天穹 | 穹 | 狩猟 | `a.siege`, `c.bolt_x1.2`, `c.shield_x1.2`, `c.accuracy+0.005` | `true` |
+| `frozen_forest` | 凍森 | 凍 | 狩猟 | `a.coldproof`1, `c.archery_x1.2`, `c.robe_x1.2`, `c.accuracy+0.005`, `c.ice-defense-multiplier_x4/5` | `true` |
+| `utopia` | 桃源 | 桃 | 学識 | `a.null-death-touch`, `c.wand_x1.2`, `c.bolt_x1.2`, `c.magical-defense-multiplier_x0.95` | `true` |
+| `machina` | 機骸 | 機 | 学識 | `a.null-shock`, `c.grimoire_x1.2`, `c.gauntlet_x1.2`, `c.magical-defense-multiplier_x0.95` | `true` |
+| `adaptation` | 適応 | 適 | 学識 | `c.catalyst_x1.2`, `c.archery_x1.2`,　`c.evasion+0.025`, `c.thunder-defense-multiplier_x3/4` | `true` |
 | `fragment` | 断章 | 断 | 生存 | `c.equip-slot+1`, `a.unforgettable`, `c.shield_x1.2` | `true` |
 | `windcross` | 風渡 | 風 | 生存 | `c.equip-slot+1`, `a.wind-rider`, `c.robe_x1.2` | `true` |
 | `oath` | 誓約 | 誓 | 生存 | `c.equip-slot+2`, `a.requiem` | `true` |
@@ -130,7 +130,7 @@
 | `aggressive` | 好戦| 好 | 外向的 | `c.sword_x1.1`, `c.bolt_x1.1`, `c.physical-offense-multiplier_x1.1`, `c.penet+0.050` | `true` |
 | `inquisitive` | 探求 | 探 | 外向的 | `c.arrow_x1.1`, `c.grimoire_x1.1`, `c.penet+0.050`, `c.magical-offense-multiplier_x1.1` | `true` |
 | `amiable` | 親和 | 和 | 外向的 | `c.gauntlet_x1.1`, `c.bolt_x1.1`, `c.penet+0.050`, `c.magical_defense+0.10` | `true` |
-| `stubborn` | 頑固 | 頑 | 内向的 | `c.equip-slot+1`, `c.shield_x1.1`, `c.physical_defense+0.10`, `b.vitality+1` | `true` |
+| `stubborn` | 頑固 | 頑 | 内向的 | `c.equip-slot+1`, `c.shield_x1.1`, `c.physical_defense+0.10` | `true` |
 | `evasive` | 責任回避 | 避 | 内向的 | `a.null-antagonism`, `c.evasion+0.020`, `c.robe_x1.1` | `true` |
 | `introspective` | 内省 | 内 | 内向的 | `a.unforgettable`, `c.wand_x1.1`, `c.armor_x1.1`,  | `true` |
 | `devoted` | 献身 | 献 | 適応 | `c.equip-slot+2`, `a.first-aid`1, `c.shield_x1.1`, `c.fire-defense-multiplier_x4/5` | `true` |
