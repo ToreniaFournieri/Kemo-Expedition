@@ -21,3 +21,15 @@ Built during the 2026/10/03 D8-boss run (`AI_play_report/v0.9.8(11)_Claude_Norma
    signal), `stageopt.mjs`, `wall.mjs` (sortie based, see report caveat). Driver: `wallopt3.mjs <save> <dungeon> <stage> <seed> <gens> <out> <startPlan> <scenario>`
    with env `ALGO=ga|sa|climb`, `OBJ=gate|boss|bossonly|room|stages|combo`, `NQ/NC` (quick/confirm sample sizes), `LAMBDA` (call-count penalty).
 6. Executing a plan: `python3 client/runplan.py plan.json`.
+
+## Additions (2026/10/04 ClaudeRace run, `AI_play_report/v0.9.8(12)_ClaudeRace_Normal_API_Exp8Boss_20261004.md`)
+* **HP cache fix**: `computePartyMaxHp` caches by `party.characters` array identity; `lib.sim()`, `bossonly.mjs`, `wall.mjs` and `hpopt.mjs` now
+  replace the array before evaluating, otherwise in-place gear edits keep a stale party HP (all earlier searches undervalued HP items).
+* `race.mjs` env for every driver: `RACE="cid:race:main:sub:lineage:pred;..."`, `ORDER=1,4,2,3,6,5`, `DEITY="Goddess of Precision"`.
+* `SIDE=1` (opt.mjs/wallopt3): pool the equipment held by other parties; `planCalls` prepends `removeEquipment` only for taken slots.
+* `wallopt3.mjs` `NOELEM=fire,ice` (ban elements) and `FORCEEL=el/ids/cats` (same-category re-gear ranked by attack).
+* `proxyopt.mjs save out "4,2,3,5" "fire:1.5,ice:0.8,thunder:0.3,none:1" [start]` – deterministic attacker optimizer (attack x distinct-bonus
+  amplifier x element weight x expected hits) + greedy jewel pass, ~1 s. `BAN=thunder` strips banned elements first.
+* `hpopt.mjs save out "1,6" [start] [wdef]` – greedy party-HP (+defense) gear for supports.
+* `lever.mjs save d f N "label|DEITY|RACE" ...` – cheap-lever sweep (deity/race/class, `PLAN=` to apply a plan first).
+* `racetest.mjs`, `roomtab.mjs` (per-room table of a gate stage), `bosslog.mjs`, `pstats.mjs`, `give.mjs`, `armor.mjs`, `tankfill.mjs`.

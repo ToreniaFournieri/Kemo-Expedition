@@ -11,7 +11,7 @@ export function seedCrypto(seed){
 }
 export async function sim(state,pi,n,seed=12345,opts={}){
   seedCrypto(seed);
-  const p=state.parties[pi];
+  const p=state.parties[pi]; p.characters=[...p.characters]; // computePartyMaxHp caches by array identity: refresh so in-place gear edits are seen
   if(opts.dest!=null)p.selectedDungeonId=opts.dest;
   if(opts.depth!=null)p.expeditionDepthLimit=opts.depth;
   return T.simulateExpeditionRuns(state,pi,'mode.normal',n);

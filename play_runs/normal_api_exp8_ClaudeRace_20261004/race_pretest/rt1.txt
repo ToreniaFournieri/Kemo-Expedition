@@ -1,0 +1,10 @@
+baseline 17.3
+4 Sota ursan slots 11 items 11 HP 23427 succ 17.3
+2 Kuzunoha ursan slots 11 items 11 HP 23427 succ 17.3
+4 Sota lupinian slots 9 items 9 HP 22760 succ 9.0
+2 Kuzunoha lupinian slots 9 items 9 HP 22663 succ 12.4
+4 Sota felidian slots 9 items 9 HP 23009 succ 7.1
+2 Kuzunoha felidian slots 9 items 9 HP 22937 succ 13.8
+4 Sota felidian:ranger:ninja slots 9 items 9 HP 23009 succ 8.1
+2 Kuzunoha felidian:ranger:ninja slots 9 items 9 HP 22802 succ 13.7
+4 Sota vulpinian slots 9 items 9 HP 22962 succ 8.0

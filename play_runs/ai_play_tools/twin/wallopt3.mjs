@@ -1,12 +1,23 @@
 // Like wallopt2 but outputs an executable call plan (items + jewels).
 import {T} from './lib.mjs'; import * as O from './opt.mjs'; import {wallObjective} from './wall.mjs'; import {writeFileSync,readFileSync} from 'node:fs'; import {SC} from './wallopt2.mjs'; import {gateObjective,multiGate,bossObjective} from './gate.mjs'; import {stageObjective} from './stageopt.mjs'; import {bossOnlyObjective,roomOnlyObjective} from './bossonly.mjs';
 const [,,file,dd,f,seedA,itersA,out,startPlan,scen]=process.argv;
-const s=T.loadSave(file); const m=O.buildModel(s,0);
+const s=T.loadSave(file); (await import('./race.mjs')).applyRace(s); const m=O.buildModel(s,0);
 if(scen&&scen.startsWith('ord:')){ const ids=scen.slice(4).split(',').map(Number); const byId=new Map(m.p.characters.map(c=>[c.id,c])); m.p.characters=ids.map(i=>byId.get(i)); m.slots=m.p.characters.map((c,i)=>T.computeCharacterStatsInParty(m.p,i).maxEquipSlots); }
-const beforeJ=O.snapshotJ(m); const free0={...m.jewels};
+const beforeJ=O.snapshotJ(m); const free0={...m.jewels}; { const inv={}; for(const [k,v] of Object.entries(s.global.inventory)) if(v.status==='owned'&&v.count>0) inv[O.vkey(v.item)]=v.count; m.invFree0=inv; }
 import {replay} from './replay.mjs';
 if(startPlan&&startPlan!=='none'){ const j=JSON.parse(readFileSync(startPlan,'utf8')); replay(m,j.calls); }
 if(!(scen&&scen.startsWith('ord:'))) (SC[scen||'base'])(m);
+if(process.env.FORCEEL){ const [el,ids,cats]=process.env.FORCEEL.split('/'); const idset=new Set(ids.split(',').map(Number)); const catset=new Set(cats.split(','));
+  const rank=(it)=>((it.rangedAttack||0)+(it.magicalAttack||0))*(1+0.1*(it.enhancement||0))*(1+(it.elementalOffenseBonus||0))+(it.rangedNoABonus||0)*40+(it.magicalNoABonus||0)*40;
+  m.p.characters.forEach((c,ci)=>{ if(!idset.has(c.id)) return; for(let si=0;si<m.slots[ci];si++){ const it=c.equipment[si]; if(it&&it.elementalOffense===el) continue; if(it&&!catset.has(it.category)) continue; if(!it&&!process.env.FILLEMPTY) continue;
+    let best=null; for(const [k,e] of m.pool){ if(e.free<=0||e.item.elementalOffense!==el||!catset.has(e.item.category)||!O.canEquip(m,ci,k)) continue; if(it&&e.item.category!==it.category&&!process.env.ANYCAT) continue; if(!best||rank(e.item)>rank(m.pool.get(best).item)) best=k; }
+    if(best) O.setSlot(m,ci,si,best); } }); console.log('FORCEEL applied'); }
+if(process.env.NOELEM){ const bad=new Set(process.env.NOELEM.split(',')); const isBad=(it)=>it&&bad.has(it.elementalOffense);
+  const rank=(it)=>Math.floor(it.id/1000)*10+(it.enhancement||0)+(it.superRare?50:0);
+  m.p.characters.forEach((c,ci)=>{ for(let si=0;si<c.equipment.length;si++){ const it=c.equipment[si]; if(!isBad(it)) continue;
+    let best=null; for(const [k,e] of m.pool){ if(e.free<=0||isBad(e.item)||e.item.category!==it.category||!O.canEquip(m,ci,k)) continue; if(!best||rank(e.item)>rank(m.pool.get(best).item)) best=k; }
+    O.setSlot(m,ci,si,best); } });
+  for(const [k,e] of m.pool) if(isBad(e.item)) e.free=0; console.log('NOELEM applied'); }
 const wB=+(process.env.WBOSS||0); let quick=wallObjective({d:+dd,f:+f,N:+(process.env.NQ||32),seed:7,wBoss:wB}), confirm=wallObjective({d:+dd,f:+f,N:+(process.env.NC||96),seed:11,wBoss:wB});
 if(process.env.OBJ==='stages'){ quick=stageObjective(+dd,{n:+(process.env.NQ||100),seed:7,stop:+(process.env.STOP||0.5)}); confirm=stageObjective(+dd,{n:+(process.env.NC||300),seed:11,stop:+(process.env.STOP||0.5)}); }
 if(process.env.OBJ==='combo'){ // gate5 + bossGate + boss together

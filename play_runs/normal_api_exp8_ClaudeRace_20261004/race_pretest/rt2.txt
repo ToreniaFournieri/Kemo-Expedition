@@ -1,0 +1,8 @@
+baseline 17.3
+4 Sota procyonian slots 9 items 9 HP 23568 succ 9.9
+2 Kuzunoha procyonian slots 9 items 9 HP 23364 succ 10.3
+4 Sota murid slots 9 items 9 HP 22636 succ 4.5
+2 Kuzunoha murid slots 9 items 9 HP 22479 succ 11.9
+4 Sota caninian slots 9 items 9 HP 23050 succ 7.4
+2 Kuzunoha caninian slots 9 items 9 HP 22950 succ 11.8
+4 Sota leporian slots 9 items 9 HP 22700 succ 9.6
