@@ -1,0 +1,9 @@
+baseline 17.3
+3 Lop ursan slots 11 items 9 HP 24069 succ 16.1
+3 Lop lupinian slots 9 items 9 HP 23397 succ 13.3
+3 Lop felidian slots 9 items 9 HP 23650 succ 13.4
+3 Lop felidian:ranger:ninja slots 9 items 9 HP 23650 succ 16.8
+3 Lop vulpinian slots 9 items 9 HP 23696 succ 13.8
+3 Lop procyonian slots 9 items 9 HP 24210 succ 13.6
+3 Lop murid slots 9 items 9 HP 23278 succ 12.0
+3 Lop caninian slots 9 items 9 HP 23800 succ 13.2

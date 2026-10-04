@@ -10,7 +10,7 @@ export function wallObjective({d,f,N=40,seed=3,pi=0,wDmg=1,wBoss=0}){
     for(let g=1;g<Math.min(f,7);g++) p.clearGateStatus[d*1000+g*10+4]=true;
     if(f===7) p.clearGateStatus[d*1000+604]=true;
     p.expeditionDepthLimit= f<=5?`${f}f-3`: f===6?'beforeBoss':'all';
-    seedCrypto(seed);
+    seedCrypto(seed); p.characters=[...p.characters];
     let bseq=0n; let v=(seed>>>0)||0x9e3779b9; const rnd=()=>{v^=v<<13;v>>>=0;v^=v>>>17;v^=v<<5;v>>>=0;return v/4294967296;};
     const out=T.withBattleSeedSourceForTesting(()=>(BigInt(seed)<<32n)|bseq++,()=>T.withGameplayRandomSourceForTesting(rnd,()=>T.simulateApiSortieBatchForTesting(state,pi,N,'mode.normal',1790000000000,0)));
     let sc=0, succ=0;

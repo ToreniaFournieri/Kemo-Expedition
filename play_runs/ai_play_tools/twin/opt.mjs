@@ -8,9 +8,10 @@ export function buildModel(state,pi=0){
   // equipment of OTHER parties stays where it is (not pooled); equipped items of this party are re-poolable.
   const jewels={}; for(const [k,v] of Object.entries(state.global.jewels||{})) if(v>0) jewels[k]=v;
   for(const c of p.characters) for(const it of c.equipment) if(it&&it.jewel){ const k=it.jewel.key+':'+it.jewel.rank; jewels[k]=(jewels[k]||0)+1; }
+  const side={}; if(process.env.SIDE){ state.parties.forEach((q,qi)=>{ if(qi===pi) return; for(const c of q.characters) c.equipment.forEach((it,si)=>{ if(!it||it.superRare) return; const k=vkey(it); const e=pool.get(k); if(e) e.free++; else pool.set(k,{item:{...it,jewel:null},free:1}); (side[k]=side[k]||[]).push([c.id,si]); }); }); }
   const slots=p.characters.map((c,i)=>T.computeCharacterStatsInParty(p,i).maxEquipSlots);
   for(const c of p.characters){ c.equipment.forEach((it)=>{ if(!it) return; const k=vkey(it); const e=pool.get(k); if(e) e.free+=0; else pool.set(k,{item:{...it,jewel:null},free:0}); }); }
-  return {state,p,pool,slots,jewels:attachCount(jewels,p)};
+  return {state,p,pool,slots,side,jewels:attachCount(jewels,p)};
 }
 function attachCount(jewels,p){ // jewels[k] = TOTAL; compute free = total - attached
   const free={...jewels}; for(const c of p.characters) for(const it of c.equipment) if(it&&it.jewel){ free[it.jewel.key+':'+it.jewel.rank]--; } return free; }
@@ -121,6 +122,10 @@ const ifmt=(k)=>{ const [i,e,s]=k.split('-'); return `0/${i}/${e}/${s}`; };
 export function planCalls(beforeJ,m,jewelsFree0){
   const calls=[]; const free={...jewelsFree0}; // free jewels in inventory at start
   const after=snapshotJ(m);
+  if(m.side&&Object.keys(m.side).length){ const cnt=(snap)=>{ const t={}; for(const row of snap) for(const x of row) if(x) t[x.key]=(t[x.key]||0)+1; return t; };
+    const b=cnt(beforeJ), a=cnt(after); const strips={};
+    for(const [k,n] of Object.entries(a)){ const extra=n-(b[k]||0); if(extra<=0) continue; const inv=(m.invFree0||{})[k]||0; let need=extra-inv; const src=m.side[k]||[]; for(let i=0;i<need&&i<src.length;i++){ const [cid,si]=src[i]; (strips[cid]=strips[cid]||[]).push(si); } }
+    for(const [cid,sl] of Object.entries(strips)) calls.push({path:`/commit/build/character/${cid}/removeEquipment`,params:{targetEquipment:sl.sort((x,y)=>x-y)},side:true}); }
   m.p.characters.forEach((c,ci)=>{
     const slotsN=Math.max(beforeJ[ci].length,after[ci].length); const rem=[],addBySlot=[];
     for(let si=0;si<slotsN;si++){ const b=beforeJ[ci][si]||null,a=after[ci][si]||null; if((b&&b.key)!==(a&&a.key)){ if(b) rem.push(si); if(a) addBySlot.push([si,a.key]); } }

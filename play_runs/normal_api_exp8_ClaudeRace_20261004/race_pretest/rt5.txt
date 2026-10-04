@@ -1,0 +1,6 @@
+baseline 17.3
+5 Selfin felidian::::nimble slots 9 items 9 HP 23733 succ 31.9
+5 Selfin felidian::::inquisitive slots 9 items 9 HP 23733 succ 31.2
+5 Selfin felidian::::serene slots 9 items 9 HP 23886 succ 29.3
+5 Selfin felidian:wizard:alchemist slots 9 items 9 HP 23745 succ 24.3
+5 Selfin felidian:::abyssal_sea slots 9 items 9 HP 23723 succ 26.6

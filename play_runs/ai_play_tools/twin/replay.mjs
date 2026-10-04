@@ -3,7 +3,7 @@ import {T} from './lib.mjs'; import * as O from './opt.mjs'; import {stageReport
 export function replay(m,calls){
   const idx=new Map(m.p.characters.map((c,i)=>[c.id,i]));
   for(const {path,params} of calls){
-    const [,,,,cid, op]=path.split('/'); const ci=idx.get(+cid); const c=m.p.characters[ci];
+    const [,,,,cid, op]=path.split('/'); const ci=idx.get(+cid); const c=m.p.characters[ci]; if(ci===undefined) continue;
     if(op==='removeEquipment'){ const sl=[].concat(params.targetEquipment); for(const si of sl){ const it=c.equipment[si]; if(!it) throw new Error('slot_empty'); O.setSlot(m,ci,si,null); } }
     else if(op==='equip'){ const items=[].concat(params.targetEquipment); const fmt=(s)=>{const [,i,e,sr]=s.split('/'); return `${i}-${e}-${sr}`;};
       if(params.targetSlot!==undefined){ O.setSlot(m,ci,params.targetSlot,fmt(items[0])); }
