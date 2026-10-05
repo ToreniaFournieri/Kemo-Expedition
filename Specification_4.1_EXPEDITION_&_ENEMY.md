@@ -21,8 +21,8 @@
 | 5 | 5 | 24 | ウルサンの炎嶺(Ursan Pyrepeak) | 炎 | C:metal , U:fire, E:enemy_type B:enemy_type | `prod` |
 | 6 | 6 | 29 | プロキオン巣穴(Procyonian Burrow) | 巣 | C:lost tech (fantasy tone) , U:thunder, E:enemy_type B:enemy_type | `prod` |
 | 7 | 7 | 34 | レポリアンの月宮(Leporian Moon Palace) | 月 | C:fantasy equipment , U:Light from Titan,Dark from Undead E:enemy_type B:enemy_type | `prod` |
-| 8 | 8 | 40 | セルヴィンの谷(Cervin Vale) | 谷 |  C:more advanced fantasy equipment , U:legendary  E:enemy_type B:enemy_type | `prod` |
-| 9 | 1 | 44 | ダーセン原野 - 追憶(Darsen field - Reminiscence) | 野 | - | `test` |
+| 8 | 8 | 39 | セルヴィンの谷(Cervin Vale) | 谷 |  C:more advanced fantasy equipment , U:legendary  E:enemy_type B:enemy_type | `prod` |
+| 9 | 1 | 43 | ダーセン原野 - 追憶(Darsen field - Reminiscence) | 野 | - | `test` |
 | 99 | 0 | 0 | 闘技場 (Colosseum) | 闘 | Debug-only area. Displayed only when Colosseum is enabled. | `prod` |
 
 - Floor of each expedition
