@@ -189,13 +189,13 @@
 | 4304 | 4 | E | `Felidian` | `i.robe`EB | 盗砂の猫衣 |
 | 4305 | 4 | E | `Shadowfang` | `i.shield`EA | 紅の防盾 | `r.fire_x2/3` |
 | 4306 | 4 | E | `Titan` | `i.shield`EC | 岩背の大盾 |
-| 4307 | 4 | E | `Felidian` | `i.sword`EB | 曲剣 |
+| 4307 | 4 | E | `Felidian` | `i.sword`EB | 氷爪 | `e.ice+0.010`, `d.HP+30`, `c.physical-offense+0.18` |
 | 4308 | 4 | E | `Shadowfang` | `i.katana`EA | 影牙の太刀 |
 | 4309 | 4 | E | `Titan` | `i.katana`EC | 巨刃の太刀 |
 | 4310 | 4 | E | `Titan` | `i.gauntlet`EC | 破砕の巨手甲 |
 | 4311 | 4 | E | `Felidian` | `i.arrow`EB | 猫牙矢 |
 | 4312 | 4 | E | `Shadowfang` | `i.bolt`EA | 影牙のボルト |
-| 4313 | 4 | E | `Felidian` | `i.bolt`EB | 砂猫のボルト | `c.penet+0.16` |
+| 4313 | 4 | E | `Felidian` | `i.bolt`EB | 砂猫の雷ボルト | `e.thunder+0.08` , `c.penet+0.16` |
 | 4314 | 4 | E | `Titan` | `i.bolt`EC | 砕岩ボルト |
 | 4315 | 4 | E | `Felidian` | `i.archery`EB | 短弓 |
 | 4316 | 4 | E | `Felidian` | `i.wand`EB | 猫呪杖 |
@@ -239,7 +239,7 @@
 | 5304 | 5 | E | `Dragon` | `i.robe`EB | 竜火の法衣 |
 | 5305 | 5 | E | `Dragon` | `i.shield`EB | 竜稜の盾 |
 | 5306 | 5 | E | `Dragon` | `i.sword`EB | ドラグスレイブ | `e.fire+0.030` |
-| 5307 | 5 | E | `Dragon` | `i.katana`EB | 破城槌 | `a.siege` |
+| 5307 | 5 | E | `Dragon` | `i.katana`EB | 破城槌 | `a.siege`, `e.thunder+0.015` |
 | 5308 | 5 | E | `Beast` | `i.gauntlet`EA | 焔爪の手甲 |
 | 5309 | 5 | E | `Ursan` | `i.gauntlet`EC | 大熊の手甲 |
 | 5310 | 5 | E | `Beast` | `i.arrow`EA | 炎獣の狩矢 |
@@ -248,7 +248,7 @@
 | 5313 | 5 | E | `Dragon` | `i.wand`EB | 竜脈の杖 |
 | 5314 | 5 | E | `Beast` | `i.grimoire`EA | 獣の秘本 |
 | 5315 | 5 | E | `Dragon` | `i.grimoire`EB | 竜炎秘儀書 |
-| 5316 | 5 | E | `Ursan` | `i.grimoire`EC | 大熊の秘本 |
+| 5316 | 5 | E | `Ursan` | `i.grimoire`EC | 冷静と慟哭の書 | `e.ice+0.010`, `c.evasion-0.010` ,`c.penet+0.07`, `c.magical-NoA-1.8` |
 | 5317 | 5 | E | `Beast` | `i.catalyst`EA | 獣核の焔触媒 |
 | 5318 | 5 | E | `Dragon` | `i.catalyst`EB | 竜脈の触媒 |
 | 5401 | 5 | B | `Ursan` | `i.armor`BD | 熊厚鎧 |
@@ -404,7 +404,7 @@
 | 8316 | 8 | E | `Ghost` | `i.archery`EB | 残痕の弓 |
 | 8317 | 8 | E | `Ghost` | `i.wand`EB | 珪素の杖 |
 | 8318 | 8 | E | `Cervin` | `i.wand`ED | 勇鹿の杖 |
-| 8319 | 8 | E | `Voidspawn` | `i.grimoire`EA | 忘却の書 | `a.fading_memory`, `r.ice_x1.5, `r.ice_x1.25`, `r.thunder_x1.25` |
+| 8319 | 8 | E | `Voidspawn` | `i.grimoire`EA | 忘却の書 | `a.fading_memory`, `r.ice_x1.5`, `r.ice_x1.25`, `r.thunder_x1.25` |
 | 8320 | 8 | E | `Jinma` | `i.grimoire`EC | 反乱の手引 | `a.defiance` |
 | 8321 | 8 | E | `Voidspawn` | `i.catalyst`EA | 虚痕の触媒 |
 | 8322 | 8 | E | `Ghost` | `i.catalyst`EB | コバルト |

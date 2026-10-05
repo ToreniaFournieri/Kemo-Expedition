@@ -8,18 +8,18 @@
 
 |category | name | short name| core concept |
 |-----|----|----|-----------|
-|`i.armor` | 鎧 | 鎧 | + `d.physical_defense` |
-|`i.robe` | 法衣 | 衣 | + `d.magical_defense` |
+|`i.armor` | 鎧 | 鎧 | + `d.physical-defense` |
+|`i.robe` | 法衣 | 衣 | + `d.magical-defense` |
 |`i.shield ` | 盾 | 盾 | + `d.HP` |
-|`i.sword` | 剣 | 剣 | + `d.melee_attack` |
-|`i.katana` | 刀 | 刀 | + `d.melee_attack`, - `melee_NoA` |
-|`i.gauntlet` | 籠手 | 手 | + `d.melee_NoA` |
-|`i.arrow` | 矢 | 矢 | + `d.ranged_attack` |
-|`i.bolt` | ボルト | ボ | + `d.ranged_attack`, - `d.ranged_NoA`  |
-|`i.archery` | 弓 | 弓 | + `d.ranged_NoA` |
-|`i.wand` | ワンド | 杖 | + `d.magical_attack` |
-|`i.grimoire` | 魔導書 | 書 | + `d.magical_attack`, - `d.magical_NoA`  |
-|`i.catalyst` | 触媒 | 媒 | + `d.magical_NoA`  |
+|`i.sword` | 剣 | 剣 | + `d.melee-attack` |
+|`i.katana` | 刀 | 刀 | + `d.melee-attack`, - `melee-NoA` |
+|`i.gauntlet` | 籠手 | 手 | + `d.melee-NoA` |
+|`i.arrow` | 矢 | 矢 | + `d.ranged-attack` |
+|`i.bolt` | ボルト | ボ | + `d.ranged-attack`, - `d.ranged-NoA`  |
+|`i.archery` | 弓 | 弓 | + `d.ranged-NoA` |
+|`i.wand` | ワンド | 杖 | + `d.magical-attack` |
+|`i.grimoire` | 魔導書 | 書 | + `d.magical-attack`, - `d.magical-NoA`  |
+|`i.catalyst` | 触媒 | 媒 | + `d.magical-NoA`  |
 
 - *note:* item might have multiple bonus. sword may have `d.HP` but subtle value.
 
@@ -47,21 +47,21 @@
 
 | Item type | xN base_power | base-bonus | X-bonus | Y-bonus | E-bonus | C-bonus | B-bonus |
 |------|--------|------|------|------|------|------|------|
-|`i.armor` | x1.4 `d.physical_defense+D` | `c.physical_defense+F` | x0.6 `d.HP+D` | x0.3 `d.magical_defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | none | `b.vitality+1` |
-|`i.robe` | x1.15 `d.magical_defense+D`  | `c.magical_defense+F` | x0.6 `d.HP+D` | x0.3 `d.physical_defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` |`c.evasion+N` | `b.intelligence+1` |
-|`i.shield` | x1.6 `d.HP+D` | `c.evasion+G` | x0.20 `d.physical_defense+D` | x0.20 `d.magical_defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | none | `b.mind+1` |
-|`i.sword` | x1.1 `d.melee_attack+D` | `c.melee_attack+Q` | x0.25 `d.physical_defense+D` | x0.85 `d.HP+D` |  `e.fire+L` | `c.accuracy+N` | `b.strength+1` |
-|`i.katana` | x1.43 `d.melee_attack+D` | `c.melee_attack+F`, `d.evasion-J`, `d.melee_NoA-K` | x0.55 `d.HP+D` | x0.3 `d.magical_defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | `c.penet+P` | `b.mind+1` |
-|`i.gauntlet` | x1.0 `d.melee_NoA+E` | `c.melee_NoA+H` | x0.3 `d.physical_defense+D` | none | none | `c.physical_defense+P` | `b.vitality+1` |
-|`i.arrow` | x0.85 `d.ranged_attack+D` | `c.ranged_attack+Q` | x0.55 `d.HP+D` | x0.32 `d.physical_defense+D` | `e.fire+L`, `e.ice+L` , `e.thunder+L` | `c.evasion+N` | `b.strength+1` |
-|`i.bolt` | x1.11 `d.ranged_attack+D` | `c.ranged_attack+F`, `d.evasion-J`, `d.ranged_NoA-K` | x0.28 `d.magical_defense+D` | x0.7 `d.HP+D` | `e.fire+L`, `e.ice+L` , `e.thunder+L` | `c.penet+P`  | `b.vitality+1` |
-|`i.archery` | x1.0 `d.ranged_NoA+E` | `c.ranged_NoA+H` | x0.52 `d.HP+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | none | `c.accuracy+N` | `b.strength+1` |
-|`i.wand` | x0.75 `d.magical_attack+D` | `c.magical_attack+Q` | x0.3 `d.magical_defense+D` | x0.55 `d.HP+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | none | `b.intelligence+1` |
-|`i.grimoire` | x0.98 `d.magical_attack+D` | `c.magical_attack+F`, `d.evasion-J`, `d.magical_NoA-K` | x0.22 `d.physical_defense+D` | x0.26 `d.magical_defense+D` | `e.ice+L`, `e.thunder+L` | `c.penet+P` | `b.mind+1` |
-|`i.catalyst` | x1.0 `d.magical_NoA+E` | `c.magical_NoA+H` | x0.52 `d.HP+D` | none | `e.fire+L`, `e.ice+L`, `e.thunder+L` | `c.magical_defense+P` | `b.intelligence+1` |
+|`i.armor` | x1.4 `d.physical-defense+D` | `c.physical-defense+F` | x0.6 `d.HP+D` | x0.3 `d.magical-defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | none | `b.vitality+1` |
+|`i.robe` | x1.15 `d.magical-defense+D`  | `c.magical-defense+F` | x0.6 `d.HP+D` | x0.3 `d.physical-defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` |`c.evasion+N` | `b.intelligence+1` |
+|`i.shield` | x1.6 `d.HP+D` | `c.evasion+G` | x0.20 `d.physical-defense+D` | x0.20 `d.magical-defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | none | `b.mind+1` |
+|`i.sword` | x1.1 `d.melee-attack+D` | `c.melee-attack+Q` | x0.25 `d.physical-defense+D` | x0.85 `d.HP+D` |  `e.fire+L` | `c.accuracy+N` | `b.strength+1` |
+|`i.katana` | x1.43 `d.melee-attack+D` | `c.melee-attack+F`, `d.evasion-J`, `d.melee-NoA-K` | x0.55 `d.HP+D` | x0.3 `d.magical-defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | `c.penet+P` | `b.mind+1` |
+|`i.gauntlet` | x1.0 `d.melee-NoA+E` | `c.melee-NoA+H` | x0.3 `d.physical-defense+D` | none | none | `c.physical-defense+P` | `b.vitality+1` |
+|`i.arrow` | x0.85 `d.ranged-attack+D` | `c.ranged-attack+Q` | x0.55 `d.HP+D` | x0.32 `d.physical-defense+D` | `e.fire+L`, `e.ice+L` , `e.thunder+L` | `c.evasion+N` | `b.strength+1` |
+|`i.bolt` | x1.11 `d.ranged-attack+D` | `c.ranged-attack+F`, `d.evasion-J`, `d.ranged-NoA-K` | x0.28 `d.magical-defense+D` | x0.7 `d.HP+D` | `e.fire+L`, `e.ice+L` , `e.thunder+L` | `c.penet+P`  | `b.vitality+1` |
+|`i.archery` | x1.0 `d.ranged-NoA+E` | `c.ranged-NoA+H` | x0.52 `d.HP+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | none | `c.accuracy+N` | `b.strength+1` |
+|`i.wand` | x0.75 `d.magical-attack+D` | `c.magical-attack+Q` | x0.3 `d.magical-defense+D` | x0.55 `d.HP+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | none | `b.intelligence+1` |
+|`i.grimoire` | x0.98 `d.magical-attack+D` | `c.magical-attack+F`, `d.evasion-J`, `d.magical-NoA-K` | x0.22 `d.physical-defense+D` | x0.26 `d.magical-defense+D` | `e.ice+L`, `e.thunder+L` | `c.penet+P` | `b.mind+1` |
+|`i.catalyst` | x1.0 `d.magical-NoA+E` | `c.magical-NoA+H` | x0.52 `d.HP+D` | none | `e.fire+L`, `e.ice+L`, `e.thunder+L` | `c.magical-defense+P` | `b.intelligence+1` |
 
 - for `d.` bonus:  `type.amplifier` + `d.X`
-  - Example: Tier 2 armor's x1.4 `d.physical_defense` is 12 x (1.45 - 0.04) x 1.4 = 12 x 1.41 = 23.688 → 24. its x0.3 `d.magical_defense` is 12 x (1.45 - 0.04) x 0.3 = 5.076 -> 6.
+  - Example: Tier 2 armor's x1.4 `d.physical-defense` is 12 x (1.45 - 0.04) x 1.4 = 12 x 1.41 = 23.688 → 24. its x0.3 `d.magical-defense` is 12 x (1.45 - 0.04) x 0.3 = 5.076 -> 6.
 
 **rarity.amplifier of base_power**
 
@@ -205,12 +205,12 @@ inventory = {
 
 | `j.` Key |  表示名 | 略称 | `c.` bonus  | `d.` base bonus |
 |-----------|------|----|----------------------------|---------|
-| `j.might`  | 剛力 | 剛 | `c.physical_attack+v` | `d.melee_attack`12, `d.ranged_attack`9 |
-| `j.arcana` | 魔導 | 魔 | `c.magical_attack+v` | `d.magical_attack`6, `d.HP`3 |
-| `j.fort`  | 堅牢 | 堅 | `c.physical_defense+v` | `d.physical_defense`6, `d.HP`6 |
-| `j.ward`  | 障壁 | 障 | `c.magical_defense+v` | `d.magical_defense`6, `d.HP`6 |
-| `j.shade` | 影走 | 影 | `c.evasion+0.0v` | `d.magical_defense`4 , `d.HP`4  |
-| `j.focus`  | 精密 | 精 | `c.accuracy+0.0v` | `d.physical_defense`4, `d.HP`3  |
+| `j.might`  | 剛力 | 剛 | `c.physical-attack+v` | `d.melee-attack`12, `d.ranged-attack`9 |
+| `j.arcana` | 魔導 | 魔 | `c.magical-attack+v` | `d.magical-attack`6, `d.HP`3 |
+| `j.fort`  | 堅牢 | 堅 | `c.physical-defense+v` | `d.physical-defense`6, `d.HP`6 |
+| `j.ward`  | 障壁 | 障 | `c.magical-defense+v` | `d.magical-defense`6, `d.HP`6 |
+| `j.shade` | 影走 | 影 | `c.evasion+0.0v` | `d.magical-defense`4 , `d.HP`4  |
+| `j.focus`  | 精密 | 精 | `c.accuracy+0.0v` | `d.physical-defense`4, `d.HP`3  |
 
 | Rank | Tier Name |
 | ---- | --------- |
@@ -225,7 +225,7 @@ inventory = {
 
 - Rank 5 `j.might`  is "剛力の碧晶"
 
-| Rank | `c.*_attack+v` | `c.*_defense+v` | `c.*+0.0v` |
+| Rank | `c.*-attack+v` | `c.*-defense+v` | `c.*+0.0v` |
 |------|---------|--------|--------|
 | 1 | 22 | 13 | 8 |
 | 2 | 21 | 12 | 7 |
