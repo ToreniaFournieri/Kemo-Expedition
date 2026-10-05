@@ -189,7 +189,7 @@
 | 4304 | 4 | E | `Felidian` | `i.robe`EB | 盗砂の猫衣 |
 | 4305 | 4 | E | `Shadowfang` | `i.shield`EA | 紅の防盾 | `r.fire_x2/3` |
 | 4306 | 4 | E | `Titan` | `i.shield`EC | 岩背の大盾 |
-| 4307 | 4 | E | `Felidian` | `i.sword`EB | 氷爪 | `e.ice+0.010`, `d.HP+30`, `c.physical-offense+0.18` |
+| 4307 | 4 | E | `Felidian` | `i.sword`EB | 氷爪 | `e.ice+0.10`, `d.HP+30`, `c.physical-offense+0.18` |
 | 4308 | 4 | E | `Shadowfang` | `i.katana`EA | 影牙の太刀 |
 | 4309 | 4 | E | `Titan` | `i.katana`EC | 巨刃の太刀 |
 | 4310 | 4 | E | `Titan` | `i.gauntlet`EC | 破砕の巨手甲 |
@@ -239,7 +239,7 @@
 | 5304 | 5 | E | `Dragon` | `i.robe`EB | 竜火の法衣 |
 | 5305 | 5 | E | `Dragon` | `i.shield`EB | 竜稜の盾 |
 | 5306 | 5 | E | `Dragon` | `i.sword`EB | ドラグスレイブ | `e.fire+0.030` |
-| 5307 | 5 | E | `Dragon` | `i.katana`EB | 破城槌 | `a.siege`, `e.thunder+0.015` |
+| 5307 | 5 | E | `Dragon` | `i.katana`EB | 破城槌 | `a.siege`, `e.thunder+0.15` |
 | 5308 | 5 | E | `Beast` | `i.gauntlet`EA | 焔爪の手甲 |
 | 5309 | 5 | E | `Ursan` | `i.gauntlet`EC | 大熊の手甲 |
 | 5310 | 5 | E | `Beast` | `i.arrow`EA | 炎獣の狩矢 |
