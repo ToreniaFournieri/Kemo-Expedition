@@ -248,7 +248,7 @@
 | 5313 | 5 | E | `Dragon` | `i.wand`EB | 竜脈の杖 |
 | 5314 | 5 | E | `Beast` | `i.grimoire`EA | 獣の秘本 |
 | 5315 | 5 | E | `Dragon` | `i.grimoire`EB | 竜炎秘儀書 |
-| 5316 | 5 | E | `Ursan` | `i.grimoire`EC | 冷静と慟哭の書 | `e.ice+0.010`, `c.evasion-0.010` ,`c.penet+0.07`, `c.magical-NoA-1.8` |
+| 5316 | 5 | E | `Ursan` | `i.grimoire`EC | 冷静と慟哭の書 | `e.ice+0.10`, `c.evasion-0.010` ,`c.penet+0.07`, `c.magical-NoA-1.8` |
 | 5317 | 5 | E | `Beast` | `i.catalyst`EA | 獣核の焔触媒 |
 | 5318 | 5 | E | `Dragon` | `i.catalyst`EB | 竜脈の触媒 |
 | 5401 | 5 | B | `Ursan` | `i.armor`BD | 熊厚鎧 |
