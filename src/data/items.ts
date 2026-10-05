@@ -208,7 +208,9 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
   '硫酸刺': [{ type: 'ability', value: 1, abilityId: 'corrode', abilityLevel: 1 }],
   '小刀': [{ type: 'ability', value: 1, abilityId: 'vine_cutter', abilityLevel: 1 }],
   '蒼き護符': [{ type: 'ability', value: 1, abilityId: 'mana_ward', abilityLevel: 1 }],
-  '砂猫のボルト': [{ type: 'penet', value: 0.16 }],
+  '砂猫の雷ボルト': [{ type: 'thunder_offense', value: 0.08 }, { type: 'penet', value: 0.16 }],
+  '氷爪': [{ type: 'ice_offense', value: 0.01 }, { type: 'physical_attack', value: 0.18 }],
+  '冷静と慟哭の書': [{ type: 'ice_offense', value: 0.01 }, { type: 'penet', value: 0.07 }],
   '雷式': [{ type: 'thunder_offense', value: 0.03 }, { type: 'strength', value: 1 }],
   '矢払盾': [{ type: 'ability', value: 1, abilityId: 'deflection', abilityLevel: 1 }],
   '崩壊核': [{ type: 'ability', value: 1, abilityId: 'decompose', abilityLevel: 1 }],
@@ -224,7 +226,7 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
   '魔封晶': [{ type: 'ability', value: 1, abilityId: 'magic_seal', abilityLevel: 1 }],
   '風羽衣': [{ type: 'ability', value: 1, abilityId: 'wind_rider', abilityLevel: 1 }],
   '毛皮衣': [{ type: 'ability', value: 1, abilityId: 'coldproof', abilityLevel: 1 }],
-  '破城槌': [{ type: 'ability', value: 1, abilityId: 'siege', abilityLevel: 1 }],
+  '破城槌': [{ type: 'ability', value: 1, abilityId: 'siege', abilityLevel: 1 }, { type: 'thunder_offense', value: 0.015 }],
   '焔断': [{ type: 'ability', value: 1, abilityId: 'fire_protect_breaker', abilityLevel: 1 }],
   '雷切': [{ type: 'ability', value: 1, abilityId: 'thunder_protect_breaker', abilityLevel: 1 }],
   '白妙': [{ type: 'ability', value: 1, abilityId: 'ice_protect_breaker', abilityLevel: 1 }],
@@ -262,6 +264,12 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
   ],
   'ファイアーヴェール': [{ type: 'fire_defense_multiplier_xV', value: 2 / 3 }],
   '反乱の手引': [{ type: 'ability', value: 1, abilityId: 'defiance', abilityLevel: 1 }],
+};
+
+// Explicit d./c. stat values for special items (applied after stripping to core concept)
+const ITEM_STAT_OVERRIDE_BY_NAME: Record<string, Partial<ItemDef>> = {
+  '氷爪': { partyHP: 30 },
+  '冷静と慟哭の書': { evasionBonus: -0.01, magicalNoABonus: -1.8 },
 };
 
 const ITEM_CORE_CONCEPT_KEYS: Record<ItemCategory, Array<keyof ItemDef>> = {
@@ -306,6 +314,7 @@ function applyAdditionalItemBonus(item: ItemDef): void {
   // Special items only keep their core concept plus the special-bonus.
   stripItemToCoreConcept(item);
   item.bonuses = [...additionalBonuses];
+  Object.assign(item, ITEM_STAT_OVERRIDE_BY_NAME[item.name]);
 }
 
 function getMasterItemName(tier: number, rarity: Rarity, category: ItemCategory, variantIndex?: number): string | undefined {
