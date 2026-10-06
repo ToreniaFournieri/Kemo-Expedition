@@ -272,6 +272,8 @@ export interface Character {
   name: string;
   gender: CharacterGender;
   isUnique?: boolean;
+  /** Unique character identity; present exactly when `isUnique` is true. SpecRef: 2.1.4.2 */
+  uniqueCharacterId?: import('../data/uniqueCharacters').UniqueCharacterId;
   autoEquipmentMode?: 0 | 1 | 2;
   raceId: RaceId;
   mainClassId: ClassId;

@@ -208,3 +208,32 @@ fails(base, uniqueCharacterId, { name: 'renamed unique' }, 'illegal_action', { s
 }
 
 console.log('apiV1BuildChange profile ok');
+
+// SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique selection: "固有"
+// SpecRef: 9.1.3 | 3-3-2 changeBuild | uniqueSelection
+{
+  const kemo = base.parties[0].characters[0];
+  const normalId = base.parties[0].characters[2].id;
+  const statusOf = async (state: GameState, id: number) => await buildApiV1ReadData(`read/build/character/${id}/status`, state, {}, {
+    revision: 0, environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, inGameTime: now,
+  }) as { current: { uniqueSelection: unknown }; validOptions: { uniqueSelection: unknown[] } };
+  assert.equal(kemo.uniqueCharacterId, 'kemo');
+  assert.equal((await statusOf(base, normalId)).current.uniqueSelection, false);
+  assert.equal((await statusOf(base, normalId)).validOptions.uniqueSelection.includes('kemo'), false, 'assigned uniques are excluded');
+  assert.equal((await statusOf(base, normalId)).validOptions.uniqueSelection.includes('orca'), true);
+  assert.equal((await statusOf(base, kemo.id)).validOptions.uniqueSelection.includes('kemo'), true, 'its own unique stays listed');
+
+  fails(base, normalId, { uniqueSelection: 'kemo' }, 'illegal_action:unique_character_assigned');
+  fails(base, normalId, { uniqueSelection: 'nobody' }, 'invalid_request');
+  fails(base, normalId, { uniqueSelection: 'orca', name: 'other' }, 'unique_character_immutable');
+
+  const picked = change(base, normalId, { uniqueSelection: 'orca' }).state;
+  const orca = character(picked, normalId);
+  assert.deepEqual([orca.isUnique, orca.uniqueCharacterId, orca.raceId, orca.gender, orca.lineageId, orca.predispositionId],
+    [true, 'orca', 'orcinian', 'female', 'rowdy_orca_girl', 'none']);
+  assert.equal((await statusOf(picked, normalId)).current.uniqueSelection, 'orca');
+
+  const released = change(picked, kemo.id, { uniqueSelection: false }).state;
+  assert.deepEqual([character(released, kemo.id).isUnique, character(released, kemo.id).uniqueCharacterId], [false, undefined]);
+  assert.equal(character(change(released, normalId, { uniqueSelection: 'kemo' }).state, normalId).uniqueCharacterId, 'kemo');
+}

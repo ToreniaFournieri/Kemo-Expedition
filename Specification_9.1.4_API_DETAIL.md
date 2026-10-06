@@ -1383,6 +1383,13 @@ type DiaryEntry = {
 * Saved equipment set names (`saveEquipmentSet.equipmentSet.name`,
   `renameEquipmentSet.name`) are 1–80 characters, the Party pane's limit.
 * `changeBuild.parameters.name` is 1–20 characters (Spec 8.2.3).
+* `changeBuild.parameters.uniqueSelection` is `false` or a `uniqueCharacterId`. An unknown
+  value is `invalid_request`; one assigned to another character is
+  `illegal_action:unique_character_assigned`. Selecting a unique character sets its
+  name, gender, race, lineage and predisposition (Spec 2.1.4.2), so a conflicting
+  `name`, `racesAndGender`, `lineage` or `predisposition` in the same call is
+  `illegal_action:unique_character_immutable`. `false` releases the character,
+  which keeps its current attributes and becomes editable.
 * A rejected set or character name is `invalid_request` with `details.field` `name`
   and `details.rule` naming the violated rule as a schema error does: `type` (not a
   string), `minLength` (empty or whitespace only), or `maxLength` (too long).

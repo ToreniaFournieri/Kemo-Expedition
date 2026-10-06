@@ -26,7 +26,7 @@ import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentH
 import { apiExpeditionOutcome, apiExpeditionOutcomeOrNull } from './expeditionOutcome.ts';
 import { buildBattleLogData, buildBattleRoomData, buildRoomResources, retainedLogIdOf } from './battleLogs.ts';
 import { buildSimulationRunData, describeSimulationDepthReach } from './simulationView.ts';
-import { describeCharacterBuildCurrent } from './buildChange.ts';
+import { describeCharacterBuildCurrent, validUniqueSelections } from './buildChange.ts';
 import { EQUIPMENT_EVALUATION_LIMIT } from './requestLimits.ts';
 import { paginate } from './pagination.ts';
 import { getItemTier } from '../../game/pricing.ts';
@@ -937,8 +937,9 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       return {
         calculatedStatus: buildCalculatedStatus(party.characters[characterIndex], computePartyStats(party).characterStats[characterIndex], party.level),
         current: describeCharacterBuildCurrent(character),
-        editableFields: { name: character.isUnique !== true, unique: character.isUnique === true },
+        editableFields: { name: character.isUnique !== true },
         validOptions: {
+          uniqueSelection: validUniqueSelections(state, character),
           racesAndGender: character.isUnique ? ['none'] : [...normalRaceOptions, ...mimorianOptions],
           mainClassId: CLASSES.map((entry) => entry.id),
           subClassId: CLASSES.map((entry) => entry.id),

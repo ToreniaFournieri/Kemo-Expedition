@@ -321,7 +321,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       if (!simulation && confirmation !== 'no') {
         if (plan.requiresConfirmation && confirmation !== 'yes') throw new Error('invalid_request:confirmation_required');
         if (Object.keys(plan.updates).length > 0) {
-          reduce({ type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: plan.updates, validatedMimorianAssignments: true });
+          reduce({ type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: plan.updates, validatedMimorianAssignments: true, allowUniqueIdentityChange: true });
           applied = true;
         }
       }
@@ -330,7 +330,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       // `calculatedStatus` previews the requested build: a simulation runs the pure reducer on a discarded state, so it
       // shows the result a `yes` would commit, including any equipment the change would remove.
       const previewState = simulation && Object.keys(plan.updates).length > 0
-        ? gameReducer(next, { type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: plan.updates, validatedMimorianAssignments: true })
+        ? gameReducer(next, { type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: plan.updates, validatedMimorianAssignments: true, allowUniqueIdentityChange: true })
         : next;
       const previewParty = previewState.parties[partyIndex];
       const previewIndex = previewParty.characters.findIndex((entry) => entry.id === characterId);

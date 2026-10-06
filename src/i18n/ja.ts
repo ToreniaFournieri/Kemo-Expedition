@@ -2903,6 +2903,7 @@ const ja = {
   'home.party.magicalAccuracy': '魔法命中率',
   'home.party.castingSpell': '詠唱魔法',
   'home.party.elementalAttackHelpTitle': 'e. 属性攻撃(重複有効)',
+  'home.party.uniqueSelectLabel': '固有',
   'home.party.uniqueCharacterClassOnly': '固有キャラクター(クラスのみ編集可能)',
   'home.party.duplicateRaceGenderWarning': '同一PT内で同種族・同性(非固有)が既に存在します',
   'home.party.mainClass': 'メインクラス',

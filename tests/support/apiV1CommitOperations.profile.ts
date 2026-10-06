@@ -769,7 +769,7 @@ function diaryLog(id: string, isRead = false): DiaryLog {
 {
   const character = seed.parties[0].characters.find((entry) => entry.isUnique !== true)!;
   const renamed = applyApiV1Commit(`commit/build/character/${character.id}/changeBuild`, seed, { name: 'Renamed', simulation: false }, baseContext());
-  assert.deepEqual(Object.keys(renamed.data.current as object).sort(), ['lineage', 'mainClassId', 'name', 'predisposition', 'racesAndGender', 'subClassId', 'unique']);
+  assert.deepEqual(Object.keys(renamed.data.current as object).sort(), ['lineage', 'mainClassId', 'name', 'predisposition', 'racesAndGender', 'subClassId', 'uniqueSelection']);
   assert.equal((renamed.data.current as { name: string }).name, 'Renamed');
   const simulated = applyApiV1Commit(`commit/build/character/${character.id}/changeBuild`, seed, { name: 'Renamed', simulation: true }, baseContext());
   assert.equal((simulated.data.current as { name: string }).name, character.name, 'a simulation reports the unchanged build');

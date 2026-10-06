@@ -105,6 +105,7 @@ import {
   initializeBags,
 } from '../game/bags';
 import { getItemById } from '../data/items';
+import { getUniqueCharacterDef, getUniqueCharacterDefByLineage } from '../data/uniqueCharacters';
 import { hydrateGameState } from '../game/saveCodec';
 import type {
   AutoEquipmentHpStrategy,
@@ -631,9 +632,18 @@ function normalizeImportedCharacter(character: Character, fallbackCharacter: Cha
     ? (ENEMIES.some((enemy) => enemy.id === character.mimorianEnemyId) ? character.mimorianEnemyId : ENEMIES[0]?.id)
     : undefined;
 
-  return {
+  // SpecRef: 2.1.4.2 | Initial setup | Saves made before `uniqueCharacterId` derive it from the unique lineage.
+  const wasUnique = typeof character.isUnique === 'boolean' ? character.isUnique : (fallbackCharacter.isUnique ?? false);
+  const normalizedUniqueCharacterId = wasUnique
+    ? (getUniqueCharacterDef(character.uniqueCharacterId)?.id
+      ?? getUniqueCharacterDefByLineage(character.lineageId)?.id
+      ?? fallbackCharacter.uniqueCharacterId)
+    : undefined;
+
+  const normalized: Character = {
     ...character,
-    isUnique: typeof character.isUnique === 'boolean' ? character.isUnique : (fallbackCharacter.isUnique ?? false),
+    isUnique: normalizedUniqueCharacterId !== undefined,
+    uniqueCharacterId: normalizedUniqueCharacterId,
     raceId: normalizedRaceId,
     mimorianEnemyId: normalizedMimorianEnemyId,
     mainClassId: normalizedMainClassId,
@@ -648,6 +658,8 @@ function normalizeImportedCharacter(character: Character, fallbackCharacter: Cha
     }),
     autoEquipmentMode: normalizeCharacterAutoEquipmentMode(character.autoEquipmentMode),
   };
+  if (normalized.uniqueCharacterId === undefined) delete normalized.uniqueCharacterId;
+  return normalized;
 }
 
 function getDeityDonationsWithDefaults(value: unknown): Record<string, number> {
@@ -1352,6 +1364,7 @@ function createInitialParty(language?: Language) {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    ...((setup as { isUnique?: boolean }).isUnique ? { uniqueCharacterId: getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id } : {}),
     autoEquipmentMode: 2,
     equipment: setup.equipmentIds.map((itemId) => ({
       ...getItemById(itemId)!,
@@ -1416,6 +1429,7 @@ function createSecondParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    ...((setup as { isUnique?: boolean }).isUnique ? { uniqueCharacterId: getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id } : {}),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1476,6 +1490,7 @@ function createThirdParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    ...((setup as { isUnique?: boolean }).isUnique ? { uniqueCharacterId: getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id } : {}),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1536,6 +1551,7 @@ function createFourthParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    ...((setup as { isUnique?: boolean }).isUnique ? { uniqueCharacterId: getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id } : {}),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1596,6 +1612,7 @@ function createFifthParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    ...((setup as { isUnique?: boolean }).isUnique ? { uniqueCharacterId: getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id } : {}),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1657,6 +1674,7 @@ function createSixthParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    ...((setup as { isUnique?: boolean }).isUnique ? { uniqueCharacterId: getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id } : {}),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1869,7 +1887,7 @@ export type GameAction =
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
   | { type: 'STAMP_FULL_AUTO_EQUIPMENT'; partyIndex: number; equipmentRevision: number; jewelRevision: number }
   | { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS'; actions: AutoEquipmentProfileAction[]; attribution?: AutoEquipmentReducerAttribution; hpStrategy?: AutoEquipmentHpStrategy; stateStrategy?: AutoEquipmentStateStrategy }
-  | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number; validatedMimorianAssignments?: boolean }
+  | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number; validatedMimorianAssignments?: boolean; allowUniqueIdentityChange?: boolean }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number; partyIndex?: number }
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SELL_ALL_OWNED' }
@@ -3311,7 +3329,7 @@ function reduceGameState(
       const oldChar = currentParty.characters[charIndex];
       // SpecRef: 2.1.4.2 | Initial setup | Unique Character Flag.
       const immutableForUnique: ReadonlySet<keyof Character> = new Set(['name', 'raceId', 'lineageId', 'predispositionId']);
-      const sanitizedUpdates = oldChar.isUnique
+      const sanitizedUpdates = oldChar.isUnique && !action.allowUniqueIdentityChange
         ? Object.fromEntries(
           Object.entries(action.updates).filter(([key]) => !immutableForUnique.has(key as keyof Character))
         ) as Partial<Character>

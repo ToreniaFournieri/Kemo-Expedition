@@ -2902,6 +2902,7 @@ const en = {
   'home.party.magicalAccuracy': 'Magic Accuracy',
   'home.party.castingSpell': 'Casting spell',
   'home.party.elementalAttackHelpTitle': 'e. Elemental attack (stackable)',
+  'home.party.uniqueSelectLabel': 'Unique',
   'home.party.uniqueCharacterClassOnly': 'Unique character (class only editable)',
   'home.party.duplicateRaceGenderWarning': 'A non-unique character with the same race and gender already exists in this party.',
   'home.party.mainClass': 'Main class',
