@@ -591,22 +591,20 @@ Path Parameters
       numeric stats, abilities, bonuses, and attack profiles.
 
   * `current`:
-    * `unique`
     * `name`
+    * `uniqueSelection`
     * `racesAndGender`
     * `mainClassId`
     * `subClassId`
     * `lineage`
     * `predisposition`
 
-
   * `editableFields`:
     * `name`
       * Boolean. 
-    * `unique`
-      * Boolean.
-      * Unique character is not permit to change `name`, `race`, `gender`, `lineage`, and `predisposition`
   * `validOptions`:
+    * `uniqueSelection`
+      * Unique character is not permit to change `name`, `race`, `gender`, `lineage`, and `predisposition`
     * `racesAndGender`
       * Currently valid race and gender combinations.
       * Format:
@@ -1283,6 +1281,7 @@ Path Parameters
 
 * Parameters:
   * `name`
+  * `uniqueSelection`
   * `racesAndGender`
   * `mainClassId`
     * Example: `class.fighter`
