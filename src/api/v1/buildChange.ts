@@ -5,6 +5,7 @@ import { PREDISPOSITIONS } from '../../data/predispositions';
 import { computeCharacterStats, MAX_CHARACTER_NAME_LENGTH } from '../../game/characterComputation';
 import { canCharacterEquipCategory, getEquipmentAptitudeForCategory, type EquipmentAptitude } from '../../game/equipmentSets';
 import { getUniqueCharacterDef, UNIQUE_CHARACTERS, type UniqueCharacterId } from '../../data/uniqueCharacters';
+import { resolveReleasedUniqueBuild } from '../../game/uniqueRelease';
 import { translate } from '../../i18n';
 import type { Character, GameState, RaceId } from '../../types';
 
@@ -126,7 +127,11 @@ export function planCharacterBuildChange(state: GameState, characterId: number, 
   let identityFixed = false;
   if (changingSelection) {
     if (selection === false) {
-      Object.assign(requested, { isUnique: false, uniqueCharacterId: undefined });
+      // SpecRef: 8.2.3 | Changing a unique character to `false`: race falls back by table order when unique-only or blocked; lineage and predisposition reset; gender and classes are kept. Explicit parameters below override.
+      Object.assign(requested, {
+        isUnique: false, uniqueCharacterId: undefined,
+        ...resolveReleasedUniqueBuild(character, party.characters.filter((candidate) => candidate.id !== character.id)),
+      });
     } else {
       if (!validUniqueSelections(state, character).includes(selection)) illegal('unique_character_assigned');
       const def = getUniqueCharacterDef(selection)!;
@@ -178,9 +183,7 @@ export function planCharacterBuildChange(state: GameState, characterId: number, 
   const nextCharacter = { ...character, ...requested };
   const duplicateRaceAndGender = party.characters.some((candidate) => candidate.id !== character.id
     && candidate.isUnique !== true && candidate.raceId === nextCharacter.raceId && candidate.gender === nextCharacter.gender);
-  // Releasing a unique keeps its race and gender, which is not a duplicate-race selection.
-  const releasingOnly = selection === false && changingSelection && parameters.racesAndGender === undefined;
-  if (nextCharacter.isUnique !== true && !releasingOnly && duplicateRaceAndGender) illegal('duplicate_race_and_gender');
+  if (nextCharacter.isUnique !== true && duplicateRaceAndGender) illegal('duplicate_race_and_gender');
 
   const updates = Object.fromEntries(Object.entries(requested).filter(([key, value]) => value !== character[key as keyof Character])) as Partial<Character>;
   const effectiveCharacter = { ...character, ...updates };

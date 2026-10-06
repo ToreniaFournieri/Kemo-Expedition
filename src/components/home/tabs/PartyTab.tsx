@@ -9,6 +9,7 @@ import { getSuperRareBonuses } from '../../../data/items';
 import { LINEAGES } from '../../../data/lineages';
 import { PREDISPOSITIONS } from '../../../data/predispositions';
 import { RACES } from '../../../data/races';
+import { resolveReleasedUniqueBuild } from '../../../game/uniqueRelease';
 import { UNIQUE_CHARACTERS,type UniqueCharacterId } from '../../../data/uniqueCharacters';
 import { buildCombatTotals, buildPartyStatsView } from '../../../api/v1/statusView';
 import { readStatusFacts } from '../../../api/v1/calculatedStatus';
@@ -1305,7 +1306,10 @@ export default function PartyTab({
                     // Identity fields come from the unique table (Spec 2.1.4.2); drop pending identity edits first.
                     const { name: _name, gender: _gender, raceId: _raceId, mimorianEnemyId: _enemy, lineageId: _lineage, predispositionId: _predisposition, isUnique: _isUnique, uniqueCharacterId: _uniqueId, ...kept } = pendingEdits ?? {};
                     if (value === 'false') {
-                      setPendingEdits(char.isUnique ? { ...kept, isUnique: false } : kept);
+                      setPendingEdits(char.isUnique ? {
+                        ...kept, isUnique: false,
+                        ...resolveReleasedUniqueBuild(char, party.characters.filter((_member, memberIndex) => memberIndex !== selectedCharacter)),
+                      } : kept);
                       return;
                     }
                     const def = UNIQUE_CHARACTERS.find((entry) => entry.id === value)!;

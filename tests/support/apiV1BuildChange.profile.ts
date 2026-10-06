@@ -233,7 +233,17 @@ console.log('apiV1BuildChange profile ok');
     [true, 'orca', 'orcinian', 'female', 'rowdy_orca_girl', 'none']);
   assert.equal((await statusOf(picked, normalId)).current.uniqueSelection, 'orca');
 
-  const released = change(picked, kemo.id, { uniqueSelection: false }).state;
+  // The race change can drop slots or aptitudes, so the release needs the usual confirmation.
+  const released = change(picked, kemo.id, { uniqueSelection: false }, { simulation: false, confirmation: 'yes' }).state;
   assert.deepEqual([character(released, kemo.id).isUnique, character(released, kemo.id).uniqueCharacterId], [false, undefined]);
+  // SpecRef: 8.2.3 | Changing a unique character to `false`: unique-only race falls back by table order, lineage/predisposition reset, gender/classes kept.
+  {
+    const before = character(picked, kemo.id);
+    const after = character(released, kemo.id);
+    const blockers = base.parties[0].characters.filter((member) => member.id !== kemo.id && member.isUnique !== true && member.gender === before.gender).map((member) => member.raceId);
+    const expectedRace = ['lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian', 'leporian', 'cervin', 'murid'].find((race) => !blockers.includes(race as never));
+    assert.deepEqual([after.raceId, after.lineageId, after.predispositionId], [expectedRace, 'sandstorm', 'aggressive']);
+    assert.deepEqual([after.gender, after.mainClassId, after.subClassId], [before.gender, before.mainClassId, before.subClassId]);
+  }
   assert.equal(character(change(released, normalId, { uniqueSelection: 'kemo' }).state, normalId).uniqueCharacterId, 'kemo');
 }
