@@ -68,6 +68,7 @@
 | Avian | アヴィアン | 雑食 | 🐓bird | N | - | - | - | - | - | - |
 
 **classes:**
+- `Main Class` and `Sub Class`
 
 | key | Japanese | short name | main/sub bonuses | main bonus | master bonus |
 |-----|----------|------------|------------------|------------|--------------|
@@ -85,6 +86,7 @@
 | class.lord | 君主 | 君 | `c.shield_x1.4`, `c.equip_slot+2` | `a.command`1, `a.squander`1 | `a.command`2, `a.squander`1, `c.shield_x1.2` |
 
 **lineage(系譜):**
+- `Lineage`
 
 -Selectable:
   - `true`: Available for player selection during character creation or edit.
@@ -120,6 +122,8 @@
 
 
 **predisposition(性格):**
+- `Predisposition`
+
 -Selectable:
   - `true`: Available for player selection during character creation or edit.
   - `false`: Not available for manual selection (e.g., reserved for unique characters, events, or system assignment).
@@ -425,7 +429,7 @@ Party.`d.HP` =
 
 - Unique character
 
-| `uniqueCharacterId` | i18n key | Gender | Race | lineage | Predisposition | Ref: Japanese name | Available At |
+| `uniqueCharacterId` | i18n key | Gender | Race | Lineage | Predisposition | Ref: Japanese name | Available At |
 |----|----|-----|----|----|----|----|----|
 | `kemo` | `character.default.n1` | Male | Kemoria | `unascertained` | `none` | ケモ | Initial |
 | `laika` | `character.default.n2` | Female | Caninian | `pioneer` | `none` | ライカ | Initial |
@@ -444,7 +448,7 @@ Party.`d.HP` =
 - **PT1** Party initial condition.
   - deity: `Goddess of Restoration`
 
-| `characterId` | Name | Gender | Race | main class | sub class | lineage | predisposition | Initial equipment | Unique |
+| `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Initial equipment | Unique |
 |------|------|------|------|------|------|------|------|------|------|
 | 1 | **`kemo`** | Male | **Kemoria** | `class.guardian` | `class.samurai` | **`unascertained`** | `none` | 1101, 1102, 1104, 1105, 1106, 1211 | **`true`** |
 | 2 | クズノハ | Female | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `aggressive` | `1104`, `1106` | `false` |
@@ -456,7 +460,7 @@ Party.`d.HP` =
 - **PT2** initial condition (when unlocked)
   - deity: `God of Cunning`
 
-| `characterId` | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+| `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
 | 101 | **`leonard`** | Male | Vulpinian | `class.duelist`| `class.lord` | **`meddlesome_fox`** | `none` | **`true`** |
 | 102 | **`orca`** | Female | **Orcinian** | `class.samurai` | `class.sword-saint` | **`rowdy_orca_girl`** | `none` | **`true`** |
@@ -468,7 +472,7 @@ Party.`d.HP` =
 - **PT3** initial condition (when unlocked)
   - deity: `Goddess of Fertility`
 
-| `characterId` | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+| `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
 | 201 | ハムザ | Male | Ursan | `class.guardian` | `class.ranger` | `firmament` | `evasive` | `false` |
 | 202 | ユースフ | Male | Caninian | `class.lord` | `class.ninja` | `firmament` | `precise` | `false` |
@@ -480,7 +484,7 @@ Party.`d.HP` =
 - **PT4** initial condition (when unlocked)
   - deity:  `God of Fortification`
 
-| `characterId` | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+| `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
 | 301 | **`mishka`** | Male | Ursan | `class.lord` | `class.duelist` | **`apostate`** | `none` | **`true`** |
 | 302 | **`ptitsa`** | Male | **Avian** | `class.ninja` | `class.sword-saint` | **`flamebound_grove`** | `none` | **`true`** |
@@ -492,7 +496,7 @@ Party.`d.HP` =
 - **PT5** initial condition (when unlocked)
   - deity: `God of Resonance`
 
-| `characterId` | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+| `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
 | 401 | **`hagakure`** | Male | Procyonian | `class.samurai` | `class.guardian` | **`hidden_grail`** | `none` | **`true`** |
 | 402 | **`sougaha`** | Male | Lupinian | `class.sword-saint` | `class.samurai` | **`almighty`** | `none` | **`true`** |
@@ -504,7 +508,7 @@ Party.`d.HP` =
 - **PT6** initial condition (when unlocked)
   - deity: Goddess of Precision
 
-| `characterId` | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+| `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
 | 501 | マーカス | Male | Ursan | `class.pilgrim` | `class.samurai` | `fragment` | `stubborn` | `false` |
 | 502 | ランスロット | Male | Caninian | `class.samurai` | `class.sword-saint` | `abyssal_sea` | `resourceful` | `false` |

@@ -235,13 +235,17 @@ Left-aligned
 
 - Unique selection: "固有"
   - Pull-down list: `false` and available `uniqueCharacterId` values.
-    - Example: `false`, `kemo`, `laika`, etc..
+    - Example: `false`, `kemo`, `laika`, etc.
     - Japanese UI example: （なし）, ケモ, ライカ, etc.
   - If a unique character such as `kemo` is changed to `false`, convert the character to a non-unique character.
     - Preserve the current race if it is valid for a non-unique character.
-    - If the current race is unique-only, such as Orcinian or Avian, change it to an available selectable race.
-    - If the preferred non-unique race is unavailable, assign another available race.
-  - A unique character already assigned to another `characterId` is excluded from the list.
+    - If the current race is unique-only, such as Kemoria, Orcinian, or Avian, change it to an available selectable race according to the race-table priority order.
+      - Example priority: Lupinian > Vulpinian > Felidian.
+    - `Gender`, `Main Class`, and `Sub Class` are preserved unchanged.
+      - Exception: when switching from `false` to a unique character, the unique character's fixed gender takes precedence.
+      - Example: switching a `Male` non-unique character to `luna` changes the gender to `Female`.
+    - `Lineage` and `Predisposition` are reset according to the priority order defined in the Lineage table and Predisposition table, respectively. 
+    - A unique character already assigned to another `characterId` is excluded from the list.
 
 
 - Race selection: "**種族**:icon.race ケイナイアン |体10,力10,知10,精10 | 盾x1.3, 手x1.2, 弓x1.1, 成長x1.1""
