@@ -1,3 +1,4 @@
+import type { UniqueCharacterId } from '../data/uniqueCharacters';
 import { renderDiaryBattle, renderDiaryMetadata, renderExpeditionMetadata } from '../game/compactDiary.ts';
 import { formatDiaryUnreadBadge } from '../game/diary';
 import { gameReducer, simulateExpeditionRuns } from '../hooks/useGameState';
@@ -5639,6 +5640,10 @@ export function GameRuntimeHost({
           setSelectedCharacter={setSelectedCharacter}
           editingCharacter={editingCharacter}
           setEditingCharacter={setEditingCharacter}
+          uniqueAssignments={Object.fromEntries(state.parties.flatMap((party) => party.characters)
+            .filter((character) => character.uniqueCharacterId !== undefined)
+            .map((character) => [character.id, character.uniqueCharacterId as UniqueCharacterId]))}
+          onSetUniqueCharacter={(characterId, uniqueCharacterId) => actions.setUniqueCharacter(characterId, uniqueCharacterId, state.selectedPartyIndex)}
           onChangeCharacterBuild={async (characterId, edits, request): Promise<CharacterBuildOutcome> => {
             const failed: CharacterBuildOutcome = { status: 'error', confirmationRequired: false, warnings: [], applied: false };
             const target = currentParty.characters.find((character) => character.id === characterId);

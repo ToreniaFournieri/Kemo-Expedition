@@ -9,6 +9,7 @@ import { getSuperRareBonuses } from '../../../data/items';
 import { LINEAGES } from '../../../data/lineages';
 import { PREDISPOSITIONS } from '../../../data/predispositions';
 import { RACES } from '../../../data/races';
+import { UNIQUE_CHARACTERS,type UniqueCharacterId } from '../../../data/uniqueCharacters';
 import { buildCombatTotals, buildPartyStatsView } from '../../../api/v1/statusView';
 import { readStatusFacts } from '../../../api/v1/calculatedStatus';
 import type { InProcessApiAdapter } from '../../../api/v1/applicationApi';
@@ -95,6 +96,8 @@ export default function PartyTab({
   editingCharacter,
   setEditingCharacter,
   onChangeCharacterBuild,
+  onSetUniqueCharacter,
+  uniqueAssignments,
   onReorderPartyCharacter,
   onEquipItem,
   onToggleEquipmentLock,
@@ -136,6 +139,9 @@ export default function PartyTab({
   editingCharacter: number | null;
   setEditingCharacter: Dispatch<SetStateAction<number | null>>;
   onChangeCharacterBuild: (characterId: number, edits: Partial<Character>, request: CharacterBuildRequest) => Promise<CharacterBuildOutcome>;
+  onSetUniqueCharacter: (characterId: number, uniqueCharacterId: UniqueCharacterId | false) => void;
+  /** characterId -> uniqueCharacterId for every assigned unique character in all parties. */
+  uniqueAssignments: Readonly<Record<number, UniqueCharacterId>>;
   onReorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
   onToggleEquipmentLock: (characterId: number, slotIndex: number) => void;
@@ -1289,6 +1295,25 @@ export default function PartyTab({
         <div className="flex justify-between items-start mb-2 gap-2">
           {editingCharacter === selectedCharacter ? (
             <div className="flex-1 min-w-0 space-y-1">
+              {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique selection: "固有" */}
+              <label className="flex items-center gap-2 text-xs text-gray-600">
+                <span>{t('home.party.uniqueSelectLabel')}</span>
+                <select
+                  value={uniqueAssignments[char.id] ?? 'false'}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // A unique pick rewrites name/race/gender/lineage, so unsaved edits are discarded.
+                    setPendingEdits(null);
+                    onSetUniqueCharacter(char.id, value === 'false' ? false : value as UniqueCharacterId);
+                  }}
+                  className="border rounded bg-transparent px-1 py-0.5"
+                >
+                  <option value="false">false</option>
+                  {UNIQUE_CHARACTERS
+                    .filter((entry) => !Object.entries(uniqueAssignments).some(([ownerId, assignedId]) => Number(ownerId) !== char.id && assignedId === entry.id))
+                    .map((entry) => <option key={entry.id} value={entry.id}>{entry.id}</option>)}
+                </select>
+              </label>
               {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique Character Flag. */}
               {char.isUnique && (
                 <div className="text-[11px] text-gray-500">

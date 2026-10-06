@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.10.1 | 5 | 2026/10/06 | Character Edit Mode gains the "固有" pull-down (Spec 8.2.3): `false` or any `uniqueCharacterId` not assigned to another character; picking one applies that unique character's name, gender, race, lineage and predisposition (Spec 2.1.4.2 table). Characters now carry `uniqueCharacterId` (older saves derive it from the unique lineage). |
 | 0.10.1 | 4 | 2026/10/06 | Fix `changeBuild` failing with HTTP 400 (`reading 'category'`) when a character has an empty equipment slot between equipped ones; `illegal_action:deity_in_use` now names the holder in `details.heldByParty`; `package.json` version aligned to 0.10.1. |
 | 0.10.1 | 3 | 2026/10/06 | Align runtime expedition enemy levels with Spec 4.1.1: Expedition 8 (Cervin Vale) 40 → 39, Expedition 9 (Darsen Field - Reminiscence) 44 → 43. |
 | 0.10.1 | 2 | 2026/10/04 | Fix the enemy bestiary `神` (Gods) tab: its internal id (9) collided with Expedition 9 (Darsen Field), so the Gods tab and expedition 9 shared one selection and showed the wrong list. Gods now use a non-colliding id (98) and Expedition 9 gets its own tab (`憶`). |

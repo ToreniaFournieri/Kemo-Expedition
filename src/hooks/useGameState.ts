@@ -105,6 +105,7 @@ import {
   initializeBags,
 } from '../game/bags';
 import { getItemById } from '../data/items';
+import { getUniqueCharacterDef, getUniqueCharacterDefByLineage, type UniqueCharacterId } from '../data/uniqueCharacters';
 import { hydrateGameState } from '../game/saveCodec';
 import type {
   AutoEquipmentHpStrategy,
@@ -631,9 +632,18 @@ function normalizeImportedCharacter(character: Character, fallbackCharacter: Cha
     ? (ENEMIES.some((enemy) => enemy.id === character.mimorianEnemyId) ? character.mimorianEnemyId : ENEMIES[0]?.id)
     : undefined;
 
+  // SpecRef: 2.1.4.2 | Initial setup | Saves made before `uniqueCharacterId` derive it from the unique lineage.
+  const wasUnique = typeof character.isUnique === 'boolean' ? character.isUnique : (fallbackCharacter.isUnique ?? false);
+  const normalizedUniqueCharacterId = wasUnique
+    ? (getUniqueCharacterDef(character.uniqueCharacterId)?.id
+      ?? getUniqueCharacterDefByLineage(character.lineageId)?.id
+      ?? fallbackCharacter.uniqueCharacterId)
+    : undefined;
+
   return {
     ...character,
-    isUnique: typeof character.isUnique === 'boolean' ? character.isUnique : (fallbackCharacter.isUnique ?? false),
+    isUnique: normalizedUniqueCharacterId !== undefined,
+    uniqueCharacterId: normalizedUniqueCharacterId,
     raceId: normalizedRaceId,
     mimorianEnemyId: normalizedMimorianEnemyId,
     mainClassId: normalizedMainClassId,
@@ -1352,6 +1362,7 @@ function createInitialParty(language?: Language) {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    uniqueCharacterId: (setup as { isUnique?: boolean }).isUnique ? getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id : undefined,
     autoEquipmentMode: 2,
     equipment: setup.equipmentIds.map((itemId) => ({
       ...getItemById(itemId)!,
@@ -1416,6 +1427,7 @@ function createSecondParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    uniqueCharacterId: (setup as { isUnique?: boolean }).isUnique ? getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id : undefined,
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1476,6 +1488,7 @@ function createThirdParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    uniqueCharacterId: (setup as { isUnique?: boolean }).isUnique ? getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id : undefined,
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1536,6 +1549,7 @@ function createFourthParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    uniqueCharacterId: (setup as { isUnique?: boolean }).isUnique ? getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id : undefined,
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1596,6 +1610,7 @@ function createFifthParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    uniqueCharacterId: (setup as { isUnique?: boolean }).isUnique ? getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id : undefined,
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1657,6 +1672,7 @@ function createSixthParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    uniqueCharacterId: (setup as { isUnique?: boolean }).isUnique ? getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id : undefined,
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1869,7 +1885,8 @@ export type GameAction =
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
   | { type: 'STAMP_FULL_AUTO_EQUIPMENT'; partyIndex: number; equipmentRevision: number; jewelRevision: number }
   | { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS'; actions: AutoEquipmentProfileAction[]; attribution?: AutoEquipmentReducerAttribution; hpStrategy?: AutoEquipmentHpStrategy; stateStrategy?: AutoEquipmentStateStrategy }
-  | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number; validatedMimorianAssignments?: boolean }
+  | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number; validatedMimorianAssignments?: boolean; allowUniqueIdentityChange?: boolean }
+  | { type: 'SET_UNIQUE_CHARACTER'; characterId: number; uniqueCharacterId: UniqueCharacterId | false; partyIndex?: number }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number; partyIndex?: number }
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SELL_ALL_OWNED' }
@@ -3311,7 +3328,7 @@ function reduceGameState(
       const oldChar = currentParty.characters[charIndex];
       // SpecRef: 2.1.4.2 | Initial setup | Unique Character Flag.
       const immutableForUnique: ReadonlySet<keyof Character> = new Set(['name', 'raceId', 'lineageId', 'predispositionId']);
-      const sanitizedUpdates = oldChar.isUnique
+      const sanitizedUpdates = oldChar.isUnique && !action.allowUniqueIdentityChange
         ? Object.fromEntries(
           Object.entries(action.updates).filter(([key]) => !immutableForUnique.has(key as keyof Character))
         ) as Partial<Character>
@@ -3411,6 +3428,34 @@ function reduceGameState(
         parties: updatedParties,
         global: { ...state.global, gold: newGold, inventory: newInventory, jewels: newJewels },
       };
+    }
+
+    case 'SET_UNIQUE_CHARACTER': {
+      // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Unique selection: "固有"
+      const targetPartyIndex = action.partyIndex ?? state.selectedPartyIndex;
+      const target = state.parties[targetPartyIndex]?.characters.find((c) => c.id === action.characterId);
+      if (!target) return state;
+      if (action.uniqueCharacterId === false) {
+        if (!target.isUnique) return state;
+        return gameReducer(state, {
+          type: 'UPDATE_CHARACTER', characterId: target.id, partyIndex: targetPartyIndex,
+          updates: { isUnique: false, uniqueCharacterId: undefined }, allowUniqueIdentityChange: true,
+        });
+      }
+      const def = getUniqueCharacterDef(action.uniqueCharacterId);
+      if (!def || target.uniqueCharacterId === def.id) return state;
+      // A unique character already assigned to another characterId cannot be selected.
+      const assignedElsewhere = state.parties.some((party) => party.characters.some((c) =>
+        c.id !== target.id && c.uniqueCharacterId === def.id));
+      if (assignedElsewhere) return state;
+      return gameReducer(state, {
+        type: 'UPDATE_CHARACTER', characterId: target.id, partyIndex: targetPartyIndex,
+        updates: {
+          isUnique: true, uniqueCharacterId: def.id, name: characterName(def.nameKey), gender: def.gender,
+          raceId: def.raceId, mimorianEnemyId: undefined, lineageId: def.lineageId, predispositionId: 'none',
+        },
+        allowUniqueIdentityChange: true,
+      });
     }
 
     case 'REORDER_PARTY_CHARACTER': {
@@ -5228,6 +5273,10 @@ export function useGameState() {
 
     resetCommonBags: useCallback((partyIndex?: number) => {
       dispatch({ type: 'RESET_COMMON_BAGS', partyIndex });
+    }, []),
+
+    setUniqueCharacter: useCallback((characterId: number, uniqueCharacterId: UniqueCharacterId | false, partyIndex?: number) => {
+      dispatch({ type: 'SET_UNIQUE_CHARACTER', characterId, uniqueCharacterId, partyIndex });
     }, []),
 
     resetUniqueBags: useCallback((partyIndex?: number) => {

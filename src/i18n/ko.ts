@@ -2899,6 +2899,7 @@ const ko = {
   'home.party.magicalAccuracy': '마법 명중률',
   'home.party.castingSpell': '시전 마법',
   'home.party.elementalAttackHelpTitle': 'e. 속성 공격 (중복 적용)',
+  'home.party.uniqueSelectLabel': '고유',
   'home.party.uniqueCharacterClassOnly': '고유 캐릭터 (클래스만 편집 가능)',
   'home.party.duplicateRaceGenderWarning': '같은 PT 내에 동일 종족·동일 성별의 비고유 캐릭터가 이미 존재합니다',
   'home.party.mainClass': '메인 클래스',
