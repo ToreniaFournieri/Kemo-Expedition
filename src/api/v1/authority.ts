@@ -229,7 +229,12 @@ function classifyCommitError(error: unknown): ApiV1AuthorityError {
   // The bare thrown message (`illegal_action:charge_insufficient`), not the stringified `Error: …` wrapper.
   const reason = error instanceof Error ? error.message : String(error);
   if (reason.includes('not_found')) return { code: 'not_found', message: 'The requested resource was not found.', details: { reason } };
-  if (reason.includes('illegal_action')) return { code: 'illegal_action', message: 'The action is unavailable.', details: { reason } };
+  if (reason.includes('illegal_action')) {
+    // A refusal may name the party or item that blocks it (`deity_in_use` → `heldByParty`) beside the reason token.
+    const attached = error instanceof Error ? (error as Error & { details?: unknown }).details : undefined;
+    const extra = typeof attached === 'object' && attached !== null ? attached : {};
+    return { code: 'illegal_action', message: 'The action is unavailable.', details: { reason, ...extra } };
+  }
   const details = describeInvalidRequest(error);
   return { code: 'invalid_request', message: invalidRequestMessage(details, 'The commit could not be applied.'), details: { ...details } };
 }

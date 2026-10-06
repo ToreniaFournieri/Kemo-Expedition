@@ -272,9 +272,9 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       const normalized = normalizeDeityName(deityName);
       const current = normalizeDeityName(next.parties[partyIndex].deity.name);
       const unlocked = next.global.unlockedDeities.map(normalizeDeityName).includes(normalized);
-      const usedElsewhere = !isNoFaithDeity(normalized) && next.parties.some((party, index) => index !== partyIndex && normalizeDeityName(party.deity.name) === normalized);
+      const holder = isNoFaithDeity(normalized) ? undefined : next.parties.find((party, index) => index !== partyIndex && normalizeDeityName(party.deity.name) === normalized);
       if (!isNoFaithDeity(normalized) && normalized !== current && !unlocked) throw new Error('illegal_action:deity_locked');
-      if (usedElsewhere) throw new Error('illegal_action:deity_in_use');
+      if (holder) throw Object.assign(new Error('illegal_action:deity_in_use'), { details: { heldByParty: holder.id } });
       reduce({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
     }
     if (Array.isArray(parameters.order)) {
