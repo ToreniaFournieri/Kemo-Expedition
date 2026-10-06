@@ -236,6 +236,11 @@ Left-aligned
 - Unique selection: "固有"
   - Pull-down list: `false` and available `uniqueCharacterId` values.
     - Example: `false`, `kemo`, `laika`, etc..
+    - Japanese UI example: （なし）, ケモ, ライカ, etc.
+  - If a unique character such as `kemo` is changed to `false`, convert the character to a non-unique character.
+    - Preserve the current race if it is valid for a non-unique character.
+    - If the current race is unique-only, such as Orcinian or Avian, change it to an available selectable race.
+    - If the preferred non-unique race is unavailable, assign another available race.
   - A unique character already assigned to another `characterId` is excluded from the list.
 
 

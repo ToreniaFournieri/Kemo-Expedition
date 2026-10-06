@@ -425,20 +425,20 @@ Party.`d.HP` =
 
 - Unique character
 
-| `uniqueCharacterId` | i18n key | Gender | Race | lineage | predisposition | ref: Japanese name |
-|----|----|-----|----|----|----|----|
-| `kemo` | `character.default.n1` | Male | Kemoria | `unascertained` | `none` | ケモ |
-| `laika` | `character.default.n2` | Female | Caninian | `pioneer` | `none` | ライカ |
-| `leonard` | `character.default.n3` | Male | Vulpinian | `meddlesome_fox` | `none` | レナード |
-| `orca` | `character.default.n4` | Female | Orcinian | `rowdy_orca_girl` | `none` | オルカ |
-| `nox` | `character.default.n5` | Male | Murid | `phantom_thief` | `none` | ノクス |
-| `luna` | `character.default.n6` | Female | Felidian | `crescent_jade` | `none` | ルナ |
-| `mishka` | `character.default.n7` | Male | Ursan | `apostate` | `none` | ミシュカ |
-| `ptitsa` | `character.default.n8` | Male | Avian | `flamebound_grove` | `none` | プチーツァ |
-| `hagakure` | `character.default.n9` | Male | Procyonian | `hidden_grail` | `none` | 葉隠 |
-| `sougaha` | `character.default.n10` | Male | Lupinian | `almighty` | `none` | 蒼牙破 |
-| `finn` | `character.default.n11` | Male | Leporian | `unexpected_prince(ss)` | `none` | フィン |
-| `merle` | `character.default.n12` | Female | Cervin | `incarnation` | `none` | マーレ |
+| `uniqueCharacterId` | i18n key | Gender | Race | lineage | Predisposition | Ref: Japanese name | Available At |
+|----|----|-----|----|----|----|----|----|
+| `kemo` | `character.default.n1` | Male | Kemoria | `unascertained` | `none` | ケモ | Initial |
+| `laika` | `character.default.n2` | Female | Caninian | `pioneer` | `none` | ライカ | Initial |
+| `leonard` | `character.default.n3` | Male | Vulpinian | `meddlesome_fox` | `none` | レナード | PT2 unlocked |
+| `orca` | `character.default.n4` | Female | Orcinian | `rowdy_orca_girl` | `none` | オルカ | PT2 unlocked |
+| `nox` | `character.default.n5` | Male | Murid | `phantom_thief` | `none` | ノクス | PT3 unlocked |
+| `luna` | `character.default.n6` | Female | Felidian | `crescent_jade` | `none` | ルナ | PT3 unlocked |
+| `mishka` | `character.default.n7` | Male | Ursan | `apostate` | `none` | ミシュカ | PT4 unlocked |
+| `ptitsa` | `character.default.n8` | Male | Avian | `flamebound_grove` | `none` | プチーツァ | PT4 unlocked |
+| `hagakure` | `character.default.n9` | Male | Procyonian | `hidden_grail` | `none` | 葉隠 | PT5 unlocked |
+| `sougaha` | `character.default.n10` | Male | Lupinian | `almighty` | `none` | 蒼牙破 | PT5 unlocked |
+| `finn` | `character.default.n11` | Male | Leporian | `unexpected_prince(ss)` | `none` | フィン | PT6 unlocked |
+| `merle` | `character.default.n12` | Female | Cervin | `incarnation` | `none` | マーレ | PT6 unlocked |
 
 
 - **PT1** Party initial condition.
