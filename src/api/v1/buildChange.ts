@@ -145,10 +145,10 @@ export function planCharacterBuildChange(state: GameState, characterId: number, 
   const nextMaximum = computeCharacterStats(effectiveCharacter, party.level).maxEquipSlots;
   const equipmentSlotsRemoved = Math.max(0, oldMaximum - nextMaximum);
   const reducedSlotContainsEquipment = equipmentSlotsRemoved > 0
-    && character.equipment.slice(nextMaximum, oldMaximum).some((item) => item !== null);
+    && character.equipment.slice(nextMaximum, oldMaximum).some((item) => item != null);
   const lostAptitudeItems: Record<EquipmentAptitude, number> = { melee: 0, ranged: 0, magic: 0 };
   for (const item of character.equipment) {
-    if (item === null || !canCharacterEquipCategory(character, item.category) || canCharacterEquipCategory(effectiveCharacter, item.category)) continue;
+    if (item == null || !canCharacterEquipCategory(character, item.category) || canCharacterEquipCategory(effectiveCharacter, item.category)) continue;
     const aptitude = getEquipmentAptitudeForCategory(item.category);
     if (aptitude) lostAptitudeItems[aptitude] += 1;
   }
