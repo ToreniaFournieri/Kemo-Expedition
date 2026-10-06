@@ -233,6 +233,11 @@ Left-aligned
       - If `gender` is missing, assign randomly:
       - `♂` or `♀`
 
+- Unique selection: "固有"
+  - Pull down list: `false`, Finn, Merle etc..
+  - A unique character already assigned to another character slot is excluded from the list.
+
+
 - Race selection: "**種族**:icon.race ケイナイアン |体10,力10,知10,精10 | 盾x1.3, 手x1.2, 弓x1.1, 成長x1.1""
   - Display the selected race summary as a single-line header above the selector buttons.
   - If another member in the same party already has the same race, same gender, and `unique_character == false`, that race option cannot be selected for the current member. (not display race icon image if cannot be selected, just bottun)
