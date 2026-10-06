@@ -234,8 +234,9 @@ Left-aligned
       - `♂` or `♀`
 
 - Unique selection: "固有"
-  - Pull down list: `false`, Finn, Merle etc..
-  - A unique character already assigned to another character slot is excluded from the list.
+  - Pull-down list: `false` and available `uniqueCharacterId` values.
+    - Example: `false`, `kemo`, `laika`, etc..
+  - A unique character already assigned to another `characterId` is excluded from the list.
 
 
 - Race selection: "**種族**:icon.race ケイナイアン |体10,力10,知10,精10 | 盾x1.3, 手x1.2, 弓x1.1, 成長x1.1""
