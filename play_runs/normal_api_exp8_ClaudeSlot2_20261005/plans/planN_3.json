@@ -1,0 +1,1 @@
+{"score":-17.885250799718136,"scen":"base","calls":[{"path":"/commit/build/character/2/removeEquipment","params":{"targetEquipment":[6]}},{"path":"/commit/build/character/2/equip","params":{"targetEquipment":["0/4306/0/0"]}},{"path":"/commit/build/character/6/jewelAttach","params":{"targetEquipment":1,"jewelToSet":"ward:1"}}],"jfree0":{"ward:1":1}}

@@ -33,3 +33,11 @@ Built during the 2026/10/03 D8-boss run (`AI_play_report/v0.9.8(11)_Claude_Norma
 * `hpopt.mjs save out "1,6" [start] [wdef]` – greedy party-HP (+defense) gear for supports.
 * `lever.mjs save d f N "label|DEITY|RACE" ...` – cheap-lever sweep (deity/race/class, `PLAN=` to apply a plan first).
 * `racetest.mjs`, `roomtab.mjs` (per-room table of a gate stage), `bosslog.mjs`, `pstats.mjs`, `give.mjs`, `armor.mjs`, `tankfill.mjs`.
+
+## Additions (2026/10/06 ClaudeSlot2 run, `AI_play_report/v0.10.1(3)_ClaudeSlot2_Normal_API_Exp8Boss_20261006.md`)
+* `twin/dmgplan.mjs save d N plan` – boss-only damage fraction / kills / reach for a call plan (honours `SIDE=1`, `RACE`, `DEITY`). Use it to judge `proxyopt`/`hpopt` plans in seconds.
+* `twin/dmgspec.mjs save d N "label|RACESPEC|ORDER|DEITY" ...` – same metric for race, order or deity levers (race spec order is `cid:race:main:sub:lineage:pred`).
+* `twin/roomfight.mjs save plan d N` with `FL=<floor> RM=<room>` – per-attack damage log of one non-boss room (elite blockers).
+* `client/auto.py <dungeon> <steps> <seconds>` – step + observe loop, stops when every PT1 gate is `godGate` or the list is empty (then verify with an export).
+* `client/runplan2.py plan.json <startIndex>` – tolerant plan runner (continues after a failed call, prints which one failed).
+* Biggest lesson: run `proxyopt.mjs save out "5" ...` (caster) and `"4,2,3,5"` (attackers) plus `hpopt.mjs` before any GA; the GA missed a starved caster at D7.
