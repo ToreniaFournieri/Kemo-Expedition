@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.10.1 | 6 | 2026/10/07 | `changeBuild` / `character/{characterId}/status` gain `uniqueSelection` (Spec 9.1.3): the Party "固有" pull-down now commits through `changeBuild` (`false` or an unassigned `uniqueCharacterId`; `illegal_action:unique_character_assigned` / `unique_character_immutable`), `current.unique` and `editableFields.unique` are replaced by `current.uniqueSelection` and `validOptions.uniqueSelection`. Equipment-loss confirmation applies to unique changes. |
 | 0.10.1 | 5 | 2026/10/06 | Character Edit Mode gains the "固有" pull-down (Spec 8.2.3): `false` or any `uniqueCharacterId` not assigned to another character; picking one applies that unique character's name, gender, race, lineage and predisposition (Spec 2.1.4.2 table). Characters now carry `uniqueCharacterId` (older saves derive it from the unique lineage). |
 | 0.10.1 | 4 | 2026/10/06 | Fix `changeBuild` failing with HTTP 400 (`reading 'category'`) when a character has an empty equipment slot between equipped ones; `illegal_action:deity_in_use` now names the holder in `details.heldByParty`; `package.json` version aligned to 0.10.1. |
 | 0.10.1 | 3 | 2026/10/06 | Align runtime expedition enemy levels with Spec 4.1.1: Expedition 8 (Cervin Vale) 40 → 39, Expedition 9 (Darsen Field - Reminiscence) 44 → 43. |

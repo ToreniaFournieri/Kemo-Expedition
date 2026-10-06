@@ -96,7 +96,6 @@ export default function PartyTab({
   editingCharacter,
   setEditingCharacter,
   onChangeCharacterBuild,
-  onSetUniqueCharacter,
   uniqueAssignments,
   onReorderPartyCharacter,
   onEquipItem,
@@ -139,7 +138,6 @@ export default function PartyTab({
   editingCharacter: number | null;
   setEditingCharacter: Dispatch<SetStateAction<number | null>>;
   onChangeCharacterBuild: (characterId: number, edits: Partial<Character>, request: CharacterBuildRequest) => Promise<CharacterBuildOutcome>;
-  onSetUniqueCharacter: (characterId: number, uniqueCharacterId: UniqueCharacterId | false) => void;
   /** characterId -> uniqueCharacterId for every assigned unique character in all parties. */
   uniqueAssignments: Readonly<Record<number, UniqueCharacterId>>;
   onReorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
@@ -542,7 +540,7 @@ export default function PartyTab({
   };
 
   const handleRaceChange = (raceId: Character['raceId']) => {
-    if (char.isUnique) return;
+    if (editingUnique) return;
     const assignedMimorianEnemyIds = new Set(
       parties
         .flatMap((currentParty) => currentParty.characters)
@@ -573,6 +571,8 @@ export default function PartyTab({
   }, [party.deity.name, editingDeity]);
 
   const char = selectedChar;
+  // A pending "固有" selection (or release) decides which identity fields are locked before it is saved.
+  const editingUnique = pendingEdits?.isUnique ?? char.isUnique ?? false;
   const hpDisplayMultiplier = ((stats.baseStats.vitality + stats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(char);
   const race = RACES.find(r => r.id === char.raceId) ?? RACES[0];
   const mainClass = CLASSES.find(c => c.id === char.mainClassId) ?? CLASSES[0];
@@ -1299,12 +1299,20 @@ export default function PartyTab({
               <label className="flex items-center gap-2 text-xs text-gray-600">
                 <span>{t('home.party.uniqueSelectLabel')}</span>
                 <select
-                  value={uniqueAssignments[char.id] ?? 'false'}
+                  value={pendingEdits?.isUnique === false ? 'false' : (pendingEdits?.uniqueCharacterId ?? char.uniqueCharacterId ?? 'false')}
                   onChange={(e) => {
                     const value = e.target.value;
-                    // A unique pick rewrites name/race/gender/lineage, so unsaved edits are discarded.
-                    setPendingEdits(null);
-                    onSetUniqueCharacter(char.id, value === 'false' ? false : value as UniqueCharacterId);
+                    // Identity fields come from the unique table (Spec 2.1.4.2); drop pending identity edits first.
+                    const { name: _name, gender: _gender, raceId: _raceId, mimorianEnemyId: _enemy, lineageId: _lineage, predispositionId: _predisposition, isUnique: _isUnique, uniqueCharacterId: _uniqueId, ...kept } = pendingEdits ?? {};
+                    if (value === 'false') {
+                      setPendingEdits(char.isUnique ? { ...kept, isUnique: false } : kept);
+                      return;
+                    }
+                    const def = UNIQUE_CHARACTERS.find((entry) => entry.id === value)!;
+                    setPendingEdits(def.id === char.uniqueCharacterId ? kept : {
+                      ...kept, isUnique: true, uniqueCharacterId: def.id, name: t(`character.default.${def.nameKey}` as never), gender: def.gender,
+                      raceId: def.raceId, lineageId: def.lineageId, predispositionId: 'none',
+                    });
                   }}
                   className="border rounded bg-transparent px-1 py-0.5"
                 >
@@ -1315,7 +1323,7 @@ export default function PartyTab({
                 </select>
               </label>
               {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique Character Flag. */}
-              {char.isUnique && (
+              {editingUnique && (
                 <div className="text-[11px] text-gray-500">
                   {t('home.party.uniqueCharacterClassOnly')}
                 </div>
@@ -1327,12 +1335,12 @@ export default function PartyTab({
                   value={pendingEdits?.name ?? char.name}
                   maxLength={MAX_CHARACTER_NAME_LENGTH}
                   onChange={(e) => {
-                    if (char.isUnique) return;
+                    if (editingUnique) return;
                     setPendingEdits({ ...pendingEdits, name: e.target.value });
                   }}
-                  disabled={char.isUnique}
+                  disabled={editingUnique}
                   className={`text-lg font-bold border-b focus:outline-none min-w-0 flex-1 ${
-                    char.isUnique
+                    editingUnique
                       ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
                       : 'bg-transparent border-sub'
                   }`}
@@ -1353,8 +1361,8 @@ export default function PartyTab({
                       {(['male', 'female'] as const).map((gender) => {
                         const isBlockedByDuplicate = isGenderOptionBlockedByDuplicate(gender);
                         const isBlockedByMimorianGender = selectedRaceId === 'mimorian' && gender === 'male';
-                        const isDisabled = char.isUnique || isBlockedByDuplicate || isBlockedByMimorianGender;
-                        const shouldShowGenderSymbol = char.isUnique
+                        const isDisabled = editingUnique || isBlockedByDuplicate || isBlockedByMimorianGender;
+                        const shouldShowGenderSymbol = editingUnique
                           ? (pendingEdits?.gender ?? char.gender) === gender
                           : !isBlockedByDuplicate && !isBlockedByMimorianGender;
 
@@ -1464,8 +1472,8 @@ export default function PartyTab({
                     const isBlockedByDuplicate = isRaceOptionBlockedByDuplicate(race.id);
                     // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Mimorian characters are an exception: Only `女` may be selected.
                     const isBlockedByMimorianGender = race.id === 'mimorian' && selectedGender === 'male';
-                    const isDisabled = char.isUnique || isBlockedByDuplicate || isBlockedByMimorianGender;
-                    const shouldShowRaceIcon = char.isUnique
+                    const isDisabled = editingUnique || isBlockedByDuplicate || isBlockedByMimorianGender;
+                    const shouldShowRaceIcon = editingUnique
                       ? isSelectedRace
                       : !isBlockedByDuplicate && !isBlockedByMimorianGender;
 
@@ -1799,14 +1807,14 @@ export default function PartyTab({
                                   <button
                                     key={`lineage-${category.label}-${lineageId}`}
                                     type="button"
-                                    disabled={char.isUnique}
+                                    disabled={editingUnique}
                                     onClick={() => setPendingEdits({ ...pendingEdits, lineageId })}
                                     className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
                                       index === 0 ? 'rounded-l' : index === category.ids.length - 1 ? 'rounded-r' : ''
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : `border-gray-200 ${char.isUnique ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
+                                        : `border-gray-200 ${editingUnique ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
                                     }`}
                                   >
                                     {lineageData.shortName ?? LINEAGE_SHORT_NAME_KEYS[lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[lineageId]) : lineageData.name}
@@ -1849,14 +1857,14 @@ export default function PartyTab({
                                   <button
                                     key={`pred-${category.label}-${predispositionId}`}
                                     type="button"
-                                    disabled={char.isUnique || !isSelectable}
+                                    disabled={editingUnique || !isSelectable}
                                     onClick={() => setPendingEdits({ ...pendingEdits, predispositionId })}
                                     className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
                                       index === 0 ? 'rounded-l' : index === category.ids.length - 1 ? 'rounded-r' : ''
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : `border-gray-200 ${char.isUnique || !isSelectable ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
+                                        : `border-gray-200 ${editingUnique || !isSelectable ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
                                     }`}
                                   >
                                     {predispositionData.shortName ?? PREDISPOSITION_SHORT_NAME_KEYS[predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[predispositionId]) : predispositionData.name}

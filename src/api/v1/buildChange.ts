@@ -4,6 +4,8 @@ import { LINEAGES } from '../../data/lineages';
 import { PREDISPOSITIONS } from '../../data/predispositions';
 import { computeCharacterStats, MAX_CHARACTER_NAME_LENGTH } from '../../game/characterComputation';
 import { canCharacterEquipCategory, getEquipmentAptitudeForCategory, type EquipmentAptitude } from '../../game/equipmentSets';
+import { getUniqueCharacterDef, UNIQUE_CHARACTERS, type UniqueCharacterId } from '../../data/uniqueCharacters';
+import { translate } from '../../i18n';
 import type { Character, GameState, RaceId } from '../../types';
 
 // SpecRef: 8.2.3 | Character Edit Mode (selected member) | Race, gender, class, lineage, and predisposition selection
@@ -17,7 +19,7 @@ const EDITABLE_RACES = new Set<RaceId>([
 // SpecRef: 9.1.3 | 3-3-2 changeBuild | Class IDs are accepted both bare (`guardian`) and prefixed (`class.guardian`).
 const stripClassPrefix = (id: string): string => id.startsWith('class.') ? id.slice('class.'.length) : id;
 
-const ALLOWED_PARAMETERS = new Set(['name', 'racesAndGender', 'mainClassId', 'subClassId', 'lineage', 'predisposition']);
+const ALLOWED_PARAMETERS = new Set(['name', 'uniqueSelection', 'racesAndGender', 'mainClassId', 'subClassId', 'lineage', 'predisposition']);
 
 /** A warning the caller must confirm, as a stable key with numeric arguments (never localized text). */
 export interface CharacterBuildWarning { key: string; args: Record<string, number> }
@@ -55,7 +57,7 @@ function currentRaceAndGender(character: Character): string {
 /** A character's public build facts: the `current` of `read/build/character/{characterId}/status` and of `changeBuild`. */
 export function describeCharacterBuildCurrent(character: Character) {
   return {
-    unique: character.isUnique === true,
+    uniqueSelection: character.uniqueCharacterId ?? false,
     name: character.name,
     racesAndGender: currentRaceAndGender(character),
     mainClassId: character.mainClassId,
@@ -63,6 +65,15 @@ export function describeCharacterBuildCurrent(character: Character) {
     lineage: character.lineageId,
     predisposition: character.predispositionId,
   };
+}
+
+// SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique selection: "固有"
+/** `false` plus every `uniqueCharacterId` not assigned to another character (the selected character's own stays listed). */
+export function validUniqueSelections(state: GameState, character: Character): (false | UniqueCharacterId)[] {
+  const assignedElsewhere = new Set(state.parties.flatMap((party) => party.characters)
+    .filter((candidate) => candidate.id !== character.id && candidate.uniqueCharacterId !== undefined)
+    .map((candidate) => candidate.uniqueCharacterId));
+  return [false, ...UNIQUE_CHARACTERS.filter((entry) => !assignedElsewhere.has(entry.id)).map((entry) => entry.id)];
 }
 
 function parseRaceAndGender(state: GameState, character: Character, value: unknown): Pick<Character, 'raceId' | 'gender'> & Partial<Pick<Character, 'mimorianEnemyId'>> {
@@ -103,7 +114,37 @@ export function planCharacterBuildChange(state: GameState, characterId: number, 
     if (name.length > MAX_CHARACTER_NAME_LENGTH) invalid('name.maxLength');
     requested.name = name;
   }
-  if (parameters.racesAndGender !== undefined) Object.assign(requested, parseRaceAndGender(state, character, parameters.racesAndGender));
+  const currentSelection = character.uniqueCharacterId ?? false;
+  let selection: false | UniqueCharacterId = currentSelection;
+  if (parameters.uniqueSelection !== undefined) {
+    const value = parameters.uniqueSelection;
+    if (value !== false && typeof value !== 'string') invalid('uniqueSelection');
+    if (value !== false && !getUniqueCharacterDef(value)) invalid('uniqueSelection');
+    selection = value as false | UniqueCharacterId;
+  }
+  const changingSelection = selection !== currentSelection;
+  let identityFixed = false;
+  if (changingSelection) {
+    if (selection === false) {
+      Object.assign(requested, { isUnique: false, uniqueCharacterId: undefined });
+    } else {
+      if (!validUniqueSelections(state, character).includes(selection)) illegal('unique_character_assigned');
+      const def = getUniqueCharacterDef(selection)!;
+      const identity: Partial<Character> = {
+        isUnique: true, uniqueCharacterId: def.id, name: translate(state.global.language, `character.default.${def.nameKey}`),
+        gender: def.gender, raceId: def.raceId, mimorianEnemyId: undefined, lineageId: def.lineageId, predispositionId: 'none',
+      };
+      // A unique character fixes its own name, race, gender, lineage and predisposition.
+      const conflicting = (parameters.name !== undefined && parameters.name !== identity.name)
+        || (parameters.racesAndGender !== undefined && parameters.racesAndGender !== `${def.raceId}/${def.gender}`)
+        || (parameters.lineage !== undefined && parameters.lineage !== def.lineageId)
+        || (parameters.predisposition !== undefined && parameters.predisposition !== 'none');
+      if (conflicting) illegal('unique_character_immutable');
+      Object.assign(requested, identity);
+      identityFixed = true;
+    }
+  }
+  if (!identityFixed && parameters.racesAndGender !== undefined) Object.assign(requested, parseRaceAndGender(state, character, parameters.racesAndGender));
   if (parameters.mainClassId !== undefined) {
     const classId = typeof parameters.mainClassId === 'string' ? stripClassPrefix(parameters.mainClassId) : null;
     if (classId === null || !CLASSES.some((entry) => entry.id === classId)) invalid('mainClassId');
@@ -114,18 +155,18 @@ export function planCharacterBuildChange(state: GameState, characterId: number, 
     if (classId === null || !CLASSES.some((entry) => entry.id === classId)) invalid('subClassId');
     requested.subClassId = classId as Character['subClassId'];
   }
-  if (parameters.lineage !== undefined) {
+  if (!identityFixed && parameters.lineage !== undefined) {
     const lineage = typeof parameters.lineage === 'string' ? LINEAGES.find((entry) => entry.id === parameters.lineage) : undefined;
     if (!lineage || lineage.selectable !== true) invalid('lineage');
     requested.lineageId = lineage.id;
   }
-  if (parameters.predisposition !== undefined) {
+  if (!identityFixed && parameters.predisposition !== undefined) {
     const predisposition = typeof parameters.predisposition === 'string' ? PREDISPOSITIONS.find((entry) => entry.id === parameters.predisposition) : undefined;
     if (!predisposition || predisposition.selectable !== true) invalid('predisposition');
     requested.predispositionId = predisposition.id;
   }
 
-  if (character.isUnique) {
+  if (character.isUnique && !changingSelection) {
     if ((requested.name !== undefined && requested.name !== character.name)
       || (parameters.racesAndGender !== undefined && parameters.racesAndGender !== currentRaceAndGender(character))
       || (requested.lineageId !== undefined && requested.lineageId !== character.lineageId)
@@ -137,7 +178,9 @@ export function planCharacterBuildChange(state: GameState, characterId: number, 
   const nextCharacter = { ...character, ...requested };
   const duplicateRaceAndGender = party.characters.some((candidate) => candidate.id !== character.id
     && candidate.isUnique !== true && candidate.raceId === nextCharacter.raceId && candidate.gender === nextCharacter.gender);
-  if (character.isUnique !== true && duplicateRaceAndGender) illegal('duplicate_race_and_gender');
+  // Releasing a unique keeps its race and gender, which is not a duplicate-race selection.
+  const releasingOnly = selection === false && changingSelection && parameters.racesAndGender === undefined;
+  if (nextCharacter.isUnique !== true && !releasingOnly && duplicateRaceAndGender) illegal('duplicate_race_and_gender');
 
   const updates = Object.fromEntries(Object.entries(requested).filter(([key, value]) => value !== character[key as keyof Character])) as Partial<Character>;
   const effectiveCharacter = { ...character, ...updates };

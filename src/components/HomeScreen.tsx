@@ -5643,7 +5643,6 @@ export function GameRuntimeHost({
           uniqueAssignments={Object.fromEntries(state.parties.flatMap((party) => party.characters)
             .filter((character) => character.uniqueCharacterId !== undefined)
             .map((character) => [character.id, character.uniqueCharacterId as UniqueCharacterId]))}
-          onSetUniqueCharacter={(characterId, uniqueCharacterId) => actions.setUniqueCharacter(characterId, uniqueCharacterId, state.selectedPartyIndex)}
           onChangeCharacterBuild={async (characterId, edits, request): Promise<CharacterBuildOutcome> => {
             const failed: CharacterBuildOutcome = { status: 'error', confirmationRequired: false, warnings: [], applied: false };
             const target = currentParty.characters.find((character) => character.id === characterId);

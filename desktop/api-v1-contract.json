@@ -21351,7 +21351,7 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "unique",
+                "uniqueSelection",
                 "name",
                 "racesAndGender",
                 "mainClassId",
@@ -21360,8 +21360,18 @@
                 "predisposition"
               ],
               "properties": {
-                "unique": {
-                  "type": "boolean"
+                "uniqueSelection": {
+                  "anyOf": [
+                    {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    }
+                  ]
                 },
                 "name": {
                   "minLength": 1,
@@ -21412,14 +21422,10 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "name",
-                "unique"
+                "name"
               ],
               "properties": {
                 "name": {
-                  "type": "boolean"
-                },
-                "unique": {
                   "type": "boolean"
                 }
               }
@@ -21428,6 +21434,7 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
+                "uniqueSelection",
                 "racesAndGender",
                 "mainClassId",
                 "subClassId",
@@ -21435,6 +21442,22 @@
                 "predisposition"
               ],
               "properties": {
+                "uniqueSelection": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "const": false,
+                        "type": "boolean"
+                      },
+                      {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      }
+                    ]
+                  }
+                },
                 "racesAndGender": {
                   "type": "array",
                   "items": {
@@ -21722,7 +21745,7 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "unique",
+                    "uniqueSelection",
                     "name",
                     "racesAndGender",
                     "mainClassId",
@@ -21731,8 +21754,18 @@
                     "predisposition"
                   ],
                   "properties": {
-                    "unique": {
-                      "type": "boolean"
+                    "uniqueSelection": {
+                      "anyOf": [
+                        {
+                          "const": false,
+                          "type": "boolean"
+                        },
+                        {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      ]
                     },
                     "name": {
                       "minLength": 1,
@@ -21783,14 +21816,10 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "name",
-                    "unique"
+                    "name"
                   ],
                   "properties": {
                     "name": {
-                      "type": "boolean"
-                    },
-                    "unique": {
                       "type": "boolean"
                     }
                   }
@@ -21799,6 +21828,7 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
+                    "uniqueSelection",
                     "racesAndGender",
                     "mainClassId",
                     "subClassId",
@@ -21806,6 +21836,22 @@
                     "predisposition"
                   ],
                   "properties": {
+                    "uniqueSelection": {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "const": false,
+                            "type": "boolean"
+                          },
+                          {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          }
+                        ]
+                      }
+                    },
                     "racesAndGender": {
                       "type": "array",
                       "items": {
@@ -21919,7 +21965,7 @@
               ]
             },
             "current": {
-              "unique": true,
+              "uniqueSelection": false,
               "name": "xxxxxxx",
               "racesAndGender": "xxxxxxx",
               "mainClassId": "xxxxxxx",
@@ -21928,10 +21974,12 @@
               "predisposition": "xxxxxxx"
             },
             "editableFields": {
-              "name": true,
-              "unique": true
+              "name": true
             },
             "validOptions": {
+              "uniqueSelection": [
+                false
+              ],
               "racesAndGender": [
                 "xxxxxxx"
               ],
@@ -30549,6 +30597,19 @@
                 "maxLength": 100,
                 "type": "string"
               },
+              "uniqueSelection": {
+                "anyOf": [
+                  {
+                    "const": false,
+                    "type": "boolean"
+                  },
+                  {
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
+                  }
+                ]
+              },
               "racesAndGender": {
                 "minLength": 1,
                 "maxLength": 200,
@@ -30811,7 +30872,7 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "unique",
+                "uniqueSelection",
                 "name",
                 "racesAndGender",
                 "mainClassId",
@@ -30820,8 +30881,18 @@
                 "predisposition"
               ],
               "properties": {
-                "unique": {
-                  "type": "boolean"
+                "uniqueSelection": {
+                  "anyOf": [
+                    {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    }
+                  ]
                 },
                 "name": {
                   "minLength": 1,
@@ -31164,7 +31235,7 @@
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
-                    "unique",
+                    "uniqueSelection",
                     "name",
                     "racesAndGender",
                     "mainClassId",
@@ -31173,8 +31244,18 @@
                     "predisposition"
                   ],
                   "properties": {
-                    "unique": {
-                      "type": "boolean"
+                    "uniqueSelection": {
+                      "anyOf": [
+                        {
+                          "const": false,
+                          "type": "boolean"
+                        },
+                        {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      ]
                     },
                     "name": {
                       "minLength": 1,
@@ -31391,7 +31472,7 @@
               ]
             },
             "current": {
-              "unique": true,
+              "uniqueSelection": false,
               "name": "xxxxxxx",
               "racesAndGender": "xxxxxxx",
               "mainClassId": "xxxxxxx",

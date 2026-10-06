@@ -15,7 +15,6 @@ isBonusAbilityTimingToken,
 parseBonusAbilityLevelScale
 } from '../../data/bonusAbilityGlossary';
 import { CLASSES,CLASS_SHORT_NAMES,getClassShortName } from '../../data/classes';
-import type { UniqueCharacterId } from '../../data/uniqueCharacters';
 import { GOD_MYTHIC_DROPS,getGodProfileForDungeon } from '../../data/dropTables';
 import {
 DUNGEONS,
@@ -269,7 +268,6 @@ export interface HomeScreenProps {
     importGameState: (state: GameState) => Promise<{ state: GameState | null; errorLog: string | null }>;
     getCompressedSavePayload: (encoding?: 'portable' | 'stored') => Promise<string>;
     resetCommonBags: () => void;
-    setUniqueCharacter: (characterId: number, uniqueCharacterId: UniqueCharacterId | false, partyIndex?: number) => void;
     resetUniqueBags: () => void;
     resetCommonSuperRareBag: () => void;
     resetRareSuperRareBag: () => void;
