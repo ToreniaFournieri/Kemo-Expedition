@@ -131,7 +131,7 @@ import { getXpToNextLevel } from '../game/partyLevel';
 import { MAX_LEVEL } from '../types';
 import { createEnvironmentStorageKey, getEnvironmentId } from '../game/environment';
 import { addDiaryLogs } from '../game/diary';
-import { addGlobalDiaryLogs, createAccountCreatedDiaryLog, createBossFirstClearDiaryLog, normalizeGlobalDiaryLogs } from '../game/globalDiary';
+import { addGlobalDiaryLogs, applyAchievementMilestones, createAccountCreatedDiaryLog, createBossFirstClearDiaryLog, createGodFirstDefeatDiaryLog, normalizeGlobalDiaryLogs, seedAchievementState } from '../game/globalDiary';
 import { computeCharacterStats } from '../game/characterComputation';
 import {
   getShopHourKey,
@@ -941,6 +941,7 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
             altarVictoriesByEnemyType: {},
             readDeveloperNewsItemIds: [],
             globalDiary: [],
+            defeatedGodExpeditionIds: [],
           };
         }
         if (Array.isArray(parsed.global.inventory)) {
@@ -959,6 +960,11 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
         parsed.global.enemyBattleStats = getEnemyBattleStatsWithDefaults(parsed.global.enemyBattleStats);
         parsed.global.altarVictoriesByEnemyType = getAltarVictoriesWithDefaults(parsed.global.altarVictoriesByEnemyType);
         parsed.global.globalDiary = normalizeGlobalDiaryLogs(parsed.global.globalDiary);
+        parsed.global.defeatedGodExpeditionIds = Array.isArray(parsed.global.defeatedGodExpeditionIds)
+          ? parsed.global.defeatedGodExpeditionIds.filter((id: unknown): id is number => Number.isInteger(id))
+          : [];
+        // Achievements start from the loaded state; only new milestones are recorded (SpecRef 8.5).
+        parsed.global = seedAchievementState(parsed.global, (parsed.parties as Party[]).reduce((sum, party) => sum + (party.expeditionStats?.Clear ?? 0), 0));
         parsed.global.readDeveloperNewsItemIds = Array.isArray(parsed.global.readDeveloperNewsItemIds)
           ? Array.from(new Set(parsed.global.readDeveloperNewsItemIds.filter((itemId: unknown): itemId is string => typeof itemId === 'string' && itemId.trim().length > 0)))
           : [];
@@ -1730,6 +1736,9 @@ export function createFreshGameState(language: Language, now: number = Date.now(
       readDeveloperNewsItemIds: [],
       // SpecRef: 8.5 | UI_DIARY | The global Diary starts with the account-created entry (new accounts only).
       globalDiary: [createAccountCreatedDiaryLog(inGameNow, 'account')],
+      achievementClearTotal: 0,
+      achievementMilestones: [],
+      defeatedGodExpeditionIds: [],
       language,
     },
     parties: [createInitialParty(language)],
@@ -2624,8 +2633,22 @@ function reduceGameState(
         && party.pendingClearGateSnapshot
         && !party.pendingClearGateSnapshot.defeatedBossExpeditions?.[clearedLog.dungeonId]
         && party.defeatedBossExpeditions?.[clearedLog.dungeonId]
+        // SpecRef: 8.5 | UI_DIARY | Only the first party to defeat a boss is recorded.
+        && !state.parties.some((other) => other !== party && other.defeatedBossExpeditions?.[clearedLog.dungeonId])
         ? clearedLog.dungeonId
         : null;
+      // SpecRef: 8.5 | UI_DIARY | First god defeat: a Gods Battle won against a god not defeated before.
+      const defeatedGodExpeditionId = clearedLog
+        && clearedLog.finalOutcome === 'Clear'
+        && isGodsBattleExpedition(clearedLog)
+        && !(state.global.defeatedGodExpeditionIds ?? []).includes(clearedLog.dungeonId)
+        ? clearedLog.dungeonId
+        : null;
+      const godFirstDefeatDiaryLog = defeatedGodExpeditionId === null ? null : createGodFirstDefeatDiaryLog({
+        createdAt: createdAtBase,
+        partyNumber: party.id,
+        godExpeditionId: defeatedGodExpeditionId,
+      });
       const unlockedPartyNumber = pendingUnlockState && pendingUnlockState.partySlotCount > state.parties.length
         ? pendingUnlockState.partySlotCount
         : null;
@@ -2682,6 +2705,17 @@ function reduceGameState(
       let nextGlobal = state.global;
       if (firstClearDiaryLog) {
         nextGlobal = { ...nextGlobal, globalDiary: addGlobalDiaryLogs(nextGlobal.globalDiary, [firstClearDiaryLog]) };
+      }
+      if (godFirstDefeatDiaryLog && defeatedGodExpeditionId !== null) {
+        nextGlobal = {
+          ...nextGlobal,
+          globalDiary: addGlobalDiaryLogs(nextGlobal.globalDiary, [godFirstDefeatDiaryLog]),
+          defeatedGodExpeditionIds: [...(nextGlobal.defeatedGodExpeditionIds ?? []), defeatedGodExpeditionId],
+        };
+      }
+      // SpecRef: 8.5 | UI_DIARY | Clear milestones count total Clear outcomes, tracked apart from the resettable statistics.
+      if (clearedLog?.finalOutcome === 'Clear') {
+        nextGlobal = { ...nextGlobal, achievementClearTotal: (nextGlobal.achievementClearTotal ?? 0) + 1 };
       }
       if (pendingUnlockState) {
         const nextUnlockedPartySlots = Math.max(1, Math.min(6, pendingUnlockState.partySlotCount));
@@ -4090,6 +4124,10 @@ function reduceGameState(
             ? Array.from(new Set(hydrated.global.readDeveloperNewsItemIds.filter((itemId) => typeof itemId === 'string' && itemId.trim().length > 0)))
             : [],
           globalDiary: normalizeGlobalDiaryLogs(hydrated.global.globalDiary),
+          defeatedGodExpeditionIds: Array.isArray(hydrated.global.defeatedGodExpeditionIds)
+            ? hydrated.global.defeatedGodExpeditionIds.filter((id) => Number.isInteger(id))
+            : [],
+          ...pickAchievementState(seedAchievementState(hydrated.global, trimmedParties.reduce((sum, party) => sum + (party.expeditionStats?.Clear ?? 0), 0))),
           prana: Number.isFinite(hydrated.global.prana) ? Math.max(0, Math.floor(hydrated.global.prana)) : 0,
           unlockedMimorianEnemyIds: Array.isArray(hydrated.global.unlockedMimorianEnemyIds)
             ? Array.from(new Set(hydrated.global.unlockedMimorianEnemyIds.filter((enemyId) => Number.isInteger(enemyId) && ENEMIES.some((enemy) => enemy.id === enemyId))))
@@ -4246,7 +4284,39 @@ function reduceGameState(
 }
 
 /** Top-level reducer boundary: availability revisions are derived from committed state. */
+function pickAchievementState(global: Pick<GameState['global'], 'achievementClearTotal' | 'achievementMilestones'>) {
+  return { achievementClearTotal: global.achievementClearTotal, achievementMilestones: global.achievementMilestones };
+}
+
+// SpecRef: 8.5 | UI_DIARY | Achievements are evaluated on the authoritative state after every change to what they count,
+// so parallel AFK Chunks (each seeing only its own snapshot) can neither double-record nor miss a milestone.
+function achievementTimestamp(action: GameAction): number {
+  if (action.type === 'COMMIT_AFK_PARTY_CHUNK' || action.type === 'COMMIT_AFK_PARTY_TRANSACTION') return action.result.simulatedCompletedAt;
+  const simulatedAt = (action as { simulatedAt?: unknown }).simulatedAt;
+  return typeof simulatedAt === 'number' ? simulatedAt : Date.now();
+}
+
 export function gameReducer(
+  state: GameState,
+  action: GameAction,
+  autoEquipmentContext?: AutoEquipmentReducerContext,
+  afkChunkContext?: AfkChunkReducerContext,
+): GameState {
+  const next = gameReducerWithoutAchievements(state, action, autoEquipmentContext, afkChunkContext);
+  // AFK workers never evaluate milestones: the main thread does, once, on the merged authoritative state.
+  if (action.type === 'COMMIT_API_STATE' || next === state || afkChunkContext) return next;
+  const before = state.global;
+  const after = next.global;
+  const countedStateChanged = after.inventory !== before.inventory
+    || after.jewels !== before.jewels
+    || after.achievementClearTotal !== before.achievementClearTotal;
+  // States without the milestone record predate achievements and are seeded when loaded, never evaluated here.
+  if (!countedStateChanged || after.achievementMilestones === undefined) return next;
+  const withMilestones = applyAchievementMilestones(after, achievementTimestamp(action));
+  return withMilestones === after ? next : { ...next, global: withMilestones };
+}
+
+function gameReducerWithoutAchievements(
   state: GameState,
   action: GameAction,
   autoEquipmentContext?: AutoEquipmentReducerContext,

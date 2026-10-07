@@ -683,6 +683,10 @@ export interface AfkGlobalDelta {
   challengedGodNames: string[];
   /** Global Diary entries created by the Chunk (SpecRef 8.5); optional for results produced before they existed. */
   globalDiary?: GlobalDiaryLog[];
+  /** Clear outcomes counted by the Chunk toward the Clear achievement (SpecRef 8.5). */
+  achievementClearTotal?: number;
+  /** Gods first defeated by the Chunk. */
+  defeatedGodExpeditionIds?: number[];
   revealedItemCompendiumItemIds: number[];
   revealedGlossaryAbilityIds: string[];
   revealedGlossaryTerrainKeys: TerrainEffectKey[];
@@ -836,6 +840,8 @@ export function createAfkPartyChunkResult(
       unlockedDeities: additions(baseGlobal.unlockedDeities, resultGlobal.unlockedDeities),
       challengedGodNames: additions(baseGlobal.challengedGodNames, resultGlobal.challengedGodNames),
       globalDiary: additions(baseGlobal.globalDiary ?? [], resultGlobal.globalDiary ?? []),
+      achievementClearTotal: (resultGlobal.achievementClearTotal ?? 0) - (baseGlobal.achievementClearTotal ?? 0),
+      defeatedGodExpeditionIds: additions(baseGlobal.defeatedGodExpeditionIds ?? [], resultGlobal.defeatedGodExpeditionIds ?? []),
       revealedItemCompendiumItemIds: additions(baseGlobal.revealedItemCompendiumItemIds, resultGlobal.revealedItemCompendiumItemIds),
       revealedGlossaryAbilityIds: additions(baseGlobal.revealedGlossaryAbilityIds, resultGlobal.revealedGlossaryAbilityIds),
       revealedGlossaryTerrainKeys: additions(baseGlobal.revealedGlossaryTerrainKeys, resultGlobal.revealedGlossaryTerrainKeys),
@@ -952,6 +958,8 @@ export function commitAfkPartyChunk(current: GameState, result: AfkPartyChunkRes
       unlockedDeities: addUnique(currentGlobal.unlockedDeities, delta.unlockedDeities),
       challengedGodNames: addUnique(currentGlobal.challengedGodNames, delta.challengedGodNames),
       globalDiary: addGlobalDiaryLogs(currentGlobal.globalDiary, delta.globalDiary ?? []),
+      achievementClearTotal: (currentGlobal.achievementClearTotal ?? 0) + (delta.achievementClearTotal ?? 0),
+      defeatedGodExpeditionIds: addUnique(currentGlobal.defeatedGodExpeditionIds ?? [], delta.defeatedGodExpeditionIds ?? []),
       revealedItemCompendiumItemIds: addUnique(currentGlobal.revealedItemCompendiumItemIds, delta.revealedItemCompendiumItemIds),
       revealedGlossaryAbilityIds: addUnique(currentGlobal.revealedGlossaryAbilityIds, delta.revealedGlossaryAbilityIds),
       revealedGlossaryTerrainKeys: addUnique(currentGlobal.revealedGlossaryTerrainKeys, delta.revealedGlossaryTerrainKeys),

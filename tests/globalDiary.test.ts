@@ -4,6 +4,11 @@ import test from 'node:test';
 
 import {
   addGlobalDiaryLogs,
+  applyAchievementMilestones,
+  createGodFirstDefeatDiaryLog,
+  getAchievementValues,
+  GLOBAL_ACHIEVEMENT_THRESHOLDS,
+  seedAchievementState,
   countUnreadGlobalDiaryLogs,
   createAccountCreatedDiaryLog,
   createBossFirstClearDiaryLog,
@@ -17,7 +22,7 @@ const hookSource = readFileSync(new URL('../src/hooks/useGameState.ts', import.m
 const diaryTabSource = readFileSync(new URL('../src/components/home/tabs/DiaryTab.tsx', import.meta.url), 'utf8');
 
 function clearLog(createdAt: number): GlobalDiaryLog {
-  return createBossFirstClearDiaryLog({ createdAt, idToken: `t${createdAt}`, partyNumber: 1, dungeonId: 1 });
+  return createBossFirstClearDiaryLog({ createdAt, idToken: `t${createdAt}`, partyNumber: 1, dungeonId: createdAt });
 }
 
 test('Global Diary uses scope 0 and keeps at most 99 entries', () => {
@@ -68,4 +73,55 @@ test('Diary tab always shows Global first, hides no tabs and shows the year in t
   assert.doesNotMatch(diaryTabSource, /parties\.length <= 1\) return null/);
   assert.match(diaryTabSource, /year: 'numeric'/);
   assert.match(diaryTabSource, /isGlobalSelected/);
+});
+
+function achievementGlobal(overrides: Record<string, unknown> = {}) {
+  return { inventory: {}, jewels: {}, achievementClearTotal: 0, achievementMilestones: [] as string[], globalDiary: [] as GlobalDiaryLog[], ...overrides } as never as Parameters<typeof applyAchievementMilestones>[0];
+}
+
+const superRareVariant = (count: number, superRare = 3) => ({ item: { superRare }, count, status: 'normal' });
+
+test('achievement values count Super Rare items and jewels held, and the lifetime Clear counter', () => {
+  const global = achievementGlobal({
+    inventory: { a: superRareVariant(4), b: superRareVariant(9, 0) },
+    jewels: { 'x-1': 3, 'y-2': 2 },
+    achievementClearTotal: 120,
+  });
+  assert.deepEqual(getAchievementValues(global), { clear: 120, superRare: 4, jewel: 5 });
+  assert.deepEqual(GLOBAL_ACHIEVEMENT_THRESHOLDS.clear, [100, 1000, 10000, 100000, 1000000]);
+});
+
+test('every newly reached milestone is recorded once and never again after the value falls and returns', () => {
+  const first = applyAchievementMilestones(achievementGlobal({ inventory: { a: superRareVariant(12) } }), 1000);
+  assert.deepEqual(first.achievementMilestones, ['superRare:1', 'superRare:10']);
+  assert.deepEqual(first.globalDiary!.map((entry) => entry.threshold), [10, 1]);
+  assert.equal(applyAchievementMilestones(first, 2000), first);
+  const dropped = applyAchievementMilestones({ ...first, inventory: {} }, 3000);
+  const returned = applyAchievementMilestones({ ...dropped, inventory: { a: superRareVariant(12) } }, 4000);
+  assert.equal(returned.globalDiary!.length, 2);
+});
+
+test('parallel reports of the same one-time event are recorded once', () => {
+  const god = createGodFirstDefeatDiaryLog({ createdAt: 5, partyNumber: 1, godExpeditionId: 2 });
+  const duplicate = createGodFirstDefeatDiaryLog({ createdAt: 9, partyNumber: 2, godExpeditionId: 2 });
+  assert.equal(addGlobalDiaryLogs([god], [duplicate]).length, 1);
+  assert.equal(addGlobalDiaryLogs([god], [createGodFirstDefeatDiaryLog({ createdAt: 9, partyNumber: 2, godExpeditionId: 3 })]).length, 2);
+});
+
+test('saves from before achievements start from their current state without recording history', () => {
+  const seeded = seedAchievementState(
+    { inventory: { a: superRareVariant(12) }, jewels: { k: 1 } } as never as Parameters<typeof seedAchievementState>[0],
+    250,
+  );
+  assert.equal(seeded.achievementClearTotal, 250);
+  assert.deepEqual([...seeded.achievementMilestones!].sort(), ['clear:100', 'jewel:1', 'superRare:1', 'superRare:10']);
+  const unchanged = applyAchievementMilestones({ ...seeded, globalDiary: [] }, 1);
+  assert.equal(unchanged.globalDiary!.length, 0);
+});
+
+test('runtime counts Clear, first god defeats and evaluates achievements on the authoritative state', () => {
+  assert.match(hookSource, /achievementClearTotal: \(nextGlobal\.achievementClearTotal \?\? 0\) \+ 1/);
+  assert.match(hookSource, /createGodFirstDefeatDiaryLog\(/);
+  assert.match(hookSource, /applyAchievementMilestones\(after,/);
+  assert.match(hookSource, /afkChunkContext\) return next/);
 });

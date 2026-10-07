@@ -1,6 +1,7 @@
 import type { DiaryLog, DiarySettings, DiaryTrigger, GameState, GlobalDiaryLog, Party } from '../../types';
 import { getDungeonById } from '../../data/dungeons.ts';
 import { countUnreadGlobalDiaryLogs, GLOBAL_DIARY_PARTY_NUMBER } from '../../game/globalDiary.ts';
+import { formatAchievementCount, godDisplayName } from '../../game/globalDiaryTitle.ts';
 import { getRewardsNamedByTrigger, joinDiaryItemNames } from '../../game/diaryHeadline';
 import { formatItem } from './itemFormat';
 
@@ -135,6 +136,22 @@ function globalDiaryContent(entry: GlobalDiaryLog): DiaryEntryContent {
     return {
       format: 'semantic',
       title: { key: 'diary.global.accountCreated', args: {} },
+      subtitle: { key: 'diary.global.noSubtitle', args: {} },
+      events: [],
+    };
+  }
+  if (entry.kind === 'godFirstDefeat') {
+    return {
+      format: 'semantic',
+      title: { key: 'diary.global.godFirstDefeat', args: { party: `PT${entry.partyNumber ?? 1}`, god: godDisplayName(entry.dungeonId ?? 0), godExpeditionId: entry.dungeonId ?? 0 } },
+      subtitle: { key: 'diary.global.noSubtitle', args: {} },
+      events: [],
+    };
+  }
+  if (entry.kind === 'achievement') {
+    return {
+      format: 'semantic',
+      title: { key: `diary.global.achievement.${entry.metric ?? 'clear'}`, args: { count: formatAchievementCount(entry.threshold ?? 0), threshold: entry.threshold ?? 0 } },
       subtitle: { key: 'diary.global.noSubtitle', args: {} },
       events: [],
     };

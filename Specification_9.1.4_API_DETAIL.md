@@ -1359,8 +1359,11 @@ type DiaryEntry = {
 * Global Diary (`partyNumber` 0) is always available and is not tied to a Party
   unlock. Its entries use the same `DiaryEntry` shape with `content.format`
   `semantic`, no `events` detail and `battleLog: null`; the title carries the
-  first-boss-defeat or account-created facts, and the unlocked-Party fact when the
-  victory unlocks one. The projection returns it as a top-level `global` object
+  account-created, first-boss-defeat (once per boss, by the first Party; the unlocked-Party
+  fact is the subtitle when the victory unlocks one), first-god-defeat (`godExpeditionId`) or
+  achievement (`metric` `clear|superRare|jewel`, milestone `threshold`) facts.
+  Achievement counters (lifetime Clear outcomes; Super Rare items and jewels held in the
+  inventory) are internal, are not cleared by `resetStatistics`, and each milestone is recorded once. The projection returns it as a top-level `global` object
   `{partyNumber: 0, unreadCount, entries}` beside `parties`, and
   `effectiveSelection.partyNumber` 0 selects it. Retention is 99 entries (8.5).
   `compact` `attention.notification` lists `partyNumber` 0 only while it has unread entries. Global entries have

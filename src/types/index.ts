@@ -447,17 +447,21 @@ export interface DiaryLog {
 }
 
 // SpecRef: 8.5 | UI_DIARY | Global Diary entries contain only language-neutral facts rendered as a title.
-export type GlobalDiaryKind = 'accountCreated' | 'bossFirstClear';
+export type GlobalDiaryKind = 'accountCreated' | 'bossFirstClear' | 'godFirstDefeat' | 'achievement';
+export type GlobalAchievementMetric = 'clear' | 'superRare' | 'jewel';
 
 export interface GlobalDiaryLog {
   id: string;
   kind: GlobalDiaryKind;
-  /** Party number that first cleared the expedition boss (`bossFirstClear` only). */
+  /** Party number that first cleared the boss (`bossFirstClear`) or defeated the god (`godFirstDefeat`). */
   partyNumber?: number;
-  /** Expedition whose boss was cleared for the first time (`bossFirstClear` only). */
+  /** Expedition whose boss was cleared (`bossFirstClear`) or whose god was defeated (`godFirstDefeat`) for the first time. */
   dungeonId?: number;
   /** Party number unlocked by that victory, when it unlocked one. */
   unlockedPartyNumber?: number;
+  /** Achievement metric and milestone (`achievement` only). */
+  metric?: GlobalAchievementMetric;
+  threshold?: number;
   createdAt: number;
   isRead: boolean;
 }
@@ -485,7 +489,7 @@ export interface Deity {
   uniqueAbilities: string[];
 }
 
-interface GlobalState {
+export interface GlobalState {
   gold: number;
   prana: number;
   unlockedMimorianEnemyIds: number[];
@@ -515,6 +519,12 @@ interface GlobalState {
   readDeveloperNewsItemIds: string[];
   /** Global Diary (SpecRef 8.5), newest first, at most 99 entries; absent in saves written before it existed. */
   globalDiary?: GlobalDiaryLog[];
+  /** Lifetime Clear outcomes; unlike `expeditionStats` it is never cleared by the Statistics reset (SpecRef 8.5). */
+  achievementClearTotal?: number;
+  /** Recorded achievement milestones (`<metric>:<threshold>`); each is recorded once. */
+  achievementMilestones?: string[];
+  /** Expedition IDs of gods already defeated, for the first-god-defeat entry. */
+  defeatedGodExpeditionIds?: number[];
   /** Explicitly persisted UI preferences (closed catalog, Spec 9.1.4.17); changed only through `SET_UI_PREFERENCES`. */
   uiPreferences?: Record<string, string | number | boolean>;
   language: Language;
