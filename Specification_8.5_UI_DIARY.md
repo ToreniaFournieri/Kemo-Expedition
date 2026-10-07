@@ -40,7 +40,7 @@
   3. **First god defeat**
      - Triggered when any party defeats a god for the first time.
   4. **Achievements**
-     - **Clear milestones:** `100`, `1,000`, `10,000`, and `100,000` total Clear outcomes.
+     - **Clear milestones:** `100`, `1,000`, `10,000`, `100,000`, and `1,000,000` total Clear outcomes.
      - **Super Rare milestones:** `1`, `10`, `100`, `1,000`, and `10,000` Super Rare items obtained.
      - **Jewel milestones:** `1`, `10`, `100`, `1,000`, and `10,000` jewels obtained.
   - Global Diary entries contain only a title and do not include detailed battle logs.
