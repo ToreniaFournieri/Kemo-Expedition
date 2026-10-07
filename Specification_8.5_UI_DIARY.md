@@ -17,7 +17,7 @@
 - The selected tab is highlighted using the sub-theme color.
 - Diary unread badges:
   - The main Diary tab displays a red unread badge, showing up to 49 unread entries. (Display `49+` when the count is 49 or greater.)
-  - Each Party subcategory tab and global tab also displays its own red unread badge, showing up to 12 unread entries for that Party.
+  - Each Party subcategory tab and global tab also displays its own red unread badge, showing up to unread entries for that Party.
   - When the user leaves a Party subcategory or global tab, all entries in that tab are treated as read and its red badge is removed.
   - The main Diary badge reflects the total number of unread diary entries across global and all Party subcategories.
 - Each Party has its own independent Diary.
@@ -70,17 +70,19 @@
 ```
 
 
-**Title of global dirary**
+**Title of global diary**
 
-line 1: [PT1] セイラン 再生の女神撃破
-line 2 gray text:      2026/02/12 21:28
+line 1: [PT1] ヴァルンの海洋 初踏破
+line 2 gray text: PT2解放     2026/02/14 07:04
+line 1: [PT1] ルピニアンの亜寒帯 初踏破
+line 2 gray text:      2026/02/13 13:04
 (Left-Aligned)         (Right-aligned)
-line 1: [PT1] ガーヴ 消耗の神撃破
+line 1: [PT1] ケイナイアン平原 初踏破
 line 2 gray text:     2026/02/12 21:28
 line 1: ケモは目覚めた
-line 2 gray text:     2026/02/11 21:0
+line 2 gray text:     2026/02/11 21:00
 
-**Title of party dirary**
+**Title of party diary**
 ```
 (Left-Aligned)         (Right-aligned)
 line 1: [PT2]ボスレア(秘奥真理の書) 獲得      ▼

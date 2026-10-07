@@ -209,7 +209,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * Path Parameters
 
 * {p}: Party number
-  * Diary entry:
+  * Diary entry and diarySetting:
     * Valid values: 0–6.
     * 0 represents the global scope. only for diary entry
     * 1–6 represent PT1–PT6.
