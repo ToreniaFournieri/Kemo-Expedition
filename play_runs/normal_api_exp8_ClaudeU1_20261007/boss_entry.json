@@ -1,0 +1,37 @@
+{
+ "diaryEntryId": "1794955394011-pv3met",
+ "partyNumber": 1,
+ "occurredAt": "2026-11-17T22:43:14.011Z",
+ "unread": true,
+ "content": {
+  "format": "semantic",
+  "title": {
+   "key": "diary.title.bossRare",
+   "args": {
+    "items": "Vestment of Fate"
+   }
+  },
+  "subtitle": {
+   "key": "diary.subtitle.expedition",
+   "args": {
+    "dungeonId": 8,
+    "difficultyOffset": 0
+   }
+  },
+  "events": [
+   {
+    "key": "diary.event.bossRare",
+    "args": {
+     "items": "Vestment of Fate"
+    }
+   }
+  ]
+ },
+ "battleLog": {
+  "logId": "diary:1794955394011-pv3met",
+  "availability": {
+   "available": true,
+   "unavailableReason": null
+  }
+ }
+}
