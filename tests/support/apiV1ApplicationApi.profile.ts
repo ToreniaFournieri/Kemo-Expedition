@@ -220,12 +220,12 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
   const local = h.api.createInProcessAdapter();
   const charged = { ...h.idleState, parties: h.idleState.parties.map((party, index) => index === 0 ? { ...party, instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null } : party) } as typeof h.idleState;
   h.api.syncIdleState(charged);
-  const sortie = await local.commit('commit/expedition/{p}/sortie', { pathParameters: { p: 1 }, parameters: {} }) as { revision: number; error?: unknown; data: { logId: string } };
+  const sortie = await local.commit('commit/expedition/{p}/sortie', { pathParameters: { p: 1 }, parameters: {} }) as { revision: number; error?: unknown; data: { sorties: { logId: string }[] } };
   assert.equal(sortie.error, undefined);
   assert.equal(sortie.revision, 1);
   assert.deepEqual(h.playerCommitEvents, ['persist', 'cycle', 'publish']);
   assert.deepEqual(h.cycleWrites, [{ partyIndex: 0, cycle: { state: 'rest', stateStartedAt: t0, durationMs: 9_999, restInitialTotalSteps: 1, isCurrentExpeditionGodsBattle: false } }]);
-  assert.match(sortie.data.logId, /^(log:\d+:[0-9a-z]+|diary:.+)$/);
+  assert.match(sortie.data.sorties[0].logId, /^(log:\d+:[0-9a-z]+|diary:.+)$/);
 }
 
 // 1a-ter. The ordinary player's in-game time is the wall clock of each request, not the time the app started: a charge that

@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.10.1 | 17 | 2026/10/07 | API: `commit/expedition/{p}/sortie` takes `numberOfSortie` (1-6), verifies charge for all requested sorties first, and returns one `{battleOutcome, rewards, diaryEntryId, logId}` per sortie. |
 | 0.10.1 | 16 | 2026/10/07 | Fixed `GET /read/observation/diary` (and every `read/observation` that lists a Global Diary notification) failing with `500 internal_error`: the API v1 response schemas did not yet allow the Global Diary scope (`partyNumber` 0, top-level `global` object, `expedition: null`), so the response was rejected by the catalog check. Contract regenerated; `DiaryEntrySchema` accepts scope 0; `markAsRead`/`diary` requests accept `partyNumber` 0. Added a regression test and normalized wall-clock Global Diary IDs in the dual-adapter parity cell. |
 | 0.10.1 | 15 | 2026/10/07 | Fixed Global Diary achievement entries being stamped with the system time instead of the in-game time (e.g. while elapsed time is simulated), which put them out of order among the other entries. |
 | 0.10.1 | 14 | 2026/10/07 | Fixed the Global Diary first-boss-defeat entry being skipped when two Parties clear the same boss before either Diary is finalized: another Party's unfinalized clear is now judged by its pre-run snapshot, and the per-boss event key keeps a single entry. |

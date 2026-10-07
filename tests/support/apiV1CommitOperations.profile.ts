@@ -499,16 +499,28 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   const ok = sortie(charged);
   assert.equal(ok.state.parties[0].instantExpeditionStock, 2, 'one stock is consumed');
   assert.deepEqual(ok.partyCycleWrites, [{ partyIndex: 0, cycle: { state: 'rest', stateStartedAt: 777, durationMs: 12_345, restInitialTotalSteps: 1, isCurrentExpeditionGodsBattle: false } }]);
-  const sortieLogId = String((ok.data as { logId: string }).logId);
+  const okSorties = (ok.data as { sorties: { battleOutcome: string; rewards: string[]; diaryEntryId: string | null; logId: string }[] }).sorties;
+  assert.equal(okSorties.length, 1, 'no `numberOfSortie` means one sortie');
+  const sortieLogId = String(okSorties[0].logId);
   assert.match(sortieLogId, /^(log:1:[0-9a-z]+|diary:.+)$/, 'a sortie names its log uniquely, never `latest`');
   if (sortieLogId.startsWith('log:')) {
     const { retainedLogIdOf } = await import('../../src/api/v1/battleLogs');
     assert.equal(sortieLogId, retainedLogIdOf(ok.state.parties[0].lastExpeditionLog!, ok.state.parties[0].id));
   }
-  assert.ok(['Clear', 'Return', 'Draw', 'Retreat', 'Defeat'].includes(String((ok.data as { outcome: string }).outcome)));
+  assert.ok(['Clear', 'Return', 'Draw', 'Retreat', 'Defeat'].includes(String(okSorties[0].battleOutcome)));
   assert.equal(charged.parties[0].instantExpeditionStock, 3, 'the input snapshot is untouched');
+  // `numberOfSortie` runs that many sorties in sequence (ending early only when a Defeat exhausts the party), one stock each,
+  // and writes the rest cycle once.
+  const triple = applyApiV1Commit('commit/expedition/1/sortie', charged, { numberOfSortie: 3 }, context());
+  const tripleSorties = (triple.data as { sorties: unknown[] }).sorties;
+  assert.ok(tripleSorties.length >= 1 && tripleSorties.length <= 3);
+  assert.equal(triple.state.parties[0].instantExpeditionStock, 3 - tripleSorties.length, 'each sortie consumes one stock');
+  assert.equal(triple.partyCycleWrites?.length, 1);
+  // Charge for all requested sorties is checked first: 4 requested with 3 in stock performs none.
+  assert.throws(() => applyApiV1Commit('commit/expedition/1/sortie', charged, { numberOfSortie: 4 }, context()), /illegal_action:charge_insufficient/);
+  for (const bad of [0, 7, 1.5, '2']) assert.throws(() => applyApiV1Commit('commit/expedition/1/sortie', charged, { numberOfSortie: bad }, context()), /invalid_request:numberOfSortie/);
   // Rewards use the Item Format of the rest of the API (`<lock>/<itemId>/<enhancement>/<superRare>`), not variant keys.
-  const rewards = (ok.data as { rewards: string[] }).rewards;
+  const rewards = okSorties[0].rewards;
   assert.equal(rewards.length, ok.state.parties[0].lastExpeditionLog?.rewards.length ?? 0);
   for (const reward of rewards) assert.match(reward, /^[01]\/[1-9][0-9]*\/[0-6]\/[0-9]+$/);
 

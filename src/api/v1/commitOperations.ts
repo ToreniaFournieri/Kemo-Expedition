@@ -230,38 +230,50 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       // The same sequence of reducer actions as pressing the Sortie or Gods Battle button (HomeScreen `triggerSortie`),
       // with the same refusals. The live party cycle is read through the context and its reset to the beginning of
       // `state.rest` is returned as a write the caller applies once the commit is durable.
-      const party = next.parties[partyIndex];
       const godsBattle = partyMatch[2] === 'godsBattle';
-      const isColosseum = party.selectedDungeonId === 99;
+      // SpecRef: 9.1.3 | 3-2-2 `numberOfSortie` (1–6); a Gods Battle is always one run.
+      const requested = parameters.numberOfSortie;
+      if (requested !== undefined && (!Number.isInteger(requested) || (requested as number) < 1 || (requested as number) > 6)) throw new Error('invalid_request:numberOfSortie');
+      const sortieCount = godsBattle ? 1 : (requested as number | undefined) ?? 1;
+      const isColosseum = next.parties[partyIndex].selectedDungeonId === 99;
       const cycle = context.partyCycle?.(partyIndex);
-      const maximumHp = computePartyStats(party).partyStats.hp;
+      const maximumHp = computePartyStats(next.parties[partyIndex]).partyStats.hp;
       const chargeScale = context.chargeDurationScale ?? 1;
-      const previousDiaryIds = new Set(party.diaryLogs.map((entry) => entry.id));
-      const unavailable = getSortieUnavailableReason({
-        party,
-        godsBattle,
-        hp: party.currentHp,
-        maximumHp,
-        chargeStock: getInstantExpeditionChargeState(party, context.simulatedAt, chargeScale).stock,
-        cycle,
-      });
-      if (unavailable) throw new Error(`illegal_action:${unavailable}`);
-      if (godsBattle && party.sideQuest) reduce({ type: 'CANCEL_SIDE_QUEST', partyIndex });
-      if (!isColosseum) reduce({ type: 'CONSUME_INSTANT_EXPEDITION_STOCK', partyIndex, now: context.simulatedAt, chargeDurationScale: chargeScale });
-      if (cycle?.state === 'explore') reduce({ type: 'FINALIZE_DIARY_LOG', partyIndex, simulatedAt: context.simulatedAt });
-      reduce({ type: 'CLEAR_PENDING_PROFIT', partyIndex });
-      reduce({ type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
-      reduce({ type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, simulatedAt: context.simulatedAt, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, triggerGodsBattle: godsBattle });
-      reduce({ type: 'ROLL_PARTY_SLEEPINESS', partyIndex });
+      const chargeStockNow = () => getInstantExpeditionChargeState(next.parties[partyIndex], context.simulatedAt, chargeScale).stock;
+      const unavailableNow = (liveCycle: typeof cycle) => getSortieUnavailableReason({ party: next.parties[partyIndex], godsBattle, hp: next.parties[partyIndex].currentHp, maximumHp, chargeStock: chargeStockNow(), cycle: liveCycle });
+      // Charge for every requested sortie is verified before anything runs, so an insufficient request performs none.
+      if (!isColosseum && chargeStockNow() < sortieCount) throw new Error('illegal_action:charge_insufficient');
+      const sorties: Record<string, unknown>[] = [];
+      for (let run = 0; run < sortieCount; run += 1) {
+        // After the first run the party is at the beginning of `state.rest`, so only the first run sees the live cycle.
+        const runCycle = run === 0 ? cycle : undefined;
+        const unavailable = unavailableNow(runCycle);
+        if (unavailable) {
+          // The first run is refused outright; a later run that cannot start (a Defeat exhausts the party) ends the batch.
+          if (run === 0) throw new Error(`illegal_action:${unavailable}`);
+          break;
+        }
+        const previousDiaryIds = new Set(next.parties[partyIndex].diaryLogs.map((entry) => entry.id));
+        if (godsBattle && next.parties[partyIndex].sideQuest) reduce({ type: 'CANCEL_SIDE_QUEST', partyIndex });
+        if (!isColosseum) reduce({ type: 'CONSUME_INSTANT_EXPEDITION_STOCK', partyIndex, now: context.simulatedAt, chargeDurationScale: chargeScale });
+        if (runCycle?.state === 'explore') reduce({ type: 'FINALIZE_DIARY_LOG', partyIndex, simulatedAt: context.simulatedAt });
+        reduce({ type: 'CLEAR_PENDING_PROFIT', partyIndex });
+        reduce({ type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
+        reduce({ type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, simulatedAt: context.simulatedAt, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, triggerGodsBattle: godsBattle });
+        reduce({ type: 'ROLL_PARTY_SLEEPINESS', partyIndex });
+        const resolved = next.parties[partyIndex];
+        // Only an outcome the party's Diary settings record creates an entry; otherwise the result is the party's newest
+        // retained log, named by its own unique ID.
+        const newDiaryEntry = resolved.diaryLogs.find((entry) => !previousDiaryIds.has(entry.id));
+        const logId = newDiaryEntry ? `diary:${newDiaryEntry.id}` : resolved.lastExpeditionLog ? retainedLogIdOf(resolved.lastExpeditionLog, resolved.id) : null;
+        sorties.push({ battleOutcome: apiExpeditionOutcomeOrNull(resolved.lastExpeditionLog), rewards: resolved.lastExpeditionLog?.rewards.map((item) => formatItem(item, item.isLocked === true)) ?? [], diaryEntryId: newDiaryEntry?.id ?? null, logId });
+      }
       if (context.partyCycle && context.restDurationMs) {
         partyCycleWrites.push({ partyIndex, cycle: { state: 'rest', stateStartedAt: context.now(), durationMs: context.restDurationMs(next.parties[partyIndex]), restInitialTotalSteps: 1, isCurrentExpeditionGodsBattle: false } });
       }
-      const resolved = next.parties[partyIndex];
-      // Only an outcome the party's Diary settings record creates an entry; otherwise the result is the party's newest
-      // retained log, named by its own unique ID.
-      const newDiaryEntry = resolved.diaryLogs.find((entry) => !previousDiaryIds.has(entry.id));
-      const logId = newDiaryEntry ? `diary:${newDiaryEntry.id}` : resolved.lastExpeditionLog ? retainedLogIdOf(resolved.lastExpeditionLog, resolved.id) : null;
-      data = { outcome: apiExpeditionOutcomeOrNull(resolved.lastExpeditionLog), rewards: resolved.lastExpeditionLog?.rewards.map((item) => formatItem(item, item.isLocked === true)) ?? [], diaryEntryId: newDiaryEntry?.id ?? null, logId };
+      // A Gods Battle keeps its single-result shape; a sortie reports one entry per run.
+      const { battleOutcome, ...godsResult } = sorties[0];
+      data = godsBattle ? { outcome: battleOutcome, ...godsResult } : { sorties };
     }
   } else if (operation.match(/^commit\/build\/party\/(\d+)$/)) {
     const partyNumber = Number(operation.split('/').at(-1));

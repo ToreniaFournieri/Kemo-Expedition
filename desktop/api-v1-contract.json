@@ -30129,7 +30129,7 @@
       "method": "POST",
       "path": "/api/v1/commit/expedition/{p}/sortie",
       "access": "session",
-      "purpose": "Resolve one sortie.",
+      "purpose": "Resolve one or more sorties (`numberOfSortie` 1–6).",
       "operationId": "commit/expedition/{p}/sortie",
       "transport": "json",
       "pathParameters": {
@@ -30173,7 +30173,13 @@
           "parameters": {
             "additionalProperties": false,
             "type": "object",
-            "properties": {}
+            "properties": {
+              "numberOfSortie": {
+                "minimum": 1,
+                "maximum": 6,
+                "type": "integer"
+              }
+            }
           },
           "confirmationToken": {
             "minLength": 1,
@@ -30187,72 +30193,86 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "outcome",
-            "rewards",
-            "diaryEntryId",
-            "logId"
+            "sorties"
           ],
           "properties": {
-            "outcome": {
-              "anyOf": [
-                {
-                  "anyOf": [
-                    {
-                      "const": "Clear",
-                      "type": "string"
-                    },
-                    {
-                      "const": "Return",
-                      "type": "string"
-                    },
-                    {
-                      "const": "Draw",
-                      "type": "string"
-                    },
-                    {
-                      "const": "Retreat",
-                      "type": "string"
-                    },
-                    {
-                      "const": "Defeat",
-                      "type": "string"
-                    }
-                  ]
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "rewards": {
+            "sorties": {
+              "minItems": 1,
+              "maxItems": 6,
               "type": "array",
               "items": {
-                "type": "string"
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "battleOutcome",
+                  "rewards",
+                  "diaryEntryId",
+                  "logId"
+                ],
+                "properties": {
+                  "battleOutcome": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "const": "Clear",
+                            "type": "string"
+                          },
+                          {
+                            "const": "Return",
+                            "type": "string"
+                          },
+                          {
+                            "const": "Draw",
+                            "type": "string"
+                          },
+                          {
+                            "const": "Retreat",
+                            "type": "string"
+                          },
+                          {
+                            "const": "Defeat",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "rewards": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "diaryEntryId": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "logId": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
               }
-            },
-            "diaryEntryId": {
-              "anyOf": [
-                {
-                  "minLength": 1,
-                  "maxLength": 200,
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "logId": {
-              "anyOf": [
-                {
-                  "minLength": 1,
-                  "maxLength": 200,
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ]
             }
           }
         },
@@ -30300,72 +30320,86 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "outcome",
-                "rewards",
-                "diaryEntryId",
-                "logId"
+                "sorties"
               ],
               "properties": {
-                "outcome": {
-                  "anyOf": [
-                    {
-                      "anyOf": [
-                        {
-                          "const": "Clear",
-                          "type": "string"
-                        },
-                        {
-                          "const": "Return",
-                          "type": "string"
-                        },
-                        {
-                          "const": "Draw",
-                          "type": "string"
-                        },
-                        {
-                          "const": "Retreat",
-                          "type": "string"
-                        },
-                        {
-                          "const": "Defeat",
-                          "type": "string"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "rewards": {
+                "sorties": {
+                  "minItems": 1,
+                  "maxItems": 6,
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "battleOutcome",
+                      "rewards",
+                      "diaryEntryId",
+                      "logId"
+                    ],
+                    "properties": {
+                      "battleOutcome": {
+                        "anyOf": [
+                          {
+                            "anyOf": [
+                              {
+                                "const": "Clear",
+                                "type": "string"
+                              },
+                              {
+                                "const": "Return",
+                                "type": "string"
+                              },
+                              {
+                                "const": "Draw",
+                                "type": "string"
+                              },
+                              {
+                                "const": "Retreat",
+                                "type": "string"
+                              },
+                              {
+                                "const": "Defeat",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "rewards": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "diaryEntryId": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "logId": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    }
                   }
-                },
-                "diaryEntryId": {
-                  "anyOf": [
-                    {
-                      "minLength": 1,
-                      "maxLength": 200,
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "logId": {
-                  "anyOf": [
-                    {
-                      "minLength": 1,
-                      "maxLength": 200,
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
                 }
               }
             },
@@ -30457,12 +30491,16 @@
         },
         "response": {
           "data": {
-            "outcome": "Clear",
-            "rewards": [
-              "xxxxxxx"
-            ],
-            "diaryEntryId": "xxxxxxx",
-            "logId": "xxxxxxx"
+            "sorties": [
+              {
+                "battleOutcome": "Clear",
+                "rewards": [
+                  "xxxxxxx"
+                ],
+                "diaryEntryId": "xxxxxxx",
+                "logId": "xxxxxxx"
+              }
+            ]
           }
         }
       }

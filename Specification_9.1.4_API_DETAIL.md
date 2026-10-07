@@ -616,11 +616,22 @@ definitions in 9.1.3.
   `state.rest`. For the ordinary player's runtime, that last step is a write to the
   live party cycle, applied after the commit is durable and in the same tick as the
   published state; an API account has no live cycle, so it neither reads nor writes
-  one. The result is `{outcome, rewards, diaryEntryId, logId}`: `outcome` uses the
-  outcome names above, `rewards` lists the dropped items in `Item Format`,
-  `diaryEntryId` is the Diary entry this sortie created (or `null`), and `logId` is
-  `diary:<diaryEntryId>` for that entry or the unique `log:<partyNumber>:<hash>` ID
-  of the log this sortie produced; both values are accepted by `latestBattleLog`.
+  one. `sortie` takes an optional `numberOfSortie` (integer `1–6`, default `1`) and
+  performs that many sorties in sequence, each consuming one stock; `godsBattle`
+  takes no parameters and runs once. Before anything runs, the charge for all
+  requested sorties is verified (`illegal_action` with `charge_insufficient`, and no
+  sortie is performed, when the stock is lower than `numberOfSortie`; the Colosseum
+  needs no charge); an out-of-range or non-integer value is `invalid_request`. Only
+  the first run sees the live `state.explore` cycle; if a later run cannot start (a
+  `Defeat` leaves the party exhausted), the batch ends there and reports the runs
+  already performed. The `sortie` result is `{sorties: [{battleOutcome, rewards,
+  diaryEntryId, logId}]}` with one entry per performed sortie, in order; the
+  `godsBattle` result is the single `{outcome, rewards, diaryEntryId, logId}`.
+  `battleOutcome` / `outcome` use the outcome names above, `rewards` lists the
+  dropped items in `Item Format`, `diaryEntryId` is the Diary entry that run created
+  (or `null`), and `logId` is `diary:<diaryEntryId>` for that entry or the unique
+  `log:<partyNumber>:<hash>` ID of the log that run produced; both values are
+  accepted by `latestBattleLog`.
 
 **Party build and equipment**
 
@@ -1048,7 +1059,7 @@ use the same operation without HTTP authentication headers.
 | POST | `/api/v1/commit/progress/elapsed` | Session | Advance controlled progression. |
 | POST | `/api/v1/commit/progress/progressReport` | Session | Perform progress-report action. |
 | POST | `/api/v1/commit/expedition/{p}/changeExpedition` | Session | Change expedition. |
-| POST | `/api/v1/commit/expedition/{p}/sortie` | Session | Resolve one sortie. |
+| POST | `/api/v1/commit/expedition/{p}/sortie` | Session | Resolve one or more sorties (`numberOfSortie` 1–6). |
 | POST | `/api/v1/commit/expedition/{p}/godsBattle` | Session | Resolve one Gods Battle. |
 | POST | `/api/v1/commit/expedition/{p}/resetStatistics` | Session | Reset the party's expedition statistics. |
 | POST | `/api/v1/commit/build/party/{p}` | Session | Change party build. |
