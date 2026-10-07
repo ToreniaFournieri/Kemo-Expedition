@@ -1252,14 +1252,23 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 **3-2-2. `{p}/sortie`**
 
-* Parameters: none.
-
+* Parameters:
+  * `numberOfSortie`
+    * Integer.
+    * Range: `1–6`.
 * Behavior:
-  * Consumes 1 stock and immediately processes one full party cycle.
+  * Check the charge usuage is available first, if not, denies all action
+  * Performs the specified number of sorties sequentially.
+  * Each sortie consumes 1 stock and immediately processes one full party cycle.
   * If the party is currently in `state.explore`, the current exploration cycle is completed first, then one additional full cycle is processed.
   * Processing always ends at the beginning of `state.rest`.
 
-* 
+* Return:
+  * For each sortie:
+    * `diaryEntryId`
+    * `battleOutcome`
+      * Example: `Clear`, `Draw`, `Retreat`, `Defeat`
+
 
 **3-2-3. `{p}/godsBattle`**
 
