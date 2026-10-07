@@ -217,17 +217,30 @@ console.log('apiV1BuildChange profile ok');
   const statusOf = async (state: GameState, id: number) => await buildApiV1ReadData(`read/build/character/${id}/status`, state, {}, {
     revision: 0, environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, inGameTime: now,
   }) as { current: { uniqueSelection: unknown }; validOptions: { uniqueSelection: unknown[] } };
+  // PT2 unlocked, so `orca` (Available At PT2) is selectable below.
+  const wide: GameState = { ...base, parties: [...base.parties, { ...base.parties[0], id: 2, characters: base.parties[0].characters.map((entry) => ({ ...entry, id: entry.id + 1000, isUnique: false, uniqueCharacterId: undefined })) }] };
   assert.equal(kemo.uniqueCharacterId, 'kemo');
   assert.equal((await statusOf(base, normalId)).current.uniqueSelection, false);
   assert.equal((await statusOf(base, normalId)).validOptions.uniqueSelection.includes('kemo'), false, 'assigned uniques are excluded');
-  assert.equal((await statusOf(base, normalId)).validOptions.uniqueSelection.includes('orca'), true);
+  assert.equal((await statusOf(wide, normalId)).validOptions.uniqueSelection.includes('orca'), true);
   assert.equal((await statusOf(base, kemo.id)).validOptions.uniqueSelection.includes('kemo'), true, 'its own unique stays listed');
 
   fails(base, normalId, { uniqueSelection: 'kemo' }, 'illegal_action:unique_character_assigned');
   fails(base, normalId, { uniqueSelection: 'nobody' }, 'invalid_request');
-  fails(base, normalId, { uniqueSelection: 'orca', name: 'other' }, 'unique_character_immutable');
+  // SpecRef: 2.1.4.2 | `Available At`: a unique character needs its PT unlocked.
+  {
+    const unlocked = base.parties.length;
+    const lockedIds = ['leonard', 'orca', 'nox', 'luna', 'mishka', 'ptitsa', 'hagakure', 'sougaha', 'finn', 'merle']
+      .filter((id) => ({ leonard: 2, orca: 2, nox: 3, luna: 3, mishka: 4, ptitsa: 4, hagakure: 5, sougaha: 5, finn: 6, merle: 6 } as Record<string, number>)[id] > unlocked);
+    const options = (await statusOf(base, normalId)).validOptions.uniqueSelection;
+    for (const id of lockedIds) {
+      assert.equal(options.includes(id), false, `${id} is not listed before its PT unlocks`);
+      fails(base, normalId, { uniqueSelection: id }, 'illegal_action:unique_character_unavailable');
+    }
+  }
+  fails(wide, normalId, { uniqueSelection: 'orca', name: 'other' }, 'unique_character_immutable');
 
-  const picked = change(base, normalId, { uniqueSelection: 'orca' }).state;
+  const picked = change(wide, normalId, { uniqueSelection: 'orca' }).state;
   const orca = character(picked, normalId);
   assert.deepEqual([orca.isUnique, orca.uniqueCharacterId, orca.raceId, orca.gender, orca.lineageId, orca.predispositionId],
     [true, 'orca', 'orcinian', 'female', 'rowdy_orca_girl', 'none']);

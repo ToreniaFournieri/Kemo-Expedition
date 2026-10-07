@@ -4,7 +4,7 @@ import { LINEAGES } from '../../data/lineages';
 import { PREDISPOSITIONS } from '../../data/predispositions';
 import { computeCharacterStats, MAX_CHARACTER_NAME_LENGTH } from '../../game/characterComputation';
 import { canCharacterEquipCategory, getEquipmentAptitudeForCategory, type EquipmentAptitude } from '../../game/equipmentSets';
-import { getUniqueCharacterDef, UNIQUE_CHARACTERS, type UniqueCharacterId } from '../../data/uniqueCharacters';
+import { getUniqueCharacterDef, isUniqueCharacterAvailable, UNIQUE_CHARACTERS, type UniqueCharacterId } from '../../data/uniqueCharacters';
 import { resolveReleasedUniqueBuild } from '../../game/uniqueRelease';
 import { translate } from '../../i18n';
 import type { Character, GameState, RaceId } from '../../types';
@@ -69,12 +69,13 @@ export function describeCharacterBuildCurrent(character: Character) {
 }
 
 // SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique selection: "固有"
-/** `false` plus every `uniqueCharacterId` not assigned to another character (the selected character's own stays listed). */
+/** `false` plus every `uniqueCharacterId` available at the unlocked PT count (Spec 2.1.4.2) and not assigned to another character (the selected character's own stays listed). */
 export function validUniqueSelections(state: GameState, character: Character): (false | UniqueCharacterId)[] {
   const assignedElsewhere = new Set(state.parties.flatMap((party) => party.characters)
     .filter((candidate) => candidate.id !== character.id && candidate.uniqueCharacterId !== undefined)
     .map((candidate) => candidate.uniqueCharacterId));
-  return [false, ...UNIQUE_CHARACTERS.filter((entry) => !assignedElsewhere.has(entry.id)).map((entry) => entry.id)];
+  return [false, ...UNIQUE_CHARACTERS.filter((entry) => !assignedElsewhere.has(entry.id)
+    && (character.uniqueCharacterId === entry.id || isUniqueCharacterAvailable(entry, state.parties.length))).map((entry) => entry.id)];
 }
 
 function parseRaceAndGender(state: GameState, character: Character, value: unknown): Pick<Character, 'raceId' | 'gender'> & Partial<Pick<Character, 'mimorianEnemyId'>> {
@@ -133,6 +134,9 @@ export function planCharacterBuildChange(state: GameState, characterId: number, 
         ...resolveReleasedUniqueBuild(character, party.characters.filter((candidate) => candidate.id !== character.id)),
       });
     } else {
+      const requestedDef = getUniqueCharacterDef(selection)!;
+      // SpecRef: 2.1.4.2 | Unique character `Available At`: selectable once its PT is unlocked.
+      if (!isUniqueCharacterAvailable(requestedDef, state.parties.length)) illegal('unique_character_unavailable');
       if (!validUniqueSelections(state, character).includes(selection)) illegal('unique_character_assigned');
       const def = getUniqueCharacterDef(selection)!;
       const identity: Partial<Character> = {

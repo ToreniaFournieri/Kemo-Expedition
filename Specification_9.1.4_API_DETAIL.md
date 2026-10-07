@@ -1385,11 +1385,16 @@ type DiaryEntry = {
 * `changeBuild.parameters.name` is 1–20 characters (Spec 8.2.3).
 * `changeBuild.parameters.uniqueSelection` is `false` or a `uniqueCharacterId`. An unknown
   value is `invalid_request`; one assigned to another character is
-  `illegal_action:unique_character_assigned`. Selecting a unique character sets its
+  `illegal_action:unique_character_assigned`; one whose `Available At` party is not yet
+  unlocked (Spec 2.1.4.2) is `illegal_action:unique_character_unavailable`, and
+  `validOptions.uniqueSelection` lists only available, unassigned ones. Selecting a unique character sets its
   name, gender, race, lineage and predisposition (Spec 2.1.4.2), so a conflicting
   `name`, `racesAndGender`, `lineage` or `predisposition` in the same call is
-  `illegal_action:unique_character_immutable`. `false` releases the character,
-  which keeps its current attributes and becomes editable.
+  `illegal_action:unique_character_immutable`. `false` releases the character and becomes
+  editable: its gender and classes are kept; its race is kept if selectable and not blocked
+  by the party's same-race/same-gender rule, otherwise the first free selectable race in
+  Spec 2.1 race-table order; lineage and predisposition reset to the first selectable
+  entry (Spec 8.2.3). Explicit `racesAndGender`, `lineage` or `predisposition` override.
 * A rejected set or character name is `invalid_request` with `details.field` `name`
   and `details.rule` naming the violated rule as a schema error does: `type` (not a
   string), `minLength` (empty or whitespace only), or `maxLength` (too long).

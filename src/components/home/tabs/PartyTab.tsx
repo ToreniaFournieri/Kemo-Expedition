@@ -10,7 +10,7 @@ import { LINEAGES } from '../../../data/lineages';
 import { PREDISPOSITIONS } from '../../../data/predispositions';
 import { RACES } from '../../../data/races';
 import { resolveReleasedUniqueBuild } from '../../../game/uniqueRelease';
-import { UNIQUE_CHARACTERS,type UniqueCharacterId } from '../../../data/uniqueCharacters';
+import { isUniqueCharacterAvailable, UNIQUE_CHARACTERS,type UniqueCharacterId } from '../../../data/uniqueCharacters';
 import { buildCombatTotals, buildPartyStatsView } from '../../../api/v1/statusView';
 import { readStatusFacts } from '../../../api/v1/calculatedStatus';
 import type { InProcessApiAdapter } from '../../../api/v1/applicationApi';
@@ -1325,7 +1325,8 @@ export default function PartyTab({
                 >
                   <option value="false">{t('home.party.uniqueSelectNone')}</option>
                   {UNIQUE_CHARACTERS
-                    .filter((entry) => !Object.entries(uniqueAssignments).some(([ownerId, assignedId]) => Number(ownerId) !== char.id && assignedId === entry.id))
+                    .filter((entry) => (currentUniqueId === entry.id || isUniqueCharacterAvailable(entry, parties.length))
+                      && !Object.entries(uniqueAssignments).some(([ownerId, assignedId]) => Number(ownerId) !== char.id && assignedId === entry.id))
                     .map((entry) => <option key={entry.id} value={entry.id}>{t(`character.default.${entry.nameKey}` as never)}</option>)}
                 </select>
               </label>
