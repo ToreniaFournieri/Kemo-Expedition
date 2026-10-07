@@ -1,0 +1,1 @@
+{"calls":[{"path":"/commit/build/character/5/removeEquipment","params":{"targetEquipment":[0,2,3,4]}},{"path":"/commit/build/character/5/equip","params":{"targetEquipment":["0/6318/0/0","0/4223/0/0","0/5223/0/0","0/2110/6/0"]}}]}
