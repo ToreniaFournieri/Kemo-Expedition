@@ -601,7 +601,8 @@ export default function PartyTab({
     male: 'Male',
     female: 'Female',
   };
-  const uniquePartyMemberImageFileName = char.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[char.lineageId] : undefined;
+  // A pending "固有" selection (or release) changes the background image immediately, before it is saved.
+  const uniquePartyMemberImageFileName = editingUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[pendingEdits?.lineageId ?? char.lineageId] : undefined;
   const raceLabel = raceLabelByRaceId[previewRaceId];
   const genderLabel = genderLabelByGender[previewGender];
   const ptRaceGenderImageFileName = party.id >= 1 && party.id <= 6 && raceLabel && genderLabel
