@@ -2634,7 +2634,10 @@ function reduceGameState(
         && !party.pendingClearGateSnapshot.defeatedBossExpeditions?.[clearedLog.dungeonId]
         && party.defeatedBossExpeditions?.[clearedLog.dungeonId]
         // SpecRef: 8.5 | UI_DIARY | Only the first party to defeat a boss is recorded.
-        && !state.parties.some((other) => other !== party && other.defeatedBossExpeditions?.[clearedLog.dungeonId])
+        // An unfinalized clear on another party is judged by its pre-run snapshot, so two parties clearing the same boss
+        // in one window cannot each hide the other; the Global Diary's per-boss event key keeps a single entry.
+        && !state.parties.some((other) => other !== party
+          && (other.pendingClearGateSnapshot?.defeatedBossExpeditions ?? other.defeatedBossExpeditions)?.[clearedLog.dungeonId])
         ? clearedLog.dungeonId
         : null;
       // SpecRef: 8.5 | UI_DIARY | First god defeat: a Gods Battle won against a god not defeated before.
