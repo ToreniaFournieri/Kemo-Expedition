@@ -4293,10 +4293,13 @@ function pickAchievementState(global: Pick<GameState['global'], 'achievementClea
 
 // SpecRef: 8.5 | UI_DIARY | Achievements are evaluated on the authoritative state after every change to what they count,
 // so parallel AFK Chunks (each seeing only its own snapshot) can neither double-record nor miss a milestone.
-function achievementTimestamp(action: GameAction): number {
+function achievementTimestamp(action: GameAction, global: GameState['global']): number {
   if (action.type === 'COMMIT_AFK_PARTY_CHUNK' || action.type === 'COMMIT_AFK_PARTY_TRANSACTION') return action.result.simulatedCompletedAt;
-  const simulatedAt = (action as { simulatedAt?: unknown }).simulatedAt;
-  return typeof simulatedAt === 'number' ? simulatedAt : Date.now();
+  const clock = action as { simulatedAt?: unknown; simulatedEndAt?: unknown };
+  if (typeof clock.simulatedAt === 'number') return clock.simulatedAt;
+  if (typeof clock.simulatedEndAt === 'number') return clock.simulatedEndAt;
+  // No in-game clock on this action: never stamp a system time behind the in-game entries already recorded.
+  return (global.globalDiary ?? []).reduce((latest, entry) => Math.max(latest, entry.createdAt), Date.now());
 }
 
 export function gameReducer(
@@ -4315,7 +4318,7 @@ export function gameReducer(
     || after.achievementClearTotal !== before.achievementClearTotal;
   // States without the milestone record predate achievements and are seeded when loaded, never evaluated here.
   if (!countedStateChanged || after.achievementMilestones === undefined) return next;
-  const withMilestones = applyAchievementMilestones(after, achievementTimestamp(action));
+  const withMilestones = applyAchievementMilestones(after, achievementTimestamp(action, after));
   return withMilestones === after ? next : { ...next, global: withMilestones };
 }
 
