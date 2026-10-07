@@ -58,7 +58,7 @@ function currentRaceAndGender(character: Character): string {
 /** A character's public build facts: the `current` of `read/build/character/{characterId}/status` and of `changeBuild`. */
 export function describeCharacterBuildCurrent(character: Character) {
   return {
-    uniqueSelection: character.uniqueCharacterId ?? false,
+    uniqueSelection: character.uniqueCharacterId ?? 'none',
     name: character.name,
     racesAndGender: currentRaceAndGender(character),
     mainClassId: character.mainClassId,
@@ -70,11 +70,11 @@ export function describeCharacterBuildCurrent(character: Character) {
 
 // SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique selection: "固有"
 /** `false` plus every `uniqueCharacterId` available at the unlocked PT count (Spec 2.1.4.2) and not assigned to another character (the selected character's own stays listed). */
-export function validUniqueSelections(state: GameState, character: Character): (false | UniqueCharacterId)[] {
+export function validUniqueSelections(state: GameState, character: Character): ('none' | UniqueCharacterId)[] {
   const assignedElsewhere = new Set(state.parties.flatMap((party) => party.characters)
     .filter((candidate) => candidate.id !== character.id && candidate.uniqueCharacterId !== undefined)
     .map((candidate) => candidate.uniqueCharacterId));
-  return [false, ...UNIQUE_CHARACTERS.filter((entry) => !assignedElsewhere.has(entry.id)
+  return ['none', ...UNIQUE_CHARACTERS.filter((entry) => !assignedElsewhere.has(entry.id)
     && (character.uniqueCharacterId === entry.id || isUniqueCharacterAvailable(entry, state.parties.length))).map((entry) => entry.id)];
 }
 
@@ -116,19 +116,20 @@ export function planCharacterBuildChange(state: GameState, characterId: number, 
     if (name.length > MAX_CHARACTER_NAME_LENGTH) invalid('name.maxLength');
     requested.name = name;
   }
-  const currentSelection = character.uniqueCharacterId ?? false;
-  let selection: false | UniqueCharacterId = currentSelection;
+  const currentSelection = character.uniqueCharacterId ?? 'none';
+  let selection: 'none' | UniqueCharacterId = currentSelection;
   if (parameters.uniqueSelection !== undefined) {
+    // SpecRef: 8.2.3 | Unique selection: `none` or an available `uniqueCharacterId`.
     const value = parameters.uniqueSelection;
-    if (value !== false && typeof value !== 'string') invalid('uniqueSelection');
-    if (value !== false && !getUniqueCharacterDef(value)) invalid('uniqueSelection');
-    selection = value as false | UniqueCharacterId;
+    if (typeof value !== 'string') invalid('uniqueSelection.type');
+    if (value !== 'none' && !getUniqueCharacterDef(value)) invalid('uniqueSelection.unknown_value');
+    selection = value as 'none' | UniqueCharacterId;
   }
   const changingSelection = selection !== currentSelection;
   let identityFixed = false;
   if (changingSelection) {
-    if (selection === false) {
-      // SpecRef: 8.2.3 | Changing a unique character to `false`: race falls back by table order when unique-only or blocked; lineage and predisposition reset; gender and classes are kept. Explicit parameters below override.
+    if (selection === 'none') {
+      // SpecRef: 8.2.3 | Changing a unique character to `none`: race falls back by table order when unique-only or blocked; lineage and predisposition reset; gender and classes are kept. Explicit parameters below override.
       Object.assign(requested, {
         isUnique: false, uniqueCharacterId: undefined,
         ...resolveReleasedUniqueBuild(character, party.characters.filter((candidate) => candidate.id !== character.id)),

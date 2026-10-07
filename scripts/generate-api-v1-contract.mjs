@@ -25,8 +25,8 @@ const nonEmptyArray = (items, options = {}) => Type.Array(items, { minItems: 1, 
 const integerId = Type.Integer({ minimum: 1 });
 const partyNumber = Type.Integer({ minimum: 1, maximum: 6 });
 const stableKey = Type.String({ minLength: 1, maxLength: 200 });
-// SpecRef: 9.1.3 | 3-3-2 changeBuild | `uniqueSelection` is `false` or a `uniqueCharacterId`.
-const uniqueSelectionValue = Type.Union([Type.Literal(false), stableKey]);
+// SpecRef: 9.1.3 | 3-3-2 changeBuild | `uniqueSelection` is `none` or a `uniqueCharacterId`.
+const uniqueSelectionValue = stableKey;
 const itemFormat = Type.String({ pattern: '^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))$' });
 const presentItemFormat = Type.String({ pattern: '^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$' });
 const evaluatedItemFormat = Type.String({ pattern: '^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)$' });

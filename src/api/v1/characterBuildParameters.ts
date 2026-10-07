@@ -18,7 +18,7 @@ export function characterEditToChangeBuildParameters(character: EditableCharacte
   const parameters: Record<string, unknown> = {};
   // SpecRef: 8.2.3 | Unique selection: `uniqueCharacterId` picks a unique character; `isUnique: false` releases it.
   if (edits.uniqueCharacterId !== undefined && edits.uniqueCharacterId !== character.uniqueCharacterId) parameters.uniqueSelection = edits.uniqueCharacterId;
-  else if (edits.isUnique === false && character.uniqueCharacterId !== undefined) parameters.uniqueSelection = false;
+  else if (edits.isUnique === false && character.uniqueCharacterId !== undefined) parameters.uniqueSelection = 'none';
   const changed = (key: keyof EditableCharacter): boolean => edits[key] !== undefined && edits[key] !== character[key];
 
   if (changed('name')) parameters.name = edits.name;

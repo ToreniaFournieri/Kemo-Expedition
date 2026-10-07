@@ -1383,14 +1383,15 @@ type DiaryEntry = {
 * Saved equipment set names (`saveEquipmentSet.equipmentSet.name`,
   `renameEquipmentSet.name`) are 1–80 characters, the Party pane's limit.
 * `changeBuild.parameters.name` is 1–20 characters (Spec 8.2.3).
-* `changeBuild.parameters.uniqueSelection` is `false` or a `uniqueCharacterId`. An unknown
-  value is `invalid_request`; one assigned to another character is
+* `changeBuild.parameters.uniqueSelection` is `none` or a `uniqueCharacterId`. A non-string
+  value (including JSON `false`) is `invalid_request` with rule `type`, an unknown string
+  `invalid_request` with rule `unknown_value`; one assigned to another character is
   `illegal_action:unique_character_assigned`; one whose `Available At` party is not yet
   unlocked (Spec 2.1.4.2) is `illegal_action:unique_character_unavailable`, and
   `validOptions.uniqueSelection` lists only available, unassigned ones. Selecting a unique character sets its
   name, gender, race, lineage and predisposition (Spec 2.1.4.2), so a conflicting
   `name`, `racesAndGender`, `lineage` or `predisposition` in the same call is
-  `illegal_action:unique_character_immutable`. `false` releases the character and becomes
+  `illegal_action:unique_character_immutable`. `none` releases the character and becomes
   editable: its gender and classes are kept; its race is kept if selectable and not blocked
   by the party's same-race/same-gender rule, otherwise the first free selectable race in
   Spec 2.1 race-table order; lineage and predisposition reset to the first selectable

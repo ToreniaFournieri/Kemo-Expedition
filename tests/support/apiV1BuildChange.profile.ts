@@ -220,13 +220,14 @@ console.log('apiV1BuildChange profile ok');
   // PT2 unlocked, so `orca` (Available At PT2) is selectable below.
   const wide: GameState = { ...base, parties: [...base.parties, { ...base.parties[0], id: 2, characters: base.parties[0].characters.map((entry) => ({ ...entry, id: entry.id + 1000, isUnique: false, uniqueCharacterId: undefined })) }] };
   assert.equal(kemo.uniqueCharacterId, 'kemo');
-  assert.equal((await statusOf(base, normalId)).current.uniqueSelection, false);
+  assert.equal((await statusOf(base, normalId)).current.uniqueSelection, 'none');
   assert.equal((await statusOf(base, normalId)).validOptions.uniqueSelection.includes('kemo'), false, 'assigned uniques are excluded');
   assert.equal((await statusOf(wide, normalId)).validOptions.uniqueSelection.includes('orca'), true);
   assert.equal((await statusOf(base, kemo.id)).validOptions.uniqueSelection.includes('kemo'), true, 'its own unique stays listed');
 
   fails(base, normalId, { uniqueSelection: 'kemo' }, 'illegal_action:unique_character_assigned');
   fails(base, normalId, { uniqueSelection: 'nobody' }, 'invalid_request');
+  fails(base, normalId, { uniqueSelection: false }, 'invalid_request');
   // SpecRef: 2.1.4.2 | `Available At`: a unique character needs its PT unlocked.
   {
     const unlocked = base.parties.length;
@@ -247,7 +248,7 @@ console.log('apiV1BuildChange profile ok');
   assert.equal((await statusOf(picked, normalId)).current.uniqueSelection, 'orca');
 
   // The race change can drop slots or aptitudes, so the release needs the usual confirmation.
-  const released = change(picked, kemo.id, { uniqueSelection: false }, { simulation: false, confirmation: 'yes' }).state;
+  const released = change(picked, kemo.id, { uniqueSelection: 'none' }, { simulation: false, confirmation: 'yes' }).state;
   assert.deepEqual([character(released, kemo.id).isUnique, character(released, kemo.id).uniqueCharacterId], [false, undefined]);
   // SpecRef: 8.2.3 | Changing a unique character to `false`: unique-only race falls back by table order, lineage/predisposition reset, gender/classes kept.
   {

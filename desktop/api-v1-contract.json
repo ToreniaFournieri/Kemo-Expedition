@@ -21361,17 +21361,9 @@
               ],
               "properties": {
                 "uniqueSelection": {
-                  "anyOf": [
-                    {
-                      "const": false,
-                      "type": "boolean"
-                    },
-                    {
-                      "minLength": 1,
-                      "maxLength": 200,
-                      "type": "string"
-                    }
-                  ]
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "type": "string"
                 },
                 "name": {
                   "minLength": 1,
@@ -21445,17 +21437,9 @@
                 "uniqueSelection": {
                   "type": "array",
                   "items": {
-                    "anyOf": [
-                      {
-                        "const": false,
-                        "type": "boolean"
-                      },
-                      {
-                        "minLength": 1,
-                        "maxLength": 200,
-                        "type": "string"
-                      }
-                    ]
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
                   }
                 },
                 "racesAndGender": {
@@ -21755,17 +21739,9 @@
                   ],
                   "properties": {
                     "uniqueSelection": {
-                      "anyOf": [
-                        {
-                          "const": false,
-                          "type": "boolean"
-                        },
-                        {
-                          "minLength": 1,
-                          "maxLength": 200,
-                          "type": "string"
-                        }
-                      ]
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
                     },
                     "name": {
                       "minLength": 1,
@@ -21839,17 +21815,9 @@
                     "uniqueSelection": {
                       "type": "array",
                       "items": {
-                        "anyOf": [
-                          {
-                            "const": false,
-                            "type": "boolean"
-                          },
-                          {
-                            "minLength": 1,
-                            "maxLength": 200,
-                            "type": "string"
-                          }
-                        ]
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
                       }
                     },
                     "racesAndGender": {
@@ -21965,7 +21933,7 @@
               ]
             },
             "current": {
-              "uniqueSelection": false,
+              "uniqueSelection": "xxxxxxx",
               "name": "xxxxxxx",
               "racesAndGender": "xxxxxxx",
               "mainClassId": "xxxxxxx",
@@ -21978,7 +21946,7 @@
             },
             "validOptions": {
               "uniqueSelection": [
-                false
+                "xxxxxxx"
               ],
               "racesAndGender": [
                 "xxxxxxx"
@@ -30598,17 +30566,9 @@
                 "type": "string"
               },
               "uniqueSelection": {
-                "anyOf": [
-                  {
-                    "const": false,
-                    "type": "boolean"
-                  },
-                  {
-                    "minLength": 1,
-                    "maxLength": 200,
-                    "type": "string"
-                  }
-                ]
+                "minLength": 1,
+                "maxLength": 200,
+                "type": "string"
               },
               "racesAndGender": {
                 "minLength": 1,
@@ -30882,17 +30842,9 @@
               ],
               "properties": {
                 "uniqueSelection": {
-                  "anyOf": [
-                    {
-                      "const": false,
-                      "type": "boolean"
-                    },
-                    {
-                      "minLength": 1,
-                      "maxLength": 200,
-                      "type": "string"
-                    }
-                  ]
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "type": "string"
                 },
                 "name": {
                   "minLength": 1,
@@ -31245,17 +31197,9 @@
                   ],
                   "properties": {
                     "uniqueSelection": {
-                      "anyOf": [
-                        {
-                          "const": false,
-                          "type": "boolean"
-                        },
-                        {
-                          "minLength": 1,
-                          "maxLength": 200,
-                          "type": "string"
-                        }
-                      ]
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
                     },
                     "name": {
                       "minLength": 1,
@@ -31472,7 +31416,7 @@
               ]
             },
             "current": {
-              "uniqueSelection": false,
+              "uniqueSelection": "xxxxxxx",
               "name": "xxxxxxx",
               "racesAndGender": "xxxxxxx",
               "mainClassId": "xxxxxxx",
