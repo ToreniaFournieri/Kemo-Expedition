@@ -574,6 +574,8 @@ export default function PartyTab({
   const char = selectedChar;
   // A pending "固有" selection (or release) decides which identity fields are locked before it is saved.
   const editingUnique = pendingEdits?.isUnique ?? char.isUnique ?? false;
+  // The party projection carries no `uniqueCharacterId`; the saved assignment comes from `uniqueAssignments`.
+  const currentUniqueId: UniqueCharacterId | undefined = char.isUnique ? uniqueAssignments[char.id] : undefined;
   const hpDisplayMultiplier = ((stats.baseStats.vitality + stats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(char);
   const race = RACES.find(r => r.id === char.raceId) ?? RACES[0];
   const mainClass = CLASSES.find(c => c.id === char.mainClassId) ?? CLASSES[0];
@@ -1300,7 +1302,7 @@ export default function PartyTab({
               <label className="flex items-center gap-2 text-xs text-gray-600">
                 <span>{t('home.party.uniqueSelectLabel')}</span>
                 <select
-                  value={pendingEdits?.isUnique === false ? 'false' : (pendingEdits?.uniqueCharacterId ?? char.uniqueCharacterId ?? 'false')}
+                  value={pendingEdits?.isUnique === false ? 'false' : (pendingEdits?.uniqueCharacterId ?? currentUniqueId ?? 'false')}
                   onChange={(e) => {
                     const value = e.target.value;
                     // Identity fields come from the unique table (Spec 2.1.4.2); drop pending identity edits first.
@@ -1313,17 +1315,17 @@ export default function PartyTab({
                       return;
                     }
                     const def = UNIQUE_CHARACTERS.find((entry) => entry.id === value)!;
-                    setPendingEdits(def.id === char.uniqueCharacterId ? kept : {
+                    setPendingEdits(def.id === currentUniqueId ? kept : {
                       ...kept, isUnique: true, uniqueCharacterId: def.id, name: t(`character.default.${def.nameKey}` as never), gender: def.gender,
                       raceId: def.raceId, lineageId: def.lineageId, predispositionId: 'none',
                     });
                   }}
                   className="border rounded bg-transparent px-1 py-0.5"
                 >
-                  <option value="false">false</option>
+                  <option value="false">{t('home.party.uniqueSelectNone')}</option>
                   {UNIQUE_CHARACTERS
                     .filter((entry) => !Object.entries(uniqueAssignments).some(([ownerId, assignedId]) => Number(ownerId) !== char.id && assignedId === entry.id))
-                    .map((entry) => <option key={entry.id} value={entry.id}>{entry.id}</option>)}
+                    .map((entry) => <option key={entry.id} value={entry.id}>{t(`character.default.${entry.nameKey}` as never)}</option>)}
                 </select>
               </label>
               {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique Character Flag. */}

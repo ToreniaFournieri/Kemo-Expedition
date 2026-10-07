@@ -2901,6 +2901,7 @@ const zhTW = {
   'home.party.castingSpell': '詠唱魔法',
   'home.party.elementalAttackHelpTitle': 'e. 屬性攻擊（可疊加）',
   'home.party.uniqueSelectLabel': '固有',
+  'home.party.uniqueSelectNone': '（無）',
   'home.party.uniqueCharacterClassOnly': '固有角色（僅可編輯職業）',
   'home.party.duplicateRaceGenderWarning': '同一隊伍中已存在相同種族·性別（非固有）的角色',
   'home.party.mainClass': '主職業',

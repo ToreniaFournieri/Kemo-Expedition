@@ -2903,6 +2903,7 @@ const zhCN = {
   'home.party.castingSpell': '咏唱魔法',
   'home.party.elementalAttackHelpTitle': 'e. 属性攻击（可叠加）',
   'home.party.uniqueSelectLabel': '固有',
+  'home.party.uniqueSelectNone': '（无）',
   'home.party.uniqueCharacterClassOnly': '固有角色（仅可编辑职业）',
   'home.party.duplicateRaceGenderWarning': '同一队伍中已存在相同种族·性别（非固有）的角色',
   'home.party.mainClass': '主职业',
