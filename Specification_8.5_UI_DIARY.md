@@ -36,13 +36,21 @@
      - Flavor text: `ケモは目覚めた`
   2. **First expedition boss defeat**
      - Triggered when any party defeats an expedition boss for the first time.
+     - Format example: `[PT1] ルピニアンの亜寒帯 初踏破`
      - If the victory unlocks a new party, include information about the newly unlocked party in the entry.
   3. **First god defeat**
      - Triggered when any party defeats a god for the first time.
+     - Format example: `[PT1] セイラン 再生の女神撃破`
   4. **Achievements**
+     - Achievement statistics are tracked internally and are not cleared by the Statistics reset button.
      - **Clear milestones:** `100`, `1,000`, `10,000`, `100,000`, and `1,000,000` total Clear outcomes.
-     - **Super Rare milestones:** `1`, `10`, `100`, `1,000`, and `10,000` Super Rare items obtained.
-     - **Jewel milestones:** `1`, `10`, `100`, `1,000`, and `10,000` jewels obtained.
+       - Format example: `1,000回 踏破達成`
+     - **Super Rare milestones:** `1`, `10`, `100`, `1,000`, and `10,000` Super Rare items held in inventory.
+       - Format example: `超レア 100個 入手`
+     - **Jewel milestones:** `1`, `10`, `100`, `1,000`, and `10,000` jewels held in inventory.
+       - Format example: `結晶 100個 入手`
+     - Each achievement milestone is recorded only once.
+       - After a milestone has been recorded, it is not triggered again even if the value later falls below the threshold and reaches it again.
   - Global Diary entries contain only a title and do not include detailed battle logs.
 - First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
 - Top record is latest (default position) and bottom is older logs.
