@@ -1219,7 +1219,7 @@
                     ],
                     "properties": {
                       "partyNumber": {
-                        "minimum": 1,
+                        "minimum": 0,
                         "maximum": 6,
                         "type": "integer"
                       },
@@ -1451,7 +1451,7 @@
                         ],
                         "properties": {
                           "partyNumber": {
-                            "minimum": 1,
+                            "minimum": 0,
                             "maximum": 6,
                             "type": "integer"
                           },
@@ -1529,7 +1529,7 @@
               ],
               "notification": [
                 {
-                  "partyNumber": 1,
+                  "partyNumber": 0,
                   "unreadDiary": 0,
                   "unreadDiaryTitle": [
                     "xxxxxxx"
@@ -1748,7 +1748,7 @@
                     ],
                     "properties": {
                       "partyNumber": {
-                        "minimum": 1,
+                        "minimum": 0,
                         "maximum": 6,
                         "type": "integer"
                       },
@@ -1980,7 +1980,7 @@
                         ],
                         "properties": {
                           "partyNumber": {
-                            "minimum": 1,
+                            "minimum": 0,
                             "maximum": 6,
                             "type": "integer"
                           },
@@ -2058,7 +2058,7 @@
               ],
               "notification": [
                 {
-                  "partyNumber": 1,
+                  "partyNumber": 0,
                   "unreadDiary": 0,
                   "unreadDiaryTitle": [
                     "xxxxxxx"
@@ -10800,7 +10800,7 @@
         "type": "object",
         "properties": {
           "partyNumber": {
-            "minimum": 1,
+            "minimum": 0,
             "maximum": 6,
             "type": "integer"
           },
@@ -10830,6 +10830,7 @@
               "required": [
                 "effectiveSelection",
                 "unreadTotal",
+                "global",
                 "parties"
               ],
               "properties": {
@@ -10842,7 +10843,7 @@
                   ],
                   "properties": {
                     "partyNumber": {
-                      "minimum": 1,
+                      "minimum": 0,
                       "maximum": 6,
                       "type": "integer"
                     },
@@ -10863,6 +10864,372 @@
                 "unreadTotal": {
                   "minimum": 0,
                   "type": "integer"
+                },
+                "global": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "partyNumber",
+                    "unreadCount",
+                    "entries"
+                  ],
+                  "properties": {
+                    "partyNumber": {
+                      "const": 0,
+                      "type": "number"
+                    },
+                    "unreadCount": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "entries": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "diaryEntryId",
+                          "partyNumber",
+                          "occurredAt",
+                          "unread",
+                          "content",
+                          "battleLog",
+                          "triggers",
+                          "expedition",
+                          "rewards",
+                          "sideQuest",
+                          "unlock"
+                        ],
+                        "properties": {
+                          "diaryEntryId": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "partyNumber": {
+                            "minimum": 0,
+                            "maximum": 6,
+                            "type": "integer"
+                          },
+                          "occurredAt": {
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                            "type": "string"
+                          },
+                          "unread": {
+                            "type": "boolean"
+                          },
+                          "content": {
+                            "anyOf": [
+                              {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "format",
+                                  "title",
+                                  "subtitle",
+                                  "events"
+                                ],
+                                "properties": {
+                                  "format": {
+                                    "const": "semantic",
+                                    "type": "string"
+                                  },
+                                  "title": {
+                                    "additionalProperties": false,
+                                    "type": "object",
+                                    "required": [
+                                      "key",
+                                      "args"
+                                    ],
+                                    "properties": {
+                                      "key": {
+                                        "minLength": 1,
+                                        "maxLength": 200,
+                                        "type": "string"
+                                      },
+                                      "args": {
+                                        "type": "object",
+                                        "patternProperties": {
+                                          "^(.*)$": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "boolean"
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "subtitle": {
+                                    "additionalProperties": false,
+                                    "type": "object",
+                                    "required": [
+                                      "key",
+                                      "args"
+                                    ],
+                                    "properties": {
+                                      "key": {
+                                        "minLength": 1,
+                                        "maxLength": 200,
+                                        "type": "string"
+                                      },
+                                      "args": {
+                                        "type": "object",
+                                        "patternProperties": {
+                                          "^(.*)$": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "boolean"
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "events": {
+                                    "type": "array",
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "type": "object",
+                                      "required": [
+                                        "key",
+                                        "args"
+                                      ],
+                                      "properties": {
+                                        "key": {
+                                          "minLength": 1,
+                                          "maxLength": 200,
+                                          "type": "string"
+                                        },
+                                        "args": {
+                                          "type": "object",
+                                          "patternProperties": {
+                                            "^(.*)$": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "number"
+                                                },
+                                                {
+                                                  "type": "boolean"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "format",
+                                  "title",
+                                  "subtitle",
+                                  "text"
+                                ],
+                                "properties": {
+                                  "format": {
+                                    "const": "legacy",
+                                    "type": "string"
+                                  },
+                                  "title": {
+                                    "type": "string"
+                                  },
+                                  "subtitle": {
+                                    "type": "string"
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "battleLog": {
+                            "anyOf": [
+                              {
+                                "type": "null"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "logId",
+                                  "availability"
+                                ],
+                                "properties": {
+                                  "logId": {
+                                    "minLength": 1,
+                                    "maxLength": 200,
+                                    "type": "string"
+                                  },
+                                  "availability": {
+                                    "additionalProperties": false,
+                                    "type": "object",
+                                    "required": [
+                                      "available",
+                                      "unavailableReason"
+                                    ],
+                                    "properties": {
+                                      "available": {
+                                        "type": "boolean"
+                                      },
+                                      "unavailableReason": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "triggers": {
+                            "uniqueItems": true,
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "const": "victory",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "return",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "defeat",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "draw",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "retreat",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "eliteRare",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "bossRare",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "mythicRare",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "superRare",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "godsBattle",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "sideQuest",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "unlock",
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          },
+                          "expedition": {
+                            "anyOf": [
+                              {
+                                "type": "null"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "dungeonId",
+                                  "difficultyOffset"
+                                ],
+                                "properties": {
+                                  "dungeonId": {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  },
+                                  "difficultyOffset": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "rewards": {
+                            "type": "array",
+                            "items": {
+                              "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$",
+                              "type": "string"
+                            }
+                          },
+                          "sideQuest": {
+                            "type": "null"
+                          },
+                          "unlock": {
+                            "anyOf": [
+                              {
+                                "type": "null"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "boss",
+                                  "partySlot"
+                                ],
+                                "properties": {
+                                  "boss": {
+                                    "type": "boolean"
+                                  },
+                                  "partySlot": {
+                                    "minimum": 2,
+                                    "maximum": 6,
+                                    "type": "integer"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
                 },
                 "parties": {
                   "type": "array",
@@ -11148,7 +11515,7 @@
                               "type": "string"
                             },
                             "partyNumber": {
-                              "minimum": 1,
+                              "minimum": 0,
                               "maximum": 6,
                               "type": "integer"
                             },
@@ -11643,6 +12010,7 @@
                   "required": [
                     "effectiveSelection",
                     "unreadTotal",
+                    "global",
                     "parties"
                   ],
                   "properties": {
@@ -11655,7 +12023,7 @@
                       ],
                       "properties": {
                         "partyNumber": {
-                          "minimum": 1,
+                          "minimum": 0,
                           "maximum": 6,
                           "type": "integer"
                         },
@@ -11676,6 +12044,372 @@
                     "unreadTotal": {
                       "minimum": 0,
                       "type": "integer"
+                    },
+                    "global": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "partyNumber",
+                        "unreadCount",
+                        "entries"
+                      ],
+                      "properties": {
+                        "partyNumber": {
+                          "const": 0,
+                          "type": "number"
+                        },
+                        "unreadCount": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "entries": {
+                          "type": "array",
+                          "items": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "diaryEntryId",
+                              "partyNumber",
+                              "occurredAt",
+                              "unread",
+                              "content",
+                              "battleLog",
+                              "triggers",
+                              "expedition",
+                              "rewards",
+                              "sideQuest",
+                              "unlock"
+                            ],
+                            "properties": {
+                              "diaryEntryId": {
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              "partyNumber": {
+                                "minimum": 0,
+                                "maximum": 6,
+                                "type": "integer"
+                              },
+                              "occurredAt": {
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                                "type": "string"
+                              },
+                              "unread": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "anyOf": [
+                                  {
+                                    "additionalProperties": false,
+                                    "type": "object",
+                                    "required": [
+                                      "format",
+                                      "title",
+                                      "subtitle",
+                                      "events"
+                                    ],
+                                    "properties": {
+                                      "format": {
+                                        "const": "semantic",
+                                        "type": "string"
+                                      },
+                                      "title": {
+                                        "additionalProperties": false,
+                                        "type": "object",
+                                        "required": [
+                                          "key",
+                                          "args"
+                                        ],
+                                        "properties": {
+                                          "key": {
+                                            "minLength": 1,
+                                            "maxLength": 200,
+                                            "type": "string"
+                                          },
+                                          "args": {
+                                            "type": "object",
+                                            "patternProperties": {
+                                              "^(.*)$": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "string"
+                                                  },
+                                                  {
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "boolean"
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "subtitle": {
+                                        "additionalProperties": false,
+                                        "type": "object",
+                                        "required": [
+                                          "key",
+                                          "args"
+                                        ],
+                                        "properties": {
+                                          "key": {
+                                            "minLength": 1,
+                                            "maxLength": 200,
+                                            "type": "string"
+                                          },
+                                          "args": {
+                                            "type": "object",
+                                            "patternProperties": {
+                                              "^(.*)$": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "string"
+                                                  },
+                                                  {
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "boolean"
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "events": {
+                                        "type": "array",
+                                        "items": {
+                                          "additionalProperties": false,
+                                          "type": "object",
+                                          "required": [
+                                            "key",
+                                            "args"
+                                          ],
+                                          "properties": {
+                                            "key": {
+                                              "minLength": 1,
+                                              "maxLength": 200,
+                                              "type": "string"
+                                            },
+                                            "args": {
+                                              "type": "object",
+                                              "patternProperties": {
+                                                "^(.*)$": {
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "number"
+                                                    },
+                                                    {
+                                                      "type": "boolean"
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "type": "object",
+                                    "required": [
+                                      "format",
+                                      "title",
+                                      "subtitle",
+                                      "text"
+                                    ],
+                                    "properties": {
+                                      "format": {
+                                        "const": "legacy",
+                                        "type": "string"
+                                      },
+                                      "title": {
+                                        "type": "string"
+                                      },
+                                      "subtitle": {
+                                        "type": "string"
+                                      },
+                                      "text": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                ]
+                              },
+                              "battleLog": {
+                                "anyOf": [
+                                  {
+                                    "type": "null"
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "type": "object",
+                                    "required": [
+                                      "logId",
+                                      "availability"
+                                    ],
+                                    "properties": {
+                                      "logId": {
+                                        "minLength": 1,
+                                        "maxLength": 200,
+                                        "type": "string"
+                                      },
+                                      "availability": {
+                                        "additionalProperties": false,
+                                        "type": "object",
+                                        "required": [
+                                          "available",
+                                          "unavailableReason"
+                                        ],
+                                        "properties": {
+                                          "available": {
+                                            "type": "boolean"
+                                          },
+                                          "unavailableReason": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              },
+                              "triggers": {
+                                "uniqueItems": true,
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "const": "victory",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "return",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "defeat",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "draw",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "retreat",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "eliteRare",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "bossRare",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "mythicRare",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "superRare",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "godsBattle",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "sideQuest",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "unlock",
+                                      "type": "string"
+                                    }
+                                  ]
+                                }
+                              },
+                              "expedition": {
+                                "anyOf": [
+                                  {
+                                    "type": "null"
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "type": "object",
+                                    "required": [
+                                      "dungeonId",
+                                      "difficultyOffset"
+                                    ],
+                                    "properties": {
+                                      "dungeonId": {
+                                        "minimum": 1,
+                                        "type": "integer"
+                                      },
+                                      "difficultyOffset": {
+                                        "minimum": 0,
+                                        "type": "integer"
+                                      }
+                                    }
+                                  }
+                                ]
+                              },
+                              "rewards": {
+                                "type": "array",
+                                "items": {
+                                  "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$",
+                                  "type": "string"
+                                }
+                              },
+                              "sideQuest": {
+                                "type": "null"
+                              },
+                              "unlock": {
+                                "anyOf": [
+                                  {
+                                    "type": "null"
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "type": "object",
+                                    "required": [
+                                      "boss",
+                                      "partySlot"
+                                    ],
+                                    "properties": {
+                                      "boss": {
+                                        "type": "boolean"
+                                      },
+                                      "partySlot": {
+                                        "minimum": 2,
+                                        "maximum": 6,
+                                        "type": "integer"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
                     },
                     "parties": {
                       "type": "array",
@@ -11961,7 +12695,7 @@
                                   "type": "string"
                                 },
                                 "partyNumber": {
-                                  "minimum": 1,
+                                  "minimum": 0,
                                   "maximum": 6,
                                   "type": "integer"
                                 },
@@ -12443,10 +13177,49 @@
           "data": {
             "diaryInfo": {
               "effectiveSelection": {
-                "partyNumber": 1,
+                "partyNumber": 0,
                 "diaryEntryId": "xxxxxxx"
               },
               "unreadTotal": 0,
+              "global": {
+                "partyNumber": 0,
+                "unreadCount": 0,
+                "entries": [
+                  {
+                    "diaryEntryId": "xxxxxxx",
+                    "partyNumber": 0,
+                    "occurredAt": "1970-01-01T00:00:00.000Z",
+                    "unread": true,
+                    "content": {
+                      "format": "semantic",
+                      "title": {
+                        "key": "xxxxxxx",
+                        "args": {}
+                      },
+                      "subtitle": {
+                        "key": "xxxxxxx",
+                        "args": {}
+                      },
+                      "events": [
+                        {
+                          "key": "xxxxxxx",
+                          "args": {}
+                        }
+                      ]
+                    },
+                    "battleLog": null,
+                    "triggers": [
+                      "victory"
+                    ],
+                    "expedition": null,
+                    "rewards": [
+                      "0/1101/2/0"
+                    ],
+                    "sideQuest": null,
+                    "unlock": null
+                  }
+                ]
+              },
               "parties": [
                 {
                   "partyNumber": 1,
@@ -12479,7 +13252,7 @@
                   "entries": [
                     {
                       "diaryEntryId": "xxxxxxx",
-                      "partyNumber": 1,
+                      "partyNumber": 0,
                       "occurredAt": "1970-01-01T00:00:00.000Z",
                       "unread": true,
                       "content": {
@@ -26120,7 +26893,7 @@
                   "type": "string"
                 },
                 "partyNumber": {
-                  "minimum": 1,
+                  "minimum": 0,
                   "maximum": 6,
                   "type": "integer"
                 },
@@ -26384,7 +27157,7 @@
                       "type": "string"
                     },
                     "partyNumber": {
-                      "minimum": 1,
+                      "minimum": 0,
                       "maximum": 6,
                       "type": "integer"
                     },
@@ -26626,7 +27399,7 @@
           "data": {
             "entry": {
               "diaryEntryId": "xxxxxxx",
-              "partyNumber": 1,
+              "partyNumber": 0,
               "occurredAt": "1970-01-01T00:00:00.000Z",
               "unread": true,
               "content": {
@@ -38523,7 +39296,7 @@
                 ]
               },
               "partyNumber": {
-                "minimum": 1,
+                "minimum": 0,
                 "maximum": 6,
                 "type": "integer"
               }

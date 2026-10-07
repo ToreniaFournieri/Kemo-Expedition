@@ -100,7 +100,7 @@ export const BattleLogReferenceSchema = Type.Union([
 
 export const DiaryEntrySchema = Type.Object({
   diaryEntryId: Type.String({ minLength: 1, maxLength: 200 }),
-  partyNumber: PartyNumberSchema,
+  partyNumber: Type.Integer({ minimum: 0, maximum: 6 }), // 0 = Global Diary scope (Spec 9.1.4)
   occurredAt: IsoTimestampSchema,
   unread: Type.Boolean(),
   content: DiaryContentSchema,

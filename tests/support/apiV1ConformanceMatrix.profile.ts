@@ -799,6 +799,8 @@ function normalize(value: unknown, extraVolatile: readonly string[] = []): unkno
   return JSON.parse(JSON.stringify(value, (key, entry) => {
     if (VOLATILE_KEYS.has(key) || extraVolatile.includes(key)) return undefined;
     if (typeof entry === 'string' && /^matrix-(opaque|inprocess)-\d+$/.test(entry)) return '<opaque-id>';
+    // Global Diary entry IDs start with their wall-clock creation time, which differs between the two adapters' runs.
+    if (typeof entry === 'string') return entry.replace(/\b\d{13}-(?=[a-z])/g, '<ms>-');
     return entry;
   }));
 }

@@ -5,6 +5,7 @@ import { createFreshGameState } from '../../src/hooks/useGameState.ts';
 
 import { createExpeditionSimulationRoomResults } from '../../src/game/expeditionSimulation.ts';
 import { computePartyStats as computePartyStatsForPadding } from '../../src/game/partyComputation.ts';
+import { createAccountCreatedDiaryLog, createBossFirstClearDiaryLog, createGodFirstDefeatDiaryLog } from '../../src/game/globalDiary.ts';
 import type { DiaryLog, ExpeditionLog } from '../../src/types/index.ts';
 
 // A hand-built forecast: room 1 is reached by every run, room 2 by 900, and later rooms by nobody.
@@ -139,6 +140,22 @@ calls.length = 0;
   const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
   const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'read/observation/diary')!.response.data);
   assert.equal(validate(projection), true, JSON.stringify(validate.errors?.slice(0, 3)));
+
+  // Global Diary entries (scope 0) must satisfy the same catalog schemas; a mismatch fails the read closed as `internal_error`.
+  const globalEntries = [
+    createAccountCreatedDiaryLog(Date.UTC(2026, 8, 20, 0), 'a'),
+    createBossFirstClearDiaryLog({ createdAt: Date.UTC(2026, 8, 20, 3), idToken: 'b', partyNumber: 1, dungeonId: 8, unlockedPartyNumber: 2 }),
+    createGodFirstDefeatDiaryLog({ createdAt: Date.UTC(2026, 8, 20, 4), partyNumber: 1, godExpeditionId: 1 }),
+  ];
+  const globalDiaryState = { ...diaryState, global: { ...diaryState.global, globalDiary: globalEntries } };
+  for (const parameters of [{ partyNumber: 1 }, { partyNumber: 0 }, { partyNumber: 0, diaryEntryId: globalEntries[1].id }]) {
+    const withGlobal = await buildApiV1ReadData('read/observation/diary', globalDiaryState, parameters, context) as any;
+    assert.equal(validate(withGlobal), true, JSON.stringify(validate.errors?.slice(0, 3)));
+    assert.equal(withGlobal.diaryInfo.global.entries.length, 3);
+  }
+  const validateEntry = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'read/diary/diaryEntry/{diaryEntryId}')!.response.data);
+  const globalDetail = await buildApiV1ReadData(`read/diary/diaryEntry/${encodeURIComponent(globalEntries[1].id)}`, globalDiaryState, {}, context) as any;
+  assert.equal(validateEntry(globalDetail), true, JSON.stringify(validateEntry.errors?.slice(0, 3)));
 
   const detail = await buildApiV1ReadData(`read/diary/diaryEntry/${encodeURIComponent(legacyEntry.id)}`, diaryState, {}, context) as any;
   assert.equal(detail.entry.diaryEntryId, legacyEntry.id);
