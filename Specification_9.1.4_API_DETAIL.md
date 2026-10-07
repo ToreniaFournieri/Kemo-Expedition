@@ -57,7 +57,7 @@ Common identifiers:
 | `revision` | Monotonically increasing integer for the active save. |
 | `requestId` | Server-generated opaque identifier for one invocation. |
 | `idempotencyKey` | Client-generated UUID or 16–128 printable ASCII characters. |
-| `partyNumber` / `{p}` | Unlocked party number `1–6`. |
+| `partyNumber` / `{p}` | Unlocked party number `1–6`. For Diary entries, projections, `markAsRead` and `diarySetting` only, `0` selects the Global Diary scope (9.1.3 Path Parameters). |
 | `characterId` | Stable character ID, never a localized name or array position. |
 | `diaryEntryId` | Stable retained Diary-entry ID. |
 | `equipmentSetId` | Stable saved-equipment-set ID. |
@@ -852,7 +852,12 @@ definitions in 9.1.3.
 
 * Diary/settings commits documented as partial updates preserve omitted fields
   and return the complete resulting `current` object.
-* `markAsRead` returns affected Diary-entry IDs and the resulting unread totals.
+* `markAsRead` returns affected Diary-entry IDs and the resulting unread totals,
+  including the Global scope (`partyNumber` 0). The main unread total includes Global.
+* `{p}` = 0 on `diarySetting` is reserved for future expansion (the Global Diary
+  has no setting pane, 8.5). Both `read/diary/0/diarySetting` and
+  `commit/diary/0/diarySetting` return an empty `current` object and change
+  nothing. Every other `{p}` route rejects `0`.
 * `markNewsAsRead` returns affected news versions (those that were unread) and the
   resulting unread count. An unknown version rejects the whole request as
   `not_found`; acknowledging only already-read news is a valid no-op.
@@ -1204,7 +1209,7 @@ type EquipmentSet = {
 };
 type DiaryEntry = {
   diaryEntryId: string; // Stable retained ID; existing saves use opaque timestamp-token IDs.
-  partyNumber: number;
+  partyNumber: number; // 0 = Global Diary entry, 1–6 = Party Diary entry
   occurredAt: string; // emulated in-game instant
   unread: boolean;
   content: {
@@ -1351,6 +1356,14 @@ type DiaryEntry = {
   optional `logId`; omission selects the party's latest retained log, while an
   explicit ID selects that party's referenced retained log or returns `not_found`.
   Legacy text remains unchanged; do not infer semantic facts from it.
+* Global Diary (`partyNumber` 0) is always available and is not tied to a Party
+  unlock. Its entries use the same `DiaryEntry` shape with `content.format`
+  `semantic`, no `events` detail and `battleLog: null`; the title carries the
+  first-boss-defeat or account-created facts, and the unlocked-Party fact when the
+  victory unlocks one. The projection returns it as a scope with `partyNumber` 0,
+  its own unread count and a 99-entry retention limit (8.5). Global entries have
+  no trigger keys and no notification settings. Existing saves receive no
+  account-created entry.
 * Each `diary` projection summary contains the same identity, timestamp, unread
   state, content, and `battleLog` reference as `DiaryEntry`, plus ordered trigger
   keys, dungeon/difficulty facts, reward Item Formats, optional language-neutral
@@ -1656,7 +1669,7 @@ Focused projection query context:
 | --- | --- |
 | `party` | `partyNumber`, `characterId`; character must belong to selected party. |
 | `base` | `pane`: `shop|inventory|vault|workshop|altar`; item searches use `searchItems`. |
-| `diary` | `partyNumber`, `diaryEntryId`; entry must belong to selected party. |
+| `diary` | `partyNumber` (`0` = Global, `1–6` = Party), `diaryEntryId`; entry must belong to the selected scope. |
 | `compact`, `overview`, `expedition`, `setting` | No local selection context. |
 
 Defaults use the retained selection when 8.x requires it, otherwise the first
@@ -1664,7 +1677,7 @@ unlocked party/member or the documented default pane. Return the effective
 selection. A stale retained selection falls back safely; an explicitly invalid
 selection is rejected. Disabled panes still return their availability/reason.
 UI adapters translate actual view actions into the required explicit commands
-(for example leaving a Diary party tab marks its entries read); HTTP reads never
+(for example leaving a Diary party or Global tab marks its entries read); HTTP reads never
 perform those actions. The menu-bar pane continues to receive only its minimum
 read-only display projection under 9.1.2.
 
