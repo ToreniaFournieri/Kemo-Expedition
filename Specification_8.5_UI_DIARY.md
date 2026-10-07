@@ -11,7 +11,8 @@
   - `commit/diary/{p}/diarySetting`
   - `commit/diary/diaryEntry/markAsRead`
 
-- The Diary has six subcategory tabs: PT1, PT2, PT3, PT4, PT5, PT6. (Default selected tab: `PT1`, or the last selected tab if previously selected.)
+- The Diary has six subcategory tabs: `Global`, `PT1`, `PT2`, `PT3`, `PT4`, `PT5`, `PT6`. (Default selected tab: `Global`, or the last selected tab if previously selected.)
+
 - A Party tab becomes visible only when the corresponding Party is unlocked.
 - The selected tab is highlighted using the sub-theme color.
 - If only one Party is unlocked, the subcategory tabs are hidden.
@@ -21,19 +22,38 @@
   - When the user leaves a Party subcategory tab, all entries in that tab are treated as read and its red badge is removed.
   - The main Diary badge reflects the total number of unread diary entries across all Party subcategories.
 - Each Party has its own independent Diary.
-- Each Party Diary keeps a maximum of 12 entries.
+- Entry:
+  - Global Diary keeps a maximum of 99 entries.
+  - Each Party Diary keeps a maximum of 12 entries.
 - Existing Diary entries remain until a new entry is created for that Party. Creating an entry removes only the oldest entries needed to restore the 12-entry maximum; opening, loading, or saving the game must not remove entries.
-- The diary is updated when any of the following events occur:
+- The party diary is updated when any of the following events occur:
   - The party is defeated.
   - The party obtains a Boss Rare or Mythic Rare item.
   - A Gods Battle occurs.
   - The party obtains a Super Rare item.
-  - The party defeats an expedition boss for the first time and unlock a new party
+- The **global Diary** is updated when any of the following events occur:
+  - The account is created.
+  - A party defeats an expedition boss for the first time and unlocks a new party.
+  - Global Diary entries contain only a title and do not include detailed battle logs.
 - First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
 - Top record is latest (default position) and bottom is older logs.
 - Use the emulated in-game timestamp rather than the device or system timestamp.
 
-- Setting. 
+**Setting**
+
+**Setting Global Diary**
+
+```
+記録設定                 ▼
+
+none
+
+
+```
+
+
+**Setting Party Diary**
+
 ```
 日誌記録設定                 ▼
 
@@ -58,19 +78,19 @@
 ```
 (Left-Aligned)         (Right-aligned)
 line 1: [PT2]ボスレア(秘奥真理の書) 獲得      ▼
-line 2 gray text: ケイナイアン平原      02/12 20:28
+line 2 gray text: ケイナイアン平原      2026/02/12 20:28
 (Left-Aligned)         (Right-aligned)
 line 1: [PT1] 敗北の記録           ▼
-line 2 gray text: ヴァルンの樹林帯      02/12 20:28
+line 2 gray text: ヴァルンの樹林帯      2026/02/12 20:28
 (Left-Aligned)         (Right-aligned)
 line 1: [PT1] サイドクエスト達成(散財1,000G)           
-line 2 gray text: ウルサンの霊峰: 剛力の雅晶 を手に入れた     02/12 20:28
+line 2 gray text: ウルサンの霊峰: 剛力の雅晶 を手に入れた     2026/02/12 20:28
 (Left-Aligned)         (Right-aligned)
 line 1: [PT1] セイラン 再生の女神撃破          ▼
-line 2 gray text:      02/12 21:28
+line 2 gray text:      2026/02/12 21:28
 (Left-Aligned)         (Right-aligned)
 line 1: [PT1] ガーヴ 消耗の神撃破          ▼
-line 2 gray text:     02/12 21:28
+line 2 gray text:     2026/02/12 21:28
 
 ```
 
@@ -82,7 +102,7 @@ line 2 gray text:     02/12 21:28
    
 ```
 line 1: [PT1] セイラン 再生の女神 敗北          ▼
-line 2 gray text: ケイナイアン平原     02/12 21:28
+line 2 gray text: ケイナイアン平原     2026/02/12 21:28
 ```
 
 ### Compact language-neutral records
