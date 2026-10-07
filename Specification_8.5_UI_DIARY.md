@@ -26,7 +26,7 @@
     - Existing Global Diary entries remain until a new entry is created. Creating an entry removes only the oldest entries needed to restore the 99-entry maximum; opening, loading, or saving the game must not remove entries.
   - Each Party Diary keeps a maximum of 12 entries.
     - Existing party Diary entries remain until a new entry is created for that Party. Creating an entry removes only the oldest entries needed to restore the 12-entry maximum; opening, loading, or saving the game must not remove entries.
-- The **party diary**S is updated when any of the following events occur:
+- The **party diary** is updated when any of the following events occur:
   - The party is defeated.
   - The party obtains a Boss Rare or Mythic Rare item.
   - A Gods Battle occurs.
@@ -51,7 +51,7 @@
        - Format example: `結晶 100個 入手`
      - Each achievement milestone is recorded only once.
        - After a milestone has been recorded, it is not triggered again even if the value later falls below the threshold and reaches it again.
-  - Global Diary entries contain only a title and do not include detailed battle logs.
+- Global Diary entries contain only a title and do not include detailed battle logs.
 - First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
 - Top record is latest (default position) and bottom is older logs.
 - Use the emulated in-game timestamp rather than the device or system timestamp.
