@@ -206,11 +206,14 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 ```
 
-Path Parameters
+* Path Parameters
 
-{p}: Party number, 1–6
-{characterId}: `characterId` Character ID.
-{diaryEntryId}: Stable Diary-entry ID.
+* {p}: Party number
+  * Valid values: 0–6.
+  * 0 represents the global scope.
+  * 1–6 represent PT1–PT6.
+* {characterId}: `characterId` Character ID.
+* {diaryEntryId}: Stable Diary-entry ID.
 
 ##### 9.1.3.2 API requirement fundamental
 

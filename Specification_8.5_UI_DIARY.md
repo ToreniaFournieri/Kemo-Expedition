@@ -11,21 +11,20 @@
   - `commit/diary/{p}/diarySetting`
   - `commit/diary/diaryEntry/markAsRead`
 
-- The Diary has six subcategory tabs: `Global`, `PT1`, `PT2`, `PT3`, `PT4`, `PT5`, `PT6`. (Default selected tab: `Global`, or the last selected tab if previously selected.)
+- The Diary has subcategory tabs: `Global`, `PT1`, `PT2`, `PT3`, `PT4`, `PT5`, `PT6`. (Default selected tab: `Global`, or the last selected tab if previously selected.)
 
 - A Party tab becomes visible only when the corresponding Party is unlocked.
 - The selected tab is highlighted using the sub-theme color.
-- If only one Party is unlocked, the subcategory tabs are hidden.
 - Diary unread badges:
   - The main Diary tab displays a red unread badge, showing up to 49 unread entries. (Display `49+` when the count is 49 or greater.)
   - Each Party subcategory tab also displays its own red unread badge, showing up to 12 unread entries for that Party.
   - When the user leaves a Party subcategory tab, all entries in that tab are treated as read and its red badge is removed.
-  - The main Diary badge reflects the total number of unread diary entries across all Party subcategories.
+  - The main Diary badge reflects the total number of unread diary entries across global and all Party subcategories.
 - Each Party has its own independent Diary.
 - Entry:
   - Global Diary keeps a maximum of 99 entries.
   - Each Party Diary keeps a maximum of 12 entries.
-- Existing Diary entries remain until a new entry is created for that Party. Creating an entry removes only the oldest entries needed to restore the 12-entry maximum; opening, loading, or saving the game must not remove entries.
+    - Existing party Diary entries remain until a new entry is created for that Party. Creating an entry removes only the oldest entries needed to restore the 12-entry maximum; opening, loading, or saving the game must not remove entries.
 - The party diary is updated when any of the following events occur:
   - The party is defeated.
   - The party obtains a Boss Rare or Mythic Rare item.
@@ -33,7 +32,8 @@
   - The party obtains a Super Rare item.
 - The **global Diary** is updated when any of the following events occur:
   - The account is created.
-  - A party defeats an expedition boss for the first time and unlocks a new party.
+    - Flavor text: "ケモは目覚めた"
+  - A party defeats an expedition boss for the first time. If the victory unlocks a new party, include the newly unlocked party information in the entry.
   - Global Diary entries contain only a title and do not include detailed battle logs.
 - First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
 - Top record is latest (default position) and bottom is older logs.
@@ -43,13 +43,7 @@
 
 **Setting Global Diary**
 
-```
-記録設定                 ▼
-
-none
-
-
-```
+- No setting pane.
 
 
 **Setting Party Diary**
@@ -74,7 +68,18 @@ none
  (Ref: 8.1.1 Popup Notification Logic & Display @Specification_8.1_UI_FOUNDATIONS.md)
 ```
 
-- Title of dirary 
+
+**Title of global dirary**
+
+line 1: [PT1] セイラン 再生の女神撃破
+line 2 gray text:      2026/02/12 21:28
+(Left-Aligned)         (Right-aligned)
+line 1: [PT1] ガーヴ 消耗の神撃破
+line 2 gray text:     2026/02/12 21:28
+line 1: ケモは目覚めた
+line 2 gray text:     2026/02/11 21:0
+
+**Title of party dirary**
 ```
 (Left-Aligned)         (Right-aligned)
 line 1: [PT2]ボスレア(秘奥真理の書) 獲得      ▼
@@ -104,6 +109,7 @@ line 2 gray text:     2026/02/12 21:28
 line 1: [PT1] セイラン 再生の女神 敗北          ▼
 line 2 gray text: ケイナイアン平原     2026/02/12 21:28
 ```
+
 
 ### Compact language-neutral records
 - New expedition and Diary records use `compactVersion: 1`. Preserve all facts necessary for the existing UI; generate narration only for expanded rooms using the current language, without combat execution or random draws.
