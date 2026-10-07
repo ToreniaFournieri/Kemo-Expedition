@@ -26,15 +26,23 @@
     - Existing Global Diary entries remain until a new entry is created. Creating an entry removes only the oldest entries needed to restore the 99-entry maximum; opening, loading, or saving the game must not remove entries.
   - Each Party Diary keeps a maximum of 12 entries.
     - Existing party Diary entries remain until a new entry is created for that Party. Creating an entry removes only the oldest entries needed to restore the 12-entry maximum; opening, loading, or saving the game must not remove entries.
-- The party diary is updated when any of the following events occur:
+- The **party diary**S is updated when any of the following events occur:
   - The party is defeated.
   - The party obtains a Boss Rare or Mythic Rare item.
   - A Gods Battle occurs.
   - The party obtains a Super Rare item.
 - The **global Diary** is updated when any of the following events occur:
-  - The account is created.
-    - Flavor text: "ケモは目覚めた"
-  - A party defeats an expedition boss for the first time. If the victory unlocks a new party, include the newly unlocked party information in the entry.
+  1. **Account creation**
+     - Flavor text: `ケモは目覚めた`
+  2. **First expedition boss defeat**
+     - Triggered when any party defeats an expedition boss for the first time.
+     - If the victory unlocks a new party, include information about the newly unlocked party in the entry.
+  3. **First god defeat**
+     - Triggered when any party defeats a god for the first time.
+  4. **Achievements**
+     - **Clear milestones:** `100`, `1,000`, `10,000`, and `100,000` total Clear outcomes.
+     - **Super Rare milestones:** `1`, `10`, `100`, `1,000`, and `10,000` Super Rare items obtained.
+     - **Jewel milestones:** `1`, `10`, `100`, `1,000`, and `10,000` jewels obtained.
   - Global Diary entries contain only a title and do not include detailed battle logs.
 - First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
 - Top record is latest (default position) and bottom is older logs.
