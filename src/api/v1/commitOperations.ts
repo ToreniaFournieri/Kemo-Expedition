@@ -32,6 +32,7 @@ import type { Character, GameState, Party, SavedEquipmentSet } from '../../types
 import { getVariantKey } from '../../types';
 import { ITEM_MAX_STACK } from '../../game/inventoryMutation';
 import { diarySettingsView } from './diaryView';
+import { countUnreadGlobalDiaryLogs, GLOBAL_DIARY_PARTY_NUMBER } from '../../game/globalDiary';
 import { formatItem } from './itemFormat';
 import { retainedLogIdOf } from './battleLogs';
 
@@ -589,25 +590,35 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (changed.length > 0) next = { ...next, global: { ...next.global, inventory: { ...next.global.inventory, ...Object.fromEntries(changed.map((key) => [key, { ...next.global.inventory[key], isNew: false }])) } } };
     data = { items: changed };
   } else if (operation.match(/^commit\/diary\/(\d+)\/diarySetting$/)) {
-    const partyNumber = Number(operation.split('/')[2]); const partyIndex = next.parties.findIndex((entry) => entry.id === partyNumber); if (partyIndex < 0) throw new Error('not_found'); reduce({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings: parameters }); data = { current: diarySettingsView(next.parties[partyIndex].diarySettings) };
+    const partyNumber = Number(operation.split('/')[2]);
+    // SpecRef: 9.1.4 | `{p}` = 0 on `diarySetting` is reserved for future expansion: nothing changes and nothing is returned.
+    if (partyNumber === GLOBAL_DIARY_PARTY_NUMBER) { data = { current: {} }; } else {
+    const partyIndex = next.parties.findIndex((entry) => entry.id === partyNumber); if (partyIndex < 0) throw new Error('not_found'); reduce({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings: parameters }); data = { current: diarySettingsView(next.parties[partyIndex].diarySettings) }; }
   } else if (operation === 'commit/diary/diaryEntry/markAsRead') {
     const partyNumber = parameters.partyNumber === undefined ? null : Number(parameters.partyNumber);
+    // SpecRef: 8.5 / 9.1.4 | `partyNumber` 0 selects the Global Diary; omitted selects the Global Diary and every Party.
+    const includesGlobal = partyNumber === null || partyNumber === GLOBAL_DIARY_PARTY_NUMBER;
     const selectedParties = partyNumber === null ? next.parties : next.parties.filter((party) => party.id === partyNumber);
-    if (selectedParties.length === 0) throw new Error('not_found');
+    if (selectedParties.length === 0 && !includesGlobal) throw new Error('not_found');
+    const globalLogs = includesGlobal ? next.global.globalDiary ?? [] : [];
     const requested = parameters.diaryEntryId;
     if (requested !== 'ALL' && typeof requested !== 'string' && !Array.isArray(requested)) throw new Error('invalid_request:diaryEntryId');
+    const allEntries = [...globalLogs, ...selectedParties.flatMap((party) => party.diaryLogs)];
     const ids = requested === 'ALL'
-      ? selectedParties.flatMap((party) => party.diaryLogs.map((entry) => entry.id))
+      ? allEntries.map((entry) => entry.id)
       : (Array.isArray(requested) ? requested : [requested]).map(String);
     if (ids.length === 0 && requested !== 'ALL') throw new Error('invalid_request:diaryEntryId');
     if (new Set(ids).size !== ids.length) throw new Error('invalid_request:duplicate_diaryEntryId');
-    const applicableIds = new Set(selectedParties.flatMap((party) => party.diaryLogs.map((entry) => entry.id)));
+    const applicableIds = new Set(allEntries.map((entry) => entry.id));
     if (ids.some((id) => !applicableIds.has(id))) throw new Error('not_found');
     // Only the entries that were unread are affected; already-read entries are a no-op.
-    const unreadIds = new Set(selectedParties.flatMap((party) => party.diaryLogs.filter((entry) => !entry.isRead).map((entry) => entry.id)));
+    const unreadIds = new Set(allEntries.filter((entry) => !entry.isRead).map((entry) => entry.id));
     const affected = ids.filter((id) => unreadIds.has(id));
     for (const id of affected) reduce({ type: 'MARK_DIARY_LOG_SEEN', logId: id });
-    data = { diaryEntryId: affected, unreadTotal: next.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0) };
+    data = {
+      diaryEntryId: affected,
+      unreadTotal: countUnreadGlobalDiaryLogs(next.global.globalDiary) + next.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0),
+    };
   } else if (operation === 'commit/setting/markNewsAsRead') {
     // An unknown version rejects the whole request; only the versions that were unread are affected and returned.
     const requested = parameters.version === undefined ? DEVELOPER_NEWS_ITEMS.map((entry) => entry.id) : (Array.isArray(parameters.version) ? parameters.version : [parameters.version]).map(String);
@@ -631,7 +642,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (parameters.resetSideQuest === true) reduce({ type: 'RESET_SIDE_QUEST_BAG', partyIndex });
     data = { partyNumber, resetCommonRewards: parameters.resetCommonRewards === true, resetRewards: parameters.resetRewards === true, resetSideQuest: parameters.resetSideQuest === true };
   } else if (operation === 'commit/setting/backup/reset') {
-    next = createFreshGameState(next.global.language); resetControlEvents = true; data = {};
+    next = createFreshGameState(next.global.language, undefined, context.simulatedAt); resetControlEvents = true; data = {};
   } else if (operation === 'commit/setting/modeSelect') {
     if (parameters.mode !== undefined && parameters.mode !== context.gameMode) throw new Error('illegal_action:mode_fixed');
     if (parameters.enemyLevelOffset !== undefined && Number(parameters.enemyLevelOffset) !== context.enemyLevelOffset) throw new Error('illegal_action:enemy_level_offset_fixed');

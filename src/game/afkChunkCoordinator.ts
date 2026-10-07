@@ -1,6 +1,7 @@
-import type { Character, DiaryLog, ExpeditionLog, GameState, InventoryRecord, Party, TerrainEffectKey } from '../types';
+import type { Character, DiaryLog, ExpeditionLog, GameState, GlobalDiaryLog, InventoryRecord, Party, TerrainEffectKey } from '../types';
 import type { RuntimeGameMode } from './runtimeGameMode';
 import { DIARY_LEGACY_LOG_LOAD_LIMIT } from './diary.ts';
+import { addGlobalDiaryLogs } from './globalDiary.ts';
 
 export const AFK_CHUNK_CYCLE_COUNT = 30;
 export type AfkWorkerSimulationStrategy = 'legacy' | 'optimized';
@@ -680,6 +681,8 @@ export interface AfkGlobalDelta {
   unlockedMimorianEnemyIds: number[];
   unlockedDeities: string[];
   challengedGodNames: string[];
+  /** Global Diary entries created by the Chunk (SpecRef 8.5); optional for results produced before they existed. */
+  globalDiary?: GlobalDiaryLog[];
   revealedItemCompendiumItemIds: number[];
   revealedGlossaryAbilityIds: string[];
   revealedGlossaryTerrainKeys: TerrainEffectKey[];
@@ -832,6 +835,7 @@ export function createAfkPartyChunkResult(
       unlockedMimorianEnemyIds: additions(baseGlobal.unlockedMimorianEnemyIds, resultGlobal.unlockedMimorianEnemyIds),
       unlockedDeities: additions(baseGlobal.unlockedDeities, resultGlobal.unlockedDeities),
       challengedGodNames: additions(baseGlobal.challengedGodNames, resultGlobal.challengedGodNames),
+      globalDiary: additions(baseGlobal.globalDiary ?? [], resultGlobal.globalDiary ?? []),
       revealedItemCompendiumItemIds: additions(baseGlobal.revealedItemCompendiumItemIds, resultGlobal.revealedItemCompendiumItemIds),
       revealedGlossaryAbilityIds: additions(baseGlobal.revealedGlossaryAbilityIds, resultGlobal.revealedGlossaryAbilityIds),
       revealedGlossaryTerrainKeys: additions(baseGlobal.revealedGlossaryTerrainKeys, resultGlobal.revealedGlossaryTerrainKeys),
@@ -947,6 +951,7 @@ export function commitAfkPartyChunk(current: GameState, result: AfkPartyChunkRes
       unlockedMimorianEnemyIds: addUnique(currentGlobal.unlockedMimorianEnemyIds, delta.unlockedMimorianEnemyIds),
       unlockedDeities: addUnique(currentGlobal.unlockedDeities, delta.unlockedDeities),
       challengedGodNames: addUnique(currentGlobal.challengedGodNames, delta.challengedGodNames),
+      globalDiary: addGlobalDiaryLogs(currentGlobal.globalDiary, delta.globalDiary ?? []),
       revealedItemCompendiumItemIds: addUnique(currentGlobal.revealedItemCompendiumItemIds, delta.revealedItemCompendiumItemIds),
       revealedGlossaryAbilityIds: addUnique(currentGlobal.revealedGlossaryAbilityIds, delta.revealedGlossaryAbilityIds),
       revealedGlossaryTerrainKeys: addUnique(currentGlobal.revealedGlossaryTerrainKeys, delta.revealedGlossaryTerrainKeys),

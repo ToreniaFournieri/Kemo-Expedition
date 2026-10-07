@@ -131,6 +131,7 @@ import { getXpToNextLevel } from '../game/partyLevel';
 import { MAX_LEVEL } from '../types';
 import { createEnvironmentStorageKey, getEnvironmentId } from '../game/environment';
 import { addDiaryLogs } from '../game/diary';
+import { addGlobalDiaryLogs, createAccountCreatedDiaryLog, createBossFirstClearDiaryLog, normalizeGlobalDiaryLogs } from '../game/globalDiary';
 import { computeCharacterStats } from '../game/characterComputation';
 import {
   getShopHourKey,
@@ -342,37 +343,6 @@ function getUnlockedStateFromEntries(logs: ExpeditionLog[], initialPartySlots: n
   }
 
   return { unlockedPartySlots };
-}
-
-// SpecRef: 5.1.3.2 | Unlock party | Party unlock condition
-function getUnlockDiaryLog(
-  log: ExpeditionLog | null,
-  previousPartySlots: number,
-  pendingUnlockState: NonNullable<Party['pendingUnlockState']>,
-  createdAt: number,
-): DiaryLog | null {
-  if (!log) return null;
-
-  const unlockedPartySlot = pendingUnlockState.partySlotCount > previousPartySlots
-    ? pendingUnlockState.partySlotCount
-    : null;
-  if (!unlockedPartySlot) return null;
-
-  const unlockSourceEntry = [...log.entries]
-    .reverse()
-    .find((entry) => {
-      const partyUnlock = getUnlockedPartySlotFromEntry(entry, log.dungeonId);
-      return !!partyUnlock;
-    });
-
-  return {
-    id: `${createdAt}-${gameplayRandom().toString(36).slice(2, 8)}`,
-    expeditionLog: log,
-    triggers: ['unlock'],
-    semantic: { version: 1, unlock: { boss: unlockSourceEntry?.roomType === 'battle_Boss', slot: unlockedPartySlot } },
-    createdAt,
-    isRead: false,
-  };
 }
 
 function getCycleDurationScale(): number {
@@ -970,6 +940,7 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
             enemyBattleStats: {},
             altarVictoriesByEnemyType: {},
             readDeveloperNewsItemIds: [],
+            globalDiary: [],
           };
         }
         if (Array.isArray(parsed.global.inventory)) {
@@ -987,6 +958,7 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
           : [];
         parsed.global.enemyBattleStats = getEnemyBattleStatsWithDefaults(parsed.global.enemyBattleStats);
         parsed.global.altarVictoriesByEnemyType = getAltarVictoriesWithDefaults(parsed.global.altarVictoriesByEnemyType);
+        parsed.global.globalDiary = normalizeGlobalDiaryLogs(parsed.global.globalDiary);
         parsed.global.readDeveloperNewsItemIds = Array.isArray(parsed.global.readDeveloperNewsItemIds)
           ? Array.from(new Set(parsed.global.readDeveloperNewsItemIds.filter((itemId: unknown): itemId is string => typeof itemId === 'string' && itemId.trim().length > 0)))
           : [];
@@ -1727,7 +1699,7 @@ type InitialStateResult = {
 // SpecRef: 9.1.3 | API | fundamental/signUp
 // New API accounts and ordinary resets must start from the same authoritative
 // game factory; transports must never synthesize their own initial save.
-export function createFreshGameState(language: Language, now: number = Date.now()): GameState {
+export function createFreshGameState(language: Language, now: number = Date.now(), inGameNow: number = now): GameState {
   return {
     scene: 'home',
     global: {
@@ -1756,6 +1728,8 @@ export function createFreshGameState(language: Language, now: number = Date.now(
       enemyBattleStats: {},
       altarVictoriesByEnemyType: {},
       readDeveloperNewsItemIds: [],
+      // SpecRef: 8.5 | UI_DIARY | The global Diary starts with the account-created entry (new accounts only).
+      globalDiary: [createAccountCreatedDiaryLog(inGameNow, 'account')],
       language,
     },
     parties: [createInitialParty(language)],
@@ -2638,18 +2612,30 @@ function reduceGameState(
       const pendingUnlockState = party.pendingUnlockState;
       // SpecRef: 8.5 | UI_DIARY | Use the emulated in-game timestamp rather than the device or system timestamp.
       const createdAtBase = pendingDiaryLog?.createdAt ?? action.simulatedAt ?? Date.now();
-      const unlockDiaryLog = pendingUnlockState
-        ? getUnlockDiaryLog(
-            party.lastExpeditionLog,
-            state.parties.length,
-            pendingUnlockState,
-            createdAtBase + 1,
-          )
-        : null;
       const nextDiaryLogs = addDiaryLogs(party.diaryLogs ?? [], [
-        ...(unlockDiaryLog ? [unlockDiaryLog] : []),
         ...(pendingDiaryLog ? [pendingDiaryLog] : []),
       ]);
+
+      // SpecRef: 8.5 | UI_DIARY | The global Diary records a party's first expedition boss defeat and the Party it unlocks.
+      const clearedLog = party.expeditionRewardsPending ? party.lastExpeditionLog : null;
+      const firstClearedDungeonId = clearedLog
+        && clearedLog.finalOutcome === 'Clear'
+        && !isGodsBattleExpedition(clearedLog)
+        && party.pendingClearGateSnapshot
+        && !party.pendingClearGateSnapshot.defeatedBossExpeditions?.[clearedLog.dungeonId]
+        && party.defeatedBossExpeditions?.[clearedLog.dungeonId]
+        ? clearedLog.dungeonId
+        : null;
+      const unlockedPartyNumber = pendingUnlockState && pendingUnlockState.partySlotCount > state.parties.length
+        ? pendingUnlockState.partySlotCount
+        : null;
+      const firstClearDiaryLog = firstClearedDungeonId === null ? null : createBossFirstClearDiaryLog({
+        createdAt: createdAtBase,
+        idToken: `p${party.id}d${firstClearedDungeonId}`,
+        partyNumber: party.id,
+        dungeonId: firstClearedDungeonId,
+        unlockedPartyNumber,
+      });
 
       let nextLevel = party.level;
       let nextExperience = party.experience;
@@ -2694,6 +2680,9 @@ function reduceGameState(
       };
 
       let nextGlobal = state.global;
+      if (firstClearDiaryLog) {
+        nextGlobal = { ...nextGlobal, globalDiary: addGlobalDiaryLogs(nextGlobal.globalDiary, [firstClearDiaryLog]) };
+      }
       if (pendingUnlockState) {
         const nextUnlockedPartySlots = Math.max(1, Math.min(6, pendingUnlockState.partySlotCount));
         const defaultParties = createDefaultParties();
@@ -3678,6 +3667,10 @@ function reduceGameState(
     }
 
     case 'MARK_DIARY_LOG_SEEN': {
+      const globalDiary = state.global.globalDiary;
+      const nextGlobal = globalDiary?.some((diaryLog) => diaryLog.id === action.logId && !diaryLog.isRead)
+        ? { ...state.global, globalDiary: globalDiary.map((diaryLog) => (diaryLog.id === action.logId ? { ...diaryLog, isRead: true } : diaryLog)) }
+        : state.global;
       const updatedParties = state.parties.map((party) => {
         const nextDiaryLogs = party.diaryLogs.map((diaryLog) => (
           diaryLog.id === action.logId
@@ -3695,6 +3688,7 @@ function reduceGameState(
       return {
         ...state,
         parties: updatedParties,
+        global: nextGlobal,
       };
     }
 
@@ -4095,6 +4089,7 @@ function reduceGameState(
           readDeveloperNewsItemIds: Array.isArray(hydrated.global.readDeveloperNewsItemIds)
             ? Array.from(new Set(hydrated.global.readDeveloperNewsItemIds.filter((itemId) => typeof itemId === 'string' && itemId.trim().length > 0)))
             : [],
+          globalDiary: normalizeGlobalDiaryLogs(hydrated.global.globalDiary),
           prana: Number.isFinite(hydrated.global.prana) ? Math.max(0, Math.floor(hydrated.global.prana)) : 0,
           unlockedMimorianEnemyIds: Array.isArray(hydrated.global.unlockedMimorianEnemyIds)
             ? Array.from(new Set(hydrated.global.unlockedMimorianEnemyIds.filter((enemyId) => Number.isInteger(enemyId) && ENEMIES.some((enemy) => enemy.id === enemyId))))

@@ -1,4 +1,5 @@
 import { getDiaryRewardHeadline } from '../../../game/diaryHeadline';
+import { GLOBAL_DIARY_PARTY_NUMBER } from '../../../game/globalDiary';
 import { renderDiaryBattle, semanticBattleAction, diaryBattleFlags } from '../../../game/compactDiary.ts';
 import { Fragment,useState,type Dispatch,type SetStateAction } from 'react';
 import { GOD_ENEMY_PROFILES } from '../../../data/dropTables';
@@ -51,40 +52,54 @@ UiIconKey
 
 const DIARY_PARTY_UNREAD_BADGE_MAX = 12;
 
-function DiaryPartyTabs({ parties, selectedIndex, onSelect }: {
-  parties: readonly DiaryPartyView[];
-  selectedIndex: number;
-  onSelect: (index: number) => void;
-}) {
-  // SpecRef: 8.5 | UI_DIARY | If only one Party is unlocked, the subcategory tabs are hidden.
-  if (parties.length <= 1) return null;
+const DIARY_GLOBAL_UNREAD_BADGE_MAX = 99;
 
+function DiaryUnreadBadge({ count, max }: { count: number; max: number }) {
+  if (count === 0) return null;
   return (
-    <div className="grid grid-cols-6 gap-1 rounded-lg bg-pane p-1 shadow-md shadow-slate-900/10" role="tablist" aria-label={t('diary.partyTabs.label')}>
+    <span className="absolute -right-1 -top-1 rounded-full bg-status-unread px-1 py-0.5 text-[9px] leading-none text-content-inverse">
+      {Math.min(count, max)}
+    </span>
+  );
+}
+
+// SpecRef: 8.5 | UI_DIARY | The Diary has subcategory tabs: Global, PT1, PT2, PT3, PT4, PT5, PT6.
+function DiaryPartyTabs({ parties, globalUnreadCount, isGlobalSelected, selectedIndex, onSelect }: {
+  parties: readonly DiaryPartyView[];
+  globalUnreadCount: number;
+  isGlobalSelected: boolean;
+  selectedIndex: number;
+  onSelect: (partyNumber: number) => void;
+}) {
+  // SpecRef: 8.5 | UI_DIARY | The selected tab is highlighted using the sub-theme color.
+  const tabClass = (selected: boolean) => `relative rounded-md px-2 py-1.5 text-sm font-semibold transition-colors ${
+    selected ? 'bg-sub text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+  }`;
+  return (
+    <div className="grid grid-cols-7 gap-1 rounded-lg bg-pane p-1 shadow-md shadow-slate-900/10" role="tablist" aria-label={t('diary.partyTabs.label')}>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={isGlobalSelected}
+        aria-label={t('diary.partyTabs.globalLabel')}
+        onClick={() => onSelect(GLOBAL_DIARY_PARTY_NUMBER)}
+        className={tabClass(isGlobalSelected)}
+      >
+        {t('diary.partyTabs.global')}
+        <DiaryUnreadBadge count={globalUnreadCount} max={DIARY_GLOBAL_UNREAD_BADGE_MAX} />
+      </button>
       {parties.map((party, index) => (
         <button
           key={party.id}
           type="button"
           role="tab"
-          aria-selected={index === selectedIndex}
+          aria-selected={!isGlobalSelected && index === selectedIndex}
           aria-label={t('diary.partyTabs.party', { number: index + 1 })}
-          onClick={() => onSelect(index)}
-          className={`relative rounded-md px-2 py-1.5 text-sm font-semibold transition-colors ${
-            // SpecRef: 8.5 | UI_DIARY | The selected tab is highlighted using the sub-theme color.
-            index === selectedIndex ? 'bg-sub text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
-          }`}
+          onClick={() => onSelect(party.id)}
+          className={tabClass(!isGlobalSelected && index === selectedIndex)}
         >
-          {/* SpecRef: 8.5 | UI_DIARY | The Diary has six subcategory tabs: PT1, PT2, PT3, PT4, PT5, PT6. */}
           {`PT${index + 1}`}
-          {(() => {
-            const unreadCount = party.unreadCount;
-            if (unreadCount === 0) return null;
-            return (
-              <span className="absolute -right-1 -top-1 rounded-full bg-status-unread px-1 py-0.5 text-[9px] leading-none text-content-inverse">
-                {Math.min(unreadCount, DIARY_PARTY_UNREAD_BADGE_MAX)}
-              </span>
-            );
-          })()}
+          <DiaryUnreadBadge count={party.unreadCount} max={DIARY_PARTY_UNREAD_BADGE_MAX} />
         </button>
       ))}
     </div>
@@ -117,14 +132,15 @@ export default function DiaryTab({
   isDarkModeEnabled: boolean;
 }) {
   const availableParties = diary?.parties ?? [];
+  const isGlobalSelected = diary?.selectedPartyNumber === GLOBAL_DIARY_PARTY_NUMBER;
+  const globalDiary = diary?.global ?? { unreadCount: 0, entries: [] };
   const selectedDiaryPartyIndex = Math.max(0, availableParties.findIndex((party) => party.id === diary?.selectedPartyNumber));
   const safeDiaryPartyIndex = Math.min(selectedDiaryPartyIndex, Math.max(0, availableParties.length - 1));
   const selectedDiaryParty = availableParties[safeDiaryPartyIndex];
 
-  const selectDiaryParty = (partyIndex: number) => {
-    if (partyIndex === safeDiaryPartyIndex) return;
-    const partyNumber = availableParties[partyIndex]?.id;
-    if (partyNumber !== undefined) onSelectParty(partyNumber);
+  const selectDiaryParty = (partyNumber: number) => {
+    if (partyNumber === GLOBAL_DIARY_PARTY_NUMBER ? isGlobalSelected : (!isGlobalSelected && partyNumber === selectedDiaryParty?.id)) return;
+    onSelectParty(partyNumber);
   };
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
@@ -294,7 +310,9 @@ export default function DiaryTab({
   const formatDiaryTimestamp = (timestamp: number) => {
     const date = new Date(timestamp);
     if (Number.isNaN(date.getTime())) return '';
+    // SpecRef: 8.5 | UI_DIARY | Timestamps show the year: 2026/02/12 20:28.
     return new Intl.DateTimeFormat(DISPLAY_LOCALE, {
+      year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
@@ -442,6 +460,26 @@ export default function DiaryTab({
     </div>
   );
 
+  // SpecRef: 8.5 | UI_DIARY | Global Diary entries contain only a title and have no setting pane or battle log.
+  if (isGlobalSelected) {
+    return (
+      <div className="space-y-3 diary-tab-surface">
+        <DiaryPartyTabs parties={availableParties} globalUnreadCount={globalDiary.unreadCount} isGlobalSelected selectedIndex={safeDiaryPartyIndex} onSelect={selectDiaryParty} />
+        {globalDiary.entries.length === 0 ? (
+          <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center shadow-md shadow-slate-900/10">{t('diary.empty')}</div>
+        ) : [...globalDiary.entries].sort((a, b) => b.createdAt - a.createdAt).map((entry) => (
+          <div key={entry.id} className="bg-pane rounded-lg p-3 shadow-md shadow-slate-900/10 text-sm">
+            <span className={`block ${entry.isRead ? 'font-normal text-gray-500' : 'font-medium text-gray-900'}`}>{entry.headline}</span>
+            <span className="mt-1 flex items-center justify-between gap-2 text-xs text-gray-400">
+              <span className="truncate">{entry.detail}</span>
+              <span className="whitespace-nowrap text-right">{formatDiaryTimestamp(entry.createdAt)}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (diaryLogs.length === 0) {
     return (
       <div
@@ -467,7 +505,7 @@ export default function DiaryTab({
             </div>
           </FloatingBubblePortal>
         )}
-        <DiaryPartyTabs parties={availableParties} selectedIndex={safeDiaryPartyIndex} onSelect={selectDiaryParty} />
+        <DiaryPartyTabs parties={availableParties} globalUnreadCount={globalDiary.unreadCount} isGlobalSelected={isGlobalSelected} selectedIndex={safeDiaryPartyIndex} onSelect={selectDiaryParty} />
         {renderDiarySettings()}
         <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center shadow-md shadow-slate-900/10">{t('diary.empty')}</div>
       </div>
@@ -498,7 +536,7 @@ export default function DiaryTab({
           </div>
         </FloatingBubblePortal>
       )}
-      <DiaryPartyTabs parties={availableParties} selectedIndex={safeDiaryPartyIndex} onSelect={selectDiaryParty} />
+      <DiaryPartyTabs parties={availableParties} globalUnreadCount={globalDiary.unreadCount} isGlobalSelected={isGlobalSelected} selectedIndex={safeDiaryPartyIndex} onSelect={selectDiaryParty} />
       {renderDiarySettings()}
       {diaryLogs.map((diaryLog) => {
         const isSideQuestLog = diaryLog.triggers.includes('sideQuest');

@@ -7,6 +7,8 @@ import { LINEAGES } from '../../data/lineages.ts';
 import { PREDISPOSITIONS } from '../../data/predispositions.ts';
 import { RACES } from '../../data/races.ts';
 import { getDiaryRewardHeadline } from '../../game/diaryHeadline.ts';
+import { countUnreadGlobalDiaryLogs, GLOBAL_DIARY_PARTY_NUMBER } from '../../game/globalDiary.ts';
+import { renderGlobalDiaryTitle } from '../../game/globalDiaryTitle.ts';
 import { buildDiaryProjection, DIARY_SETTING_VALID_OPTIONS, diaryEntryContent, diarySettingsView, findDiaryEntryView } from './diaryView.ts';
 import { getConditionState } from '../../game/partyCondition.ts';
 import { getDungeonById } from '../../data/dungeons.ts';
@@ -118,7 +120,7 @@ function overviewProjection(state: GameState, context: ApiV1ReadContext) {
     gold: state.global.gold,
     prana: state.global.prana,
     environment: context.environment,
-    unreadDiary: state.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0),
+    unreadDiary: countUnreadGlobalDiaryLogs(state.global.globalDiary) + state.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0),
     speedOfTime: runtime ? {
       base: SPEED_OF_TIME_KEYS[runtime.timeSpeed] ?? 'real',
       scale: context.chargeDurationScale ?? 1,
@@ -195,9 +197,22 @@ function compactObservation(state: GameState, context: ApiV1ReadContext, simulat
         partyNumber: party.id,
         unreadDiary: party.diaryLogs.filter((entry) => !entry.isRead).length,
         unreadDiaryTitle: party.diaryLogs.filter((entry) => !entry.isRead).map((entry) => compactDiaryTitle(entry, party.name)),
-      })),
+      })).concat(globalDiaryNotification(state)),
     },
   };
+}
+
+// SpecRef: 9.1.3 | 2-1-1 compact | The Global Diary (`partyNumber` 0) is listed only while it has unread entries.
+function globalDiaryNotification(state: GameState) {
+  const unread = (state.global.globalDiary ?? []).filter((entry) => !entry.isRead);
+  return unread.length === 0 ? [] : [{
+    partyNumber: GLOBAL_DIARY_PARTY_NUMBER,
+    unreadDiary: unread.length,
+    unreadDiaryTitle: unread.map((entry) => {
+      const { headline, detail } = renderGlobalDiaryTitle(entry);
+      return `${encodeCompactText(entry.id)}/${encodeCompactText(headline)}/${encodeCompactText(detail)}/${compactDiaryTimestamp(entry.createdAt)}`;
+    }),
+  }];
 }
 
 /** `YYYYMMDD HH:MM` in the game clock's display timezone (the device's local time, as the Diary tab shows it). */
@@ -1050,6 +1065,8 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   }
 
   const diarySetting = operationId.match(/^read\/diary\/(\d+)\/diarySetting$/);
+  // SpecRef: 9.1.4 | `{p}` = 0 on `diarySetting` is reserved for future expansion and returns nothing.
+  if (diarySetting && Number(diarySetting[1]) === GLOBAL_DIARY_PARTY_NUMBER) return { current: {} };
   if (diarySetting) { const selected = partyByNumber(state, diarySetting[1]); if (!selected) throw new Error('not_found'); return { current: diarySettingsView(selected.party.diarySettings), validOptions: DIARY_SETTING_VALID_OPTIONS }; }
   const diaryEntry = operationId.match(/^read\/diary\/diaryEntry\/(.+)$/);
   if (diaryEntry) return { entry: findDiaryEntryView(state, decodeURIComponent(diaryEntry[1])) };

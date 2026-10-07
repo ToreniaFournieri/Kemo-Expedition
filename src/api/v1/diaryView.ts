@@ -1,4 +1,6 @@
-import type { DiaryLog, DiarySettings, DiaryTrigger, GameState, Party } from '../../types';
+import type { DiaryLog, DiarySettings, DiaryTrigger, GameState, GlobalDiaryLog, Party } from '../../types';
+import { getDungeonById } from '../../data/dungeons.ts';
+import { countUnreadGlobalDiaryLogs, GLOBAL_DIARY_PARTY_NUMBER } from '../../game/globalDiary.ts';
 import { getRewardsNamedByTrigger, joinDiaryItemNames } from '../../game/diaryHeadline';
 import { formatItem } from './itemFormat';
 
@@ -127,6 +129,52 @@ function diaryEntrySummary(entry: DiaryLog, partyNumber: number) {
   };
 }
 
+// SpecRef: 8.5 / 9.1.4 | Global Diary entries are title-only semantic entries of scope `partyNumber` 0, with no battle log.
+function globalDiaryContent(entry: GlobalDiaryLog): DiaryEntryContent {
+  if (entry.kind === 'accountCreated') {
+    return {
+      format: 'semantic',
+      title: { key: 'diary.global.accountCreated', args: {} },
+      subtitle: { key: 'diary.global.noSubtitle', args: {} },
+      events: [],
+    };
+  }
+  const dungeonId = entry.dungeonId ?? 0;
+  return {
+    format: 'semantic',
+    title: {
+      key: 'diary.global.bossFirstClear',
+      args: { party: `PT${entry.partyNumber ?? 1}`, dungeonId, dungeon: getDungeonById(dungeonId)?.name ?? String(dungeonId) },
+    },
+    subtitle: entry.unlockedPartyNumber
+      ? { key: 'diary.global.partyUnlocked', args: { party: `PT${entry.unlockedPartyNumber}` } }
+      : { key: 'diary.global.noSubtitle', args: {} },
+    events: [],
+  };
+}
+
+export function globalDiaryEntryView(entry: GlobalDiaryLog) {
+  return {
+    diaryEntryId: entry.id,
+    partyNumber: GLOBAL_DIARY_PARTY_NUMBER,
+    occurredAt: new Date(entry.createdAt).toISOString(),
+    unread: !entry.isRead,
+    content: globalDiaryContent(entry),
+    battleLog: null,
+  };
+}
+
+function globalDiaryEntrySummary(entry: GlobalDiaryLog) {
+  return {
+    ...globalDiaryEntryView(entry),
+    triggers: [] as DiaryTrigger[],
+    expedition: entry.dungeonId === undefined ? null : { dungeonId: entry.dungeonId, difficultyOffset: 0 },
+    rewards: [] as string[],
+    sideQuest: null,
+    unlock: entry.unlockedPartyNumber ? { boss: true, partySlot: entry.unlockedPartyNumber } : null,
+  };
+}
+
 function findEntry(state: GameState, diaryEntryId: string): { party: Party; entry: DiaryLog } | null {
   for (const party of state.parties) {
     const entry = party.diaryLogs.find((candidate) => candidate.id === diaryEntryId);
@@ -138,19 +186,34 @@ function findEntry(state: GameState, diaryEntryId: string): { party: Party; entr
 export function buildDiaryProjection(state: GameState, parameters: Record<string, unknown>) {
   const explicitPartyNumber = parameters.partyNumber === undefined ? null : Number(parameters.partyNumber);
   const explicitEntryId = parameters.diaryEntryId === undefined ? null : String(parameters.diaryEntryId);
-  const selectedParty = explicitPartyNumber === null ? state.parties[state.selectedPartyIndex] ?? state.parties[0] : state.parties.find((party) => party.id === explicitPartyNumber);
-  if (!selectedParty) throw new Error('not_found');
+  const globalDiary = state.global.globalDiary ?? [];
+  const isGlobalSelected = explicitPartyNumber === GLOBAL_DIARY_PARTY_NUMBER;
+  const selectedParty = isGlobalSelected ? null
+    : explicitPartyNumber === null ? state.parties[state.selectedPartyIndex] ?? state.parties[0] : state.parties.find((party) => party.id === explicitPartyNumber);
+  if (!isGlobalSelected && !selectedParty) throw new Error('not_found');
 
-  let selectedEntry: DiaryLog | null = null;
+  let selectedEntryId: string | null = null;
   if (explicitEntryId !== null) {
-    const found = findEntry(state, explicitEntryId);
-    if (!found || found.party.id !== selectedParty.id) throw new Error('not_found');
-    selectedEntry = found.entry;
+    if (isGlobalSelected) {
+      if (!globalDiary.some((entry) => entry.id === explicitEntryId)) throw new Error('not_found');
+    } else {
+      const found = findEntry(state, explicitEntryId);
+      if (!found || found.party.id !== selectedParty!.id) throw new Error('not_found');
+    }
+    selectedEntryId = explicitEntryId;
   }
 
   return {
-    effectiveSelection: { partyNumber: selectedParty.id, diaryEntryId: selectedEntry?.id ?? null },
-    unreadTotal: state.parties.reduce((total, party) => total + party.diaryLogs.filter((entry) => !entry.isRead).length, 0),
+    effectiveSelection: { partyNumber: isGlobalSelected ? GLOBAL_DIARY_PARTY_NUMBER : selectedParty!.id, diaryEntryId: selectedEntryId },
+    unreadTotal: countUnreadGlobalDiaryLogs(globalDiary)
+      + state.parties.reduce((total, party) => total + party.diaryLogs.filter((entry) => !entry.isRead).length, 0),
+    global: {
+      partyNumber: GLOBAL_DIARY_PARTY_NUMBER,
+      unreadCount: countUnreadGlobalDiaryLogs(globalDiary),
+      entries: [...globalDiary]
+        .sort((left, right) => right.createdAt - left.createdAt)
+        .map(globalDiaryEntrySummary),
+    },
     parties: state.parties.map((party) => ({
       partyNumber: party.id,
       name: party.name,
@@ -174,6 +237,10 @@ export function buildDiaryProjection(state: GameState, parameters: Record<string
 
 export function findDiaryEntryView(state: GameState, diaryEntryId: string) {
   const found = findEntry(state, diaryEntryId);
-  if (!found) throw new Error('not_found');
+  if (!found) {
+    const globalEntry = (state.global.globalDiary ?? []).find((entry) => entry.id === diaryEntryId);
+    if (!globalEntry) throw new Error('not_found');
+    return globalDiaryEntryView(globalEntry);
+  }
   return diaryEntryView(found.entry, found.party.id);
 }

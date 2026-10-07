@@ -1360,8 +1360,10 @@ type DiaryEntry = {
   unlock. Its entries use the same `DiaryEntry` shape with `content.format`
   `semantic`, no `events` detail and `battleLog: null`; the title carries the
   first-boss-defeat or account-created facts, and the unlocked-Party fact when the
-  victory unlocks one. The projection returns it as a scope with `partyNumber` 0,
-  its own unread count and a 99-entry retention limit (8.5). Global entries have
+  victory unlocks one. The projection returns it as a top-level `global` object
+  `{partyNumber: 0, unreadCount, entries}` beside `parties`, and
+  `effectiveSelection.partyNumber` 0 selects it. Retention is 99 entries (8.5).
+  `compact` `attention.notification` lists `partyNumber` 0 only while it has unread entries. Global entries have
   no trigger keys and no notification settings. Existing saves receive no
   account-created entry.
 * Each `diary` projection summary contains the same identity, timestamp, unread

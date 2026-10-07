@@ -31,9 +31,18 @@ interface DiaryEntryProjection {
   readonly unlock: { readonly boss: boolean; readonly partySlot: number } | null;
 }
 
+interface GlobalDiaryEntryProjection {
+  readonly diaryEntryId: string;
+  readonly occurredAt: string;
+  readonly unread: boolean;
+  readonly content: { readonly format: 'semantic'; readonly title: { readonly key: string; readonly args: Record<string, string | number> }; readonly subtitle: { readonly key: string; readonly args: Record<string, string | number> } };
+}
+
 export interface DiaryProjection {
+  /** `partyNumber` 0 selects the Global Diary (SpecRef 9.1.3 Path Parameters). */
   readonly effectiveSelection: { readonly partyNumber: number; readonly diaryEntryId: string | null };
   readonly unreadTotal: number;
+  readonly global?: { readonly partyNumber: 0; readonly unreadCount: number; readonly entries: readonly GlobalDiaryEntryProjection[] };
   readonly parties: readonly {
     readonly partyNumber: number;
     readonly name: string;
@@ -73,9 +82,24 @@ export interface DiaryPartyView {
   readonly diaryLogs: readonly DiaryEntryView[];
 }
 
+export interface DiaryGlobalEntryView {
+  readonly id: string;
+  readonly createdAt: number;
+  readonly isRead: boolean;
+  readonly headline: string;
+  readonly detail: string;
+}
+
+export interface DiaryGlobalView {
+  readonly unreadCount: number;
+  readonly entries: readonly DiaryGlobalEntryView[];
+}
+
 export interface DiaryTabView {
+  /** 0 = Global Diary tab, otherwise the Party number. */
   readonly selectedPartyNumber: number;
   readonly unreadTotal: number;
+  readonly global: DiaryGlobalView;
   readonly parties: readonly DiaryPartyView[];
 }
 
@@ -135,6 +159,16 @@ export function buildDiaryTabView(
   return {
     selectedPartyNumber: projection.effectiveSelection.partyNumber,
     unreadTotal: projection.unreadTotal,
+    global: {
+      unreadCount: projection.global?.unreadCount ?? 0,
+      entries: (projection.global?.entries ?? []).map((entry) => ({
+        id: entry.diaryEntryId,
+        createdAt: Date.parse(entry.occurredAt),
+        isRead: !entry.unread,
+        headline: t(entry.content.title.key, entry.content.title.args),
+        detail: t(entry.content.subtitle.key, entry.content.subtitle.args),
+      })),
+    },
     parties: projection.parties.map((party) => ({
       id: party.partyNumber,
       name: party.name,

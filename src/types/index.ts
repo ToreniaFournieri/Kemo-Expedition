@@ -446,6 +446,22 @@ export interface DiaryLog {
   isRead: boolean;
 }
 
+// SpecRef: 8.5 | UI_DIARY | Global Diary entries contain only language-neutral facts rendered as a title.
+export type GlobalDiaryKind = 'accountCreated' | 'bossFirstClear';
+
+export interface GlobalDiaryLog {
+  id: string;
+  kind: GlobalDiaryKind;
+  /** Party number that first cleared the expedition boss (`bossFirstClear` only). */
+  partyNumber?: number;
+  /** Expedition whose boss was cleared for the first time (`bossFirstClear` only). */
+  dungeonId?: number;
+  /** Party number unlocked by that victory, when it unlocked one. */
+  unlockedPartyNumber?: number;
+  createdAt: number;
+  isRead: boolean;
+}
+
 export type DiaryRarityThreshold = 'all' | 1 | 2 | 3 | 4 | 5 | 6 | 'none';
 export type DiarySideQuestThreshold = 'all' | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 'none';
 
@@ -497,6 +513,8 @@ interface GlobalState {
   enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
   altarVictoriesByEnemyType?: Record<string, number>;
   readDeveloperNewsItemIds: string[];
+  /** Global Diary (SpecRef 8.5), newest first, at most 99 entries; absent in saves written before it existed. */
+  globalDiary?: GlobalDiaryLog[];
   /** Explicitly persisted UI preferences (closed catalog, Spec 9.1.4.17); changed only through `SET_UI_PREFERENCES`. */
   uiPreferences?: Record<string, string | number | boolean>;
   language: Language;

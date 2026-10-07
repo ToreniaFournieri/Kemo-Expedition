@@ -1,6 +1,7 @@
 import type { UniqueCharacterId } from '../data/uniqueCharacters';
 import { renderDiaryBattle, renderDiaryMetadata, renderExpeditionMetadata } from '../game/compactDiary.ts';
 import { formatDiaryUnreadBadge } from '../game/diary';
+import { countUnreadGlobalDiaryLogs, GLOBAL_DIARY_PARTY_NUMBER } from '../game/globalDiary';
 import { gameReducer, simulateExpeditionRuns } from '../hooks/useGameState';
 import { flushSync } from 'react-dom';
 import type { ReactNode } from 'react';
@@ -2931,7 +2932,7 @@ export function GameRuntimeHost({
       schemaVersion: 1 as const,
       environment: getEnvironmentId(),
       language: state.global.language,
-      unreadDiaryCount: state.parties.reduce((count, party) => (
+      unreadDiaryCount: countUnreadGlobalDiaryLogs(state.global.globalDiary) + state.parties.reduce((count, party) => (
         count + party.diaryLogs.reduce((partyCount, log) => partyCount + (log.isRead ? 0 : 1), 0)
       ), 0),
       theme: getDesktopTheme(gameMode, isDarkModeEnabled),
@@ -3019,7 +3020,8 @@ export function GameRuntimeHost({
       const partyIndex = payload.partyId === undefined
         ? state.selectedPartyIndex
         : state.parties.findIndex((party) => party.id === payload.partyId);
-      const selectActivatedParty = () => { if (partyIndex >= 0) actions.selectParty(partyIndex); };
+      // A party notification opens that party's Diary tab, not the Global tab.
+      const selectActivatedParty = () => { setIsDiaryGlobalSelected(false); if (partyIndex >= 0) actions.selectParty(partyIndex); };
       if (isPartyExpeditionSplitViewEnabled) {
         setActiveWideModeSecondaryTab('diary');
       } else {
@@ -5286,11 +5288,13 @@ export function GameRuntimeHost({
     : activeTab === 'diary');
   // SpecRef: 8.5 / 9.1.4.17 | The Diary pane receives only API summaries and retained-log projections. The shared Party
   // selection remains persisted game state; settings and read acknowledgement are serialized Application API commits.
+  // SpecRef: 8.5 | UI_DIARY | Default selected tab: Global, or the last selected tab (kept for the session).
+  const [isDiaryGlobalSelected, setIsDiaryGlobalSelected] = useState(true);
   const diaryObservation = useApiRead<{ diaryInfo: DiaryProjection }>(
     inProcessApiRef.current,
     'read/observation/diary',
-    { parameters: { partyNumber: currentParty.id } },
-    [state.parties, currentParty.id],
+    { parameters: { partyNumber: isDiaryGlobalSelected ? GLOBAL_DIARY_PARTY_NUMBER : currentParty.id } },
+    [state.parties, state.global.globalDiary, currentParty.id, isDiaryGlobalSelected],
     isDiaryTabVisible,
   );
   const diaryProjection = diaryObservation?.diaryInfo ?? null;
@@ -5327,16 +5331,26 @@ export function GameRuntimeHost({
       if (response?.error) console.error('[api-v1] Diary settings change failed', response.error);
     });
   }, []);
-  const selectedDiaryPartyNumberRef = useRef(currentParty.id);
-  selectedDiaryPartyNumberRef.current = currentParty.id;
+  const selectedDiaryPartyNumberRef = useRef(isDiaryGlobalSelected ? GLOBAL_DIARY_PARTY_NUMBER : currentParty.id);
+  selectedDiaryPartyNumberRef.current = isDiaryGlobalSelected ? GLOBAL_DIARY_PARTY_NUMBER : currentParty.id;
   const selectDiaryParty = useCallback((partyNumber: number) => {
     if (partyNumber === selectedDiaryPartyNumberRef.current) return;
     const previousPartyNumber = selectedDiaryPartyNumberRef.current;
     selectedDiaryPartyNumberRef.current = partyNumber;
+    const applyDiarySelection = () => {
+      if (partyNumber === GLOBAL_DIARY_PARTY_NUMBER) {
+        setIsDiaryGlobalSelected(true);
+        return;
+      }
+      const partyIndex = applicationApiRef.current?.authority.getSnapshot().state.parties.findIndex((party) => party.id === partyNumber) ?? -1;
+      if (partyIndex >= 0) {
+        setIsDiaryGlobalSelected(false);
+        actions.selectParty(partyIndex);
+      }
+    };
     // SpecRef: 9.1.3 | 1-3 logIn | Navigation remains available while UI commits are disabled.
     if (apiControlActiveRef.current) {
-      const partyIndex = applicationApiRef.current?.authority.getSnapshot().state.parties.findIndex((party) => party.id === partyNumber) ?? -1;
-      if (partyIndex >= 0) actions.selectParty(partyIndex);
+      applyDiarySelection();
       return;
     }
     diaryCommandQueueRef.current = diaryCommandQueueRef.current.then(async () => {
@@ -5348,8 +5362,7 @@ export function GameRuntimeHost({
         selectedDiaryPartyNumberRef.current = previousPartyNumber;
         return;
       }
-      const partyIndex = applicationApiRef.current?.authority.getSnapshot().state.parties.findIndex((party) => party.id === partyNumber) ?? -1;
-      if (partyIndex >= 0) actions.selectParty(partyIndex);
+      applyDiarySelection();
     });
   }, [actions]);
   const prevDiaryTabVisibleRef = useRef(isDiaryTabVisible);
@@ -5575,7 +5588,7 @@ export function GameRuntimeHost({
     if (nextTab) switchTab(nextTab);
   };
 
-  const unreadDiaryCount = state.parties.reduce((count, party) => (
+  const unreadDiaryCount = countUnreadGlobalDiaryLogs(state.global.globalDiary) + state.parties.reduce((count, party) => (
     count + party.diaryLogs.filter((log) => !log.isRead).length
   ), 0);
   const hasUnreadDiary = unreadDiaryCount > 0;
