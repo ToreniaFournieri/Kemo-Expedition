@@ -686,17 +686,19 @@ function getSideQuestStatsWithDefaults(value: unknown): SideQuestStats {
     // Only quests accepted after the counters existed are counted; older saves simply start from zero.
     const total = count(entry.total);
     const success = Math.min(total, count(entry.success));
-    result[id] = { success, cancelled: Math.min(total - success, count(entry.cancelled)), total };
+    const cancelled = Math.min(total - success, count(entry.cancelled));
+    result[id] = { success, cancelled, failed: Math.min(total - success - cancelled, count(entry.failed)), total };
   }
   return result;
 }
 
-function bumpSideQuestStats(party: Party, id: number, delta: { success?: number; cancelled?: number; total?: number }): SideQuestStats {
+function bumpSideQuestStats(party: Party, id: number, delta: { success?: number; cancelled?: number; failed?: number; total?: number }): SideQuestStats {
   const stats = getSideQuestStatsWithDefaults(party.sideQuestStats);
-  const entry = stats[String(id)] ?? { success: 0, cancelled: 0, total: 0 };
+  const entry = stats[String(id)] ?? { success: 0, cancelled: 0, failed: 0, total: 0 };
   stats[String(id)] = {
     success: entry.success + (delta.success ?? 0),
     cancelled: entry.cancelled + (delta.cancelled ?? 0),
+    failed: entry.failed + (delta.failed ?? 0),
     total: entry.total + (delta.total ?? 0),
   };
   return stats;
@@ -1879,7 +1881,7 @@ export type GameAction =
   | { type: 'SPEND_PENDING_PROFIT'; partyIndex: number; amount: number }
   | { type: 'ROLL_PARTY_SLEEPINESS'; partyIndex: number }
   | { type: 'ROLL_SIDE_QUEST'; partyIndex: number; rolledTier: number; simulatedAt?: number }
-  | { type: 'CANCEL_SIDE_QUEST'; partyIndex: number }
+  | { type: 'CANCEL_SIDE_QUEST'; partyIndex: number; expired?: boolean }
   | { type: 'ADVANCE_SIDE_QUEST'; partyIndex: number; amount: number; simulatedAt?: number }
   | { type: 'SET_SIDE_QUEST_PROGRESS'; partyIndex: number; progress: number }
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null; partyIndex?: number }
@@ -2903,7 +2905,7 @@ function reduceGameState(
       updatedParties[action.partyIndex] = {
         ...currentParty,
         sideQuest: null,
-        sideQuestStats: bumpSideQuestStats(currentParty, currentParty.sideQuest.id, { cancelled: 1 }),
+        sideQuestStats: bumpSideQuestStats(currentParty, currentParty.sideQuest.id, action.expired ? { failed: 1 } : { cancelled: 1 }),
       };
       return { ...state, parties: updatedParties };
     }
@@ -4016,7 +4018,7 @@ function reduceGameState(
             latestParty?.sideQuest
             && simulatedAt >= getScaledSideQuestExpiresAt(latestParty.sideQuest, resolvedCycleDurationScale)
           ) {
-            workingState = reduceGameState(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex }, undefined, afkChunkContext);
+            workingState = reduceGameState(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex, expired: true }, undefined, afkChunkContext);
           }
           if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(action.workerAttribution, 'sideQuestAutomationMs', postProfitAutomationStartedAt);
           completedOperationCount += 1;
@@ -5178,8 +5180,8 @@ export function useGameState() {
       dispatch({ type: 'ROLL_PARTY_SLEEPINESS', partyIndex });
     }, []),
 
-    cancelSideQuest: useCallback((partyIndex: number) => {
-      dispatch({ type: 'CANCEL_SIDE_QUEST', partyIndex });
+    cancelSideQuest: useCallback((partyIndex: number, expired?: boolean) => {
+      dispatch({ type: 'CANCEL_SIDE_QUEST', partyIndex, expired });
     }, []),
 
     advanceSideQuest: useCallback((partyIndex: number, amount: number, simulatedAt?: number) => {

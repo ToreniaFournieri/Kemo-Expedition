@@ -222,7 +222,7 @@ export interface HomeScreenProps {
     spendPendingProfit: (partyIndex: number, amount: number) => void;
     rollPartySleepiness: (partyIndex: number) => void;
     rollSideQuest: (partyIndex: number, rolledTier: number, simulatedAt?: number) => void;
-    cancelSideQuest: (partyIndex: number) => void;
+    cancelSideQuest: (partyIndex: number, expired?: boolean) => void;
     advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
     applyAutoEquipmentActions: (actions: AutoEquipmentProfileAction[]) => void;

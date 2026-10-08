@@ -8719,7 +8719,7 @@
                     "sideQuestStatistics": {
                       "type": "array",
                       "items": {
-                        "pattern": "^[1-9][0-9]*-[0-9]+/[0-9]+/[0-9]+$",
+                        "pattern": "^[1-9][0-9]*-[0-9]+/[0-9]+/[0-9]+/[0-9]+$",
                         "type": "string"
                       }
                     }
@@ -9320,7 +9320,7 @@
                         "sideQuestStatistics": {
                           "type": "array",
                           "items": {
-                            "pattern": "^[1-9][0-9]*-[0-9]+/[0-9]+/[0-9]+$",
+                            "pattern": "^[1-9][0-9]*-[0-9]+/[0-9]+/[0-9]+/[0-9]+$",
                             "type": "string"
                           }
                         }
@@ -9528,7 +9528,7 @@
                   "savedGold": 0
                 },
                 "sideQuestStatistics": [
-                  "13-1/0/2"
+                  "13-1/0/0/2"
                 ]
               },
               "unlockedMimorianEnemyIds": [

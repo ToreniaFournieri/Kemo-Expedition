@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.10.1 | 20 | 2026/10/09 | API: `read/observation/party` `sideQuestStatistics` is now `<sideQuestId>-<successfulCount>/<cancelledCount>/<failedCount>/<totalCount>`; an expired side quest counts as `failedCount`, while `cancelledCount` is player-action cancellation only (e.g. God Battle). Older saves keep their previous expiries under `cancelledCount`. |
 | 0.10.1 | 19 | 2026/10/08 | API: `read/observation/compact` adds per-party `clearGate` and `sideQuest` one-line summaries. |
 | 0.10.1 | 18 | 2026/10/08 | API: `read/observation/party` adds `sideQuestStatistics` (`<sideQuestId>-<successfulCount>/<cancelledCount>/<totalCount>`); parties now persist per-side-quest accepted/completed/cancelled counts. |
 | 0.10.1 | 17 | 2026/10/07 | API: `commit/expedition/{p}/sortie` takes `numberOfSortie` (1-6), verifies charge for all requested sorties first, and returns one `{battleOutcome, rewards, diaryEntryId, logId}` per sortie. |

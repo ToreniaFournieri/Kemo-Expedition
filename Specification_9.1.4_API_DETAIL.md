@@ -897,11 +897,11 @@ definitions in 9.1.3.
   to their defaults. Like the Expedition pane, an outcome of a log that is still
   hidden while the party explores is not counted yet.
 * `read/observation/party`'s `party.sideQuestStatistics` (9.1.3, 2-1-4) lists
-  `<sideQuestId>-<successfulCount>/<cancelledCount>/<totalCount>` in ascending
+  `<sideQuestId>-<successfulCount>/<cancelledCount>/<failedCount>/<totalCount>` in ascending
   `sideQuestId` order, only for side quests the party has accepted. `totalCount`
   increases when a side quest is accepted (so an active quest is included),
   `successfulCount` when it is completed, and `cancelledCount` when it is
-  cancelled (God Battle) or expires. Only side quests accepted after the counters
+  cancelled by a player action (such as starting a sortie or a God Battle), and `failedCount` when it expires. Only side quests accepted after the counters
   were introduced are counted. `resetStatistics` does not clear it.
 * `read/observation/compact`'s `clearGate` is the party's active Clear-Gate goals
   in the Expedition pane's order (`4th Elite gate: 3/4`, `Boss gate: c/r`,

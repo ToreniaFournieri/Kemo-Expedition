@@ -4456,7 +4456,7 @@ export function GameRuntimeHost({
 
         // SpecRef: 5.1.2 | Side Quest | Expiration
         if (party.sideQuest && simulationNow >= getScaledSideQuestExpiresAt(party.sideQuest, timeSpeedScale)) {
-          actions.cancelSideQuest(partyIndex);
+          actions.cancelSideQuest(partyIndex, true);
           if (!suppressCycleNotificationsForAfk && party.diarySettings.notifySideQuestPopup) {
             actions.addNotification(t('home.notification.sideQuestFailed', { party: party.name, quest: resolveSideQuestShortText(party.sideQuest) }));
           }

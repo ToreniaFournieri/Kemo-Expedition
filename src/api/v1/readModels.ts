@@ -418,7 +418,7 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>, 
       // SpecRef: 9.1.3 | 2-1-4 party | `sideQuestStatistics`
       sideQuestStatistics: Object.entries(party.sideQuestStats ?? {})
         .sort(([a], [b]) => Number(a) - Number(b))
-        .map(([id, { success, cancelled, total }]) => `${id}-${success}/${cancelled}/${total}`),
+        .map(([id, { success, cancelled, failed, total }]) => `${id}-${success}/${cancelled}/${failed}/${total}`),
     },
   };
 }
