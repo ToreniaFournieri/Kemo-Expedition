@@ -443,7 +443,9 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Currently displayed in the party tab in the UI.
     * Includes `statistics`.
     * `sideQuestStatistics`
-      * Format: `<sideQuestId>-<successfulCount>/<cancelledCount>/<totalCount>` for each side quest.
+      * Format: `<sideQuestId>-<successfulCount>/<cancelledCount>/<failedCount>/<totalCount>` for each side quest.
+        * `cancelledCount`: Number of side quests cancelled by a player action, such as starting a sortie.
+        * `failedCount`: Number of side quests that ended without achieving the required goal.
 
 **2-1-5. `base`**
 
