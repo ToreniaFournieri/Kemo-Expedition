@@ -387,7 +387,7 @@ PT3: 貯金額: 10G
   - Rounded range: 7 ~ 20
   - Final target: randomly select one integer from 7 to 20 (inclusive).
 
-| ID | type | base value range(lv1) | lv2 | 1v3 | lv4 |
+| `sideQuestId` | type | base value range(lv1) | lv2 | 1v3 | lv4 |
 |--|--|---|---|---|---|
 | 1 | `q.squander` | 100 ~ 400 | x1.4 | x1.8 | x2.2 |  
 | 2 | `q.sleeping` | 1 ~ 4 | - | - | - |

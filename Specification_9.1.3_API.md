@@ -436,7 +436,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Party-related information.
     * Currently displayed in the party tab in the UI.
     * Includes `statistics`.
-
+    * `sideQuestStatistics`
+      * Format: `<sideQuestId>-<successfulCounts>/<totalCounts>` for each side quest.
 
 **2-1-5. `base`**
 
