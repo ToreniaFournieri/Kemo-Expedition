@@ -506,3 +506,889 @@
 {"n": 506, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 4, "tag": "party-sq", "igt": null, "err": null}
 {"n": 507, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 4, "tag": "party-sq", "igt": null, "err": null}
 {"n": 508, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 1, "method": "POST", "path": "/fundamental/signUp", "parameters": {"userId": "ClaudeSide", "environment": "prod", "gameMode": "normal", "language": "en"}, "status": 200, "ms": 70, "tag": "", "igt": null, "err": null}
+{"n": 2, "method": "POST", "path": "/fundamental/logIn", "parameters": {"userId": "ClaudeSide", "environment": "prod", "gameMode": "normal"}, "status": 200, "ms": 107, "tag": "login", "igt": null, "err": null}
+{"n": 3, "method": "GET", "path": "/read/observation/overview", "parameters": null, "status": 200, "ms": 24, "tag": "", "igt": null, "err": null}
+{"n": 4, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 86, "tag": "compact", "igt": null, "err": null}
+{"n": 5, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 34, "tag": "party-sq", "igt": null, "err": null}
+{"n": 6, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 8, "tag": "party-sq", "igt": null, "err": null}
+{"n": 7, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 7, "tag": "party-sq", "igt": null, "err": null}
+{"n": 8, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 11, "tag": "party-sq", "igt": null, "err": null}
+{"n": 9, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 10, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 11, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 33, "tag": "party-sq", "igt": null, "err": null}
+{"n": 12, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 13, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 14, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 15, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 16, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 17, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 642, "tag": "el", "igt": "2026-10-09T03:32:17.581Z", "err": null}
+{"n": 18, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 19, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 556, "tag": "el", "igt": "2026-10-09T09:32:17.581Z", "err": null}
+{"n": 20, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 21, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 551, "tag": "el", "igt": "2026-10-09T15:32:17.581Z", "err": null}
+{"n": 22, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 23, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 566, "tag": "el", "igt": "2026-10-09T21:32:17.581Z", "err": null}
+{"n": 24, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 20, "tag": "compact", "igt": null, "err": null}
+{"n": 25, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 513, "tag": "el", "igt": "2026-10-10T03:32:17.581Z", "err": null}
+{"n": 26, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 31, "tag": "compact", "igt": null, "err": null}
+{"n": 27, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 563, "tag": "el", "igt": "2026-10-10T09:32:17.581Z", "err": null}
+{"n": 28, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 29, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 549, "tag": "el", "igt": "2026-10-10T15:32:17.581Z", "err": null}
+{"n": 30, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 31, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 540, "tag": "el", "igt": "2026-10-10T21:32:17.581Z", "err": null}
+{"n": 32, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 33, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 472, "tag": "el", "igt": "2026-10-11T03:32:17.581Z", "err": null}
+{"n": 34, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 18, "tag": "compact", "igt": null, "err": null}
+{"n": 35, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 463, "tag": "el", "igt": "2026-10-11T09:32:17.581Z", "err": null}
+{"n": 36, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 37, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 478, "tag": "el", "igt": "2026-10-11T15:32:17.581Z", "err": null}
+{"n": 38, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 39, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 453, "tag": "el", "igt": "2026-10-11T21:32:17.581Z", "err": null}
+{"n": 40, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 41, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 430, "tag": "el", "igt": "2026-10-12T03:32:17.581Z", "err": null}
+{"n": 42, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 30, "tag": "compact", "igt": null, "err": null}
+{"n": 43, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 446, "tag": "el", "igt": "2026-10-12T09:32:17.581Z", "err": null}
+{"n": 44, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 45, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 499, "tag": "el", "igt": "2026-10-12T15:32:17.581Z", "err": null}
+{"n": 46, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 32, "tag": "compact", "igt": null, "err": null}
+{"n": 47, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 492, "tag": "el", "igt": "2026-10-12T21:32:17.581Z", "err": null}
+{"n": 48, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 49, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 447, "tag": "el", "igt": "2026-10-13T03:32:17.581Z", "err": null}
+{"n": 50, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 51, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 420, "tag": "el", "igt": "2026-10-13T09:32:17.581Z", "err": null}
+{"n": 52, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 53, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 467, "tag": "el", "igt": "2026-10-13T15:32:17.581Z", "err": null}
+{"n": 54, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 55, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 450, "tag": "el", "igt": "2026-10-13T21:32:17.581Z", "err": null}
+{"n": 56, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 57, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 416, "tag": "el", "igt": "2026-10-14T03:32:17.581Z", "err": null}
+{"n": 58, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 17, "tag": "compact", "igt": null, "err": null}
+{"n": 59, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 430, "tag": "el", "igt": "2026-10-14T09:32:17.581Z", "err": null}
+{"n": 60, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 61, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 449, "tag": "el", "igt": "2026-10-14T15:32:17.581Z", "err": null}
+{"n": 62, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 63, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 369, "tag": "el", "igt": "2026-10-14T21:32:17.581Z", "err": null}
+{"n": 64, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 65, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 399, "tag": "el", "igt": "2026-10-15T03:32:17.581Z", "err": null}
+{"n": 66, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 14, "tag": "compact", "igt": null, "err": null}
+{"n": 67, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 454, "tag": "el", "igt": "2026-10-15T09:32:17.581Z", "err": null}
+{"n": 68, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 69, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 528, "tag": "el", "igt": "2026-10-15T15:32:17.581Z", "err": null}
+{"n": 70, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 71, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 412, "tag": "el", "igt": "2026-10-15T21:32:17.581Z", "err": null}
+{"n": 72, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 73, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 400, "tag": "el", "igt": "2026-10-16T03:32:17.581Z", "err": null}
+{"n": 74, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 33, "tag": "compact", "igt": null, "err": null}
+{"n": 75, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 445, "tag": "el", "igt": "2026-10-16T09:32:17.581Z", "err": null}
+{"n": 76, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 77, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 450, "tag": "el", "igt": "2026-10-16T15:32:17.581Z", "err": null}
+{"n": 78, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 30, "tag": "compact", "igt": null, "err": null}
+{"n": 79, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 420, "tag": "el", "igt": "2026-10-16T21:32:17.581Z", "err": null}
+{"n": 80, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 30, "tag": "compact", "igt": null, "err": null}
+{"n": 81, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 487, "tag": "el", "igt": "2026-10-17T03:32:17.581Z", "err": null}
+{"n": 82, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 17, "tag": "compact", "igt": null, "err": null}
+{"n": 83, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 534, "tag": "el", "igt": "2026-10-17T09:32:17.581Z", "err": null}
+{"n": 84, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 33, "tag": "compact", "igt": null, "err": null}
+{"n": 85, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 422, "tag": "el", "igt": "2026-10-17T15:32:17.581Z", "err": null}
+{"n": 86, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 87, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 439, "tag": "el", "igt": "2026-10-17T21:32:17.581Z", "err": null}
+{"n": 88, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 89, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 454, "tag": "el", "igt": "2026-10-18T03:32:17.581Z", "err": null}
+{"n": 90, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 91, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 410, "tag": "el", "igt": "2026-10-18T09:32:17.581Z", "err": null}
+{"n": 92, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 93, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 385, "tag": "el", "igt": "2026-10-18T15:32:17.581Z", "err": null}
+{"n": 94, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 95, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 420, "tag": "el", "igt": "2026-10-18T21:32:17.581Z", "err": null}
+{"n": 96, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 20, "tag": "compact", "igt": null, "err": null}
+{"n": 97, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 16, "tag": "party-sq", "igt": null, "err": null}
+{"n": 98, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 46, "tag": "party-sq", "igt": null, "err": null}
+{"n": 99, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 11, "tag": "party-sq", "igt": null, "err": null}
+{"n": 100, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 7, "tag": "party-sq", "igt": null, "err": null}
+{"n": 101, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 9, "tag": "party-sq", "igt": null, "err": null}
+{"n": 102, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 9, "tag": "party-sq", "igt": null, "err": null}
+{"n": 103, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 327, "tag": "el", "igt": "2026-10-19T03:32:17.581Z", "err": null}
+{"n": 104, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 34, "tag": "compact", "igt": null, "err": null}
+{"n": 105, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 401, "tag": "el", "igt": "2026-10-19T09:32:17.581Z", "err": null}
+{"n": 106, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 107, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 399, "tag": "el", "igt": "2026-10-19T15:32:17.581Z", "err": null}
+{"n": 108, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 109, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 374, "tag": "el", "igt": "2026-10-19T21:32:17.581Z", "err": null}
+{"n": 110, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 111, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 451, "tag": "el", "igt": "2026-10-20T03:32:17.581Z", "err": null}
+{"n": 112, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 113, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 371, "tag": "el", "igt": "2026-10-20T09:32:17.581Z", "err": null}
+{"n": 114, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 19, "tag": "compact", "igt": null, "err": null}
+{"n": 115, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 420, "tag": "el", "igt": "2026-10-20T15:32:17.581Z", "err": null}
+{"n": 116, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 117, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 368, "tag": "el", "igt": "2026-10-20T21:32:17.581Z", "err": null}
+{"n": 118, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 21, "tag": "compact", "igt": null, "err": null}
+{"n": 119, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 391, "tag": "el", "igt": "2026-10-21T03:32:17.581Z", "err": null}
+{"n": 120, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 121, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 356, "tag": "el", "igt": "2026-10-21T09:32:17.581Z", "err": null}
+{"n": 122, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 123, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 458, "tag": "el", "igt": "2026-10-21T15:32:17.581Z", "err": null}
+{"n": 124, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 125, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 459, "tag": "el", "igt": "2026-10-21T21:32:17.581Z", "err": null}
+{"n": 126, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 127, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 418, "tag": "el", "igt": "2026-10-22T03:32:17.581Z", "err": null}
+{"n": 128, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 129, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 430, "tag": "el", "igt": "2026-10-22T09:32:17.581Z", "err": null}
+{"n": 130, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 31, "tag": "compact", "igt": null, "err": null}
+{"n": 131, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 431, "tag": "el", "igt": "2026-10-22T15:32:17.581Z", "err": null}
+{"n": 132, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 18, "tag": "compact", "igt": null, "err": null}
+{"n": 133, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 422, "tag": "el", "igt": "2026-10-22T21:32:17.581Z", "err": null}
+{"n": 134, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 18, "tag": "compact", "igt": null, "err": null}
+{"n": 135, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 424, "tag": "el", "igt": "2026-10-23T03:32:17.581Z", "err": null}
+{"n": 136, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 137, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 373, "tag": "el", "igt": "2026-10-23T09:32:17.581Z", "err": null}
+{"n": 138, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 139, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 369, "tag": "el", "igt": "2026-10-23T15:32:17.581Z", "err": null}
+{"n": 140, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 141, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 345, "tag": "el", "igt": "2026-10-23T21:32:17.581Z", "err": null}
+{"n": 142, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 143, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 425, "tag": "el", "igt": "2026-10-24T03:32:17.581Z", "err": null}
+{"n": 144, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 36, "tag": "compact", "igt": null, "err": null}
+{"n": 145, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 437, "tag": "el", "igt": "2026-10-24T09:32:17.581Z", "err": null}
+{"n": 146, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 147, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 375, "tag": "el", "igt": "2026-10-24T15:32:17.581Z", "err": null}
+{"n": 148, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 21, "tag": "compact", "igt": null, "err": null}
+{"n": 149, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 372, "tag": "el", "igt": "2026-10-24T21:32:17.581Z", "err": null}
+{"n": 150, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 151, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 373, "tag": "el", "igt": "2026-10-25T03:32:17.581Z", "err": null}
+{"n": 152, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 153, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 354, "tag": "el", "igt": "2026-10-25T09:32:17.581Z", "err": null}
+{"n": 154, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 17, "tag": "compact", "igt": null, "err": null}
+{"n": 155, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 431, "tag": "el", "igt": "2026-10-25T15:32:17.581Z", "err": null}
+{"n": 156, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 32, "tag": "compact", "igt": null, "err": null}
+{"n": 157, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 455, "tag": "el", "igt": "2026-10-25T21:32:17.581Z", "err": null}
+{"n": 158, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 159, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 423, "tag": "el", "igt": "2026-10-26T03:32:17.581Z", "err": null}
+{"n": 160, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 161, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 396, "tag": "el", "igt": "2026-10-26T09:32:17.581Z", "err": null}
+{"n": 162, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 163, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 423, "tag": "el", "igt": "2026-10-26T15:32:17.581Z", "err": null}
+{"n": 164, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 165, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 375, "tag": "el", "igt": "2026-10-26T21:32:17.581Z", "err": null}
+{"n": 166, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 167, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 374, "tag": "el", "igt": "2026-10-27T03:32:17.581Z", "err": null}
+{"n": 168, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 169, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 446, "tag": "el", "igt": "2026-10-27T09:32:17.581Z", "err": null}
+{"n": 170, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 171, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 422, "tag": "el", "igt": "2026-10-27T15:32:17.581Z", "err": null}
+{"n": 172, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 173, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 365, "tag": "el", "igt": "2026-10-27T21:32:17.581Z", "err": null}
+{"n": 174, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 175, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 430, "tag": "el", "igt": "2026-10-28T03:32:17.581Z", "err": null}
+{"n": 176, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 30, "tag": "compact", "igt": null, "err": null}
+{"n": 177, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 386, "tag": "el", "igt": "2026-10-28T09:32:17.581Z", "err": null}
+{"n": 178, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 31, "tag": "compact", "igt": null, "err": null}
+{"n": 179, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 377, "tag": "el", "igt": "2026-10-28T15:32:17.581Z", "err": null}
+{"n": 180, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 181, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 341, "tag": "el", "igt": "2026-10-28T21:32:17.581Z", "err": null}
+{"n": 182, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 183, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 16, "tag": "party-sq", "igt": null, "err": null}
+{"n": 184, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 41, "tag": "party-sq", "igt": null, "err": null}
+{"n": 185, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 20, "tag": "party-sq", "igt": null, "err": null}
+{"n": 186, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 7, "tag": "party-sq", "igt": null, "err": null}
+{"n": 187, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 7, "tag": "party-sq", "igt": null, "err": null}
+{"n": 188, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 12, "tag": "party-sq", "igt": null, "err": null}
+{"n": 189, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 382, "tag": "el", "igt": "2026-10-29T03:32:17.581Z", "err": null}
+{"n": 190, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 32, "tag": "compact", "igt": null, "err": null}
+{"n": 191, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 395, "tag": "el", "igt": "2026-10-29T09:32:17.581Z", "err": null}
+{"n": 192, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 193, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 364, "tag": "el", "igt": "2026-10-29T15:32:17.581Z", "err": null}
+{"n": 194, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 195, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 377, "tag": "el", "igt": "2026-10-29T21:32:17.581Z", "err": null}
+{"n": 196, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 20, "tag": "compact", "igt": null, "err": null}
+{"n": 197, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 367, "tag": "el", "igt": "2026-10-30T03:32:17.581Z", "err": null}
+{"n": 198, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 199, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 419, "tag": "el", "igt": "2026-10-30T09:32:17.581Z", "err": null}
+{"n": 200, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 40, "tag": "compact", "igt": null, "err": null}
+{"n": 201, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 406, "tag": "el", "igt": "2026-10-30T15:32:17.581Z", "err": null}
+{"n": 202, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 33, "tag": "compact", "igt": null, "err": null}
+{"n": 203, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 542, "tag": "el", "igt": "2026-10-30T21:32:17.581Z", "err": null}
+{"n": 204, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 205, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 423, "tag": "el", "igt": "2026-10-31T03:32:17.581Z", "err": null}
+{"n": 206, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 207, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 404, "tag": "el", "igt": "2026-10-31T09:32:17.581Z", "err": null}
+{"n": 208, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 30, "tag": "compact", "igt": null, "err": null}
+{"n": 209, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 424, "tag": "el", "igt": "2026-10-31T15:32:17.581Z", "err": null}
+{"n": 210, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 35, "tag": "compact", "igt": null, "err": null}
+{"n": 211, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 466, "tag": "el", "igt": "2026-10-31T21:32:17.581Z", "err": null}
+{"n": 212, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 213, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 457, "tag": "el", "igt": "2026-11-01T03:32:17.581Z", "err": null}
+{"n": 214, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 37, "tag": "compact", "igt": null, "err": null}
+{"n": 215, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 498, "tag": "el", "igt": "2026-11-01T09:32:17.581Z", "err": null}
+{"n": 216, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 32, "tag": "compact", "igt": null, "err": null}
+{"n": 217, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 505, "tag": "el", "igt": "2026-11-01T15:32:17.581Z", "err": null}
+{"n": 218, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 31, "tag": "compact", "igt": null, "err": null}
+{"n": 219, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 468, "tag": "el", "igt": "2026-11-01T21:32:17.581Z", "err": null}
+{"n": 220, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 42, "tag": "compact", "igt": null, "err": null}
+{"n": 221, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 469, "tag": "el", "igt": "2026-11-02T03:32:17.581Z", "err": null}
+{"n": 222, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 223, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 478, "tag": "el", "igt": "2026-11-02T09:32:17.581Z", "err": null}
+{"n": 224, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 19, "tag": "compact", "igt": null, "err": null}
+{"n": 225, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 446, "tag": "el", "igt": "2026-11-02T15:32:17.581Z", "err": null}
+{"n": 226, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 227, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 479, "tag": "el", "igt": "2026-11-02T21:32:17.581Z", "err": null}
+{"n": 228, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 35, "tag": "compact", "igt": null, "err": null}
+{"n": 229, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 469, "tag": "el", "igt": "2026-11-03T03:32:17.581Z", "err": null}
+{"n": 230, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 231, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 439, "tag": "el", "igt": "2026-11-03T09:32:17.581Z", "err": null}
+{"n": 232, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 233, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 421, "tag": "el", "igt": "2026-11-03T15:32:17.581Z", "err": null}
+{"n": 234, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 21, "tag": "compact", "igt": null, "err": null}
+{"n": 235, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 448, "tag": "el", "igt": "2026-11-03T21:32:17.581Z", "err": null}
+{"n": 236, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 237, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 483, "tag": "el", "igt": "2026-11-04T03:32:17.581Z", "err": null}
+{"n": 238, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 239, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 466, "tag": "el", "igt": "2026-11-04T09:32:17.581Z", "err": null}
+{"n": 240, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 241, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 488, "tag": "el", "igt": "2026-11-04T15:32:17.581Z", "err": null}
+{"n": 242, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 243, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 424, "tag": "el", "igt": "2026-11-04T21:32:17.581Z", "err": null}
+{"n": 244, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 245, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 520, "tag": "el", "igt": "2026-11-05T03:32:17.581Z", "err": null}
+{"n": 246, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 34, "tag": "compact", "igt": null, "err": null}
+{"n": 247, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 432, "tag": "el", "igt": "2026-11-05T09:32:17.581Z", "err": null}
+{"n": 248, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 249, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 445, "tag": "el", "igt": "2026-11-05T15:32:17.581Z", "err": null}
+{"n": 250, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 40, "tag": "compact", "igt": null, "err": null}
+{"n": 251, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 430, "tag": "el", "igt": "2026-11-05T21:32:17.581Z", "err": null}
+{"n": 252, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 31, "tag": "compact", "igt": null, "err": null}
+{"n": 253, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 428, "tag": "el", "igt": "2026-11-06T03:32:17.581Z", "err": null}
+{"n": 254, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 255, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 408, "tag": "el", "igt": "2026-11-06T09:32:17.581Z", "err": null}
+{"n": 256, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 257, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 419, "tag": "el", "igt": "2026-11-06T15:32:17.581Z", "err": null}
+{"n": 258, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 259, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 392, "tag": "el", "igt": "2026-11-06T21:32:17.581Z", "err": null}
+{"n": 260, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 261, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 414, "tag": "el", "igt": "2026-11-07T03:32:17.581Z", "err": null}
+{"n": 262, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 263, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 441, "tag": "el", "igt": "2026-11-07T09:32:17.581Z", "err": null}
+{"n": 264, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 265, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 532, "tag": "el", "igt": "2026-11-07T15:32:17.581Z", "err": null}
+{"n": 266, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 267, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 445, "tag": "el", "igt": "2026-11-07T21:32:17.581Z", "err": null}
+{"n": 268, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 269, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 16, "tag": "party-sq", "igt": null, "err": null}
+{"n": 270, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 42, "tag": "party-sq", "igt": null, "err": null}
+{"n": 271, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 8, "tag": "party-sq", "igt": null, "err": null}
+{"n": 272, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 7, "tag": "party-sq", "igt": null, "err": null}
+{"n": 273, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 274, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 15, "tag": "party-sq", "igt": null, "err": null}
+{"n": 275, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 344, "tag": "el", "igt": "2026-11-08T03:32:17.581Z", "err": null}
+{"n": 276, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 18, "tag": "compact", "igt": null, "err": null}
+{"n": 277, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 445, "tag": "el", "igt": "2026-11-08T09:32:17.581Z", "err": null}
+{"n": 278, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 279, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 421, "tag": "el", "igt": "2026-11-08T15:32:17.581Z", "err": null}
+{"n": 280, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 34, "tag": "compact", "igt": null, "err": null}
+{"n": 281, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 439, "tag": "el", "igt": "2026-11-08T21:32:17.581Z", "err": null}
+{"n": 282, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 20, "tag": "compact", "igt": null, "err": null}
+{"n": 283, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 440, "tag": "el", "igt": "2026-11-09T03:32:17.581Z", "err": null}
+{"n": 284, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 21, "tag": "compact", "igt": null, "err": null}
+{"n": 285, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 487, "tag": "el", "igt": "2026-11-09T09:32:17.581Z", "err": null}
+{"n": 286, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 287, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 400, "tag": "el", "igt": "2026-11-09T15:32:17.581Z", "err": null}
+{"n": 288, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 289, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 436, "tag": "el", "igt": "2026-11-09T21:32:17.581Z", "err": null}
+{"n": 290, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 291, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 415, "tag": "el", "igt": "2026-11-10T03:32:17.581Z", "err": null}
+{"n": 292, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 293, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 375, "tag": "el", "igt": "2026-11-10T09:32:17.581Z", "err": null}
+{"n": 294, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 295, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 410, "tag": "el", "igt": "2026-11-10T15:32:17.581Z", "err": null}
+{"n": 296, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 297, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 407, "tag": "el", "igt": "2026-11-10T21:32:17.581Z", "err": null}
+{"n": 298, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 299, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 421, "tag": "el", "igt": "2026-11-11T03:32:17.581Z", "err": null}
+{"n": 300, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 301, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 409, "tag": "el", "igt": "2026-11-11T09:32:17.581Z", "err": null}
+{"n": 302, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 16, "tag": "compact", "igt": null, "err": null}
+{"n": 303, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 366, "tag": "el", "igt": "2026-11-11T15:32:17.581Z", "err": null}
+{"n": 304, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 305, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 394, "tag": "el", "igt": "2026-11-11T21:32:17.581Z", "err": null}
+{"n": 306, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 307, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 392, "tag": "el", "igt": "2026-11-12T03:32:17.581Z", "err": null}
+{"n": 308, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 309, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 423, "tag": "el", "igt": "2026-11-12T09:32:17.581Z", "err": null}
+{"n": 310, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 311, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 425, "tag": "el", "igt": "2026-11-12T15:32:17.581Z", "err": null}
+{"n": 312, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 313, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 391, "tag": "el", "igt": "2026-11-12T21:32:17.581Z", "err": null}
+{"n": 314, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 315, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 433, "tag": "el", "igt": "2026-11-13T03:32:17.581Z", "err": null}
+{"n": 316, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 317, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 458, "tag": "el", "igt": "2026-11-13T09:32:17.581Z", "err": null}
+{"n": 318, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 19, "tag": "compact", "igt": null, "err": null}
+{"n": 319, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 376, "tag": "el", "igt": "2026-11-13T15:32:17.581Z", "err": null}
+{"n": 320, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 321, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 390, "tag": "el", "igt": "2026-11-13T21:32:17.581Z", "err": null}
+{"n": 322, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 48, "tag": "compact", "igt": null, "err": null}
+{"n": 323, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 442, "tag": "el", "igt": "2026-11-14T03:32:17.581Z", "err": null}
+{"n": 324, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 325, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 450, "tag": "el", "igt": "2026-11-14T09:32:17.581Z", "err": null}
+{"n": 326, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 20, "tag": "compact", "igt": null, "err": null}
+{"n": 327, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 447, "tag": "el", "igt": "2026-11-14T15:32:17.581Z", "err": null}
+{"n": 328, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 329, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 463, "tag": "el", "igt": "2026-11-14T21:32:17.581Z", "err": null}
+{"n": 330, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 30, "tag": "compact", "igt": null, "err": null}
+{"n": 331, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 432, "tag": "el", "igt": "2026-11-15T03:32:17.581Z", "err": null}
+{"n": 332, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 333, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 463, "tag": "el", "igt": "2026-11-15T09:32:17.581Z", "err": null}
+{"n": 334, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 335, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 472, "tag": "el", "igt": "2026-11-15T15:32:17.581Z", "err": null}
+{"n": 336, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 35, "tag": "compact", "igt": null, "err": null}
+{"n": 337, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 454, "tag": "el", "igt": "2026-11-15T21:32:17.581Z", "err": null}
+{"n": 338, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 339, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 372, "tag": "el", "igt": "2026-11-16T03:32:17.581Z", "err": null}
+{"n": 340, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 341, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 459, "tag": "el", "igt": "2026-11-16T09:32:17.581Z", "err": null}
+{"n": 342, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 343, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 446, "tag": "el", "igt": "2026-11-16T15:32:17.581Z", "err": null}
+{"n": 344, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 19, "tag": "compact", "igt": null, "err": null}
+{"n": 345, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 496, "tag": "el", "igt": "2026-11-16T21:32:17.581Z", "err": null}
+{"n": 346, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 39, "tag": "compact", "igt": null, "err": null}
+{"n": 347, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 449, "tag": "el", "igt": "2026-11-17T03:32:17.581Z", "err": null}
+{"n": 348, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 349, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 437, "tag": "el", "igt": "2026-11-17T09:32:17.581Z", "err": null}
+{"n": 350, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 18, "tag": "compact", "igt": null, "err": null}
+{"n": 351, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 450, "tag": "el", "igt": "2026-11-17T15:32:17.581Z", "err": null}
+{"n": 352, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 353, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 508, "tag": "el", "igt": "2026-11-17T21:32:17.581Z", "err": null}
+{"n": 354, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 19, "tag": "compact", "igt": null, "err": null}
+{"n": 355, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 24, "tag": "party-sq", "igt": null, "err": null}
+{"n": 356, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 37, "tag": "party-sq", "igt": null, "err": null}
+{"n": 357, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 11, "tag": "party-sq", "igt": null, "err": null}
+{"n": 358, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 359, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 360, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 361, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 374, "tag": "el", "igt": "2026-11-18T03:32:17.581Z", "err": null}
+{"n": 362, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 363, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 407, "tag": "el", "igt": "2026-11-18T09:32:17.581Z", "err": null}
+{"n": 364, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 37, "tag": "compact", "igt": null, "err": null}
+{"n": 365, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 432, "tag": "el", "igt": "2026-11-18T15:32:17.581Z", "err": null}
+{"n": 366, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 367, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 447, "tag": "el", "igt": "2026-11-18T21:32:17.581Z", "err": null}
+{"n": 368, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 369, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 506, "tag": "el", "igt": "2026-11-19T03:32:17.581Z", "err": null}
+{"n": 370, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 371, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 477, "tag": "el", "igt": "2026-11-19T09:32:17.581Z", "err": null}
+{"n": 372, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 373, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 472, "tag": "el", "igt": "2026-11-19T15:32:17.581Z", "err": null}
+{"n": 374, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 375, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 546, "tag": "el", "igt": "2026-11-19T21:32:17.581Z", "err": null}
+{"n": 376, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 21, "tag": "compact", "igt": null, "err": null}
+{"n": 377, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 571, "tag": "el", "igt": "2026-11-20T03:32:17.581Z", "err": null}
+{"n": 378, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 21, "tag": "compact", "igt": null, "err": null}
+{"n": 379, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 521, "tag": "el", "igt": "2026-11-20T09:32:17.581Z", "err": null}
+{"n": 380, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 381, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 598, "tag": "el", "igt": "2026-11-20T15:32:17.581Z", "err": null}
+{"n": 382, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 49, "tag": "compact", "igt": null, "err": null}
+{"n": 383, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 489, "tag": "el", "igt": "2026-11-20T21:32:17.581Z", "err": null}
+{"n": 384, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 385, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 448, "tag": "el", "igt": "2026-11-21T03:32:17.581Z", "err": null}
+{"n": 386, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 387, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 392, "tag": "el", "igt": "2026-11-21T09:32:17.581Z", "err": null}
+{"n": 388, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 389, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 534, "tag": "el", "igt": "2026-11-21T15:32:17.581Z", "err": null}
+{"n": 390, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 35, "tag": "compact", "igt": null, "err": null}
+{"n": 391, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 502, "tag": "el", "igt": "2026-11-21T21:32:17.581Z", "err": null}
+{"n": 392, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 38, "tag": "compact", "igt": null, "err": null}
+{"n": 393, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 403, "tag": "el", "igt": "2026-11-22T03:32:17.581Z", "err": null}
+{"n": 394, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 42, "tag": "compact", "igt": null, "err": null}
+{"n": 395, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 420, "tag": "el", "igt": "2026-11-22T09:32:17.581Z", "err": null}
+{"n": 396, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 37, "tag": "compact", "igt": null, "err": null}
+{"n": 397, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 411, "tag": "el", "igt": "2026-11-22T15:32:17.581Z", "err": null}
+{"n": 398, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 48, "tag": "compact", "igt": null, "err": null}
+{"n": 399, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 441, "tag": "el", "igt": "2026-11-22T21:32:17.581Z", "err": null}
+{"n": 400, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 401, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 491, "tag": "el", "igt": "2026-11-23T03:32:17.581Z", "err": null}
+{"n": 402, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 403, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 477, "tag": "el", "igt": "2026-11-23T09:32:17.581Z", "err": null}
+{"n": 404, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 21, "tag": "compact", "igt": null, "err": null}
+{"n": 405, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 468, "tag": "el", "igt": "2026-11-23T15:32:17.581Z", "err": null}
+{"n": 406, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 36, "tag": "compact", "igt": null, "err": null}
+{"n": 407, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 405, "tag": "el", "igt": "2026-11-23T21:32:17.581Z", "err": null}
+{"n": 408, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 32, "tag": "compact", "igt": null, "err": null}
+{"n": 409, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 433, "tag": "el", "igt": "2026-11-24T03:32:17.581Z", "err": null}
+{"n": 410, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 411, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 506, "tag": "el", "igt": "2026-11-24T09:32:17.581Z", "err": null}
+{"n": 412, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 413, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 420, "tag": "el", "igt": "2026-11-24T15:32:17.581Z", "err": null}
+{"n": 414, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 415, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 468, "tag": "el", "igt": "2026-11-24T21:32:17.581Z", "err": null}
+{"n": 416, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 19, "tag": "compact", "igt": null, "err": null}
+{"n": 417, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 497, "tag": "el", "igt": "2026-11-25T03:32:17.581Z", "err": null}
+{"n": 418, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 419, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 405, "tag": "el", "igt": "2026-11-25T09:32:17.581Z", "err": null}
+{"n": 420, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 38, "tag": "compact", "igt": null, "err": null}
+{"n": 421, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 458, "tag": "el", "igt": "2026-11-25T15:32:17.581Z", "err": null}
+{"n": 422, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 423, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 475, "tag": "el", "igt": "2026-11-25T21:32:17.581Z", "err": null}
+{"n": 424, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 425, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 465, "tag": "el", "igt": "2026-11-26T03:32:17.581Z", "err": null}
+{"n": 426, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 427, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 504, "tag": "el", "igt": "2026-11-26T09:32:17.581Z", "err": null}
+{"n": 428, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 429, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 431, "tag": "el", "igt": "2026-11-26T15:32:17.581Z", "err": null}
+{"n": 430, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 431, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 590, "tag": "el", "igt": "2026-11-26T21:32:17.581Z", "err": null}
+{"n": 432, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 32, "tag": "compact", "igt": null, "err": null}
+{"n": 433, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 436, "tag": "el", "igt": "2026-11-27T03:32:17.581Z", "err": null}
+{"n": 434, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 35, "tag": "compact", "igt": null, "err": null}
+{"n": 435, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 500, "tag": "el", "igt": "2026-11-27T09:32:17.581Z", "err": null}
+{"n": 436, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 437, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 465, "tag": "el", "igt": "2026-11-27T15:32:17.581Z", "err": null}
+{"n": 438, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 439, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 401, "tag": "el", "igt": "2026-11-27T21:32:17.581Z", "err": null}
+{"n": 440, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 441, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 28, "tag": "party-sq", "igt": null, "err": null}
+{"n": 442, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 31, "tag": "party-sq", "igt": null, "err": null}
+{"n": 443, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 9, "tag": "party-sq", "igt": null, "err": null}
+{"n": 444, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 445, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 446, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 447, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 370, "tag": "el", "igt": "2026-11-28T03:32:17.581Z", "err": null}
+{"n": 448, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 449, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 430, "tag": "el", "igt": "2026-11-28T09:32:17.581Z", "err": null}
+{"n": 450, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 451, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 438, "tag": "el", "igt": "2026-11-28T15:32:17.581Z", "err": null}
+{"n": 452, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 453, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 406, "tag": "el", "igt": "2026-11-28T21:32:17.581Z", "err": null}
+{"n": 454, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 455, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 459, "tag": "el", "igt": "2026-11-29T03:32:17.581Z", "err": null}
+{"n": 456, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 33, "tag": "compact", "igt": null, "err": null}
+{"n": 457, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 419, "tag": "el", "igt": "2026-11-29T09:32:17.581Z", "err": null}
+{"n": 458, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 43, "tag": "compact", "igt": null, "err": null}
+{"n": 459, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 525, "tag": "el", "igt": "2026-11-29T15:32:17.581Z", "err": null}
+{"n": 460, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 30, "tag": "compact", "igt": null, "err": null}
+{"n": 461, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 518, "tag": "el", "igt": "2026-11-29T21:32:17.581Z", "err": null}
+{"n": 462, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 463, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 416, "tag": "el", "igt": "2026-11-30T03:32:17.581Z", "err": null}
+{"n": 464, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 19, "tag": "compact", "igt": null, "err": null}
+{"n": 465, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 464, "tag": "el", "igt": "2026-11-30T09:32:17.581Z", "err": null}
+{"n": 466, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 30, "tag": "compact", "igt": null, "err": null}
+{"n": 467, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 478, "tag": "el", "igt": "2026-11-30T15:32:17.581Z", "err": null}
+{"n": 468, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 34, "tag": "compact", "igt": null, "err": null}
+{"n": 469, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 470, "tag": "el", "igt": "2026-11-30T21:32:17.581Z", "err": null}
+{"n": 470, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 471, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 415, "tag": "el", "igt": "2026-12-01T03:32:17.581Z", "err": null}
+{"n": 472, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 473, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 489, "tag": "el", "igt": "2026-12-01T09:32:17.581Z", "err": null}
+{"n": 474, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 20, "tag": "compact", "igt": null, "err": null}
+{"n": 475, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 465, "tag": "el", "igt": "2026-12-01T15:32:17.581Z", "err": null}
+{"n": 476, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 477, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 442, "tag": "el", "igt": "2026-12-01T21:32:17.581Z", "err": null}
+{"n": 478, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 479, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 563, "tag": "el", "igt": "2026-12-02T03:32:17.581Z", "err": null}
+{"n": 480, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 51, "tag": "compact", "igt": null, "err": null}
+{"n": 481, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 485, "tag": "el", "igt": "2026-12-02T09:32:17.581Z", "err": null}
+{"n": 482, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 483, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 433, "tag": "el", "igt": "2026-12-02T15:32:17.581Z", "err": null}
+{"n": 484, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 485, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 415, "tag": "el", "igt": "2026-12-02T21:32:17.581Z", "err": null}
+{"n": 486, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 487, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 419, "tag": "el", "igt": "2026-12-03T03:32:17.581Z", "err": null}
+{"n": 488, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 489, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 425, "tag": "el", "igt": "2026-12-03T09:32:17.581Z", "err": null}
+{"n": 490, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 491, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 465, "tag": "el", "igt": "2026-12-03T15:32:17.581Z", "err": null}
+{"n": 492, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 493, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 507, "tag": "el", "igt": "2026-12-03T21:32:17.581Z", "err": null}
+{"n": 494, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 31, "tag": "compact", "igt": null, "err": null}
+{"n": 495, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 446, "tag": "el", "igt": "2026-12-04T03:32:17.581Z", "err": null}
+{"n": 496, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 497, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 430, "tag": "el", "igt": "2026-12-04T09:32:17.581Z", "err": null}
+{"n": 498, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 499, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 440, "tag": "el", "igt": "2026-12-04T15:32:17.581Z", "err": null}
+{"n": 500, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 501, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 566, "tag": "el", "igt": "2026-12-04T21:32:17.581Z", "err": null}
+{"n": 502, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 33, "tag": "compact", "igt": null, "err": null}
+{"n": 503, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 525, "tag": "el", "igt": "2026-12-05T03:32:17.581Z", "err": null}
+{"n": 504, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 46, "tag": "compact", "igt": null, "err": null}
+{"n": 505, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 444, "tag": "el", "igt": "2026-12-05T09:32:17.581Z", "err": null}
+{"n": 506, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 507, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 464, "tag": "el", "igt": "2026-12-05T15:32:17.581Z", "err": null}
+{"n": 508, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 40, "tag": "compact", "igt": null, "err": null}
+{"n": 509, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 436, "tag": "el", "igt": "2026-12-05T21:32:17.581Z", "err": null}
+{"n": 510, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 32, "tag": "compact", "igt": null, "err": null}
+{"n": 511, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 406, "tag": "el", "igt": "2026-12-06T03:32:17.581Z", "err": null}
+{"n": 512, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 513, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 436, "tag": "el", "igt": "2026-12-06T09:32:17.581Z", "err": null}
+{"n": 514, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 19, "tag": "compact", "igt": null, "err": null}
+{"n": 515, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 439, "tag": "el", "igt": "2026-12-06T15:32:17.581Z", "err": null}
+{"n": 516, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 517, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 442, "tag": "el", "igt": "2026-12-06T21:32:17.581Z", "err": null}
+{"n": 518, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 69, "tag": "compact", "igt": null, "err": null}
+{"n": 519, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 435, "tag": "el", "igt": "2026-12-07T03:32:17.581Z", "err": null}
+{"n": 520, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 521, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 499, "tag": "el", "igt": "2026-12-07T09:32:17.581Z", "err": null}
+{"n": 522, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 523, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 402, "tag": "el", "igt": "2026-12-07T15:32:17.581Z", "err": null}
+{"n": 524, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 525, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 439, "tag": "el", "igt": "2026-12-07T21:32:17.581Z", "err": null}
+{"n": 526, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 527, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 45, "tag": "party-sq", "igt": null, "err": null}
+{"n": 528, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 529, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 530, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 531, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 532, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 7, "tag": "party-sq", "igt": null, "err": null}
+{"n": 533, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 351, "tag": "el", "igt": "2026-12-08T03:32:17.581Z", "err": null}
+{"n": 534, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 535, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 421, "tag": "el", "igt": "2026-12-08T09:32:17.581Z", "err": null}
+{"n": 536, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 537, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 424, "tag": "el", "igt": "2026-12-08T15:32:17.581Z", "err": null}
+{"n": 538, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 31, "tag": "compact", "igt": null, "err": null}
+{"n": 539, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 476, "tag": "el", "igt": "2026-12-08T21:32:17.581Z", "err": null}
+{"n": 540, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 541, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 437, "tag": "el", "igt": "2026-12-09T03:32:17.581Z", "err": null}
+{"n": 542, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 543, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 390, "tag": "el", "igt": "2026-12-09T09:32:17.581Z", "err": null}
+{"n": 544, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 545, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 463, "tag": "el", "igt": "2026-12-09T15:32:17.581Z", "err": null}
+{"n": 546, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 547, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 440, "tag": "el", "igt": "2026-12-09T21:32:17.581Z", "err": null}
+{"n": 548, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 549, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 523, "tag": "el", "igt": "2026-12-10T03:32:17.581Z", "err": null}
+{"n": 550, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 551, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 466, "tag": "el", "igt": "2026-12-10T09:32:17.581Z", "err": null}
+{"n": 552, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 553, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 461, "tag": "el", "igt": "2026-12-10T15:32:17.581Z", "err": null}
+{"n": 554, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 555, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 431, "tag": "el", "igt": "2026-12-10T21:32:17.581Z", "err": null}
+{"n": 556, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 17, "tag": "compact", "igt": null, "err": null}
+{"n": 557, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 438, "tag": "el", "igt": "2026-12-11T03:32:17.581Z", "err": null}
+{"n": 558, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 559, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 462, "tag": "el", "igt": "2026-12-11T09:32:17.581Z", "err": null}
+{"n": 560, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 20, "tag": "compact", "igt": null, "err": null}
+{"n": 561, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 515, "tag": "el", "igt": "2026-12-11T15:32:17.581Z", "err": null}
+{"n": 562, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 563, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 441, "tag": "el", "igt": "2026-12-11T21:32:17.581Z", "err": null}
+{"n": 564, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 565, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 412, "tag": "el", "igt": "2026-12-12T03:32:17.581Z", "err": null}
+{"n": 566, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 30, "tag": "compact", "igt": null, "err": null}
+{"n": 567, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 476, "tag": "el", "igt": "2026-12-12T09:32:17.581Z", "err": null}
+{"n": 568, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 569, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 432, "tag": "el", "igt": "2026-12-12T15:32:17.581Z", "err": null}
+{"n": 570, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 31, "tag": "compact", "igt": null, "err": null}
+{"n": 571, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 440, "tag": "el", "igt": "2026-12-12T21:32:17.581Z", "err": null}
+{"n": 572, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 573, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 408, "tag": "el", "igt": "2026-12-13T03:32:17.581Z", "err": null}
+{"n": 574, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 575, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 525, "tag": "el", "igt": "2026-12-13T09:32:17.581Z", "err": null}
+{"n": 576, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 19, "tag": "compact", "igt": null, "err": null}
+{"n": 577, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 459, "tag": "el", "igt": "2026-12-13T15:32:17.581Z", "err": null}
+{"n": 578, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 579, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 440, "tag": "el", "igt": "2026-12-13T21:32:17.581Z", "err": null}
+{"n": 580, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 34, "tag": "compact", "igt": null, "err": null}
+{"n": 581, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 431, "tag": "el", "igt": "2026-12-14T03:32:17.581Z", "err": null}
+{"n": 582, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 583, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 424, "tag": "el", "igt": "2026-12-14T09:32:17.581Z", "err": null}
+{"n": 584, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 585, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 440, "tag": "el", "igt": "2026-12-14T15:32:17.581Z", "err": null}
+{"n": 586, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 33, "tag": "compact", "igt": null, "err": null}
+{"n": 587, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 398, "tag": "el", "igt": "2026-12-14T21:32:17.581Z", "err": null}
+{"n": 588, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 589, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 453, "tag": "el", "igt": "2026-12-15T03:32:17.581Z", "err": null}
+{"n": 590, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 591, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 457, "tag": "el", "igt": "2026-12-15T09:32:17.581Z", "err": null}
+{"n": 592, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 593, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 466, "tag": "el", "igt": "2026-12-15T15:32:17.581Z", "err": null}
+{"n": 594, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 595, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 446, "tag": "el", "igt": "2026-12-15T21:32:17.581Z", "err": null}
+{"n": 596, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 597, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 388, "tag": "el", "igt": "2026-12-16T03:32:17.581Z", "err": null}
+{"n": 598, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 48, "tag": "compact", "igt": null, "err": null}
+{"n": 599, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 485, "tag": "el", "igt": "2026-12-16T09:32:17.581Z", "err": null}
+{"n": 600, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 20, "tag": "compact", "igt": null, "err": null}
+{"n": 601, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 388, "tag": "el", "igt": "2026-12-16T15:32:17.581Z", "err": null}
+{"n": 602, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 603, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 439, "tag": "el", "igt": "2026-12-16T21:32:17.581Z", "err": null}
+{"n": 604, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 605, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 427, "tag": "el", "igt": "2026-12-17T03:32:17.581Z", "err": null}
+{"n": 606, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 37, "tag": "compact", "igt": null, "err": null}
+{"n": 607, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 538, "tag": "el", "igt": "2026-12-17T09:32:17.581Z", "err": null}
+{"n": 608, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 48, "tag": "compact", "igt": null, "err": null}
+{"n": 609, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 503, "tag": "el", "igt": "2026-12-17T15:32:17.581Z", "err": null}
+{"n": 610, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 611, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 400, "tag": "el", "igt": "2026-12-17T21:32:17.581Z", "err": null}
+{"n": 612, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 31, "tag": "compact", "igt": null, "err": null}
+{"n": 613, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 22, "tag": "party-sq", "igt": null, "err": null}
+{"n": 614, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 66, "tag": "party-sq", "igt": null, "err": null}
+{"n": 615, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 204, "tag": "party-sq", "igt": null, "err": null}
+{"n": 616, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 10, "tag": "party-sq", "igt": null, "err": null}
+{"n": 617, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 7, "tag": "party-sq", "igt": null, "err": null}
+{"n": 618, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 619, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 363, "tag": "el", "igt": "2026-12-18T03:32:17.581Z", "err": null}
+{"n": 620, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 33, "tag": "compact", "igt": null, "err": null}
+{"n": 621, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 422, "tag": "el", "igt": "2026-12-18T09:32:17.581Z", "err": null}
+{"n": 622, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 623, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 434, "tag": "el", "igt": "2026-12-18T15:32:17.581Z", "err": null}
+{"n": 624, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 625, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 436, "tag": "el", "igt": "2026-12-18T21:32:17.581Z", "err": null}
+{"n": 626, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 627, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 441, "tag": "el", "igt": "2026-12-19T03:32:17.581Z", "err": null}
+{"n": 628, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 629, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 444, "tag": "el", "igt": "2026-12-19T09:32:17.581Z", "err": null}
+{"n": 630, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 631, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 406, "tag": "el", "igt": "2026-12-19T15:32:17.581Z", "err": null}
+{"n": 632, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 633, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 448, "tag": "el", "igt": "2026-12-19T21:32:17.581Z", "err": null}
+{"n": 634, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 635, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 455, "tag": "el", "igt": "2026-12-20T03:32:17.581Z", "err": null}
+{"n": 636, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 637, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 395, "tag": "el", "igt": "2026-12-20T09:32:17.581Z", "err": null}
+{"n": 638, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 30, "tag": "compact", "igt": null, "err": null}
+{"n": 639, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 433, "tag": "el", "igt": "2026-12-20T15:32:17.581Z", "err": null}
+{"n": 640, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 21, "tag": "compact", "igt": null, "err": null}
+{"n": 641, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 505, "tag": "el", "igt": "2026-12-20T21:32:17.581Z", "err": null}
+{"n": 642, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 643, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 434, "tag": "el", "igt": "2026-12-21T03:32:17.581Z", "err": null}
+{"n": 644, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 645, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 477, "tag": "el", "igt": "2026-12-21T09:32:17.581Z", "err": null}
+{"n": 646, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 647, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 431, "tag": "el", "igt": "2026-12-21T15:32:17.581Z", "err": null}
+{"n": 648, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 649, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 400, "tag": "el", "igt": "2026-12-21T21:32:17.581Z", "err": null}
+{"n": 650, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 651, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 400, "tag": "el", "igt": "2026-12-22T03:32:17.581Z", "err": null}
+{"n": 652, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 653, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 453, "tag": "el", "igt": "2026-12-22T09:32:17.581Z", "err": null}
+{"n": 654, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 55, "tag": "compact", "igt": null, "err": null}
+{"n": 655, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 415, "tag": "el", "igt": "2026-12-22T15:32:17.581Z", "err": null}
+{"n": 656, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 657, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 420, "tag": "el", "igt": "2026-12-22T21:32:17.581Z", "err": null}
+{"n": 658, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 659, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 504, "tag": "el", "igt": "2026-12-23T03:32:17.581Z", "err": null}
+{"n": 660, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 661, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 398, "tag": "el", "igt": "2026-12-23T09:32:17.581Z", "err": null}
+{"n": 662, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 20, "tag": "compact", "igt": null, "err": null}
+{"n": 663, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 495, "tag": "el", "igt": "2026-12-23T15:32:17.581Z", "err": null}
+{"n": 664, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 665, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 402, "tag": "el", "igt": "2026-12-23T21:32:17.581Z", "err": null}
+{"n": 666, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 667, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 400, "tag": "el", "igt": "2026-12-24T03:32:17.581Z", "err": null}
+{"n": 668, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 669, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 390, "tag": "el", "igt": "2026-12-24T09:32:17.581Z", "err": null}
+{"n": 670, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 32, "tag": "compact", "igt": null, "err": null}
+{"n": 671, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 464, "tag": "el", "igt": "2026-12-24T15:32:17.581Z", "err": null}
+{"n": 672, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 673, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 414, "tag": "el", "igt": "2026-12-24T21:32:17.581Z", "err": null}
+{"n": 674, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 42, "tag": "compact", "igt": null, "err": null}
+{"n": 675, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 431, "tag": "el", "igt": "2026-12-25T03:32:17.581Z", "err": null}
+{"n": 676, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 677, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 364, "tag": "el", "igt": "2026-12-25T09:32:17.581Z", "err": null}
+{"n": 678, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 679, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 427, "tag": "el", "igt": "2026-12-25T15:32:17.581Z", "err": null}
+{"n": 680, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 19, "tag": "compact", "igt": null, "err": null}
+{"n": 681, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 449, "tag": "el", "igt": "2026-12-25T21:32:17.581Z", "err": null}
+{"n": 682, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 683, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 427, "tag": "el", "igt": "2026-12-26T03:32:17.581Z", "err": null}
+{"n": 684, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 685, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 534, "tag": "el", "igt": "2026-12-26T09:32:17.581Z", "err": null}
+{"n": 686, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 20, "tag": "compact", "igt": null, "err": null}
+{"n": 687, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 383, "tag": "el", "igt": "2026-12-26T15:32:17.581Z", "err": null}
+{"n": 688, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 689, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 415, "tag": "el", "igt": "2026-12-26T21:32:17.581Z", "err": null}
+{"n": 690, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 691, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 394, "tag": "el", "igt": "2026-12-27T03:32:17.581Z", "err": null}
+{"n": 692, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 693, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 454, "tag": "el", "igt": "2026-12-27T09:32:17.581Z", "err": null}
+{"n": 694, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 31, "tag": "compact", "igt": null, "err": null}
+{"n": 695, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 467, "tag": "el", "igt": "2026-12-27T15:32:17.581Z", "err": null}
+{"n": 696, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 46, "tag": "compact", "igt": null, "err": null}
+{"n": 697, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 532, "tag": "el", "igt": "2026-12-27T21:32:17.581Z", "err": null}
+{"n": 698, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 699, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 28, "tag": "party-sq", "igt": null, "err": null}
+{"n": 700, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 65, "tag": "party-sq", "igt": null, "err": null}
+{"n": 701, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 11, "tag": "party-sq", "igt": null, "err": null}
+{"n": 702, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 8, "tag": "party-sq", "igt": null, "err": null}
+{"n": 703, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 11, "tag": "party-sq", "igt": null, "err": null}
+{"n": 704, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 705, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 372, "tag": "el", "igt": "2026-12-28T03:32:17.581Z", "err": null}
+{"n": 706, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 707, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 399, "tag": "el", "igt": "2026-12-28T09:32:17.581Z", "err": null}
+{"n": 708, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 709, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 459, "tag": "el", "igt": "2026-12-28T15:32:17.581Z", "err": null}
+{"n": 710, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 711, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 528, "tag": "el", "igt": "2026-12-28T21:32:17.581Z", "err": null}
+{"n": 712, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 713, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 428, "tag": "el", "igt": "2026-12-29T03:32:17.581Z", "err": null}
+{"n": 714, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 715, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 412, "tag": "el", "igt": "2026-12-29T09:32:17.581Z", "err": null}
+{"n": 716, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 717, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 410, "tag": "el", "igt": "2026-12-29T15:32:17.581Z", "err": null}
+{"n": 718, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 719, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 399, "tag": "el", "igt": "2026-12-29T21:32:17.581Z", "err": null}
+{"n": 720, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 721, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 400, "tag": "el", "igt": "2026-12-30T03:32:17.581Z", "err": null}
+{"n": 722, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 33, "tag": "compact", "igt": null, "err": null}
+{"n": 723, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 444, "tag": "el", "igt": "2026-12-30T09:32:17.581Z", "err": null}
+{"n": 724, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 725, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 411, "tag": "el", "igt": "2026-12-30T15:32:17.581Z", "err": null}
+{"n": 726, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 727, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 417, "tag": "el", "igt": "2026-12-30T21:32:17.581Z", "err": null}
+{"n": 728, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 729, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 407, "tag": "el", "igt": "2026-12-31T03:32:17.581Z", "err": null}
+{"n": 730, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 33, "tag": "compact", "igt": null, "err": null}
+{"n": 731, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 437, "tag": "el", "igt": "2026-12-31T09:32:17.581Z", "err": null}
+{"n": 732, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 733, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 489, "tag": "el", "igt": "2026-12-31T15:32:17.581Z", "err": null}
+{"n": 734, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 735, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 453, "tag": "el", "igt": "2026-12-31T21:32:17.581Z", "err": null}
+{"n": 736, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 737, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 478, "tag": "el", "igt": "2027-01-01T03:32:17.581Z", "err": null}
+{"n": 738, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 739, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 466, "tag": "el", "igt": "2027-01-01T09:32:17.581Z", "err": null}
+{"n": 740, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 17, "tag": "compact", "igt": null, "err": null}
+{"n": 741, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 460, "tag": "el", "igt": "2027-01-01T15:32:17.581Z", "err": null}
+{"n": 742, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 30, "tag": "compact", "igt": null, "err": null}
+{"n": 743, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 416, "tag": "el", "igt": "2027-01-01T21:32:17.581Z", "err": null}
+{"n": 744, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 52, "tag": "compact", "igt": null, "err": null}
+{"n": 745, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 464, "tag": "el", "igt": "2027-01-02T03:32:17.581Z", "err": null}
+{"n": 746, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 21, "tag": "compact", "igt": null, "err": null}
+{"n": 747, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 440, "tag": "el", "igt": "2027-01-02T09:32:17.581Z", "err": null}
+{"n": 748, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 16, "tag": "compact", "igt": null, "err": null}
+{"n": 749, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 417, "tag": "el", "igt": "2027-01-02T15:32:17.581Z", "err": null}
+{"n": 750, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 31, "tag": "compact", "igt": null, "err": null}
+{"n": 751, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 419, "tag": "el", "igt": "2027-01-02T21:32:17.581Z", "err": null}
+{"n": 752, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 753, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 378, "tag": "el", "igt": "2027-01-03T03:32:17.581Z", "err": null}
+{"n": 754, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 755, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 430, "tag": "el", "igt": "2027-01-03T09:32:17.581Z", "err": null}
+{"n": 756, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 757, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 466, "tag": "el", "igt": "2027-01-03T15:32:17.581Z", "err": null}
+{"n": 758, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 40, "tag": "compact", "igt": null, "err": null}
+{"n": 759, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 554, "tag": "el", "igt": "2027-01-03T21:32:17.581Z", "err": null}
+{"n": 760, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 33, "tag": "compact", "igt": null, "err": null}
+{"n": 761, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 408, "tag": "el", "igt": "2027-01-04T03:32:17.581Z", "err": null}
+{"n": 762, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 30, "tag": "compact", "igt": null, "err": null}
+{"n": 763, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 413, "tag": "el", "igt": "2027-01-04T09:32:17.581Z", "err": null}
+{"n": 764, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 765, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 427, "tag": "el", "igt": "2027-01-04T15:32:17.581Z", "err": null}
+{"n": 766, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 767, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 447, "tag": "el", "igt": "2027-01-04T21:32:17.581Z", "err": null}
+{"n": 768, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 769, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 460, "tag": "el", "igt": "2027-01-05T03:32:17.581Z", "err": null}
+{"n": 770, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 36, "tag": "compact", "igt": null, "err": null}
+{"n": 771, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 452, "tag": "el", "igt": "2027-01-05T09:32:17.581Z", "err": null}
+{"n": 772, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 31, "tag": "compact", "igt": null, "err": null}
+{"n": 773, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 437, "tag": "el", "igt": "2027-01-05T15:32:17.581Z", "err": null}
+{"n": 774, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 32, "tag": "compact", "igt": null, "err": null}
+{"n": 775, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 479, "tag": "el", "igt": "2027-01-05T21:32:17.581Z", "err": null}
+{"n": 776, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 777, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 535, "tag": "el", "igt": "2027-01-06T03:32:17.581Z", "err": null}
+{"n": 778, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 779, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 439, "tag": "el", "igt": "2027-01-06T09:32:17.581Z", "err": null}
+{"n": 780, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 34, "tag": "compact", "igt": null, "err": null}
+{"n": 781, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 416, "tag": "el", "igt": "2027-01-06T15:32:17.581Z", "err": null}
+{"n": 782, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 39, "tag": "compact", "igt": null, "err": null}
+{"n": 783, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 507, "tag": "el", "igt": "2027-01-06T21:32:17.581Z", "err": null}
+{"n": 784, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 785, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 18, "tag": "party-sq", "igt": null, "err": null}
+{"n": 786, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 43, "tag": "party-sq", "igt": null, "err": null}
+{"n": 787, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 12, "tag": "party-sq", "igt": null, "err": null}
+{"n": 788, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 789, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 790, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 791, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 424, "tag": "el", "igt": "2027-01-07T03:32:17.581Z", "err": null}
+{"n": 792, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 793, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 484, "tag": "el", "igt": "2027-01-07T09:32:17.581Z", "err": null}
+{"n": 794, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 795, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 478, "tag": "el", "igt": "2027-01-07T15:32:17.581Z", "err": null}
+{"n": 796, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 38, "tag": "compact", "igt": null, "err": null}
+{"n": 797, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 484, "tag": "el", "igt": "2027-01-07T21:32:17.581Z", "err": null}
+{"n": 798, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 799, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 488, "tag": "el", "igt": "2027-01-08T03:32:17.581Z", "err": null}
+{"n": 800, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 801, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 435, "tag": "el", "igt": "2027-01-08T09:32:17.581Z", "err": null}
+{"n": 802, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 803, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 522, "tag": "el", "igt": "2027-01-08T15:32:17.581Z", "err": null}
+{"n": 804, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 805, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 444, "tag": "el", "igt": "2027-01-08T21:32:17.581Z", "err": null}
+{"n": 806, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 807, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 454, "tag": "el", "igt": "2027-01-09T03:32:17.581Z", "err": null}
+{"n": 808, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 809, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 476, "tag": "el", "igt": "2027-01-09T09:32:17.581Z", "err": null}
+{"n": 810, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 16, "tag": "compact", "igt": null, "err": null}
+{"n": 811, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 447, "tag": "el", "igt": "2027-01-09T15:32:17.581Z", "err": null}
+{"n": 812, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 33, "tag": "compact", "igt": null, "err": null}
+{"n": 813, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 460, "tag": "el", "igt": "2027-01-09T21:32:17.581Z", "err": null}
+{"n": 814, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 36, "tag": "compact", "igt": null, "err": null}
+{"n": 815, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 477, "tag": "el", "igt": "2027-01-10T03:32:17.581Z", "err": null}
+{"n": 816, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 19, "tag": "compact", "igt": null, "err": null}
+{"n": 817, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 488, "tag": "el", "igt": "2027-01-10T09:32:17.581Z", "err": null}
+{"n": 818, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 819, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 418, "tag": "el", "igt": "2027-01-10T15:32:17.581Z", "err": null}
+{"n": 820, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 821, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 399, "tag": "el", "igt": "2027-01-10T21:32:17.581Z", "err": null}
+{"n": 822, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 823, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 385, "tag": "el", "igt": "2027-01-11T03:32:17.581Z", "err": null}
+{"n": 824, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 825, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 503, "tag": "el", "igt": "2027-01-11T09:32:17.581Z", "err": null}
+{"n": 826, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 35, "tag": "compact", "igt": null, "err": null}
+{"n": 827, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 511, "tag": "el", "igt": "2027-01-11T15:32:17.581Z", "err": null}
+{"n": 828, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 829, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 427, "tag": "el", "igt": "2027-01-11T21:32:17.581Z", "err": null}
+{"n": 830, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 20, "tag": "compact", "igt": null, "err": null}
+{"n": 831, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 439, "tag": "el", "igt": "2027-01-12T03:32:17.581Z", "err": null}
+{"n": 832, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 833, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 416, "tag": "el", "igt": "2027-01-12T09:32:17.581Z", "err": null}
+{"n": 834, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 37, "tag": "compact", "igt": null, "err": null}
+{"n": 835, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 393, "tag": "el", "igt": "2027-01-12T15:32:17.581Z", "err": null}
+{"n": 836, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 37, "tag": "compact", "igt": null, "err": null}
+{"n": 837, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 462, "tag": "el", "igt": "2027-01-12T21:32:17.581Z", "err": null}
+{"n": 838, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 839, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 438, "tag": "el", "igt": "2027-01-13T03:32:17.581Z", "err": null}
+{"n": 840, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 841, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 393, "tag": "el", "igt": "2027-01-13T09:32:17.581Z", "err": null}
+{"n": 842, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 31, "tag": "compact", "igt": null, "err": null}
+{"n": 843, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 435, "tag": "el", "igt": "2027-01-13T15:32:17.581Z", "err": null}
+{"n": 844, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 25, "tag": "compact", "igt": null, "err": null}
+{"n": 845, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 443, "tag": "el", "igt": "2027-01-13T21:32:17.581Z", "err": null}
+{"n": 846, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "compact", "igt": null, "err": null}
+{"n": 847, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 450, "tag": "el", "igt": "2027-01-14T03:32:17.581Z", "err": null}
+{"n": 848, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 19, "tag": "compact", "igt": null, "err": null}
+{"n": 849, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 497, "tag": "el", "igt": "2027-01-14T09:32:17.581Z", "err": null}
+{"n": 850, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 39, "tag": "compact", "igt": null, "err": null}
+{"n": 851, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 458, "tag": "el", "igt": "2027-01-14T15:32:17.581Z", "err": null}
+{"n": 852, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 27, "tag": "compact", "igt": null, "err": null}
+{"n": 853, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 546, "tag": "el", "igt": "2027-01-14T21:32:17.581Z", "err": null}
+{"n": 854, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 28, "tag": "compact", "igt": null, "err": null}
+{"n": 855, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 460, "tag": "el", "igt": "2027-01-15T03:32:17.581Z", "err": null}
+{"n": 856, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 21, "tag": "compact", "igt": null, "err": null}
+{"n": 857, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 468, "tag": "el", "igt": "2027-01-15T09:32:17.581Z", "err": null}
+{"n": 858, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 39, "tag": "compact", "igt": null, "err": null}
+{"n": 859, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 496, "tag": "el", "igt": "2027-01-15T15:32:17.581Z", "err": null}
+{"n": 860, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 58, "tag": "compact", "igt": null, "err": null}
+{"n": 861, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 568, "tag": "el", "igt": "2027-01-15T21:32:17.581Z", "err": null}
+{"n": 862, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 863, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 440, "tag": "el", "igt": "2027-01-16T03:32:17.581Z", "err": null}
+{"n": 864, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 865, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 527, "tag": "el", "igt": "2027-01-16T09:32:17.581Z", "err": null}
+{"n": 866, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 31, "tag": "compact", "igt": null, "err": null}
+{"n": 867, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 506, "tag": "el", "igt": "2027-01-16T15:32:17.581Z", "err": null}
+{"n": 868, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 22, "tag": "compact", "igt": null, "err": null}
+{"n": 869, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 529, "tag": "el", "igt": "2027-01-16T21:32:17.581Z", "err": null}
+{"n": 870, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 24, "tag": "compact", "igt": null, "err": null}
+{"n": 871, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 26, "tag": "party-sq", "igt": null, "err": null}
+{"n": 872, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 38, "tag": "party-sq", "igt": null, "err": null}
+{"n": 873, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 8, "tag": "party-sq", "igt": null, "err": null}
+{"n": 874, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 875, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 876, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 877, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 878, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 879, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 7, "tag": "party-sq", "igt": null, "err": null}
+{"n": 880, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 881, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 7, "tag": "party-sq", "igt": null, "err": null}
+{"n": 882, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 5, "tag": "party-sq", "igt": null, "err": null}
+{"n": 883, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 47, "tag": "compact", "igt": null, "err": null}
+{"n": 884, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 8, "tag": "party-sq", "igt": null, "err": null}
+{"n": 885, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 6, "tag": "party-sq", "igt": null, "err": null}
+{"n": 886, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 9, "tag": "party-sq", "igt": null, "err": null}
