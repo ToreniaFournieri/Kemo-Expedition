@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.10.1 | 23 | 2026/10/09 | API: `sideQuestStatistics` reports `failedCount` 0 for an entry saved before the failed counter existed (it printed `undefined`). Backup import keeps the stored counters. |
 | 0.10.1 | 22 | 2026/10/09 | Fix `q.sleeping` never advancing in AFK emulation / API accounts (0% success in the 100-day report): the AFK per-cycle path never rolled the party's sleepiness and never advanced a sleeping quest. It now advances `q.sleeping` by 1 for a cycle whose sleepiness is `sound_sleep` (2), matching the live `state.sound_sleep` rule, and draws the next sleepiness at the end of each AFK cycle (as `state.return` does). |
 | 0.10.1 | 21 | 2026/10/09 | Side quest target ranges now follow Spec 5.1.2: `q.exercise` 10 ~ 30, `q.embezzlement` 10 ~ 50, `q.healing` 2 ~ 10, `q.treasure-boss-rare` 1 ~ 3, `q.poor-kid` 5 ~ 15, `q.savings` 300 ~ 1,500 (level scaling unchanged). Spec 1.1.9 table now lists the base value range column and its columns are aligned. |
 | 0.10.1 | 20 | 2026/10/09 | API: `read/observation/party` `sideQuestStatistics` is now `<sideQuestId>-<successfulCount>/<cancelledCount>/<failedCount>/<totalCount>`; an expired side quest counts as `failedCount`, while `cancelledCount` is player-action cancellation only (e.g. God Battle). Older saves keep their previous expiries under `cancelledCount`. |
