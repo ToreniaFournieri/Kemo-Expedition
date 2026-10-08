@@ -16,6 +16,10 @@ const BAN=new Set((process.env.BAN||'').split(',').filter(Boolean));
 for(const [k,e] of m.pool) if(BAN.has(e.item.elementalOffense)) e.free=0;
 for(const id of ids){ const ci=m.p.characters.findIndex(c=>c.id===id); const b0=proxy(ci);
   m.p.characters[ci].equipment.forEach((it,si)=>{ if(it&&BAN.has(it.elementalOffense)) O.setSlot(m,ci,si,null); }); let best=proxy(ci);
+  if(best===0){ // seed an attack: strongest (attack-bearing, NoA-bearing) pair so the greedy passes have a gradient
+    const cats=m.p.characters[ci].mainClassId==='wizard'||m.p.characters[ci].mainClassId==='sage'||m.p.characters[ci].mainClassId==='alchemist'?['wand','catalyst']:['arrow','archery'];
+    let si=0; for(const cat of cats){ let bk=null,bv=-1; for(const [k,e] of m.pool){ if(e.free<=0||e.item.category!==cat||!O.canEquip(m,ci,k)) continue; const v=(+k.split('-')[0])*10+(+k.split('-')[1]); if(v>bv){bv=v;bk=k;} } if(bk&&si<m.slots[ci]){ const c=m.p.characters[ci]; let tgt=si; O.setSlot(m,ci,tgt,bk); si++; } }
+    best=proxy(ci); }
   for(let pass=0;pass<6;pass++){ let improved=false;
     for(let si=0;si<m.slots[ci];si++){ for(const [k,e] of m.pool){ if(e.free<=0||!OFF.has(e.item.category)||!O.canEquip(m,ci,k)) continue; const cur=m.p.characters[ci].equipment[si]; if(cur&&O.vkey(cur)===k) continue;
         const undo=O.setSlot(m,ci,si,k); const v=proxy(ci); if(v>best*1.0005){ best=v; improved=true; } else undo(); } }
