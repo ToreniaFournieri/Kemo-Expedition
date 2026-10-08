@@ -1961,7 +1961,8 @@ function getApproxAfkTimeQuestProgressPerCycle(
   // SpecRef: 5.1.2 | Side Quest | AFK handling
   if (!party.sideQuest) return 0;
   if (party.sideQuest.type === 'q.sleeping') {
-    return normalizeSleepinessState(party.currentSleepiness ?? 2) > 0 ? 1 : 0;
+    // SpecRef: 5.1.1 | Party State Machine | state.free_action: only sleepiness 2 enters state.sound_sleep.
+    return normalizeSleepinessState(party.currentSleepiness) === 2 ? 1 : 0;
   }
   if (!TIME_BASED_SIDE_QUEST_TYPES.has(party.sideQuest.type)) return 0;
 
@@ -3910,7 +3911,7 @@ function reduceGameState(
           const activeParty = workingState.parties[partyIndex];
           if (!activeParty) continue;
 
-          if (activeParty.sideQuest && TIME_BASED_SIDE_QUEST_TYPES.has(activeParty.sideQuest.type)) {
+          if (activeParty.sideQuest && (activeParty.sideQuest.type === 'q.sleeping' || TIME_BASED_SIDE_QUEST_TYPES.has(activeParty.sideQuest.type))) {
             const approximateProgress = getApproxAfkTimeQuestProgressPerCycle(
               activeParty,
               partyCycleDurationMs,
@@ -4011,6 +4012,9 @@ function reduceGameState(
               simulatedAt,
             }, undefined, afkChunkContext);
           }
+
+          // SpecRef: 5.1.1 | Party State Machine | sleepiness is drawn at the end of state.return for the next cycle.
+          workingState = reduceGameState(workingState, { type: 'ROLL_PARTY_SLEEPINESS', partyIndex }, undefined, afkChunkContext);
 
           const latestParty = workingState.parties[partyIndex];
           // SpecRef: 5.1.2 | Side Quest | AFK handling
