@@ -368,7 +368,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `state`
         * Example: `state.rest`.
       * `clearGate`
-        * Example: `4th Elite gate: 3/4 `
+        * Example: `4th Elite gate: 3/4`
       * `sideQuest`
         * Format: `<sideQuest>-<lv>: <progress>/<target>-<timeRemaining>/<timeLimit>`
           * remainingTime and deadline are expressed in hours (h).

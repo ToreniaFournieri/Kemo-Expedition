@@ -34,7 +34,7 @@ import { paginate } from './pagination.ts';
 import { getItemTier } from '../../game/pricing.ts';
 import { getLocalizedItemName, getLocalizedSuperRareTitle } from '../../game/gameState.ts';
 import { describeUiPreferenceCatalog, listUiPreferences } from './uiPreferenceCatalog.ts';
-import { getExpeditionGoals, getSideQuestFacts } from '../../game/expeditionGoals.ts';
+import { formatCompactClearGate, formatCompactSideQuest, getExpeditionGoals, getSideQuestFacts } from '../../game/expeditionGoals.ts';
 import { getEstimatedStartHp, getPartyStateProgress } from '../../game/partyStateProgress.ts';
 import { DIFFICULTY_OFFSET_STEP, EXPEDITION_DEPTH_LIMITS, getSelectableDestinationIds, getSelectableDifficultyOffsetMax } from '../../game/expeditionSettings.ts';
 import { getSortieUnavailableReason } from './sortieAvailability.ts';
@@ -184,6 +184,9 @@ function compactObservation(state: GameState, context: ApiV1ReadContext, simulat
         condition: `${getConditionState(party.condition).slice('condition.'.length)}/${party.condition}`,
       },
       state: partyStateKey(party, computePartyStats(party).partyStats.hp, context.partyCycle?.(partyIndex)),
+      // SpecRef: 9.1.3 | 2-1-1 compact | `clearGate`, `sideQuest`
+      clearGate: formatCompactClearGate(getExpeditionGoals(party, context.partyCycle?.(partyIndex)?.state)),
+      sideQuest: formatCompactSideQuest(party, context.chargeDurationScale ?? 1, context.inGameTime),
       lastDestination: disclosedLogOf(state, context, partyIndex)?.dungeonId ?? party.selectedDungeonId,
       lastOutcome: apiExpeditionOutcomeOrNull(disclosedLogOf(state, context, partyIndex)),
     })),

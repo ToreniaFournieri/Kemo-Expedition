@@ -39,6 +39,18 @@ const context = {
 const quickCompact = await buildApiV1ReadData('read/observation/compact', state, {}, context) as { attention: Record<string, unknown> };
 assert.deepEqual(calls, []);
 assert.equal('latestSimulationResult' in quickCompact.attention, false);
+// `clearGate` and `sideQuest` (Spec 9.1.3, 2-1-1): the first locked Elite gate, and the side quest as one line.
+{
+  const compactParty = (source: typeof state) => (buildApiV1ReadData('read/observation/compact', source, {}, context) as Promise<{ partyInfo: { clearGate: string | null; sideQuest: string | null }[] }>).then((result) => result.partyInfo[0]);
+  const idle = await compactParty(state);
+  assert.match(idle.clearGate ?? '', /^\d+(?:st|nd|rd|th) Elite gate: 0\/\d+$/);
+  assert.equal(idle.sideQuest, null);
+  const now = context.inGameTime;
+  const withQuest = (quest: object) => ({ ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, sideQuest: quest } : party) }) as typeof state;
+  const timed = { id: 3, type: 'q.exercise', target: 600, progress: 240, rolledTier: 3, assignedAt: now, expiresAt: now + 12 * 3_600_000 };
+  assert.equal((await compactParty(withQuest(timed))).sideQuest, 'q.exercise-2: 4/10-12h/12h');
+  assert.equal((await compactParty(withQuest({ ...timed, id: 7, type: 'q.AFK', expiresAt: Number.MAX_SAFE_INTEGER }))).sideQuest, 'q.AFK-2: 4/10');
+}
 const slowCompact = await buildApiV1ReadData('read/observation/compact', state, { quick: false }, context) as { attention: { latestSimulationResult?: string[] } };
 assert.deepEqual(calls, state.parties.map((_, partyIndex) => ({ partyIndex, count: 100 })));
 assert.equal(slowCompact.attention.latestSimulationResult?.length, state.parties.length);

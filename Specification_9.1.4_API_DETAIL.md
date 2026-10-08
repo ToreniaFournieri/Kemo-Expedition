@@ -903,6 +903,13 @@ definitions in 9.1.3.
   `successfulCount` when it is completed, and `cancelledCount` when it is
   cancelled (God Battle) or expires. Only side quests accepted after the counters
   were introduced are counted. `resetStatistics` does not clear it.
+* `read/observation/compact`'s `clearGate` is the party's active Clear-Gate goals
+  in the Expedition pane's order (`4th Elite gate: 3/4`, `Boss gate: c/r`,
+  `Gods gate: c/r`, `Entry gate: 0/1`, `Gods entry: 0/1`), joined by `, `, or
+  `null` when none. `sideQuest` is `<sideQuest>-<lv>: <progress>/<target>-<timeRemaining>h/<timeLimit>h`
+  (`lv` from 5.1.2; time-based quests count minutes; `timeRemaining` is rounded up
+  at the current Speed of Time); a quest without a deadline omits the time part
+  (`q.AFK-2: 4/30`), and no quest is `null`.
 * `commit/progress/elapsed` reports requested, accepted, and capped elapsed
   seconds plus resulting progression effects. Existing AFK caps and FIFO rules
   remain authoritative. All Chunks form one staged transaction under 9.1.4.4;

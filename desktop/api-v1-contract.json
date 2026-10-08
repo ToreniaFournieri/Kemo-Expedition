@@ -1093,6 +1093,8 @@
                 "required": [
                   "party",
                   "state",
+                  "clearGate",
+                  "sideQuest",
                   "lastDestination",
                   "lastOutcome"
                 ],
@@ -1141,6 +1143,28 @@
                     "minLength": 1,
                     "maxLength": 200,
                     "type": "string"
+                  },
+                  "clearGate": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "sideQuest": {
+                    "anyOf": [
+                      {
+                        "pattern": "^q\\.[A-Za-z_-]+-[1-4]: [0-9]+/[0-9]+(?:-[0-9]+h/[0-9]+h)?$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "lastDestination": {
                     "anyOf": [
@@ -1325,6 +1349,8 @@
                     "required": [
                       "party",
                       "state",
+                      "clearGate",
+                      "sideQuest",
                       "lastDestination",
                       "lastOutcome"
                     ],
@@ -1373,6 +1399,28 @@
                         "minLength": 1,
                         "maxLength": 200,
                         "type": "string"
+                      },
+                      "clearGate": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "sideQuest": {
+                        "anyOf": [
+                          {
+                            "pattern": "^q\\.[A-Za-z_-]+-[1-4]: [0-9]+/[0-9]+(?:-[0-9]+h/[0-9]+h)?$",
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
                       "lastDestination": {
                         "anyOf": [
@@ -1519,6 +1567,8 @@
                   "condition": "steady/55"
                 },
                 "state": "xxxxxxx",
+                "clearGate": "xxxxxxx",
+                "sideQuest": "q.exercise-2: 4/10-5h/12h",
                 "lastDestination": 1,
                 "lastOutcome": "Clear"
               }
@@ -1622,6 +1672,8 @@
                 "required": [
                   "party",
                   "state",
+                  "clearGate",
+                  "sideQuest",
                   "lastDestination",
                   "lastOutcome"
                 ],
@@ -1670,6 +1722,28 @@
                     "minLength": 1,
                     "maxLength": 200,
                     "type": "string"
+                  },
+                  "clearGate": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "sideQuest": {
+                    "anyOf": [
+                      {
+                        "pattern": "^q\\.[A-Za-z_-]+-[1-4]: [0-9]+/[0-9]+(?:-[0-9]+h/[0-9]+h)?$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "lastDestination": {
                     "anyOf": [
@@ -1854,6 +1928,8 @@
                     "required": [
                       "party",
                       "state",
+                      "clearGate",
+                      "sideQuest",
                       "lastDestination",
                       "lastOutcome"
                     ],
@@ -1902,6 +1978,28 @@
                         "minLength": 1,
                         "maxLength": 200,
                         "type": "string"
+                      },
+                      "clearGate": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "sideQuest": {
+                        "anyOf": [
+                          {
+                            "pattern": "^q\\.[A-Za-z_-]+-[1-4]: [0-9]+/[0-9]+(?:-[0-9]+h/[0-9]+h)?$",
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
                       "lastDestination": {
                         "anyOf": [
@@ -2048,6 +2146,8 @@
                   "condition": "steady/55"
                 },
                 "state": "xxxxxxx",
+                "clearGate": "xxxxxxx",
+                "sideQuest": "q.exercise-2: 4/10-5h/12h",
                 "lastDestination": 1,
                 "lastOutcome": "Clear"
               }

@@ -347,11 +347,15 @@ const deliveryStatus = literals('queued', 'sending', 'delivered', 'failed', 'unk
 // Spec 9.1.4.15: the public delivery projection; payload parameters/files are never returned.
 const deliveryRecord = strict({ deliveryId: stableKey, status: deliveryStatus, createdAt: isoTimestamp, updatedAt: isoTimestamp, failureReason: Type.Union([Type.String(), Type.Null()]), rewardApplied: Type.Boolean() });
 
+// Spec 9.1.3 2-1-1: `4th Elite gate: 3/4`, and `<sideQuest>-<lv>: <progress>/<target>-<timeRemaining>h/<timeLimit>h` (time part omitted without a deadline).
+const compactClearGate = Type.String({ minLength: 1 });
+const compactSideQuest = Type.String({ pattern: '^q\\.[A-Za-z_-]+-[1-4]: [0-9]+/[0-9]+(?:-[0-9]+h/[0-9]+h)?$' });
+sampleOverrides.set(compactSideQuest, 'q.exercise-2: 4/10-5h/12h');
 const compactObservationSchema = strict({
   globalInfo: strict({ gameMode: modeKey, inGameTime: isoTimestamp, gold: Type.Integer({ minimum: 0 }), prana: Type.Integer({ minimum: 0 }) }),
   partyInfo: Type.Array(strict({
     party: strict({ partyNumber, level: Type.Integer({ minimum: 1, maximum: 69 }), experiencePoint: Type.String(), deity: stableKey, deityRank: Type.Integer({ minimum: 0 }), condition: compactCondition }),
-    state: stableKey, lastDestination: Type.Union([integerId, Type.Null()]), lastOutcome: Type.Union([expeditionOutcome, Type.Null()]),
+    state: stableKey, clearGate: Type.Union([compactClearGate, Type.Null()]), sideQuest: Type.Union([compactSideQuest, Type.Null()]), lastDestination: Type.Union([integerId, Type.Null()]), lastOutcome: Type.Union([expeditionOutcome, Type.Null()]),
   })),
   attention: strict({ latestSimulationResult: Type.Optional(Type.Array(Type.String())), emptyEquipmentSlot: Type.Array(Type.String()), notification: Type.Array(strict({ partyNumber: diaryScopeNumber, unreadDiary: Type.Integer({ minimum: 0 }), unreadDiaryTitle: Type.Array(Type.String()) })) }),
 });

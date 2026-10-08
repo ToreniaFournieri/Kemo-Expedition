@@ -119,3 +119,51 @@ export function getSideQuestFacts(party: Party, cycleDurationScale: number, nowM
     remainingMs: Math.max(0, quest.expiresAt - simulatedNow),
   };
 }
+
+export function getSideQuestLevelFromExpId(expId: number): 1 | 2 | 3 | 4 {
+  // SpecRef: 5.1.2 | Side Quest | Side quest difficulty
+  if (expId <= 2) return 1;
+  if (expId <= 4) return 2;
+  if (expId <= 6) return 3;
+  return 4;
+}
+
+const HOUR_MS = 60 * 60 * 1000;
+
+function ordinal(value: number): string {
+  const tens = value % 100;
+  if (tens >= 11 && tens <= 13) return `${value}th`;
+  return `${value}${({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[value % 10] ?? 'th'}`;
+}
+
+// SpecRef: 9.1.3 | 2-1-1 compact | `clearGate`
+/** The party's active Clear-Gate goals as the compact observation spells them, e.g. `4th Elite gate: 3/4`; null when none. */
+export function formatCompactClearGate(goals: readonly ExpeditionGoal[]): string | null {
+  const parts = goals.map((goal) => {
+    switch (goal.kind) {
+      case 'eliteGate': return `${ordinal(goal.floor)} Elite gate: ${goal.current}/${goal.required}`;
+      case 'bossGate': return `Boss gate: ${goal.current}/${goal.required}`;
+      case 'godGate': return `Gods gate: ${goal.collected}/${goal.required}`;
+      case 'entryGate': return `Entry gate: 0/1`;
+      case 'godEntry': return `Gods entry: 0/1`;
+    }
+  });
+  return parts.length === 0 ? null : parts.join(', ');
+}
+
+// SpecRef: 9.1.3 | 2-1-1 compact | `sideQuest`
+/**
+ * The party's side quest as `<sideQuest>-<lv>: <progress>/<target>-<timeRemaining>/<timeLimit>` (hours), e.g.
+ * `q.exercise-2: 4/10-5h/12h`; a quest without a deadline omits the time part. Time-based quests count minutes.
+ */
+export function formatCompactSideQuest(party: Party, cycleDurationScale: number, nowMs: number): string | null {
+  const facts = getSideQuestFacts(party, cycleDurationScale, nowMs);
+  const quest = party.sideQuest;
+  if (!facts || !quest) return null;
+  const unit = TIME_BASED_SIDE_QUEST_TYPES.has(facts.type) ? 60 : 1;
+  const level = getSideQuestLevelFromExpId(Math.floor(quest.rolledTier));
+  const head = `${facts.type}-${level}: ${Math.floor(facts.progress / unit)}/${Math.ceil(facts.target / unit)}`;
+  if (!facts.hasDeadline) return head;
+  const limitHours = Math.round((quest.expiresAt - quest.assignedAt) / HOUR_MS);
+  return `${head}-${Math.ceil(facts.remainingMs / HOUR_MS)}h/${limitHours}h`;
+}

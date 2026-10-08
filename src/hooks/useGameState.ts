@@ -127,6 +127,7 @@ import {
   isGodsBattleAvailable,
 } from '../game/clearGate';
 import { resolveSideQuestOutcome } from '../game/expeditionEffects/sideQuestOutcome';
+import { getSideQuestLevelFromExpId } from '../game/expeditionGoals';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { MAX_LEVEL } from '../types';
 import { createEnvironmentStorageKey, getEnvironmentId } from '../game/environment';
@@ -229,13 +230,6 @@ const SIDE_QUEST_RUNTIME_DEFS: Record<number, SideQuestRuntimeDef> = {
   13: { type: 'q.savings', shortTextKey: 'sideQuest.savings.short', baseMin: 200, baseMax: 1000, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
 };
 
-function getSideQuestLevelFromExpId(expId: number): 1 | 2 | 3 | 4 {
-  // SpecRef: 5.1.2 | Side Quest | Side quest difficulty
-  if (expId <= 2) return 1;
-  if (expId <= 4) return 2;
-  if (expId <= 6) return 3;
-  return 4;
-}
 
 
 function getSideQuestShortTextKey(type: string): string | undefined {
