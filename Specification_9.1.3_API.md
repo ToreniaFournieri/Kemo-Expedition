@@ -1290,6 +1290,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Parameters: none.
 
+* Reset `statistics` and `sideQuestStatistics`
 
 **3-3. `commit/build`**
 
