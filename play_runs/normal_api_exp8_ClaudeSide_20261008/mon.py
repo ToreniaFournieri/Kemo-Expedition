@@ -1,7 +1,7 @@
 import t,json,sys,time
 # mon.py days stepsec : step and log every sideQuest change of every party (compact), stats every 10 days
 days=int(sys.argv[1]); sec=int(sys.argv[2]); n=days*86400//sec; per10=10*86400//sec
-L=open('sq_monitor.log','a'); last={}
+L=open(sys.argv[3] if len(sys.argv)>3 else 'sq_monitor.log','a'); last={}
 def log(s): L.write(s+'\n'); L.flush()
 def stats(tag):
     out={}
@@ -19,5 +19,5 @@ for i in range(1,n+1):
         if last.get(k,('x',))[0]!=(sq or '')[:0]+str(sq).split(':')[0]  or (sq and last[k][1]!=sq):
             log(f"d{i*sec/86400:6.2f} PT{k} lv{p['party']['level']} dest{p['lastDestination']} gate={cg} quest={sq}")
         last[k]=(str(sq).split(':')[0],sq)
-    if i%per10==0: stats('day%d'%(i*sec//86400))
+    if i%(per10*(3 if days>=300 else 1))==0: stats('day%d'%(i*sec//86400))
 stats('final'); log('DONE')
