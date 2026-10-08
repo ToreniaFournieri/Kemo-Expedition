@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.10.1 | 21 | 2026/10/09 | Side quest target ranges now follow Spec 5.1.2: `q.exercise` 10 ~ 30, `q.embezzlement` 10 ~ 50, `q.healing` 2 ~ 10, `q.treasure-boss-rare` 1 ~ 3, `q.poor-kid` 5 ~ 15, `q.savings` 300 ~ 1,500 (level scaling unchanged). Spec 1.1.9 table now lists the base value range column and its columns are aligned. |
 | 0.10.1 | 20 | 2026/10/09 | API: `read/observation/party` `sideQuestStatistics` is now `<sideQuestId>-<successfulCount>/<cancelledCount>/<failedCount>/<totalCount>`; an expired side quest counts as `failedCount`, while `cancelledCount` is player-action cancellation only (e.g. God Battle). Older saves keep their previous expiries under `cancelledCount`. |
 | 0.10.1 | 19 | 2026/10/08 | API: `read/observation/compact` adds per-party `clearGate` and `sideQuest` one-line summaries. |
 | 0.10.1 | 18 | 2026/10/08 | API: `read/observation/party` adds `sideQuestStatistics` (`<sideQuestId>-<successfulCount>/<cancelledCount>/<totalCount>`); parties now persist per-side-quest accepted/completed/cancelled counts. |
