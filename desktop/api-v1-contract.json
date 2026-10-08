@@ -8205,7 +8205,8 @@
                     "condition",
                     "order",
                     "characters",
-                    "statistics"
+                    "statistics",
+                    "sideQuestStatistics"
                   ],
                   "properties": {
                     "partyNumber": {
@@ -8614,6 +8615,13 @@
                           "type": "integer"
                         }
                       }
+                    },
+                    "sideQuestStatistics": {
+                      "type": "array",
+                      "items": {
+                        "pattern": "^[1-9][0-9]*-[0-9]+/[0-9]+/[0-9]+$",
+                        "type": "string"
+                      }
                     }
                   }
                 },
@@ -8798,7 +8806,8 @@
                         "condition",
                         "order",
                         "characters",
-                        "statistics"
+                        "statistics",
+                        "sideQuestStatistics"
                       ],
                       "properties": {
                         "partyNumber": {
@@ -9207,6 +9216,13 @@
                               "type": "integer"
                             }
                           }
+                        },
+                        "sideQuestStatistics": {
+                          "type": "array",
+                          "items": {
+                            "pattern": "^[1-9][0-9]*-[0-9]+/[0-9]+/[0-9]+$",
+                            "type": "string"
+                          }
                         }
                       }
                     },
@@ -9410,7 +9426,10 @@
                   "defeat": 0,
                   "donatedGold": 0,
                   "savedGold": 0
-                }
+                },
+                "sideQuestStatistics": [
+                  "13-1/0/2"
+                ]
               },
               "unlockedMimorianEnemyIds": [
                 1

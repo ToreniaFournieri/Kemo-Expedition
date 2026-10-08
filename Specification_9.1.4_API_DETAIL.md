@@ -896,6 +896,13 @@ definitions in 9.1.3.
   `defeat`, `donatedGold`, and `savedGold`, the values `resetStatistics` restores
   to their defaults. Like the Expedition pane, an outcome of a log that is still
   hidden while the party explores is not counted yet.
+* `read/observation/party`'s `party.sideQuestStatistics` (9.1.3, 2-1-4) lists
+  `<sideQuestId>-<successfulCount>/<cancelledCount>/<totalCount>` in ascending
+  `sideQuestId` order, only for side quests the party has accepted. `totalCount`
+  increases when a side quest is accepted (so an active quest is included),
+  `successfulCount` when it is completed, and `cancelledCount` when it is
+  cancelled (God Battle) or expires. Only side quests accepted after the counters
+  were introduced are counted. `resetStatistics` does not clear it.
 * `commit/progress/elapsed` reports requested, accepted, and capped elapsed
   seconds plus resulting progression effects. Existing AFK caps and FIFO rules
   remain authoritative. All Chunks form one staged transaction under 9.1.4.4;

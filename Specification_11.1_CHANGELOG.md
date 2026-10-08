@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.10.1 | 18 | 2026/10/08 | API: `read/observation/party` adds `sideQuestStatistics` (`<sideQuestId>-<successfulCount>/<cancelledCount>/<totalCount>`); parties now persist per-side-quest accepted/completed/cancelled counts. |
 | 0.10.1 | 17 | 2026/10/07 | API: `commit/expedition/{p}/sortie` takes `numberOfSortie` (1-6), verifies charge for all requested sorties first, and returns one `{battleOutcome, rewards, diaryEntryId, logId}` per sortie. |
 | 0.10.1 | 16 | 2026/10/07 | Fixed `GET /read/observation/diary` (and every `read/observation` that lists a Global Diary notification) failing with `500 internal_error`: the API v1 response schemas did not yet allow the Global Diary scope (`partyNumber` 0, top-level `global` object, `expedition: null`), so the response was rejected by the catalog check. Contract regenerated; `DiaryEntrySchema` accepts scope 0; `markAsRead`/`diary` requests accept `partyNumber` 0. Added a regression test and normalized wall-clock Global Diary IDs in the dual-adapter parity cell. |
 | 0.10.1 | 15 | 2026/10/07 | Fixed Global Diary achievement entries being stamped with the system time instead of the in-game time (e.g. while elapsed time is simulated), which put them out of order among the other entries. |

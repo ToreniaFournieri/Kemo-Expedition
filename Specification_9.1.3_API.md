@@ -367,6 +367,12 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
           * Example: `low/-188`
       * `state`
         * Example: `state.rest`.
+      * `clearGate`
+        * Example: `4th Elite gate: 3/4 `
+      * `sideQuest`
+        * Format: `<sideQuest>-<lv>: <progress>/<target>-<timeRemaining>/<timeLimit>`
+          * remainingTime and deadline are expressed in hours (h).
+        * Example: `q.exercise-2: 4/10-5h/12h` 
       * `lastDestination`
         * Example: `4`.
       * `lastOutcome`
@@ -437,7 +443,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Currently displayed in the party tab in the UI.
     * Includes `statistics`.
     * `sideQuestStatistics`
-      * Format: `<sideQuestId>-<successfulCounts>/<totalCounts>` for each side quest.
+      * Format: `<sideQuestId>-<successfulCount>/<cancelledCount>/<totalCount>` for each side quest.
 
 **2-1-5. `base`**
 

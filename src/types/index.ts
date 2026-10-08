@@ -395,6 +395,8 @@ export interface Party {
   currentSleepiness: SleepinessState;
   condition: number;
   sideQuest: SideQuestState | null;
+  /** Per `sideQuestId`: quests accepted (`total`), completed (`success`) and cancelled or expired (`cancelled`). Absent until the first quest. */
+  sideQuestStats?: Record<string, { success: number; cancelled: number; total: number }>;
   /** Inventory revisions observed by the most recent scheduled FULL run. */
   lastFullEquipmentRevision?: number;
   lastFullJewelRevision?: number;

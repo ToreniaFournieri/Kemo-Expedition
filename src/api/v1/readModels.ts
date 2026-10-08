@@ -412,6 +412,10 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>, 
         autoEquipmentMode: autoEquipmentModeName(character.autoEquipmentMode),
       })),
       statistics: expeditionStatistics(state, context, state.parties.indexOf(party)),
+      // SpecRef: 9.1.3 | 2-1-4 party | `sideQuestStatistics`
+      sideQuestStatistics: Object.entries(party.sideQuestStats ?? {})
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .map(([id, { success, cancelled, total }]) => `${id}-${success}/${cancelled}/${total}`),
     },
   };
 }

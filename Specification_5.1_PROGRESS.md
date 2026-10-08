@@ -387,23 +387,23 @@ PT3: 貯金額: 10G
   - Rounded range: 7 ~ 20
   - Final target: randomly select one integer from 7 to 20 (inclusive).
 
-| `sideQuestId` | type | base value range(lv1) | lv2 | 1v3 | lv4 |
-|--|--|---|---|---|---|
-| 1 | `q.squander` | 100 ~ 400 | x1.4 | x1.8 | x2.2 |  
-| 2 | `q.sleeping` | 1 ~ 4 | - | - | - |
-| 3 | `q.exercise` | 5 ~ 15 | x1.3 | x1.5 | x2.0 |
-| 4 | `q.embezzlement` | 25 ~ 100 | x1.4 | x1.8 | x2.2 | 
-| 5 | `q.donation` | 100 ~ 500 | x1.4 | x1.8 | x2.2 | 
-| 6 | `q.healing` | 5 ~ 20 | x1.3 | x1.5 | x2.0 |
-| 7 | `q.AFK` | 30 ~ 120 | x1.3 | x1.5 | x2.0 |
-| 8 | `q.treasure-super-rare` | 1 | - | - | - |
-| 9 | `q.treasure-boss-rare` | 1 - 4 | - | - | - |
-| 10 | `q.poor-kid` | 10 ~ 30 | x1.3 | x1.5 | x2.0 |
-| 11 | `q.consecutive-wins` | 5 ~ 20 | x1.3 | x1.5 | x2.0 |
-| 12 | `q.losers` | 1 | - | - | - |
-| 13 | `q.savings` | 200 - 1,000 | x1.4 | x1.8 | x2.2 | 
+| `sideQuestId` | `sideQuest` | `timeLimit` | base value range(lv1) | lv2 | 1v3 | lv4 | 
+|--|--|---|---|---|---|---|
+| 1 | `q.squander`     | 16 hours | 100 ~ 400 | x1.4 | x1.8 | x2.2 |  
+| 2 | `q.sleeping`     | 12 hours | 1 ~ 4 | - | - | - |
+| 3 | `q.exercise`     | 16 hours | 5 ~ 15 | x1.3 | x1.5 | x2.0 |
+| 4 | `q.embezzlement` | 16 hours | 25 ~ 100 | x1.4 | x1.8 | x2.2 | 
+| 5 | `q.donation`     | 12 hours | 100 ~ 500 | x1.4 | x1.8 | x2.2 | 
+| 6 | `q.healing`      | 16 hours | 5 ~ 20 | x1.3 | x1.5 | x2.0 |
+| 7 | `q.AFK`          | - | 30 ~ 120 | x1.3 | x1.5 | x2.0 |
+| 8 | `q.treasure-super-rare` | 24 hours | 1 | - | - | - |
+| 9 | `q.treasure-boss-rare` | 16 hours | 1 - 4 | - | - | - |
+| 10 | `q.poor-kid`    | 9 hours | 10 ~ 30 | x1.3 | x1.5 | x2.0 |
+| 11 | `q.consecutive-wins` | 16 hours | 5 ~ 20 | x1.3 | x1.5 | x2.0 |
+| 12 | `q.losers`      | 9 hours | 1 | - | - | - |
+| 13 | `q.savings`     | 16 hours | 200 - 1,000 | x1.4 | x1.8 | x2.2 | 
 
-| `x.exp_id` | lv |
+| `x.exp_id` | `lv` |
 |---|----|
 | 1 | 1 |
 | 2 | 1 |

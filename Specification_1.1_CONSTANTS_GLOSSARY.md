@@ -425,7 +425,7 @@
 #### 1.1.9 q. side quest
 - "求. サイドクエスト (条件達成すると報酬として結晶が手に入る)"
 
-| ID | type | Short text | Display text format | deadline | logic | for Glossary Title | for Glossary content |
+| ID | type | Short text | Display text format | `timeLimit` | logic | for Glossary Title | for Glossary content |
 |--|--|---|---|---|---|---|---|
 | 0 | (none) | |  | | | | |
 | 1 | `q.squander` | 散財(XXXG) | 宴会で XXXG 浪費する(0%, XXXG)　(神魔戦で中止) | 250 ~ 1,000 G | 16 hours | | 散財 | 宴会で浪費する(神魔戦で中止) |

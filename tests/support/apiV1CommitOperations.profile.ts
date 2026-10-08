@@ -637,6 +637,19 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.throws(() => applyApiV1Commit('commit/expedition/9/resetStatistics', played, {}, baseContext()), /not_found/);
 }
 
+// `sideQuestStatistics` is projected as `<sideQuestId>-<successfulCount>/<cancelledCount>/<totalCount>` and survives resetStatistics (Spec 9.1.3, 2-1-4).
+{
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels.ts');
+  const withStats = { ...seed, parties: seed.parties.map((party, index) => index === 0
+    ? { ...party, sideQuestStats: { '13': { success: 1, cancelled: 1, total: 2 }, '3': { success: 0, cancelled: 0, total: 1 } } }
+    : party) } as GameState;
+  const read = async (state: GameState) => (await buildApiV1ReadData('read/observation/party', state, { partyNumber: 1 }, {} as never) as { partyInfo: { party: { sideQuestStatistics: string[] } } }).partyInfo.party.sideQuestStatistics;
+  assert.deepEqual(await read(withStats), ['3-0/0/1', '13-1/1/2']);
+  assert.deepEqual(await read(seed), []);
+  const reset = applyApiV1Commit('commit/expedition/1/resetStatistics', withStats, {}, baseContext());
+  assert.deepEqual(await read(reset.state), ['3-0/0/1', '13-1/1/2']);
+}
+
 // A real, freshly resolved expedition (a compact, language-neutral record) renders from the `latestBattleLog` response alone
 // exactly as the retained record itself does: names, gate and reward text, the Bestiary snapshot, and the whole narration.
 {

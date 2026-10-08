@@ -680,6 +680,34 @@ function getExpeditionStatsWithDefaults(value: unknown) {
   };
 }
 
+type SideQuestStats = NonNullable<Party['sideQuestStats']>;
+
+function getSideQuestStatsWithDefaults(value: unknown): SideQuestStats {
+  if (!value || typeof value !== 'object') return {};
+  const count = (raw: unknown) => (typeof raw === 'number' && Number.isFinite(raw) ? Math.max(0, Math.floor(raw)) : 0);
+  const result: SideQuestStats = {};
+  for (const [id, raw] of Object.entries(value as Record<string, unknown>)) {
+    if (!raw || typeof raw !== 'object') continue;
+    const entry = raw as Record<string, unknown>;
+    // Only quests accepted after the counters existed are counted; older saves simply start from zero.
+    const total = count(entry.total);
+    const success = Math.min(total, count(entry.success));
+    result[id] = { success, cancelled: Math.min(total - success, count(entry.cancelled)), total };
+  }
+  return result;
+}
+
+function bumpSideQuestStats(party: Party, id: number, delta: { success?: number; cancelled?: number; total?: number }): SideQuestStats {
+  const stats = getSideQuestStatsWithDefaults(party.sideQuestStats);
+  const entry = stats[String(id)] ?? { success: 0, cancelled: 0, total: 0 };
+  stats[String(id)] = {
+    success: entry.success + (delta.success ?? 0),
+    cancelled: entry.cancelled + (delta.cancelled ?? 0),
+    total: entry.total + (delta.total ?? 0),
+  };
+  return stats;
+}
+
 function getExpeditionDepthLimitWithDefault(value: unknown): ExpeditionDepthLimit {
   const validDepthLimits: ExpeditionDepthLimit[] = [
     '1f-3', '1f-4',
@@ -1270,6 +1298,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
       : -1,
     condition: normalizePartyCondition(party.condition),
     sideQuest: normalizedSideQuest,
+    sideQuestStats: getSideQuestStatsWithDefaults(party.sideQuestStats),
   };
 }
 
@@ -2857,6 +2886,7 @@ function reduceGameState(
       updatedParties[action.partyIndex] = {
         ...currentParty,
         bags,
+        sideQuestStats: bumpSideQuestStats(currentParty, ticket, { total: 1 }),
         sideQuest: {
           id: ticket,
           type: def.type,
@@ -2876,7 +2906,11 @@ function reduceGameState(
       const currentParty = state.parties[action.partyIndex];
       if (!currentParty || !currentParty.sideQuest) return state;
       const updatedParties = [...state.parties];
-      updatedParties[action.partyIndex] = { ...currentParty, sideQuest: null };
+      updatedParties[action.partyIndex] = {
+        ...currentParty,
+        sideQuest: null,
+        sideQuestStats: bumpSideQuestStats(currentParty, currentParty.sideQuest.id, { cancelled: 1 }),
+      };
       return { ...state, parties: updatedParties };
     }
 
@@ -2942,6 +2976,7 @@ function reduceGameState(
       updatedParties[action.partyIndex] = {
         ...currentParty,
         sideQuest: null,
+        sideQuestStats: bumpSideQuestStats(currentParty, currentParty.sideQuest.id, { success: 1 }),
         diaryLogs: nextDiaryLogs,
         hasUnreadDiary: sideQuestDiaryLog ? true : currentParty.hasUnreadDiary,
       };
