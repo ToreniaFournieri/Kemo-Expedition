@@ -41,3 +41,13 @@ Built during the 2026/10/03 D8-boss run (`AI_play_report/v0.9.8(11)_Claude_Norma
 * `client/auto.py <dungeon> <steps> <seconds>` – step + observe loop, stops when every PT1 gate is `godGate` or the list is empty (then verify with an export).
 * `client/runplan2.py plan.json <startIndex>` – tolerant plan runner (continues after a failed call, prints which one failed).
 * Biggest lesson: run `proxyopt.mjs save out "5" ...` (caster) and `"4,2,3,5"` (attackers) plus `hpopt.mjs` before any GA; the GA missed a starved caster at D7.
+
+## Additions (2026/10/09 ClaudeCharge run, `AI_play_report/v0.10.1(27)_ClaudeCharge_Normal_API_Exp8Boss_20261009.md`)
+* Exact offline API emulator in `play_runs/normal_api_exp8_ClaudeCharge_20261009/tools/` (build from the repo root:
+  `python3 <run>/tools/extract_autoequip.py && node <run>/tools/build2.mjs`). `emu.mjs` drives the game's own
+  `stageApiV1ElapsedProgression` (elapsed, sub-cycle carry), `applyApiV1Commit` (sortie/build/equip/expedition) and the FULL/SEMI
+  `planAutoEquipment` copied out of `HomeScreen.tsx` (auto-equip after each elapsed chunk, never after a sortie). A sortie also wipes
+  the elapsed carry (as `authority.ts` does).
+* `dtest.mjs save target "{policy}" seeds` simulates a step/sortie cadence; `farm.mjs save 12 seed "d:offset:depth"` gives EXP per 12 h;
+  `bossfight.mjs` / `bossdmg.mjs` tally boss-only outcomes and damage per attacker; `applyplan.mjs` writes a save with a plan applied.
+* Level only raises party HP (attack comes from gear), so level what-ifs (`setlv.mjs`) only test survival.

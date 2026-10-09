@@ -1,0 +1,1 @@
+{"score":-5.577304838003293,"scen":"base","calls":[{"path":"/commit/build/character/1/jewelAttach","params":{"targetEquipment":6,"jewelToSet":"ward:2"}},{"path":"/commit/build/character/2/jewelAttach","params":{"targetEquipment":1,"jewelToSet":"focus:1"}}],"jfree0":{"ward:2":3,"ward:1":6,"shade:1":2,"shade:2":1,"focus:1":1,"focus:2":0,"might:1":0,"arcana:2":0,"arcana:1":0}}
