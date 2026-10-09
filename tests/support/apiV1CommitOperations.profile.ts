@@ -637,7 +637,7 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.throws(() => applyApiV1Commit('commit/expedition/9/resetStatistics', played, {}, baseContext()), /not_found/);
 }
 
-// `sideQuestStatistics` is projected as `<sideQuestId>-<successfulCount>/<cancelledCount>/<failedCount>/<totalCount>` and survives resetStatistics (Spec 9.1.3, 2-1-4).
+// `sideQuestStatistics` is projected as `<sideQuestId>-<successfulCount>/<cancelledCount>/<failedCount>/<totalCount>` and is cleared by resetStatistics (Spec 9.1.3, 2-1-4, 3-2-4).
 {
   const { buildApiV1ReadData } = await import('../../src/api/v1/readModels.ts');
   const withStats = { ...seed, parties: seed.parties.map((party, index) => index === 0
@@ -647,7 +647,7 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.deepEqual(await read(withStats), ['3-0/0/0/1', '13-1/1/1/3']);
   assert.deepEqual(await read(seed), []);
   const reset = applyApiV1Commit('commit/expedition/1/resetStatistics', withStats, {}, baseContext());
-  assert.deepEqual(await read(reset.state), ['3-0/0/0/1', '13-1/1/1/3']);
+  assert.deepEqual(await read(reset.state), []);
 }
 
 // A real, freshly resolved expedition (a compact, language-neutral record) renders from the `latestBattleLog` response alone

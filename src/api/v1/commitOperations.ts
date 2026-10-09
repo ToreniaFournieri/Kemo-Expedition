@@ -221,7 +221,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     } else if (partyMatch[2] === 'resetStatistics') {
       // SpecRef: 9.1.3 | Commit | 3-2-4 {p}/resetStatistics
       // The Expedition pane's Reset button: the same reducer action, which restores the party's expedition statistics
-      // (Clear, Return, Draw, Retreat, Defeat, and the totals) to their defaults.
+      // (Clear, Return, Draw, Retreat, Defeat, and the totals) and the side quest counters to their defaults.
       reduce({ type: 'RESET_EXPEDITION_STATS', partyIndex });
       data = {};
     } else {

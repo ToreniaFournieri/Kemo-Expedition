@@ -2526,8 +2526,10 @@ function reduceGameState(
 
     case 'RESET_EXPEDITION_STATS': {
       const updatedParties = [...state.parties];
+      // SpecRef: 9.1.3 | Commit | 3-2-4 {p}/resetStatistics — resets `statistics` and `sideQuestStatistics`.
+      const { sideQuestStats: _clearedSideQuestStats, ...partyWithoutSideQuestStats } = updatedParties[action.partyIndex];
       updatedParties[action.partyIndex] = {
-        ...updatedParties[action.partyIndex],
+        ...partyWithoutSideQuestStats,
         expeditionStats: getExpeditionStatsWithDefaults(null),
       };
       return { ...state, parties: updatedParties };

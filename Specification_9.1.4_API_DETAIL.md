@@ -597,8 +597,8 @@ definitions in 9.1.3.
     button; the commit itself uses the party's current HP, like `triggerSortie`.
 * `resetStatistics` is the Expedition pane's Reset button (9.1.3, 3-2-4): it restores
   the party's expedition statistics (the Clear, Return, Draw, Retreat, and Defeat
-  counts and the donated and saved Gold totals) to their defaults and changes nothing
-  else. It takes no parameters, returns `{}`, and is a valid no-op (no revision
+  counts and the donated and saved Gold totals) and the side quest statistics to their
+  defaults and changes nothing else. It takes no parameters, returns `{}`, and is a valid no-op (no revision
   change) when the statistics already hold their defaults. An unknown party is
   `not_found`.
 * `sortie` and `godsBattle` behave as pressing the Sortie or Gods Battle button
@@ -894,7 +894,7 @@ definitions in 9.1.3.
 * `read/observation/party`'s `party.statistics` is the selected party's
   Expedition statistics (9.1.3, 2-1-4): `clear`, `return`, `draw`, `retreat`,
   `defeat`, `donatedGold`, and `savedGold`, the values `resetStatistics` restores
-  to their defaults. Like the Expedition pane, an outcome of a log that is still
+  to their defaults (`sideQuestStatistics` is cleared too). Like the Expedition pane, an outcome of a log that is still
   hidden while the party explores is not counted yet.
 * `read/observation/party`'s `party.sideQuestStatistics` (9.1.3, 2-1-4) lists
   `<sideQuestId>-<successfulCount>/<cancelledCount>/<failedCount>/<totalCount>` in ascending
@@ -902,7 +902,7 @@ definitions in 9.1.3.
   increases when a side quest is accepted (so an active quest is included),
   `successfulCount` when it is completed, and `cancelledCount` when it is
   cancelled by a player action (such as starting a sortie or a God Battle), and `failedCount` when it expires. Only side quests accepted after the counters
-  were introduced are counted. `resetStatistics` does not clear it.
+  were introduced are counted. `resetStatistics` clears it.
 * `read/observation/compact`'s `clearGate` is the party's active Clear-Gate goals
   in the Expedition pane's order (`4th Elite gate: 3/4`, `Boss gate: c/r`,
   `Gods gate: c/r`, `Entry gate: 0/1`, `Gods entry: 0/1`), joined by `, `, or
