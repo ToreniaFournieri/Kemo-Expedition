@@ -241,8 +241,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       const chargeScale = context.chargeDurationScale ?? 1;
       const chargeStockNow = () => getInstantExpeditionChargeState(next.parties[partyIndex], context.simulatedAt, chargeScale).stock;
       const unavailableNow = (liveCycle: typeof cycle) => getSortieUnavailableReason({ party: next.parties[partyIndex], godsBattle, hp: next.parties[partyIndex].currentHp, maximumHp, chargeStock: chargeStockNow(), cycle: liveCycle });
-      // Charge for every requested sortie is verified before anything runs, so an insufficient request performs none.
-      if (!isColosseum && chargeStockNow() < sortieCount) throw new Error('illegal_action:charge_insufficient');
+      // A request above the available charge performs as many sorties as the charge allows (none: refused on the first run).
       const sorties: Record<string, unknown>[] = [];
       for (let run = 0; run < sortieCount; run += 1) {
         // After the first run the party is at the beginning of `state.rest`, so only the first run sees the live cycle.
@@ -273,7 +272,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       }
       // A Gods Battle keeps its single-result shape; a sortie reports one entry per run.
       const { battleOutcome, ...godsResult } = sorties[0];
-      data = godsBattle ? { outcome: battleOutcome, ...godsResult } : { sorties };
+      data = godsBattle ? { outcome: battleOutcome, ...godsResult } : { summary: `${sorties.length}/${sortieCount}`, sorties };
     }
   } else if (operation.match(/^commit\/build\/party\/(\d+)$/)) {
     const partyNumber = Number(operation.split('/').at(-1));

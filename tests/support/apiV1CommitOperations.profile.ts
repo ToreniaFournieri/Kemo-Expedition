@@ -516,8 +516,11 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.ok(tripleSorties.length >= 1 && tripleSorties.length <= 3);
   assert.equal(triple.state.parties[0].instantExpeditionStock, 3 - tripleSorties.length, 'each sortie consumes one stock');
   assert.equal(triple.partyCycleWrites?.length, 1);
-  // Charge for all requested sorties is checked first: 4 requested with 3 in stock performs none.
-  assert.throws(() => applyApiV1Commit('commit/expedition/1/sortie', charged, { numberOfSortie: 4 }, context()), /illegal_action:charge_insufficient/);
+  // 4 requested with 3 in stock performs as many as the charge allows, reported as `<valid>/<requested>`.
+  const over = applyApiV1Commit('commit/expedition/1/sortie', charged, { numberOfSortie: 4 }, context());
+  const overData = over.data as { summary: string; sorties: unknown[] };
+  assert.ok(overData.sorties.length >= 1 && overData.sorties.length <= 3);
+  assert.equal(overData.summary, `${overData.sorties.length}/4`);
   for (const bad of [0, 7, 1.5, '2']) assert.throws(() => applyApiV1Commit('commit/expedition/1/sortie', charged, { numberOfSortie: bad }, context()), /invalid_request:numberOfSortie/);
   // Rewards use the Item Format of the rest of the API (`<lock>/<itemId>/<enhancement>/<superRare>`), not variant keys.
   const rewards = okSorties[0].rewards;

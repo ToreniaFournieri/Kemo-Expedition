@@ -30312,9 +30312,13 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
+            "summary",
             "sorties"
           ],
           "properties": {
+            "summary": {
+              "type": "string"
+            },
             "sorties": {
               "minItems": 1,
               "maxItems": 6,
@@ -30439,9 +30443,13 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
+                "summary",
                 "sorties"
               ],
               "properties": {
+                "summary": {
+                  "type": "string"
+                },
                 "sorties": {
                   "minItems": 1,
                   "maxItems": 6,
@@ -30610,6 +30618,7 @@
         },
         "response": {
           "data": {
+            "summary": "xxxxxxx",
             "sorties": [
               {
                 "battleOutcome": "Clear",
