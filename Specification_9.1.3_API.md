@@ -1275,10 +1275,10 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * Processing always ends at the beginning of `state.rest`.
 
 * Return:
+  * `summary`
+    * Format: `<validSortie>/<numberOfSortie>`
+    * Example: `4/6`
   * For each sortie:
-    * `summary`
-      * Format: `<validSortie>/<numberOfSortie>`
-      * Example: `4/6`
     * `diaryEntryId`
     * `rewards`
     * `logId`
