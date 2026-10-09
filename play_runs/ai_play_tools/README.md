@@ -51,3 +51,10 @@ Built during the 2026/10/03 D8-boss run (`AI_play_report/v0.9.8(11)_Claude_Norma
 * `dtest.mjs save target "{policy}" seeds` simulates a step/sortie cadence; `farm.mjs save 12 seed "d:offset:depth"` gives EXP per 12 h;
   `bossfight.mjs` / `bossdmg.mjs` tally boss-only outcomes and damage per attacker; `applyplan.mjs` writes a save with a plan applied.
 * Level only raises party HP (attack comes from gear), so level what-ifs (`setlv.mjs`) only test survival.
+
+## Additions (2026/10/09 ClaudeRenew run, `AI_play_report/v0.10.1(30)_ClaudeRenew_Normal_API_Exp8Boss_RenewalBosses_20261009.md`)
+* Run folder `play_runs/normal_api_exp8_ClaudeRenew_20261009/`: `client/plan.sh tag d "f,f"` (proxyopt+hpopt+lever+GA per gate),
+  `client/p8.sh tag f` (export + HP(0.2)+thunder plan + GA), `client/replan6.sh tag d` (boss/route weight sweep), `client/run.py`
+  with `STALL=1` (stop when two observations are identical).
+* `tools/mdopt.mjs` = hpopt variant: `MW` weights magical defense, `ONLYDEF=1` only swaps slots that already hold defensive gear.
+* Lessons: Clear-Gate progress is a consecutive streak; farm drops at the deepest depth with <=5% Defeat (`farm.mjs`) with 1080 s/k=2 loops.
