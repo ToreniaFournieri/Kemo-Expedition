@@ -220,14 +220,14 @@ const SIDE_QUEST_RUNTIME_DEFS: Record<number, SideQuestRuntimeDef> = {
   3: { type: 'q.exercise', shortTextKey: 'sideQuest.exercise.short', baseMin: 10, baseMax: 30, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
   4: { type: 'q.embezzlement', shortTextKey: 'sideQuest.embezzlement.short', baseMin: 10, baseMax: 50, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
   5: { type: 'q.donation', shortTextKey: 'sideQuest.donation.short', baseMin: 100, baseMax: 500, deadlineHours: 12, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
-  6: { type: 'q.healing', shortTextKey: 'sideQuest.healing.short', baseMin: 2, baseMax: 10, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.2, 3: 1.4, 4: 1.6 } },
+  6: { type: 'q.healing', shortTextKey: 'sideQuest.healing.short', baseMin: 2, baseMax: 7, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.2, 3: 1.4, 4: 1.6 } },
   7: { type: 'q.AFK', shortTextKey: 'sideQuest.afk.short', baseMin: 30, baseMax: 120, deadlineHours: 0, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
   8: { type: 'q.treasure-super-rare', shortTextKey: 'sideQuest.treasureSuperRare.short', baseMin: 1, baseMax: 1, deadlineHours: 24, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
   9: { type: 'q.treasure-boss-rare', shortTextKey: 'sideQuest.treasureBossRare.short', baseMin: 1, baseMax: 3, deadlineHours: 20, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
   10: { type: 'q.poor-kid', shortTextKey: 'sideQuest.poorKid.short', baseMin: 5, baseMax: 15, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1.2, 3: 1.4, 4: 1.6 } },
   11: { type: 'q.consecutive-wins', shortTextKey: 'sideQuest.consecutiveWins.short', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.2, 3: 1.4, 4: 1.6 } },
   12: { type: 'q.losers', shortTextKey: 'sideQuest.losers.short', baseMin: 1, baseMax: 1, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  13: { type: 'q.savings', shortTextKey: 'sideQuest.savings.short', baseMin: 300, baseMax: 1500, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+  13: { type: 'q.savings', shortTextKey: 'sideQuest.savings.short', baseMin: 600, baseMax: 2500, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.6, 3: 2.8, 4: 4.0 } },
 };
 
 
