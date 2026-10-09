@@ -349,8 +349,8 @@ const deliveryRecord = strict({ deliveryId: stableKey, status: deliveryStatus, c
 
 // Spec 9.1.3 2-1-1: `4th Elite gate: 3/4`, and `<sideQuest>-<lv>: <progress>/<target>-<timeRemaining>h/<timeLimit>h` (time part omitted without a deadline).
 const compactClearGate = Type.String({ minLength: 1 });
-const compactSideQuest = Type.String({ pattern: '^q\\.[A-Za-z_-]+-[1-4]: [0-9]+/[0-9]+(?:-[0-9]+h/[0-9]+h)?$' });
-sampleOverrides.set(compactSideQuest, 'q.exercise-2: 4/10-5h/12h');
+const compactSideQuest = Type.String({ pattern: '^q\\.[A-Za-z_-]+-[1-4]: [0-9]+/[0-9]+(?:-[0-9]+h/[0-9]+h-[0-9]{8} [0-9]{2}:[0-9]{2})?$' });
+sampleOverrides.set(compactSideQuest, 'q.exercise-2: 4/10-5h/12h-20261009 13:18');
 const compactObservationSchema = strict({
   globalInfo: strict({ gameMode: modeKey, inGameTime: isoTimestamp, gold: Type.Integer({ minimum: 0 }), prana: Type.Integer({ minimum: 0 }) }),
   partyInfo: Type.Array(strict({

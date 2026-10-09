@@ -45,7 +45,12 @@ export function resolveExpeditionOutcome(input: ResolveExpeditionOutcomeInput): 
     input.finalOutcome,
     input.endedWithDrawRetreat,
   );
-  const progressWithRecoveredBossRares = input.finalOutcome === 'Defeat'
+  // SpecRef: 8.3 | Gods Battle | Boss Rare items count only after the dungeon boss has been defeated at least once
+  // (before this run, or by this run's Clear; a Gods Battle implies it); earlier Elite-room Boss Rares do not count.
+  const bossDefeated = input.isGodsBattle
+    || input.finalOutcome === 'Clear'
+    || input.defeatedBossExpeditions[input.dungeonId] === true;
+  const progressWithRecoveredBossRares = input.finalOutcome === 'Defeat' || !bossDefeated
     ? { ...input.clearGateProgress }
     : addRecoveredBossRaresToGodsBattleProgress(
         input.clearGateProgress,

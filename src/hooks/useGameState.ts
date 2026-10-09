@@ -4331,13 +4331,16 @@ function pickAchievementState(global: Pick<GameState['global'], 'achievementClea
 
 // SpecRef: 8.5 | UI_DIARY | Achievements are evaluated on the authoritative state after every change to what they count,
 // so parallel AFK Chunks (each seeing only its own snapshot) can neither double-record nor miss a milestone.
-function achievementTimestamp(action: GameAction, global: GameState['global']): number {
+function achievementTimestamp(action: GameAction, state: GameState): number {
   if (action.type === 'COMMIT_AFK_PARTY_CHUNK' || action.type === 'COMMIT_AFK_PARTY_TRANSACTION') return action.result.simulatedCompletedAt;
   const clock = action as { simulatedAt?: unknown; simulatedEndAt?: unknown };
   if (typeof clock.simulatedAt === 'number') return clock.simulatedAt;
   if (typeof clock.simulatedEndAt === 'number') return clock.simulatedEndAt;
-  // No in-game clock on this action: never stamp a system time behind the in-game entries already recorded.
-  return (global.globalDiary ?? []).reduce((latest, entry) => Math.max(latest, entry.createdAt), Date.now());
+  // No in-game clock on this action: never stamp a system time behind the in-game entries already recorded. Party
+  // Diaries carry the latest in-game time; the Global Diary alone can lag far behind it (its newest entry may be old).
+  const latestPartyEntry = state.parties.reduce((latest, party) => (party.diaryLogs ?? [])
+    .reduce((partyLatest, entry) => Math.max(partyLatest, entry.createdAt), latest), 0);
+  return (state.global.globalDiary ?? []).reduce((latest, entry) => Math.max(latest, entry.createdAt), Math.max(Date.now(), latestPartyEntry));
 }
 
 export function gameReducer(
@@ -4356,7 +4359,7 @@ export function gameReducer(
     || after.achievementClearTotal !== before.achievementClearTotal;
   // States without the milestone record predate achievements and are seeded when loaded, never evaluated here.
   if (!countedStateChanged || after.achievementMilestones === undefined) return next;
-  const withMilestones = applyAchievementMilestones(after, achievementTimestamp(action, after));
+  const withMilestones = applyAchievementMilestones(after, achievementTimestamp(action, next));
   return withMilestones === after ? next : { ...next, global: withMilestones };
 }
 

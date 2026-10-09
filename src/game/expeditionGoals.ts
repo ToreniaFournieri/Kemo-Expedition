@@ -154,7 +154,7 @@ export function formatCompactClearGate(goals: readonly ExpeditionGoal[]): string
 // SpecRef: 9.1.3 | 2-1-1 compact | `sideQuest`
 /**
  * The party's side quest as `<sideQuest>-<lv>: <progress>/<target>-<timeRemaining>/<timeLimit>-<startTimestamp>`
- * (hours; `YYYYMMDD HH:MM` start), e.g. `q.exercise-2: 4/10-5h/12h-20261009 13:18`; a quest without a deadline omits the time part. Time-based quests count minutes.
+ * (hours; `YYYYMMDD HH:MM` UTC start), e.g. `q.exercise-2: 4/10-5h/12h-20261009 13:18`; a quest without a deadline omits the time part. Time-based quests count minutes.
  */
 export function formatCompactSideQuest(party: Party, cycleDurationScale: number, nowMs: number): string | null {
   const facts = getSideQuestFacts(party, cycleDurationScale, nowMs);
@@ -167,6 +167,6 @@ export function formatCompactSideQuest(party: Party, cycleDurationScale: number,
   const limitHours = Math.round((quest.expiresAt - quest.assignedAt) / HOUR_MS);
   const started = new Date(quest.assignedAt);
   const pad = (value: number) => String(value).padStart(2, '0');
-  const startTimestamp = `${started.getFullYear()}${pad(started.getMonth() + 1)}${pad(started.getDate())} ${pad(started.getHours())}:${pad(started.getMinutes())}`;
+  const startTimestamp = `${started.getUTCFullYear()}${pad(started.getUTCMonth() + 1)}${pad(started.getUTCDate())} ${pad(started.getUTCHours())}:${pad(started.getUTCMinutes())}`;
   return `${head}-${Math.ceil(facts.remainingMs / HOUR_MS)}h/${limitHours}h-${startTimestamp}`;
 }

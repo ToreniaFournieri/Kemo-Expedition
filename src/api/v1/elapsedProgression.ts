@@ -1,5 +1,6 @@
 import { AFK_CHUNK_CYCLE_COUNT, compareAfkPartyDispatchCandidates, getAfkChunkOperationCount } from '../../game/afkChunkCoordinator';
 import { getApproxAfkCycleDurationMs, getEffectiveAfkElapsedMs } from '../../game/afkScheduler';
+import { applyAchievementMilestones } from '../../game/globalDiary';
 import { simulateAfkPartyChunkForWorker } from '../../hooks/useGameState';
 import type { GameState } from '../../types';
 
@@ -115,6 +116,12 @@ export async function stageApiV1ElapsedProgression(
         workerOptimization: 'optimized',
         compactBattleResultOutput: false,
       });
+      // SpecRef: 8.5 | UI_DIARY | Worker Chunks never evaluate achievements; the staged state does, stamped with the
+      // Chunk's in-game end, so a later clockless action cannot stamp them with an older Diary time.
+      if (next.global.achievementMilestones !== undefined) {
+        const withMilestones = applyAchievementMilestones(next.global, simulatedCompletedAt);
+        if (withMilestones !== next.global) next = { ...next, global: withMilestones };
+      }
       next = options.applyAutoEquipment(next, candidate.partyIndex, undefined, false);
       return next;
     });

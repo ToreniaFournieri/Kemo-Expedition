@@ -357,6 +357,26 @@ for (const [thrown, code] of [['illegal_action:charge_insufficient', 'illegal_ac
   assert.equal(noOp.state, state);
 }
 
+// SpecRef: 8.5 | UI_DIARY | Worker Chunks skip achievements, so elapsed progression records them itself, stamped with the
+// Chunk's in-game end rather than the newest (possibly old) Global Diary entry.
+{
+  const options = {
+    simulatedAt: fixedNow,
+    realNow: fixedNow,
+    gameMode: 'mode.normal' as const,
+    enemyLevelOffset: 0,
+    cycleDurationScale: 1,
+    applyAutoEquipment: (state: GameState) => state,
+    runWithRandom: <T>(operation: () => T) => operation(),
+  };
+  const withJewel = { ...seed, global: { ...seed.global, jewels: { ...seed.global.jewels, achievementFixture: 1 } } } as GameState;
+  const staged = await stageApiV1ElapsedProgression(withJewel, { elapsedSeconds: 3_600 }, options);
+  assert.ok(staged.chunkCount > 0);
+  assert.ok(staged.state.global.achievementMilestones?.includes('jewel:1'));
+  const entry = staged.state.global.globalDiary?.find((log) => log.kind === 'achievement' && log.metric === 'jewel' && log.threshold === 1);
+  assert.ok(entry && entry.createdAt > fixedNow && entry.createdAt <= staged.simulatedAt, `achievement stamped in-game: ${entry?.createdAt}`);
+}
+
 // The carried remainder lives in the account control beside the clock: elapsed stores it and import/reset clears it.
 {
   const deps = dependencies();

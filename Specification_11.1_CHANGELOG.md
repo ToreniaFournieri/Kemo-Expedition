@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.10.1 | 29 | 2026/10/09 | API (Spec 9.1.3): compact `sideQuest` start timestamp is now UTC and the catalog pattern accepts it (`read/observation/compact` returned 500 `internal_error` for a party with a timed side quest). Global Diary (Spec 8.5): achievements reached during `commit/progress/elapsed` are recorded at the Chunk's in-game end instead of a later action's stale timestamp (they took the newest Global Diary entry's time). Gods Battle (Spec 8.3): Boss Rare items count toward the Gods gate only once the expedition boss has been defeated (or by the clearing run); Elite-room Boss Rares before that no longer count. |
 | 0.10.1 | 28 | 2026/10/09 | Global Diary (Spec 8.5): a boss first clear that also unlocks a Party (Expeditions 3-7) now keeps its `bossFirstClear` entry and its Clear achievement count; the Party-unlock step previously rebuilt the global state from before the finalization and dropped both. |
 | 0.10.1 | 27 | 2026/10/09 | API (Spec 9.1.3): compact `sideQuest` now appends `-<startTimestamp>` (`YYYYMMDD HH:MM`); `{p}/sortie` performs as many sorties as the available charge allows instead of refusing, and returns `summary` (`<validSortie>/<numberOfSortie>`). |
 | 0.10.1 | 26 | 2026/10/09 | Side quest target ranges now follow Spec 1.1.9 / 5.1.2: `q.healing` 2 ~ 7 and `q.savings` 600 ~ 2,500; `q.savings` level multipliers now x1.6 / x2.8 / x4.0. |

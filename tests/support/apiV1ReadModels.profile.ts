@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { buildApiV1ReadData } from '../../src/api/v1/readModels.ts';
 import { buildDiaryTabView, type DiaryProjection } from '../../src/api/v1/diaryTabView.ts';
 import { createFreshGameState } from '../../src/hooks/useGameState.ts';
@@ -47,11 +48,12 @@ assert.equal('latestSimulationResult' in quickCompact.attention, false);
   assert.equal(idle.sideQuest, null);
   const now = context.inGameTime;
   const withQuest = (quest: object) => ({ ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, sideQuest: quest } : party) }) as typeof state;
-  const startDate = new Date(now);
-  const two = (value: number) => String(value).padStart(2, '0');
-  const startStamp = `${startDate.getFullYear()}${two(startDate.getMonth() + 1)}${two(startDate.getDate())} ${two(startDate.getHours())}:${two(startDate.getMinutes())}`;
-  const timed = { id: 3, type: 'q.exercise', target: 600, progress: 240, rolledTier: 3, assignedAt: now, expiresAt: now + 12 * 3_600_000 };
-  assert.equal((await compactParty(withQuest(timed))).sideQuest, `q.exercise-2: 4/10-12h/12h-${startStamp}`);
+  // The start timestamp is UTC whatever the host time zone, and matches the catalog's `sideQuest` pattern.
+  const timed = { id: 3, type: 'q.exercise', target: 600, progress: 240, rolledTier: 3, assignedAt: now - 10 * 3_600_000 - 42 * 60_000, expiresAt: now + 78 * 60_000 };
+  const timedLine = (await compactParty(withQuest(timed))).sideQuest;
+  assert.equal(timedLine, 'q.exercise-2: 4/10-2h/12h-20260919 13:18');
+  const sideQuestPattern = readFileSync('desktop/api-v1-contract.json', 'utf8').match(/"pattern": "(\^q[^"]+)"/)?.[1];
+  assert.ok(sideQuestPattern && new RegExp(JSON.parse(`"${sideQuestPattern}"`)).test(timedLine ?? ''));
   assert.equal((await compactParty(withQuest({ ...timed, id: 7, type: 'q.AFK', expiresAt: Number.MAX_SAFE_INTEGER }))).sideQuest, 'q.AFK-2: 4/10');
 }
 const slowCompact = await buildApiV1ReadData('read/observation/compact', state, { quick: false }, context) as { attention: { latestSimulationResult?: string[] } };

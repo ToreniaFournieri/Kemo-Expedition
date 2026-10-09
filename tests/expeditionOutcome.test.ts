@@ -98,3 +98,13 @@ test('a non-defeat Gods Battle retains recovered Boss Rare progress', () => {
   });
   assert.equal(result.clearGateProgress[godKey], 3);
 });
+
+test('Boss Rare items count toward the Gods Battle gate only after the dungeon boss has been defeated', () => {
+  const godKey = getGodsBattleProgressKey(1);
+  // Elite-room Boss Rares before the first boss defeat do not count.
+  assert.equal(resolve({ finalOutcome: 'Return', recoveredItems: [BOSS_RARE] }).clearGateProgress[godKey], undefined);
+  assert.equal(resolve({ finalOutcome: 'Retreat', recoveredItems: [BOSS_RARE, BOSS_RARE] }).clearGateProgress[godKey], undefined);
+  // The first-clear run's drops count, as do later runs once the boss is defeated.
+  assert.equal(resolve({ finalOutcome: 'Clear', recoveredItems: [BOSS_RARE, BOSS_RARE] }).clearGateProgress[godKey], 2);
+  assert.equal(resolve({ recoveredItems: [BOSS_RARE], defeatedBossExpeditions: { 1: true } }).clearGateProgress[godKey], 1);
+});
