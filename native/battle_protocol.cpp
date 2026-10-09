@@ -1217,9 +1217,7 @@ double base_per_hit_damage(const CombatantState& actor, const CombatantState& ta
   const bool magical = profile_index == 1;
   const u32 family = magical ? 1 : 0;
   const double defense = magical ? target.profile.magical_defense : target.profile.physical_defense;
-  const double effective_defense = actor.side == Side::Party
-      ? defense * (1.0 - actor.profile.penetration[family])
-      : defense;
+  const double effective_defense = defense * (1.0 - actor.profile.penetration[family]);
   const double offense = actor.side == Side::Party
       ? ((1.0 + actor.profile.attack_bonus[profile_index] + actor.profile.phase_bonus[1]) *
           actor.profile.offense_amplifier[family] + actor.profile.deity_bonus[0])
@@ -1458,7 +1456,7 @@ double advanced_per_hit_damage(const InputHeader& input, BattleStateCore& state,
   const u32 family = magical ? 1 : 0;
   double defense = magical ? target.profile.magical_defense : target.profile.physical_defense;
   const double debuff = magical ? target.temporary.magical_defense_debuff : target.temporary.physical_defense_debuff;
-  double penetration = actor.side == Side::Party ? actor.profile.penetration[family] : 0.0;
+  double penetration = actor.profile.penetration[family];
   const int heavy = active_ability_level(actor, protocol::AbilityId::HeavyStrike);
   if (heavy > 0) {
     const double original = profile_index == 0 ? actor.attacks.original_ranged_noa

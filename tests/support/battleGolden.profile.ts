@@ -262,7 +262,7 @@ test('v2 contract case inventory and natural seeds remain exact', () => {
   );
 });
 
-test('Expedition 6 natural seed retains 107 draws and grouped Resonance +12% in every locale', () => {
+test('Expedition 6 natural seed retains 107 draws and grouped Resonance +16% in every locale', () => {
   const fixture = createGoldenCases().find((entry) => entry.id === 'saved-party-3-expedition-6-boss');
   assert.ok(fixture);
   const seed = 0x8e710003n;
@@ -274,10 +274,10 @@ test('Expedition 6 natural seed retains 107 draws and grouped Resonance +12% in 
     assert.equal(pair.seeded.randomConsumed, 107);
     const groupedHeader = pair.seeded.result.log.find((entry) => (
       entry.actor === 'enemy' && entry.attackType === 'magical'
-      && entry.hits === 3 && entry.isEnemyTargetHit !== true
+      && entry.hits === 4 && entry.isEnemyTargetHit !== true
     ));
-    assert.ok(groupedHeader, `${language}: grouped three-hit magical header is missing`);
-    assert.match(groupedHeader.action, /12%/);
+    assert.ok(groupedHeader, `${language}: grouped four-hit magical header is missing`);
+    assert.match(groupedHeader.action, /16%/);
   }
   setLanguage('ja');
 });

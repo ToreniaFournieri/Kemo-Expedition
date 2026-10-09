@@ -96,6 +96,17 @@ function magicStyleId(style: EnemyDef['magicStyle']): 0 | 1 | 2 | 3 | 4 {
   return 0;
 }
 
+function projectedEnemyPenetration(enemy: EnemyDef): number {
+  const names = new Set<string>();
+  let penet = 0;
+  for (const bonus of enemy.bonuses ?? []) {
+    if (bonus.type !== 'penet' || names.has(String(bonus.value))) continue;
+    names.add(String(bonus.value));
+    penet += bonus.value;
+  }
+  return Math.min(penet, 1);
+}
+
 function projectedEnemyNoA(enemy: EnemyDef, attackType: 'ranged' | 'magical' | 'melee'): number {
   let value = attackType === 'ranged' ? enemy.rangedNoA : attackType === 'magical' ? enemy.magicalNoA : enemy.meleeNoA;
   if (enemy.abilities.some((ability) => ability.id === 'heavy_strike' && ability.level > 0)) value = Math.ceil(value / 2);
@@ -231,8 +242,8 @@ export function projectBattleCombatants(
     magicalDefense: enemy.magicalDefense,
     accuracyBonus: enemy.accuracyBonus,
     evasionBonus: enemy.evasionBonus,
-    physicalPenetration: 1,
-    magicalPenetration: 1,
+    physicalPenetration: projectedEnemyPenetration(enemy),
+    magicalPenetration: projectedEnemyPenetration(enemy),
     elementalOffenseValue: enemy.elementalOffenseValue,
     fireResistance: enemy.elementalResistance.fire,
     thunderResistance: enemy.elementalResistance.thunder,

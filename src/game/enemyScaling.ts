@@ -71,6 +71,10 @@ const ENEMY_TYPE_C_BONUS_TYPES = new Set<BonusType>([
   'fire_defense_multiplier_xV',
   'ice_defense_multiplier_xV',
   'thunder_defense_multiplier_xV',
+  'physical_offense_multiplier_xV',
+  'magical_offense_multiplier_xV',
+  'accuracy',
+  'penet',
 ]);
 
 function formatCBonusValue(value: number): string {
@@ -87,6 +91,10 @@ export function applyEnemyTypeCBonuses(enemy: EnemyDef): EnemyDef {
   let magicalNoA = enemy.magicalNoA;
   let meleeNoA = enemy.meleeNoA;
   let evasionBonus = enemy.evasionBonus;
+  let accuracyBonus = enemy.accuracyBonus;
+  let rangedAttackAmplifier = enemy.rangedAttackAmplifier;
+  let magicalAttackAmplifier = enemy.magicalAttackAmplifier;
+  let meleeAttackAmplifier = enemy.meleeAttackAmplifier;
   let physicalDefenseAmplifier = enemy.physicalDefenseAmplifier;
   let magicalDefenseAmplifier = enemy.magicalDefenseAmplifier;
   const elementalResistance = { ...enemy.elementalResistance };
@@ -115,6 +123,16 @@ export function applyEnemyTypeCBonuses(enemy: EnemyDef): EnemyDef {
       case 'evasion':
         evasionBonus += bonus.value;
         break;
+      case 'accuracy':
+        accuracyBonus += bonus.value;
+        break;
+      case 'physical_offense_multiplier_xV':
+        rangedAttackAmplifier *= bonus.value;
+        meleeAttackAmplifier *= bonus.value;
+        break;
+      case 'magical_offense_multiplier_xV':
+        magicalAttackAmplifier *= bonus.value;
+        break;
       case 'physical_defense_multiplier_xV':
         physicalDefenseAmplifier = Math.max(0.01, physicalDefenseAmplifier * bonus.value);
         break;
@@ -140,6 +158,10 @@ export function applyEnemyTypeCBonuses(enemy: EnemyDef): EnemyDef {
     magicalNoA,
     meleeNoA,
     evasionBonus,
+    accuracyBonus,
+    rangedAttackAmplifier,
+    magicalAttackAmplifier,
+    meleeAttackAmplifier,
     physicalDefenseAmplifier,
     magicalDefenseAmplifier,
     elementalResistance,
