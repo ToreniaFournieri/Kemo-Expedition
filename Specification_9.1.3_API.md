@@ -108,10 +108,10 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 2-3. read/build
      party/{p}
-     character/{characterId}/status
-     character/{characterId}/equipment
-     character/{characterId}/equipmentSet
-     character/{characterId}/equipmentEvaluation
+     character/status
+     character/equipment
+     character/equipmentSet
+     character/equipmentEvaluation
 
 2-4. read/base
      searchItems
@@ -441,6 +441,16 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * Return:
   * `partyInfo`
     * Party-related information.
+      * `currentHP`: `8960`
+      * `partyMaxHP`: `70790`
+      * `partyLevel`: `11`
+      * `experienceRatio`: `10%`
+      * `xp_current`: `1200`
+      * `xp_next`: `12000`
+      * `deity`: `God of Fortification`
+      * `deityRank`: `8`
+      * `deityTotalDonation`: `785242`
+      * `deityNextRankThreshold`: `1066102`
     * Currently displayed in the party tab in the UI.
     * Includes `statistics`.
     * `sideQuestStatistics`
@@ -598,11 +608,18 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * Example:  `[101, 102, 103, 104, 105, 106]`
 
 
-**2-3-2. `character/{characterId}/status`**
+**2-3-2. `character/status`**
 
-* Parameters: none.
+
+* Parameters:
+  * `characterId`
+    * Required.
+    * Accepts a single character ID or an array of character IDs.
+    * Examples: `1`, `[1, 2, 3]`.
 
 * Return:
+  * For each specified character:
+  * `characterId`: The character's ID.
   * `calculatedStatus`:
     * `CalculatedStatus` as defined in 9.1.4.14, with shared UI-calculated
       numeric stats, abilities, bonuses, and attack profiles.
@@ -645,11 +662,17 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * Validation:
   * Same as `2.1 CHARACTER_&_PARTY` 
 
-**2-3-3. `character/{characterId}/equipment`**
+**2-3-3. `character/equipment`**
 
-* Parameters: none.
+* Parameters:
+  * `characterId`
+    * Required.
+    * Accepts a single character ID or an array of character IDs.
+    * Examples: `1`, `[1, 2, 3]`.
 
 * Return:
+  * For each specified character:
+  * `characterId`: The character's ID.
   * `current`:
     * `mode`
       * Current Auto Equipment mode.
@@ -694,64 +717,75 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
         * `unavailableReason`: `No redo history.`
 
 
-**2-3-4. `character/{characterId}/equipmentSet`**
+**2-3-4. `character/equipmentSet`**
 
 * Parameters:
-  * `equipmentSetId`
-    * Optional.
-    * Accepts one or more equipment set IDs.
-    * If omitted, returns all saved equipment sets.
-  * `isEquipmentSetDetail`
-    * Boolean.
-    * Optional; default: `false`.
-    * If `true`, include the full equipment-set details.
-    * If `false`, return summary information only.
-
-* Return:
-  * `equipmentSets`
-    * Array.
-    * Each entry:
+  * `characterId`
+    * Required.
+    * Accepts a single character ID or an array of character IDs.
+    * Each entry contains:
       * `equipmentSetId`
-      * `equipmentSet`
-        * Includes `availability`, evaluated for the target character against the
-          current inventory, aptitude, and equipment-slot count.
-        * `availability.allAvailable` is `true` only when the complete exact set
-          can be loaded.
-        * `availability.entries` preserves saved-set order. Each entry includes
-          `slotIndex`, `item`, `available`, and `unavailableReason`.
-        * `unavailableReason` is `slot_unavailable`, `not_equippable`,
-          `unavailable`, or `null` when available. Jewels do not affect saved-set
-          availability because saved equipment sets do not store Jewels.
-
-**2-3-5. `character/{characterId}/equipmentEvaluation`**
-
-* Parameters:
-  * `targetItems`
-    * Optional when `equipmentChanges` is supplied.
-    * One item or an array of items.
-    * Each item uses `<Item Format>/<jewelType>:<jewelRank>`.
-  * `equipmentChanges`
-    * Optional when `targetItems` is supplied.
-    * One hypothetical equipment change or an array of unique changes.
-    * Replacement format: `<slotIndex>=<Item Format>/<jewelType>:<jewelRank>`.
-    * Use `0:0` as the Jewel part when the replacement item has no Jewel.
-    * Removal format: `<slotIndex>=0`.
-    * Every slot is evaluated independently against the same immutable character
-      snapshot. The item does not need to be owned.
-  * At least one of `targetItems` or `equipmentChanges` is required.
+        * Optional.
+        * Accepts one or more equipment set IDs.
+        * If omitted, returns all saved equipment sets.
+      * `isEquipmentSetDetail`
+        * Boolean.
+        * Optional; default: `false`.
+        * If `true`, include the full equipment-set details.
+        * If `false`, return summary information only.
 
 * Return:
-  * `calculatedItemStatus`
-    * Calculated item status for each target item after applying bonuses and modifiers specific to the target character.
-    * Includes character-specific equipment bonuses that are not included in the item's standalone `calculatedBasePower`.
-  * `calculatedEquipmentChange`
-    * Ordered results for `equipmentChanges`; an empty array when none were requested.
-    * Each result includes the echoed `change`, `equippable`,
-      `physicalDefenseDelta`, and `magicalDefenseDelta`.
-    * Defense deltas compare the complete character status before and after the
-      hypothetical replacement or removal, including item and Jewel `d.` and `c.`
-      effects. Evaluation never changes equipment, history, RNG, or revision.
+  * `characterId`
+    * For each specified character:
+      * `equipmentSets`
+        * Array.
+        * Each entry:
+          * `equipmentSetId`
+          * `equipmentSet`
+            * Includes `availability`, evaluated for the target character against the
+              current inventory, aptitude, and equipment-slot count.
+            * `availability.allAvailable` is `true` only when the complete exact set
+              can be loaded.
+            * `availability.entries` preserves saved-set order. Each entry includes
+              `slotIndex`, `item`, `available`, and `unavailableReason`.
+            * `unavailableReason` is `slot_unavailable`, `not_equippable`,
+              `unavailable`, or `null` when available. Jewels do not affect saved-set
+              availability because saved equipment sets do not store Jewels.
 
+**2-3-5. `character/equipmentEvaluation`**
+
+* Parameters:
+  * `characterId`
+    * Required.
+    * Accepts a single character ID or an array of character IDs.
+    * Each entry contains:
+      * `targetItems`
+        * Optional when `equipmentChanges` is supplied.
+        * One item or an array of items.
+        * Each item uses `<Item Format>/<jewelType>:<jewelRank>`.
+      * `equipmentChanges`
+        * Optional when `targetItems` is supplied.
+        * One hypothetical equipment change or an array of unique changes.
+        * Replacement format: `<slotIndex>=<Item Format>/<jewelType>:<jewelRank>`.
+        * Use `0:0` as the Jewel part when the replacement item has no Jewel.
+        * Removal format: `<slotIndex>=0`.
+        * Every slot is evaluated independently against the same immutable character
+          snapshot. The item does not need to be owned.
+      * At least one of `targetItems` or `equipmentChanges` is required.
+
+* Return:
+  * `characterId`
+    * For each specified character:
+      * `calculatedItemStatus`
+        * Calculated item status for each target item after applying bonuses and modifiers specific to the target character.
+        * Includes character-specific equipment bonuses that are not included in the item's standalone `calculatedBasePower`.
+      * `calculatedEquipmentChange`
+        * Ordered results for `equipmentChanges`; an empty array when none were requested.
+        * Each result includes the echoed `change`, `equippable`,
+          `physicalDefenseDelta`, and `magicalDefenseDelta`.
+        * Defense deltas compare the complete character status before and after the
+          hypothetical replacement or removal, including item and Jewel `d.` and `c.`
+          effects. Evaluation never changes equipment, history, RNG, or revision.
 
 
 **2-4. `read/base`**

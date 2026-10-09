@@ -459,6 +459,7 @@ Party.`d.HP` =
 
 - **PT2** initial condition (when unlocked)
   - deity: `God of Cunning`
+    - If this deity is unavailable, assign no deity instead.
 
 | `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
@@ -471,6 +472,7 @@ Party.`d.HP` =
 
 - **PT3** initial condition (when unlocked)
   - deity: `Goddess of Fertility`
+    - If this deity is unavailable, assign no deity instead.
 
 | `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
@@ -483,6 +485,7 @@ Party.`d.HP` =
 
 - **PT4** initial condition (when unlocked)
   - deity:  `God of Fortification`
+    - If this deity is unavailable, assign no deity instead.
 
 | `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
@@ -495,6 +498,7 @@ Party.`d.HP` =
 
 - **PT5** initial condition (when unlocked)
   - deity: `God of Resonance`
+    - If this deity is unavailable, assign no deity instead.
 
 | `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
@@ -507,6 +511,7 @@ Party.`d.HP` =
 
 - **PT6** initial condition (when unlocked)
   - deity: Goddess of Precision
+    - If this deity is unavailable, assign no deity instead.
 
 | `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
