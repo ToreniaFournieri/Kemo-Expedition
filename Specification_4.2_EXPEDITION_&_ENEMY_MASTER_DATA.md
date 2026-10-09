@@ -424,7 +424,7 @@
 | 132 | Normal | `Beast` | class.sword-saint.striker | 1211, 1207, 1215, 1104, 1105, 1106 | あなこ | |
 | 133 | Normal | `Aerial` | class.ranger.duelist | 1213, 1217, 1207, 1107, 1108, 1109 | ペネトレーター | |
 | 134 | Normal | `Aerial` | class.samurai.ranger | 1209, 1205, 1213, 1104, 1105, 1106 | ヨキジ | |
-| 135 | BOSS | `Caninian` | class.guardian | 1401, 1402, 1406, 1101, 1102, 1103 | ヴェルグ | `a.ice-absorb`1, `a.true-sight`1, `c.growth_x1.2` |
+| 135 | BOSS | `Caninian` | class.guardian | 1401, 1402, 1406, 1101, 1102, 1103 | ヴェルグ | `a.ice-absorb`1, `a.true-sight`1, `c.growth_x1.2`, `c.magical-defense-multiplier_x2/3` |
 | 136 | Normal | `Frost` | class.ranger | 2213, 2224, 2107, 2108, 2109 | シズク | |
 | 137 | Normal | `Frost` | class.striker | 2215, 2213, 2107, 2108, 2109 | クリスティア | |
 | 138 | Normal | `Frost` | class.wizard | 2219, 2221, 2110, 2111, 2112 | ヴィエル | |
@@ -460,7 +460,7 @@
 | 168 | Normal | `Frost` | class.sword-saint.striker | 2223, 2222, 2215, 2104, 2105, 2106 | ミミ | |
 | 169 | Normal | `Golem` | class.ranger.duelist | 2213, 2224, 2222, 2107, 2108, 2109 | リボンバン | |
 | 170 | Normal | `Golem` | class.samurai.ranger | 2209, 2205, 2213, 2104, 2105, 2106 | パックベア | |
-| 171 | BOSS | `Lupinian` | class.striker.duelist | 2406, 2401, 2407, 2107, 2108, 2109 | ロザリア | `a.deflection`2, `a.life-drain`7, `a.null-life-drain`1, `c.growth_x2.0` |
+| 171 | BOSS | `Lupinian` | class.striker.duelist | 2406, 2401, 2407, 2107, 2108, 2109 | ロザリア | `a.deflection`2, `a.life-drain`7, `a.null-life-drain`1, `c.growth_x1.5`, `c.physical-defense-multiplier_x1/2`, `c.magical-defense-multiplier_x3/2`, `d.melee-offense-amplifier_x2.0` |
 | 172 | Normal | `Fruit` | class.ranger.ranger | 3213, 3217, 3213, 3107, 3108, 3109 | あぷりん | |
 | 173 | Normal | `Fruit` | class.striker.striker | 3215, 3213, 3215, 3107, 3108, 3109 | ぐぁびー | |
 | 174 | Normal | `Fruit` | class.wizard.wizard | 3219, 3203, 3219, 3110, 3111, 3112 | みむる | |
@@ -496,7 +496,7 @@
 | 204 | Normal | `Orcinian` | class.sword-saint.striker | 3211, 3207, 3215, 3104, 3105, 3106 | エヴェリナ | |
 | 205 | Normal | `Slime_Colony` | class.ranger.duelist | 3213, 3217, 3207, 3107, 3108, 3109 | イリア | |
 | 206 | Normal | `Slime_Colony` | class.samurai.ranger | 3209, 3205, 3213, 3104, 3105, 3106 | ヴェスペラ | |
-| 207 | BOSS | `Vulpinian` | class.wizard.sage | 3408, 3405, 3404, 3110, 3111, 3112 | 宰相ゴールドテイル | `a.melee-confusion`1, `c.growth_x1.5`, `a.squander`1 |
+| 207 | BOSS | `Vulpinian` | class.wizard.sage | 3408, 3405, 3404, 3110, 3111, 3112 | 宰相ゴールドテイル | `a.melee-confusion`1, `c.growth_x1.7`, `a.squander`1, `c.physical-defense-multiplier_x2/3` |
 | 208 | Normal | `Shadowfang` | class.ranger.ranger | 4213, 4217, 4213, 4107, 4108, 4109 | ポムキャット | |
 | 209 | Normal | `Shadowfang` | class.striker.striker | 4215, 4213, 4215, 4107, 4108, 4109 | フワテイル | |
 | 210 | Normal | `Shadowfang` | class.wizard.wizard | 4219, 4203, 4219, 4110, 4111, 4112 | コロッチュ | |
@@ -532,7 +532,7 @@
 | 240 | Normal | `Felidian` | class.sword-saint.striker | 4211, 4207, 4215, 4104, 4105, 4106 | ラミル | |
 | 241 | Normal | `Murid` | class.ranger.duelist | 4213, 4217, 4207, 4107, 4108, 4109 | 銀髭のヴァロ | |
 | 242 | Normal | `Murid` | class.samurai.ranger | 4209, 4205, 4213, 4104, 4105, 4106 | 銭のマーン | |
-| 243 | BOSS | `Felidian` | class.striker.ranger | 4403, 4402, 4402, 4107, 4108, 4109 | 大司祭マウラ | `c.fire-defense-multiplier_x4/5`, `c.growth_x1.5` |
+| 243 | BOSS | `Felidian` | class.striker.ranger | 4403, 4402, 4402, 4107, 4108, 4109 | 大司祭マウラ | `c.fire-defense-multiplier_x4/5`, `c.growth_x1.5`, `d.ranged-NoA_x3/2` |
 | 244 | Normal | `Beast` | class.ranger.ranger | 5213, 5217, 5213, 5107, 5108, 5109 | ジスカ | |
 | 245 | Normal | `Beast` | class.striker.striker | 5215, 5213, 5215, 5107, 5108, 5109 | スナ | |
 | 246 | Normal | `Beast` | class.wizard.wizard | 5219, 5203, 5219, 5110, 5111, 5112 | ラテラ | |
@@ -568,7 +568,7 @@
 | 276 | Normal | `Beast` | class.sword-saint.striker | 5211, 5207, 5215, 5104, 5105, 5106 | ラティア | |
 | 277 | Normal | `Dragon` | class.ranger.duelist | 5213, 5217, 5207, 5107, 5108, 5109 | モロキア | |
 | 278 | Normal | `Dragon` | class.samurai.ranger | 5209, 5205, 5213, 5104, 5105, 5106 | ハイドロサ | |
-| 279 | BOSS | `Ursan` | class.samurai.duelist | 5404, 5405, 5406, 5104, 5105, 5106 | ケルビナ | `a.fire-reflect`1, `c.growth_x1.3` |
+| 279 | BOSS | `Ursan` | class.samurai.duelist | 5404, 5405, 5406, 5104, 5105, 5106 | ケルビナ | `a.fire-reflect`1, `c.growth_x1.3`, `c.physical-offense-multiplier_x3/2` |
 | 280 | Normal | `Mech` | class.ranger.ranger | 6213, 6217, 6213, 6107, 6108, 6109 | リヴェッタ | |
 | 281 | Normal | `Mech` | class.striker.striker | 6215, 6213, 6215, 6107, 6108, 6109 | ピペット | |
 | 282 | Normal | `Mech` | class.wizard.wizard | 6219, 6203, 6219, 6110, 6111, 6112 | スプロクサ | |
@@ -604,7 +604,7 @@
 | 312 | Normal | `Mech` | class.sword-saint.striker | 6211, 6207, 6215, 6104, 6105, 6106 | ミント | |
 | 313 | Elite | `Procyonian` | class.ranger.duelist | 6403, 6401, 6107, 6108, 6109 | クインシー | `c.growth_x1.5` |
 | 314 | Elite | `Procyonian` | class.samurai.ranger | 6408, 6407, 6104, 6105, 6106 | スキッパー | `c.growth_x1.5` |
-| 315 | BOSS | `Procyonian` | class.sage.lord | 6406, 6405, 6408, 6110, 6111, 6112 | セレスティアルリーパー | `a.soul-reap`3, `c.growth_x1.5` |
+| 315 | BOSS | `Procyonian` | class.sage.lord | 6406, 6405, 6408, 6110, 6111, 6112 | セレスティアルリーパー | `a.soul-reap`3, `c.growth_x1.5`, `c.accuracy+0.030` |
 | 316 | Normal | `Pony` | class.ranger.ranger | 7213, 7217, 7213, 7107, 7108, 7109 | リッカ | |
 | 317 | Normal | `Pony` | class.striker.striker | 7215, 7213, 7215, 7107, 7108, 7109 | ナナラ | |
 | 318 | Normal | `Pony` | class.wizard.wizard | 7219, 7203, 7219, 7110, 7111, 7112 | ノワ | |
@@ -640,7 +640,7 @@
 | 348 | Normal | `Pony` | class.sword-saint.striker | 7211, 7207, 7215, 7104, 7105, 7106 | ニーヴ | |
 | 349 | Normal | `Undead` | class.ranger.duelist | 7213, 7217, 7207, 7107, 7108, 7109 | サージャ | |
 | 350 | Normal | `Undead` | class.samurai.ranger | 7209, 7205, 7213, 7104, 7105, 7106 | メルナ | |
-| 351 | BOSS | `Leporian` | class.lord.ninja | 7406, 7405, 7401, 7101, 7102, 7103 | 宰相ヴァルター | `a.melee-reflect`1, `c.growth_x1.4` |
+| 351 | BOSS | `Leporian` | class.lord.ninja | 7406, 7405, 7401, 7101, 7102, 7103 | 宰相ヴァルター | `a.melee-reflect`1, `c.growth_x1.4`, `c.penet+0.20` |
 | 352 | Normal | `Voidspawn` | class.ranger.ranger | 8213, 8217, 8213, 8107, 8108, 8109 | ヴェスパ | |
 | 353 | Normal | `Voidspawn` | class.striker.striker | 8215, 8213, 8215, 8107, 8108, 8109 | キリカ | |
 | 354 | Normal | `Voidspawn` | class.wizard.wizard | 8219, 8203, 8219, 8110, 8111, 8112 | ミレア | |
@@ -676,7 +676,7 @@
 | 384 | Normal | `Voidspawn` | class.sword-saint.striker | 8211, 8207, 8215, 8104, 8105, 8106 | コルヴァ | |
 | 385 | Normal | `Ghost` | class.ranger.duelist | 8213, 8217, 8207, 8107, 8108, 8109 | レムリ | |
 | 386 | Normal | `Ghost` | class.samurai.ranger | 8209, 8205, 8213, 8104, 8105, 8106 | モカ | |
-| 387 | BOSS | `Cervin` | class.ninja.wizard | 8401, 8403, 8409, 8107, 8108, 8109 | セルヴァ・レム | `a.shock`1, `a.magic-seal`1 |
+| 387 | BOSS | `Cervin` | class.ninja.wizard | 8401, 8403, 8409, 8107, 8108, 8109 | セルヴァ・レム | `a.shock`1, `a.magic-seal`1, `c.magical-offense-multiplier_x3/2`  |
 
 
 
