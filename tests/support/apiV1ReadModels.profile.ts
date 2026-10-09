@@ -47,8 +47,11 @@ assert.equal('latestSimulationResult' in quickCompact.attention, false);
   assert.equal(idle.sideQuest, null);
   const now = context.inGameTime;
   const withQuest = (quest: object) => ({ ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, sideQuest: quest } : party) }) as typeof state;
+  const startDate = new Date(now);
+  const two = (value: number) => String(value).padStart(2, '0');
+  const startStamp = `${startDate.getFullYear()}${two(startDate.getMonth() + 1)}${two(startDate.getDate())} ${two(startDate.getHours())}:${two(startDate.getMinutes())}`;
   const timed = { id: 3, type: 'q.exercise', target: 600, progress: 240, rolledTier: 3, assignedAt: now, expiresAt: now + 12 * 3_600_000 };
-  assert.equal((await compactParty(withQuest(timed))).sideQuest, 'q.exercise-2: 4/10-12h/12h');
+  assert.equal((await compactParty(withQuest(timed))).sideQuest, `q.exercise-2: 4/10-12h/12h-${startStamp}`);
   assert.equal((await compactParty(withQuest({ ...timed, id: 7, type: 'q.AFK', expiresAt: Number.MAX_SAFE_INTEGER }))).sideQuest, 'q.AFK-2: 4/10');
 }
 const slowCompact = await buildApiV1ReadData('read/observation/compact', state, { quick: false }, context) as { attention: { latestSimulationResult?: string[] } };
