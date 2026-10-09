@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.10.1 | 26 | 2026/10/09 | Side quest target ranges now follow Spec 1.1.9 / 5.1.2: `q.healing` 2 ~ 7 and `q.savings` 600 ~ 2,500; `q.savings` level multipliers now x1.6 / x2.8 / x4.0. |
 | 0.10.1 | 25 | 2026/10/09 | Side quest runtime now follows Spec 1.1.9 / 5.1.2: `q.sleeping` time limit 16 hours, `q.treasure-boss-rare` time limit 20 hours, and `q.healing` / `q.poor-kid` / `q.consecutive-wins` level multipliers x1.2 / x1.4 / x1.6. Spec 1.1.9 table gains lv2 ~ lv4 multiplier columns and updated time limits. |
 | 0.10.1 | 24 | 2026/10/09 | `resetStatistics` (and the Expedition pane's Reset button) now also clears the party's `sideQuestStatistics`, per 9.1.3 3-2-4. |
 | 0.10.1 | 23 | 2026/10/09 | API: `sideQuestStatistics` reports `failedCount` 0 for an entry saved before the failed counter existed (it printed `undefined`). Backup import keeps the stored counters. |
