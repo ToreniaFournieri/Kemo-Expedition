@@ -394,14 +394,14 @@ PT3: 貯金額: 10G
 | 3 | `q.exercise`     | 16 hours | 10 ~ 30 | x1.3 | x1.5 | x2.0 |
 | 4 | `q.embezzlement` | 16 hours | 10 ~ 50 | x1.4 | x1.8 | x2.2 | 
 | 5 | `q.donation`     | 12 hours | 100 ~ 500 | x1.4 | x1.8 | x2.2 | 
-| 6 | `q.healing`      | 16 hours | 2 ~ 10 | x1.2 | x1.4 | x1.6 |
+| 6 | `q.healing`      | 16 hours | 2 ~ 7 | x1.2 | x1.4 | x1.6 |
 | 7 | `q.AFK`          | - | 30 ~ 120 | x1.3 | x1.5 | x2.0 |
 | 8 | `q.treasure-super-rare` | 24 hours | 1 | - | - | - |
 | 9 | `q.treasure-boss-rare` | 20 hours | 1 - 3 | - | - | - |
 | 10 | `q.poor-kid`    | 9 hours | 5 ~ 15 | x1.2 | x1.4 | x1.6 |
 | 11 | `q.consecutive-wins` | 16 hours | 5 ~ 20 | x1.2 | x1.4 | x1.6 |
 | 12 | `q.losers`      | 9 hours | 1 | - | - | - |
-| 13 | `q.savings`     | 16 hours | 300 - 1,500 | x1.6 | x2.8 | x4.0 | 
+| 13 | `q.savings`     | 16 hours | 600 - 2,500 | x1.6 | x2.8 | x4.0 | 
 
 | `x.exp_id` | `lv` |
 |---|----|
