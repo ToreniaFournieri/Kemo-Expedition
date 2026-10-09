@@ -10,6 +10,7 @@
 
 | Version | Build | date | Changes                                                                              |
 |-|-|-|-|
+| 0.10.1 | 25 | 2026/10/09 | Side quest runtime now follows Spec 1.1.9 / 5.1.2: `q.sleeping` time limit 16 hours, `q.treasure-boss-rare` time limit 20 hours, and `q.healing` / `q.poor-kid` / `q.consecutive-wins` level multipliers x1.2 / x1.4 / x1.6. Spec 1.1.9 table gains lv2 ~ lv4 multiplier columns and updated time limits. |
 | 0.10.1 | 24 | 2026/10/09 | `resetStatistics` (and the Expedition pane's Reset button) now also clears the party's `sideQuestStatistics`, per 9.1.3 3-2-4. |
 | 0.10.1 | 23 | 2026/10/09 | API: `sideQuestStatistics` reports `failedCount` 0 for an entry saved before the failed counter existed (it printed `undefined`). Backup import keeps the stored counters. |
 | 0.10.1 | 22 | 2026/10/09 | Fix `q.sleeping` never advancing in AFK emulation / API accounts (0% success in the 100-day report): the AFK per-cycle path never rolled the party's sleepiness and never advanced a sleeping quest. It now advances `q.sleeping` by 1 for a cycle whose sleepiness is `sound_sleep` (2), matching the live `state.sound_sleep` rule, and draws the next sleepiness at the end of each AFK cycle (as `state.return` does). |
