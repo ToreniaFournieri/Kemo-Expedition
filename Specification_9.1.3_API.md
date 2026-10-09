@@ -370,9 +370,10 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `clearGate`
         * Example: `4th Elite gate: 3/4`
       * `sideQuest`
-        * Format: `<sideQuest>-<lv>: <progress>/<target>-<timeRemaining>/<timeLimit>`
+        * Format: `<sideQuest>-<lv>: <progress>/<target>-<timeRemaining>/<timeLimit>-<startTimestamp>`
           * remainingTime and deadline are expressed in hours (h).
-        * Example: `q.exercise-2: 4/10-5h/12h` 
+          * `startTimestamp` indicates when the side quest started.
+        * Example: `q.exercise-2: 4/10-5h/12h-20261009 13:18` 
       * `lastDestination`
         * Example: `4`.
       * `lastOutcome`
@@ -1266,7 +1267,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Integer.
     * Range: `1–6`.
 * Behavior:
-  * Before processing, verify that sufficient charge is available for all requested sorties. (If not, perform no sorties.)
+  * Before processing, check the available charge.
+    * If the available charge is lower than `numberOfSortie`, perform as many sorties as the available charge allows.
   * Performs the specified number of sorties sequentially.
   * Each sortie consumes 1 stock and immediately processes one full party cycle.
   * If the party is currently in `state.explore`, the current exploration cycle is completed first, then one additional full cycle is processed.
@@ -1274,6 +1276,9 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Return:
   * For each sortie:
+    * `summary`
+      * Format: `<validSortie>/<numberOfSortie>`
+      * Example: `4/6`
     * `diaryEntryId`
     * `rewards`
     * `logId`
