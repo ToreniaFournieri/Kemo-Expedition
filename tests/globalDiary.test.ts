@@ -68,6 +68,12 @@ test('runtime wires the Global Diary into new accounts, boss first clears and AF
   assert.match(coordinator, /globalDiary: addGlobalDiaryLogs\(/);
 });
 
+test('a first clear that unlocks a Party keeps its Global Diary entry', () => {
+  // Expeditions 3-7 unlock Party 2-6; the unlock step must build on the global state that already holds the entry.
+  assert.match(hookSource, /nextGlobal = \{\n\s+\.\.\.nextGlobal,\n\s+unlockedDeities: \[\.\.\.DEFAULT_UNLOCKED_DEITIES\]/);
+  assert.doesNotMatch(hookSource, /nextGlobal = \{\n\s+\.\.\.state\.global,\n\s+unlockedDeities:/);
+});
+
 test('Diary tab always shows Global first, hides no tabs and shows the year in timestamps', () => {
   assert.match(diaryTabSource, /grid-cols-7/);
   assert.doesNotMatch(diaryTabSource, /parties\.length <= 1\) return null/);

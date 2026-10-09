@@ -2762,8 +2762,9 @@ function reduceGameState(
           pendingUnlockState: null,
         };
 
+        // Builds on nextGlobal so the same finalization's first-clear entry and Clear count are kept.
         nextGlobal = {
-          ...state.global,
+          ...nextGlobal,
           unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
         };
       }
