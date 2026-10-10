@@ -615,6 +615,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Parameters:
   * `targetCharacterIds`: Array of character IDs to optimize.
+    * Format : `[{characterId, changeableComponents}]`
     * For each target character:
       * `changeableComponents`
         * `raceGender`: Boolean
@@ -624,13 +625,23 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
         * `predisposition`: Boolean
         * `equipment`: Boolean
         * `jewels`: Boolean
-  * `considerOrderChange`: Boolean. 
-  * `considerDeityChange`: Boolean. 
+        * If a component cannot be changed due to character-specific restrictions (e.g., a unique character), ignore the corresponding setting.
+  * `considerOrderChange`
+    * Boolean.
+    * Optional.
+    * Defualt: `false`
+  * `considerDeityChange`
+    * Boolean.
+    * Optional.
+    * Defualt: `false`
   * `objective`
+    * Optional.
+    * Default: `success`.
     * `success`, `minDefeat`, `bossDamage`, `experience`
   * `gaParametersSimple`
     * `effort`
       * `low`, `medium`, `high`
+      * Optional.
       * Default: `low`
 
 | `effort` | `populationSize` | `generations` | `quickRuns` | `confirmRuns` |
@@ -644,7 +655,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 | Parameter | Type | Default | Range | Description |
 |---|---|---|---|---|
-| `effort` | String | `medium` | `low` / `medium` / `high` | Preset that sets every parameter below. Explicit values override the preset. |
+| `effort` | String | `low` | `low` / `medium` / `high` | Preset that sets every parameter below. Explicit values override the preset. |
 | `populationSize` | Integer | `24` | 8 ~ 64 | Number of candidate builds per generation. |
 | `generations` | Integer | `40` | 1 ~ 200 | Number of generations to run. |
 | `eliteCount` | Integer | `3` | 0 ~ populationSize / 4 | Best builds copied unchanged to the next generation. |
@@ -662,7 +673,12 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `verdict`
     * Rating of the best build compared with the current build.
     * Judged on a separate verification simulation (`verifyRuns`, independent seed), not on the scores used during the search.
-    * `<rate>` = success rate for the selected objective. Standard error (SE) is computed from the before and after rates.
+    * `<rate>` = Standard error (SE) is computed from the before and after rates.
+      * `success`: success rate for the selected objective.
+      * `minDefeat`: the defeat rate, where lower is better.
+      * `bossDamage`: boss damage share.
+      * `experience` : EXP per run. This isn’t a percentage, so “10 percentage points” doesn’t apply; it needs a relative threshold such as +20%.
+
     * Values:
       * `veryGood`: `<rate>` improves by 10 percentage points or more, and the improvement is larger than 2 SE.
       * `good`: `<rate>` improves by more than 2 SE, but by less than 10 percentage points.
@@ -1433,6 +1449,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 **3-3-2. `party/{p}/applyGaResult`**
 
 * Applies every change in a `gaSearch` result to party `{p}` in one atomic request.
+* This operation is not recorded in the `undo` or `redo` history and clears all existing history.
 
 * Parameters:
   * `gaResultId`
