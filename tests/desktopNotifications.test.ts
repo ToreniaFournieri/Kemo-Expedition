@@ -17,13 +17,13 @@ function diaryLog(triggers: DiaryLog['triggers'], rewards: Item[]): DiaryLog {
   };
 }
 
-test('desktop Boss Rare notifications select the exact dropped Boss Rare items', () => {
+test('desktop Epic notifications select the exact dropped Epic items', () => {
   const common = item(101);
-  const firstBossRare = item(1401);
-  const secondBossRare = item(2402);
+  const firstEpic = item(1401);
+  const secondEpic = item(2402);
   assert.deepEqual(
-    getDesktopNotificationRewardItems(diaryLog(['bossRare'], [common, firstBossRare, secondBossRare])),
-    [firstBossRare, secondBossRare],
+    getDesktopNotificationRewardItems(diaryLog(['epic'], [common, firstEpic, secondEpic])),
+    [firstEpic, secondEpic],
   );
 });
 
@@ -31,7 +31,7 @@ test('desktop Super Rare notifications select titled items regardless of base ra
   const superRareBossItem = item(1401, 2);
   const ordinaryBossItem = item(1402);
   assert.deepEqual(
-    getDesktopNotificationRewardItems(diaryLog(['superRare', 'bossRare'], [superRareBossItem, ordinaryBossItem])),
+    getDesktopNotificationRewardItems(diaryLog(['superRare', 'epic'], [superRareBossItem, ordinaryBossItem])),
     [superRareBossItem],
   );
 });

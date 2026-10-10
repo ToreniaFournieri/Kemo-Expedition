@@ -74,12 +74,12 @@ export function getExpeditionGoals(party: Party, cycleState?: string): Expeditio
     if (nextDungeon && !isDungeonEntryUnlocked(displayedParty, nextDungeon.id)) goals.push({ kind: 'entryGate', nextDungeonId: nextDungeon.id });
 
     const godsRequired = getGodsBattleRequired();
-    const bossRareCollected = getGodsBattleProgress(displayedParty, currentDungeon.id);
+    const epicCollected = getGodsBattleProgress(displayedParty, currentDungeon.id);
     const hasBossDefeat = hasDefeatedDungeonBoss(displayedParty, currentDungeon.id);
-    const godsUnlocked = bossRareCollected >= godsRequired && hasBossDefeat;
+    const godsUnlocked = epicCollected >= godsRequired && hasBossDefeat;
     if (!godsUnlocked && !shouldDelayNextSpecialGoal(party, cycleState)) {
       goals.push(hasBossDefeat
-        ? { kind: 'godGate', dungeonId: currentDungeon.id, collected: bossRareCollected, required: godsRequired }
+        ? { kind: 'godGate', dungeonId: currentDungeon.id, collected: epicCollected, required: godsRequired }
         : { kind: 'godEntry', dungeonId: currentDungeon.id });
     }
   }

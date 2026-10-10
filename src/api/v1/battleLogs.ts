@@ -6,13 +6,10 @@ import { buildEnemyStatus, publicEnemySnapshot, type EnemyStatus } from './enemy
 import { apiExpeditionOutcome } from './expeditionOutcome.ts';
 import { formatItem } from './itemFormat.ts';
 import { roundEventValue } from './numericPrecision.ts';
+import { getItemRarityById } from '../../game/itemRarity.ts';
 
 function retainedLogRarity(item: Item): ItemRarity {
-  const code = item.id % 1000;
-  if (code >= 500) return 'mythicRare';
-  if (code >= 400) return 'bossRare';
-  if (code >= 300) return 'eliteRare';
-  return code >= 200 ? 'uncommon' : 'common';
+  return getItemRarityById(item.id);
 }
 
 function serializeRetainedBattleEvent(entry: ExpeditionLog['entries'][number]['details'][number], index: number) {
@@ -184,7 +181,7 @@ export function buildBattleLogData(log: ExpeditionLog | null, partyNumber: numbe
         itemId: item.id,
         category: item.category,
         tier: Math.max(1, Math.floor(item.id / 1000)),
-        rarity: retainedLogRarity(item),
+        itemRarity: retainedLogRarity(item),
         enhancement: item.enhancement,
         superRare: item.superRare,
       })),

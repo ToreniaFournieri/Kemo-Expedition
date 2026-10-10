@@ -353,7 +353,7 @@ calls.length = 0;
   for (const api of ['sword', 'archery', 'gauntlet', 'grimoire', 'bow', 'glove', 'book']) {
     for (const stack of await search({ category: api })) assert.equal(Object.values(parseInventoryStacks([stack]))[0].item.category, categoryOf(api));
   }
-  assert.equal((await search({ rarity: 'bossRare' })).length, 0, 'a fresh state owns no boss rare items');
+  assert.equal((await search({ itemRarity: 'epic' })).length, 0, 'a fresh state owns no epic items');
   assert.equal((await search({ superRare: 'true' })).length, 0);
   assert.equal((await search({ superRare: true })).length, 0);
   assert.equal((await search({ superRare: false })).length, owned.length);
@@ -383,7 +383,7 @@ calls.length = 0;
   assert.match(assigned[0], /\/fort:4\/-?\d+/);
   assert.equal((await search({ category: 'jewel', state: 'all' })).length, 3);
   assert.deepEqual(await search({ category: 'jewel', state: 'sold' }), []);
-  assert.deepEqual(await search({ category: 'jewel', rarity: 'bossRare' }), [], 'item filters exclude unassigned Jewels');
+  assert.deepEqual(await search({ category: 'jewel', itemRarity: 'epic' }), [], 'item filters exclude unassigned Jewels');
 
   // Details follow the base format, in the fixed order ability, cBonus, otherBonus.
   const sample = Object.values(state.global.inventory).find((variant) => variant.item.id === 1104)!;
@@ -748,23 +748,23 @@ calls.length = 0;
   assert.equal(compact.attention.notification[0].unreadDiary, 1);
   const dungeonName = getDungeonById(1)!.name;
   assert.deepEqual(compact.attention.notification[0].unreadDiaryTitle, [`120/Defeat Record/${dungeonName.replace(/%/g, '%25').replace(/\//g, '%2F')}/20260916 22:04`]);
-  // A rare-drop entry is titled with the Diary tab's headline, which names the item: `[PT1] Boss Rare acquired (Item)`.
+  // A rare-drop entry is titled with the Diary tab's headline, which names the item: `[PT1] Epic acquired (Item)`.
   {
     const { ITEMS, getItemById } = await import('../../src/data/items.ts');
     const { diaryItemName } = await import('../../src/game/compactDiary.ts');
-    const bossRare = ITEMS.find((item) => item.id % 1000 >= 400 && item.id % 1000 < 500)!;
-    const drop = { ...getItemById(bossRare.id)!, enhancement: 0, superRare: 0 };
-    const bossEntry = { ...unreadEntry, id: '130', triggers: ['bossRare'], expeditionLog: { ...log, rewards: [drop] } } as unknown as DiaryLog;
+    const epic = ITEMS.find((item) => item.id % 1000 >= 400 && item.id % 1000 < 500)!;
+    const drop = { ...getItemById(epic.id)!, enhancement: 0, superRare: 0 };
+    const bossEntry = { ...unreadEntry, id: '130', triggers: ['epic'], expeditionLog: { ...log, rewards: [drop] } } as unknown as DiaryLog;
     const withBoss = { ...withDiary, parties: withDiary.parties.map((party, index) => index === 0 ? { ...party, diaryLogs: [bossEntry] } : party) };
     const bossCompact = await buildApiV1ReadData('read/observation/compact', withBoss, {}, context) as typeof compact;
     const title = decodeURIComponent(bossCompact.attention.notification[0].unreadDiaryTitle[0].split('/')[1]);
-    assert.equal(title, `[${withBoss.parties[0].name}] Boss Rare acquired (${diaryItemName(drop)})`);
+    assert.equal(title, `[${withBoss.parties[0].name}] Epic acquired (${diaryItemName(drop)})`);
     // `diaryEntry/{id}` names the same item, and only the item the trigger is about, not the expedition's whole drop list.
     const common = { ...getItemById(ITEMS.find((item) => item.id % 1000 < 200)!.id)!, enhancement: 0, superRare: 0 };
     const mixed = { ...withBoss, parties: withBoss.parties.map((party, index) => index === 0 ? { ...party, diaryLogs: [{ ...bossEntry, expeditionLog: { ...log, rewards: [common, drop] } } as unknown as DiaryLog] } : party) };
     const read = await buildApiV1ReadData('read/diary/diaryEntry/130', mixed, {}, context) as { entry: { content: { title: { args: unknown }; events: { key: string; args: unknown }[] } } };
     assert.deepEqual(read.entry.content.title.args, { items: diaryItemName(drop) });
-    assert.deepEqual(read.entry.content.events, [{ key: 'diary.event.bossRare', args: { items: diaryItemName(drop) } }]);
+    assert.deepEqual(read.entry.content.events, [{ key: 'diary.event.epic', args: { items: diaryItemName(drop) } }]);
     // The list read carries the same content, so it names the same item.
     const list = await buildApiV1ReadData('read/observation/diary', mixed, {}, context) as unknown as { diaryInfo: { parties: { entries: { content: typeof read.entry.content }[] }[] } };
     assert.deepEqual(list.diaryInfo.parties[0].entries[0].content, read.entry.content, 'observation/diary and diaryEntry share one content shape');
@@ -816,17 +816,17 @@ calls.length = 0;
   assert.equal(last.nextCursor, null, 'a complete list reports a null cursor');
 }
 
-// Item Compendium filters (9.1.3 4-2-5): tier, rarity, ability/bonus search, and `details`; rarity and tier are reported.
+// Item Compendium filters (9.1.3 4-2-5): tier, `itemRarity`, ability/bonus search, and `details`; `itemRarity` and tier are reported.
 {
   const { ITEMS } = await import('../../src/data/items.ts');
-  type Compendium = { items: { itemId: number; rarity: string; tier: number; ability?: string[]; cBonus?: string[]; otherBonus?: string[] }[]; nextCursor: string | null };
+  type Compendium = { items: { itemId: number; itemRarity: string; tier: number; ability?: string[]; cBonus?: string[]; otherBonus?: string[] }[]; nextCursor: string | null };
   // Every item revealed, so the detail filters and fields apply (an unrevealed item is only a placeholder).
   const allRevealed = { ...state, global: { ...state.global, revealedItemCompendiumItemIds: ITEMS.map((item) => item.id) } };
   const read = (parameters: Record<string, unknown>) => buildApiV1ReadData('resources/itemCompendium', allRevealed, { limit: 200, ...parameters }, context) as Promise<Compendium>;
   const tier2 = await read({ category: 'sword', tier: 2 });
   assert.ok(tier2.items.length > 0 && tier2.items.every((item) => item.tier === 2 && Math.floor(item.itemId / 1000) === 2));
-  const common = await read({ category: 'sword', rarity: 'common' });
-  assert.ok(common.items.length > 0 && common.items.every((item) => item.rarity === 'common'));
+  const common = await read({ category: 'sword', itemRarity: 'common' });
+  assert.ok(common.items.length > 0 && common.items.every((item) => item.itemRarity === 'common'));
   const withAbility = (await read({ category: 'sword', details: 'all' })).items.find((item) => (item.ability ?? []).length > 0);
   assert.ok(withAbility, 'some sword has an ability');
   if (withAbility) {
@@ -840,10 +840,10 @@ calls.length = 0;
   const aliases = await read({ category: 'book' });
   assert.deepEqual(aliases.items.map((item) => item.itemId), (await read({ category: 'grimoire' })).items.map((item) => item.itemId));
   assert.equal((await read({ category: 'grimoire' })).items.length, ITEMS.filter((item) => item.category === 'grimoire').length);
-  // An unrevealed item is a placeholder: ID, category, rarity, and tier only; the detail searches never match it (9.1.4.7).
+  // An unrevealed item is a placeholder: ID, category, `itemRarity`, and tier only; the detail searches never match it (9.1.4.7).
   const hidden = await buildApiV1ReadData('resources/itemCompendium', state, { category: 'sword', details: 'all', limit: 200 }, context) as Compendium;
   assert.ok(hidden.items.length > 0);
-  for (const item of hidden.items) assert.deepEqual(Object.keys(item).sort(), ['category', 'itemId', 'rarity', 'revealed', 'tier']);
+  for (const item of hidden.items) assert.deepEqual(Object.keys(item).sort(), ['category', 'itemId', 'itemRarity', 'revealed', 'tier']);
   const abilityId = withAbility!.ability![0].split(':')[0];
   assert.deepEqual((await buildApiV1ReadData('resources/itemCompendium', state, { category: 'sword', searchAbility: abilityId }, context) as Compendium).items, []);
 }

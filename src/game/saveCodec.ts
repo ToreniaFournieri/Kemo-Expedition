@@ -2,9 +2,12 @@ import { upgradeLegacyOutcomeKeys } from './legacyOutcomeKeys';
 import { mapCompactHistories } from './compactDiaryStorage.ts';
 import { getItemById } from '../data/items';
 import { getInstantExpeditionChargeState } from './instantExpedition';
-import { ClassId, GameState, InventoryRecord, InventoryVariant, Item, Party, RandomBag, WeightedBagEntry } from '../types';
+import { ClassId, DiaryLog, ExpeditionLog, GameState, InventoryRecord, InventoryVariant, Item, ItemRarity, Party, RandomBag, WeightedBagEntry } from '../types';
 import { normalizeLanguage } from '../i18n';
-import { migrateLegacyGateState } from './clearGateCore';
+import { migrateLegacyGateState, upgradeLegacyGodsBattleProgressKeys } from './clearGateCore';
+import { upgradeLegacyDiaryTriggers, upgradeLegacyItemRarity } from './itemRarity.ts';
+import { upgradeLegacyRewardBagKeys } from './bagMigration.ts';
+import { upgradeLegacyDiarySettings } from './diarySettings.ts';
 
 type ItemReference = Pick<Item, 'id' | 'enhancement' | 'superRare' | 'jewel' | 'isLocked'>;
 type CompactBagEntry = [number, number];
@@ -218,6 +221,45 @@ function normalizePartyLegacyOutcomes(party: Party): Party {
   };
 }
 
+// SpecRef: 1.1 | 1.0.3 Item rarity tier
+// Saves written before the item rarity rename store `eliteRare` / `bossRare` / `mythicRare` in Diary triggers and log
+// rarity values, `bossThreshold` in Diary settings, and `godBattle:<id>:bossRare` in a pending Clear-Gate snapshot.
+// Every load path goes through hydration, so the upgrade lives here and the rest of the runtime only sees current names.
+function upgradeLegacyLogRarity<T extends ExpeditionLog | null | undefined>(log: T): T {
+  const isLegacy = (rarity: ItemRarity | undefined) => rarity !== upgradeLegacyItemRarity(rarity);
+  if (!log?.entries?.some((entry) => isLegacy(entry.rewardRarity))) return log;
+  return {
+    ...log,
+    entries: log.entries.map((entry) => (isLegacy(entry.rewardRarity)
+      ? { ...entry, rewardRarity: upgradeLegacyItemRarity(entry.rewardRarity) as ItemRarity }
+      : entry)),
+  };
+}
+
+function upgradeLegacyDiaryLogRarity(entry: DiaryLog): DiaryLog {
+  return {
+    ...entry,
+    ...(entry.triggers ? { triggers: upgradeLegacyDiaryTriggers(entry.triggers) } : {}),
+    expeditionLog: upgradeLegacyLogRarity(entry.expeditionLog),
+  };
+}
+
+function normalizePartyLegacyItemRarity(party: Party): Party {
+  return {
+    ...party,
+    ...(party.diarySettings ? { diarySettings: upgradeLegacyDiarySettings(party.diarySettings) } : {}),
+    ...(party.pendingClearGateSnapshot ? {
+      pendingClearGateSnapshot: {
+        ...party.pendingClearGateSnapshot,
+        progress: upgradeLegacyGodsBattleProgressKeys(party.pendingClearGateSnapshot.progress ?? {}),
+      },
+    } : {}),
+    lastExpeditionLog: upgradeLegacyLogRarity(party.lastExpeditionLog),
+    pendingDiaryLog: party.pendingDiaryLog ? upgradeLegacyDiaryLogRarity(party.pendingDiaryLog) : party.pendingDiaryLog,
+    diaryLogs: (party.diaryLogs ?? []).map(upgradeLegacyDiaryLogRarity),
+  };
+}
+
 // SpecRef: 9 | Environment | hydrateGameState
 export function hydrateGameState(state: GameState): GameState {
   state = mapCompactHistories(state, true);
@@ -233,18 +275,18 @@ export function hydrateGameState(state: GameState): GameState {
 
   return {
     ...canonicalState,
-    bags: hydrateBagCollection(state.bags),
+    bags: hydrateBagCollection(upgradeLegacyRewardBagKeys(state.bags)),
     global: {
       ...state.global,
       inventory: hydratedInventory,
       language: normalizeLanguage(state.global.language),
     },
     parties: state.parties.map((party) => {
-      const normalizedParty = normalizePartyInstantExpeditionCharge(normalizePartyClearGates(normalizePartyLegacyOutcomes(party)));
+      const normalizedParty = normalizePartyInstantExpeditionCharge(normalizePartyClearGates(normalizePartyLegacyItemRarity(normalizePartyLegacyOutcomes(party))));
       const partyBags = normalizedParty.bags ?? state.bags;
       return {
         ...normalizedParty,
-        bags: hydrateBagCollection(partyBags),
+        bags: hydrateBagCollection(upgradeLegacyRewardBagKeys(partyBags)),
         sleepinessOfPartyBag: hydrateBagEntries(party.sleepinessOfPartyBag),
         characters: party.characters.map((character) => ({
           ...character,

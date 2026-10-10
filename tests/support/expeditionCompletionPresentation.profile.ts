@@ -12,7 +12,7 @@ import type { DiarySettings, ExpeditionLogEntry, Item, Party } from '../../src/t
 
 const BASE_DIARY_SETTINGS: DiarySettings = {
   superRareThreshold: 'all',
-  bossThreshold: 'all',
+  epicThreshold: 'all',
   mythicThreshold: 'all',
   rareThreshold: 'all',
   sideQuestThreshold: 'all',

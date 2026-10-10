@@ -1,6 +1,6 @@
 import type { Item } from '../../types/index.ts';
 import {
-  addRecoveredBossRaresToGodsBattleProgress,
+  addRecoveredEpicsToGodsBattleProgress,
   applyClearGateOutcome,
   getGodsBattleProgressKey,
   isClearGateUnlocked,
@@ -45,14 +45,14 @@ export function resolveExpeditionOutcome(input: ResolveExpeditionOutcomeInput): 
     input.finalOutcome,
     input.endedWithDrawRetreat,
   );
-  // SpecRef: 8.3 | Gods Battle | Boss Rare items count only after the dungeon boss has been defeated at least once
-  // (before this run, or by this run's Clear; a Gods Battle implies it); earlier Elite-room Boss Rares do not count.
+  // SpecRef: 8.3 | Gods Battle | Epic items count only after the dungeon boss has been defeated at least once
+  // (before this run, or by this run's Clear; a Gods Battle implies it); earlier Elite-room Epics do not count.
   const bossDefeated = input.isGodsBattle
     || input.finalOutcome === 'Clear'
     || input.defeatedBossExpeditions[input.dungeonId] === true;
-  const progressWithRecoveredBossRares = input.finalOutcome === 'Defeat' || !bossDefeated
+  const progressWithRecoveredEpics = input.finalOutcome === 'Defeat' || !bossDefeated
     ? { ...input.clearGateProgress }
-    : addRecoveredBossRaresToGodsBattleProgress(
+    : addRecoveredEpicsToGodsBattleProgress(
         input.clearGateProgress,
         input.dungeonId,
         input.recoveredItems,
@@ -60,13 +60,13 @@ export function resolveExpeditionOutcome(input: ResolveExpeditionOutcomeInput): 
 
   const gateOutcome = input.isGodsBattle
     ? {
-        progress: progressWithRecoveredBossRares,
+        progress: progressWithRecoveredEpics,
         status: { ...input.clearGateStatus },
         gateKey: null,
       }
     : applyClearGateOutcome(
         {
-          clearGateProgress: progressWithRecoveredBossRares,
+          clearGateProgress: progressWithRecoveredEpics,
           clearGateStatus: { ...input.clearGateStatus },
         },
         input.dungeonId,

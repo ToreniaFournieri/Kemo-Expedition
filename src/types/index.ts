@@ -432,7 +432,7 @@ export type ExpeditionDepthLimit =
   | 'beforeBoss'
   | 'all';
 
-export type DiaryTrigger = 'victory' | 'return' | 'defeat' | 'draw' | 'retreat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock';
+export type DiaryTrigger = 'victory' | 'return' | 'defeat' | 'draw' | 'retreat' | 'rare' | 'epic' | 'mythic' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock';
 export type DiaryDefeatNotificationMode = 'defeatOnly' | 'defeatAndDraw' | 'defeatDrawRetreat' | 'all' | 'none';
 
 export interface DiaryLog {
@@ -473,7 +473,7 @@ export type DiarySideQuestThreshold = 'all' | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 'none'
 
 export interface DiarySettings {
   superRareThreshold: DiaryRarityThreshold;
-  bossThreshold: DiaryRarityThreshold;
+  epicThreshold: DiaryRarityThreshold;
   mythicThreshold: DiaryRarityThreshold;
   rareThreshold: DiaryRarityThreshold;
   sideQuestThreshold: DiarySideQuestThreshold;
@@ -714,9 +714,9 @@ export interface GameBags {
   commonRewardBag: RandomBag;      // For normal rooms (40 no item, 10 win)
   commonEnhancementBag: RandomBag; // For normal rooms enhancement
   uncommonRewardBag: RandomBag;    // For uncommon rewards (49 no item, 1 win)
-  eliteRareRewardBag: RandomBag;        // For elite rare rewards (49 no item, 1 win)
-  bossRareRewardBag: RandomBag;      // For boss rare rewards (49 no item, 1 win)
-  mythicRareRewardBag: RandomBag;    // For mythic rare rewards (24 no item, 1 win)
+  rareRewardBag: RandomBag;        // For rare rewards (49 no item, 1 win)
+  epicRewardBag: RandomBag;      // For epic rewards (49 no item, 1 win)
+  mythicRewardBag: RandomBag;    // For mythic rewards (24 no item, 1 win)
   enhancementBag: RandomBag;       // For unique rewards enhancement
   superRareBag: RandomBag; // For non-reward systems that still consume shared super rare titles (e.g., shop)
   commonSuperRareBag: RandomBag; // For common reward super rare rolls
@@ -887,7 +887,7 @@ export const MAX_LEVEL = 69;
 // Notification Types
 export type NotificationStyle = 'normal' | 'rare';
 export type NotificationCategory = 'item' | 'stat';
-export type ItemRarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
+export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'mythic';
 
 export interface GameNotification {
   id: string;

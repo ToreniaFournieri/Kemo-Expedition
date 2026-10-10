@@ -11,7 +11,7 @@ import {
   getGodsBattleProgressKey,
 } from '../src/game/clearGateCore.ts';
 
-const BOSS_RARE = { id: 1401 } as Item;
+const EPIC = { id: 1401 } as Item;
 
 function resolve(overrides: Partial<Parameters<typeof resolveExpeditionOutcome>[0]> = {}) {
   return resolveExpeditionOutcome({
@@ -54,11 +54,11 @@ test('a Return before clearing the room ahead of the active gate does not advanc
   assert.equal(result.newlyUnlockedGateKey, null);
 });
 
-test('defeat neither counts recovered Boss Rare items nor preserves the active streak', () => {
+test('defeat neither counts recovered Epic items nor preserves the active streak', () => {
   const gateKey = getEliteGateKey(1, 1);
   const result = resolve({
     finalOutcome: 'Defeat',
-    recoveredItems: [BOSS_RARE],
+    recoveredItems: [EPIC],
     clearGateProgress: { [String(gateKey)]: 4 },
   });
   assert.equal(result.clearGateProgress[String(gateKey)], 0);
@@ -72,13 +72,13 @@ test('a normal clear records the defeated dungeon while evaluating its next gate
   assert.equal(result.clearGateProgress[String(gateKey)], 1);
 });
 
-test('a cleared Gods Battle resets its Boss Rare gate without changing normal gates', () => {
+test('a cleared Gods Battle resets its Epic gate without changing normal gates', () => {
   const gateKey = getEliteGateKey(1, 1);
   const godKey = getGodsBattleProgressKey(1);
   const result = resolve({
     finalOutcome: 'Clear',
     isGodsBattle: true,
-    recoveredItems: [BOSS_RARE],
+    recoveredItems: [EPIC],
     clearGateProgress: { [String(gateKey)]: 3, [godKey]: 2 },
   });
   assert.equal(result.clearGateProgress[String(gateKey)], 3);
@@ -88,23 +88,23 @@ test('a cleared Gods Battle resets its Boss Rare gate without changing normal ga
   assert.equal(result.defeatedBossExpeditions[1], undefined);
 });
 
-test('a non-defeat Gods Battle retains recovered Boss Rare progress', () => {
+test('a non-defeat Gods Battle retains recovered Epic progress', () => {
   const godKey = getGodsBattleProgressKey(1);
   const result = resolve({
     finalOutcome: 'Retreat',
     isGodsBattle: true,
-    recoveredItems: [BOSS_RARE],
+    recoveredItems: [EPIC],
     clearGateProgress: { [godKey]: 2 },
   });
   assert.equal(result.clearGateProgress[godKey], 3);
 });
 
-test('Boss Rare items count toward the Gods Battle gate only after the dungeon boss has been defeated', () => {
+test('Epic items count toward the Gods Battle gate only after the dungeon boss has been defeated', () => {
   const godKey = getGodsBattleProgressKey(1);
-  // Elite-room Boss Rares before the first boss defeat do not count.
-  assert.equal(resolve({ finalOutcome: 'Return', recoveredItems: [BOSS_RARE] }).clearGateProgress[godKey], undefined);
-  assert.equal(resolve({ finalOutcome: 'Retreat', recoveredItems: [BOSS_RARE, BOSS_RARE] }).clearGateProgress[godKey], undefined);
+  // Elite-room Epics before the first boss defeat do not count.
+  assert.equal(resolve({ finalOutcome: 'Return', recoveredItems: [EPIC] }).clearGateProgress[godKey], undefined);
+  assert.equal(resolve({ finalOutcome: 'Retreat', recoveredItems: [EPIC, EPIC] }).clearGateProgress[godKey], undefined);
   // The first-clear run's drops count, as do later runs once the boss is defeated.
-  assert.equal(resolve({ finalOutcome: 'Clear', recoveredItems: [BOSS_RARE, BOSS_RARE] }).clearGateProgress[godKey], 2);
-  assert.equal(resolve({ recoveredItems: [BOSS_RARE], defeatedBossExpeditions: { 1: true } }).clearGateProgress[godKey], 1);
+  assert.equal(resolve({ finalOutcome: 'Clear', recoveredItems: [EPIC, EPIC] }).clearGateProgress[godKey], 2);
+  assert.equal(resolve({ recoveredItems: [EPIC], defeatedBossExpeditions: { 1: true } }).clearGateProgress[godKey], 1);
 });

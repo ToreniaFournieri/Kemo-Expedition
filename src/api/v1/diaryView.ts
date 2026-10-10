@@ -20,7 +20,7 @@ export const DIARY_DEFEAT_NOTIFICATION_OPTIONS = ['defeatOnly', 'defeatAndDraw',
 
 export const DIARY_SETTING_VALID_OPTIONS = {
   superRareThreshold: DIARY_THRESHOLD_OPTIONS,
-  bossThreshold: DIARY_THRESHOLD_OPTIONS,
+  epicThreshold: DIARY_THRESHOLD_OPTIONS,
   mythicThreshold: DIARY_THRESHOLD_OPTIONS,
   rareThreshold: DIARY_THRESHOLD_OPTIONS,
   sideQuestThreshold: DIARY_SIDE_QUEST_THRESHOLD_OPTIONS,
@@ -36,7 +36,7 @@ export const DIARY_SETTING_VALID_OPTIONS = {
 export function diarySettingsView(settings: DiarySettings): DiarySettings {
   return {
     superRareThreshold: settings.superRareThreshold,
-    bossThreshold: settings.bossThreshold,
+    epicThreshold: settings.epicThreshold,
     mythicThreshold: settings.mythicThreshold,
     rareThreshold: settings.rareThreshold,
     sideQuestThreshold: settings.sideQuestThreshold,
@@ -51,7 +51,7 @@ export function diarySettingsView(settings: DiarySettings): DiarySettings {
 
 function primaryTrigger(triggers: readonly DiaryTrigger[]): DiaryTrigger | 'special' {
   if (triggers.length === 1 && ['victory', 'return', 'defeat', 'draw', 'retreat'].includes(triggers[0])) return triggers[0];
-  for (const trigger of ['unlock', 'sideQuest', 'godsBattle', 'superRare', 'mythicRare', 'bossRare', 'eliteRare'] as const) {
+  for (const trigger of ['unlock', 'sideQuest', 'godsBattle', 'superRare', 'mythic', 'epic', 'rare'] as const) {
     if (triggers.includes(trigger)) return trigger;
   }
   return 'special';

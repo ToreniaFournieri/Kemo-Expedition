@@ -66,7 +66,7 @@ let savePayload = defaultSavePayload;
 /** The first party has met the Gods Battle gate for its selected destination (Spec 5.1.3.1). */
 function godsBattleReady(state: GameState) {
   const party = state.parties[0];
-  party.clearGateProgress = { ...party.clearGateProgress, [`godBattle:${party.selectedDungeonId}:bossRare`]: 3 };
+  party.clearGateProgress = { ...party.clearGateProgress, [`godBattle:${party.selectedDungeonId}:epic`]: 3 };
   party.defeatedBossExpeditions = { ...party.defeatedBossExpeditions, [party.selectedDungeonId]: true } as typeof party.defeatedBossExpeditions;
 }
 

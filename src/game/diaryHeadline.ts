@@ -3,13 +3,13 @@ import type { DiaryTrigger } from '../types/index.ts';
 import { diaryItemName, type DiaryItem } from './compactDiary.ts';
 import { getItemRarityById } from './itemRarity.ts';
 
-// SpecRef: 8.5 | UI_DIARY | Diary headline: `[PT1] Boss Rare acquired (Item)`
+// SpecRef: 8.5 | UI_DIARY | Diary headline: `[PT1] Epic acquired (Item)`
 /** The drops a rare-drop trigger is about: what the Diary headline names for it (`null` for a trigger that is not a rare drop). */
 export function getRewardsNamedByTrigger(trigger: DiaryTrigger, rewards: readonly DiaryItem[]): DiaryItem[] | null {
   if (trigger === 'superRare') return rewards.filter((item) => item.superRare > 0);
-  if (trigger === 'mythicRare') return rewards.filter((item) => getItemRarityById(item.id) === 'mythicRare');
-  if (trigger === 'bossRare') return rewards.filter((item) => getItemRarityById(item.id) === 'bossRare');
-  if (trigger === 'eliteRare') return rewards.filter((item) => getItemRarityById(item.id) === 'eliteRare');
+  if (trigger === 'mythic') return rewards.filter((item) => getItemRarityById(item.id) === 'mythic');
+  if (trigger === 'epic') return rewards.filter((item) => getItemRarityById(item.id) === 'epic');
+  if (trigger === 'rare') return rewards.filter((item) => getItemRarityById(item.id) === 'rare');
   return null;
 }
 
@@ -25,16 +25,16 @@ export function getDiaryRewardHeadline(partyName: string, triggers: readonly Dia
     ? t('diary.headline.rewardNamed', { party: partyName, rewardType, rewards: rewardNames })
     : t('diary.headline.reward', { party: partyName, rewardType });
 
-  if (triggers.includes('superRare') || triggers.includes('mythicRare') || triggers.includes('bossRare')) {
-    const rewardType = triggers.includes('superRare') ? t('diary.reward.superRare') : triggers.includes('mythicRare') ? t('diary.reward.mythicRare') : t('diary.reward.bossRare');
+  if (triggers.includes('superRare') || triggers.includes('mythic') || triggers.includes('epic')) {
+    const rewardType = triggers.includes('superRare') ? t('diary.reward.superRare') : triggers.includes('mythic') ? t('diary.reward.mythic') : t('diary.reward.epic');
     return headline(rewardType, named((item) => {
       if (triggers.includes('superRare')) return item.superRare > 0;
-      if (triggers.includes('mythicRare')) return getItemRarityById(item.id) === 'mythicRare';
-      return getItemRarityById(item.id) === 'bossRare';
+      if (triggers.includes('mythic')) return getItemRarityById(item.id) === 'mythic';
+      return getItemRarityById(item.id) === 'epic';
     }));
   }
-  if (triggers.includes('eliteRare')) return headline(t('diary.reward.eliteRare'), named((item) => getItemRarityById(item.id) === 'eliteRare'));
+  if (triggers.includes('rare')) return headline(t('diary.reward.rare'), named((item) => getItemRarityById(item.id) === 'rare'));
 
-  const fallbackBossNames = named((item) => getItemRarityById(item.id) === 'bossRare');
-  return fallbackBossNames ? headline(t('diary.reward.bossRare'), fallbackBossNames) : null;
+  const fallbackBossNames = named((item) => getItemRarityById(item.id) === 'epic');
+  return fallbackBossNames ? headline(t('diary.reward.epic'), fallbackBossNames) : null;
 }

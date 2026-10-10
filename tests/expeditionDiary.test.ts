@@ -25,7 +25,7 @@ function createLog(): ExpeditionLog {
 
 test('pending expedition Diary adapter assembles the retained record from allocated values', () => {
   const log = createLog();
-  const triggers = ['victory', 'bossRare'] as const;
+  const triggers = ['victory', 'epic'] as const;
   const pending = planPendingExpeditionDiaryLog({
     log,
     triggers: [...triggers],

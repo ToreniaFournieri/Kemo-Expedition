@@ -9,7 +9,7 @@ import ko from '../src/i18n/ko.ts';
 import {
   BOSS_GATE_REQUIRED,
   ELITE_GATE_REQUIREMENTS,
-  addRecoveredBossRaresToGodsBattleProgress,
+  addRecoveredEpicsToGodsBattleProgress,
   applyClearGateOutcome,
   getBossGateKey,
   getClearGateQualifyingPosition,
@@ -20,6 +20,7 @@ import {
   getRoomPosition,
   isClearGateUnlocked,
   migrateLegacyGateState,
+  upgradeLegacyGodsBattleProgressKeys,
 } from '../src/game/clearGateCore.ts';
 
 type GateParty = Pick<Party, 'clearGateProgress' | 'clearGateStatus' | 'defeatedBossExpeditions'>;
@@ -166,13 +167,14 @@ test('two consecutive Returns through 6F-3 unlock the boss gate', () => {
   assert.equal(isClearGateUnlocked(party, bossGate), true);
 });
 
-test('Gods Battle progress counts Boss Rare items but not Mythic items', () => {
+test('Gods Battle progress counts Epic items but not Mythic items', () => {
   const items = [{ id: 1401 }, { id: 1402 }, { id: 8501 }] as Item[];
-  const progress = addRecoveredBossRaresToGodsBattleProgress({}, 1, items);
+  const progress = addRecoveredEpicsToGodsBattleProgress({}, 1, items);
   assert.equal(getGodsBattleProgress({ clearGateProgress: progress }, 1), 2);
 });
 
-test('legacy saves retain unlocked item gates and Boss Rare Gods Battle progress', () => {
+test('legacy saves retain unlocked item gates and Epic Gods Battle progress', () => {
+  // Loot-Gate saves predate the item rarity rename and keep `eliteRare` / `bossRare` keys.
   const migrated = migrateLegacyGateState({
     lootGateProgress: {
       '2:uncommon': 12,
@@ -187,4 +189,13 @@ test('legacy saves retain unlocked item gates and Boss Rare Gods Battle progress
   assert.equal(migrated.status[getEliteGateKey(2, 4)], undefined);
   assert.equal(migrated.status[getBossGateKey(2)], true);
   assert.equal(getGodsBattleProgress({ clearGateProgress: migrated.progress }, 2), 2);
+});
+
+test('saves from before the item rarity rename keep their Gods Battle progress under the epic key', () => {
+  const migrated = migrateLegacyGateState({
+    clearGateProgress: { 'godBattle:3:bossRare': 2, 'godBattle:4:bossRare': 5, 'godBattle:4:epic': 1, '3014': 4 },
+  });
+  assert.deepEqual(migrated.progress, { 'godBattle:3:epic': 2, 'godBattle:4:epic': 1, '3014': 4 });
+  assert.equal(getGodsBattleProgress({ clearGateProgress: migrated.progress }, 3), 2);
+  assert.deepEqual(upgradeLegacyGodsBattleProgressKeys({ 'godBattle:5:epic': 3 }), { 'godBattle:5:epic': 3 });
 });

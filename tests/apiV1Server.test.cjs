@@ -21,7 +21,7 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
       if (operationId === 'fundamental/logOut') return { revision, data: { finalPersistedRevision: revision } };
       if (operationId === 'read/observation/overview') return { revision, data: { headerInfo: { gameMode: 'mode.normal', inGameTime: new Date(0).toISOString(), gold: 200, prana: 0, environment: 'desktop', unreadDiary: 0, speedOfTime: null, autoRepeat: null, progressReportInfo: { available: false, bonusActive: false } } } };
       if (operationId === 'read/base/searchItems') return { revision, data: { items: ['0/1101/0/0/1/12'], totalCount: 1, truncated: false } };
-      if (operationId === 'resources/itemCompendium') return { revision, data: { items: [{ itemId: 2402, category: 'sword', rarity: 'uncommon', tier: 2, revealed: false }], nextCursor: null } };
+      if (operationId === 'resources/itemCompendium') return { revision, data: { items: [{ itemId: 2402, category: 'sword', itemRarity: 'uncommon', tier: 2, revealed: false }], nextCursor: null } };
       if (operationId === 'commit/base/changeJewelPriorityParty') {
         if (payload.idempotencyKey === 'operation-in-progress-key') return { status: 409, revision, error: { code: 'operation_in_progress', message: 'The operation is already in progress.' } };
         return { previousRevision: revision, revision: ++revision, data: { current: { partyNumber: 1 } } };
@@ -83,7 +83,10 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
   assert.equal((await fetch(`${descriptor.endpoint}/read/base/searchItems?limit=0`, { headers: session })).status, 400, 'limit is at least 1');
   const compendium = await fetch(`${descriptor.endpoint}/resources/itemCompendium?itemId=2402`, { headers: session });
   assert.equal(compendium.status, 200, 'itemCompendium category is optional, so one item can be looked up by itemId');
-  assert.deepEqual(calls.at(-1).payload.parameters, { itemId: 2402, rarity: 'all', details: 'abilityAndCBonus', limit: 100 });
+  assert.deepEqual(calls.at(-1).payload.parameters, { itemId: 2402, itemRarity: 'all', details: 'abilityAndCBonus', limit: 100 });
+  // SpecRef: 9.1.3 4-2-5 | The rarity filter is `itemRarity`; the pre-rename `rarity` parameter and its values are rejected.
+  assert.equal((await fetch(`${descriptor.endpoint}/resources/itemCompendium?rarity=rare`, { headers: session })).status, 400);
+  assert.equal((await fetch(`${descriptor.endpoint}/resources/itemCompendium?itemRarity=eliteRare`, { headers: session })).status, 400);
   // SpecRef: 9.1.4.14 | GET arrays repeat the parameter name; a comma-joined array gets a hint instead of a bare pattern error.
   const commaJoined = await fetch(`${descriptor.endpoint}/read/build/character/equipmentEvaluation?characterId=1&targetItems=0/1101/0/0/0:0,0/1102/0/0/0:0`, { headers: session });
   const commaJoinedError = (await commaJoined.json()).error;

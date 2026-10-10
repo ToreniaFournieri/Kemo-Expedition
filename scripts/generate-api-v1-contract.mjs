@@ -53,7 +53,7 @@ const gameMode = literals('normal', 'orca');
 const modeKey = literals('mode.normal', 'mode.orca');
 // Spec 9.1.3 Item category: the item categories themselves; `bow`, `glove`, and `book` remain accepted aliases.
 const itemCategory = literals('sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'shield', 'bolt', 'grimoire', 'catalyst', 'arrow', 'jewel', 'bow', 'glove', 'book');
-const rarity = literals('common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRare', 'all');
+const itemRarity = literals('common', 'uncommon', 'rare', 'epic', 'mythic', 'all');
 const detail = literals('none', 'ability', 'cBonus', 'otherBonus', 'abilityAndCBonus', 'all');
 const identity = { userId: Type.String({ pattern: '^[A-Za-z0-9_-]{1,16}$' }), environment, gameMode, levelOffsetForOrca: optional(Type.Integer({ minimum: 0, maximum: 20 }), 5) };
 const empty = strict({});
@@ -151,7 +151,7 @@ const battleLogSchema = strict({
   logId: stableKey, partyNumber, dungeonId: integerId, difficultyOffset: Type.Integer({ minimum: 0 }), finalOutcome: expeditionOutcome,
   totalExperience: Type.Number({ minimum: 0 }), completedRooms: Type.Integer({ minimum: 0 }), totalRooms: Type.Integer({ minimum: 0 }),
   remainingPartyHp: Type.Number(), maximumPartyHp: Type.Number(),
-  rewards: Type.Array(strict({ item: presentItemFormat, itemId: integerId, category: stableKey, tier: Type.Integer({ minimum: 1 }), rarity: stableKey, enhancement: Type.Integer({ minimum: 0, maximum: 6 }), superRare: Type.Integer({ minimum: 0 }) })),
+  rewards: Type.Array(strict({ item: presentItemFormat, itemId: integerId, category: stableKey, tier: Type.Integer({ minimum: 1 }), itemRarity: literals('common', 'uncommon', 'rare', 'epic', 'mythic'), enhancement: Type.Integer({ minimum: 0, maximum: 6 }), superRare: Type.Integer({ minimum: 0 }) })),
   autoSell: strict({ count: Type.Integer({ minimum: 0 }), gold: Type.Number({ minimum: 0 }) }),
   rooms: Type.Array(battleRoom),
 });
@@ -180,11 +180,11 @@ const querySchemas = {
     targetItems: optional(Type.Union([evaluatedItemFormat, nonEmptyArray(evaluatedItemFormat, { uniqueItems: true, maxItems: 100 })])),
     equipmentChanges: optional(Type.Union([equipmentChangeFormat, nonEmptyArray(equipmentChangeFormat, { uniqueItems: true, maxItems: 100 })])),
   }),
-  'read/base/searchItems': strict({ state: optional(literals('owned', 'equipped', 'sold', 'all'), 'owned'), category: optional(itemCategory), rarity: optional(rarity, 'all'), superRare: optional(Type.Boolean()), superRareId: optional(Type.Integer({ minimum: 0 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), limit: optional(Type.Integer({ minimum: 1, maximum: 5000 }), 10) }),
+  'read/base/searchItems': strict({ state: optional(literals('owned', 'equipped', 'sold', 'all'), 'owned'), category: optional(itemCategory), itemRarity: optional(itemRarity, 'all'), superRare: optional(Type.Boolean()), superRareId: optional(Type.Integer({ minimum: 0 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), limit: optional(Type.Integer({ minimum: 1, maximum: 5000 }), 10) }),
   'read/base/enemyFormList': strict({ enemyType: optional(stableKey), enemyId: optional(integerId) }),
   // Category letters match Specification_1.1_CONSTANTS_GLOSSARY.md's own section numbering (1.1.1 a., 1.1.2 b., ...).
   'resources/glossary': strict({ category: literals('Ab.', 'Base.', 'Fixed.', 'Inc.', 'Mech.', 'Faith.', 'Magic.', 'Quest.', 'Terrain.'), glossaryId: optional(stableKey), ...page }),
-  'resources/itemCompendium': strict({ category: optional(itemCategory), rarity: optional(rarity, 'all'), tier: optional(Type.Integer({ minimum: 1, maximum: 8 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), ...page }),
+  'resources/itemCompendium': strict({ category: optional(itemCategory), itemRarity: optional(itemRarity, 'all'), tier: optional(Type.Integer({ minimum: 1, maximum: 8 })), itemId: optional(integerId), searchAbility: optional(stableKey), searchBonus: optional(stableKey), details: optional(detail, 'abilityAndCBonus'), ...page }),
   // `mustelid` was missing from this list, making it unreachable through this operation (RaceId has 14 members, not 13).
   'resources/characterRoster': strict({ race: literals('lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'mustelid', 'procyonian', 'leporian', 'cervin', 'murid', 'kemoria', 'orcinian', 'avian', 'mimorian'), ...page }),
   'resources/bestiary': strict({ enemyId: optional(integerId), enemyType: optional(stableKey), expedition: optional(integerId), 'x.type': optional(literals('Normal', 'Elite', 'BOSS')), ...page }),
@@ -195,13 +195,13 @@ const threshold = Type.Union([literals('all', 'none'), Type.Integer({ minimum: 1
 const sideQuestThreshold = Type.Union([literals('all', 'none'), Type.Integer({ minimum: 2, maximum: 8 })]);
 const defeatNotificationMode = literals('defeatOnly', 'defeatAndDraw', 'defeatDrawRetreat', 'all', 'none');
 const diarySettingMembers = {
-  superRareThreshold: threshold, bossThreshold: threshold, mythicThreshold: threshold, rareThreshold: threshold,
+  superRareThreshold: threshold, epicThreshold: threshold, mythicThreshold: threshold, rareThreshold: threshold,
   sideQuestThreshold, notifyGodsBattle: Type.Boolean(), defeatNotificationMode, notifyCyclePopup: Type.Boolean(),
   notifyItemDropPopup: Type.Boolean(), notifyAutoEquipmentPopup: Type.Boolean(), notifySideQuestPopup: Type.Boolean(),
 };
 const diarySetting = Object.fromEntries(Object.entries(diarySettingMembers).map(([key, schema]) => [key, optional(schema)]));
 const diarySettingValidOptions = strict({
-  superRareThreshold: Type.Array(threshold), bossThreshold: Type.Array(threshold), mythicThreshold: Type.Array(threshold), rareThreshold: Type.Array(threshold),
+  superRareThreshold: Type.Array(threshold), epicThreshold: Type.Array(threshold), mythicThreshold: Type.Array(threshold), rareThreshold: Type.Array(threshold),
   sideQuestThreshold: Type.Array(sideQuestThreshold), notifyGodsBattle: Type.Array(Type.Boolean()), defeatNotificationMode: Type.Array(defeatNotificationMode),
   notifyCyclePopup: Type.Array(Type.Boolean()), notifyItemDropPopup: Type.Array(Type.Boolean()), notifyAutoEquipmentPopup: Type.Array(Type.Boolean()), notifySideQuestPopup: Type.Array(Type.Boolean()),
 });
@@ -333,7 +333,7 @@ const diaryContent = Type.Union([
 ]);
 const battleLogReference = Type.Union([Type.Null(), strict({ logId: stableKey, availability })]);
 const diaryEntry = strict({ diaryEntryId: stableKey, partyNumber: diaryScopeNumber, occurredAt: isoTimestamp, unread: Type.Boolean(), content: diaryContent, battleLog: battleLogReference });
-const diaryTrigger = literals('victory', 'return', 'defeat', 'draw', 'retreat', 'eliteRare', 'bossRare', 'mythicRare', 'superRare', 'godsBattle', 'sideQuest', 'unlock');
+const diaryTrigger = literals('victory', 'return', 'defeat', 'draw', 'retreat', 'rare', 'epic', 'mythic', 'superRare', 'godsBattle', 'sideQuest', 'unlock');
 const diaryLabel = Type.Union([strict({ format: Type.Literal('semantic'), text: diaryText }), strict({ format: Type.Literal('legacy'), text: Type.String() })]);
 const diaryEntrySummary = strict({
   ...diaryEntry.properties,
@@ -403,8 +403,8 @@ const partyProjectionSchema = strict({ effectiveSelection: strict({ partyNumber,
 // `<shopItemId>/<Item Format>/<price>/<availability>` (Spec 9.1.3, 2-4-4); an unidentified entry's enhancement and Super Rare are `?`.
 const shopItemString = Type.String({ pattern: '^[1-7]/0/[1-9][0-9]*/(?:[0-6]|\\?)/(?:0|[1-9][0-9]*|\\?)/[0-9]+/(true|false)$' });
 sampleOverrides.set(shopItemString, '1/0/1104/2/0/720/true');
-const shopRarity = literals('common', 'uncommon', 'eliteRare', 'bossRare');
-const shopEntry = strict({ shopItemId: Type.Integer({ minimum: 1, maximum: 7 }), itemId: integerId, identified: Type.Boolean(), enhancement: Type.Union([Type.Integer({ minimum: 0, maximum: 6 }), Type.Null()]), superRare: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]), price: Type.Integer({ minimum: 0 }), rarity: shopRarity, soldOut: Type.Boolean(), available: Type.Boolean(), unavailableReason: Type.Union([literals('sold_out', 'insufficient_gold'), Type.Null()]) });
+const shopRarity = literals('common', 'uncommon', 'rare', 'epic');
+const shopEntry = strict({ shopItemId: Type.Integer({ minimum: 1, maximum: 7 }), itemId: integerId, identified: Type.Boolean(), enhancement: Type.Union([Type.Integer({ minimum: 0, maximum: 6 }), Type.Null()]), superRare: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]), price: Type.Integer({ minimum: 0 }), itemRarity: shopRarity, soldOut: Type.Boolean(), available: Type.Boolean(), unavailableReason: Type.Union([literals('sold_out', 'insufficient_gold'), Type.Null()]) });
 const shopInfoMembers = { intimacy: Type.Integer({ minimum: 0, maximum: 199 }), dialogue: semanticText, paidRefreshCountdown: Type.Integer({ minimum: 1 }), paidRefreshPrice: Type.Integer({ minimum: 0 }), paidRefresh: strict({ available: Type.Boolean(), unavailableReason: Type.Union([Type.Literal('insufficient_gold'), Type.Null()]) }) };
 // Spec 8.4.5: an Alter level per enemy category, and one entry per enemy form.
 const altarCategory = strict({ enemyType: stableKey, altarLevel: Type.Integer({ minimum: 0, maximum: 20 }), victories: count, nextLevelVictories: count, maximumLevel: Type.Boolean(), formCount: count, unlockedFormCount: count });
@@ -601,7 +601,7 @@ const responseDataSchemas = {
   // `canReset` (a.prophecy2) and the bag facts.
   'resources/clairvoyance/{p}': strict({
     available: Type.Boolean(), canReset: optional(Type.Boolean()),
-    reward: optional(strict({ common: clairvoyanceBagFacts, uncommon: clairvoyanceBagFacts, eliteRare: clairvoyanceBagFacts, bossRare: clairvoyanceBagFacts, mythicRare: clairvoyanceBagFacts })),
+    reward: optional(strict({ common: clairvoyanceBagFacts, uncommon: clairvoyanceBagFacts, rare: clairvoyanceBagFacts, epic: clairvoyanceBagFacts, mythic: clairvoyanceBagFacts })),
     enhancement: optional(strict({ common: clairvoyanceEnhancementFacts, general: clairvoyanceEnhancementFacts })),
     superRare: optional(strict({ common: clairvoyanceBagFacts, rare: clairvoyanceBagFacts })),
     sideQuest: optional(clairvoyanceBagFacts),
@@ -617,7 +617,7 @@ const responseDataSchemas = {
     validOptions: strict({ category: Type.Array(literals('Ab.', 'Base.', 'Fixed.', 'Inc.', 'Mech.', 'Faith.', 'Magic.', 'Quest.', 'Terrain.')) }),
     ...nextCursor,
   }),
-  'resources/itemCompendium': strict({ items: Type.Array(strict({ itemId: integerId, name: optional(Type.String()), category: stableKey, rarity: literals('common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRare'), tier: Type.Integer({ minimum: 1, maximum: 8 }), revealed: Type.Boolean(), ability: optional(Type.Array(Type.String())), cBonus: optional(Type.Array(Type.String())), otherBonus: optional(Type.Array(Type.String())) })), ...nextCursor }),
+  'resources/itemCompendium': strict({ items: Type.Array(strict({ itemId: integerId, name: optional(Type.String()), category: stableKey, itemRarity: literals('common', 'uncommon', 'rare', 'epic', 'mythic'), tier: Type.Integer({ minimum: 1, maximum: 8 }), revealed: Type.Boolean(), ability: optional(Type.Array(Type.String())), cBonus: optional(Type.Array(Type.String())), otherBonus: optional(Type.Array(Type.String())) })), ...nextCursor }),
   'resources/characterRoster': strict({ races: Type.Array(strict({ raceId: stableKey, status: baseStats, ability: Type.Array(Type.String()), cBonus: Type.Array(Type.String()), otherBonus: Type.Array(Type.String()), defaultAbility: Type.Union([stableKey, Type.Null()]), unlockAbility: Type.Union([stableKey, Type.Null()]) })), ...nextCursor }),
   // Spec 9.1.4.7: an unrevealed enemy is a placeholder (ID and counts only), a revealed one carries its full status.
   'resources/bestiary': strict({ enemies: Type.Array(Type.Union([

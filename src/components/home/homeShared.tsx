@@ -1241,38 +1241,38 @@ export function buildAfkSummaryNotification(stats: AfkSummaryStats): string | nu
   return [summaryParts.join('/'), financeParts.join(', ')].filter(Boolean).join(' ');
 }
 
-export type ItemRarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
+export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'mythic';
 export type RarityFilter = 'all' | ItemRarity;
 
 export const RARITY_SHORT_CODES: Record<ItemRarity, string> = {
   common: 'C',
   uncommon: 'U',
-  eliteRare: 'E',
-  bossRare: 'B',
-  mythicRare: 'M',
+  rare: 'R',
+  epic: 'E',
+  mythic: 'M',
 };
 
 export const RARITY_FILTER_LABELS: Record<RarityFilter, string> = {
   all: 'ALL',
   common: 'C',
   uncommon: 'U',
-  eliteRare: 'E',
-  bossRare: 'B',
-  mythicRare: 'M',
+  rare: 'R',
+  epic: 'E',
+  mythic: 'M',
 };
 
 const RARITY_FILTER_NOTE_KEYS: Record<RarityFilter, string> = {
   all: 'party.rarity.all',
   common: 'party.rarity.common',
   uncommon: 'party.rarity.uncommon',
-  eliteRare: 'diary.reward.eliteRare',
-  bossRare: 'diary.reward.bossRare',
-  mythicRare: 'diary.reward.mythicRare',
+  rare: 'diary.reward.rare',
+  epic: 'diary.reward.epic',
+  mythic: 'diary.reward.mythic',
 };
 
 export const getRarityFilterNote = (filter: RarityFilter): string => t(RARITY_FILTER_NOTE_KEYS[filter]);
 
-export const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRare'];
+export const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'rare', 'epic', 'mythic'];
 
 export const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; labelKey: string }> = [
   { value: 'all', labelKey: 'party.rarity.all' },
@@ -1532,7 +1532,7 @@ export const MYTHIC_TIER_BY_NAME = new Map(GOD_MYTHIC_DROPS.map((drop) => [drop.
 
 export function getDisplayTier(itemId: number, itemName?: string): number {
   const tier = Math.floor(itemId / 1000);
-  if (getItemRarityById(itemId) === 'mythicRare' && itemName) {
+  if (getItemRarityById(itemId) === 'mythic' && itemName) {
     return MYTHIC_TIER_BY_NAME.get(itemName) ?? tier;
   }
   return tier;
@@ -1551,23 +1551,23 @@ export function matchesRarityFilter(itemId: number, filter: RarityFilter): boole
 
 export function getRarityTextClass(rarity: ItemRarity, isSuperRare: boolean): string {
   if (isSuperRare) return 'text-accent font-bold';
-  if (rarity === 'eliteRare') return 'text-sub';
-  if (rarity === 'bossRare') return 'text-accent';
-  if (rarity === 'mythicRare') return 'text-accent font-bold';
+  if (rarity === 'rare') return 'text-sub';
+  if (rarity === 'epic') return 'text-accent';
+  if (rarity === 'mythic') return 'text-accent font-bold';
   return 'text-black';
 }
 
 export function getRewardTextClass(rarity?: ItemRarity, isSuperRare?: boolean): string {
   if (isSuperRare) return 'text-accent';
-  if (rarity === 'mythicRare') return 'text-accent';
-  if (rarity === 'bossRare') return 'text-accent';
-  if (rarity === 'eliteRare') return 'text-sub';
+  if (rarity === 'mythic') return 'text-accent';
+  if (rarity === 'epic') return 'text-accent';
+  if (rarity === 'rare') return 'text-sub';
   return 'text-black';
 }
 
 export function getRewardFontWeightClass(rarity: ItemRarity, isSuperRare: boolean): string {
   if (isSuperRare) return 'font-bold';
-  if (rarity === 'mythicRare') return 'font-bold';
+  if (rarity === 'mythic') return 'font-bold';
   return rarity === 'common' ? 'font-normal' : 'font-medium';
 }
 

@@ -1,4 +1,5 @@
 import type { Item, Party } from '../types/index.ts';
+import { getItemRarityById } from './itemRarity.ts';
 
 export type ClearGateOutcome = 'Clear' | 'Return' | 'Draw' | 'Retreat' | 'Defeat';
 
@@ -52,7 +53,24 @@ export function getClearGateQualifyingPosition(gateKey: number): number {
 }
 
 export function getGodsBattleProgressKey(dungeonId: number): string {
-  return `godBattle:${dungeonId}:bossRare`;
+  return `godBattle:${dungeonId}:epic`;
+}
+
+// Saves written before the item rarity rename count Gods Battle progress under `godBattle:<dungeonId>:bossRare`.
+const LEGACY_GODS_BATTLE_PROGRESS_SUFFIX = ':bossRare';
+
+/** Returns a copy of a Clear-Gate progress record with legacy Gods Battle keys renamed (a current key wins). */
+export function upgradeLegacyGodsBattleProgressKeys(progress: Readonly<Record<string, number>>): Record<string, number> {
+  const result: Record<string, number> = {};
+  for (const [key, value] of Object.entries(progress)) {
+    if (!key.startsWith('godBattle:') || !key.endsWith(LEGACY_GODS_BATTLE_PROGRESS_SUFFIX)) {
+      result[key] = value;
+      continue;
+    }
+    const currentKey = `${key.slice(0, -LEGACY_GODS_BATTLE_PROGRESS_SUFFIX.length)}:epic`;
+    if (!(currentKey in progress)) result[currentKey] = value;
+  }
+  return result;
 }
 
 export function getClearGateProgress(
@@ -119,21 +137,16 @@ export function applyClearGateOutcome(
   return { progress, status, gateKey };
 }
 
-function isBossRareItem(itemId: number): boolean {
-  const rarityCode = itemId % 1000;
-  return rarityCode >= 400 && rarityCode < 500;
-}
-
-export function addRecoveredBossRaresToGodsBattleProgress(
+export function addRecoveredEpicsToGodsBattleProgress(
   currentProgress: Readonly<Record<string, number>>,
   dungeonId: number,
   recoveredItems: readonly Item[],
 ): Record<string, number> {
   const nextProgress = { ...currentProgress };
-  const recoveredBossRares = recoveredItems.filter((item) => isBossRareItem(item.id)).length;
-  if (recoveredBossRares > 0) {
+  const recoveredEpics = recoveredItems.filter((item) => getItemRarityById(item.id) === 'epic').length;
+  if (recoveredEpics > 0) {
     const key = getGodsBattleProgressKey(dungeonId);
-    nextProgress[key] = (nextProgress[key] ?? 0) + recoveredBossRares;
+    nextProgress[key] = (nextProgress[key] ?? 0) + recoveredEpics;
   }
   return nextProgress;
 }
@@ -150,7 +163,7 @@ export function migrateLegacyGateState(source: LegacyGateState, maxDungeonId = 9
   progress: Record<string, number>;
   status: Record<number, boolean>;
 } {
-  const progress = { ...(source.clearGateProgress ?? {}) };
+  const progress = upgradeLegacyGodsBattleProgressKeys(source.clearGateProgress ?? {});
   const status = { ...(source.lootGateStatus ?? {}), ...(source.clearGateStatus ?? {}) };
   const legacyProgress = source.lootGateProgress ?? {};
 
@@ -160,12 +173,13 @@ export function migrateLegacyGateState(source: LegacyGateState, maxDungeonId = 9
       const gateKey = getEliteGateKey(dungeonId, floor);
       if (legacyUncommonCount >= LEGACY_ELITE_GATE_REQUIREMENTS[floor]) status[gateKey] = true;
     }
+    // Loot-Gate saves predate the item rarity rename, so their keys keep the old rarity names.
     if ((legacyProgress[`${dungeonId}:eliteRare`] ?? 0) >= LEGACY_BOSS_GATE_REQUIRED) {
       status[getBossGateKey(dungeonId)] = true;
     }
-    const legacyBossRareCount = Math.max(0, legacyProgress[`${dungeonId}:bossRare`] ?? 0);
+    const legacyEpicCount = Math.max(0, legacyProgress[`${dungeonId}:bossRare`] ?? 0);
     const godsBattleKey = getGodsBattleProgressKey(dungeonId);
-    if (!(godsBattleKey in progress) && legacyBossRareCount > 0) progress[godsBattleKey] = legacyBossRareCount;
+    if (!(godsBattleKey in progress) && legacyEpicCount > 0) progress[godsBattleKey] = legacyEpicCount;
   }
 
   return { progress, status };

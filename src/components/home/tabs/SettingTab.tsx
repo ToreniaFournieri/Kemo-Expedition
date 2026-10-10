@@ -33,6 +33,7 @@ import { completeFeedbackSubmission,FEEDBACK_REWARD_COOLDOWN_MS,getFeedbackRewar
 import { getLocalizedEnhancementTitle,getLocalizedItemName,getLocalizedSuperRareTitle } from '../../../game/gameState';
 import { buildGodRuntimeEnemy } from '../../../game/godEnemy';
 import { hydrateGameState,serializeGameState } from '../../../game/saveCodec';
+import { upgradeLegacyRewardBagKeys } from '../../../game/bagMigration';
 import { decodePersistedState } from '../../../game/storageCompression';
 import { Language,SUPPORTED_LANGUAGES,t } from '../../../i18n';
 import { AbilityId,Dungeon,EnemyDef,GameState,Item,NotificationCategory,NotificationStyle,RaceId } from '../../../types';
@@ -704,16 +705,18 @@ export default function SettingTab({
         'commonRewardBag',
         'commonEnhancementBag',
         'uncommonRewardBag',
-        'eliteRareRewardBag',
-        'bossRareRewardBag',
-        'mythicRareRewardBag',
+        'rareRewardBag',
+        'epicRewardBag',
+        'mythicRewardBag',
         'enhancementBag',
         'superRareBag',
         'physicalThreatBag',
         'magicalThreatBag',
         'sideQuestBag',
       ];
-      const missingBags = requiredBags.filter((bagKey) => !(bagKey in saveData.bags!));
+      // Saves from before the item rarity rename name the rare/epic/mythic reward bags by their legacy keys.
+      const importedBags = upgradeLegacyRewardBagKeys(saveData.bags);
+      const missingBags = requiredBags.filter((bagKey) => !(bagKey in importedBags));
       if (missingBags.length > 0) {
         issues.push(t('setting.import.issue.bagsIncomplete', { bags: missingBags.join(', ') }));
       }
@@ -1515,16 +1518,16 @@ export default function SettingTab({
                     <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.uncommon.hitsRemaining)}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('setting.clairvoyance.eliteRareRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.eliteRare.remaining)} / {formatNumber(clairvoyance.reward.eliteRare.total)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.eliteRare.hitsRemaining)}</span></div>
+                    <div>{t('setting.clairvoyance.rareRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.rare.remaining)} / {formatNumber(clairvoyance.reward.rare.total)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.rare.hitsRemaining)}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('setting.clairvoyance.bossRareRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.bossRare.remaining)} / {formatNumber(clairvoyance.reward.bossRare.total)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.bossRare.hitsRemaining)}</span></div>
+                    <div>{t('setting.clairvoyance.epicRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.epic.remaining)} / {formatNumber(clairvoyance.reward.epic.total)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.epic.hitsRemaining)}</span></div>
                   </div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>{t('setting.clairvoyance.mythicRareRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.mythicRare.remaining)} / {formatNumber(clairvoyance.reward.mythicRare.total)}</span></div>
-                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.mythicRare.hitsRemaining)}</span></div>
+                    <div>{t('setting.clairvoyance.mythicRewards')}: <span className="tabular-nums">{formatNumber(clairvoyance.reward.mythic.remaining)} / {formatNumber(clairvoyance.reward.mythic.total)}</span></div>
+                    <div className="text-xs text-gray-500 text-right">{t('setting.clairvoyance.hitsRemaining')} <span className="tabular-nums">{formatNumber(clairvoyance.reward.mythic.hitsRemaining)}</span></div>
                   </div>
                   <div>{t('setting.clairvoyance.enhancement')}: {formatNumber(clairvoyance.enhancement.general.remaining)} / {formatNumber(clairvoyance.enhancement.general.total)}</div>
                   <div className="pl-1 text-xs text-gray-500">

@@ -49,8 +49,8 @@ import { buildEnemyStatus } from './enemyStatus.ts';
 import { GLOSSARY_SECTIONS } from '../../data/glossary.ts';
 import { formatBonusAbilityPhaseDisplay, LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES } from '../../data/bonusAbilityGlossary.ts';
 import {
-  createCommonEnhancementBag, createCommonRewardBag, createCommonSuperRareBag, createEliteRareRewardBag, createEnhancementBag,
-  createBossRareRewardBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag,
+  createCommonEnhancementBag, createCommonRewardBag, createCommonSuperRareBag, createRareRewardBag, createEnhancementBag,
+  createEpicRewardBag, createMythicRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag,
   createUncommonRewardBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag,
 } from '../../game/bags.ts';
 import type { ApiV1PartyCycleView } from './commitOperations.ts';
@@ -233,7 +233,7 @@ function encodeCompactText(text: string): string {
 
 // SpecRef: 9.1.3 | 2-1-1 compact | unreadDiaryTitle `<diaryEntryId>/<diaryTitle>/<diarySubtitle>/<timeStamp>`
 // The title and subtitle are the Diary tab's own (current language), escaped as compact free text (9.1.4.14).
-// A rare-drop entry is titled with the Diary tab's own headline, which names the dropped items (`[PT1] Boss Rare acquired (Item)`).
+// A rare-drop entry is titled with the Diary tab's own headline, which names the dropped items (`[PT1] Epic acquired (Item)`).
 function compactDiaryTitle(entry: DiaryLog, partyName: string): string {
   const content = diaryEntryContent(entry);
   const namesItems = content.format === 'semantic'
@@ -457,12 +457,12 @@ function searchItems(state: GameState, parameters: Record<string, unknown>) {
   const limit = parameters.limit === undefined ? SEARCH_ITEMS_DEFAULT_LIMIT : Number(parameters.limit);
   if (!Number.isInteger(limit) || limit < 1 || limit > SEARCH_ITEMS_MAX_LIMIT) throw new Error('invalid_request:limit');
   const includesState = (name: 'owned' | 'sold' | 'equipped') => wantedState === 'all' || wantedState === name;
-  const itemFilterGiven = (parameters.rarity !== undefined && parameters.rarity !== 'all') || parameters.superRare !== undefined
+  const itemFilterGiven = (parameters.itemRarity !== undefined && parameters.itemRarity !== 'all') || parameters.superRare !== undefined
     || parameters.superRareId !== undefined || parameters.itemId !== undefined;
 
   const matchesItem = (item: Item): boolean => {
     if (category !== null && category !== 'jewel' && item.category !== API_CATEGORY_TO_ITEM_CATEGORY[category]) return false;
-    if (parameters.rarity !== undefined && parameters.rarity !== 'all' && getItemRarityById(item.id) !== parameters.rarity) return false;
+    if (parameters.itemRarity !== undefined && parameters.itemRarity !== 'all' && getItemRarityById(item.id) !== parameters.itemRarity) return false;
     if (parameters.superRare !== undefined && (item.superRare > 0) !== (parameters.superRare === true || parameters.superRare === 'true')) return false;
     if (parameters.superRareId !== undefined && item.superRare !== Number(parameters.superRareId)) return false;
     if (parameters.itemId !== undefined && item.id !== Number(parameters.itemId)) return false;
@@ -529,12 +529,12 @@ function matchesDetailFilters(details: ItemDetails, parameters: Record<string, u
 // SpecRef: 9.1.3 | 4-2-5 itemCompendium
 // SpecRef: 8.6 | UI_SETTING | Item Compendium (アイテム図鑑)
 // Lists every item, base level, regardless of ownership. `revealed` follows the Item Reveal Rule (or the Debug "Display all
-// Compendium" setting). An unrevealed item is still listed, as a placeholder: only its ID, category, rarity, and tier, never
+// Compendium" setting). An unrevealed item is still listed, as a placeholder: only its ID, category, `itemRarity`, and tier, never
 // its name or details, and the ability and bonus searches never match it (9.1.4.7: no undisclosed content).
 // `details` selects which of `ability`, `cBonus`, and `otherBonus` a revealed item includes, like `searchItems`.
 function itemCompendium(state: GameState, parameters: Record<string, unknown>, context: ApiV1ReadContext) {
   const category = parameters.category === undefined ? null : String(parameters.category);
-  const rarity = parameters.rarity === undefined || parameters.rarity === 'all' ? null : String(parameters.rarity);
+  const rarity = parameters.itemRarity === undefined || parameters.itemRarity === 'all' ? null : String(parameters.itemRarity);
   const tier = parameters.tier === undefined ? null : Number(parameters.tier);
   const itemId = parameters.itemId === undefined ? null : Number(parameters.itemId);
   const mode = String(parameters.details ?? 'abilityAndCBonus') as ItemDetailsMode;
@@ -550,7 +550,7 @@ function itemCompendium(state: GameState, parameters: Record<string, unknown>, c
     if (tier !== null && getItemTier(item.id) !== tier) return [];
     if (itemId !== null && item.id !== itemId) return [];
     const isRevealed = revealAll || revealed.has(item.id);
-    const placeholder = { itemId: item.id, category: item.category, rarity: itemRarity, tier: getItemTier(item.id), revealed: isRevealed };
+    const placeholder = { itemId: item.id, category: item.category, itemRarity, tier: getItemTier(item.id), revealed: isRevealed };
     const searchesDetails = parameters.searchAbility !== undefined || parameters.searchBonus !== undefined;
     if (!isRevealed) return searchesDetails ? [] : [placeholder];
     // The Compendium shows every item at base level (Spec 8.6: Enhancement = 0, SuperRare = 0), not an owned instance.
@@ -696,7 +696,7 @@ export interface ApiV1ClairvoyanceSleepinessFacts {
 export type ApiV1ClairvoyanceResource = { available: false } | ({ available: true; canReset: boolean } & ApiV1ClairvoyanceProjection);
 
 export interface ApiV1ClairvoyanceProjection {
-  reward: { common: ApiV1ClairvoyanceBagFacts; uncommon: ApiV1ClairvoyanceBagFacts; eliteRare: ApiV1ClairvoyanceBagFacts; bossRare: ApiV1ClairvoyanceBagFacts; mythicRare: ApiV1ClairvoyanceBagFacts };
+  reward: { common: ApiV1ClairvoyanceBagFacts; uncommon: ApiV1ClairvoyanceBagFacts; rare: ApiV1ClairvoyanceBagFacts; epic: ApiV1ClairvoyanceBagFacts; mythic: ApiV1ClairvoyanceBagFacts };
   enhancement: { common: ApiV1ClairvoyanceEnhancementFacts; general: ApiV1ClairvoyanceEnhancementFacts };
   superRare: { common: ApiV1ClairvoyanceBagFacts; rare: ApiV1ClairvoyanceBagFacts };
   sideQuest: ApiV1ClairvoyanceBagFacts;
@@ -732,9 +732,9 @@ function clairvoyance(party: Party) {
     reward: {
       common: bagHitFacts(bags.commonRewardBag, createCommonRewardBag(), [1]),
       uncommon: bagHitFacts(bags.uncommonRewardBag, createUncommonRewardBag(), [1]),
-      eliteRare: bagHitFacts(bags.eliteRareRewardBag, createEliteRareRewardBag(), [1]),
-      bossRare: bagHitFacts(bags.bossRareRewardBag, createBossRareRewardBag(), [1]),
-      mythicRare: bagHitFacts(bags.mythicRareRewardBag, createMythicRareRewardBag(), [1]),
+      rare: bagHitFacts(bags.rareRewardBag, createRareRewardBag(), [1]),
+      epic: bagHitFacts(bags.epicRewardBag, createEpicRewardBag(), [1]),
+      mythic: bagHitFacts(bags.mythicRewardBag, createMythicRewardBag(), [1]),
     },
     enhancement: {
       common: enhancementBagFacts(bags.commonEnhancementBag, createCommonEnhancementBag()),
@@ -765,7 +765,7 @@ function shopProjection(state: GameState, nowMs: number) {
     paidRefreshPrice: facts.paidRefreshPrice,
     paidRefresh: { available: facts.paidRefreshAvailable, unavailableReason: facts.paidRefreshAvailable ? null : 'insufficient_gold' },
     refreshesAt: new Date(facts.refreshesAt).toISOString(),
-    entries: facts.entries.map((entry) => ({ shopItemId: entry.shopItemId, itemId: entry.itemId, identified: entry.identified, enhancement: entry.enhancement, superRare: entry.superRare, price: entry.price, rarity: entry.rarity, soldOut: entry.soldOut, available: entry.available, unavailableReason: entry.unavailableReason })),
+    entries: facts.entries.map((entry) => ({ shopItemId: entry.shopItemId, itemId: entry.itemId, identified: entry.identified, enhancement: entry.enhancement, superRare: entry.superRare, price: entry.price, itemRarity: entry.rarity, soldOut: entry.soldOut, available: entry.available, unavailableReason: entry.unavailableReason })),
   };
 }
 

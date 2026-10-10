@@ -73,7 +73,7 @@ export interface ApiBattleLog {
   readonly totalRooms: number;
   readonly remainingPartyHp: number;
   readonly maximumPartyHp: number;
-  readonly rewards: readonly { item: string; itemId: number; category: string; tier: number; rarity: string; enhancement: number; superRare: number }[];
+  readonly rewards: readonly { item: string; itemId: number; category: string; tier: number; itemRarity: ItemRarity; enhancement: number; superRare: number }[];
   readonly autoSell: { count: number; gold: number };
   readonly rooms: readonly ApiBattleRoom[];
 }

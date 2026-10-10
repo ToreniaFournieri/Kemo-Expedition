@@ -214,9 +214,9 @@ export default function DiaryTab({
     if (triggers.includes('sideQuest')) return t('diary.title.sideQuest');
     if (triggers.includes('godsBattle')) return t('diary.title.godsBattle');
     if (triggers.includes('superRare')) return t('diary.title.superRare');
-    if (triggers.includes('mythicRare')) return t('diary.title.mythicRare');
-    if (triggers.includes('bossRare')) return t('diary.title.bossRare');
-    if (triggers.includes('eliteRare')) return t('diary.title.eliteRare');
+    if (triggers.includes('mythic')) return t('diary.title.mythic');
+    if (triggers.includes('epic')) return t('diary.title.epic');
+    if (triggers.includes('rare')) return t('diary.title.rare');
     return t('diary.title.special');
   };
 
@@ -357,7 +357,7 @@ export default function DiaryTab({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>{t('diary.settings.eliteRareNotification')}</span>
+                    <span>{t('diary.settings.rareNotification')}</span>
                     <select
                       value={settings.rareThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyNumber, { rareThreshold: parseDiaryThreshold(event.target.value) })}
@@ -369,10 +369,10 @@ export default function DiaryTab({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>{t('diary.settings.bossRareNotification')}</span>
+                    <span>{t('diary.settings.epicNotification')}</span>
                     <select
-                      value={settings.bossThreshold}
-                      onChange={(event) => onUpdateDiarySettings(partyNumber, { bossThreshold: parseDiaryThreshold(event.target.value) })}
+                      value={settings.epicThreshold}
+                      onChange={(event) => onUpdateDiarySettings(partyNumber, { epicThreshold: parseDiaryThreshold(event.target.value) })}
                       className="rounded border border-gray-300 bg-white px-2 py-1"
                     >
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
@@ -392,7 +392,7 @@ export default function DiaryTab({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>{t('diary.settings.mythicRareNotification')}</span>
+                    <span>{t('diary.settings.mythicNotification')}</span>
                     <select
                       value={settings.mythicThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyNumber, { mythicThreshold: parseDiaryThreshold(event.target.value) })}
@@ -545,7 +545,7 @@ export default function DiaryTab({
         const diaryParty = selectedDiaryParty;
         const specialRewards = log.rewards.filter((item) => {
           const rarity = getItemRarityById(item.id);
-          return rarity === 'bossRare' || rarity === 'mythicRare' || item.superRare > 0;
+          return rarity === 'epic' || rarity === 'mythic' || item.superRare > 0;
         });
         return (
           <div key={diaryLog.id} className="bg-pane rounded-lg p-3 shadow-md shadow-slate-900/10">

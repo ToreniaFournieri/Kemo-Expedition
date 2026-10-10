@@ -2,7 +2,7 @@ import { ItemDef, EnhancementTitle, SuperRareTitle, ItemCategory, ElementalOffen
 import { GOD_MYTHIC_DROPS } from './dropTables';
 import {
   getMasterItemCategoriesByRarity,
-  getMasterItemEliteSource,
+  getMasterItemEnemyTypeSource,
   getMasterItemId,
   getMasterItemNames,
 } from './masterSpecData';
@@ -115,8 +115,8 @@ export function getSuperRareBonuses(value: number): Bonus[] {
 // ============================================================
 // Item generation types
 // ============================================================
-type Rarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
-type EliteSource = 'A' | 'B' | 'C' | 'D';
+type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'mythic';
+type EnemyTypeSource = 'A' | 'B' | 'C' | 'D';
 
 type ItemVariantMod = {
   partyHP?: number;
@@ -186,9 +186,9 @@ const TYPE_AMPLIFIERS: Record<ItemCategory, number> = {
 const RARITY_AMPLIFIERS: Record<Rarity, number> = {
   common: 1.0,
   uncommon: 1.35,
-  eliteRare: 1.67,
-  bossRare: 2.0,
-  mythicRare: 2.4,
+  rare: 1.67,
+  epic: 2.0,
+  mythic: 2.4,
 };
 
 const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
@@ -309,7 +309,7 @@ function applyAdditionalItemBonus(item: ItemDef): void {
 }
 
 function getMasterItemName(tier: number, rarity: Rarity, category: ItemCategory, variantIndex?: number): string | undefined {
-  if (rarity === 'mythicRare') return undefined;
+  if (rarity === 'mythic') return undefined;
   const names = getMasterItemNames(tier, rarity, category);
   if (!names || names.length === 0) return undefined;
   const index = Math.max(0, variantIndex ?? 0);
@@ -450,7 +450,7 @@ function getTierIndex(tier: number): number {
 function getBonusTier(baseTier: number, rarity: Rarity, column: 'F' | 'G' | 'H' | 'J' | 'K' | 'L' | 'M' | 'N' | 'P' | 'Q'): number {
   if (column === 'J' || column === 'K') return baseTier;
   if (rarity === 'uncommon') return Math.min(baseTier + 1, 10);
-  if (rarity === 'eliteRare') return Math.min(baseTier + 2, 10);
+  if (rarity === 'rare') return Math.min(baseTier + 2, 10);
   return baseTier;
 }
 
@@ -506,7 +506,7 @@ function createItem(
   template: ItemTemplate,
   variantIndex?: number,
   forcedName?: string,
-  eliteSource: EliteSource = 'A'
+  enemyTypeSource: EnemyTypeSource = 'A'
 ): ItemDef | null {
   // SpecRef: 3.1.2 | Item list | Rarity base
   const basePower = TIER_BASE_POWER[getTierIndex(tier)];
@@ -525,21 +525,21 @@ function createItem(
   const bonusTierJ = getBonusTier(tier, rarity, 'J');
   const bonusTierK = getBonusTier(tier, rarity, 'K');
   const expeditionElement = getExpeditionElementByTier(tier);
-  const hasBaseBonus = rarity !== 'bossRare' && rarity !== 'mythicRare';
+  const hasBaseBonus = rarity !== 'epic' && rarity !== 'mythic';
   const hasE =
     rarity === 'uncommon'
-    || (rarity === 'eliteRare' && eliteSource === 'A');
+    || (rarity === 'rare' && enemyTypeSource === 'A');
   const hasX =
-    rarity === 'bossRare'
-    || rarity === 'mythicRare'
-    || (rarity === 'eliteRare' && (eliteSource === 'A' || eliteSource === 'B'));
+    rarity === 'epic'
+    || rarity === 'mythic'
+    || (rarity === 'rare' && (enemyTypeSource === 'A' || enemyTypeSource === 'B'));
   const hasY =
-    rarity === 'mythicRare'
-    || (rarity === 'eliteRare' && (eliteSource === 'B' || eliteSource === 'C'));
+    rarity === 'mythic'
+    || (rarity === 'rare' && (enemyTypeSource === 'B' || enemyTypeSource === 'C'));
   const hasC =
-    rarity === 'bossRare'
-    || rarity === 'mythicRare'
-    || (rarity === 'eliteRare' && eliteSource === 'C');
+    rarity === 'epic'
+    || rarity === 'mythic'
+    || (rarity === 'rare' && enemyTypeSource === 'C');
 
   const masterName = forcedName ?? getMasterItemName(tier, rarity, template.category, variantIndex);
   const name = masterName;
@@ -701,7 +701,7 @@ function createItem(
     addRarityCBonus(item, template, bonusTierN, bonusTierP);
   }
 
-  if (rarity === 'bossRare' || rarity === 'mythicRare') {
+  if (rarity === 'epic' || rarity === 'mythic') {
     if (template.category === 'armor' || template.category === 'gauntlet') item.vitalityBonus = 1;
     if (template.category === 'robe' || template.category === 'wand' || template.category === 'catalyst') item.intelligenceBonus = 1;
     if (template.category === 'shield' || template.category === 'katana' || template.category === 'grimoire') item.mindBonus = 1;
@@ -750,38 +750,38 @@ function generateItems(): ItemDef[] {
       }
     }
 
-    // Elite rare items (master-spec driven variants per category)
+    // Rare items (master-spec driven variants per category)
     for (let i = 0; i < ITEM_TEMPLATES.length; i++) {
       const template = ITEM_TEMPLATES[i];
-      const names = getMasterItemNames(tier, 'eliteRare', template.category);
+      const names = getMasterItemNames(tier, 'rare', template.category);
       for (let variantIndex = 0; variantIndex < names.length; variantIndex++) {
         const name = names[variantIndex];
-        const id = getMasterItemId(tier, 'eliteRare', template.category, name);
-        const eliteSource = getMasterItemEliteSource(tier, template.category, name);
-        const item = createItem(id, tier, 'eliteRare', template, variantIndex, name, eliteSource);
+        const id = getMasterItemId(tier, 'rare', template.category, name);
+        const enemyTypeSource = getMasterItemEnemyTypeSource(tier, template.category, name);
+        const item = createItem(id, tier, 'rare', template, variantIndex, name, enemyTypeSource);
         if (item) items.push(item);
       }
     }
 
-    // Boss rare items (master-spec driven categories per tier)
-    const bossRareCategories = getMasterItemCategoriesByRarity(tier, 'bossRare');
-    bossRareCategories.forEach((category) => {
+    // Epic items (master-spec driven categories per tier)
+    const epicCategories = getMasterItemCategoriesByRarity(tier, 'epic');
+    epicCategories.forEach((category) => {
       const template = ITEM_TEMPLATE_BY_CATEGORY[category];
       if (!template) return;
-      const names = getMasterItemNames(tier, 'bossRare', category);
+      const names = getMasterItemNames(tier, 'epic', category);
       names.forEach((name, variantIndex) => {
-        const id = getMasterItemId(tier, 'bossRare', category, name);
-        const item = createItem(id, tier, 'bossRare', template, variantIndex, name);
+        const id = getMasterItemId(tier, 'epic', category, name);
+        const item = createItem(id, tier, 'epic', template, variantIndex, name);
         if (item) items.push(item);
       });
     });
   }
 
-  // Mythic rare items from gods (2.2)
+  // Mythic items from gods (2.2)
   GOD_MYTHIC_DROPS.forEach((drop, index) => {
     const template = ITEM_TEMPLATE_BY_CATEGORY[drop.category];
     const id = 8500 + index + 1;
-    const item = createItem(id, drop.tier, 'mythicRare', template, undefined, drop.name);
+    const item = createItem(id, drop.tier, 'mythic', template, undefined, drop.name);
     if (item) {
       if (drop.bonuses) {
         item.bonuses = drop.bonuses;
@@ -814,12 +814,12 @@ let activeItemLookup = indexedItemLookup;
 
 // Item lookup by tier and rarity
 export function getItemsByTierAndRarity(tier: number, rarity: Rarity): ItemDef[] {
-  if (rarity === 'mythicRare') {
+  if (rarity === 'mythic') {
     return ITEMS.filter((item) => GOD_MYTHIC_DROP_TIER_BY_ID.get(item.id) === tier);
   }
 
   const tierBase = tier * 1000;
-  const rarityBase = { common: 100, uncommon: 200, eliteRare: 300, bossRare: 400, mythicRare: 500 }[rarity];
+  const rarityBase = { common: 100, uncommon: 200, rare: 300, epic: 400, mythic: 500 }[rarity];
   return ITEMS.filter(i => i.id >= tierBase + rarityBase && i.id < tierBase + rarityBase + 100);
 }
 

@@ -346,11 +346,11 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   const at = Date.parse('2026-01-01T03:00:00.000Z');
   const defeated = (state: GameState): GameState => ({ ...state, parties: state.parties.map((party, index) => (index === 0 ? { ...party, defeatedBossExpeditions: { ...party.defeatedBossExpeditions, 7: true } } : party)) });
   const plans: Array<[number, string, string, string]> = [
-    [0, 'C', 'CCCCCC', 'default'], [19, 'C', 'CCCCCC', 'default'], [20, 'CC', 'UCCCC', 'intimacy20'], [40, 'UC', 'EUUCC', 'intimacy40'],
-    [80, 'UU', 'BEEUU', 'intimacy80'], [99, 'UU', 'BEEUU', 'intimacy80'], [100, 'EU', 'BEEEU', 'intimacy100'], [120, 'EE', 'BBEEU', 'intimacy120'],
-    [140, 'BE', 'BBEEE', 'intimacy140'], [199, 'BE', 'BBEEE', 'intimacy140'],
+    [0, 'C', 'CCCCCC', 'default'], [19, 'C', 'CCCCCC', 'default'], [20, 'CC', 'UCCCC', 'intimacy20'], [40, 'UC', 'RUUCC', 'intimacy40'],
+    [80, 'UU', 'ERRUU', 'intimacy80'], [99, 'UU', 'ERRUU', 'intimacy80'], [100, 'RU', 'ERRRU', 'intimacy100'], [120, 'RR', 'EERRU', 'intimacy120'],
+    [140, 'ER', 'EERRR', 'intimacy140'], [199, 'ER', 'EERRR', 'intimacy140'],
   ];
-  const letter: Record<string, string> = { common: 'C', uncommon: 'U', eliteRare: 'E', bossRare: 'B' };
+  const letter: Record<string, string> = { common: 'C', uncommon: 'U', rare: 'R', epic: 'E' };
   for (const [intimacy, identified, unidentified, dialogue] of plans) {
     const state = defeated({ ...seed, global: { ...seed.global, shopIntimacy: intimacy, shopIntimacyLastDecayAt: at } } as GameState);
     const facts = getShopFacts(shopLineupInputOf(state), new Date(at));
@@ -849,13 +849,13 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   const drawn = (bag: { entries: { id: number; tickets: number }[] }) => ({ entries: bag.entries.map((entry, index) => index === 0 ? { ...entry, tickets: Math.max(0, entry.tickets - 1) } : entry) });
   const party = seed.parties[0];
   const activeQuest = { id: 1, type: 'gold', target: 10, progress: 7 } as unknown as NonNullable<GameState['parties'][number]['sideQuest']>;
-  const used = { ...seed, parties: [{ ...party, sideQuest: activeQuest, bags: { ...party.bags, sideQuestBag: drawn(party.bags.sideQuestBag), commonSuperRareBag: drawn(party.bags.commonSuperRareBag), bossRareRewardBag: drawn(party.bags.bossRareRewardBag) } }, ...seed.parties.slice(1)] } as GameState;
+  const used = { ...seed, parties: [{ ...party, sideQuest: activeQuest, bags: { ...party.bags, sideQuestBag: drawn(party.bags.sideQuestBag), commonSuperRareBag: drawn(party.bags.commonSuperRareBag), epicRewardBag: drawn(party.bags.epicRewardBag) } }, ...seed.parties.slice(1)] } as GameState;
   const ctx = baseContext({ settings: { debug: { clairvoyance: true } } });
   const sideQuest = applyApiV1Commit('commit/setting/clairvoyanceReset', used, { partyNumber: party.id, resetSideQuest: true }, ctx).state.parties[0];
   assert.deepEqual(sideQuest.bags.sideQuestBag, seed.parties[0].bags.sideQuestBag, 'the side-quest bag is initialized');
   assert.equal(sideQuest.sideQuest?.progress, 7, 'the side-quest progress is kept');
   const rewards = applyApiV1Commit('commit/setting/clairvoyanceReset', used, { partyNumber: party.id, resetRewards: true }, ctx).state.parties[0];
-  assert.deepEqual(rewards.bags.bossRareRewardBag, seed.parties[0].bags.bossRareRewardBag, 'the party reward bags are initialized');
+  assert.deepEqual(rewards.bags.epicRewardBag, seed.parties[0].bags.epicRewardBag, 'the party reward bags are initialized');
   assert.deepEqual(rewards.bags.commonSuperRareBag, used.parties[0].bags.commonSuperRareBag, 'the common Super Rare bag is left to the common reset');
 }
 

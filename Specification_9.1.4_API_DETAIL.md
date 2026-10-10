@@ -830,7 +830,7 @@ definitions in 9.1.3.
   returns the compact `<shopItemId>/<Item Format>/<price>/<availability>` strings of 9.1.3 in
   `current.items` (an unidentified entry's enhancement and Super Rare are `?`) and the same facts
   structured in `current.entries` (adding `identified`, `enhancement` and `superRare`, which are
-  `null` while hidden, `rarity`, `soldOut`, and `unavailableReason`: `sold_out` or `insufficient_gold`);
+  `null` while hidden, `itemRarity` (`common`, `uncommon`, `rare`, or `epic`), `soldOut`, and `unavailableReason`: `sold_out` or `insufficient_gold`);
   `validOptions.items` lists the slots that can be bought now, and
   `validOptions.lineupId` repeats `current.lineupId`, so `validOptions` holds
   everything `purchaseShopItems` needs. The `base` projection's
@@ -1305,7 +1305,7 @@ type DiaryEntry = {
   `BattleLog` is `{logId, partyNumber, dungeonId, difficultyOffset, finalOutcome
   ("Clear"|"Return"|"Draw"|"Retreat"|"Defeat"), totalExperience, completedRooms,
   totalRooms, remainingPartyHp, maximumPartyHp, rewards[], autoSell {count, gold},
-  rooms[]}`. A reward is `{item (Item Format), itemId, category, tier, rarity,
+  rooms[]}`. A reward is `{item (Item Format), itemId, category, tier, itemRarity,
   enhancement, superRare}`. Each room carries its outcome (`victory`, `defeat`,
   `draw`), damage, party HP, heal and attrition amounts, `endEvents`, and its
   battle in one of two formats: `compact-v1` (terrain, an actor table, modifier
@@ -1426,7 +1426,7 @@ type DiaryEntry = {
   the next stock under current speed settings; zero at maximum stock. API reads
   do not themselves advance the charge clock.
 * `enemyFormList.enemyType` and `enemyId` are optional intersecting filters;
-  omission selects all currently visible forms. `rarity` defaults to `all` for
+  omission selects all currently visible forms. `itemRarity` defaults to `all` for
   search/compendium. Missing `superRare` means either value; inconsistent
   `superRare` and `superRareId` filters are invalid.
 * `purchaseShopItems.items` entries are `{shopItemId: number}` or the bare
@@ -1529,10 +1529,10 @@ type DiaryEntry = {
   `<diaryEntryId>/<diaryTitle>/<diarySubtitle>/<YYYYMMDD HH:MM>`: the title and
   subtitle are the Diary tab's (current language; the subtitle is the expedition
   name for an ordinary entry) and are escaped free text (only `%` and `/`).
-* `itemCompendium` applies every documented filter (`category`, `rarity`, `tier`,
+* `itemCompendium` applies every documented filter (`category`, `itemRarity`, `tier`,
   `itemId`, `searchAbility`, `searchBonus`); every filter, `category` included, is
   optional, so `itemId` alone looks up one item. Each item carries `itemId`, `category`,
-  `rarity`, `tier` (the thousands digit of the item ID), and `revealed`. A revealed
+  `itemRarity`, `tier` (the thousands digit of the item ID), and `revealed`. A revealed
   item also carries its localized `name` and the `ability`, `cBonus`, and
   `otherBonus` arrays selected by `details` (omitted when not selected). An
   unrevealed item (8.6 Item Reveal Rule) is a placeholder without name or details,

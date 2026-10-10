@@ -61,8 +61,8 @@ export default {
         rarity: {
           common: 'rgb(var(--rarity-common) / <alpha-value>)',
           uncommon: 'rgb(var(--rarity-uncommon) / <alpha-value>)',
-          elite: 'rgb(var(--rarity-elite) / <alpha-value>)',
-          boss: 'rgb(var(--rarity-boss) / <alpha-value>)',
+          rare: 'rgb(var(--rarity-rare) / <alpha-value>)',
+          epic: 'rgb(var(--rarity-epic) / <alpha-value>)',
           mythic: 'rgb(var(--rarity-mythic) / <alpha-value>)',
           'super-rare': 'rgb(var(--rarity-super-rare) / <alpha-value>)',
         },

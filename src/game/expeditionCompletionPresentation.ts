@@ -5,8 +5,10 @@ import type {
   ExpeditionLog,
   ExpeditionLogEntry,
   Item,
+  ItemRarity,
 } from '../types/index.ts';
 import { getDiaryOutcomeTrigger } from './diary.ts';
+import { getItemRarityById } from './itemRarity.ts';
 import { diaryItem } from './compactDiary.ts';
 import type {
   ExpeditionFinalizationPlan,
@@ -51,15 +53,8 @@ function matchesDiaryThreshold(
   return item.enhancement >= threshold;
 }
 
-function getItemRarityCode(
-  item: Item,
-): 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare' {
-  const rarityCode = item.id % 1000;
-  if (rarityCode >= 500) return 'mythicRare';
-  if (rarityCode >= 400) return 'bossRare';
-  if (rarityCode >= 300) return 'eliteRare';
-  if (rarityCode >= 200) return 'uncommon';
-  return 'common';
+function getItemRarityCode(item: Item): ItemRarity {
+  return getItemRarityById(item.id);
 }
 
 /**
@@ -100,16 +95,16 @@ export function planCompletedExpeditionPresentation(
     item.superRare > 0
       && matchesDiaryThreshold(item, input.diarySettings.superRareThreshold)
   ));
-  const hasBossMatch = input.finalization.rewards.some((item) => (
-    getItemRarityCode(item) === 'bossRare'
-      && matchesDiaryThreshold(item, input.diarySettings.bossThreshold)
+  const hasEpicMatch = input.finalization.rewards.some((item) => (
+    getItemRarityCode(item) === 'epic'
+      && matchesDiaryThreshold(item, input.diarySettings.epicThreshold)
   ));
   const hasMythicMatch = input.finalization.rewards.some((item) => (
-    getItemRarityCode(item) === 'mythicRare'
+    getItemRarityCode(item) === 'mythic'
       && matchesDiaryThreshold(item, input.diarySettings.mythicThreshold)
   ));
   const hasRareMatch = input.finalization.rewards.some((item) => (
-    getItemRarityCode(item) === 'eliteRare'
+    getItemRarityCode(item) === 'rare'
       && matchesDiaryThreshold(item, input.diarySettings.rareThreshold)
   ));
 
@@ -126,9 +121,9 @@ export function planCompletedExpeditionPresentation(
   if (hasSuperRareMatch) {
     diaryTriggers.push('superRare');
   } else {
-    if (hasMythicMatch) diaryTriggers.push('mythicRare');
-    if (hasBossMatch) diaryTriggers.push('bossRare');
-    if (hasRareMatch) diaryTriggers.push('eliteRare');
+    if (hasMythicMatch) diaryTriggers.push('mythic');
+    if (hasEpicMatch) diaryTriggers.push('epic');
+    if (hasRareMatch) diaryTriggers.push('rare');
   }
 
   return {

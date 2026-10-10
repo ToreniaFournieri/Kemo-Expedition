@@ -10060,7 +10060,7 @@
                           "enhancement",
                           "superRare",
                           "price",
-                          "rarity",
+                          "itemRarity",
                           "soldOut",
                           "available",
                           "unavailableReason"
@@ -10105,7 +10105,7 @@
                             "minimum": 0,
                             "type": "integer"
                           },
-                          "rarity": {
+                          "itemRarity": {
                             "anyOf": [
                               {
                                 "const": "common",
@@ -10116,11 +10116,11 @@
                                 "type": "string"
                               },
                               {
-                                "const": "eliteRare",
+                                "const": "rare",
                                 "type": "string"
                               },
                               {
-                                "const": "bossRare",
+                                "const": "epic",
                                 "type": "string"
                               }
                             ]
@@ -10662,7 +10662,7 @@
                               "enhancement",
                               "superRare",
                               "price",
-                              "rarity",
+                              "itemRarity",
                               "soldOut",
                               "available",
                               "unavailableReason"
@@ -10707,7 +10707,7 @@
                                 "minimum": 0,
                                 "type": "integer"
                               },
-                              "rarity": {
+                              "itemRarity": {
                                 "anyOf": [
                                   {
                                     "const": "common",
@@ -10718,11 +10718,11 @@
                                     "type": "string"
                                   },
                                   {
-                                    "const": "eliteRare",
+                                    "const": "rare",
                                     "type": "string"
                                   },
                                   {
-                                    "const": "bossRare",
+                                    "const": "epic",
                                     "type": "string"
                                   }
                                 ]
@@ -10932,7 +10932,7 @@
                     "enhancement": 0,
                     "superRare": 0,
                     "price": 0,
-                    "rarity": "common",
+                    "itemRarity": "common",
                     "soldOut": true,
                     "available": true,
                     "unavailableReason": "sold_out"
@@ -11315,15 +11315,15 @@
                                   "type": "string"
                                 },
                                 {
-                                  "const": "eliteRare",
+                                  "const": "rare",
                                   "type": "string"
                                 },
                                 {
-                                  "const": "bossRare",
+                                  "const": "epic",
                                   "type": "string"
                                 },
                                 {
-                                  "const": "mythicRare",
+                                  "const": "mythic",
                                   "type": "string"
                                 },
                                 {
@@ -11511,7 +11511,7 @@
                         "type": "object",
                         "required": [
                           "superRareThreshold",
-                          "bossThreshold",
+                          "epicThreshold",
                           "mythicThreshold",
                           "rareThreshold",
                           "sideQuestThreshold",
@@ -11544,7 +11544,7 @@
                               }
                             ]
                           },
-                          "bossThreshold": {
+                          "epicThreshold": {
                             "anyOf": [
                               {
                                 "anyOf": [
@@ -11923,15 +11923,15 @@
                                     "type": "string"
                                   },
                                   {
-                                    "const": "eliteRare",
+                                    "const": "rare",
                                     "type": "string"
                                   },
                                   {
-                                    "const": "bossRare",
+                                    "const": "epic",
                                     "type": "string"
                                   },
                                   {
-                                    "const": "mythicRare",
+                                    "const": "mythic",
                                     "type": "string"
                                   },
                                   {
@@ -12495,15 +12495,15 @@
                                       "type": "string"
                                     },
                                     {
-                                      "const": "eliteRare",
+                                      "const": "rare",
                                       "type": "string"
                                     },
                                     {
-                                      "const": "bossRare",
+                                      "const": "epic",
                                       "type": "string"
                                     },
                                     {
-                                      "const": "mythicRare",
+                                      "const": "mythic",
                                       "type": "string"
                                     },
                                     {
@@ -12691,7 +12691,7 @@
                             "type": "object",
                             "required": [
                               "superRareThreshold",
-                              "bossThreshold",
+                              "epicThreshold",
                               "mythicThreshold",
                               "rareThreshold",
                               "sideQuestThreshold",
@@ -12724,7 +12724,7 @@
                                   }
                                 ]
                               },
-                              "bossThreshold": {
+                              "epicThreshold": {
                                 "anyOf": [
                                   {
                                     "anyOf": [
@@ -13103,15 +13103,15 @@
                                         "type": "string"
                                       },
                                       {
-                                        "const": "eliteRare",
+                                        "const": "rare",
                                         "type": "string"
                                       },
                                       {
-                                        "const": "bossRare",
+                                        "const": "epic",
                                         "type": "string"
                                       },
                                       {
-                                        "const": "mythicRare",
+                                        "const": "mythic",
                                         "type": "string"
                                       },
                                       {
@@ -13417,7 +13417,7 @@
                   ],
                   "settings": {
                     "superRareThreshold": "all",
-                    "bossThreshold": "all",
+                    "epicThreshold": "all",
                     "mythicThreshold": "all",
                     "rareThreshold": "all",
                     "sideQuestThreshold": "all",
@@ -15352,7 +15352,7 @@
                           "itemId",
                           "category",
                           "tier",
-                          "rarity",
+                          "itemRarity",
                           "enhancement",
                           "superRare"
                         ],
@@ -15374,10 +15374,29 @@
                             "minimum": 1,
                             "type": "integer"
                           },
-                          "rarity": {
-                            "minLength": 1,
-                            "maxLength": 200,
-                            "type": "string"
+                          "itemRarity": {
+                            "anyOf": [
+                              {
+                                "const": "common",
+                                "type": "string"
+                              },
+                              {
+                                "const": "uncommon",
+                                "type": "string"
+                              },
+                              {
+                                "const": "rare",
+                                "type": "string"
+                              },
+                              {
+                                "const": "epic",
+                                "type": "string"
+                              },
+                              {
+                                "const": "mythic",
+                                "type": "string"
+                              }
+                            ]
                           },
                           "enhancement": {
                             "minimum": 0,
@@ -17945,7 +17964,7 @@
                               "itemId",
                               "category",
                               "tier",
-                              "rarity",
+                              "itemRarity",
                               "enhancement",
                               "superRare"
                             ],
@@ -17967,10 +17986,29 @@
                                 "minimum": 1,
                                 "type": "integer"
                               },
-                              "rarity": {
-                                "minLength": 1,
-                                "maxLength": 200,
-                                "type": "string"
+                              "itemRarity": {
+                                "anyOf": [
+                                  {
+                                    "const": "common",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "uncommon",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "rare",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "epic",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "mythic",
+                                    "type": "string"
+                                  }
+                                ]
                               },
                               "enhancement": {
                                 "minimum": 0,
@@ -20456,7 +20494,7 @@
                   "itemId": 1,
                   "category": "xxxxxxx",
                   "tier": 1,
-                  "rarity": "xxxxxxx",
+                  "itemRarity": "common",
                   "enhancement": 0,
                   "superRare": 0
                 }
@@ -24411,7 +24449,7 @@
               }
             ]
           },
-          "rarity": {
+          "itemRarity": {
             "anyOf": [
               {
                 "const": "common",
@@ -24422,15 +24460,15 @@
                 "type": "string"
               },
               {
-                "const": "eliteRare",
+                "const": "rare",
                 "type": "string"
               },
               {
-                "const": "bossRare",
+                "const": "epic",
                 "type": "string"
               },
               {
-                "const": "mythicRare",
+                "const": "mythic",
                 "type": "string"
               },
               {
@@ -25173,7 +25211,7 @@
                       "enhancement",
                       "superRare",
                       "price",
-                      "rarity",
+                      "itemRarity",
                       "soldOut",
                       "available",
                       "unavailableReason"
@@ -25218,7 +25256,7 @@
                         "minimum": 0,
                         "type": "integer"
                       },
-                      "rarity": {
+                      "itemRarity": {
                         "anyOf": [
                           {
                             "const": "common",
@@ -25229,11 +25267,11 @@
                             "type": "string"
                           },
                           {
-                            "const": "eliteRare",
+                            "const": "rare",
                             "type": "string"
                           },
                           {
-                            "const": "bossRare",
+                            "const": "epic",
                             "type": "string"
                           }
                         ]
@@ -25373,7 +25411,7 @@
                           "enhancement",
                           "superRare",
                           "price",
-                          "rarity",
+                          "itemRarity",
                           "soldOut",
                           "available",
                           "unavailableReason"
@@ -25418,7 +25456,7 @@
                             "minimum": 0,
                             "type": "integer"
                           },
-                          "rarity": {
+                          "itemRarity": {
                             "anyOf": [
                               {
                                 "const": "common",
@@ -25429,11 +25467,11 @@
                                 "type": "string"
                               },
                               {
-                                "const": "eliteRare",
+                                "const": "rare",
                                 "type": "string"
                               },
                               {
-                                "const": "bossRare",
+                                "const": "epic",
                                 "type": "string"
                               }
                             ]
@@ -25537,7 +25575,7 @@
                   "enhancement": 0,
                   "superRare": 0,
                   "price": 0,
-                  "rarity": "common",
+                  "itemRarity": "common",
                   "soldOut": true,
                   "available": true,
                   "unavailableReason": "sold_out"
@@ -26395,7 +26433,7 @@
               "type": "object",
               "required": [
                 "superRareThreshold",
-                "bossThreshold",
+                "epicThreshold",
                 "mythicThreshold",
                 "rareThreshold",
                 "sideQuestThreshold",
@@ -26428,7 +26466,7 @@
                     }
                   ]
                 },
-                "bossThreshold": {
+                "epicThreshold": {
                   "anyOf": [
                     {
                       "anyOf": [
@@ -26558,7 +26596,7 @@
               "type": "object",
               "required": [
                 "superRareThreshold",
-                "bossThreshold",
+                "epicThreshold",
                 "mythicThreshold",
                 "rareThreshold",
                 "sideQuestThreshold",
@@ -26594,7 +26632,7 @@
                     ]
                   }
                 },
-                "bossThreshold": {
+                "epicThreshold": {
                   "type": "array",
                   "items": {
                     "anyOf": [
@@ -26796,7 +26834,7 @@
                   "type": "object",
                   "required": [
                     "superRareThreshold",
-                    "bossThreshold",
+                    "epicThreshold",
                     "mythicThreshold",
                     "rareThreshold",
                     "sideQuestThreshold",
@@ -26829,7 +26867,7 @@
                         }
                       ]
                     },
-                    "bossThreshold": {
+                    "epicThreshold": {
                       "anyOf": [
                         {
                           "anyOf": [
@@ -26959,7 +26997,7 @@
                   "type": "object",
                   "required": [
                     "superRareThreshold",
-                    "bossThreshold",
+                    "epicThreshold",
                     "mythicThreshold",
                     "rareThreshold",
                     "sideQuestThreshold",
@@ -26995,7 +27033,7 @@
                         ]
                       }
                     },
-                    "bossThreshold": {
+                    "epicThreshold": {
                       "type": "array",
                       "items": {
                         "anyOf": [
@@ -27187,7 +27225,7 @@
           "data": {
             "current": {
               "superRareThreshold": "all",
-              "bossThreshold": "all",
+              "epicThreshold": "all",
               "mythicThreshold": "all",
               "rareThreshold": "all",
               "sideQuestThreshold": "all",
@@ -27202,7 +27240,7 @@
               "superRareThreshold": [
                 "all"
               ],
-              "bossThreshold": [
+              "epicThreshold": [
                 "all"
               ],
               "mythicThreshold": [
@@ -39786,7 +39824,7 @@
                   }
                 ]
               },
-              "bossThreshold": {
+              "epicThreshold": {
                 "anyOf": [
                   {
                     "anyOf": [
@@ -39931,7 +39969,7 @@
               "type": "object",
               "required": [
                 "superRareThreshold",
-                "bossThreshold",
+                "epicThreshold",
                 "mythicThreshold",
                 "rareThreshold",
                 "sideQuestThreshold",
@@ -39964,7 +40002,7 @@
                     }
                   ]
                 },
-                "bossThreshold": {
+                "epicThreshold": {
                   "anyOf": [
                     {
                       "anyOf": [
@@ -40143,7 +40181,7 @@
                   "type": "object",
                   "required": [
                     "superRareThreshold",
-                    "bossThreshold",
+                    "epicThreshold",
                     "mythicThreshold",
                     "rareThreshold",
                     "sideQuestThreshold",
@@ -40176,7 +40214,7 @@
                         }
                       ]
                     },
-                    "bossThreshold": {
+                    "epicThreshold": {
                       "anyOf": [
                         {
                           "anyOf": [
@@ -40393,7 +40431,7 @@
           "data": {
             "current": {
               "superRareThreshold": "all",
-              "bossThreshold": "all",
+              "epicThreshold": "all",
               "mythicThreshold": "all",
               "rareThreshold": "all",
               "sideQuestThreshold": "all",
@@ -45044,9 +45082,9 @@
               "required": [
                 "common",
                 "uncommon",
-                "eliteRare",
-                "bossRare",
-                "mythicRare"
+                "rare",
+                "epic",
+                "mythic"
               ],
               "properties": {
                 "common": {
@@ -45105,7 +45143,7 @@
                     }
                   }
                 },
-                "eliteRare": {
+                "rare": {
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
@@ -45133,7 +45171,7 @@
                     }
                   }
                 },
-                "bossRare": {
+                "epic": {
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
@@ -45161,7 +45199,7 @@
                     }
                   }
                 },
-                "mythicRare": {
+                "mythic": {
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
@@ -45515,9 +45553,9 @@
                   "required": [
                     "common",
                     "uncommon",
-                    "eliteRare",
-                    "bossRare",
-                    "mythicRare"
+                    "rare",
+                    "epic",
+                    "mythic"
                   ],
                   "properties": {
                     "common": {
@@ -45576,7 +45614,7 @@
                         }
                       }
                     },
-                    "eliteRare": {
+                    "rare": {
                       "additionalProperties": false,
                       "type": "object",
                       "required": [
@@ -45604,7 +45642,7 @@
                         }
                       }
                     },
-                    "bossRare": {
+                    "epic": {
                       "additionalProperties": false,
                       "type": "object",
                       "required": [
@@ -45632,7 +45670,7 @@
                         }
                       }
                     },
-                    "mythicRare": {
+                    "mythic": {
                       "additionalProperties": false,
                       "type": "object",
                       "required": [
@@ -46505,7 +46543,7 @@
               }
             ]
           },
-          "rarity": {
+          "itemRarity": {
             "anyOf": [
               {
                 "const": "common",
@@ -46516,15 +46554,15 @@
                 "type": "string"
               },
               {
-                "const": "eliteRare",
+                "const": "rare",
                 "type": "string"
               },
               {
-                "const": "bossRare",
+                "const": "epic",
                 "type": "string"
               },
               {
-                "const": "mythicRare",
+                "const": "mythic",
                 "type": "string"
               },
               {
@@ -46617,7 +46655,7 @@
                 "required": [
                   "itemId",
                   "category",
-                  "rarity",
+                  "itemRarity",
                   "tier",
                   "revealed"
                 ],
@@ -46634,7 +46672,7 @@
                     "maxLength": 200,
                     "type": "string"
                   },
-                  "rarity": {
+                  "itemRarity": {
                     "anyOf": [
                       {
                         "const": "common",
@@ -46645,15 +46683,15 @@
                         "type": "string"
                       },
                       {
-                        "const": "eliteRare",
+                        "const": "rare",
                         "type": "string"
                       },
                       {
-                        "const": "bossRare",
+                        "const": "epic",
                         "type": "string"
                       },
                       {
-                        "const": "mythicRare",
+                        "const": "mythic",
                         "type": "string"
                       }
                     ]
@@ -46749,7 +46787,7 @@
                     "required": [
                       "itemId",
                       "category",
-                      "rarity",
+                      "itemRarity",
                       "tier",
                       "revealed"
                     ],
@@ -46766,7 +46804,7 @@
                         "maxLength": 200,
                         "type": "string"
                       },
-                      "rarity": {
+                      "itemRarity": {
                         "anyOf": [
                           {
                             "const": "common",
@@ -46777,15 +46815,15 @@
                             "type": "string"
                           },
                           {
-                            "const": "eliteRare",
+                            "const": "rare",
                             "type": "string"
                           },
                           {
-                            "const": "bossRare",
+                            "const": "epic",
                             "type": "string"
                           },
                           {
-                            "const": "mythicRare",
+                            "const": "mythic",
                             "type": "string"
                           }
                         ]
@@ -46868,7 +46906,7 @@
               {
                 "itemId": 1,
                 "category": "xxxxxxx",
-                "rarity": "common",
+                "itemRarity": "common",
                 "tier": 1,
                 "revealed": true
               }

@@ -4826,7 +4826,7 @@ export function GameRuntimeHost({
           if (gained > 0) actions.advanceSideQuest(index, gained, simulatedAt);
         }
         if (party.sideQuest.type === 'q.treasure-boss-rare') {
-          const gained = currentLog.rewards.filter((item) => getItemRarityById(item.id) === 'bossRare').length;
+          const gained = currentLog.rewards.filter((item) => getItemRarityById(item.id) === 'epic').length;
           if (gained > 0) actions.advanceSideQuest(index, gained, simulatedAt);
         }
         if (party.sideQuest.type === 'q.poor-kid' && (currentLog.rewards.length ?? 0) === 0) {
@@ -4887,7 +4887,7 @@ export function GameRuntimeHost({
             const rarity = getItemRarityById(item.id);
             actions.addNotification(
               t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
-              rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
+              rarity === 'rare' || rarity === 'epic' || isSuperRare ? 'rare' : 'normal',
               'item',
               undefined,
               { rarity, isSuperRareItem: isSuperRare }
@@ -5159,7 +5159,7 @@ export function GameRuntimeHost({
         const rarity = getItemRarityById(item.id);
         actions.addNotification(
           t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
-          rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
+          rarity === 'rare' || rarity === 'epic' || isSuperRare ? 'rare' : 'normal',
           'item',
           undefined,
           { rarity, isSuperRareItem: isSuperRare }
