@@ -58,3 +58,15 @@ Built during the 2026/10/03 D8-boss run (`AI_play_report/v0.9.8(11)_Claude_Norma
   with `STALL=1` (stop when two observations are identical).
 * `tools/mdopt.mjs` = hpopt variant: `MW` weights magical defense, `ONLYDEF=1` only swaps slots that already hold defensive gear.
 * Lessons: Clear-Gate progress is a consecutive streak; farm drops at the deepest depth with <=5% Defeat (`farm.mjs`) with 1080 s/k=2 loops.
+
+## Additions (2026/10/10 ClaudeUpd run, `AI_play_report/v0.10.1(31)_ClaudeUpd_Normal_API_Exp8Boss_TestNewUpdates_20261010.md`)
+* Run folder `play_runs/normal_api_exp8_ClaudeUpd_20261010/`. `client/run.py S k n obs [stopOpen]` uses the build-31 elapsed
+  `parties[].controls.sortie` + `currentHp` to skip refused or low-HP sorties (`HPF` env, default 0.6); stops on Clear / gate open / boss killed.
+* `client/cad.mjs save hours "S:k:hpf" ...` (env `T0` = save's in-game time, `DEPTH`, `TOP` tier, `GATES=1,2,3` to pretend gates open):
+  runs/drops/calls per 12 h with the exact API emulator — pick loop length and farm depth with it.
+* `client/gatecheck.mjs save depth steps` (env `SEED`): exact-emulator outcome split and gate progress; use it to confirm a forecast
+  (`lever`) rate before a long gate grind (forecast was off by up to ~3x at the D6 boss gate).
+* `tools/itemswap.mjs save d N basePlan itemKey "cids" out`: puts an ability item (e.g. `6309-0-0`, `a.illusion-breaker`) into every
+  slot of the listed characters and keeps the best boss-only variant. `tools/farm2.mjs` = farm.mjs + top-tier drops/12 h (`TOP`).
+* Lessons: D6 boss (Procyonian `a.illusion`) needs #6309 on each ranged attacker; farm at the depth before the first unbeatable elite
+  (D6 2f-3, D7 3f-3); re-plan right after Lv30 (new slot); D8 loops 1,800 s.
