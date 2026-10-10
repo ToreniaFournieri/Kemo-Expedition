@@ -147,6 +147,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 3-3. commit/build
      party/{p}
+     party/{p}/applyGaResult
      character/{characterId}/changeBuild
      character/{characterId}/removeAllEquipment
      character/{characterId}/removeEquipment
@@ -690,8 +691,10 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `evaluations`
     * Number of builds evaluated.
   * `elapsedSeconds`
+  * `gaResultId`
+    * ID of this search result. Used by `party/{p}/applyGaResult`.
+    * Only the latest result per party is kept. A new `gaSearch` for the same party invalidates the previous ID.
 
-  
 **2-3-3. `character/status`**
 
 
@@ -1427,7 +1430,55 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Partial updates are allowed.
 
-**3-3-2. `character/{characterId}/changeBuild`**
+**3-3-2. `party/{p}/applyGaResult`**
+
+* Applies every change in a `gaSearch` result to party `{p}` in one atomic request.
+
+* Parameters:
+  * `gaResultId`
+    * Required.
+    * String.
+    * `gaResultId` returned by `read/build/party/{p}/gaSearch`.
+  * `autoEquipmentMode`
+    * Optional.
+    * Default: `SEMI`.
+    * Allowed values: `SEMI`, `OFF`.
+    * `FULL` is not allowed, because Auto Equipment would replace the applied build.
+  * `simulation`
+    * Required.
+    * Boolean.
+    * If `true`, validates the result and returns the changes without committing them.
+    * If `false`, applies and commits the changes.
+  * `confirmation`
+    * Required only when `confirmationRequired` is `true` and `simulation` is `false`.
+    * Allowed values:
+      * `yes`: Applies the changes.
+      * `no`: Cancels the request without changing the game state.
+
+* Validation:
+  * The request is rejected when:
+    * `gaResultId` is unknown, or was replaced by a newer `gaSearch` for the same party.
+    * The current save revision differs from the `revision` of the `gaSearch` result.
+    * `verdict` is `noChange`.
+  * `confirmationRequired` is `true` when:
+    * `verdict` is `worse` or `noisy`.
+
+* Atomicity:
+  * All changes in `changeSummary` are applied as one commit.
+  * If any change fails validation, no game-state change is committed.
+
+* Return:
+  * `applied`
+    * The `changeSummary` that was applied (or would be applied when `simulation` is `true`).
+  * `confirmationRequired`
+    * Boolean.
+  * `warnings`
+    * Returned when confirmation is required. Includes the `verdict` and the `forecast`.
+  * `calculatedStatus`
+    * For each changed character, `CalculatedStatus` as defined in 9.1.4.14.
+
+
+**3-3-3. `character/{characterId}/changeBuild`**
 
 * Parameters:
   * `name`
@@ -1465,14 +1516,14 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
         * Cancels the requested changes without modifying the character.
 
 
-**3-3-3. `character/{characterId}/removeAllEquipment`**
+**3-3-4. `character/{characterId}/removeAllEquipment`**
 
 * Parameters: none.
 * Remove all equipment.
 
 * If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
 
-**3-3-4. `character/{characterId}/removeEquipment`**
+**3-3-5. `character/{characterId}/removeEquipment`**
 
 * Parameters:
   * `targetEquipment`
@@ -1486,7 +1537,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
 
 
-**3-3-5. `character/{characterId}/equip`**
+**3-3-6. `character/{characterId}/equip`**
 
 * Parameters:
   * `targetEquipment`
@@ -1510,7 +1561,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Useful when updating an equipped item without changing the mode, such as when changing its lock status.
 
 
-**3-3-6. `character/{characterId}/lockEquipment`**
+**3-3-7. `character/{characterId}/lockEquipment`**
 
 * Parameters:
   * `targetEquipment`
@@ -1523,7 +1574,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * Requires `autoEquipment.mode` = `FULL`.
   * Does not change `autoEquipment.mode`.
 
-**3-3-7. `character/{characterId}/unlockEquipment`**
+**3-3-8. `character/{characterId}/unlockEquipment`**
 
 * Parameters:
   * `targetEquipment`
@@ -1536,7 +1587,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * Requires `autoEquipment.mode` = `FULL`.
   * Does not change `autoEquipment.mode`.
 
-**3-3-8. `character/{characterId}/autoEquipment`**
+**3-3-9. `character/{characterId}/autoEquipment`**
 
 * Parameters:
   * `mode`
@@ -1546,7 +1597,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * If `true`, immediately runs Auto Equipment using the specified `mode`.
     * Boolean: `true` / `false`.
 
-**3-3-9. `character/{characterId}/jewelAttach`**
+**3-3-10. `character/{characterId}/jewelAttach`**
 
 * Parameters:
   * `targetEquipment`
@@ -1560,7 +1611,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
 
 
-**3-3-10. `character/{characterId}/jewelRemove`**
+**3-3-11. `character/{characterId}/jewelRemove`**
 
 * Parameters:
   * `targetEquipment`
@@ -1568,7 +1619,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
 
 
-**3-3-11. `character/{characterId}/saveEquipmentSet`**
+**3-3-12. `character/{characterId}/saveEquipmentSet`**
 
 * Parameters:
   * `equipmentSet`
@@ -1579,7 +1630,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * Return:
   * `equipmentSetId`
 
-**3-3-12. `character/{characterId}/loadEquipmentSet`**
+**3-3-13. `character/{characterId}/loadEquipmentSet`**
 
 * Parameters:
   * `equipmentSetId`
@@ -1608,22 +1659,22 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
 
 
-**3-3-13. `character/{characterId}/deleteEquipmentSet`**
+**3-3-14. `character/{characterId}/deleteEquipmentSet`**
 
 * Parameters:
   * `equipmentSetId`
 
-**3-3-14. `character/{characterId}/renameEquipmentSet`**
+**3-3-15. `character/{characterId}/renameEquipmentSet`**
 
 * Parameters:
   * `equipmentSetId`
   * `name`
 
-**3-3-15. `character/{characterId}/undoEquipment`**
+**3-3-16. `character/{characterId}/undoEquipment`**
 
 * Parameters: none.
 
-**3-3-16. `character/{characterId}/redoEquipment`**
+**3-3-17. `character/{characterId}/redoEquipment`**
 
 * Parameters: none.
 
