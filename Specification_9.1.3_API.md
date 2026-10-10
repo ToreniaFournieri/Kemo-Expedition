@@ -640,11 +640,11 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Default: `false`
   * `considerItemsScope`
     * Optional.
-    * Default: `onlyInventory`
+    * Default: `normal`
     * Options:
-      * `onlyInventory`: Consider inventory only. Do not consider equipment from other party members.
-      * `withinTargets`: Consider items in the inventory and equipment equipped by the selected target characters.
-      * `global`: Consider items in the inventory and equipment equipped by all characters. 
+      * `normal`: Consider the individual target character's equipment and items in the inventory. Ignore equipment equipped by other party members.
+      * `withinTargets`: Consider the equipment of characters specified by `characterId` in `targets`, along with items in the inventory.
+      * `global`: Consider all characters' equipment and items in the inventory.
   * `objective`
     * Optional.
     * Default: `success`.
