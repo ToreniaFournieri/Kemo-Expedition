@@ -65,19 +65,19 @@
 
 | Intimacy | Identified Lineup  | Unidentified Lineup  |
 |---|---|---|
-| 0–19 | 1 Common | 6  Common |
-| 20–39 | 2 Common |  1 Uncommon, 4 Common |
-| 40–79 | 1 Uncommon, 1 Common | 1 Elite rare, 2 Uncommon, 2 Common |
-| 80–99 | 2 Uncommon  | 1 Boss rare, 2 Elite rare, 2 Uncommon |
-| 100–119 | 1 Elite rare, 1 Uncommon | 1 Boss rare, 3 Elite rare, 1 Uncommon |
-| 120–139 | 2 Elite rare | 2 Boss rare, 2 Elite rare, 1 Uncommon |
-| 140–Cap | 1 Boss rare, 1 Elite rare | 2 Boss rare, 3 Elite rare |
+| 0–19 | 1 `common` | 6  `common` |
+| 20–39 | 2 `common` |  1 `uncommon`, 4 `common` |
+| 40–79 | 1 `uncommon`, 1 `common` | 1 `rare`, 2 `uncommon`, 2 `common` |
+| 80–99 | 2 `uncommon`  | 1 `epic`, 2 `rare`, 2 `uncommon` |
+| 100–119 | 1 `rare`, 1 `uncommon` | 1 `epic`, 3 `rare`, 1 `uncommon` |
+| 120–139 | 2 `rare` | 2 `epic`, 2 `rare`, 1 `uncommon` |
+| 140–Cap | 1 `epic`, 1 `rare` | 2 `epic`, 3 `rare` |
 
 **Display (rarity color)**
-- Common: non-bold  
-- Uncommon: **bold**  
-- Elite rare: Sub color (blue)  
-- Boss rare: Accent color (dark orange)
+- `common`: non-bold  
+- `uncommon`: **bold**  
+- `rare`: Sub color (blue)  
+- `epic`: Accent color (dark orange)
 
 
 **Enhancement (Same as item drop logic)**
@@ -133,8 +133,8 @@
 - Item list:
   - Stacked by item variant
   - Shows state:`s.owned` items and **equiped items**.
-  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, エリートレアのみ, ボスレアのみ, 神魔レアのみ: [ALL] [C] [U] [E] [B] [M] |超レア: ON/OFF
-    - IF player selects [M],   神魔レアのみ: [ALL] [C] [U] [E] [B] **[M]** 
+  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, エピックレアのみ, 神魔レアのみ: [ALL] [C] [U] [R] [E] [M] |超レア: ON/OFF
+    - IF player selects [M],   神魔レアのみ: [ALL] [C] [U] [R] [E] **[M]** 
     - 超レア[ON/OFF] default: OFF, if ON, filter superRare >= 1.
   - Inventory includes item category tabs:
     - If no jewel has been obtained (`hasFirstJewel: false`):

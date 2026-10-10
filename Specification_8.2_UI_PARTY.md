@@ -502,8 +502,8 @@ The toggle cycles through the following modes:
 **4. Inventory Pane:**
   - Always visible on the same screen at the bottom.
   - Stacked by item variant
-  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, 神魔レアのみ : [ALL] [C] [U] [R] [M] |超レア: ON/OFF
-    - IF player selects [M],  　　神魔レアのみ: [ALL] [C] [U] [R] **[M]** 
+  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, 神魔レアのみ : [ALL] [C] [U] [R] [E] [M] |超レア: ON/OFF
+    - IF player selects [M],  　　神魔レアのみ: [ALL] [C] [U] [R] [E] **[M]** 
     - 超レア[ON/OFF] default: OFF, if ON, filter superRare >= 1.
   - Inventory includes item category tabs:
     - Displays [耐久:鎧,衣,盾] for all character

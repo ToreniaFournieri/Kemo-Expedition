@@ -49,17 +49,18 @@
 | `e.thunder_xN` | [雷攻N] | `e.thunder_x2/3` -> [雷攻x2/3] |
 
 
-- Translation
+- **1.0.3 Item rarity tier**
 
-| name | Japanese | short word |
+| `itemRarity` | `shortLabel` | Japanese |
 |----|-----|---|
-| common | 通常 | [C] |
-| uncommon | アンコモン | [U] |
-| elite rare | エリートレア | [E] |
-| boss rare | ボスレア | [B] |　
-| mythic rare | 神魔レア | [M] |
+| `common`   | [C] | ノーマル | 
+| `uncommon` | [U] | アンコモン |
+| `rare`     | [R] | レア |
+| `epic`     | [E] | エピックレア |
+| `mythic`   | [M] | 神魔レア |
 
-- **1.0.3 Glossary Reveal Rule:**
+
+- **1.0.4 Glossary Reveal Rule:**
   - Each glossary entry of **ability and terrain effect** has an internal `revealed` flag.
   - A glossary entry is revealed when its related ability, terrain is shown to the player for the first time.
   - Once revealed, the entry is added to the Glossary.

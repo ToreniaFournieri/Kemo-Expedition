@@ -129,9 +129,9 @@
 
   - アンコモン報酬: uncommon reward_bag remaining / total counts 
     - 当たり残り remaining
-  - エリートレア報酬: elite rare reward_bag remaining / total counts 
+  - レア報酬:  rare reward_bag remaining / total counts 
     - 当たり残り remaining
-  - ボスレア報酬: boss rare reward_bag remaining / total counts 
+  - エピックレア報酬: epic reward_bag remaining / total counts 
     - 当たり残り remaining
   - 神魔レア報酬: mythic rare reward_bag remaining / total counts 
     - 当たり残り remaining
@@ -170,8 +170,8 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
 - View Settings:
   - Visibility: Shows all items in the database (including undiscovered items).
   - Standardized Stats: Displays item data at base level (Enhancement = 0, SuperRare = 0).
-  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, エリートレアのみ, ボスレアのみ, 神魔レアのみ: [ALL] [C] [U]  [E] [B] [M]
-  	- IF player selects [M],   神魔レアのみ: [ALL] [C] [U] [E] [B] **[M]** 
+  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, エピックレアのみ, 神魔レアのみ: [ALL] [C] [U] [R] [E] [M]
+  	- IF player selects [M],   神魔レアのみ: [ALL] [C] [U] [R] [E]　**[M]** 
 - Item category tabs: (same as Inventory tab's item list)
   - [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
   - Default: 鎧 or previously selected category of each character 

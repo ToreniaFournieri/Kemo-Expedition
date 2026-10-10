@@ -65,25 +65,25 @@
 
 **rarity.amplifier of base_power**
 
-| Rarity | `rarity.amplifier` |
+| `itemRarity` | `rarity.amplifier` |
 |------|--------|
-| common | x1.0 |
-| uncommon | x1.35 |
-| elite rare | x1.67 |
-| boss rare | x2.00 |
-| mythic rare | x2.40 |
+| `common` | x1.0 |
+| `uncommon` | x1.35 |
+| `rare` | x1.67 |
+| `epic` | x2.00 |
+| `mythic` | x2.40 |
 
 **Rarity base**
 
-| Rarity | EnemyTypeSource | Features |
+| `itemRarity` | EnemyTypeSource | Features |
 |------|--------|--------|
-| common | none | xN base_power x rarity.amplifier, and base-bonus |
-| uncommon | none | xN base_power x rarity.amplifier, E-bonus, base-bonus with +1 tier upgrade(except penalty) |
-| elite rare | A | xN base_power x rarity.amplifier, X-bonus, E-bonus, base-bonus with +2 tier upgrade(except penalty) |
-| elite rare | B | xN base_power x rarity.amplifier, X-bonus, Y-bonus, base-bonus with +2 tier upgrade(except penalty) |
-| elite rare | C | xN base_power x rarity.amplifier, Y-bonus, C-bonus, base-bonus with +2 tier upgrade(except penalty) |
-| boss rare | none | xN base_power x rarity.amplifier, X-bonus, C-bonus, B-bonus, but **no base-bonus** |
-| mythic rare | none | xN base_power x rarity.amplifier, X-bonus, Y-bonus, C-bonus, B-bonus, but no base-bonus |
+| `common` | none | xN base_power x rarity.amplifier, and base-bonus |
+| `uncommon` | none | xN base_power x rarity.amplifier, E-bonus, base-bonus with +1 tier upgrade(except penalty) |
+| `rare` | A | xN base_power x rarity.amplifier, X-bonus, E-bonus, base-bonus with +2 tier upgrade(except penalty) |
+| `rare` | B | xN base_power x rarity.amplifier, X-bonus, Y-bonus, base-bonus with +2 tier upgrade(except penalty) |
+| `rare` | C | xN base_power x rarity.amplifier, Y-bonus, C-bonus, base-bonus with +2 tier upgrade(except penalty) |
+| `epic` | none | xN base_power x rarity.amplifier, X-bonus, C-bonus, B-bonus, but **no base-bonus** |
+| `mythic` | none | xN base_power x rarity.amplifier, X-bonus, Y-bonus, C-bonus, B-bonus, but no base-bonus |
 
 - note:
   - `base-bonus` means the default bonus set granted by the item type at its tier, including its base `c.*` bonus and other default tier-based bonuses defined in the item type table.
@@ -118,11 +118,11 @@
 #### 3.1.3 Item variation 
 
 **Item Variation Hierarchy**
-- Common (12 variations per tier): 1 standard version of every item type.
-- Uncommon (12 variations per tier): 1 specialized versions of every item type.
-- Elite rare ( 12 variations per tier): 1+ version of every item type. 
-- Boss rare (2~3 variations per tier)
-- Mythic rare (total 12 items)
+- `common` (12 variations per tier): 1 standard version of every item type.
+- `uncommon` (12 variations per tier): 1 specialized versions of every item type.
+- `rare` ( 12 variations per tier): 1+ version of every item type. 
+- `epic` (2~3 variations per tier)
+- `mythic` (total 12 items)
 
 #### 3.1.4 Item stacking
 - Items are stacked based on their unique combination of (superRare title, enhancement title, and base item ID). The default `max_stack` is 99.
@@ -143,7 +143,7 @@
 - id
 - item_category
 - tier
-- rarity
+- `itemRarity`
 - subtle_power (`d.`)
 - bonus (`c.`)
 - elemental offensive bonus (`e.`)
@@ -189,12 +189,12 @@ inventory = {
 - Selling price and Purchesing price in Felis's Junk shop calculation 
   - `item_tier` = 1-8
   - `enhancement`: 0-6
-  - `rarity`: common = 1, uncommon = 3, elite rare = 10, boss rare = 30, mythic rare = 300. 
+  - `itemRarity`: `common` = 1, `uncommon` = 3, `rare` = 10, `epic` = 30, `mythic` = 300. 
   - `super_rare`: If yes, 100, if no, 1.
   - Round up the final calculated price to the nearest integer.
-  - Selling_price = (10 + 2 x `item_tier` ) x (1 + `enhancement`/5) x `rarity` x `super_rare`
-  - Unidentified Purchesing_price = (4 + 2 x `item_tier` ) x `rarity` x 10
-  - Identified Purchesing_price = (4 + 2 x `item_tier` ) x `rarity`  x (1 + `enhancement`) x `super_rare` x 40
+  - Selling_price = (10 + 2 x `item_tier` ) x (1 + `enhancement`/5) x `itemRarity` x `super_rare`
+  - Unidentified Purchesing_price = (4 + 2 x `item_tier` ) x `itemRarity` x 10
+  - Identified Purchesing_price = (4 + 2 x `item_tier` ) x `itemRarity`  x (1 + `enhancement`) x `super_rare` x 40
 
 
 

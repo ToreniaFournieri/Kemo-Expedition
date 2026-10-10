@@ -808,14 +808,14 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `category`
     * Optional.
     * `Item category` filter.
-  * `rarity`
+  * `itemRarity`
     * Optional.
     * Allowed values:
       * `common`
       * `uncommon`
-      * `eliteRare`
-      * `bossRare`
-      * `mythicRare`
+      * `rare`
+      * `epic`
+      * `mythic`
       * `all`
   * `superRare`
     * Optional.
@@ -1907,14 +1907,14 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `category`
     * Optional.
     * Uses the `Item category` list.
-  * `rarity`
+  * `itemRarity`
     * Optional.
     * Allowed values:
       * `common`
       * `uncommon`
-      * `eliteRare`
-      * `bossRare`
-      * `mythicRare`
+      * `rare`
+      * `epic`
+      * `mythic`
       * `all`
   * `tier`
     * Optional.
