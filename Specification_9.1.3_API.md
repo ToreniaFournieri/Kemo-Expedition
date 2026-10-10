@@ -1454,7 +1454,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 **3-3-2. `party/{p}/applyGaResult`**
 
 * Applies every change in a `gaSearch` result to party `{p}` in one atomic request.
-* This operation is not recorded in the `undo` or `redo` history and clears the existing history of all affected party members.
+* This operation is not recorded in the `undo` or `redo` history and clears the existing history of all affected party members in `changeSummary`.
 
 * Parameters:
   * `gaResultId`
