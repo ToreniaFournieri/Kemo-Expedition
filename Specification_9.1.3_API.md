@@ -108,6 +108,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 2-3. read/build
      party/{p}
+     party/{p}/gaSearch
      character/status
      character/equipment
      character/equipmentSet
@@ -607,8 +608,91 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `characterId` (character IDs) currently available for party ordering.
       * Example:  `[101, 102, 103, 104, 105, 106]`
 
+**2-3-2 `party/{p}/gaSearch`**
 
-**2-3-2. `character/status`**
+* Optimize the party build for the current destination and depth limit.
+
+* Parameters:
+  * `targetCharacterIds`: Array of character IDs to optimize.
+    * For each target character:
+      * `changeableComponents`
+        * `raceGender`: Boolean
+        * `mainClass`: Boolean
+        * `subClass`: Boolean
+        * `lineage`: Boolean
+        * `predisposition`: Boolean
+        * `equipment`: Boolean
+        * `jewels`: Boolean
+  * `considerOrderChange`: Boolean. 
+  * `considerDeityChange`: Boolean. 
+  * `objective`
+    * `success`, `minDefeat`, `bossDamage`, `experience`
+  * `gaParametersSimple`
+    * `effort`
+      * `low`, `medium`, `high`
+      * Default: `low`
+
+| `effort` | `populationSize` | `generations` | `quickRuns` | `confirmRuns` |
+|---|---|---|---|---|
+| `low` | 12 | 15 | 30 | 150 |
+| `medium` | 24 | 40 | 50 | 300 |
+| `high` | 48 | 80 | 100 | 600 |    
+
+  * `gaParametersDetails`
+    * Optional.
+
+| Parameter | Type | Default | Range | Description |
+|---|---|---|---|---|
+| `effort` | String | `medium` | `low` / `medium` / `high` | Preset that sets every parameter below. Explicit values override the preset. |
+| `populationSize` | Integer | `24` | 8 ~ 64 | Number of candidate builds per generation. |
+| `generations` | Integer | `40` | 1 ~ 200 | Number of generations to run. |
+| `eliteCount` | Integer | `3` | 0 ~ populationSize / 4 | Best builds copied unchanged to the next generation. |
+| `mutationRate` | Number | `0.35` | 0 ~ 1 | Probability that a child build is mutated. |
+| `tournamentSize` | Integer | `3` | 2 ~ 8 | Number of candidates compared when selecting each parent. |
+| `quickRuns` | Integer | `50` | 10 ~ 300 | Simulation runs used to score every candidate. |
+| `confirmRuns` | Integer | `300` | 50 ~ 1000 | Simulation runs (different seed) used to re-score the top candidates. |
+| `confirmTopN` | Integer | `5` | 1 ~ 10 | Number of top candidates re-scored with `confirmRuns` each generation. |
+| `seed` | Integer | Random | Any integer | Fixed seed for a reproducible result. |
+| `maxChanges` | Integer | None | 1 ~ | Penalizes builds that need more changes than this value. |
+| `seedWithHeuristics` | Boolean | `true` | `true` / `false` | Adds heuristic attack-focused and HP-focused builds to the first generation. |
+| `timeBudgetSeconds` | Integer | `30` | 5 ~ 300 | Hard time limit. When reached, the search returns the best build so far. |
+
+* Return:
+  * `verdict`
+    * Rating of the best build compared with the current build.
+    * Judged on a separate verification simulation (`verifyRuns`, independent seed), not on the scores used during the search.
+    * `<rate>` = success rate for the selected objective. Standard error (SE) is computed from the before and after rates.
+    * Values:
+      * `veryGood`: `<rate>` improves by 10 percentage points or more, and the improvement is larger than 2 SE.
+      * `good`: `<rate>` improves by more than 2 SE, but by less than 10 percentage points.
+      * `noisy`: `<rate>` improves, but by no more than 2 SE. The gain may come from chance.
+      * `noChange`: No better build was found. `changeSummary` is empty.
+      * `worse`: The verification run is lower than the current build by more than 2 SE. `changeSummary` is still returned but should not be applied.
+  * `forecast`
+    * `before`: `overview` of the current build (same format as `{p}/simulationRun`).
+    * `after`: `overview` of the best build (same format as `{p}/simulationRun`).
+  * `changeSummary`
+    * Ordered array of Commit API calls that turns the current build into the best build.
+    * Each entry can be sent directly to the Commit API.
+    * Format: `{ "endpoint": <Commit API path>, "parameters": <parameters> }`
+    * Order:
+      1. `commit/build/character/{characterId}/removeEquipment` (all characters, to free items moving between characters)
+      2. `commit/build/party/{p}` (`deityId`, `order`)
+      3. `commit/build/character/{characterId}/changeBuild` (`simulation`: `false`)
+      4. `commit/build/character/{characterId}/equip` (with `targetSlot`)
+      5. `commit/build/character/{characterId}/jewelRemove`
+      6. `commit/build/character/{characterId}/jewelAttach`
+    * Example:
+      `[{"endpoint":"commit/build/character/101/removeEquipment","parameters":{"targetEquipment":[0,2]}},{"endpoint":"commit/build/character/101/equip","parameters":{"targetEquipment":"0/1101/2/0","targetSlot":0}}]`
+  * `revision`
+    * Save revision the search was based on.
+    * Use it as `expectedRevision` when applying `changeSummary`. If the game state has changed, the commit is rejected.
+  * `evaluations`
+    * Number of builds evaluated.
+  * `elapsedSeconds`
+
+  
+**2-3-3. `character/status`**
 
 
 * Parameters:
@@ -662,7 +746,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * Validation:
   * Same as `2.1 CHARACTER_&_PARTY` 
 
-**2-3-3. `character/equipment`**
+**2-3-4. `character/equipment`**
 
 * Parameters:
   * `characterId`
@@ -717,7 +801,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
         * `unavailableReason`: `No redo history.`
 
 
-**2-3-4. `character/equipmentSet`**
+**2-3-5. `character/equipmentSet`**
 
 * Parameters:
   * `characterId`
@@ -752,7 +836,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
               `unavailable`, or `null` when available. Jewels do not affect saved-set
               availability because saved equipment sets do not store Jewels.
 
-**2-3-5. `character/equipmentEvaluation`**
+**2-3-6. `character/equipmentEvaluation`**
 
 * Parameters:
   * `characterId`
