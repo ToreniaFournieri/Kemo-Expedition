@@ -640,11 +640,11 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Default: `false`
   * `considerItemsScope`
     * Optional.
-    * Defualt: `onlyInventory`
+    * Default: `onlyInventory`
     * Options:
       * `onlyInventory`: Consider inventory only. Do not consider equipment from other party members.
       * `withinTargets`: Consider items in the inventory and equipment equipped by the selected target characters.
-      * `global`: Consider items in the inventory and equipment equipped by all characters.
+      * `global`: Consider items in the inventory and equipment equipped by all characters. 
   * `objective`
     * Optional.
     * Default: `success`.
@@ -722,6 +722,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * ID of this search result. Used by `party/{p}/applyGaResult`.
     * Only the latest result per party is kept. A new `gaSearch` for the same party invalidates the previous ID.
     * The result is not save state. It is lost when the application restarts.
+    * If `considerItemsScope` is `global`, any equipment removals from other characters required by the result must also be included in the result and applied before other changes.
 
 **2-3-3. `character/status`**
 
@@ -1776,7 +1777,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Parameters:
   * `superRareThreshold`
-  * `bossThreshold`
+  * `epicThreshold`
   * `mythicThreshold`
   * `rareThreshold`
   * `sideQuestThreshold`
