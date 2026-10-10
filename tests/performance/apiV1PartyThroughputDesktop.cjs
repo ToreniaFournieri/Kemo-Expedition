@@ -106,7 +106,7 @@ app.on('browser-window-created',(_event,window)=>{
      if(total%100===0){console.log(JSON.stringify({fixture,phase,total,wallMs:r.wallMs,revision:r.body.revision}));await checkpoint(phase);}
      return r.body.data;
     }
-    const readCases=[['read/observation/party',{}],['read/build/party/{p}',{path:{p:1}}],...['status','equipment','equipmentSet','equipmentEvaluation'].map(name=>['read/build/character/{characterId}/'+name,{path:characterPath,...(name==='equipmentEvaluation'?{query:{equipmentChanges:'1=0'}}:{})}])];
+    const readCases=[['read/observation/party',{}],['read/build/party/{p}',{path:{p:1}}],...['status','equipment','equipmentSet','equipmentEvaluation'].map(name=>['read/build/character/'+name,{query:{characterId,...(name==='equipmentEvaluation'?{equipmentChanges:'1=0'}:{})}}])];
     for(let i=0;i<reads;i++){const[id,options]=readCases[i%readCases.length];await request('sameRevisionReads',id,options);}
     assert.deepEqual(await window.webContents.executeJavaScript('window.__BOKEMO_API_BENCHMARK__.snapshot()'),initial);assert.deepEqual(store.load(identity),initialStore);await checkpoint('sameRevisionReadsEnd');
     for(let cycle=0;cycle<cycles;cycle++){

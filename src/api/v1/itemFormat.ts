@@ -2,7 +2,7 @@ import { getItemById } from '../../data/items';
 import { getVariantKey, type InventoryRecord, type Item, type JewelAttachment, type JewelKey, type SavedEquipmentEntry, type SavedEquipmentSet } from '../../types';
 
 // SpecRef: 9.1.3 | Item Format | `<lockStatus>/<itemId>/<enhancement>/<superRare>`
-// SpecRef: 9.1.3 | 2-3-3 read/build/character/{characterId}/equipment | `<slotIndex>/<Item Format>[/<jewelType>:<jewelRank>]`
+// SpecRef: 9.1.3 | 2-3-3 read/build/character/equipment | `<slotIndex>/<Item Format>[/<jewelType>:<jewelRank>]`
 // The single definition of the compact item and equipment-entry wire formats. Read models format with it and UI
 // adapters parse with it, so a projection carries exactly the facts needed to rebuild a display item from master data.
 

@@ -5,6 +5,7 @@ import { createFreshGameState, gameReducer } from '../../src/hooks/useGameState'
 import { canCharacterEquipCategory } from '../../src/game/equipmentSets';
 import { getVariantKey, type GameState } from '../../src/types';
 import { planEquipmentIntent, type EquipmentIntent } from '../../src/api/v1/equipmentIntents';
+import { readCharacterBuild } from './apiV1CharacterRead.ts';
 
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | Party build and equipment
 // Slot-addressed equipment commands must validate the whole request against one snapshot and report real effects.
@@ -358,8 +359,7 @@ assert.equal(undoHistory[String(characterId)].redo.length, 0);
   const stale = { ...wizard, parties: wizard.parties.map((party, index) => index !== 0 ? party : {
     ...party, characters: party.characters.map((entry) => entry.id !== characterId ? entry : { ...entry, equipment: [...entry.equipment, null, null] }),
   }) };
-  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
-  const view = await buildApiV1ReadData(`read/build/character/${characterId}/equipment`, stale, {}, { revision: 1 } as never) as { current: { equipment: string[] } };
+  const view = await readCharacterBuild('equipment', characterId, stale, {}, { revision: 1 } as never) as { current: { equipment: string[] } };
   assert.equal(view.current.equipment.length, maxSlots(wizard), 'the read model lists only real slots');
 }
 

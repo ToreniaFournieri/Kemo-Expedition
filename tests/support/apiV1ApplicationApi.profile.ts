@@ -131,7 +131,7 @@ const steps: Step[] = [
   { operation: 'read/observation/setting', mutating: false },
   { operation: 'read/observation/compact', mutating: false },
   { operation: 'read/expedition/{p}/setting', pathParameters: { p: 1 }, mutating: false },
-  { operation: 'read/build/character/{characterId}/equipmentEvaluation', pathParameters: { characterId: createFreshGameState('ja', 0).parties[0].characters[0].id }, parameters: { equipmentChanges: ['0=0', '1=0'], targetItems: ['0/1101/2/0/0:0'.replace('/0:0', '') + '/fort:1'] }, mutating: false },
+  { operation: 'read/build/character/equipmentEvaluation', parameters: { characterId: createFreshGameState('ja', 0).parties[0].characters[0].id, equipmentChanges: ['0=0', '1=0'], targetItems: ['0/1101/2/0/0:0'.replace('/0:0', '') + '/fort:1'] }, mutating: false },
   { operation: 'read/expedition/{p}/setting', pathParameters: { p: 9 }, mutating: false },
   { operation: 'commit/base/changeJewelPriorityParty', parameters: { partyNumber: 'none' }, mutating: true },
   { operation: 'commit/base/changeJewelPriorityParty', parameters: { partyNumber: 'none' }, mutating: true },
@@ -348,18 +348,18 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
 {
   const h = harness();
   const local = h.api.createInProcessAdapter();
-  type Equipment = { data: { validOptions: { undoEquipment: { available: boolean }; redoEquipment: { available: boolean } } } };
-  const readEquipment = () => local.read('read/build/character/{characterId}/equipment', { pathParameters: { characterId: 1 } }) as Promise<Equipment>;
-  assert.equal((await readEquipment()).data.validOptions.undoEquipment.available, false);
+  type Equipment = { data: { characters: { validOptions: { undoEquipment: { available: boolean }; redoEquipment: { available: boolean } } }[] } };
+  const readEquipment = () => local.read('read/build/character/equipment', { parameters: { characterId: 1 } }) as Promise<Equipment>;
+  assert.equal((await readEquipment()).data.characters[0].validOptions.undoEquipment.available, false);
   const seen: Promise<Equipment>[] = [];
   const unsubscribe = local.subscribe(() => { seen.push(readEquipment()); });
   const removed = await local.commit('commit/build/character/{characterId}/removeAllEquipment', { pathParameters: { characterId: 1 } }) as { error?: unknown };
   assert.equal(removed.error, undefined);
   assert.equal(seen.length, 1, 'one notification per successful commit');
-  assert.equal((await seen[0]).data.validOptions.undoEquipment.available, true, 'the history is installed when subscribers are told');
+  assert.equal((await seen[0]).data.characters[0].validOptions.undoEquipment.available, true, 'the history is installed when subscribers are told');
   const undone = await local.commit('commit/build/character/{characterId}/undoEquipment', { pathParameters: { characterId: 1 } }) as { error?: unknown };
   assert.equal(undone.error, undefined);
-  const afterUndo = (await seen[1]).data.validOptions;
+  const afterUndo = (await seen[1]).data.characters[0].validOptions;
   assert.equal(afterUndo.redoEquipment.available, true, 'Redo is available as soon as Undo is installed');
   assert.equal(afterUndo.undoEquipment.available, false);
   const rejected = await local.commit('commit/build/character/{characterId}/undoEquipment', { pathParameters: { characterId: 1 } }) as { error?: unknown };

@@ -4,7 +4,7 @@ import { executeApiV1CommitTransaction, type ApiV1CommitAuthorityDependencies, t
 import { planCharacterBuildChange } from '../../src/api/v1/buildChange';
 import { characterEditToChangeBuildParameters } from '../../src/api/v1/characterBuildParameters';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
-import { buildApiV1ReadData } from '../../src/api/v1/readModels';
+import { readCharacterBuild } from './apiV1CharacterRead.ts';
 import { createFreshGameState, gameReducer } from '../../src/hooks/useGameState';
 import type { GameState } from '../../src/types';
 
@@ -108,7 +108,7 @@ function request(parameters: Record<string, unknown>, overrides: Partial<ApiV1Co
 
   // `calculatedStatus` previews the requested build: the simulation reports exactly the status the confirmed change
   // commits (removed equipment included), and a cancelled change reports the unchanged status.
-  const statusOf = async (state: GameState) => (await buildApiV1ReadData(`read/build/character/${characterId}/status`, state, {}, {
+  const statusOf = async (state: GameState) => (await readCharacterBuild('status', characterId, state, {}, {
     revision: 0, environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, inGameTime: now,
   })).calculatedStatus;
   assert.deepEqual(simulated.data.calculatedStatus, await statusOf(confirmed.state), 'a simulation previews the committed status');
@@ -170,7 +170,7 @@ fails(base, uniqueCharacterId, { name: 'renamed unique' }, 'illegal_action', { s
 {
   const enemyId = ENEMIES[0].id;
   const unlocked: GameState = { ...base, global: { ...base.global, unlockedMimorianEnemyIds: [enemyId] } };
-  const status = await buildApiV1ReadData(`read/build/character/${characterId}/status`, unlocked, {}, {
+  const status = await readCharacterBuild('status', characterId, unlocked, {}, {
     revision: 0, environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, inGameTime: now,
   }) as { current: { racesAndGender: string }; validOptions: { racesAndGender: string[]; lineage: string[]; predisposition: string[] } };
   assert.ok(status.validOptions.racesAndGender.includes(`mimorian/female/${enemyId}`));
@@ -179,7 +179,7 @@ fails(base, uniqueCharacterId, { name: 'renamed unique' }, 'illegal_action', { s
   assert.ok(status.validOptions.lineage.every((id) => id !== 'unascertained'));
   assert.ok(status.validOptions.predisposition.every((id) => id !== 'none'));
 
-  const uniqueStatus = await buildApiV1ReadData(`read/build/character/${uniqueCharacterId}/status`, base, {}, {
+  const uniqueStatus = await readCharacterBuild('status', uniqueCharacterId, base, {}, {
     revision: 0, environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, inGameTime: now,
   }) as { validOptions: { racesAndGender: string[]; lineage: string[]; predisposition: string[] } };
   assert.deepEqual(uniqueStatus.validOptions.racesAndGender, ['none']);
@@ -214,7 +214,7 @@ console.log('apiV1BuildChange profile ok');
 {
   const kemo = base.parties[0].characters[0];
   const normalId = base.parties[0].characters[2].id;
-  const statusOf = async (state: GameState, id: number) => await buildApiV1ReadData(`read/build/character/${id}/status`, state, {}, {
+  const statusOf = async (state: GameState, id: number) => await readCharacterBuild('status', id, state, {}, {
     revision: 0, environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, inGameTime: now,
   }) as { current: { uniqueSelection: unknown }; validOptions: { uniqueSelection: unknown[] } };
   // PT2 unlocked, so `orca` (Available At PT2) is selectable below.

@@ -85,11 +85,11 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
   assert.equal(compendium.status, 200, 'itemCompendium category is optional, so one item can be looked up by itemId');
   assert.deepEqual(calls.at(-1).payload.parameters, { itemId: 2402, rarity: 'all', details: 'abilityAndCBonus', limit: 100 });
   // SpecRef: 9.1.4.14 | GET arrays repeat the parameter name; a comma-joined array gets a hint instead of a bare pattern error.
-  const commaJoined = await fetch(`${descriptor.endpoint}/read/build/character/1/equipmentEvaluation?targetItems=0/1101/0/0/0:0,0/1102/0/0/0:0`, { headers: session });
+  const commaJoined = await fetch(`${descriptor.endpoint}/read/build/character/equipmentEvaluation?characterId=1&targetItems=0/1101/0/0/0:0,0/1102/0/0/0:0`, { headers: session });
   const commaJoinedError = (await commaJoined.json()).error;
   assert.deepEqual([commaJoined.status, commaJoinedError.details.field, commaJoinedError.details.hint], [400, 'targetItems', 'repeat_parameter']);
   assert.match(commaJoinedError.message, /repeating the parameter \(`targetItems=1&targetItems=2`\)/);
-  const badSingle = await fetch(`${descriptor.endpoint}/read/build/character/1/equipmentEvaluation?targetItems=nonsense`, { headers: session });
+  const badSingle = await fetch(`${descriptor.endpoint}/read/build/character/equipmentEvaluation?characterId=1&targetItems=nonsense`, { headers: session });
   assert.equal((await badSingle.json()).error.details.hint, undefined, 'no hint without a comma');
   const invalidCommit = await fetch(`${descriptor.endpoint}/commit/base/changeJewelPriorityParty`, { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedRevision: 0, idempotencyKey: crypto.randomUUID(), parameters: {}, typo: true }) });
   assert.equal(invalidCommit.status, 400);

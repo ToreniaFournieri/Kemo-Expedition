@@ -54,8 +54,8 @@ function currentRaceAndGender(character: Character): string {
     : `${character.raceId}/${character.gender}`;
 }
 
-// SpecRef: 9.1.3 | 2-3-2 character/{characterId}/status `current`; 9.1.4.9 | changeBuild returns the complete new `current`
-/** A character's public build facts: the `current` of `read/build/character/{characterId}/status` and of `changeBuild`. */
+// SpecRef: 9.1.3 | 2-3-2 character/status `current`; 9.1.4.9 | changeBuild returns the complete new `current`
+/** A character's public build facts: the `current` of `read/build/character/status` and of `changeBuild`. */
 export function describeCharacterBuildCurrent(character: Character) {
   return {
     uniqueSelection: character.uniqueCharacterId ?? 'none',

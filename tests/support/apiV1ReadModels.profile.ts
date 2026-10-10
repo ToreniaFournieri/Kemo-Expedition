@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { buildApiV1ReadData } from '../../src/api/v1/readModels.ts';
+import { readCharacterBuild } from './apiV1CharacterRead.ts';
 import { buildDiaryTabView, type DiaryProjection } from '../../src/api/v1/diaryTabView.ts';
 import { createFreshGameState } from '../../src/hooks/useGameState.ts';
 
@@ -191,7 +192,7 @@ calls.length = 0;
   const { snapshotCharacterEquipment } = await import('../../src/api/v1/equipmentHistoryFacts.ts');
   type Action = { equipmentStates: string[][]; available: boolean; unavailableReason: string | null };
   const target = state.parties[0].characters[0];
-  const readEquipment = async (history?: Record<string, { undo: never[]; redo: never[] }>) => (await buildApiV1ReadData(`read/build/character/${target.id}/equipment`, state, {}, { ...context, control: { equipmentHistory: history } }) as {
+  const readEquipment = async (history?: Record<string, { undo: never[]; redo: never[] }>) => (await readCharacterBuild('equipment', target.id, state, {}, { ...context, control: { equipmentHistory: history } }) as {
     validOptions: { numberOfEmptyEquipmentSlots: number; undoEquipment: Action; redoEquipment: Action };
   }).validOptions;
   const options = await readEquipment();
@@ -222,7 +223,7 @@ calls.length = 0;
   assert.equal(listed.equipmentStates[0].length, thirty[29].equipment.length, 'the most recent state is first');
 
   const shortArray = { ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, characters: party.characters.map((entry) => entry.id === target.id ? { ...entry, equipment: [] } : entry) } : party) };
-  const bare = await buildApiV1ReadData(`read/build/character/${target.id}/equipment`, shortArray, {}, context) as { validOptions: { numberOfEmptyEquipmentSlots: number } };
+  const bare = await readCharacterBuild('equipment', target.id, shortArray, {}, context) as { validOptions: { numberOfEmptyEquipmentSlots: number } };
   assert.ok(bare.validOptions.numberOfEmptyEquipmentSlots > 0, 'empty slots are counted against the real slot count, not the array length');
 }
 // Item and equipment-entry formats round-trip through master data, so a projection is enough to rebuild a display item.
@@ -252,7 +253,7 @@ calls.length = 0;
   // The saved Jewel is in the Jewel inventory, so the entry is available (Spec 8.2.4: a set is the item and Jewel combination).
   const withSet = { ...state, global: { ...state.global, jewels: { ...state.global.jewels, 'ward:2': 1 }, savedEquipmentSets: [{ slot: 4, name: 'Boss', createdAt: Date.UTC(2026, 8, 20), equipment: [{ slotIndex: first.slot, item: { ...first.item, isLocked: false, jewel: { key: 'ward' as const, rank: 2 } }, isLocked: true }] }] } };
   for (const detail of [true, 'true']) {
-    const read = await buildApiV1ReadData(`read/build/character/${target.id}/equipmentSet`, withSet, { isEquipmentSetDetail: detail }, context) as {
+    const read = await readCharacterBuild('equipmentSet', target.id, withSet, { isEquipmentSetDetail: detail }, context) as {
       equipmentSets: { equipmentSetId: number; equipmentSet: { name: string; createdAt: string; equipment?: string[]; availability: { allAvailable: boolean; entries: Array<{ slotIndex: number; item: string; available: boolean; unavailableReason: string | null }> } } }[];
     };
     assert.equal(read.equipmentSets[0].equipmentSet.equipment?.[0], `${first.slot}/1/${first.item.id}/${first.item.enhancement}/${first.item.superRare}/ward:2`, 'saved sets carry their Jewel');
@@ -270,7 +271,7 @@ calls.length = 0;
     }]);
     assert.equal(rebuilt.availability.entries[0].available, true);
   }
-  const summary = await buildApiV1ReadData(`read/build/character/${target.id}/equipmentSet`, withSet, {}, context) as { equipmentSets: { equipmentSet: { equipment?: string[] } }[] };
+  const summary = await readCharacterBuild('equipmentSet', target.id, withSet, {}, context) as { equipmentSets: { equipmentSet: { equipment?: string[] } }[] };
   assert.equal(summary.equipmentSets[0].equipmentSet.equipment, undefined, 'the summary omits equipment');
 }
 
@@ -887,7 +888,7 @@ assert.deepEqual(state, before);
   const { CalculatedStatusSchema } = await import('../../src/api/v1/contracts.ts');
   const party = await buildApiV1ReadData('read/observation/party', state, {}, context) as { partyInfo: { party: { characters: { characterId: number; calculatedStatus: unknown }[] } } };
   const character = party.partyInfo.party.characters[0];
-  const status = await buildApiV1ReadData(`read/build/character/${character.characterId}/status`, state, {}, context) as { calculatedStatus: { stats: { key: string }[]; attacks: { attackType: string; available: boolean; speed: unknown }[] } };
+  const status = await readCharacterBuild('status', character.characterId, state, {}, context) as { calculatedStatus: { stats: { key: string }[]; attacks: { attackType: string; available: boolean; speed: unknown }[] } };
   for (const projected of [character.calculatedStatus, status.calculatedStatus]) {
     assert.equal(Value.Check(CalculatedStatusSchema, projected), true, JSON.stringify([...Value.Errors(CalculatedStatusSchema, projected)].slice(0, 3)));
   }
@@ -1225,4 +1226,18 @@ assert.deepEqual(state, before);
   const room = buildBattleRoomData({ room: 1, enemyHP: 1, outcome: 'victory', damageDealt: 0, damageTaken: 0, remainingPartyHP: 1, maxPartyHP: 1, details: [], compactBattle } as never) as { events: unknown[][] };
   assert.equal(room.events[0][8], 0.714, 'Howl 5/7 is published at 3 decimals');
   assert.equal(Math.round((room.events[0][8] as number) * 7), 5, 'the numerator is still recoverable');
+}
+
+// Multi-character reads and the new party projection facts.
+{
+  const fresh = createFreshGameState('en', Date.UTC(2026, 8, 20));
+  const ids = fresh.parties[0].characters.slice(0, 2).map((character) => character.id);
+  const ctx = { revision: 1, environment: 'desktop', now: Date.UTC(2026, 8, 20) } as never;
+  const many = await buildApiV1ReadData('read/build/character/status', fresh, { characterId: ids }, ctx) as { characters: { characterId: number }[] };
+  assert.deepEqual(many.characters.map((entry) => entry.characterId), ids, 'one result per requested character, in request order');
+  const single = await buildApiV1ReadData('read/build/character/status', fresh, { characterId: ids[0] }, ctx) as { characters: unknown[] };
+  assert.equal(single.characters.length, 1);
+  await assert.rejects(() => buildApiV1ReadData('read/build/character/status', fresh, {}, ctx), /invalid_request:characterId/);
+  await assert.rejects(() => buildApiV1ReadData('read/build/character/status', fresh, { characterId: [ids[0], ids[0]] }, ctx), /invalid_request:characterId/);
+  await assert.rejects(() => buildApiV1ReadData('read/build/character/status', fresh, { characterId: 999999 }, ctx), /not_found/);
 }

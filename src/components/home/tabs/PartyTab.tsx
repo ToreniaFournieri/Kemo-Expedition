@@ -795,7 +795,7 @@ export default function PartyTab({
     ? retainedEquipCategory
     : availableCategories.includes('armor') ? 'armor' : availableCategories[0] ?? 'armor';
 
-  // SpecRef: 9.1.3 | Read | 2-3-5 character/{characterId}/equipmentEvaluation
+  // SpecRef: 9.1.3 | Read | 2-3-5 character/equipmentEvaluation
   // Every displayed defense preview is evaluated against one immutable Application API snapshot. The tab only formats
   // the returned deltas; it does not simulate equipment or recalculate character status.
   const previewTargetSlot = selectingSlot ?? Array.from({ length: stats.maxEquipSlots }).findIndex((_, index) => !char.equipment[index]);
@@ -817,19 +817,19 @@ export default function PartyTab({
   // pause so that a burst of inventory changes issues one set of requests.
   const equipmentChangeInputs = useMemo(() => Array.from(
     { length: Math.ceil(equipmentChanges.length / EQUIPMENT_EVALUATION_LIMIT) },
-    (_, chunk) => ({ pathParameters: { characterId: char.id }, parameters: { equipmentChanges: equipmentChanges.slice(chunk * EQUIPMENT_EVALUATION_LIMIT, (chunk + 1) * EQUIPMENT_EVALUATION_LIMIT) } }),
+    (_, chunk) => ({ parameters: { characterId: char.id, equipmentChanges: equipmentChanges.slice(chunk * EQUIPMENT_EVALUATION_LIMIT, (chunk + 1) * EQUIPMENT_EVALUATION_LIMIT) } }),
   ), [char.id, equipmentChanges]);
   const equipmentChangeProjections = useApiReadMany<{
-    calculatedEquipmentChange: Array<{ change: string; equippable: boolean; physicalDefenseDelta: number; magicalDefenseDelta: number }>;
+    characters: { calculatedEquipmentChange: Array<{ change: string; equippable: boolean; physicalDefenseDelta: number; magicalDefenseDelta: number }> }[];
   }>(
     apiAdapter,
-    'read/build/character/{characterId}/equipmentEvaluation',
+    'read/build/character/equipmentEvaluation',
     equipmentChangeInputs,
     [char.id, equipmentChanges.join('|')],
     120,
   );
   const equipmentChangeByTarget = useMemo(
-    () => new Map((equipmentChangeProjections ?? []).flatMap((projection) => projection.calculatedEquipmentChange).map((entry) => [entry.change, entry])),
+    () => new Map((equipmentChangeProjections ?? []).flatMap((projection) => projection.characters.flatMap((entry) => entry.calculatedEquipmentChange)).map((entry) => [entry.change, entry])),
     [equipmentChangeProjections],
   );
 

@@ -284,6 +284,8 @@ interface ReadFixture {
   path?: (client: Actor) => Promise<Record<string, unknown>>;
   query?: Record<string, unknown>;
   missingPath?: Record<string, unknown>;
+  dynamicQuery?: (client: Actor) => Promise<Record<string, unknown>>;
+  missingQuery?: Record<string, unknown>;
   prepare?: (client: Actor) => Promise<void>;
   environment?: 'dev';
 }
@@ -340,7 +342,7 @@ const commitFixtures: Record<string, CommitFixture> = {
   'commit/build/character/{characterId}/equip': {
     prepare: async (client) => { await client.commitOk('commit/build/character/{characterId}/removeEquipment', { path: await characterPath(client), parameters: { targetEquipment: 1 } }); },
     request: async (client) => {
-      const equipment = await client.read('read/build/character/{characterId}/equipment', await characterPath(client)) as { current: { equipment: Array<string | null> } };
+      const equipment = await client.read('read/build/character/equipment', {}, await characterPath(client)) as { characters: Array<{ current: { equipment: Array<string | null> } }> };
       void equipment;
       const armor = await ownedItems(client, 'armor');
       return { path: await characterPath(client), parameters: { targetEquipment: armor[0] } };
@@ -445,10 +447,10 @@ const readFixtures: Record<string, ReadFixture> = {
   'read/expedition/{p}/simulationRun': { path: async () => ({ p: 1 }), missingPath: { p: 6 } },
   'read/expedition/{p}/chargeStock': { path: async () => ({ p: 1 }), missingPath: { p: 6 } },
   'read/build/party/{p}': { path: async () => ({ p: 1 }), missingPath: { p: 6 } },
-  'read/build/character/{characterId}/status': { path: characterPath, missingPath: { characterId: 999999 } },
-  'read/build/character/{characterId}/equipment': { path: characterPath, missingPath: { characterId: 999999 } },
-  'read/build/character/{characterId}/equipmentSet': { path: characterPath, missingPath: { characterId: 999999 } },
-  'read/build/character/{characterId}/equipmentEvaluation': { path: characterPath, query: { equipmentChanges: '1=0' }, missingPath: { characterId: 999999 } },
+  'read/build/character/status': { dynamicQuery: characterPath, missingQuery: { characterId: 999999 } },
+  'read/build/character/equipment': { dynamicQuery: characterPath, missingQuery: { characterId: 999999 } },
+  'read/build/character/equipmentSet': { dynamicQuery: characterPath, missingQuery: { characterId: 999999 } },
+  'read/build/character/equipmentEvaluation': { dynamicQuery: characterPath, query: { equipmentChanges: '1=0' }, missingQuery: { characterId: 999999 } },
   'read/base/searchItems': { query: { state: 'owned' } },
   'resources/glossary': { query: { category: 'Ab.' } },
   'resources/itemCompendium': { query: { category: 'armor' } },
@@ -692,13 +694,14 @@ async function runRead(operation: CatalogOperation) {
   const execute = async (client: Client | null) => {
     const probe = client ?? new Client();
     const path = (await fixture.path?.(probe)) ?? {};
-    return { client: probe, path };
+    const query = { ...fixture.query, ...((await fixture.dynamicQuery?.(probe)) ?? {}) };
+    return { client: probe, path, query };
   };
 
   await cell(id, 'success', async () => {
     const run = async (client: Client | null) => {
-      const { client: active, path } = await execute(client);
-      const result = await active.send(id, { path, query: fixture.query });
+      const { client: active, path, query } = await execute(client);
+      const result = await active.send(id, { path, query });
       assert.equal(result.status, 200, JSON.stringify(result.body));
     };
     if (needsSession) await withSession({ environment }, run); else await run(null);
@@ -706,10 +709,10 @@ async function runRead(operation: CatalogOperation) {
 
   await cell(id, 'invalidInput', async () => {
     const run = async (client: Client | null) => {
-      const { client: active, path } = await execute(client);
+      const { client: active, path, query } = await execute(client);
       const result = operation.method === 'POST'
         ? await active.send(id, { path, body: { ...(operation.examples.invalidRequest?.body ?? { unexpectedMember: true }) } })
-        : await active.send(id, { path, query: { ...fixture.query, ...(operation.examples.invalidRequest?.query ?? { unexpectedMember: 'true' }) } });
+        : await active.send(id, { path, query: { ...query, ...(operation.examples.invalidRequest?.query ?? { unexpectedMember: 'true' }) } });
       expectError(result, 'invalid_request', 'an unknown query member');
     };
     if (needsSession) await withSession({ environment }, run); else await run(null);
@@ -717,10 +720,10 @@ async function runRead(operation: CatalogOperation) {
 
   if (needsSession) {
     await cell(id, 'readOnly', () => withSession({ environment }, async (client) => {
-      const { path } = await execute(client);
+      const { path, query } = await execute(client);
       const before = await snapshot(client);
       const persisted = persistCount;
-      const result = await client.send(id, { path, query: fixture.query });
+      const result = await client.send(id, { path, query });
       assert.equal(result.status, 200, JSON.stringify(result.body));
       assert.equal(await snapshot(client), before, 'a read changes nothing');
       assert.equal(persistCount, persisted, 'a read persists nothing');
@@ -729,9 +732,10 @@ async function runRead(operation: CatalogOperation) {
     record(id, 'readOnly', 'n/a: public operation without a save');
   }
 
-  if (errors.has('not_found') && fixture.missingPath) {
+  if (errors.has('not_found') && (fixture.missingPath || fixture.missingQuery)) {
     await cell(id, 'notFound', () => withSession({ environment }, async (client) => {
-      const result = await client.send(id, { path: fixture.missingPath, query: fixture.query });
+      const query = { ...fixture.query, ...((await fixture.dynamicQuery?.(client)) ?? {}), ...fixture.missingQuery };
+      const result = await client.send(id, { path: fixture.missingPath ?? {}, query });
       expectError(result, 'not_found', 'a missing path resource');
     }));
   } else if (errors.has('not_found')) {
@@ -871,8 +875,9 @@ async function runParity(filter: RegExp | null) {
         const environment = fixture.environment ?? 'prod';
         const http = await withSession({ environment }, async (client) => {
           const path = (await fixture.path?.(client)) ?? {};
+          const query = { ...fixture.query, ...((await fixture.dynamicQuery?.(client)) ?? {}) };
           await settleDeliveries(application);
-          const result = await client.send(id, { path, query: fixture.query });
+          const result = await client.send(id, { path, query });
           assert.equal(result.status, 200, JSON.stringify(result.body));
           return normalize({ revision: result.body.revision, data: result.body.data });
         });
@@ -880,8 +885,9 @@ async function runParity(filter: RegExp | null) {
         try {
           const local = new InProcessActor(inProcessApplication());
           const path = (await fixture.path?.(local)) ?? {};
+          const query = { ...fixture.query, ...((await fixture.dynamicQuery?.(local)) ?? {}) };
           await settleDeliveries(local.api);
-          const result = await local.raw(id, path, fixture.query ?? {});
+          const result = await local.raw(id, path, query);
           assert.equal(result.error, undefined, JSON.stringify(result.error));
           assert.deepEqual(normalize({ revision: result.revision, data: result.data }), http, 'the read differs between adapters');
         } finally {

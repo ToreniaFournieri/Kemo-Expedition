@@ -635,11 +635,27 @@ definitions in 9.1.3.
 
 **Party build and equipment**
 
+* `read/build/character/{status,equipment,equipmentSet,equipmentEvaluation}` take a
+  required query `characterId`: one ID, or the key repeated for several unique IDs (at
+  most 36). The other parameters apply to every listed character. The response is
+  `{characters: [...]}` in request order, each entry `{characterId, ...}` with the fields
+  9.1.3 lists for the operation. An unknown ID is `not_found` and rejects the whole read;
+  a missing, malformed, or duplicate `characterId` is `invalid_request:characterId`.
+* `commit/expedition/{p}/sortie` and `godsBattle` return `currentHp`, `chargeStock`, and
+  `controls` (`{sortie, godsBattle}`, each `{available, unavailableReason}`) as the party
+  stands after the commit, with the same reasons and order as `read/observation/expedition`
+  (9.1.3, 2-2-1). `commit/progress/elapsed` returns `parties`, one `{partyNumber,
+  currentHp, chargeStock, controls}` per party after the step. A client can read these
+  instead of sending a Sortie that `party_exhausted` or `charge_insufficient` would refuse.
+* `read/observation/party`'s `party` adds `experienceRatio` (whole percent of the current
+  level's EXP, 0 at the maximum level), `currentHp`, `deityTotalDonation`, and
+  `deityNextRankThreshold` (`null` at the maximum rank).
+
 * Every projection spells the Auto Equipment mode the way 9.1.3 (2-3-3 `mode`) and
   the `autoEquipment` commit do: `FULL`, `SEMI`, or `OFF`. This includes the
   `party` projection's `characters[].autoEquipmentMode`.
 * Equipment arrays (the `party` projection's `characters[].equipment` and
-  `character/{characterId}/equipment`) list every slot the character has, in slot
+  `character/equipment`) list every slot the character has, in slot
   order, with `0` for each empty slot, including trailing empty slots.
 
 * `equip` returns `warnings` beside `current`, as semantic `{key, args}` entries.
@@ -1056,10 +1072,10 @@ use the same operation without HTTP authentication headers.
 | POST | `/api/v1/read/expedition/{p}/simulationRun` | Session | Private forecast of `numberOfRun` runs (default 100). |
 | GET | `/api/v1/read/expedition/{p}/chargeStock` | Session | Charge stock/status. |
 | GET | `/api/v1/read/build/party/{p}` | Session | Party build/options. |
-| GET | `/api/v1/read/build/character/{characterId}/status` | Session | Character build/options. |
-| GET | `/api/v1/read/build/character/{characterId}/equipment` | Session | Equipment/mode. |
-| GET | `/api/v1/read/build/character/{characterId}/equipmentSet` | Session | Saved equipment sets. |
-| GET | `/api/v1/read/build/character/{characterId}/equipmentEvaluation` | Session | Evaluate items and Jewels for the character. |
+| GET | `/api/v1/read/build/character/status` | Session | Character build/options. |
+| GET | `/api/v1/read/build/character/equipment` | Session | Equipment/mode. |
+| GET | `/api/v1/read/build/character/equipmentSet` | Session | Saved equipment sets. |
+| GET | `/api/v1/read/build/character/equipmentEvaluation` | Session | Evaluate items and Jewels for the character. |
 | GET | `/api/v1/read/base/searchItems` | Session | Search known items. |
 | GET | `/api/v1/read/base/jewelPriorityParty` | Session | Jewel priority. |
 | GET | `/api/v1/read/base/shopInfo` | Session | Shop status/information. |

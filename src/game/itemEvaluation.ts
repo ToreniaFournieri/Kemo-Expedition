@@ -6,7 +6,7 @@ import { getItemDisplayMultiplier } from './itemPower';
 import { getJewelCBonusValue, getJewelDRankBonus, JEWEL_DEFS } from './jewel';
 import { getCharacterGrowthMultiplier, getCharacterMultiplier } from './partyComputation';
 
-// SpecRef: 9.1.3 | Read | 2-3-5 character/{characterId}/equipmentEvaluation
+// SpecRef: 9.1.3 | Read | 2-3-5 character/equipmentEvaluation
 // SpecRef: 8.2.4 | Equipment management | Inventory in party tab respects `item_category_x1.x` amplifier
 // The status one item would show for one character: its own `d.` stats scaled by enhancement, Super Rare title, and the
 // item's multipliers plus the character's equipment-category bonus (for example `c.katana_x1.4`) and, for HP, the

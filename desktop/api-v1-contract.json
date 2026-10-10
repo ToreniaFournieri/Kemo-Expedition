@@ -8299,9 +8299,13 @@
                     "level",
                     "experience",
                     "experienceToNext",
+                    "experienceRatio",
+                    "currentHp",
                     "maxHp",
                     "deityId",
                     "deityRank",
+                    "deityTotalDonation",
+                    "deityNextRankThreshold",
                     "condition",
                     "order",
                     "characters",
@@ -8331,6 +8335,15 @@
                       "minimum": 0,
                       "type": "integer"
                     },
+                    "experienceRatio": {
+                      "minimum": 0,
+                      "maximum": 100,
+                      "type": "integer"
+                    },
+                    "currentHp": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
                     "maxHp": {
                       "minimum": 0,
                       "type": "integer"
@@ -8343,6 +8356,21 @@
                     "deityRank": {
                       "minimum": 0,
                       "type": "integer"
+                    },
+                    "deityTotalDonation": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "deityNextRankThreshold": {
+                      "anyOf": [
+                        {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "condition": {
                       "minimum": -400,
@@ -8900,9 +8928,13 @@
                         "level",
                         "experience",
                         "experienceToNext",
+                        "experienceRatio",
+                        "currentHp",
                         "maxHp",
                         "deityId",
                         "deityRank",
+                        "deityTotalDonation",
+                        "deityNextRankThreshold",
                         "condition",
                         "order",
                         "characters",
@@ -8932,6 +8964,15 @@
                           "minimum": 0,
                           "type": "integer"
                         },
+                        "experienceRatio": {
+                          "minimum": 0,
+                          "maximum": 100,
+                          "type": "integer"
+                        },
+                        "currentHp": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
                         "maxHp": {
                           "minimum": 0,
                           "type": "integer"
@@ -8944,6 +8985,21 @@
                         "deityRank": {
                           "minimum": 0,
                           "type": "integer"
+                        },
+                        "deityTotalDonation": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "deityNextRankThreshold": {
+                          "anyOf": [
+                            {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         },
                         "condition": {
                           "minimum": -400,
@@ -9458,9 +9514,13 @@
                 "level": 1,
                 "experience": 0,
                 "experienceToNext": 0,
+                "experienceRatio": 0,
+                "currentHp": 0,
                 "maxHp": 0,
                 "deityId": "xxxxxxx",
                 "deityRank": 0,
+                "deityTotalDonation": 0,
+                "deityNextRankThreshold": 0,
                 "condition": -400,
                 "order": [
                   1
@@ -22003,12 +22063,17 @@
     },
     {
       "method": "GET",
-      "path": "/api/v1/read/build/character/{characterId}/status",
+      "path": "/api/v1/read/build/character/status",
       "access": "session",
       "purpose": "Character build/options.",
-      "operationId": "read/build/character/{characterId}/status",
+      "operationId": "read/build/character/status",
       "transport": "query",
       "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
         "additionalProperties": false,
         "type": "object",
         "required": [
@@ -22016,15 +22081,24 @@
         ],
         "properties": {
           "characterId": {
-            "minimum": 1,
-            "type": "integer"
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "minItems": 1,
+                "uniqueItems": true,
+                "maxItems": 36,
+                "type": "array",
+                "items": {
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            ]
           }
         }
-      },
-      "query": {
-        "additionalProperties": false,
-        "type": "object",
-        "properties": {}
       },
       "body": {
         "additionalProperties": false,
@@ -22036,136 +22110,39 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "calculatedStatus",
-            "current",
-            "editableFields",
-            "validOptions"
+            "characters"
           ],
           "properties": {
-            "calculatedStatus": {
-              "additionalProperties": false,
-              "type": "object",
-              "required": [
-                "stats",
-                "abilities",
-                "bonuses",
-                "attacks"
-              ],
-              "properties": {
-                "stats": {
-                  "type": "array",
-                  "items": {
+            "characters": {
+              "minItems": 1,
+              "maxItems": 36,
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "characterId",
+                  "calculatedStatus",
+                  "current",
+                  "editableFields",
+                  "validOptions"
+                ],
+                "properties": {
+                  "characterId": {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "calculatedStatus": {
                     "additionalProperties": false,
                     "type": "object",
                     "required": [
-                      "key",
-                      "value",
-                      "unit"
+                      "stats",
+                      "abilities",
+                      "bonuses",
+                      "attacks"
                     ],
                     "properties": {
-                      "key": {
-                        "minLength": 1,
-                        "maxLength": 200,
-                        "type": "string"
-                      },
-                      "value": {
-                        "type": "number"
-                      },
-                      "unit": {
-                        "anyOf": [
-                          {
-                            "const": "number",
-                            "type": "string"
-                          },
-                          {
-                            "const": "ratio",
-                            "type": "string"
-                          },
-                          {
-                            "const": "seconds",
-                            "type": "string"
-                          }
-                        ]
-                      }
-                    }
-                  }
-                },
-                "abilities": {
-                  "type": "array",
-                  "items": {
-                    "additionalProperties": false,
-                    "type": "object",
-                    "required": [
-                      "abilityId",
-                      "level"
-                    ],
-                    "properties": {
-                      "abilityId": {
-                        "minLength": 1,
-                        "maxLength": 200,
-                        "type": "string"
-                      },
-                      "level": {
-                        "minimum": 1,
-                        "maximum": 10,
-                        "type": "integer"
-                      }
-                    }
-                  }
-                },
-                "bonuses": {
-                  "type": "array",
-                  "items": {
-                    "additionalProperties": false,
-                    "type": "object",
-                    "required": [
-                      "bonusId",
-                      "value"
-                    ],
-                    "properties": {
-                      "bonusId": {
-                        "minLength": 1,
-                        "maxLength": 200,
-                        "type": "string"
-                      },
-                      "value": {
-                        "type": "number"
-                      }
-                    }
-                  }
-                },
-                "attacks": {
-                  "type": "array",
-                  "items": {
-                    "additionalProperties": false,
-                    "type": "object",
-                    "required": [
-                      "attackType",
-                      "available",
-                      "facts",
-                      "speed"
-                    ],
-                    "properties": {
-                      "attackType": {
-                        "anyOf": [
-                          {
-                            "const": "melee",
-                            "type": "string"
-                          },
-                          {
-                            "const": "ranged",
-                            "type": "string"
-                          },
-                          {
-                            "const": "magical",
-                            "type": "string"
-                          }
-                        ]
-                      },
-                      "available": {
-                        "type": "boolean"
-                      },
-                      "facts": {
+                      "stats": {
                         "type": "array",
                         "items": {
                           "additionalProperties": false,
@@ -22203,175 +22180,291 @@
                           }
                         }
                       },
-                      "speed": {
+                      "abilities": {
+                        "type": "array",
+                        "items": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "abilityId",
+                            "level"
+                          ],
+                          "properties": {
+                            "abilityId": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "level": {
+                              "minimum": 1,
+                              "maximum": 10,
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      },
+                      "bonuses": {
+                        "type": "array",
+                        "items": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "bonusId",
+                            "value"
+                          ],
+                          "properties": {
+                            "bonusId": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "number"
+                            }
+                          }
+                        }
+                      },
+                      "attacks": {
+                        "type": "array",
+                        "items": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "attackType",
+                            "available",
+                            "facts",
+                            "speed"
+                          ],
+                          "properties": {
+                            "attackType": {
+                              "anyOf": [
+                                {
+                                  "const": "melee",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "ranged",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "magical",
+                                  "type": "string"
+                                }
+                              ]
+                            },
+                            "available": {
+                              "type": "boolean"
+                            },
+                            "facts": {
+                              "type": "array",
+                              "items": {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "key",
+                                  "value",
+                                  "unit"
+                                ],
+                                "properties": {
+                                  "key": {
+                                    "minLength": 1,
+                                    "maxLength": 200,
+                                    "type": "string"
+                                  },
+                                  "value": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "anyOf": [
+                                      {
+                                        "const": "number",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "ratio",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "seconds",
+                                        "type": "string"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            },
+                            "speed": {
+                              "anyOf": [
+                                {
+                                  "type": "null"
+                                },
+                                {
+                                  "additionalProperties": false,
+                                  "type": "object",
+                                  "required": [
+                                    "min",
+                                    "max",
+                                    "diceCount",
+                                    "dieSize"
+                                  ],
+                                  "properties": {
+                                    "min": {
+                                      "type": "integer"
+                                    },
+                                    "max": {
+                                      "type": "integer"
+                                    },
+                                    "diceCount": {
+                                      "type": "integer"
+                                    },
+                                    "dieSize": {
+                                      "type": "integer"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "current": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "uniqueSelection",
+                      "name",
+                      "racesAndGender",
+                      "mainClassId",
+                      "subClassId",
+                      "lineage",
+                      "predisposition"
+                    ],
+                    "properties": {
+                      "uniqueSelection": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "name": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "racesAndGender": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "mainClassId": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "subClassId": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "lineage": {
                         "anyOf": [
                           {
-                            "type": "null"
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
                           },
                           {
-                            "additionalProperties": false,
-                            "type": "object",
-                            "required": [
-                              "min",
-                              "max",
-                              "diceCount",
-                              "dieSize"
-                            ],
-                            "properties": {
-                              "min": {
-                                "type": "integer"
-                              },
-                              "max": {
-                                "type": "integer"
-                              },
-                              "diceCount": {
-                                "type": "integer"
-                              },
-                              "dieSize": {
-                                "type": "integer"
-                              }
-                            }
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "predisposition": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
                           }
                         ]
                       }
                     }
-                  }
-                }
-              }
-            },
-            "current": {
-              "additionalProperties": false,
-              "type": "object",
-              "required": [
-                "uniqueSelection",
-                "name",
-                "racesAndGender",
-                "mainClassId",
-                "subClassId",
-                "lineage",
-                "predisposition"
-              ],
-              "properties": {
-                "uniqueSelection": {
-                  "minLength": 1,
-                  "maxLength": 200,
-                  "type": "string"
-                },
-                "name": {
-                  "minLength": 1,
-                  "type": "string"
-                },
-                "racesAndGender": {
-                  "minLength": 1,
-                  "maxLength": 200,
-                  "type": "string"
-                },
-                "mainClassId": {
-                  "minLength": 1,
-                  "maxLength": 200,
-                  "type": "string"
-                },
-                "subClassId": {
-                  "minLength": 1,
-                  "maxLength": 200,
-                  "type": "string"
-                },
-                "lineage": {
-                  "anyOf": [
-                    {
-                      "minLength": 1,
-                      "maxLength": 200,
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
+                  },
+                  "editableFields": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "name"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "boolean"
+                      }
                     }
-                  ]
-                },
-                "predisposition": {
-                  "anyOf": [
-                    {
-                      "minLength": 1,
-                      "maxLength": 200,
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
+                  },
+                  "validOptions": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "uniqueSelection",
+                      "racesAndGender",
+                      "mainClassId",
+                      "subClassId",
+                      "lineage",
+                      "predisposition"
+                    ],
+                    "properties": {
+                      "uniqueSelection": {
+                        "type": "array",
+                        "items": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "racesAndGender": {
+                        "type": "array",
+                        "items": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "mainClassId": {
+                        "type": "array",
+                        "items": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "subClassId": {
+                        "type": "array",
+                        "items": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "lineage": {
+                        "type": "array",
+                        "items": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "predisposition": {
+                        "type": "array",
+                        "items": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      }
                     }
-                  ]
-                }
-              }
-            },
-            "editableFields": {
-              "additionalProperties": false,
-              "type": "object",
-              "required": [
-                "name"
-              ],
-              "properties": {
-                "name": {
-                  "type": "boolean"
-                }
-              }
-            },
-            "validOptions": {
-              "additionalProperties": false,
-              "type": "object",
-              "required": [
-                "uniqueSelection",
-                "racesAndGender",
-                "mainClassId",
-                "subClassId",
-                "lineage",
-                "predisposition"
-              ],
-              "properties": {
-                "uniqueSelection": {
-                  "type": "array",
-                  "items": {
-                    "minLength": 1,
-                    "maxLength": 200,
-                    "type": "string"
-                  }
-                },
-                "racesAndGender": {
-                  "type": "array",
-                  "items": {
-                    "minLength": 1,
-                    "maxLength": 200,
-                    "type": "string"
-                  }
-                },
-                "mainClassId": {
-                  "type": "array",
-                  "items": {
-                    "minLength": 1,
-                    "maxLength": 200,
-                    "type": "string"
-                  }
-                },
-                "subClassId": {
-                  "type": "array",
-                  "items": {
-                    "minLength": 1,
-                    "maxLength": 200,
-                    "type": "string"
-                  }
-                },
-                "lineage": {
-                  "type": "array",
-                  "items": {
-                    "minLength": 1,
-                    "maxLength": 200,
-                    "type": "string"
-                  }
-                },
-                "predisposition": {
-                  "type": "array",
-                  "items": {
-                    "minLength": 1,
-                    "maxLength": 200,
-                    "type": "string"
                   }
                 }
               }
@@ -22414,136 +22507,39 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "calculatedStatus",
-                "current",
-                "editableFields",
-                "validOptions"
+                "characters"
               ],
               "properties": {
-                "calculatedStatus": {
-                  "additionalProperties": false,
-                  "type": "object",
-                  "required": [
-                    "stats",
-                    "abilities",
-                    "bonuses",
-                    "attacks"
-                  ],
-                  "properties": {
-                    "stats": {
-                      "type": "array",
-                      "items": {
+                "characters": {
+                  "minItems": 1,
+                  "maxItems": 36,
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "characterId",
+                      "calculatedStatus",
+                      "current",
+                      "editableFields",
+                      "validOptions"
+                    ],
+                    "properties": {
+                      "characterId": {
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "calculatedStatus": {
                         "additionalProperties": false,
                         "type": "object",
                         "required": [
-                          "key",
-                          "value",
-                          "unit"
+                          "stats",
+                          "abilities",
+                          "bonuses",
+                          "attacks"
                         ],
                         "properties": {
-                          "key": {
-                            "minLength": 1,
-                            "maxLength": 200,
-                            "type": "string"
-                          },
-                          "value": {
-                            "type": "number"
-                          },
-                          "unit": {
-                            "anyOf": [
-                              {
-                                "const": "number",
-                                "type": "string"
-                              },
-                              {
-                                "const": "ratio",
-                                "type": "string"
-                              },
-                              {
-                                "const": "seconds",
-                                "type": "string"
-                              }
-                            ]
-                          }
-                        }
-                      }
-                    },
-                    "abilities": {
-                      "type": "array",
-                      "items": {
-                        "additionalProperties": false,
-                        "type": "object",
-                        "required": [
-                          "abilityId",
-                          "level"
-                        ],
-                        "properties": {
-                          "abilityId": {
-                            "minLength": 1,
-                            "maxLength": 200,
-                            "type": "string"
-                          },
-                          "level": {
-                            "minimum": 1,
-                            "maximum": 10,
-                            "type": "integer"
-                          }
-                        }
-                      }
-                    },
-                    "bonuses": {
-                      "type": "array",
-                      "items": {
-                        "additionalProperties": false,
-                        "type": "object",
-                        "required": [
-                          "bonusId",
-                          "value"
-                        ],
-                        "properties": {
-                          "bonusId": {
-                            "minLength": 1,
-                            "maxLength": 200,
-                            "type": "string"
-                          },
-                          "value": {
-                            "type": "number"
-                          }
-                        }
-                      }
-                    },
-                    "attacks": {
-                      "type": "array",
-                      "items": {
-                        "additionalProperties": false,
-                        "type": "object",
-                        "required": [
-                          "attackType",
-                          "available",
-                          "facts",
-                          "speed"
-                        ],
-                        "properties": {
-                          "attackType": {
-                            "anyOf": [
-                              {
-                                "const": "melee",
-                                "type": "string"
-                              },
-                              {
-                                "const": "ranged",
-                                "type": "string"
-                              },
-                              {
-                                "const": "magical",
-                                "type": "string"
-                              }
-                            ]
-                          },
-                          "available": {
-                            "type": "boolean"
-                          },
-                          "facts": {
+                          "stats": {
                             "type": "array",
                             "items": {
                               "additionalProperties": false,
@@ -22581,175 +22577,291 @@
                               }
                             }
                           },
-                          "speed": {
+                          "abilities": {
+                            "type": "array",
+                            "items": {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "abilityId",
+                                "level"
+                              ],
+                              "properties": {
+                                "abilityId": {
+                                  "minLength": 1,
+                                  "maxLength": 200,
+                                  "type": "string"
+                                },
+                                "level": {
+                                  "minimum": 1,
+                                  "maximum": 10,
+                                  "type": "integer"
+                                }
+                              }
+                            }
+                          },
+                          "bonuses": {
+                            "type": "array",
+                            "items": {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "bonusId",
+                                "value"
+                              ],
+                              "properties": {
+                                "bonusId": {
+                                  "minLength": 1,
+                                  "maxLength": 200,
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          },
+                          "attacks": {
+                            "type": "array",
+                            "items": {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "attackType",
+                                "available",
+                                "facts",
+                                "speed"
+                              ],
+                              "properties": {
+                                "attackType": {
+                                  "anyOf": [
+                                    {
+                                      "const": "melee",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "ranged",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "magical",
+                                      "type": "string"
+                                    }
+                                  ]
+                                },
+                                "available": {
+                                  "type": "boolean"
+                                },
+                                "facts": {
+                                  "type": "array",
+                                  "items": {
+                                    "additionalProperties": false,
+                                    "type": "object",
+                                    "required": [
+                                      "key",
+                                      "value",
+                                      "unit"
+                                    ],
+                                    "properties": {
+                                      "key": {
+                                        "minLength": 1,
+                                        "maxLength": 200,
+                                        "type": "string"
+                                      },
+                                      "value": {
+                                        "type": "number"
+                                      },
+                                      "unit": {
+                                        "anyOf": [
+                                          {
+                                            "const": "number",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "ratio",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "seconds",
+                                            "type": "string"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                },
+                                "speed": {
+                                  "anyOf": [
+                                    {
+                                      "type": "null"
+                                    },
+                                    {
+                                      "additionalProperties": false,
+                                      "type": "object",
+                                      "required": [
+                                        "min",
+                                        "max",
+                                        "diceCount",
+                                        "dieSize"
+                                      ],
+                                      "properties": {
+                                        "min": {
+                                          "type": "integer"
+                                        },
+                                        "max": {
+                                          "type": "integer"
+                                        },
+                                        "diceCount": {
+                                          "type": "integer"
+                                        },
+                                        "dieSize": {
+                                          "type": "integer"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "current": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "uniqueSelection",
+                          "name",
+                          "racesAndGender",
+                          "mainClassId",
+                          "subClassId",
+                          "lineage",
+                          "predisposition"
+                        ],
+                        "properties": {
+                          "uniqueSelection": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "name": {
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "racesAndGender": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "mainClassId": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "subClassId": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "lineage": {
                             "anyOf": [
                               {
-                                "type": "null"
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "type": "string"
                               },
                               {
-                                "additionalProperties": false,
-                                "type": "object",
-                                "required": [
-                                  "min",
-                                  "max",
-                                  "diceCount",
-                                  "dieSize"
-                                ],
-                                "properties": {
-                                  "min": {
-                                    "type": "integer"
-                                  },
-                                  "max": {
-                                    "type": "integer"
-                                  },
-                                  "diceCount": {
-                                    "type": "integer"
-                                  },
-                                  "dieSize": {
-                                    "type": "integer"
-                                  }
-                                }
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "predisposition": {
+                            "anyOf": [
+                              {
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
                               }
                             ]
                           }
                         }
-                      }
-                    }
-                  }
-                },
-                "current": {
-                  "additionalProperties": false,
-                  "type": "object",
-                  "required": [
-                    "uniqueSelection",
-                    "name",
-                    "racesAndGender",
-                    "mainClassId",
-                    "subClassId",
-                    "lineage",
-                    "predisposition"
-                  ],
-                  "properties": {
-                    "uniqueSelection": {
-                      "minLength": 1,
-                      "maxLength": 200,
-                      "type": "string"
-                    },
-                    "name": {
-                      "minLength": 1,
-                      "type": "string"
-                    },
-                    "racesAndGender": {
-                      "minLength": 1,
-                      "maxLength": 200,
-                      "type": "string"
-                    },
-                    "mainClassId": {
-                      "minLength": 1,
-                      "maxLength": 200,
-                      "type": "string"
-                    },
-                    "subClassId": {
-                      "minLength": 1,
-                      "maxLength": 200,
-                      "type": "string"
-                    },
-                    "lineage": {
-                      "anyOf": [
-                        {
-                          "minLength": 1,
-                          "maxLength": 200,
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
+                      },
+                      "editableFields": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "name"
+                        ],
+                        "properties": {
+                          "name": {
+                            "type": "boolean"
+                          }
                         }
-                      ]
-                    },
-                    "predisposition": {
-                      "anyOf": [
-                        {
-                          "minLength": 1,
-                          "maxLength": 200,
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
+                      },
+                      "validOptions": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "uniqueSelection",
+                          "racesAndGender",
+                          "mainClassId",
+                          "subClassId",
+                          "lineage",
+                          "predisposition"
+                        ],
+                        "properties": {
+                          "uniqueSelection": {
+                            "type": "array",
+                            "items": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            }
+                          },
+                          "racesAndGender": {
+                            "type": "array",
+                            "items": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            }
+                          },
+                          "mainClassId": {
+                            "type": "array",
+                            "items": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            }
+                          },
+                          "subClassId": {
+                            "type": "array",
+                            "items": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            }
+                          },
+                          "lineage": {
+                            "type": "array",
+                            "items": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            }
+                          },
+                          "predisposition": {
+                            "type": "array",
+                            "items": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            }
+                          }
                         }
-                      ]
-                    }
-                  }
-                },
-                "editableFields": {
-                  "additionalProperties": false,
-                  "type": "object",
-                  "required": [
-                    "name"
-                  ],
-                  "properties": {
-                    "name": {
-                      "type": "boolean"
-                    }
-                  }
-                },
-                "validOptions": {
-                  "additionalProperties": false,
-                  "type": "object",
-                  "required": [
-                    "uniqueSelection",
-                    "racesAndGender",
-                    "mainClassId",
-                    "subClassId",
-                    "lineage",
-                    "predisposition"
-                  ],
-                  "properties": {
-                    "uniqueSelection": {
-                      "type": "array",
-                      "items": {
-                        "minLength": 1,
-                        "maxLength": 200,
-                        "type": "string"
-                      }
-                    },
-                    "racesAndGender": {
-                      "type": "array",
-                      "items": {
-                        "minLength": 1,
-                        "maxLength": 200,
-                        "type": "string"
-                      }
-                    },
-                    "mainClassId": {
-                      "type": "array",
-                      "items": {
-                        "minLength": 1,
-                        "maxLength": 200,
-                        "type": "string"
-                      }
-                    },
-                    "subClassId": {
-                      "type": "array",
-                      "items": {
-                        "minLength": 1,
-                        "maxLength": 200,
-                        "type": "string"
-                      }
-                    },
-                    "lineage": {
-                      "type": "array",
-                      "items": {
-                        "minLength": 1,
-                        "maxLength": 200,
-                        "type": "string"
-                      }
-                    },
-                    "predisposition": {
-                      "type": "array",
-                      "items": {
-                        "minLength": 1,
-                        "maxLength": 200,
-                        "type": "string"
                       }
                     }
                   }
@@ -22767,7 +22879,6 @@
         "internal_error",
         "invalid_request",
         "login_required",
-        "not_found",
         "runtime_unavailable"
       ],
       "restrictions": {
@@ -22777,10 +22888,10 @@
       },
       "examples": {
         "request": {
-          "pathParameters": {
+          "pathParameters": {},
+          "query": {
             "characterId": 1
-          },
-          "query": {}
+          }
         },
         "invalidRequest": {
           "query": {
@@ -22789,85 +22900,95 @@
         },
         "response": {
           "data": {
-            "calculatedStatus": {
-              "stats": [
-                {
-                  "key": "xxxxxxx",
-                  "value": 1,
-                  "unit": "number"
-                }
-              ],
-              "abilities": [
-                {
-                  "abilityId": "xxxxxxx",
-                  "level": 1
-                }
-              ],
-              "bonuses": [
-                {
-                  "bonusId": "xxxxxxx",
-                  "value": 1
-                }
-              ],
-              "attacks": [
-                {
-                  "attackType": "melee",
-                  "available": true,
-                  "facts": [
+            "characters": [
+              {
+                "characterId": 1,
+                "calculatedStatus": {
+                  "stats": [
                     {
                       "key": "xxxxxxx",
                       "value": 1,
                       "unit": "number"
                     }
                   ],
-                  "speed": null
+                  "abilities": [
+                    {
+                      "abilityId": "xxxxxxx",
+                      "level": 1
+                    }
+                  ],
+                  "bonuses": [
+                    {
+                      "bonusId": "xxxxxxx",
+                      "value": 1
+                    }
+                  ],
+                  "attacks": [
+                    {
+                      "attackType": "melee",
+                      "available": true,
+                      "facts": [
+                        {
+                          "key": "xxxxxxx",
+                          "value": 1,
+                          "unit": "number"
+                        }
+                      ],
+                      "speed": null
+                    }
+                  ]
+                },
+                "current": {
+                  "uniqueSelection": "xxxxxxx",
+                  "name": "xxxxxxx",
+                  "racesAndGender": "xxxxxxx",
+                  "mainClassId": "xxxxxxx",
+                  "subClassId": "xxxxxxx",
+                  "lineage": "xxxxxxx",
+                  "predisposition": "xxxxxxx"
+                },
+                "editableFields": {
+                  "name": true
+                },
+                "validOptions": {
+                  "uniqueSelection": [
+                    "xxxxxxx"
+                  ],
+                  "racesAndGender": [
+                    "xxxxxxx"
+                  ],
+                  "mainClassId": [
+                    "xxxxxxx"
+                  ],
+                  "subClassId": [
+                    "xxxxxxx"
+                  ],
+                  "lineage": [
+                    "xxxxxxx"
+                  ],
+                  "predisposition": [
+                    "xxxxxxx"
+                  ]
                 }
-              ]
-            },
-            "current": {
-              "uniqueSelection": "xxxxxxx",
-              "name": "xxxxxxx",
-              "racesAndGender": "xxxxxxx",
-              "mainClassId": "xxxxxxx",
-              "subClassId": "xxxxxxx",
-              "lineage": "xxxxxxx",
-              "predisposition": "xxxxxxx"
-            },
-            "editableFields": {
-              "name": true
-            },
-            "validOptions": {
-              "uniqueSelection": [
-                "xxxxxxx"
-              ],
-              "racesAndGender": [
-                "xxxxxxx"
-              ],
-              "mainClassId": [
-                "xxxxxxx"
-              ],
-              "subClassId": [
-                "xxxxxxx"
-              ],
-              "lineage": [
-                "xxxxxxx"
-              ],
-              "predisposition": [
-                "xxxxxxx"
-              ]
-            }
+              }
+            ]
           }
         }
       }
     },
     {
       "method": "GET",
-      "path": "/api/v1/read/build/character/{characterId}/equipment",
+      "path": "/api/v1/read/build/character/equipment",
       "access": "session",
       "purpose": "Equipment/mode.",
-      "operationId": "read/build/character/{characterId}/equipment",
+      "operationId": "read/build/character/equipment",
       "transport": "query",
       "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
         "additionalProperties": false,
         "type": "object",
         "required": [
@@ -22875,15 +22996,24 @@
         ],
         "properties": {
           "characterId": {
-            "minimum": 1,
-            "type": "integer"
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "minItems": 1,
+                "uniqueItems": true,
+                "maxItems": 36,
+                "type": "array",
+                "items": {
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            ]
           }
         }
-      },
-      "query": {
-        "additionalProperties": false,
-        "type": "object",
-        "properties": {}
       },
       "body": {
         "additionalProperties": false,
@@ -22895,143 +23025,162 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "current",
-            "validOptions"
+            "characters"
           ],
           "properties": {
-            "current": {
-              "additionalProperties": false,
-              "type": "object",
-              "required": [
-                "mode",
-                "equipment"
-              ],
-              "properties": {
-                "mode": {
-                  "anyOf": [
-                    {
-                      "const": "FULL",
-                      "type": "string"
-                    },
-                    {
-                      "const": "SEMI",
-                      "type": "string"
-                    },
-                    {
-                      "const": "OFF",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "equipment": {
-                  "type": "array",
-                  "items": {
-                    "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "validOptions": {
-              "additionalProperties": false,
-              "type": "object",
-              "required": [
-                "mode",
-                "numberOfEmptyEquipmentSlots",
-                "undoEquipment",
-                "redoEquipment"
-              ],
-              "properties": {
-                "mode": {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "const": "FULL",
-                        "type": "string"
+            "characters": {
+              "minItems": 1,
+              "maxItems": 36,
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "characterId",
+                  "current",
+                  "validOptions"
+                ],
+                "properties": {
+                  "characterId": {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "current": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "mode",
+                      "equipment"
+                    ],
+                    "properties": {
+                      "mode": {
+                        "anyOf": [
+                          {
+                            "const": "FULL",
+                            "type": "string"
+                          },
+                          {
+                            "const": "SEMI",
+                            "type": "string"
+                          },
+                          {
+                            "const": "OFF",
+                            "type": "string"
+                          }
+                        ]
                       },
-                      {
-                        "const": "SEMI",
-                        "type": "string"
-                      },
-                      {
-                        "const": "OFF",
-                        "type": "string"
-                      }
-                    ]
-                  }
-                },
-                "numberOfEmptyEquipmentSlots": {
-                  "minimum": 0,
-                  "type": "integer"
-                },
-                "undoEquipment": {
-                  "additionalProperties": false,
-                  "type": "object",
-                  "required": [
-                    "equipmentStates",
-                    "available",
-                    "unavailableReason"
-                  ],
-                  "properties": {
-                    "equipmentStates": {
-                      "maxItems": 30,
-                      "type": "array",
-                      "items": {
+                      "equipment": {
                         "type": "array",
                         "items": {
                           "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                           "type": "string"
                         }
                       }
-                    },
-                    "available": {
-                      "type": "boolean"
-                    },
-                    "unavailableReason": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
                     }
-                  }
-                },
-                "redoEquipment": {
-                  "additionalProperties": false,
-                  "type": "object",
-                  "required": [
-                    "equipmentStates",
-                    "available",
-                    "unavailableReason"
-                  ],
-                  "properties": {
-                    "equipmentStates": {
-                      "maxItems": 30,
-                      "type": "array",
-                      "items": {
+                  },
+                  "validOptions": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "mode",
+                      "numberOfEmptyEquipmentSlots",
+                      "undoEquipment",
+                      "redoEquipment"
+                    ],
+                    "properties": {
+                      "mode": {
                         "type": "array",
                         "items": {
-                          "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
-                          "type": "string"
+                          "anyOf": [
+                            {
+                              "const": "FULL",
+                              "type": "string"
+                            },
+                            {
+                              "const": "SEMI",
+                              "type": "string"
+                            },
+                            {
+                              "const": "OFF",
+                              "type": "string"
+                            }
+                          ]
+                        }
+                      },
+                      "numberOfEmptyEquipmentSlots": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "undoEquipment": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "equipmentStates",
+                          "available",
+                          "unavailableReason"
+                        ],
+                        "properties": {
+                          "equipmentStates": {
+                            "maxItems": 30,
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "available": {
+                            "type": "boolean"
+                          },
+                          "unavailableReason": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "redoEquipment": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "equipmentStates",
+                          "available",
+                          "unavailableReason"
+                        ],
+                        "properties": {
+                          "equipmentStates": {
+                            "maxItems": 30,
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "available": {
+                            "type": "boolean"
+                          },
+                          "unavailableReason": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
                         }
                       }
-                    },
-                    "available": {
-                      "type": "boolean"
-                    },
-                    "unavailableReason": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
                     }
                   }
                 }
@@ -23075,143 +23224,162 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "current",
-                "validOptions"
+                "characters"
               ],
               "properties": {
-                "current": {
-                  "additionalProperties": false,
-                  "type": "object",
-                  "required": [
-                    "mode",
-                    "equipment"
-                  ],
-                  "properties": {
-                    "mode": {
-                      "anyOf": [
-                        {
-                          "const": "FULL",
-                          "type": "string"
-                        },
-                        {
-                          "const": "SEMI",
-                          "type": "string"
-                        },
-                        {
-                          "const": "OFF",
-                          "type": "string"
-                        }
-                      ]
-                    },
-                    "equipment": {
-                      "type": "array",
-                      "items": {
-                        "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
-                        "type": "string"
-                      }
-                    }
-                  }
-                },
-                "validOptions": {
-                  "additionalProperties": false,
-                  "type": "object",
-                  "required": [
-                    "mode",
-                    "numberOfEmptyEquipmentSlots",
-                    "undoEquipment",
-                    "redoEquipment"
-                  ],
-                  "properties": {
-                    "mode": {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "const": "FULL",
-                            "type": "string"
+                "characters": {
+                  "minItems": 1,
+                  "maxItems": 36,
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "characterId",
+                      "current",
+                      "validOptions"
+                    ],
+                    "properties": {
+                      "characterId": {
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "current": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "mode",
+                          "equipment"
+                        ],
+                        "properties": {
+                          "mode": {
+                            "anyOf": [
+                              {
+                                "const": "FULL",
+                                "type": "string"
+                              },
+                              {
+                                "const": "SEMI",
+                                "type": "string"
+                              },
+                              {
+                                "const": "OFF",
+                                "type": "string"
+                              }
+                            ]
                           },
-                          {
-                            "const": "SEMI",
-                            "type": "string"
-                          },
-                          {
-                            "const": "OFF",
-                            "type": "string"
-                          }
-                        ]
-                      }
-                    },
-                    "numberOfEmptyEquipmentSlots": {
-                      "minimum": 0,
-                      "type": "integer"
-                    },
-                    "undoEquipment": {
-                      "additionalProperties": false,
-                      "type": "object",
-                      "required": [
-                        "equipmentStates",
-                        "available",
-                        "unavailableReason"
-                      ],
-                      "properties": {
-                        "equipmentStates": {
-                          "maxItems": 30,
-                          "type": "array",
-                          "items": {
+                          "equipment": {
                             "type": "array",
                             "items": {
                               "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
                               "type": "string"
                             }
                           }
-                        },
-                        "available": {
-                          "type": "boolean"
-                        },
-                        "unavailableReason": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
                         }
-                      }
-                    },
-                    "redoEquipment": {
-                      "additionalProperties": false,
-                      "type": "object",
-                      "required": [
-                        "equipmentStates",
-                        "available",
-                        "unavailableReason"
-                      ],
-                      "properties": {
-                        "equipmentStates": {
-                          "maxItems": 30,
-                          "type": "array",
-                          "items": {
+                      },
+                      "validOptions": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "mode",
+                          "numberOfEmptyEquipmentSlots",
+                          "undoEquipment",
+                          "redoEquipment"
+                        ],
+                        "properties": {
+                          "mode": {
                             "type": "array",
                             "items": {
-                              "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
-                              "type": "string"
+                              "anyOf": [
+                                {
+                                  "const": "FULL",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "SEMI",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "OFF",
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          },
+                          "numberOfEmptyEquipmentSlots": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "undoEquipment": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "equipmentStates",
+                              "available",
+                              "unavailableReason"
+                            ],
+                            "properties": {
+                              "equipmentStates": {
+                                "maxItems": 30,
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "available": {
+                                "type": "boolean"
+                              },
+                              "unavailableReason": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          "redoEquipment": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "equipmentStates",
+                              "available",
+                              "unavailableReason"
+                            ],
+                            "properties": {
+                              "equipmentStates": {
+                                "maxItems": 30,
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "available": {
+                                "type": "boolean"
+                              },
+                              "unavailableReason": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
                             }
                           }
-                        },
-                        "available": {
-                          "type": "boolean"
-                        },
-                        "unavailableReason": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
                         }
                       }
                     }
@@ -23230,7 +23398,6 @@
         "internal_error",
         "invalid_request",
         "login_required",
-        "not_found",
         "runtime_unavailable"
       ],
       "restrictions": {
@@ -23240,10 +23407,10 @@
       },
       "examples": {
         "request": {
-          "pathParameters": {
+          "pathParameters": {},
+          "query": {
             "characterId": 1
-          },
-          "query": {}
+          }
         },
         "invalidRequest": {
           "query": {
@@ -23252,48 +23419,58 @@
         },
         "response": {
           "data": {
-            "current": {
-              "mode": "FULL",
-              "equipment": [
-                "0"
-              ]
-            },
-            "validOptions": {
-              "mode": [
-                "FULL"
-              ],
-              "numberOfEmptyEquipmentSlots": 0,
-              "undoEquipment": {
-                "equipmentStates": [
-                  [
+            "characters": [
+              {
+                "characterId": 1,
+                "current": {
+                  "mode": "FULL",
+                  "equipment": [
                     "0"
                   ]
-                ],
-                "available": true,
-                "unavailableReason": "xxxxxxx"
-              },
-              "redoEquipment": {
-                "equipmentStates": [
-                  [
-                    "0"
-                  ]
-                ],
-                "available": true,
-                "unavailableReason": "xxxxxxx"
+                },
+                "validOptions": {
+                  "mode": [
+                    "FULL"
+                  ],
+                  "numberOfEmptyEquipmentSlots": 0,
+                  "undoEquipment": {
+                    "equipmentStates": [
+                      [
+                        "0"
+                      ]
+                    ],
+                    "available": true,
+                    "unavailableReason": "xxxxxxx"
+                  },
+                  "redoEquipment": {
+                    "equipmentStates": [
+                      [
+                        "0"
+                      ]
+                    ],
+                    "available": true,
+                    "unavailableReason": "xxxxxxx"
+                  }
+                }
               }
-            }
+            ]
           }
         }
       }
     },
     {
       "method": "GET",
-      "path": "/api/v1/read/build/character/{characterId}/equipmentSet",
+      "path": "/api/v1/read/build/character/equipmentSet",
       "access": "session",
       "purpose": "Saved equipment sets.",
-      "operationId": "read/build/character/{characterId}/equipmentSet",
+      "operationId": "read/build/character/equipmentSet",
       "transport": "query",
       "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
         "additionalProperties": false,
         "type": "object",
         "required": [
@@ -23301,15 +23478,23 @@
         ],
         "properties": {
           "characterId": {
-            "minimum": 1,
-            "type": "integer"
-          }
-        }
-      },
-      "query": {
-        "additionalProperties": false,
-        "type": "object",
-        "properties": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "minItems": 1,
+                "uniqueItems": true,
+                "maxItems": 36,
+                "type": "array",
+                "items": {
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            ]
+          },
           "equipmentSetId": {
             "anyOf": [
               {
@@ -23343,104 +23528,123 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "equipmentSets"
+            "characters"
           ],
           "properties": {
-            "equipmentSets": {
+            "characters": {
+              "minItems": 1,
+              "maxItems": 36,
               "type": "array",
               "items": {
                 "additionalProperties": false,
                 "type": "object",
                 "required": [
-                  "equipmentSetId",
-                  "equipmentSet"
+                  "characterId",
+                  "equipmentSets"
                 ],
                 "properties": {
-                  "equipmentSetId": {
+                  "characterId": {
                     "minimum": 1,
                     "type": "integer"
                   },
-                  "equipmentSet": {
-                    "additionalProperties": false,
-                    "type": "object",
-                    "required": [
-                      "equipmentSetId",
-                      "name",
-                      "createdAt",
-                      "availability"
-                    ],
-                    "properties": {
-                      "equipmentSetId": {
-                        "minimum": 1,
-                        "type": "integer"
-                      },
-                      "name": {
-                        "minLength": 1,
-                        "type": "string"
-                      },
-                      "createdAt": {
-                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
-                        "type": "string"
-                      },
-                      "equipment": {
-                        "type": "array",
-                        "items": {
-                          "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
-                          "type": "string"
-                        }
-                      },
-                      "availability": {
-                        "additionalProperties": false,
-                        "type": "object",
-                        "required": [
-                          "allAvailable",
-                          "entries"
-                        ],
-                        "properties": {
-                          "allAvailable": {
-                            "type": "boolean"
-                          },
-                          "entries": {
-                            "type": "array",
-                            "items": {
+                  "equipmentSets": {
+                    "type": "array",
+                    "items": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "equipmentSetId",
+                        "equipmentSet"
+                      ],
+                      "properties": {
+                        "equipmentSetId": {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        "equipmentSet": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "equipmentSetId",
+                            "name",
+                            "createdAt",
+                            "availability"
+                          ],
+                          "properties": {
+                            "equipmentSetId": {
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "name": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "createdAt": {
+                              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                              "type": "string"
+                            },
+                            "equipment": {
+                              "type": "array",
+                              "items": {
+                                "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
+                                "type": "string"
+                              }
+                            },
+                            "availability": {
                               "additionalProperties": false,
                               "type": "object",
                               "required": [
-                                "slotIndex",
-                                "item",
-                                "available",
-                                "unavailableReason"
+                                "allAvailable",
+                                "entries"
                               ],
                               "properties": {
-                                "slotIndex": {
-                                  "minimum": 0,
-                                  "type": "integer"
-                                },
-                                "item": {
-                                  "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
-                                  "type": "string"
-                                },
-                                "available": {
+                                "allAvailable": {
                                   "type": "boolean"
                                 },
-                                "unavailableReason": {
-                                  "anyOf": [
-                                    {
-                                      "const": "slot_unavailable",
-                                      "type": "string"
-                                    },
-                                    {
-                                      "const": "not_equippable",
-                                      "type": "string"
-                                    },
-                                    {
-                                      "const": "unavailable",
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "null"
+                                "entries": {
+                                  "type": "array",
+                                  "items": {
+                                    "additionalProperties": false,
+                                    "type": "object",
+                                    "required": [
+                                      "slotIndex",
+                                      "item",
+                                      "available",
+                                      "unavailableReason"
+                                    ],
+                                    "properties": {
+                                      "slotIndex": {
+                                        "minimum": 0,
+                                        "type": "integer"
+                                      },
+                                      "item": {
+                                        "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
+                                        "type": "string"
+                                      },
+                                      "available": {
+                                        "type": "boolean"
+                                      },
+                                      "unavailableReason": {
+                                        "anyOf": [
+                                          {
+                                            "const": "slot_unavailable",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "not_equippable",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "const": "unavailable",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
                                     }
-                                  ]
+                                  }
                                 }
                               }
                             }
@@ -23490,104 +23694,123 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "equipmentSets"
+                "characters"
               ],
               "properties": {
-                "equipmentSets": {
+                "characters": {
+                  "minItems": 1,
+                  "maxItems": 36,
                   "type": "array",
                   "items": {
                     "additionalProperties": false,
                     "type": "object",
                     "required": [
-                      "equipmentSetId",
-                      "equipmentSet"
+                      "characterId",
+                      "equipmentSets"
                     ],
                     "properties": {
-                      "equipmentSetId": {
+                      "characterId": {
                         "minimum": 1,
                         "type": "integer"
                       },
-                      "equipmentSet": {
-                        "additionalProperties": false,
-                        "type": "object",
-                        "required": [
-                          "equipmentSetId",
-                          "name",
-                          "createdAt",
-                          "availability"
-                        ],
-                        "properties": {
-                          "equipmentSetId": {
-                            "minimum": 1,
-                            "type": "integer"
-                          },
-                          "name": {
-                            "minLength": 1,
-                            "type": "string"
-                          },
-                          "createdAt": {
-                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
-                            "type": "string"
-                          },
-                          "equipment": {
-                            "type": "array",
-                            "items": {
-                              "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
-                              "type": "string"
-                            }
-                          },
-                          "availability": {
-                            "additionalProperties": false,
-                            "type": "object",
-                            "required": [
-                              "allAvailable",
-                              "entries"
-                            ],
-                            "properties": {
-                              "allAvailable": {
-                                "type": "boolean"
-                              },
-                              "entries": {
-                                "type": "array",
-                                "items": {
+                      "equipmentSets": {
+                        "type": "array",
+                        "items": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "equipmentSetId",
+                            "equipmentSet"
+                          ],
+                          "properties": {
+                            "equipmentSetId": {
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "equipmentSet": {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "equipmentSetId",
+                                "name",
+                                "createdAt",
+                                "availability"
+                              ],
+                              "properties": {
+                                "equipmentSetId": {
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "name": {
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "createdAt": {
+                                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+                                  "type": "string"
+                                },
+                                "equipment": {
+                                  "type": "array",
+                                  "items": {
+                                    "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
+                                    "type": "string"
+                                  }
+                                },
+                                "availability": {
                                   "additionalProperties": false,
                                   "type": "object",
                                   "required": [
-                                    "slotIndex",
-                                    "item",
-                                    "available",
-                                    "unavailableReason"
+                                    "allAvailable",
+                                    "entries"
                                   ],
                                   "properties": {
-                                    "slotIndex": {
-                                      "minimum": 0,
-                                      "type": "integer"
-                                    },
-                                    "item": {
-                                      "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
-                                      "type": "string"
-                                    },
-                                    "available": {
+                                    "allAvailable": {
                                       "type": "boolean"
                                     },
-                                    "unavailableReason": {
-                                      "anyOf": [
-                                        {
-                                          "const": "slot_unavailable",
-                                          "type": "string"
-                                        },
-                                        {
-                                          "const": "not_equippable",
-                                          "type": "string"
-                                        },
-                                        {
-                                          "const": "unavailable",
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
+                                    "entries": {
+                                      "type": "array",
+                                      "items": {
+                                        "additionalProperties": false,
+                                        "type": "object",
+                                        "required": [
+                                          "slotIndex",
+                                          "item",
+                                          "available",
+                                          "unavailableReason"
+                                        ],
+                                        "properties": {
+                                          "slotIndex": {
+                                            "minimum": 0,
+                                            "type": "integer"
+                                          },
+                                          "item": {
+                                            "pattern": "^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$",
+                                            "type": "string"
+                                          },
+                                          "available": {
+                                            "type": "boolean"
+                                          },
+                                          "unavailableReason": {
+                                            "anyOf": [
+                                              {
+                                                "const": "slot_unavailable",
+                                                "type": "string"
+                                              },
+                                              {
+                                                "const": "not_equippable",
+                                                "type": "string"
+                                              },
+                                              {
+                                                "const": "unavailable",
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          }
                                         }
-                                      ]
+                                      }
                                     }
                                   }
                                 }
@@ -23612,7 +23835,6 @@
         "internal_error",
         "invalid_request",
         "login_required",
-        "not_found",
         "runtime_unavailable"
       ],
       "restrictions": {
@@ -23622,10 +23844,10 @@
       },
       "examples": {
         "request": {
-          "pathParameters": {
+          "pathParameters": {},
+          "query": {
             "characterId": 1
-          },
-          "query": {}
+          }
         },
         "invalidRequest": {
           "query": {
@@ -23634,25 +23856,30 @@
         },
         "response": {
           "data": {
-            "equipmentSets": [
+            "characters": [
               {
-                "equipmentSetId": 1,
-                "equipmentSet": {
-                  "equipmentSetId": 1,
-                  "name": "xxxxxxx",
-                  "createdAt": "1970-01-01T00:00:00.000Z",
-                  "availability": {
-                    "allAvailable": true,
-                    "entries": [
-                      {
-                        "slotIndex": 0,
-                        "item": "0",
-                        "available": true,
-                        "unavailableReason": "slot_unavailable"
+                "characterId": 1,
+                "equipmentSets": [
+                  {
+                    "equipmentSetId": 1,
+                    "equipmentSet": {
+                      "equipmentSetId": 1,
+                      "name": "xxxxxxx",
+                      "createdAt": "1970-01-01T00:00:00.000Z",
+                      "availability": {
+                        "allAvailable": true,
+                        "entries": [
+                          {
+                            "slotIndex": 0,
+                            "item": "0",
+                            "available": true,
+                            "unavailableReason": "slot_unavailable"
+                          }
+                        ]
                       }
-                    ]
+                    }
                   }
-                }
+                ]
               }
             ]
           }
@@ -23661,12 +23888,17 @@
     },
     {
       "method": "GET",
-      "path": "/api/v1/read/build/character/{characterId}/equipmentEvaluation",
+      "path": "/api/v1/read/build/character/equipmentEvaluation",
       "access": "session",
       "purpose": "Evaluate items and Jewels for the character.",
-      "operationId": "read/build/character/{characterId}/equipmentEvaluation",
+      "operationId": "read/build/character/equipmentEvaluation",
       "transport": "query",
       "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
         "additionalProperties": false,
         "type": "object",
         "required": [
@@ -23674,15 +23906,23 @@
         ],
         "properties": {
           "characterId": {
-            "minimum": 1,
-            "type": "integer"
-          }
-        }
-      },
-      "query": {
-        "additionalProperties": false,
-        "type": "object",
-        "properties": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "minItems": 1,
+                "uniqueItems": true,
+                "maxItems": 36,
+                "type": "array",
+                "items": {
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            ]
+          },
           "targetItems": {
             "anyOf": [
               {
@@ -23731,98 +23971,117 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
-            "calculatedItemStatus",
-            "calculatedEquipmentChange"
+            "characters"
           ],
           "properties": {
-            "calculatedItemStatus": {
+            "characters": {
+              "minItems": 1,
+              "maxItems": 36,
               "type": "array",
               "items": {
                 "additionalProperties": false,
                 "type": "object",
                 "required": [
-                  "item",
-                  "equippable",
-                  "stats",
-                  "abilities"
+                  "characterId",
+                  "calculatedItemStatus",
+                  "calculatedEquipmentChange"
                 ],
                 "properties": {
-                  "item": {
-                    "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)$",
-                    "type": "string"
+                  "characterId": {
+                    "minimum": 1,
+                    "type": "integer"
                   },
-                  "equippable": {
-                    "type": "boolean"
-                  },
-                  "stats": {
+                  "calculatedItemStatus": {
                     "type": "array",
                     "items": {
                       "additionalProperties": false,
                       "type": "object",
                       "required": [
-                        "key",
-                        "value",
-                        "unit"
+                        "item",
+                        "equippable",
+                        "stats",
+                        "abilities"
                       ],
                       "properties": {
-                        "key": {
-                          "minLength": 1,
-                          "maxLength": 200,
+                        "item": {
+                          "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)$",
                           "type": "string"
                         },
-                        "value": {
-                          "type": "number"
+                        "equippable": {
+                          "type": "boolean"
                         },
-                        "unit": {
-                          "anyOf": [
-                            {
-                              "const": "number",
-                              "type": "string"
-                            },
-                            {
-                              "const": "ratio",
-                              "type": "string"
+                        "stats": {
+                          "type": "array",
+                          "items": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "key",
+                              "value",
+                              "unit"
+                            ],
+                            "properties": {
+                              "key": {
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "anyOf": [
+                                  {
+                                    "const": "number",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "ratio",
+                                    "type": "string"
+                                  }
+                                ]
+                              }
                             }
-                          ]
+                          }
+                        },
+                        "abilities": {
+                          "type": "array",
+                          "items": {
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "type": "string"
+                          }
                         }
                       }
                     }
                   },
-                  "abilities": {
+                  "calculatedEquipmentChange": {
                     "type": "array",
                     "items": {
-                      "minLength": 1,
-                      "maxLength": 200,
-                      "type": "string"
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "change",
+                        "equippable",
+                        "physicalDefenseDelta",
+                        "magicalDefenseDelta"
+                      ],
+                      "properties": {
+                        "change": {
+                          "pattern": "^[0-9]+=(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0))$",
+                          "type": "string"
+                        },
+                        "equippable": {
+                          "type": "boolean"
+                        },
+                        "physicalDefenseDelta": {
+                          "type": "integer"
+                        },
+                        "magicalDefenseDelta": {
+                          "type": "integer"
+                        }
+                      }
                     }
-                  }
-                }
-              }
-            },
-            "calculatedEquipmentChange": {
-              "type": "array",
-              "items": {
-                "additionalProperties": false,
-                "type": "object",
-                "required": [
-                  "change",
-                  "equippable",
-                  "physicalDefenseDelta",
-                  "magicalDefenseDelta"
-                ],
-                "properties": {
-                  "change": {
-                    "pattern": "^[0-9]+=(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0))$",
-                    "type": "string"
-                  },
-                  "equippable": {
-                    "type": "boolean"
-                  },
-                  "physicalDefenseDelta": {
-                    "type": "integer"
-                  },
-                  "magicalDefenseDelta": {
-                    "type": "integer"
                   }
                 }
               }
@@ -23865,98 +24124,117 @@
               "additionalProperties": false,
               "type": "object",
               "required": [
-                "calculatedItemStatus",
-                "calculatedEquipmentChange"
+                "characters"
               ],
               "properties": {
-                "calculatedItemStatus": {
+                "characters": {
+                  "minItems": 1,
+                  "maxItems": 36,
                   "type": "array",
                   "items": {
                     "additionalProperties": false,
                     "type": "object",
                     "required": [
-                      "item",
-                      "equippable",
-                      "stats",
-                      "abilities"
+                      "characterId",
+                      "calculatedItemStatus",
+                      "calculatedEquipmentChange"
                     ],
                     "properties": {
-                      "item": {
-                        "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)$",
-                        "type": "string"
+                      "characterId": {
+                        "minimum": 1,
+                        "type": "integer"
                       },
-                      "equippable": {
-                        "type": "boolean"
-                      },
-                      "stats": {
+                      "calculatedItemStatus": {
                         "type": "array",
                         "items": {
                           "additionalProperties": false,
                           "type": "object",
                           "required": [
-                            "key",
-                            "value",
-                            "unit"
+                            "item",
+                            "equippable",
+                            "stats",
+                            "abilities"
                           ],
                           "properties": {
-                            "key": {
-                              "minLength": 1,
-                              "maxLength": 200,
+                            "item": {
+                              "pattern": "^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0)$",
                               "type": "string"
                             },
-                            "value": {
-                              "type": "number"
+                            "equippable": {
+                              "type": "boolean"
                             },
-                            "unit": {
-                              "anyOf": [
-                                {
-                                  "const": "number",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "ratio",
-                                  "type": "string"
+                            "stats": {
+                              "type": "array",
+                              "items": {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "key",
+                                  "value",
+                                  "unit"
+                                ],
+                                "properties": {
+                                  "key": {
+                                    "minLength": 1,
+                                    "maxLength": 200,
+                                    "type": "string"
+                                  },
+                                  "value": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "anyOf": [
+                                      {
+                                        "const": "number",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "ratio",
+                                        "type": "string"
+                                      }
+                                    ]
+                                  }
                                 }
-                              ]
+                              }
+                            },
+                            "abilities": {
+                              "type": "array",
+                              "items": {
+                                "minLength": 1,
+                                "maxLength": 200,
+                                "type": "string"
+                              }
                             }
                           }
                         }
                       },
-                      "abilities": {
+                      "calculatedEquipmentChange": {
                         "type": "array",
                         "items": {
-                          "minLength": 1,
-                          "maxLength": 200,
-                          "type": "string"
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "change",
+                            "equippable",
+                            "physicalDefenseDelta",
+                            "magicalDefenseDelta"
+                          ],
+                          "properties": {
+                            "change": {
+                              "pattern": "^[0-9]+=(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0))$",
+                              "type": "string"
+                            },
+                            "equippable": {
+                              "type": "boolean"
+                            },
+                            "physicalDefenseDelta": {
+                              "type": "integer"
+                            },
+                            "magicalDefenseDelta": {
+                              "type": "integer"
+                            }
+                          }
                         }
-                      }
-                    }
-                  }
-                },
-                "calculatedEquipmentChange": {
-                  "type": "array",
-                  "items": {
-                    "additionalProperties": false,
-                    "type": "object",
-                    "required": [
-                      "change",
-                      "equippable",
-                      "physicalDefenseDelta",
-                      "magicalDefenseDelta"
-                    ],
-                    "properties": {
-                      "change": {
-                        "pattern": "^[0-9]+=(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)/(?:(?:might|arcana|fort|ward|shade|focus):[1-8]|0:0))$",
-                        "type": "string"
-                      },
-                      "equippable": {
-                        "type": "boolean"
-                      },
-                      "physicalDefenseDelta": {
-                        "type": "integer"
-                      },
-                      "magicalDefenseDelta": {
-                        "type": "integer"
                       }
                     }
                   }
@@ -23974,7 +24252,6 @@
         "internal_error",
         "invalid_request",
         "login_required",
-        "not_found",
         "runtime_unavailable"
       ],
       "restrictions": {
@@ -23984,10 +24261,10 @@
       },
       "examples": {
         "request": {
-          "pathParameters": {
+          "pathParameters": {},
+          "query": {
             "characterId": 1
-          },
-          "query": {}
+          }
         },
         "invalidRequest": {
           "query": {
@@ -23996,28 +24273,33 @@
         },
         "response": {
           "data": {
-            "calculatedItemStatus": [
+            "characters": [
               {
-                "item": "0/1101/2/0/fort:1",
-                "equippable": true,
-                "stats": [
+                "characterId": 1,
+                "calculatedItemStatus": [
                   {
-                    "key": "xxxxxxx",
-                    "value": 1,
-                    "unit": "number"
+                    "item": "0/1101/2/0/fort:1",
+                    "equippable": true,
+                    "stats": [
+                      {
+                        "key": "xxxxxxx",
+                        "value": 1,
+                        "unit": "number"
+                      }
+                    ],
+                    "abilities": [
+                      "xxxxxxx"
+                    ]
                   }
                 ],
-                "abilities": [
-                  "xxxxxxx"
+                "calculatedEquipmentChange": [
+                  {
+                    "change": "0=0/1101/2/0/0:0",
+                    "equippable": true,
+                    "physicalDefenseDelta": 1,
+                    "magicalDefenseDelta": 1
+                  }
                 ]
-              }
-            ],
-            "calculatedEquipmentChange": [
-              {
-                "change": "0=0/1101/2/0/0:0",
-                "equippable": true,
-                "physicalDefenseDelta": 1,
-                "magicalDefenseDelta": 1
               }
             ]
           }
@@ -29522,7 +29804,8 @@
             "acceptedElapsedSeconds",
             "cappedElapsedSeconds",
             "elapsedSeconds",
-            "inGameTime"
+            "inGameTime",
+            "parties"
           ],
           "properties": {
             "requestedElapsedSeconds": {
@@ -29544,6 +29827,132 @@
             "inGameTime": {
               "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
               "type": "string"
+            },
+            "parties": {
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "partyNumber",
+                  "currentHp",
+                  "chargeStock",
+                  "controls"
+                ],
+                "properties": {
+                  "partyNumber": {
+                    "minimum": 1,
+                    "maximum": 6,
+                    "type": "integer"
+                  },
+                  "currentHp": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "chargeStock": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "controls": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "sortie",
+                      "godsBattle"
+                    ],
+                    "properties": {
+                      "sortie": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "available",
+                          "unavailableReason"
+                        ],
+                        "properties": {
+                          "available": {
+                            "type": "boolean"
+                          },
+                          "unavailableReason": {
+                            "anyOf": [
+                              {
+                                "anyOf": [
+                                  {
+                                    "const": "gods_battle_unavailable",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "entry_gate_locked",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "party_exhausted",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "already_moving_to_gods_battle",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "charge_insufficient",
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "godsBattle": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "available",
+                          "unavailableReason"
+                        ],
+                        "properties": {
+                          "available": {
+                            "type": "boolean"
+                          },
+                          "unavailableReason": {
+                            "anyOf": [
+                              {
+                                "anyOf": [
+                                  {
+                                    "const": "gods_battle_unavailable",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "entry_gate_locked",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "party_exhausted",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "already_moving_to_gods_battle",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "charge_insufficient",
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -29595,7 +30004,8 @@
                 "acceptedElapsedSeconds",
                 "cappedElapsedSeconds",
                 "elapsedSeconds",
-                "inGameTime"
+                "inGameTime",
+                "parties"
               ],
               "properties": {
                 "requestedElapsedSeconds": {
@@ -29617,6 +30027,132 @@
                 "inGameTime": {
                   "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
                   "type": "string"
+                },
+                "parties": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "partyNumber",
+                      "currentHp",
+                      "chargeStock",
+                      "controls"
+                    ],
+                    "properties": {
+                      "partyNumber": {
+                        "minimum": 1,
+                        "maximum": 6,
+                        "type": "integer"
+                      },
+                      "currentHp": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "chargeStock": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "controls": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "sortie",
+                          "godsBattle"
+                        ],
+                        "properties": {
+                          "sortie": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "available",
+                              "unavailableReason"
+                            ],
+                            "properties": {
+                              "available": {
+                                "type": "boolean"
+                              },
+                              "unavailableReason": {
+                                "anyOf": [
+                                  {
+                                    "anyOf": [
+                                      {
+                                        "const": "gods_battle_unavailable",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "entry_gate_locked",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "party_exhausted",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "already_moving_to_gods_battle",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "charge_insufficient",
+                                        "type": "string"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          "godsBattle": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "available",
+                              "unavailableReason"
+                            ],
+                            "properties": {
+                              "available": {
+                                "type": "boolean"
+                              },
+                              "unavailableReason": {
+                                "anyOf": [
+                                  {
+                                    "anyOf": [
+                                      {
+                                        "const": "gods_battle_unavailable",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "entry_gate_locked",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "party_exhausted",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "already_moving_to_gods_battle",
+                                        "type": "string"
+                                      },
+                                      {
+                                        "const": "charge_insufficient",
+                                        "type": "string"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             },
@@ -29709,7 +30245,24 @@
             "acceptedElapsedSeconds": 0,
             "cappedElapsedSeconds": 0,
             "elapsedSeconds": 0,
-            "inGameTime": "1970-01-01T00:00:00.000Z"
+            "inGameTime": "1970-01-01T00:00:00.000Z",
+            "parties": [
+              {
+                "partyNumber": 1,
+                "currentHp": 0,
+                "chargeStock": 0,
+                "controls": {
+                  "sortie": {
+                    "available": true,
+                    "unavailableReason": "gods_battle_unavailable"
+                  },
+                  "godsBattle": {
+                    "available": true,
+                    "unavailableReason": "gods_battle_unavailable"
+                  }
+                }
+              }
+            ]
           }
         }
       }
@@ -30313,7 +30866,10 @@
           "type": "object",
           "required": [
             "summary",
-            "sorties"
+            "sorties",
+            "currentHp",
+            "chargeStock",
+            "controls"
           ],
           "properties": {
             "summary": {
@@ -30396,6 +30952,112 @@
                   }
                 }
               }
+            },
+            "currentHp": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "chargeStock": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "controls": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "sortie",
+                "godsBattle"
+              ],
+              "properties": {
+                "sortie": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "available",
+                    "unavailableReason"
+                  ],
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    },
+                    "unavailableReason": {
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "const": "gods_battle_unavailable",
+                              "type": "string"
+                            },
+                            {
+                              "const": "entry_gate_locked",
+                              "type": "string"
+                            },
+                            {
+                              "const": "party_exhausted",
+                              "type": "string"
+                            },
+                            {
+                              "const": "already_moving_to_gods_battle",
+                              "type": "string"
+                            },
+                            {
+                              "const": "charge_insufficient",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "godsBattle": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "available",
+                    "unavailableReason"
+                  ],
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    },
+                    "unavailableReason": {
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "const": "gods_battle_unavailable",
+                              "type": "string"
+                            },
+                            {
+                              "const": "entry_gate_locked",
+                              "type": "string"
+                            },
+                            {
+                              "const": "party_exhausted",
+                              "type": "string"
+                            },
+                            {
+                              "const": "already_moving_to_gods_battle",
+                              "type": "string"
+                            },
+                            {
+                              "const": "charge_insufficient",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -30444,7 +31106,10 @@
               "type": "object",
               "required": [
                 "summary",
-                "sorties"
+                "sorties",
+                "currentHp",
+                "chargeStock",
+                "controls"
               ],
               "properties": {
                 "summary": {
@@ -30524,6 +31189,112 @@
                             "type": "null"
                           }
                         ]
+                      }
+                    }
+                  }
+                },
+                "currentHp": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "chargeStock": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "controls": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "sortie",
+                    "godsBattle"
+                  ],
+                  "properties": {
+                    "sortie": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "available",
+                        "unavailableReason"
+                      ],
+                      "properties": {
+                        "available": {
+                          "type": "boolean"
+                        },
+                        "unavailableReason": {
+                          "anyOf": [
+                            {
+                              "anyOf": [
+                                {
+                                  "const": "gods_battle_unavailable",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "entry_gate_locked",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "party_exhausted",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "already_moving_to_gods_battle",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "charge_insufficient",
+                                  "type": "string"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "godsBattle": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "available",
+                        "unavailableReason"
+                      ],
+                      "properties": {
+                        "available": {
+                          "type": "boolean"
+                        },
+                        "unavailableReason": {
+                          "anyOf": [
+                            {
+                              "anyOf": [
+                                {
+                                  "const": "gods_battle_unavailable",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "entry_gate_locked",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "party_exhausted",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "already_moving_to_gods_battle",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "charge_insufficient",
+                                  "type": "string"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
                       }
                     }
                   }
@@ -30628,7 +31399,19 @@
                 "diaryEntryId": "xxxxxxx",
                 "logId": "xxxxxxx"
               }
-            ]
+            ],
+            "currentHp": 0,
+            "chargeStock": 0,
+            "controls": {
+              "sortie": {
+                "available": true,
+                "unavailableReason": "gods_battle_unavailable"
+              },
+              "godsBattle": {
+                "available": true,
+                "unavailableReason": "gods_battle_unavailable"
+              }
+            }
           }
         }
       }
@@ -30698,7 +31481,10 @@
             "outcome",
             "rewards",
             "diaryEntryId",
-            "logId"
+            "logId",
+            "currentHp",
+            "chargeStock",
+            "controls"
           ],
           "properties": {
             "outcome": {
@@ -30761,6 +31547,112 @@
                   "type": "null"
                 }
               ]
+            },
+            "currentHp": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "chargeStock": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "controls": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "sortie",
+                "godsBattle"
+              ],
+              "properties": {
+                "sortie": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "available",
+                    "unavailableReason"
+                  ],
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    },
+                    "unavailableReason": {
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "const": "gods_battle_unavailable",
+                              "type": "string"
+                            },
+                            {
+                              "const": "entry_gate_locked",
+                              "type": "string"
+                            },
+                            {
+                              "const": "party_exhausted",
+                              "type": "string"
+                            },
+                            {
+                              "const": "already_moving_to_gods_battle",
+                              "type": "string"
+                            },
+                            {
+                              "const": "charge_insufficient",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "godsBattle": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "available",
+                    "unavailableReason"
+                  ],
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    },
+                    "unavailableReason": {
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "const": "gods_battle_unavailable",
+                              "type": "string"
+                            },
+                            {
+                              "const": "entry_gate_locked",
+                              "type": "string"
+                            },
+                            {
+                              "const": "party_exhausted",
+                              "type": "string"
+                            },
+                            {
+                              "const": "already_moving_to_gods_battle",
+                              "type": "string"
+                            },
+                            {
+                              "const": "charge_insufficient",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -30811,7 +31703,10 @@
                 "outcome",
                 "rewards",
                 "diaryEntryId",
-                "logId"
+                "logId",
+                "currentHp",
+                "chargeStock",
+                "controls"
               ],
               "properties": {
                 "outcome": {
@@ -30874,6 +31769,112 @@
                       "type": "null"
                     }
                   ]
+                },
+                "currentHp": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "chargeStock": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "controls": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "sortie",
+                    "godsBattle"
+                  ],
+                  "properties": {
+                    "sortie": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "available",
+                        "unavailableReason"
+                      ],
+                      "properties": {
+                        "available": {
+                          "type": "boolean"
+                        },
+                        "unavailableReason": {
+                          "anyOf": [
+                            {
+                              "anyOf": [
+                                {
+                                  "const": "gods_battle_unavailable",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "entry_gate_locked",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "party_exhausted",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "already_moving_to_gods_battle",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "charge_insufficient",
+                                  "type": "string"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "godsBattle": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "available",
+                        "unavailableReason"
+                      ],
+                      "properties": {
+                        "available": {
+                          "type": "boolean"
+                        },
+                        "unavailableReason": {
+                          "anyOf": [
+                            {
+                              "anyOf": [
+                                {
+                                  "const": "gods_battle_unavailable",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "entry_gate_locked",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "party_exhausted",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "already_moving_to_gods_battle",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "charge_insufficient",
+                                  "type": "string"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
                 }
               }
             },
@@ -30970,7 +31971,19 @@
               "xxxxxxx"
             ],
             "diaryEntryId": "xxxxxxx",
-            "logId": "xxxxxxx"
+            "logId": "xxxxxxx",
+            "currentHp": 0,
+            "chargeStock": 0,
+            "controls": {
+              "sortie": {
+                "available": true,
+                "unavailableReason": "gods_battle_unavailable"
+              },
+              "godsBattle": {
+                "available": true,
+                "unavailableReason": "gods_battle_unavailable"
+              }
+            }
           }
         }
       }

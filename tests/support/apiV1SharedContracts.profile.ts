@@ -20,18 +20,18 @@ assert.ok(diaryEntryOperation, 'read/diary/diaryEntry/{diaryEntryId} is missing 
 const generatedDiaryEntry = diaryEntryOperation!.response.data.properties.entry;
 assert.deepEqual(toJson(DiaryEntrySchema), generatedDiaryEntry, 'DiaryEntrySchema drifted from the generated read/diary/diaryEntry/{diaryEntryId} response shape');
 
-const equipmentSetOperation = byId.get('read/build/character/{characterId}/equipmentSet');
-assert.ok(equipmentSetOperation, 'read/build/character/{characterId}/equipmentSet is missing from the generated catalog');
-const equipmentSetsSchema = equipmentSetOperation!.response.data.properties.equipmentSets as { items: { properties: Record<string, unknown> } };
+const equipmentSetOperation = byId.get('read/build/character/equipmentSet');
+assert.ok(equipmentSetOperation, 'read/build/character/equipmentSet is missing from the generated catalog');
+const equipmentSetsSchema = (equipmentSetOperation!.response.data.properties.characters as { items: { properties: Record<string, unknown> } }).items.properties.equipmentSets as { items: { properties: Record<string, unknown> } };
 const generatedEquipmentSet = equipmentSetsSchema.items.properties.equipmentSet as { properties: Record<string, unknown> };
 assert.deepEqual(toJson(EquipmentSetSchema), generatedEquipmentSet, 'EquipmentSetSchema drifted from the generated equipmentSet response shape');
 
 const generatedEquipmentPattern = (generatedEquipmentSet.properties.equipment as { items: { pattern: string } }).items.pattern;
 assert.equal(EquipmentEntryFormatSchema.pattern, generatedEquipmentPattern, 'EquipmentEntryFormatSchema pattern drifted from the generated equipment-entry pattern');
 
-const characterStatusOperation = byId.get('read/build/character/{characterId}/status');
-assert.ok(characterStatusOperation, 'read/build/character/{characterId}/status is missing from the generated catalog');
-const generatedCalculatedStatus = characterStatusOperation!.response.data.properties.calculatedStatus;
-assert.deepEqual(toJson(CalculatedStatusSchema), generatedCalculatedStatus, 'CalculatedStatusSchema drifted from the generated read/build/character/{characterId}/status response shape');
+const characterStatusOperation = byId.get('read/build/character/status');
+assert.ok(characterStatusOperation, 'read/build/character/status is missing from the generated catalog');
+const generatedCalculatedStatus = (characterStatusOperation!.response.data.properties.characters as { items: { properties: Record<string, unknown> } }).items.properties.calculatedStatus;
+assert.deepEqual(toJson(CalculatedStatusSchema), generatedCalculatedStatus, 'CalculatedStatusSchema drifted from the generated read/build/character/status response shape');
 
 console.log('apiV1SharedContracts profile ok');

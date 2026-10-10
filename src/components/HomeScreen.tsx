@@ -2140,22 +2140,22 @@ export function GameRuntimeHost({
 
   // SpecRef: 8.2.4 | Equipment management | Undo and Redo availability comes from the equipment projection
   const historyCharacter = currentParty.characters[selectedCharacter] ?? currentParty.characters[0];
-  const equipmentProjection = useApiRead<{ validOptions: { undoEquipment: { available: boolean }; redoEquipment: { available: boolean } } }>(
+  const equipmentProjection = useApiRead<{ characters: { validOptions: { undoEquipment: { available: boolean }; redoEquipment: { available: boolean } } }[] }>(
     inProcessApiRef.current,
-    'read/build/character/{characterId}/equipment',
-    !headless && historyCharacter ? { pathParameters: { characterId: historyCharacter.id } } : null,
+    'read/build/character/equipment',
+    !headless && historyCharacter ? { parameters: { characterId: historyCharacter.id } } : null,
     [historyCharacter?.id, historyCharacter?.equipment, state.global.inventory, state.global.jewels, currentParty.level], !headless,
   );
 
   // SpecRef: 8.2 | UI_PARTY | Saved equipment sets and the deity pane render from projections
-  const equipmentSetProjection = useApiRead<{ equipmentSets: Parameters<typeof parseSavedEquipmentSet>[0][] }>(
+  const equipmentSetProjection = useApiRead<{ characters: { equipmentSets: Parameters<typeof parseSavedEquipmentSet>[0][] }[] }>(
     inProcessApiRef.current,
-    'read/build/character/{characterId}/equipmentSet',
-    !headless && historyCharacter ? { pathParameters: { characterId: historyCharacter.id }, parameters: { isEquipmentSetDetail: true } } : null,
+    'read/build/character/equipmentSet',
+    !headless && historyCharacter ? { parameters: { characterId: historyCharacter.id, isEquipmentSetDetail: true } } : null,
     [historyCharacter?.id, state.global.savedEquipmentSets], !headless,
   );
   const savedEquipmentSetsView = useMemo(
-    () => (equipmentSetProjection?.equipmentSets ?? []).map(parseSavedEquipmentSet),
+    () => (equipmentSetProjection?.characters[0]?.equipmentSets ?? []).map(parseSavedEquipmentSet),
     [equipmentSetProjection],
   );
   // The owned inventory and Jewel counts are only needed while the Party tab is on screen.
@@ -5706,8 +5706,8 @@ export function GameRuntimeHost({
           onRenameEquipmentSet={(characterId, slot, name) => dispatchEquipmentIntent(characterId, { kind: 'renameSet', slot, name })}
           onDeleteEquipmentSet={(characterId, slot) => dispatchEquipmentIntent(characterId, { kind: 'deleteSet', slot })}
           onLoadEquipmentSet={(characterId, slot, mode) => dispatchEquipmentIntent(characterId, { kind: 'loadSet', slot, mode })}
-          canUndoEquipment={equipmentProjection?.validOptions.undoEquipment.available === true}
-          canRedoEquipment={equipmentProjection?.validOptions.redoEquipment.available === true}
+          canUndoEquipment={equipmentProjection?.characters[0]?.validOptions.undoEquipment.available === true}
+          canRedoEquipment={equipmentProjection?.characters[0]?.validOptions.redoEquipment.available === true}
           onUndoEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'undo' })}
           onRedoEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'redo' })}
           savedEquipmentSets={savedEquipmentSetsView}

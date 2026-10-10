@@ -52,5 +52,5 @@ test('Party Undo and Redo use the API history and availability, not a Party-loca
   assert.match(partyTab, /onUndoEquipment\(char\.id\)/);
   const home = fs.readFileSync(path.resolve('src/components/HomeScreen.tsx'), 'utf8');
   assert.equal(home.includes('actions.restoreEquipmentState'), false);
-  assert.match(home, /'read\/build\/character\/\{characterId\}\/equipment'/);
+  assert.match(home, /'read\/build\/character\/equipment'/);
 });

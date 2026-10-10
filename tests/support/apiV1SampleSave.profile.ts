@@ -36,8 +36,8 @@ const catalog = (await import('../../desktop/api-v1-contract.json', { with: { ty
 const validator = (operationId: string) => new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === operationId)!.response.data);
 const validateParty = validator('read/observation/party');
 const validateSearch = validator('read/base/searchItems');
-const validateEquipment = validator('read/build/character/{characterId}/equipment');
-const validateStatus = validator('read/build/character/{characterId}/status');
+const validateEquipment = validator('read/build/character/equipment');
+const validateStatus = validator('read/build/character/status');
 const validateDonation = validator('resources/donationBox');
 const validateDiary = validator('read/observation/diary');
 const validateDiaryEntry = validator('read/diary/diaryEntry/{diaryEntryId}');
@@ -163,9 +163,10 @@ assert.equal(statusChecked, 36);
 // 3. Equipment reads agree with the real equipment for all 36 characters.
 for (const party of state.parties) {
   for (const character of party.characters) {
-    const equipment = await read(`read/build/character/${character.id}/equipment`) as { current: { equipment: string[] }; validOptions: { numberOfEmptyEquipmentSlots: number } };
-    assert.equal(validateEquipment(equipment), true, `${character.name} equipment: ${JSON.stringify(validateEquipment.errors?.slice(0, 2))}`);
-    const status = await read(`read/build/character/${character.id}/status`);
+    const equipmentRead = await read('read/build/character/equipment', { characterId: character.id });
+    const equipment = (equipmentRead as { characters: { current: { equipment: string[] }; validOptions: { numberOfEmptyEquipmentSlots: number } }[] }).characters[0];
+    assert.equal(validateEquipment(equipmentRead), true, `${character.name} equipment: ${JSON.stringify(validateEquipment.errors?.slice(0, 2))}`);
+    const status = await read('read/build/character/status', { characterId: character.id });
     assert.equal(validateStatus(status), true, `${character.name} status: ${JSON.stringify(validateStatus.errors?.slice(0, 2))}`);
     const slots = computePartyStats(party).characterStats[party.characters.indexOf(character)].maxEquipSlots;
     assert.equal(equipment.validOptions.numberOfEmptyEquipmentSlots, slots - character.equipment.slice(0, slots).filter(Boolean).length, `${character.name} empty slots`);
@@ -330,7 +331,7 @@ const before = { items: itemConservation(state), jewels: jewelConservation(state
 
 // 5b. equipmentEvaluation on the real save: every owned variant with a Jewel, for characters of different builds, never changes the state.
 {
-  const validateEvaluation = validator('read/build/character/{characterId}/equipmentEvaluation');
+  const validateEvaluation = validator('read/build/character/equipmentEvaluation');
   const { JEWELS_BY_ITEM_CATEGORY } = await import('../../src/game/jewel.ts');
   const owned = Object.values(state.global.inventory).filter((variant) => variant.count > 0).map((variant) => `0/${variant.item.id}/${variant.item.enhancement}/${variant.item.superRare}/${JEWELS_BY_ITEM_CATEGORY[variant.item.category][0]}:1`);
   assert.ok(owned.length > 1000, 'the real save owns many variants');
@@ -340,10 +341,10 @@ const before = { items: itemConservation(state), jewels: jewelConservation(state
     for (let start = 0; start < owned.length; start += 100) {
       const batch = owned.slice(start, start + 100);
       const before = JSON.stringify(state);
-      const data = await read(`read/build/character/${someone.id}/equipmentEvaluation`, { targetItems: batch });
+      const data = await read('read/build/character/equipmentEvaluation', { characterId: someone.id, targetItems: batch });
       assert.equal(JSON.stringify(state), before, 'an evaluation never changes the state');
       assert.equal(validateEvaluation(data), true, JSON.stringify(validateEvaluation.errors?.slice(0, 2)));
-      const entries = (data as { calculatedItemStatus: { item: string; stats: { value: number }[] }[] }).calculatedItemStatus;
+      const entries = (data as { characters: { calculatedItemStatus: { item: string; stats: { value: number }[] }[] }[] }).characters[0].calculatedItemStatus;
       assert.deepEqual(entries.map((entry) => entry.item), batch);
       for (const entry of entries) for (const fact of entry.stats) assert.equal(Number.isFinite(fact.value), true, `${entry.item} has a finite value`);
       evaluated += entries.length;

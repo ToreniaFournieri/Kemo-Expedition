@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { default as Ajv } from 'ajv';
-import { buildApiV1ReadData, type ApiV1ReadContext } from '../../src/api/v1/readModels.ts';
+import { type ApiV1ReadContext } from '../../src/api/v1/readModels.ts';
+import { readCharacterBuild } from './apiV1CharacterRead.ts';
 import { createFreshGameState } from '../../src/hooks/useGameState.ts';
 import { getCharacterCategoryMultiplier, getCharacterGrowthMultiplier, getItemStats } from '../../src/components/home/homeShared.tsx';
 import { computeCharacterStats } from '../../src/game/characterComputation.ts';
@@ -16,14 +17,15 @@ const context: ApiV1ReadContext = {
 };
 const state = createFreshGameState('en', at);
 const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { method: string; path: string; operationId: string; response: { data: object } }[] };
-const operationId = 'read/build/character/{characterId}/equipmentEvaluation';
+const operationId = 'read/build/character/equipmentEvaluation';
 const operation = catalog.operations.find((entry) => entry.operationId === operationId)!;
 assert.equal(operation.method, 'GET');
-assert.equal(operation.path, '/api/v1/read/build/character/{characterId}/equipmentEvaluation');
+assert.equal(operation.path, '/api/v1/read/build/character/equipmentEvaluation');
 assert.equal(catalog.operations.some((entry) => entry.operationId === 'commit/build/character/{characterId}/equipmentEvaluation'), false, 'the obsolete Commit route is absent');
-const validate = new Ajv({ strict: false }).compile(operation.response.data);
-const evaluate = (characterId: number, targetItems: unknown, from = state) => buildApiV1ReadData(`read/build/character/${characterId}/equipmentEvaluation`, from, { targetItems }, context);
-const evaluateChanges = (characterId: number, equipmentChanges: unknown, from = state) => buildApiV1ReadData(`read/build/character/${characterId}/equipmentEvaluation`, from, { equipmentChanges }, context);
+const validateResponse = new Ajv({ strict: false }).compile(operation.response.data);
+const validate = Object.assign((entry: object) => validateResponse({ characters: [{ characterId: 1, ...entry }] }), { get errors() { return validateResponse.errors; } });
+const evaluate = (characterId: number, targetItems: unknown, from = state) => readCharacterBuild('equipmentEvaluation', characterId, from, { targetItems }, context);
+const evaluateChanges = (characterId: number, equipmentChanges: unknown, from = state) => readCharacterBuild('equipmentEvaluation', characterId, from, { equipmentChanges }, context);
 
 type Entry = { item: string; equippable: boolean; stats: { key: string; value: number; unit: string }[]; abilities: string[] };
 const format = (item: { id: number }, enhancement: number, superRare: number, jewel?: string, locked = 0) => {

@@ -1,4 +1,6 @@
 import { isDungeonEntryUnlocked, isGodsBattleAvailable } from '../../game/clearGate.ts';
+import { getInstantExpeditionChargeState } from '../../game/instantExpedition.ts';
+import { computePartyStats } from '../../game/partyComputation.ts';
 import type { Party } from '../../types/index.ts';
 
 // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
@@ -35,4 +37,22 @@ export function getSortieUnavailableReason(input: SortieAvailabilityInput): Sort
   if (godsBattle && cycle?.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true) return 'already_moving_to_gods_battle';
   if (!isColosseum && chargeStock <= 0) return 'charge_insufficient';
   return null;
+}
+
+export interface SortieControlFacts {
+  currentHp: number;
+  chargeStock: number;
+  controls: { sortie: { available: boolean; unavailableReason: SortieUnavailableReason | null }; godsBattle: { available: boolean; unavailableReason: SortieUnavailableReason | null } };
+}
+
+// SpecRef: 9.1.3 | 3-2-2 {p}/sortie | `currentHp`, `chargeStock`, `controls` after the commit
+/** What the next Sortie / Gods Battle would be refused for, from the party as a commit leaves it (no live cycle). */
+export function getSortieControlFacts(party: Party, nowMs: number, chargeDurationScale: number): SortieControlFacts {
+  const maximumHp = computePartyStats(party).partyStats.hp;
+  const chargeStock = getInstantExpeditionChargeState(party, nowMs, chargeDurationScale).stock;
+  const control = (godsBattle: boolean) => {
+    const reason = getSortieUnavailableReason({ party, godsBattle, hp: party.currentHp, maximumHp, chargeStock });
+    return { available: reason === null, unavailableReason: reason };
+  };
+  return { currentHp: Math.max(0, Math.floor(party.currentHp)), chargeStock, controls: { sortie: control(false), godsBattle: control(true) } };
 }

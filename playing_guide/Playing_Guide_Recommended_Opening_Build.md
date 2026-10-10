@@ -18,8 +18,8 @@ Read `GET /api/v1/read/observation/compact` once for an opening overview. It run
 
 ```text
 GET /api/v1/read/build/party/1
-GET /api/v1/read/build/character/{characterId}/status
-GET /api/v1/read/build/character/{characterId}/equipment
+GET /api/v1/read/build/character/status?characterId=<id>[&characterId=<id>...]
+GET /api/v1/read/build/character/equipment?characterId=<id>[&characterId=<id>...]
 GET /api/v1/read/expedition/1/setting
 GET /api/v1/read/base/shopItemsList
 ```
@@ -49,7 +49,7 @@ Read each result before the next request. If a response is lost, retry the **sam
 | 2 | Borg | `{"name":"Borg","racesAndGender":"ursan/female","lineage":"adaptation","predisposition":"serene","mainClassId":"sage","subClassId":"alchemist"}` | `SEMI` |
 | 4 | Grun | `{"name":"Grun","racesAndGender":"ursan/male","lineage":"adaptation","predisposition":"introspective","mainClassId":"wizard","subClassId":"alchemist"}` | `SEMI` |
 
-For each character, compare `GET /api/v1/read/build/character/{characterId}/status` with the target. Send only changed, valid fields. Omit immutable identity fields for a unique character. Submit `POST /api/v1/commit/build/character/{characterId}/changeBuild` first with the desired fields and `"simulation":true`. This validates without applying. Inspect `data.confirmationRequired` and `data.warnings`, then submit the same desired fields with `"simulation":false`. Include `"confirmation":"yes"` only if the simulation required it and you accept its effects. Each request needs its own key and the latest revision. For example:
+For each character, compare `GET /api/v1/read/build/character/status?characterId=<id>[&characterId=<id>...]` with the target. Send only changed, valid fields. Omit immutable identity fields for a unique character. Submit `POST /api/v1/commit/build/character/{characterId}/changeBuild` first with the desired fields and `"simulation":true`. This validates without applying. Inspect `data.confirmationRequired` and `data.warnings`, then submit the same desired fields with `"simulation":false`. Include `"confirmation":"yes"` only if the simulation required it and you accept its effects. Each request needs its own key and the latest revision. For example:
 
 ```text
 POST /api/v1/commit/build/character/1/changeBuild
@@ -102,7 +102,7 @@ Allocate by these rules first, then use the table to break ties:
 * **Every character must keep at least one attack.** A grimoire (`1111`) adds magical attack but lowers magical NoA by 1, and a catalyst (`1112`) raises it. Never give a caster grimoires without a catalyst, and never stack two grimoires on one character. Two grimoires alone left Borg with no attacks.
 * **Give each caster (Grun, Borg, Selfin, Laika) a catalyst** before adding grimoires or wands.
 * **Give Kemo the extra melee weapons** (swords `1104`, a katana `1105`) so the front line deals damage.
-* After each `equip`, read `GET /api/v1/read/build/character/{characterId}/status` and check that at least one attack has NoA above 0.
+* After each `equip`, read `GET /api/v1/read/build/character/status?characterId=<id>[&characterId=<id>...]` and check that at least one attack has NoA above 0.
 
 The original allocation target is below. These are **base item IDs**, not the `Item Format` strings accepted by `equip`. Match each target to an owned, compatible item in current inventory. Prefer the strongest available enhancement for Kemo's sword, Grun's wand, and Borg's grimoire.
 

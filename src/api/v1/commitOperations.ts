@@ -12,7 +12,7 @@ import { accountEnemyEditSettingsOf, describeEnemyEditPane, planEnemyEditPaneWri
 import { canCharacterEquipCategory, createDefaultEquipmentSetName, evaluateEquipmentSet, evaluateEquipmentState, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
 import { recordEquipmentState, redoEquipmentState, undoEquipmentState } from '../../game/equipmentHistory';
 import { computeCharacterStats } from '../../game/characterComputation';
-import { getSortieUnavailableReason } from './sortieAvailability';
+import { getSortieControlFacts, getSortieUnavailableReason } from './sortieAvailability';
 import { getExpeditionChangeRejection } from '../../game/expeditionSettings';
 import { getInstantExpeditionChargeState } from '../../game/instantExpedition';
 import { computePartyStats } from '../../game/partyComputation';
@@ -272,7 +272,8 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       }
       // A Gods Battle keeps its single-result shape; a sortie reports one entry per run.
       const { battleOutcome, ...godsResult } = sorties[0];
-      data = godsBattle ? { outcome: battleOutcome, ...godsResult } : { summary: `${sorties.length}/${sortieCount}`, sorties };
+      const after = getSortieControlFacts(next.parties[partyIndex], context.simulatedAt, chargeScale);
+      data = godsBattle ? { outcome: battleOutcome, ...godsResult, ...after } : { summary: `${sorties.length}/${sortieCount}`, sorties, ...after };
     }
   } else if (operation.match(/^commit\/build\/party\/(\d+)$/)) {
     const partyNumber = Number(operation.split('/').at(-1));

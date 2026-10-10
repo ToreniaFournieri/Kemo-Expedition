@@ -386,6 +386,7 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>, 
   if (characterId !== null && !party.characters.some((character) => character.id === characterId)) throw new Error('not_found');
   const partyStatus = computePartyStats(party);
   const computed = partyStatus.characterStats;
+  const deityTotalDonation = state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0;
   return {
     effectiveSelection: { partyNumber: party.id, characterId: characterId ?? party.characters[0]?.id ?? null },
     party: {
@@ -394,9 +395,14 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>, 
       level: party.level,
       experience: party.experience,
       experienceToNext: party.level < MAX_LEVEL ? Math.ceil(getXpToNextLevel(party.level)) : 0,
+      // SpecRef: 9.1.3 | 2-1-4 party | `experienceRatio`: whole percent of the current level's EXP, 0 at the maximum level
+      experienceRatio: party.level < MAX_LEVEL ? Math.floor((party.experience / Math.max(1, getXpToNextLevel(party.level))) * 100) : 0,
+      currentHp: Math.max(0, Math.floor(party.currentHp)),
       maxHp: Math.floor(partyStatus.partyStats.hp),
       deityId: getDeityId(party.deity.name),
-      deityRank: getDeityRank(state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0),
+      deityRank: getDeityRank(deityTotalDonation),
+      deityTotalDonation,
+      deityNextRankThreshold: getNextRankDonationRequirement(deityTotalDonation),
       condition: party.condition,
       order: party.characters.map((character) => character.id),
       characters: party.characters.map((character, index) => ({
@@ -940,109 +946,117 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       .filter((id) => id === 'none' || id === currentDeityId || !usedByOtherParties.has(id));
     return { current: { deityId: currentDeityId, order: selected.party.characters.map((entry) => entry.id) }, validOptions: { deityId, order: selected.party.characters.map((entry) => entry.id) } };
   }
-  const characterRead = operationId.match(/^read\/build\/character\/(\d+)\/(status|equipment|equipmentSet|equipmentEvaluation)$/);
+  const characterRead = operationId.match(/^read\/build\/character\/(status|equipment|equipmentSet|equipmentEvaluation)$/);
   if (characterRead) {
-    const found = findCharacter(state, characterRead[1]);
-    if (!found) throw new Error('not_found');
-    const { party, character, characterIndex } = found;
-    if (characterRead[2] === 'status') {
-      const editableRaceIds = new Set(['lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian', 'leporian', 'cervin', 'murid']);
-      const normalRaceOptions = RACES.filter((race) => editableRaceIds.has(race.id)).flatMap((race) => (['male', 'female'] as const)
-        .filter((gender) => !party.characters.some((candidate) => candidate.id !== character.id && candidate.isUnique !== true && candidate.raceId === race.id && candidate.gender === gender))
-        .map((gender) => `${race.id}/${gender}`));
-      const assignedMimorianForms = new Set(state.parties.flatMap((entry) => entry.characters)
-        .filter((candidate) => candidate.id !== character.id && candidate.raceId === 'mimorian')
-        .map((candidate) => candidate.mimorianEnemyId));
-      const mimorianOptions = state.global.unlockedMimorianEnemyIds
-        .filter((enemyId) => ENEMIES.some((enemy) => enemy.id === enemyId) && !assignedMimorianForms.has(enemyId))
-        .map((enemyId) => `mimorian/female/${enemyId}`);
-      return {
-        calculatedStatus: buildCalculatedStatus(party.characters[characterIndex], computePartyStats(party).characterStats[characterIndex], party.level),
-        current: describeCharacterBuildCurrent(character),
-        editableFields: { name: character.isUnique !== true },
-        validOptions: {
-          uniqueSelection: validUniqueSelections(state, character),
-          racesAndGender: character.isUnique ? ['none'] : [...normalRaceOptions, ...mimorianOptions],
-          mainClassId: CLASSES.map((entry) => entry.id),
-          subClassId: CLASSES.map((entry) => entry.id),
-          lineage: character.isUnique ? ['none'] : LINEAGES.filter((entry) => entry.selectable === true).map((entry) => entry.id),
-          predisposition: character.isUnique ? ['none'] : PREDISPOSITIONS.filter((entry) => entry.selectable === true).map((entry) => entry.id),
-        },
-      };
-    }
-    if (characterRead[2] === 'equipment') {
-      // Empty slots are counted against the character's real slot count: the equipment array may be shorter.
+    // SpecRef: 9.1.3 | 2-3-2..2-3-5 | `characterId` is one ID or an array of IDs; the remaining parameters apply to every listed character.
+    if (parameters.characterId === undefined) throw new Error('invalid_request:characterId');
+    const requestedIds = (Array.isArray(parameters.characterId) ? parameters.characterId : [parameters.characterId]).map(Number);
+    if (requestedIds.length === 0 || requestedIds.length > 36 || requestedIds.some((id) => !Number.isInteger(id) || id < 1)) throw new Error('invalid_request:characterId');
+    if (new Set(requestedIds).size !== requestedIds.length) throw new Error('invalid_request:characterId.duplicate');
+    const readCharacter = (characterIdValue: number) => {
+      const found = findCharacter(state, characterIdValue);
+      if (!found) throw new Error('not_found');
+      const { party, character, characterIndex } = found;
+      if (characterRead[1] === 'status') {
+        const editableRaceIds = new Set(['lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian', 'leporian', 'cervin', 'murid']);
+        const normalRaceOptions = RACES.filter((race) => editableRaceIds.has(race.id)).flatMap((race) => (['male', 'female'] as const)
+          .filter((gender) => !party.characters.some((candidate) => candidate.id !== character.id && candidate.isUnique !== true && candidate.raceId === race.id && candidate.gender === gender))
+          .map((gender) => `${race.id}/${gender}`));
+        const assignedMimorianForms = new Set(state.parties.flatMap((entry) => entry.characters)
+          .filter((candidate) => candidate.id !== character.id && candidate.raceId === 'mimorian')
+          .map((candidate) => candidate.mimorianEnemyId));
+        const mimorianOptions = state.global.unlockedMimorianEnemyIds
+          .filter((enemyId) => ENEMIES.some((enemy) => enemy.id === enemyId) && !assignedMimorianForms.has(enemyId))
+          .map((enemyId) => `mimorian/female/${enemyId}`);
+        return {
+          calculatedStatus: buildCalculatedStatus(party.characters[characterIndex], computePartyStats(party).characterStats[characterIndex], party.level),
+          current: describeCharacterBuildCurrent(character),
+          editableFields: { name: character.isUnique !== true },
+          validOptions: {
+            uniqueSelection: validUniqueSelections(state, character),
+            racesAndGender: character.isUnique ? ['none'] : [...normalRaceOptions, ...mimorianOptions],
+            mainClassId: CLASSES.map((entry) => entry.id),
+            subClassId: CLASSES.map((entry) => entry.id),
+            lineage: character.isUnique ? ['none'] : LINEAGES.filter((entry) => entry.selectable === true).map((entry) => entry.id),
+            predisposition: character.isUnique ? ['none'] : PREDISPOSITIONS.filter((entry) => entry.selectable === true).map((entry) => entry.id),
+          },
+        };
+      }
+      if (characterRead[1] === 'equipment') {
+        // Empty slots are counted against the character's real slot count: the equipment array may be shorter.
+        const maxSlots = computePartyStats(party).characterStats[characterIndex].maxEquipSlots;
+        const emptySlots = Array.from({ length: maxSlots }, (_, slot) => slot).filter((slot) => !character.equipment[slot]).length;
+        return {
+          current: { mode: autoEquipmentModeName(character.autoEquipmentMode), equipment: equipmentEntries(character, maxSlots) },
+          validOptions: { mode: ['FULL', 'SEMI', 'OFF'], numberOfEmptyEquipmentSlots: emptySlots, ...describeEquipmentHistory(state, character.id, context.control?.equipmentHistory) },
+        };
+      }
+      if (characterRead[1] === 'equipmentEvaluation') {
+        // SpecRef: 9.1.3 | Read | 2-3-5 character/equipmentEvaluation
+        const requested = parameters.targetItems === undefined ? [] : Array.isArray(parameters.targetItems) ? parameters.targetItems : [parameters.targetItems];
+        const requestedChanges = parameters.equipmentChanges === undefined ? [] : Array.isArray(parameters.equipmentChanges) ? parameters.equipmentChanges : [parameters.equipmentChanges];
+        if (requested.length === 0 && requestedChanges.length === 0) throw new Error('invalid_request:targetItems.or_equipmentChanges_required');
+        if (new Set(requested).size !== requested.length) throw new Error('invalid_request:targetItems.duplicate');
+        if (new Set(requestedChanges).size !== requestedChanges.length) throw new Error('invalid_request:equipmentChanges.duplicate');
+        if (requested.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:targetItems.maxItems');
+        if (requestedChanges.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:equipmentChanges.maxItems');
+        const currentStats = computeCharacterStatsInParty(party, characterIndex);
+        return {
+          // A rejected entry is named by its request index so a caller can find it among many.
+          calculatedItemStatus: requested.map((entry, index) => {
+            const item = typeof entry === 'string' ? parseEvaluatedItemFormat(entry) : null;
+            if (!item) throw new Error(`invalid_request:targetItems[${index}].format`);
+            if (item.jewel && !isJewelAllowedForCategory(item.category, item.jewel.key)) throw new Error(`invalid_request:targetItems[${index}].jewel_category`);
+            return { item: entry as string, ...evaluateItemForCharacter(character, item, party.level), abilities: describeItem(item).ability };
+          }),
+          calculatedEquipmentChange: requestedChanges.map((entry, index) => {
+            const change = typeof entry === 'string' ? parseEquipmentChange(entry) : null;
+            if (!change) throw new Error(`invalid_request:equipmentChanges[${index}].format`);
+            if (change.slotIndex >= currentStats.maxEquipSlots) throw new Error(`invalid_request:equipmentChanges[${index}].slotIndex`);
+            if (change.item?.jewel && !isJewelAllowedForCategory(change.item.category, change.item.jewel.key)) {
+              throw new Error(`invalid_request:equipmentChanges[${index}].jewel_category`);
+            }
+            const equipment = [...character.equipment];
+            equipment[change.slotIndex] = change.item;
+            const nextStats = computeCharacterStatsInParty(party, characterIndex, { ...character, equipment });
+            return {
+              change: entry as string,
+              equippable: change.item === null || evaluateItemForCharacter(character, change.item, party.level).equippable,
+              physicalDefenseDelta: Math.round(nextStats.physicalDefense) - Math.round(currentStats.physicalDefense),
+              magicalDefenseDelta: Math.round(nextStats.magicalDefense) - Math.round(currentStats.magicalDefense),
+            };
+          }),
+        };
+      }
+      const ids = Array.isArray(parameters.equipmentSetId) ? parameters.equipmentSetId.map(Number) : parameters.equipmentSetId ? [Number(parameters.equipmentSetId)] : null;
       const maxSlots = computePartyStats(party).characterStats[characterIndex].maxEquipSlots;
-      const emptySlots = Array.from({ length: maxSlots }, (_, slot) => slot).filter((slot) => !character.equipment[slot]).length;
       return {
-        current: { mode: autoEquipmentModeName(character.autoEquipmentMode), equipment: equipmentEntries(character, maxSlots) },
-        validOptions: { mode: ['FULL', 'SEMI', 'OFF'], numberOfEmptyEquipmentSlots: emptySlots, ...describeEquipmentHistory(state, character.id, context.control?.equipmentHistory) },
-      };
-    }
-    if (characterRead[2] === 'equipmentEvaluation') {
-      // SpecRef: 9.1.3 | Read | 2-3-5 character/{characterId}/equipmentEvaluation
-      const requested = parameters.targetItems === undefined ? [] : Array.isArray(parameters.targetItems) ? parameters.targetItems : [parameters.targetItems];
-      const requestedChanges = parameters.equipmentChanges === undefined ? [] : Array.isArray(parameters.equipmentChanges) ? parameters.equipmentChanges : [parameters.equipmentChanges];
-      if (requested.length === 0 && requestedChanges.length === 0) throw new Error('invalid_request:targetItems.or_equipmentChanges_required');
-      if (new Set(requested).size !== requested.length) throw new Error('invalid_request:targetItems.duplicate');
-      if (new Set(requestedChanges).size !== requestedChanges.length) throw new Error('invalid_request:equipmentChanges.duplicate');
-      if (requested.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:targetItems.maxItems');
-      if (requestedChanges.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:equipmentChanges.maxItems');
-      const currentStats = computeCharacterStatsInParty(party, characterIndex);
-      return {
-        // A rejected entry is named by its request index so a caller can find it among many.
-        calculatedItemStatus: requested.map((entry, index) => {
-          const item = typeof entry === 'string' ? parseEvaluatedItemFormat(entry) : null;
-          if (!item) throw new Error(`invalid_request:targetItems[${index}].format`);
-          if (item.jewel && !isJewelAllowedForCategory(item.category, item.jewel.key)) throw new Error(`invalid_request:targetItems[${index}].jewel_category`);
-          return { item: entry as string, ...evaluateItemForCharacter(character, item, party.level), abilities: describeItem(item).ability };
-        }),
-        calculatedEquipmentChange: requestedChanges.map((entry, index) => {
-          const change = typeof entry === 'string' ? parseEquipmentChange(entry) : null;
-          if (!change) throw new Error(`invalid_request:equipmentChanges[${index}].format`);
-          if (change.slotIndex >= currentStats.maxEquipSlots) throw new Error(`invalid_request:equipmentChanges[${index}].slotIndex`);
-          if (change.item?.jewel && !isJewelAllowedForCategory(change.item.category, change.item.jewel.key)) {
-            throw new Error(`invalid_request:equipmentChanges[${index}].jewel_category`);
-          }
-          const equipment = [...character.equipment];
-          equipment[change.slotIndex] = change.item;
-          const nextStats = computeCharacterStatsInParty(party, characterIndex, { ...character, equipment });
+        equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => {
+          const availability = evaluateEquipmentSet(set, character, state.global.inventory, state.global.jewels, maxSlots);
           return {
-            change: entry as string,
-            equippable: change.item === null || evaluateItemForCharacter(character, change.item, party.level).equippable,
-            physicalDefenseDelta: Math.round(nextStats.physicalDefense) - Math.round(currentStats.physicalDefense),
-            magicalDefenseDelta: Math.round(nextStats.magicalDefense) - Math.round(currentStats.magicalDefense),
+            equipmentSetId: set.slot,
+            equipmentSet: {
+              equipmentSetId: set.slot,
+              name: set.name,
+              createdAt: new Date(set.createdAt).toISOString(),
+              ...(parameters.isEquipmentSetDetail === true || parameters.isEquipmentSetDetail === 'true'
+                ? { equipment: set.equipment.map((entry, index) => formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, entry.item.jewel)) }
+                : {}),
+              availability: {
+                allAvailable: availability.allAvailable,
+                entries: availability.entries.map(({ entry, available, unavailableReason }, index) => ({
+                  slotIndex: getSavedEquipmentSlot(entry, index),
+                  item: formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, entry.item.jewel),
+                  available,
+                  unavailableReason,
+                })),
+              },
+            },
           };
         }),
       };
-    }
-    const ids = Array.isArray(parameters.equipmentSetId) ? parameters.equipmentSetId.map(Number) : parameters.equipmentSetId ? [Number(parameters.equipmentSetId)] : null;
-    const maxSlots = computePartyStats(party).characterStats[characterIndex].maxEquipSlots;
-    return {
-      equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => {
-        const availability = evaluateEquipmentSet(set, character, state.global.inventory, state.global.jewels, maxSlots);
-        return {
-          equipmentSetId: set.slot,
-          equipmentSet: {
-            equipmentSetId: set.slot,
-            name: set.name,
-            createdAt: new Date(set.createdAt).toISOString(),
-            ...(parameters.isEquipmentSetDetail === true || parameters.isEquipmentSetDetail === 'true'
-              ? { equipment: set.equipment.map((entry, index) => formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, entry.item.jewel)) }
-              : {}),
-            availability: {
-              allAvailable: availability.allAvailable,
-              entries: availability.entries.map(({ entry, available, unavailableReason }, index) => ({
-                slotIndex: getSavedEquipmentSlot(entry, index),
-                item: formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, entry.item.jewel),
-                available,
-                unavailableReason,
-              })),
-            },
-          },
-        };
-      }),
     };
+    return { characters: requestedIds.map((id) => ({ characterId: id, ...readCharacter(id) })) };
   }
 
   if (operationId === 'read/base/searchItems') return searchItems(state, parameters);
