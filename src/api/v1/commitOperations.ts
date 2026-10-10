@@ -260,7 +260,9 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
         if (!isColosseum) reduce({ type: 'CONSUME_INSTANT_EXPEDITION_STOCK', partyIndex, now: context.simulatedAt, chargeDurationScale: chargeScale });
         if (runCycle?.state === 'explore') reduce({ type: 'FINALIZE_DIARY_LOG', partyIndex, simulatedAt: context.simulatedAt });
         reduce({ type: 'CLEAR_PENDING_PROFIT', partyIndex });
-        reduce({ type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
+        // SpecRef: 8.3 | UI_EXPEDITION | The sortie enters the dungeon with the party's current HP (no recovery to maximum).
+        // The Colosseum is exempt from the HP gate, so it still starts at full HP.
+        if (isColosseum) reduce({ type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
         reduce({ type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, simulatedAt: context.simulatedAt, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, triggerGodsBattle: godsBattle });
         reduce({ type: 'ROLL_PARTY_SLEEPINESS', partyIndex });
         const resolved = next.parties[partyIndex];
