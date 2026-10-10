@@ -48,6 +48,10 @@ export interface ExpeditionForecastBattleDiagnostic {
   readonly outcome: ExpeditionLogEntry['outcome'];
   readonly remainingPartyHP: number;
   readonly replayMetadata: ExpeditionLogEntry['replayMetadata'];
+  /** Damage the party dealt and the enemy's maximum HP, for the boss-damage share of the GA search (Spec 9.1.3, 2-3-2). */
+  readonly damageDealt: number;
+  readonly enemyHp: number;
+  readonly isBoss: boolean;
 }
 
 export interface ExpeditionForecastResolution {
@@ -109,6 +113,9 @@ export function createExpeditionForecastResolution(
       outcome: entry.outcome,
       remainingPartyHP: entry.remainingPartyHP,
       replayMetadata: entry.replayMetadata,
+      damageDealt: entry.damageDealt,
+      enemyHp: entry.enemyHP,
+      isBoss: entry.roomType === 'battle_Boss',
     })),
     experience: log.totalExperience,
     rewards: [...log.rewards],

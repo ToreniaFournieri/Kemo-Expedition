@@ -155,6 +155,32 @@ export function autoEquipmentModeName(mode: Character['autoEquipmentMode']): 'FU
   return mode === 2 ? 'FULL' : mode === 1 ? 'SEMI' : 'OFF';
 }
 
+// SpecRef: 9.1.3 | Read | 2-3-1 party/{p} `validOptions.deityId`
+/** `none`, the party's own deity, and every unlocked deity no other party holds (also the GA search's deity choices). */
+export function validPartyDeityIds(state: GameState, party: Party): string[] {
+  const currentDeityId = getDeityId(party.deity.name);
+  const usedByOtherParties = new Set(state.parties.filter((entry) => entry.id !== party.id).map((entry) => getDeityId(entry.deity.name)));
+  return Array.from(new Set(['none', currentDeityId, ...state.global.unlockedDeities.map(getDeityId)]))
+    .filter((id) => id === 'none' || id === currentDeityId || !usedByOtherParties.has(id));
+}
+
+const EDITABLE_RACE_IDS = new Set(['lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian', 'leporian', 'cervin', 'murid']);
+
+// SpecRef: 9.1.3 | Read | 2-3-3 character/status `validOptions.racesAndGender`
+/** Race/gender keys not held by another non-unique party member, plus unlocked Mimorian forms no other character uses. */
+export function validRaceAndGenderOptions(state: GameState, party: Party, character: Party['characters'][number]): string[] {
+  const normalRaceOptions = RACES.filter((race) => EDITABLE_RACE_IDS.has(race.id)).flatMap((race) => (['male', 'female'] as const)
+    .filter((gender) => !party.characters.some((candidate) => candidate.id !== character.id && candidate.isUnique !== true && candidate.raceId === race.id && candidate.gender === gender))
+    .map((gender) => `${race.id}/${gender}`));
+  const assignedMimorianForms = new Set(state.parties.flatMap((entry) => entry.characters)
+    .filter((candidate) => candidate.id !== character.id && candidate.raceId === 'mimorian')
+    .map((candidate) => candidate.mimorianEnemyId));
+  const mimorianOptions = state.global.unlockedMimorianEnemyIds
+    .filter((enemyId) => ENEMIES.some((enemy) => enemy.id === enemyId) && !assignedMimorianForms.has(enemyId))
+    .map((enemyId) => `mimorian/female/${enemyId}`);
+  return [...normalRaceOptions, ...mimorianOptions];
+}
+
 function partyByNumber(state: GameState, value: unknown): { party: Party; index: number } | null {
   const partyNumber = Number(value);
   const index = state.parties.findIndex((party) => party.id === partyNumber);
@@ -944,10 +970,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     const selected = partyByNumber(state, partyBuild[1]);
     if (!selected) throw new Error('not_found');
     const currentDeityId = getDeityId(selected.party.deity.name);
-    const usedByOtherParties = new Set(state.parties.filter((party) => party.id !== selected.party.id).map((party) => getDeityId(party.deity.name)));
-    const deityId = Array.from(new Set(['none', currentDeityId, ...state.global.unlockedDeities.map(getDeityId)]))
-      .filter((id) => id === 'none' || id === currentDeityId || !usedByOtherParties.has(id));
-    return { current: { deityId: currentDeityId, order: selected.party.characters.map((entry) => entry.id) }, validOptions: { deityId, order: selected.party.characters.map((entry) => entry.id) } };
+    return { current: { deityId: currentDeityId, order: selected.party.characters.map((entry) => entry.id) }, validOptions: { deityId: validPartyDeityIds(state, selected.party), order: selected.party.characters.map((entry) => entry.id) } };
   }
   const characterRead = operationId.match(/^read\/build\/character\/(status|equipment|equipmentSet|equipmentEvaluation)$/);
   if (characterRead) {
@@ -961,23 +984,13 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       if (!found) throw new Error('not_found');
       const { party, character, characterIndex } = found;
       if (characterRead[1] === 'status') {
-        const editableRaceIds = new Set(['lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian', 'leporian', 'cervin', 'murid']);
-        const normalRaceOptions = RACES.filter((race) => editableRaceIds.has(race.id)).flatMap((race) => (['male', 'female'] as const)
-          .filter((gender) => !party.characters.some((candidate) => candidate.id !== character.id && candidate.isUnique !== true && candidate.raceId === race.id && candidate.gender === gender))
-          .map((gender) => `${race.id}/${gender}`));
-        const assignedMimorianForms = new Set(state.parties.flatMap((entry) => entry.characters)
-          .filter((candidate) => candidate.id !== character.id && candidate.raceId === 'mimorian')
-          .map((candidate) => candidate.mimorianEnemyId));
-        const mimorianOptions = state.global.unlockedMimorianEnemyIds
-          .filter((enemyId) => ENEMIES.some((enemy) => enemy.id === enemyId) && !assignedMimorianForms.has(enemyId))
-          .map((enemyId) => `mimorian/female/${enemyId}`);
         return {
           calculatedStatus: buildCalculatedStatus(party.characters[characterIndex], computePartyStats(party).characterStats[characterIndex], party.level),
           current: describeCharacterBuildCurrent(character),
           editableFields: { name: character.isUnique !== true },
           validOptions: {
             uniqueSelection: validUniqueSelections(state, character),
-            racesAndGender: character.isUnique ? ['none'] : [...normalRaceOptions, ...mimorianOptions],
+            racesAndGender: character.isUnique ? ['none'] : validRaceAndGenderOptions(state, party, character),
             mainClassId: CLASSES.map((entry) => entry.id),
             subClassId: CLASSES.map((entry) => entry.id),
             lineage: character.isUnique ? ['none'] : LINEAGES.filter((entry) => entry.selectable === true).map((entry) => entry.id),

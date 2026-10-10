@@ -126,6 +126,8 @@ export interface ApiV1CommitAuthorityDependencies {
   onPublicationFailure?: (error: unknown) => void;
   yieldBetweenChunks?: () => Promise<void>;
   afterElapsedChunk?: (completedChunks: number, totalChunks: number, stagedState: GameState) => void | Promise<void>;
+  /** The latest in-memory `gaSearch` result of a party, for `applyGaResult` (Spec 9.1.3, 3-3-2). */
+  gaResult?: ApiV1CommitContext['gaResult'];
 }
 
 export type ApiV1CommitAuthorityResult =
@@ -375,6 +377,7 @@ export async function executeApiV1CommitTransaction(
         displaySettings: dependencies.displaySettings?.(),
         debugSettings: dependencies.debugSettings?.(),
         enemyEditSettings: dependencies.enemyEditSettings?.(),
+        gaResult: dependencies.gaResult,
       }));
     }
   } catch (error) {

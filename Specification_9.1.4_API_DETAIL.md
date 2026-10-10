@@ -124,9 +124,11 @@ after the response has been prepared. Fundamental responses use
   `revision`. A response must not combine values from different revisions.
 * Read, Help, and Resource operations do not mutate game state, consume live random
   values, advance time, mark Diary entries read, or persist derived state.
-* Reads use `GET`, except `simulationRun`, which uses `POST` because it performs
-  substantial non-cacheable computation. It remains a Read operation and must
-  not commit anything.
+* Reads use `GET`, except `simulationRun` and `gaSearch`, which use `POST` because
+  they perform substantial non-cacheable computation (and `gaSearch` takes nested
+  parameters). They remain Read operations and must not commit anything.
+  `gaSearch` keeps its latest result per party in memory for `applyGaResult`;
+  that result is not save state and changes no revision.
 * Every `GET` endpoint except the popup event stream also answers `HEAD` with
   the status and headers (including `ETag`) that `GET` would return, and no body.
   A `405` for a `GET` endpoint lists `Allow: GET, HEAD`.
@@ -305,8 +307,8 @@ All JSON Commit requests use this transport envelope:
 
 This generic challenge applies to operations that do not define their own
 confirmation (`backup/import`, `backup/reset`, and partial `loadEquipmentSet`).
-`changeBuild` is excluded: it confirms through its `simulation` and
-`confirmation` parameters (9.1.4.9).
+`changeBuild` and `applyGaResult` are excluded: they confirm through their
+`simulation` and `confirmation` parameters (9.1.4.9).
 
 `backup/import` and `backup/reset` (9.1.3, 3-6-5-2/3-6-5-3) each accept an
 optional boolean `skipConfirmation` parameter (default `false`). When `true`,
@@ -782,6 +784,95 @@ definitions in 9.1.3.
 * Equipment Undo/Redo reports whether another Undo/Redo remains available; each
   restore is validated against current item and Jewel availability.
 
+**GA search**
+
+* `gaSearch` (9.1.3, 2-3-2) scores every candidate build with the same private
+  forecast as `simulationRun`, run on fixed seeds derived from `gaParameters.seed`
+  (a fresh seed when omitted): one for the quick runs, one for the confirm runs,
+  one for a final selection, and one for verification. A seeded forecast also
+  fixes its battle seeds, so all candidates are compared on the same random
+  numbers and a request with the same `seed`, save, and parameters returns the same
+  result unless `timeBudgetSeconds` stops it first.
+* Validation: `targets` is 1 to 6 unique members of party `{p}` (otherwise
+  `invalid_request`, field `targets.characterId`); omitted `changeableComponents`
+  members are `false`. `eliteCount` may not exceed `populationSize / 4`. An
+  unknown member anywhere is `invalid_request`. A missing party is `not_found`.
+* Candidates: `equipment` lets the search place any owned item variant (free in
+  the Inventory or worn by a target whose equipment is changeable) that the
+  character can equip, up to its slot count. `jewels` lets it place free Jewels
+  and those on targets whose Jewels are changeable; with `jewels` but not
+  `equipment`, the items stay and only their Jewels change, and with `equipment`
+  but not `jewels`, an item that stays in its slot keeps its Jewel and a new item
+  gets none. Build components choose from the same options as
+  `read/build/character/status`, are validated by the `changeBuild` rules in party
+  order, and an invalid choice keeps the current value. `considerOrderChange`
+  permutes the whole party; `considerDeityChange` chooses from
+  `read/build/party/{p}` `validOptions.deityId`.
+* Search: the first population holds the current build and, with
+  `seedWithHeuristics`, one attack-focused and one HP/defense-focused greedy
+  build; the rest are mutants. Each generation scores every candidate with
+  `quickRuns`, re-scores the `confirmTopN` best with `confirmRuns`, keeps
+  `eliteCount` unchanged, and fills the rest by tournament selection (size
+  `tournamentSize`), per-character crossover, and mutation (`mutationRate`;
+  1–3 changes among item replace, item swap, Jewel change, build value, order
+  swap, and deity). A candidate that needs more than `maxChanges` entries is never
+  selected. After the last generation (or the time budget), the three best
+  confirmed builds and the current build are re-scored on the final seed with
+  twice `confirmRuns` (at most 1000), and a build replaces the current one only
+  when its rate is ahead by at least one standard error.
+* Objectives: the search maximizes `ln(success)` for `success`, the average boss
+  damage share for `bossDamage`, and average EXP per run for `experience`; a
+  small reached-rooms term (weighted by the failure share) breaks ties while
+  successes are rare. `minDefeat` minimizes the defeat rate without lowering the
+  success rate: a candidate whose success rate on the same seed is below the
+  current build's is penalized, so a build that cannot win (and only draws) is
+  never chosen.
+* `bossDamage` measures the boss room of the current destination: every
+  Clear-Gate of that destination counts as open and the depth limit is `all` for
+  every run of that search, including the verification, so its `forecast` describes
+  that setup. A run that does not reach the boss deals a share of 0, and a boss kill
+  counts as 1.
+* `verdict` compares the current build and the result on the verification seed with
+  `verifyRuns` runs each. The standard error uses the binomial variance of the two
+  rates (`success`, `minDefeat`; the Bernoulli bound `p(1 - p)` for `bossDamage`)
+  or the per-run EXP variance (`experience`). `noChange` means no different build
+  passed the final selection; `changeSummary` is then `[]` and `forecast.after`
+  equals `forecast.before`. The response also returns `verification`:
+  `{objective, runs, before, after, gain, standardError, seed}` with the measured
+  rates, the gain in percentage points (percent for `experience`; `null` when the
+  current EXP is 0), its standard error, and the seed used, so the search can be
+  repeated.
+* `changeSummary` entries are generated by running each call through the Commit
+  API handler on a private copy, so each one is accepted as written: an `equip`
+  entry names the exact owned variant (lock digit included) with `targetSlot`,
+  `removeEquipment` and `jewelRemove` list the character's slots in one entry, and
+  `changeBuild` carries only the changed members with `simulation: false`.
+  `revision` is the revision of the snapshot that was searched.
+* `applyGaResult` (9.1.3, 3-3-2) owns its confirmation like `changeBuild`:
+  `simulation` is required; `simulation: true` reports `applied` (the
+  `changeSummary`), `verdict`, `forecast`, `confirmationRequired`, `warnings`, and
+  the resulting `calculatedStatus` (one `{characterId, calculatedStatus}` per
+  character with an entry) without committing. With `verdict` `noisy` or `worse`,
+  `confirmationRequired` is `true`, `warnings` holds
+  `api.warning.applyGaResult.unconfirmedImprovement`, and a commit needs
+  `confirmation: "yes"` (a missing one is `invalid_request`, field
+  `confirmation`); `confirmation: "no"` cancels with `applied: []` and no
+  revision change. `confirmation` with `simulation: true` is `invalid_request`.
+* `applyGaResult` rejections: an unknown or replaced `gaResultId` (or none kept,
+  for example after a restart, `logIn`, or `logOut`) is `illegal_action`
+  (`ga_result_unavailable`); `verdict: noChange` is `ga_result_no_change`. Its
+  build-relevant state (9.1.3, 3-3-2) is compared by: party order and deity, each
+  party member's build and equipment (items and Jewels), and the owned count of
+  every item variant and Jewel the result equips or attaches. A difference is
+  `ga_result_stale`; other inventory, Gold, and progression changes are not.
+* `applyGaResult` applies every entry in order in one transaction and is rejected
+  atomically if any entry fails. `autoEquipmentMode` (`SEMI` by default; `FULL` is
+  `invalid_request`) is set on every character with an equipment or Jewel entry.
+  The internal calls record no Undo step; afterwards each character with an entry
+  whose equipment state (items, Jewels, and mode) changed gets exactly one Undo
+  step, its state before the operation, and a character whose equipment state did
+  not change gets none (an identical step would block its earlier history).
+
 **Base**
 
 * Multi-item sell, purchase, and unlock requests validate all entries and the
@@ -1014,6 +1105,8 @@ operations use shared tokens: `debug_mode_required` (the dev/beta restriction),
 `api_account_display_setting` (a runtime display setting sent by an API account),
 `theme_unavailable`, `nothing_to_undo`, `nothing_to_redo`,
 `equipment_unavailable`, `deity_locked`, `deity_in_use`, and `variant_not_sold`.
+`applyGaResult` uses `ga_result_unavailable`, `ga_result_stale`, and
+`ga_result_no_change` (9.1.4.9).
 
 `control_lease_expired` is returned to the session whose lease expired from
 inactivity until that client logs in or out again; after that, or for any other
@@ -1075,6 +1168,7 @@ use the same operation without HTTP authentication headers.
 | POST | `/api/v1/read/expedition/{p}/simulationRun` | Session | Private forecast of `numberOfRun` runs (default 100). |
 | GET | `/api/v1/read/expedition/{p}/chargeStock` | Session | Charge stock/status. |
 | GET | `/api/v1/read/build/party/{p}` | Session | Party build/options. |
+| POST | `/api/v1/read/build/party/{p}/gaSearch` | Session | Private genetic search for a better party build. |
 | GET | `/api/v1/read/build/character/status` | Session | Character build/options. |
 | GET | `/api/v1/read/build/character/equipment` | Session | Equipment/mode. |
 | GET | `/api/v1/read/build/character/equipmentSet` | Session | Saved equipment sets. |
@@ -1097,6 +1191,7 @@ use the same operation without HTTP authentication headers.
 | POST | `/api/v1/commit/expedition/{p}/godsBattle` | Session | Resolve one Gods Battle. |
 | POST | `/api/v1/commit/expedition/{p}/resetStatistics` | Session | Reset the party's expedition statistics. |
 | POST | `/api/v1/commit/build/party/{p}` | Session | Change party build. |
+| POST | `/api/v1/commit/build/party/{p}/applyGaResult` | Session | Apply the latest `gaSearch` result. |
 | POST | `/api/v1/commit/build/character/{characterId}/changeBuild` | Session | Change character build. |
 | POST | `/api/v1/commit/build/character/{characterId}/removeAllEquipment` | Session | Remove all equipment. |
 | POST | `/api/v1/commit/build/character/{characterId}/removeEquipment` | Session | Remove selected slots. |
@@ -1199,6 +1294,9 @@ use the same operation without HTTP authentication headers.
 * `simulationRun` POST accepts `{expectedRevision?: number, numberOfRun?: number}` directly, with no
   Commit envelope or idempotency key. Omission uses the admission revision; a
   supplied mismatch returns `stale_revision` before private computation.
+  `gaSearch` POST accepts its 9.1.3 members (`targets`, `considerOrderChange`,
+  `considerDeityChange`, `objective`, `gaParameters`) and an optional
+  `expectedRevision` the same way.
   `numberOfRun` is an integer 1 ~ 1000 and defaults to 100; any other value is
   `invalid_request`.
 * A parameter is required unless marked optional, given a default, or contained

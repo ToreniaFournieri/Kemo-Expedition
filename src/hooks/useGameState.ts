@@ -72,6 +72,7 @@ import {
 } from '../game/glossaryDisclosure';
 import { upgradeLegacyOutcomeKeys } from '../game/legacyOutcomeKeys';
 import { gameplayRandom, createApiRandom, withGameplayRandomSource } from '../game/gameplayRandom';
+import { withForecastBattleSeedSource } from '../game/battleSeedSource';
 import { replaceCharacterEquipment } from '../game/equipment';
 import {
   applyEquipmentSet,
@@ -4782,14 +4783,20 @@ export async function simulateExpeditionRuns(
   count = EXPEDITION_SIMULATION_RUN_COUNT,
   onProgress?: (completed: number, total: number) => void,
   enemyLevelOffset: number = 0,
+  /** A fixed forecast seed (the GA search compares builds on the same random numbers); a fresh one when omitted. */
+  fixedSeed?: number,
 ): Promise<ExpeditionSimulationResult> {
   void memoryMonitor.recordEvent('simulation_start');
   const total = Math.max(1, Math.floor(count));
   const sandbox = createSimulationSandbox(state, partyIndex);
   // All forecasts share the sandbox party status, so they also share enemies and prepared battle inputs.
   const forecastEncounterCache = new Map<string, EnemyDef>();
-  const seed = new Uint32Array(1); crypto.getRandomValues(seed);
+  const seed = new Uint32Array(1);
+  if (fixedSeed === undefined) crypto.getRandomValues(seed); else seed[0] = fixedSeed;
   const forecastRandom = createApiRandom(seed[0]);
+  // A fixed seed also fixes the battle seeds (they otherwise come from Web Crypto), so the whole forecast repeats.
+  const battleRandom = fixedSeed === undefined ? null : createApiRandom((seed[0] ^ 0x5bd1e995) >>> 0);
+  const nextBattleSeed = () => (BigInt(Math.floor(battleRandom!.next() * 4294967296)) << 32n) | BigInt(Math.floor(battleRandom!.next() * 4294967296));
 
   const result: ExpeditionSimulationResult = {
     Clear: 0,
@@ -4800,13 +4807,15 @@ export async function simulateExpeditionRuns(
     total,
     rooms: createExpeditionSimulationRoomResults(total),
     totals: { experience: 0, itemDrops: 0, dropSaleValue: 0 },
+    boss: { reached: 0, kills: 0, damageShare: 0 },
+    experienceSquareSum: 0,
   };
 
   let sliceStartedAt = performance.now();
   let lastProgressAt = sliceStartedAt - EXPEDITION_SIMULATION_PROGRESS_INTERVAL_MS;
   for (let index = 0; index < total; index += 1) {
     const runState = createSimulationRunState(sandbox);
-    const resolvedState = withGameplayRandomSource(forecastRandom.next, () => gameReducer(runState, {
+    const resolveRun = () => withGameplayRandomSource(forecastRandom.next, () => gameReducer(runState, {
       type: 'RUN_EXPEDITION',
       partyIndex,
       gameMode,
@@ -4820,13 +4829,21 @@ export async function simulateExpeditionRuns(
       },
       forecastEncounterCache,
     }));
+    const resolvedState = battleRandom ? withForecastBattleSeedSource(nextBattleSeed, resolveRun) : resolveRun();
     const resolution = forecastResolutionByState.get(resolvedState);
     if (!resolution) throw new Error('simulation_failed');
     memoryMonitor.incrementBattleCount(resolution.completedRooms);
     result.totals!.experience += resolution.experience;
+    result.experienceSquareSum! += resolution.experience * resolution.experience;
     result.totals!.itemDrops += resolution.rewards.length + resolution.autoSellCount;
     result.totals!.dropSaleValue += resolution.autoSellProfit
       + resolution.rewards.reduce((sum, item) => sum + calculateSellPrice(item, resolution.autoSellMultiplier), 0);
+    const bossBattle = resolution.battleDiagnostics.find((battle) => battle.isBoss && battle.enemyId !== undefined);
+    if (bossBattle) {
+      result.boss!.reached += 1;
+      if (bossBattle.outcome === 'victory') result.boss!.kills += 1;
+      result.boss!.damageShare += bossBattle.outcome === 'victory' ? 1 : Math.min(1, bossBattle.damageDealt / Math.max(1, bossBattle.enemyHp));
+    }
 
     let terminalStatus: 'Clear' | 'Return' | 'Draw' | 'Retreat' | 'Defeat';
     if (resolution.outcome === 'Clear') {

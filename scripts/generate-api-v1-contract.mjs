@@ -13,7 +13,7 @@ const operations = [...specification.matchAll(rowPattern)].map((match) => ({
   method: match[1], path: match[2], access: match[3].toLowerCase(), purpose: match[4].trim(),
   operationId: match[2].slice('/api/v1/'.length),
 }));
-if (operations.length !== 85) throw new Error(`Expected 85 /api/v1 operations, found ${operations.length}.`);
+if (operations.length !== 87) throw new Error(`Expected 87 /api/v1 operations, found ${operations.length}.`);
 if (new Set(operations.map(({ method, path }) => `${method} ${path}`)).size !== operations.length) throw new Error('Duplicate /api/v1 method/path pair in the endpoint index.');
 if (operations.some(({ path }) => !path.startsWith('/api/v1/'))) throw new Error('Non-v1 route found in the v1 endpoint index.');
 
@@ -242,6 +242,8 @@ const commitParameters = {
   'commit/expedition/{p}/changeExpedition': strict({ destination: optional(integerId), destinationMode: optional(literals('auto', 'fixed')), depthLimit: optional(Type.String({ pattern: '^(?:[1-9][0-9]*f-[1-9][0-9]*|beforeBoss|all)$' })), difficultyOffset: optional(Type.Integer({ minimum: 0, multipleOf: 2 })) }),
   'commit/expedition/{p}/sortie': strict({ numberOfSortie: optional(Type.Integer({ minimum: 1, maximum: 6 })) }), 'commit/expedition/{p}/godsBattle': empty, 'commit/expedition/{p}/resetStatistics': empty,
   'commit/build/party/{p}': strict({ deityId: optional(stableKey), order: optional(nonEmptyArray(integerId, { minItems: 6, maxItems: 6, uniqueItems: true })) }),
+  // SpecRef: 9.1.3 | 3-3-2 applyGaResult | `FULL` is not allowed: Auto Equipment would replace the applied build.
+  'commit/build/party/{p}/applyGaResult': strict({ gaResultId: stableKey, autoEquipmentMode: optional(literals('SEMI', 'OFF'), 'SEMI'), simulation: Type.Boolean(), confirmation: Type.Optional(Type.Union([Type.Literal('yes'), Type.Literal('no')])) }),
   'commit/build/character/{characterId}/changeBuild': strict({ name: optional(Type.String({ minLength: 1, maxLength: 100 })), uniqueSelection: optional(uniqueSelectionValue), racesAndGender: optional(stableKey), mainClassId: optional(stableKey), subClassId: optional(stableKey), lineage: optional(stableKey), predisposition: optional(stableKey), simulation: Type.Boolean(), confirmation: Type.Optional(Type.Union([Type.Literal('yes'), Type.Literal('no')])) }),
   'commit/build/character/{characterId}/removeAllEquipment': empty,
   'commit/build/character/{characterId}/removeEquipment': strict({ targetEquipment: equipmentTarget }),
@@ -275,8 +277,22 @@ const commitParameters = {
   'commit/setting/uiPreferences': strict({ changes: nonEmptyArray(strict({ key: stableKey, value: Type.Union([Type.String(), Type.Number(), Type.Boolean()]) })) }),
 };
 
+// SpecRef: 9.1.3 | Read | 2-3-2 party/{p}/gaSearch | a POST Read body like `simulationRun` (no Commit envelope).
+const gaComponents = strict(Object.fromEntries(['raceGender', 'mainClass', 'subClass', 'lineage', 'predisposition', 'equipment', 'jewels'].map((key) => [key, optional(Type.Boolean(), false)])));
+const gaIntegers = { populationSize: [8, 64], generations: [1, 200], quickRuns: [10, 300], confirmRuns: [50, 1000], timeBudgetSeconds: [5, 300], verifyRuns: [100, 1000], eliteCount: [0, 16], tournamentSize: [2, 8], confirmTopN: [1, 10], maxChanges: [1, 100] };
+const gaParameters = strict({
+  effort: optional(literals('low', 'medium', 'high'), 'low'),
+  ...Object.fromEntries(Object.entries(gaIntegers).map(([key, [minimum, maximum]]) => [key, optional(Type.Integer({ minimum, maximum }))])),
+  mutationRate: optional(Type.Number({ minimum: 0, maximum: 1 })), seed: optional(Type.Integer()), seedWithHeuristics: optional(Type.Boolean(), true),
+});
 const directBodySchemas = {
   'fundamental/signUp': strict({ ...identity, language: optional(language, 'ja') }), 'fundamental/logIn': strict({ ...identity, headless: optional(Type.Boolean(), false) }), 'fundamental/logOut': empty,
+  'read/build/party/{p}/gaSearch': strict({
+    expectedRevision: optional(Type.Integer({ minimum: 0 })),
+    targets: nonEmptyArray(strict({ characterId: integerId, changeableComponents: optional(gaComponents) }), { maxItems: 6 }),
+    considerOrderChange: optional(Type.Boolean(), false), considerDeityChange: optional(Type.Boolean(), false),
+    objective: optional(literals('success', 'minDefeat', 'bossDamage', 'experience'), 'success'), gaParameters: optional(gaParameters),
+  }),
 };
 
 // SpecRef: 9.1.4.14 | Parameter and payload schema conventions | Concrete response catalog
@@ -290,6 +306,13 @@ const tradeResult = strict({ items: Type.Array(strict({ item: itemFormat, quanti
 // A purchase also reports how many of each variant were sold on arrival (auto-sell status or the 99 stack cap).
 const purchaseResult = strict({ items: Type.Array(strict({ item: itemFormat, quantity: Type.Integer({ minimum: 1 }), autoSoldQuantity: Type.Integer({ minimum: 0 }) })), goldDelta: Type.Integer(), pranaDelta: Type.Integer() });
 const semanticText = strict({ key: stableKey, args: Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), Type.Boolean()])) });
+// SpecRef: 9.1.3 | 2-3-2 gaSearch | the result rating, the forecast pair, and one Commit API call of `changeSummary`.
+const gaVerdict = literals('veryGood', 'good', 'noisy', 'noChange', 'worse');
+const gaObjective = literals('success', 'minDefeat', 'bossDamage', 'experience');
+const gaForecast = strict({ before: Type.String(), after: Type.String() });
+const gaChangeEndpoint = Type.String({ pattern: '^commit/build/' });
+sampleOverrides.set(gaChangeEndpoint, 'commit/build/character/101/equip');
+const gaChangeEntry = strict({ endpoint: gaChangeEndpoint, parameters: Type.Record(Type.String(), Type.Union([scalar, Type.Array(Type.Integer({ minimum: 0 }))])) });
 const availability = strict({ available: Type.Boolean(), unavailableReason: Type.Union([Type.String(), Type.Null()]) });
 const equipmentEntryFormat = Type.String({ pattern: '^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$' });
 sampleOverrides.set(equipmentEntryFormat, '0');
@@ -495,6 +518,11 @@ const responseDataSchemas = {
   }),
   'read/expedition/{p}/chargeStock': strict({ chargeStock: Type.Integer({ minimum: 0, maximum: 6 }), chargeDuration: Type.Integer({ minimum: 0 }) }),
   'read/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }), validOptions: strict({ deityId: Type.Array(stableKey), order: Type.Array(integerId) }) }),
+  'read/build/party/{p}/gaSearch': strict({
+    verdict: gaVerdict, forecast: gaForecast, changeSummary: Type.Array(gaChangeEntry), revision: Type.Integer({ minimum: 0 }),
+    evaluations: Type.Integer({ minimum: 0 }), elapsedSeconds: Type.Number({ minimum: 0 }), gaResultId: stableKey,
+    verification: strict({ objective: gaObjective, runs: Type.Integer({ minimum: 1 }), before: Type.Number({ minimum: 0 }), after: Type.Number({ minimum: 0 }), gain: Type.Union([Type.Number(), Type.Null()]), standardError: Type.Number({ minimum: 0 }), seed: Type.Integer() }),
+  }),
   'read/build/character/status': characterReads({ calculatedStatus, current: characterBuildCurrent, editableFields: strict({ name: Type.Boolean() }), validOptions: strict({ uniqueSelection: Type.Array(uniqueSelectionValue), racesAndGender: Type.Array(stableKey), mainClassId: Type.Array(stableKey), subClassId: Type.Array(stableKey), lineage: Type.Array(stableKey), predisposition: Type.Array(stableKey) }) }),
   'read/build/character/equipment': characterReads({ current: strict({ mode: literals('FULL', 'SEMI', 'OFF'), equipment: equipmentEntryList }), validOptions: strict({ mode: Type.Array(literals('FULL', 'SEMI', 'OFF')), numberOfEmptyEquipmentSlots: Type.Integer({ minimum: 0 }), undoEquipment: equipmentHistoryAction, redoEquipment: equipmentHistoryAction }) }),
   'read/build/character/equipmentSet': characterReads({ equipmentSets: Type.Array(strict({ equipmentSetId: integerId, equipmentSet })) }),
@@ -531,6 +559,7 @@ const responseDataSchemas = {
   'commit/expedition/{p}/godsBattle': strict({ outcome: Type.Union([expeditionOutcome, Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]), ...sortieControlFacts }),
   'commit/expedition/{p}/resetStatistics': empty,
   'commit/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }) }),
+  'commit/build/party/{p}/applyGaResult': strict({ applied: Type.Array(gaChangeEntry), confirmationRequired: Type.Boolean(), warnings: Type.Array(semanticText), verdict: gaVerdict, forecast: gaForecast, calculatedStatus: Type.Array(strict({ characterId: integerId, calculatedStatus })) }),
   'commit/build/character/{characterId}/changeBuild': strict({ calculatedStatus, current: characterBuildCurrent, confirmationRequired: Type.Boolean(), warnings: Type.Array(semanticText), applied: Type.Boolean() }),
   'commit/build/character/{characterId}/removeAllEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/removeEquipment': strict({ current: equipmentCommitCurrent }),
@@ -693,7 +722,7 @@ function errorsFor(operation, query) {
   if (operation.operationId === 'fundamental/signUp') codes.add('already_exists');
   if (operation.operationId === 'fundamental/logIn') { codes.add('control_unavailable'); codes.add('not_found'); }
   if (operation.operationId === 'fundamental/logOut') codes.add('save_failed');
-  if (operation.operationId.endsWith('/simulationRun')) codes.add('stale_revision');
+  if (operation.operationId.endsWith('/simulationRun') || operation.operationId.endsWith('/gaSearch')) codes.add('stale_revision');
   const list = [...codes].sort();
   for (const code of list) if (!KNOWN_ERROR_CODES.has(code)) throw new Error(`Unknown error code referenced by ${operation.operationId}: ${code}`);
   return list;

@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { createApplicationApi, type ApplicationApiPorts } from '../../src/api/v1/applicationApi';
-import { createFreshGameState } from '../../src/hooks/useGameState';
+import { createFreshGameState, gameReducer, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { serializeGameState } from '../../src/game/saveCodec';
 import { encodePersistedState } from '../../src/game/storageCompression';
 import { decodeApiSavePayload } from '../../src/api/v1/commitOperations';
@@ -115,7 +115,10 @@ const ports: ApplicationApiPorts = {
     enemyLevelOffset: () => 0,
     cycleDurationScale: () => 1,
     applyAutoEquipment: (state) => state,
-    simulate: async () => ({ total: 100, Clear: 40, Return: 10, Draw: 10, Retreat: 10, Defeat: 30, rooms: [] }),
+    // A seeded forecast is a GA search's: it runs the real engine, which repeats exactly for one seed.
+    simulate: async (state, partyIndex, count, seed) => seed === undefined
+      ? { total: 100, Clear: 40, Return: 10, Draw: 10, Retreat: 10, Defeat: 30, rooms: [] }
+      : simulateExpeditionRuns(state, partyIndex, 'mode.normal', count, undefined, 0, seed),
     persistPlayer: async () => undefined,
     publish: async () => undefined,
     yieldBetweenChunks: async () => undefined,
@@ -150,6 +153,11 @@ const descriptor = JSON.parse(fs.readFileSync(settings.connectionFile, 'utf8')) 
 interface HttpResult { sent?: CommitRequest; status: number; body: Record<string, unknown> & { error?: { code: string; details?: Record<string, unknown> }; data?: Record<string, unknown>; revision?: number } ; bytes?: Uint8Array }
 
 const byId = new Map(contract.operations.map((operation) => [operation.operationId, operation]));
+
+/** A POST Read (`simulationRun`, `gaSearch`) takes its members as the JSON body; a GET Read as the query. */
+function readInit(operationId: string, path: Record<string, unknown>, query: Record<string, unknown>) {
+  return byId.get(operationId)?.method === 'POST' ? { path, body: query } : { path, query };
+}
 
 function routeFor(operationId: string, pathParameters: Record<string, unknown> = {}): string {
   const operation = byId.get(operationId);
@@ -214,7 +222,7 @@ class Client {
   }
 
   async read(operationId: string, path: Record<string, unknown> = {}, query: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
-    const result = await this.send(operationId, { path, query });
+    const result = await this.send(operationId, readInit(operationId, path, query));
     assert.equal(result.status, 200, `${operationId}: ${JSON.stringify(result.body)}`);
     return result.body.data as Record<string, unknown>;
   }
@@ -295,6 +303,21 @@ async function firstCharacterId(client: Actor): Promise<number> {
   return party.current.order[0];
 }
 async function characterPath(client: Actor) { return { characterId: await firstCharacterId(client) }; }
+// SpecRef: 9.1.3 | 2-3-2 gaSearch | a small, seeded search over party 1's equipment (the matrix clock never reaches the time budget).
+async function gaSearchBody(client: Actor) {
+  const party = await client.read('read/build/party/{p}', { p: 1 }) as { current: { order: number[] } };
+  return {
+    targets: party.current.order.map((characterId) => ({ characterId, changeableComponents: { equipment: true } })),
+    gaParameters: { seed: 7, populationSize: 8, generations: 2, quickRuns: 10, confirmRuns: 50, verifyRuns: 100, eliteCount: 2 },
+  };
+}
+/** Party 1 without equipment and with a shallow depth, so the search always finds and verifies a better build. */
+function gaImprovable(state: GameState) {
+  let next = state;
+  for (const character of state.parties[0].characters) next = gameReducer(next, { type: 'REMOVE_ALL_EQUIPMENT', partyIndex: 0, characterId: character.id });
+  Object.assign(state, next);
+  state.parties[0] = { ...state.parties[0], expeditionDepthLimit: '1f-3' };
+}
 async function ownedItems(client: Client, category?: string): Promise<string[]> {
   const data = await client.read('read/base/searchItems', {}, { state: 'owned', ...(category ? { category } : {}) }) as { items: string[] };
   return data.items.map((entry) => entry.split('/').slice(0, 4).join('/'));
@@ -326,6 +349,13 @@ const commitFixtures: Record<string, CommitFixture> = {
       const order = [...party.current.order];
       [order[0], order[1]] = [order[1], order[0]];
       return { path: { p: 1 }, parameters: { order } };
+    },
+  },
+  'commit/build/party/{p}/applyGaResult': {
+    save: gaImprovable,
+    request: async (client) => {
+      const result = await client.read('read/build/party/{p}/gaSearch', { p: 1 }, await gaSearchBody(client)) as { gaResultId: string };
+      return { path: { p: 1 }, parameters: { gaResultId: result.gaResultId, simulation: false, confirmation: 'yes' } };
     },
   },
   'commit/build/character/{characterId}/changeBuild': {
@@ -447,6 +477,7 @@ const readFixtures: Record<string, ReadFixture> = {
   'read/expedition/{p}/simulationRun': { path: async () => ({ p: 1 }), missingPath: { p: 6 } },
   'read/expedition/{p}/chargeStock': { path: async () => ({ p: 1 }), missingPath: { p: 6 } },
   'read/build/party/{p}': { path: async () => ({ p: 1 }), missingPath: { p: 6 } },
+  'read/build/party/{p}/gaSearch': { path: async () => ({ p: 1 }), dynamicQuery: gaSearchBody, missingPath: { p: 6 } },
   'read/build/character/status': { dynamicQuery: characterPath, missingQuery: { characterId: 999999 } },
   'read/build/character/equipment': { dynamicQuery: characterPath, missingQuery: { characterId: 999999 } },
   'read/build/character/equipmentSet': { dynamicQuery: characterPath, missingQuery: { characterId: 999999 } },
@@ -701,7 +732,7 @@ async function runRead(operation: CatalogOperation) {
   await cell(id, 'success', async () => {
     const run = async (client: Client | null) => {
       const { client: active, path, query } = await execute(client);
-      const result = await active.send(id, { path, query });
+      const result = await active.send(id, readInit(id, path, query));
       assert.equal(result.status, 200, JSON.stringify(result.body));
     };
     if (needsSession) await withSession({ environment }, run); else await run(null);
@@ -723,7 +754,7 @@ async function runRead(operation: CatalogOperation) {
       const { path, query } = await execute(client);
       const before = await snapshot(client);
       const persisted = persistCount;
-      const result = await client.send(id, { path, query });
+      const result = await client.send(id, readInit(id, path, query));
       assert.equal(result.status, 200, JSON.stringify(result.body));
       assert.equal(await snapshot(client), before, 'a read changes nothing');
       assert.equal(persistCount, persisted, 'a read persists nothing');
@@ -735,7 +766,7 @@ async function runRead(operation: CatalogOperation) {
   if (errors.has('not_found') && (fixture.missingPath || fixture.missingQuery)) {
     await cell(id, 'notFound', () => withSession({ environment }, async (client) => {
       const query = { ...fixture.query, ...((await fixture.dynamicQuery?.(client)) ?? {}), ...fixture.missingQuery };
-      const result = await client.send(id, { path: fixture.missingPath ?? {}, query });
+      const result = await client.send(id, readInit(id, fixture.missingPath ?? {}, query));
       expectError(result, 'not_found', 'a missing path resource');
     }));
   } else if (errors.has('not_found')) {
@@ -877,7 +908,7 @@ async function runParity(filter: RegExp | null) {
           const path = (await fixture.path?.(client)) ?? {};
           const query = { ...fixture.query, ...((await fixture.dynamicQuery?.(client)) ?? {}) };
           await settleDeliveries(application);
-          const result = await client.send(id, { path, query });
+          const result = await client.send(id, readInit(id, path, query));
           assert.equal(result.status, 200, JSON.stringify(result.body));
           return normalize({ revision: result.body.revision, data: result.body.data });
         });

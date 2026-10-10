@@ -814,6 +814,13 @@ export interface ExpeditionSimulationResult {
   rooms: ExpeditionSimulationRoomResult[];
   /** Sums over all runs; divide by `total` for the expected value per run. */
   totals?: { experience: number; itemDrops: number; dropSaleValue: number };
+  /**
+   * Boss room facts over all runs: `reached` runs that fought the boss, `kills` won, and `damageShare` the sum of each
+   * run's dealt damage over the boss's maximum HP (capped at 1; 0 for a run that never reached it).
+   */
+  boss?: { reached: number; kills: number; damageShare: number };
+  /** Sum of each run's EXP squared, for the variance of the GA search's `experience` objective. */
+  experienceSquareSum?: number;
 }
 
 export interface ExpeditionSimulationRoomResult {
