@@ -1,0 +1,60 @@
+{
+ "verdict": "worse",
+ "forecast": {
+  "before": "Success 16.6% / Draw 20.0% / Retreat 44.0% / Defeat 19.4%",
+  "after": "Success 11.2% / Draw 20.0% / Retreat 47.0% / Defeat 21.8%"
+ },
+ "changeSummary": [
+  {
+   "endpoint": "commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/5101/1/0",
+    "targetSlot": 0
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/6103/5/0",
+    "targetSlot": 1
+   }
+  },
+  {
+   "endpoint": "commit/build/character/3/jewelRemove",
+   "parameters": {
+    "targetEquipment": [
+     9
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/jewelAttach",
+   "parameters": {
+    "targetEquipment": 0,
+    "jewelToSet": "shade:2"
+   }
+  }
+ ],
+ "revision": 2944,
+ "evaluations": 1402,
+ "elapsedSeconds": 82.6,
+ "gaResultId": "bd1fee4b-d485-4ef9-b74f-62f8a5576fcd",
+ "verification": {
+  "objective": "success",
+  "runs": 500,
+  "before": 0.166,
+  "after": 0.112,
+  "gain": -5.4,
+  "standardError": 2.18,
+  "seed": 899390720
+ }
+}

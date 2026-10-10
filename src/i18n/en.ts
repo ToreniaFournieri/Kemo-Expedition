@@ -899,7 +899,7 @@ const en = {
   'expedition.floorConcept.8.2': 'Subworld',
   'expedition.floorConcept.8.3': 'Another People',
   'expedition.floorConcept.8.4': 'Gehenna',
-  'expedition.floorConcept.8.5': 'Selvin Document Archive District',
+  'expedition.floorConcept.8.5': 'Cervin Document Archive District',
   'expedition.floorConcept.8.6': 'Clairvoyant Sanctuary',
   'expedition.floorConcept.9.1': 'Across the Trenches',
   'expedition.floorConcept.9.2': 'Military Road',

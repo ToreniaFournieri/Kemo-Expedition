@@ -35,6 +35,8 @@ const apiAccountStore = createApiAccountStore({ userDataPath: app.getPath('userD
 function apiV1RendererTimeoutMs(operation) {
   if (operation === 'fundamental/status') return 15_000;
   if (operation === 'fundamental/logIn') return 600_000;
+  // gaSearch may run up to its 300 s timeBudgetSeconds cap (Spec 9.1.3, 2-3-2) plus final verification.
+  if (/^read\/build\/party\/\d+\/gaSearch$/.test(operation)) return 360_000;
   return 120_000;
 }
 

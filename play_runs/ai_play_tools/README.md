@@ -81,3 +81,11 @@ Built during the 2026/10/03 D8-boss run (`AI_play_report/v0.9.8(11)_Claude_Norma
 * Run folder `play_runs/normal_api_exp8_ClaudeEXP_20261010/` (copy of the ClaudeItem client/tools; `cad.mjs` now prints `xp/12h`).
 * Lesson: at a stuck gate sweep `proxyopt` element weights (fire:3 / ice:3 / thunder:3) and `lever.mjs` deity labels before any GA; fire:3 raised the D7 route 6 % to 24 %, thunder:3 raised D8 gate 2 from 12 % to 52 %.
 * `run.py` "BOSS OPEN" = boss fightable (entryGate/godEntry shown); `godGate` = boss dead. Confirm with the Global Diary `bossFirstClear`.
+
+## Additions (2026/10/10 ClaudeGA run, `AI_play_report/v0.10.1(35)_ClaudeGA_Normal_API_Exp8Boss_InGameGA_20261010.md`)
+* Run folder `play_runs/normal_api_exp8_ClaudeGA_20261010/` uses only the in-game `gaSearch`/`applyGaResult` (no twin).
+  `client/ga.py obj effort [apply]` (env `CIDS`, `COMP`, `ORD`, `DEI`, `EXTRA` gaParameters JSON; logs to `ga_log.jsonl`),
+  `client/apply.py`, `client/polish.sh [boss]` (bossDamage -> build-only pass -> success x2), `client/stage.sh d`, `client/farm.sh depth loops`,
+  `run.py` env `AUTOGA=success:high` (re-search on gate change or 2 stalled observations).
+* Lessons: free PT2/PT3 gear (`removeAllEquipment` + `autoEquipment OFF`) first, since `gaSearch` ignores other parties' items;
+  `timeBudgetSeconds` <= 110 (desktop 120 s timeout -> 503); 1-2 sorties per loop at gates (batch runs start at reduced HP).

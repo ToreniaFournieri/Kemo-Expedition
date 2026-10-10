@@ -108,7 +108,7 @@ const EXPEDITION_FLOOR_CONCEPTS: Record<number, string[]> = {
   5: ['Wandering Forest', 'Treacherous Mountain Path', 'Ursan Battle Line', 'Dragon Ridge', 'Volcanic Crater', 'Fortress'],
   6: ['Steam-driven Burrow', 'K9 Interstellar Spaceship Wreckage', 'Forbidden Research Facility', 'Heartless Machines', 'Masterless Bridge', 'Altar of Resonance'],
   7: ['Giant Wreckage Ring', 'Transfer Device Sector', 'Realm of Light', 'Realm of Darkness', 'Abyss', 'Moon Palace'],
-  8: ['Void-scar Canyon Gate', 'Subworld', 'Another People', 'Gehenna', 'Selvin Document Archive District', 'Clairvoyant Sanctuary'],
+  8: ['Void-scar Canyon Gate', 'Subworld', 'Another People', 'Gehenna', 'Cervin Document Archive District', 'Clairvoyant Sanctuary'],
   9: ['Across the trenches', 'Military Road', 'Darsen Field', 'Federation Encampment', 'Defensive line', 'Caninian Capital'],
 };
 
