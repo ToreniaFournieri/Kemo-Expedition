@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import test from 'node:test';
 import { normalizeImportedBags, upgradeLegacyRewardBagKeys } from '../../src/game/bagMigration.ts';
 import { getDiarySettingsWithDefaults } from '../../src/game/diarySettings.ts';
+import { getItemById } from '../../src/data/items.ts';
 import { getItemRarityById, upgradeLegacyDiaryTriggers, upgradeLegacyItemRarity } from '../../src/game/itemRarity.ts';
 import { hydrateGameState } from '../../src/game/saveCodec.ts';
 import { decodePersistedState } from '../../src/game/storageCompression.ts';
@@ -21,6 +22,21 @@ test('legacy rarity values and Diary triggers upgrade to the renamed values', ()
   assert.deepEqual(upgradeLegacyDiaryTriggers(legacyTriggers), ['victory', 'epic', 'rare']);
   const currentTriggers: DiaryTrigger[] = ['defeat', 'mythic'];
   assert.equal(upgradeLegacyDiaryTriggers(currentTriggers), currentTriggers, 'current triggers are returned unchanged');
+});
+
+// SpecRef: 3.1.2 | Item list | Rarity base: a `rare` item from EnemyTypeSource D has X-bonus, E-bonus, and the +2 tier base-bonus.
+test('a rare item from enemy type source D carries the source-A bonus set', () => {
+  const sourceA = getItemById(3315)!; // 潮海の杖 `i.wand`RA, tier 3
+  const sourceD = getItemById(3316)!; // シャチの杖 `i.wand`RD, tier 3
+  assert.equal(sourceD.magicalAttack, sourceA.magicalAttack);
+  assert.equal(sourceD.magicalDefense, sourceA.magicalDefense, 'X-bonus');
+  assert.ok((sourceD.magicalDefense ?? 0) > 0);
+  assert.deepEqual(
+    sourceD.bonuses?.filter((bonus) => bonus.type.endsWith('_defense') && bonus.type !== 'magical_defense'),
+    sourceA.bonuses?.filter((bonus) => bonus.type.endsWith('_defense') && bonus.type !== 'magical_defense'),
+    'E-bonus',
+  );
+  assert.ok((getItemById(8302)!.partyHP ?? 0) > 0, 'a tier 8 source-D armor has the X-bonus HP');
 });
 
 // SpecRef: 1.2 | Bag Randomization | `t.rare_reward_bag`, `t.epic_reward_bag`, `t.mythic_reward_bag`
@@ -80,4 +96,16 @@ test('a save written before the item rarity rename loads with only the renamed k
       assert.equal(party.clearGateProgress[legacyKey.replace(/:bossRare$/, ':epic')], count, `party ${index + 1} ${legacyKey}`);
     }
   });
+});
+
+// SpecRef: 1.1 | Side quest `q.treasure-epic-rare`
+test('a saved Epic side quest with the pre-rename ID and label key loads under the current ones', () => {
+  const envelope = JSON.parse(readFileSync(resolve(process.cwd(), 'sample_savedata/ALL_Exp8_v0.9.3_dev_20260816.kemoz'), 'utf8')) as { saveDataCompressed: string };
+  const raw = JSON.parse(decodePersistedState(envelope.saveDataCompressed)) as GameState;
+  const legacyQuest = {
+    id: 9, type: 'q.treasure-boss-rare', shortText: 'ボスレア獲得', shortTextKey: 'sideQuest.treasureBossRare.short',
+    target: 2, progress: 1, rolledTier: 1, assignedAt: 0, expiresAt: 1,
+  };
+  const hydrated = hydrateGameState({ ...raw, parties: raw.parties.map((party, index) => (index === 0 ? { ...party, sideQuest: legacyQuest } : party)) });
+  assert.deepEqual(hydrated.parties[0].sideQuest, { ...legacyQuest, type: 'q.treasure-epic-rare', shortTextKey: 'sideQuest.treasureEpicRare.short' });
 });

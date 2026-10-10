@@ -12,11 +12,14 @@ test('treasure quests count only their matching recovered reward class', () => {
     finalOutcome: 'Return',
     rewards,
   }), { type: 'advance', amount: 2 });
-  assert.deepEqual(resolveSideQuestOutcome({
-    sideQuestType: 'q.treasure_boss_rare',
-    finalOutcome: 'Return',
-    rewards,
-  }), { type: 'advance', amount: 2 });
+  // `q.treasure-epic-rare` was `q.treasure-boss-rare` (and `q.treasure_boss_rare` before that); a saved quest keeps counting.
+  for (const sideQuestType of ['q.treasure-epic-rare', 'q.treasure-boss-rare', 'q.treasure_boss_rare']) {
+    assert.deepEqual(resolveSideQuestOutcome({
+      sideQuestType,
+      finalOutcome: 'Return',
+      rewards,
+    }), { type: 'advance', amount: 2 }, sideQuestType);
+  }
 });
 
 test('treasure quests do nothing when no matching item was retained', () => {

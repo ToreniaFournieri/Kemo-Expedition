@@ -21,7 +21,8 @@ export function resolveSideQuestOutcome(
       return amount > 0 ? { type: 'advance', amount } : null;
     }
     case 'q.treasure_boss_rare':
-    case 'q.treasure-boss-rare': {
+    case 'q.treasure-boss-rare':
+    case 'q.treasure-epic-rare': {
       const amount = input.rewards
         .filter((item) => getRewardRarityByItemId(item.id) === 'epic')
         .length;

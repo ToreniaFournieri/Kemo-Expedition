@@ -526,13 +526,14 @@ function createItem(
   const bonusTierK = getBonusTier(tier, rarity, 'K');
   const expeditionElement = getExpeditionElementByTier(tier);
   const hasBaseBonus = rarity !== 'epic' && rarity !== 'mythic';
+  // A `rare` item from EnemyTypeSource D carries the same bonus set as source A (X-bonus and E-bonus).
   const hasE =
     rarity === 'uncommon'
-    || (rarity === 'rare' && enemyTypeSource === 'A');
+    || (rarity === 'rare' && (enemyTypeSource === 'A' || enemyTypeSource === 'D'));
   const hasX =
     rarity === 'epic'
     || rarity === 'mythic'
-    || (rarity === 'rare' && (enemyTypeSource === 'A' || enemyTypeSource === 'B'));
+    || (rarity === 'rare' && (enemyTypeSource === 'A' || enemyTypeSource === 'B' || enemyTypeSource === 'D'));
   const hasY =
     rarity === 'mythic'
     || (rarity === 'rare' && (enemyTypeSource === 'B' || enemyTypeSource === 'C'));

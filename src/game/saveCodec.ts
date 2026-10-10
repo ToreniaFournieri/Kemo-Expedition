@@ -244,9 +244,27 @@ function upgradeLegacyDiaryLogRarity(entry: DiaryLog): DiaryLog {
   };
 }
 
+// SpecRef: 1.1 | Side quest `q.treasure-epic-rare`
+// The Epic side quest was `q.treasure-boss-rare` (`q.treasure_boss_rare` before that) labeled `sideQuest.treasureBossRare.short`.
+const LEGACY_EPIC_SIDE_QUEST_TYPES = new Set(['q.treasure-boss-rare', 'q.treasure_boss_rare']);
+const LEGACY_EPIC_SIDE_QUEST_SHORT_TEXT_KEY = 'sideQuest.treasureBossRare.short';
+
+function upgradeLegacyEpicSideQuest(sideQuest: Party['sideQuest']): Party['sideQuest'] {
+  if (!sideQuest) return sideQuest;
+  const legacyType = LEGACY_EPIC_SIDE_QUEST_TYPES.has(sideQuest.type);
+  const legacyKey = sideQuest.shortTextKey === LEGACY_EPIC_SIDE_QUEST_SHORT_TEXT_KEY;
+  if (!legacyType && !legacyKey) return sideQuest;
+  return {
+    ...sideQuest,
+    ...(legacyType ? { type: 'q.treasure-epic-rare' } : {}),
+    ...(legacyKey ? { shortTextKey: 'sideQuest.treasureEpicRare.short' } : {}),
+  };
+}
+
 function normalizePartyLegacyItemRarity(party: Party): Party {
   return {
     ...party,
+    ...(party.sideQuest ? { sideQuest: upgradeLegacyEpicSideQuest(party.sideQuest) } : {}),
     ...(party.diarySettings ? { diarySettings: upgradeLegacyDiarySettings(party.diarySettings) } : {}),
     ...(party.pendingClearGateSnapshot ? {
       pendingClearGateSnapshot: {

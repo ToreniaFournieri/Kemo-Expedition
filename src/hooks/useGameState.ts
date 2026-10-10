@@ -223,7 +223,7 @@ const SIDE_QUEST_RUNTIME_DEFS: Record<number, SideQuestRuntimeDef> = {
   6: { type: 'q.healing', shortTextKey: 'sideQuest.healing.short', baseMin: 2, baseMax: 7, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.2, 3: 1.4, 4: 1.6 } },
   7: { type: 'q.AFK', shortTextKey: 'sideQuest.afk.short', baseMin: 30, baseMax: 120, deadlineHours: 0, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
   8: { type: 'q.treasure-super-rare', shortTextKey: 'sideQuest.treasureSuperRare.short', baseMin: 1, baseMax: 1, deadlineHours: 24, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  9: { type: 'q.treasure-boss-rare', shortTextKey: 'sideQuest.treasureBossRare.short', baseMin: 1, baseMax: 3, deadlineHours: 20, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  9: { type: 'q.treasure-epic-rare', shortTextKey: 'sideQuest.treasureEpicRare.short', baseMin: 1, baseMax: 3, deadlineHours: 20, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
   10: { type: 'q.poor-kid', shortTextKey: 'sideQuest.poorKid.short', baseMin: 5, baseMax: 15, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1.2, 3: 1.4, 4: 1.6 } },
   11: { type: 'q.consecutive-wins', shortTextKey: 'sideQuest.consecutiveWins.short', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.2, 3: 1.4, 4: 1.6 } },
   12: { type: 'q.losers', shortTextKey: 'sideQuest.losers.short', baseMin: 1, baseMax: 1, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
@@ -240,7 +240,8 @@ function normalizeSideQuestType(type: string): string {
   // SpecRef: 5.1.2 | Side Quest | Runtime quest id normalization
   const legacyToCurrentTypeMap: Record<string, string> = {
     'q.treasure_super_rare': 'q.treasure-super-rare',
-    'q.treasure_boss_rare': 'q.treasure-boss-rare',
+    'q.treasure_boss_rare': 'q.treasure-epic-rare',
+    'q.treasure-boss-rare': 'q.treasure-epic-rare',
     'q.poor_kid': 'q.poor-kid',
     'q.consecutive_wins': 'q.consecutive-wins',
   };
@@ -357,7 +358,7 @@ function formatSideQuestShortText(type: string, shortTextKey: string, target: nu
     'q.healing': 'sideQuest.target.minutes',
     'q.AFK': 'sideQuest.target.minutes',
     'q.treasure-super-rare': '',
-    'q.treasure-boss-rare': 'sideQuest.target.items',
+    'q.treasure-epic-rare': 'sideQuest.target.items',
     'q.poor-kid': 'sideQuest.target.count',
     'q.consecutive-wins': 'sideQuest.target.streak',
     'q.losers': '',

@@ -1678,7 +1678,7 @@ export function formatSideQuestShortText(type: string, shortText: string, displa
     'q.healing': t('home.unit.minutes', { value: formatNumber(displayTarget) }),
     'q.AFK': t('home.unit.minutes', { value: formatNumber(displayTarget) }),
     'q.treasure-super-rare': '',
-    'q.treasure-boss-rare': t('home.unit.items', { value: formatNumber(displayTarget) }),
+    'q.treasure-epic-rare': t('home.unit.items', { value: formatNumber(displayTarget) }),
     'q.poor-kid': t('home.unit.count', { value: formatNumber(displayTarget) }),
     'q.consecutive-wins': t('home.unit.streak', { value: formatNumber(displayTarget) }),
     'q.losers': '',
@@ -1746,8 +1746,8 @@ export function getSideQuestDisplay(party: Party, cycleDurationScale: number, em
     'q.treasure-super-rare': {
       text: t('home.sideQuest.treasureSuperRare'),
     },
-    'q.treasure-boss-rare': {
-      text: t('home.sideQuest.treasureBossRare', { count: formatNumber(displayTarget) }),
+    'q.treasure-epic-rare': {
+      text: t('home.sideQuest.treasureEpicRare', { count: formatNumber(displayTarget) }),
       current: t('home.unit.items', { value: formatNumber(displayProgress) }),
     },
     'q.poor-kid': {
@@ -1847,7 +1847,7 @@ export function getProjectedCompactProgressItems(
       'q.healing': t('home.sideQuest.healing', { minutes: formatNumber(target) }),
       'q.AFK': t('home.sideQuest.afk', { minutes: formatNumber(target) }),
       'q.treasure-super-rare': t('home.sideQuest.treasureSuperRare'),
-      'q.treasure-boss-rare': t('home.sideQuest.treasureBossRare', { count: formatNumber(target) }),
+      'q.treasure-epic-rare': t('home.sideQuest.treasureEpicRare', { count: formatNumber(target) }),
       'q.poor-kid': t('home.sideQuest.poorKid', { count: formatNumber(target) }),
       'q.consecutive-wins': t('home.sideQuest.consecutiveWins', { streak: formatNumber(target) }),
       'q.losers': t('home.sideQuest.losers'),
@@ -1859,7 +1859,7 @@ export function getProjectedCompactProgressItems(
       'q.donation': `${formatNumber(progress)}G`, 'q.savings': `${formatNumber(progress)}G`,
       'q.exercise': t('home.unit.minutes', { value: formatNumber(progress) }), 'q.healing': t('home.unit.minutes', { value: formatNumber(progress) }), 'q.AFK': t('home.unit.minutes', { value: formatNumber(progress) }),
       'q.sleeping': t('home.unit.count', { value: formatNumber(progress) }), 'q.poor-kid': t('home.unit.count', { value: formatNumber(progress) }),
-      'q.treasure-boss-rare': t('home.unit.items', { value: formatNumber(progress) }), 'q.consecutive-wins': t('home.unit.streak', { value: formatNumber(progress) }),
+      'q.treasure-epic-rare': t('home.unit.items', { value: formatNumber(progress) }), 'q.consecutive-wins': t('home.unit.streak', { value: formatNumber(progress) }),
     };
     const parts = [`${sideQuest.percent}%`];
     if (currentByType[sideQuest.type]) parts.push(currentByType[sideQuest.type]);

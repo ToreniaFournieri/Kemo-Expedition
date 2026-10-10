@@ -4825,7 +4825,7 @@ export function GameRuntimeHost({
           const gained = currentLog.rewards.filter((item) => item.superRare > 0).length;
           if (gained > 0) actions.advanceSideQuest(index, gained, simulatedAt);
         }
-        if (party.sideQuest.type === 'q.treasure-boss-rare') {
+        if (party.sideQuest.type === 'q.treasure-epic-rare') {
           const gained = currentLog.rewards.filter((item) => getItemRarityById(item.id) === 'epic').length;
           if (gained > 0) actions.advanceSideQuest(index, gained, simulatedAt);
         }
