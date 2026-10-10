@@ -328,6 +328,9 @@ function expeditionProjection(state: GameState, context: ApiV1ReadContext) {
           rooms: revealed.map(buildBattleRoomData),
           resources: { rooms: revealed.map(buildRoomResources), compact: runningLog.compactVersion === 1 },
         } : null,
+        level: party.level,
+        // SpecRef: 9.1.3 | 2-1-4 party | `experienceRatio`: whole percent of the current level's EXP, 0 at the maximum level
+        experienceRatio: party.level < MAX_LEVEL ? Math.floor((party.experience / Math.max(1, getXpToNextLevel(party.level))) * 100) : 0,
         currentHp: displayedHp,
         maximumHp,
         disclosedFloor: log?.entries.at(-1)?.floor ?? null,

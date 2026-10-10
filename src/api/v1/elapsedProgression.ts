@@ -153,7 +153,7 @@ export async function stageApiV1ElapsedProgression(
   };
 }
 
-// SpecRef: 9.1.3 | 3-3-1 progress/elapsed | `parties`: each party's `currentHp`, `chargeStock`, and `controls` after the step
+// SpecRef: 9.1.3 | 3-3-1 progress/elapsed | `parties`: each party's `currentHp`, `maximumHp`, `chargeStock`, and `controls` after the step
 function partyControls(state: GameState, simulatedAt: number, scale: number) {
   return state.parties.map((party) => ({ partyNumber: party.id, ...getSortieControlFacts(party, simulatedAt, scale) }));
 }

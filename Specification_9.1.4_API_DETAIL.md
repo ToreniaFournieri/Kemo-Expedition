@@ -641,12 +641,15 @@ definitions in 9.1.3.
   `{characters: [...]}` in request order, each entry `{characterId, ...}` with the fields
   9.1.3 lists for the operation. An unknown ID is `not_found` and rejects the whole read;
   a missing, malformed, or duplicate `characterId` is `invalid_request:characterId`.
-* `commit/expedition/{p}/sortie` and `godsBattle` return `currentHp`, `chargeStock`, and
+* `commit/expedition/{p}/sortie` and `godsBattle` return `currentHp`, `maximumHp`, `chargeStock`, and
   `controls` (`{sortie, godsBattle}`, each `{available, unavailableReason}`) as the party
   stands after the commit, with the same reasons and order as `read/observation/expedition`
   (9.1.3, 2-2-1). `commit/progress/elapsed` returns `parties`, one `{partyNumber,
-  currentHp, chargeStock, controls}` per party after the step. A client can read these
+  currentHp, maximumHp, chargeStock, controls}` per party after the step. A client can read these
   instead of sending a Sortie that `party_exhausted` or `charge_insufficient` would refuse.
+  A Sortie is available at any `currentHp` above 0 (the Expedition button's rule), so compare
+  `currentHp` with `maximumHp` to judge whether the party is worth sending.
+* `read/observation/expedition`'s party entries add `level` and `experienceRatio` (as in `read/observation/party`).
 * `read/observation/party`'s `party` adds `experienceRatio` (whole percent of the current
   level's EXP, 0 at the maximum level), `currentHp`, `deityTotalDonation`, and
   `deityNextRankThreshold` (`null` at the maximum rank).

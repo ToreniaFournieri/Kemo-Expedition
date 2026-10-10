@@ -378,12 +378,13 @@ const stepProgress = strict({
 const clearGateFact = strict({ kind: literals('eliteGate', 'bossGate', 'entryGate', 'godGate', 'godEntry'), dungeonId: integerId, floor: Type.Union([Type.Integer({ minimum: 1 }), Type.Null()]), current: count, required: Type.Integer({ minimum: 1 }) });
 const sideQuestFact = strict({ id: Type.Integer({ minimum: 0 }), type: stableKey, target: Type.Number({ minimum: 1 }), progress: Type.Number({ minimum: 0 }), percent: percentage, hasDeadline: Type.Boolean(), remainingMs: Type.Number({ minimum: 0 }) });
 const sortieControl = strict({ available: Type.Boolean(), unavailableReason: Type.Union([literals('gods_battle_unavailable', 'entry_gate_locked', 'party_exhausted', 'already_moving_to_gods_battle', 'charge_insufficient'), Type.Null()]) });
-const sortieControlFacts = { currentHp: Type.Integer({ minimum: 0 }), chargeStock: Type.Integer({ minimum: 0 }), controls: strict({ sortie: sortieControl, godsBattle: sortieControl }) };
+const sortieControlFacts = { currentHp: Type.Integer({ minimum: 0 }), maximumHp: Type.Integer({ minimum: 0 }), chargeStock: Type.Integer({ minimum: 0 }), controls: strict({ sortie: sortieControl, godsBattle: sortieControl }) };
 const expeditionProjectionSchema = strict({ parties: Type.Array(strict({
   partyNumber, name: Type.String({ minLength: 1 }), state: stableKey,
   stateStartedAt: Type.Union([isoTimestamp, Type.Null()]), stateDurationMs: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]), stateExpectedEndAt: Type.Union([isoTimestamp, Type.Null()]),
   progress: Type.Union([stepProgress, Type.Null()]),
   exploration: Type.Union([strict({ dungeonId: integerId, difficultyOffset: Type.Integer({ minimum: 0 }), totalRooms: Type.Integer({ minimum: 0 }), revealedRoomCount: count, nextRevealAt: Type.Union([isoTimestamp, Type.Null()]), rooms: Type.Array(battleRoom, { maxItems: 24 }), resources: explorationResources }), Type.Null()]),
+  level: Type.Integer({ minimum: 1 }), experienceRatio: Type.Integer({ minimum: 0 }),
   currentHp: Type.Number({ minimum: 0 }), maximumHp: Type.Number({ minimum: 0 }),
   disclosedFloor: Type.Union([Type.Integer(), Type.Null()]), disclosedOutcome: Type.Union([expeditionOutcome, Type.Null()]),
   destination: Type.Union([integerId, Type.Null()]), destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0 }),

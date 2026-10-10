@@ -57,6 +57,8 @@ export interface ExpeditionPartyProjection {
     /** The stored records the revealed rooms are rendered from (see `latestBattleLog`). */
     resources: { rooms: ApiRoomResources[]; compact: boolean };
   } | null;
+  level: number;
+  experienceRatio: number;
   currentHp: number;
   maximumHp: number;
   disclosedFloor: number | null;

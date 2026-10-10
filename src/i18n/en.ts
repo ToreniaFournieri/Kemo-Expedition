@@ -1885,7 +1885,7 @@ const en = {
   'item.name.6103': 'Machine Shield',
   'item.name.6303': 'Machine Shield',
   'item.name.2307': 'Citronella Robe',
-  'item.name.3316': 'Orcinian‎ Elite Rare Wand',
+  'item.name.3316': 'Orcinian Wand',
   'item.name.5301': 'Dragonscale Mail',
   'item.name.8302': 'Cervin Mail',
   'item.name.1109': 'Vinebow',

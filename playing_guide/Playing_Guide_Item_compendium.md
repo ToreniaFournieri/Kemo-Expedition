@@ -111,7 +111,7 @@ Environment: Desktop Orca; `mode.orca`; enemy offset `+5`; Debug Mode OFF.
 | 3101 | Armor | 3 | C | Shell-Stitched Lightmail | Physical defense +37 [Physical defense +11%] |
 | 8502 | Robe | 3 | M | Vestment of Revival | Physical defense +22 Magic defense +72 HP+44 Intelligence +1 [Evasion +3,  Unlock] |
 | 3405 | Robe | 3 | E | Russet Fox Vestment | Magic defense +60 HP+36 Intelligence +1 [Evasion +3] |
-| 3304 | Robe | 3 | R | Sharkskin Mantle | Magic defense +50 [Magic defense +8%] |
+| 3304 | Robe | 3 | R | Sharkskin Mantle | Magic defense +50 HP+30 [Magic defense +8%, Thunder defense 6%] |
 | 3303 | Robe | 3 | R | Tideking Cloak | Magic defense +50 HP+30 [Magic defense +8%, Thunder defense 6%] |
 | 3203 | Robe | 3 | U | Tidescent Vestment | Magic defense +41 [Magic defense +9%, Thunder defense 7%] |
 | 3102 | Robe | 3 | C | Shellsand Vestment | Magic defense +30 [Magic defense +11%] |
@@ -139,12 +139,12 @@ Environment: Desktop Orca; `mode.orca`; enemy offset `+5`; Debug Mode OFF.
 | 3312 | Bolt | 3 | R | Acidspine Bolt | Ranged attack +49 [CorrodeLv1] |
 | 3215 | Bolt | 3 | U | Tide-Tipped Bolt | Ranged attack +39 Thunder element +12% [Ranged hits-1.4, Evasion -3, Ranged attack +9%] |
 | 3108 | Bolt | 3 | C | Shell-Tipped Bolt | Ranged attack +29 [Ranged hits-1.4, Evasion -3, Ranged attack +11%] |
-| 3314 | Bow | 3 | R | Whalewhisper Bow | Ranged hits +1 [Ranged hits+5, Accuracy +5] |
+| 3314 | Bow | 3 | R | Whalewhisper Bow | Ranged hits +1 HP+23 [Ranged hits+5, Accuracy +5] |
 | 3313 | Bow | 3 | R | Colony Slimebow | Ranged hits +1 HP+23 [Ranged hits+5, Accuracy +5, Thunder defense 6%] |
 | 3217 | Bow | 3 | U | Seabent Bow | Ranged hits +0.81 [Ranged hits+4, Accuracy +4] |
 | 3109 | Bow | 3 | C | Shellstring Bow | Ranged hits +0.6 [Ranged hits+3, Accuracy +3] |
 | 3408 | Wand | 3 | E | Foxtail Staff | Magic attack +39 Magic defense +12 Intelligence +1 |
-| 3316 | Wand | 3 | R | Orcinian Elite Rare Wand | Magic attack +33 [Magic attack +19%] |
+| 3316 | Wand | 3 | R | Orcinian Wand | Magic attack +33 Magic defense +10 [Magic attack +19%, Thunder defense 6%] |
 | 3315 | Wand | 3 | R | Tidemere Staff | Magic attack +33 Magic defense +10 [Magic attack +19%, Thunder defense 6%] |
 | 3219 | Wand | 3 | U | Tidereader Staff | Magic attack +27 [Magic attack +20%, Thunder defense 7%] |
 | 3110 | Wand | 3 | C | Shellcore Staff | Magic attack +20 [Magic attack +21%] |
@@ -374,7 +374,7 @@ Environment: Desktop Orca; `mode.orca`; enemy offset `+5`; Debug Mode OFF.
 | 7223 | Catalyst | 7 | U | Lightgrave Catalyst | Magic hits +0.41 Ice element +8% [Magic hits+8] |
 | 7112 | Catalyst | 7 | C | Starcore Catalyst | Magic hits +0.3 [Magic hits+7] |
 | 8515 | Armor | 8 | M | Fated Armor | Physical defense +336 Magic defense +101 HP+202 Vitality +1 [ Unlock] |
-| 8302 | Armor | 8 | R | Cervin Mail | Physical defense +234 [Physical defense +3%] |
+| 8302 | Armor | 8 | R | Cervin Mail | Physical defense +234 HP+141 [Physical defense +3%] |
 | 8301 | Armor | 8 | R | Voidscar Mail | Physical defense +234 HP+141 [Physical defense +3%] |
 | 8201 | Armor | 8 | U | Star-Chronicle Mail | Physical defense +189 [Physical defense +4%] |
 | 8101 | Armor | 8 | C | Old-Sanctum Mail | Physical defense +140 [Physical defense +5%] |
@@ -391,7 +391,7 @@ Environment: Desktop Orca; `mode.orca`; enemy offset `+5`; Debug Mode OFF.
 | 8205 | Shield | 8 | U | Guardian Shield | HP+216 [Evasion +4] |
 | 8103 | Shield | 8 | C | Dragon-Sigil Shield | HP+160 [Evasion +5] |
 | 8408 | Sword | 8 | E | Astral Breaker | Melee attack +221 Physical defense +56 Strength +1 [Accuracy +8] |
-| 8308 | Sword | 8 | R | Valiant Hart Blade | Melee attack +184 [Accuracy +11, Melee attack +14%] |
+| 8308 | Sword | 8 | R | Valiant Hart Blade | Melee attack +184 Physical defense +46 [Accuracy +11, Melee attack +14%] |
 | 8207 | Sword | 8 | U | Aliva Dirk | Melee attack +149 [Accuracy +9, Melee attack +15%] |
 | 8104 | Sword | 8 | C | Mithril Dirk | Melee attack +111 [Accuracy +8, Melee attack +16%] |
 | 8522 | Katana | 8 | M | Katana of Extinction | Melee attack +344 Magic defense +103 HP+189 Mind +1 [Pen+8] |
@@ -411,7 +411,7 @@ Environment: Desktop Orca; `mode.orca`; enemy offset `+5`; Debug Mode OFF.
 | 8107 | Arrow | 8 | C | Spirit-Silver Arrow | Ranged attack +85 [Ranged attack +16%] |
 | 8521 | Bolt | 8 | M | Void-Piercing Bolt | Ranged attack +267 Magic defense +75 HP+187 [Pen+8] |
 | 8403 | Bolt | 8 | E | Far-Sight Thunderbolt | Ranged attack +223 Magic defense +63 [Pen+8] |
-| 8315 | Bolt | 8 | R | Valiant Hart Flashbolt | Ranged attack +186 [Ranged hits-2.4, Evasion -8, Ranged attack +3%] |
+| 8315 | Bolt | 8 | R | Valiant Hart Flashbolt | Ranged attack +186 Magic defense +52 [Ranged hits-2.4, Evasion -8, Ranged attack +3%] |
 | 8314 | Bolt | 8 | R | Ghoststrike Bolt | Ranged attack +186 Magic defense +52 HP+130 [Ranged hits-2.4, Evasion -8, Ranged attack +3%] |
 | 8215 | Bolt | 8 | U | Mythflash Bolt | Ranged attack +150 [Ranged hits-2.4, Evasion -8, Ranged attack +4%] |
 | 8108 | Bolt | 8 | C | Godsigil Bolt | Ranged attack +112 [Ranged hits-2.4, Evasion -8, Ranged attack +5%] |
@@ -422,7 +422,7 @@ Environment: Desktop Orca; `mode.orca`; enemy offset `+5`; Debug Mode OFF.
 | 8109 | Bow | 8 | C | Sacred-Hymn Bow | Ranged hits +0.3 [Ranged hits+8, Accuracy +8] |
 | 8524 | Wand | 8 | M | Wand of Discordance | Magic attack +180 Magic defense +54 HP+99 Intelligence +1 |
 | 8409 | Wand | 8 | E | Purging Litany | Magic attack +150 [Magic Barrier BreakerLv1] |
-| 8318 | Wand | 8 | R | Valiant Hart Staff | Magic attack +126 [Magic attack +14%] |
+| 8318 | Wand | 8 | R | Valiant Hart Staff | Magic attack +126 Magic defense +38 [Magic attack +14%] |
 | 8317 | Wand | 8 | R | Silicon Staff | Magic attack +126 Magic defense +38 HP+69 [Magic attack +14%] |
 | 8219 | Wand | 8 | U | Mythguide Staff | Magic attack +102 [Magic attack +15%] |
 | 8110 | Wand | 8 | C | Sacred-Tree Staff | Magic attack +75 [Magic attack +16%] |

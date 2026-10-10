@@ -2627,6 +2627,8 @@
                       "stateExpectedEndAt",
                       "progress",
                       "exploration",
+                      "level",
+                      "experienceRatio",
                       "currentHp",
                       "maximumHp",
                       "disclosedFloor",
@@ -4966,6 +4968,14 @@
                           }
                         ]
                       },
+                      "level": {
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "experienceRatio": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
                       "currentHp": {
                         "minimum": 0,
                         "type": "number"
@@ -5334,6 +5344,8 @@
                           "stateExpectedEndAt",
                           "progress",
                           "exploration",
+                          "level",
+                          "experienceRatio",
                           "currentHp",
                           "maximumHp",
                           "disclosedFloor",
@@ -7673,6 +7685,14 @@
                               }
                             ]
                           },
+                          "level": {
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "experienceRatio": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
                           "currentHp": {
                             "minimum": 0,
                             "type": "number"
@@ -8169,6 +8189,8 @@
                       "compact": true
                     }
                   },
+                  "level": 1,
+                  "experienceRatio": 0,
                   "currentHp": 0,
                   "maximumHp": 0,
                   "disclosedFloor": 1,
@@ -29874,6 +29896,7 @@
                 "required": [
                   "partyNumber",
                   "currentHp",
+                  "maximumHp",
                   "chargeStock",
                   "controls"
                 ],
@@ -29884,6 +29907,10 @@
                     "type": "integer"
                   },
                   "currentHp": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maximumHp": {
                     "minimum": 0,
                     "type": "integer"
                   },
@@ -30074,6 +30101,7 @@
                     "required": [
                       "partyNumber",
                       "currentHp",
+                      "maximumHp",
                       "chargeStock",
                       "controls"
                     ],
@@ -30084,6 +30112,10 @@
                         "type": "integer"
                       },
                       "currentHp": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "maximumHp": {
                         "minimum": 0,
                         "type": "integer"
                       },
@@ -30288,6 +30320,7 @@
               {
                 "partyNumber": 1,
                 "currentHp": 0,
+                "maximumHp": 0,
                 "chargeStock": 0,
                 "controls": {
                   "sortie": {
@@ -30906,6 +30939,7 @@
             "summary",
             "sorties",
             "currentHp",
+            "maximumHp",
             "chargeStock",
             "controls"
           ],
@@ -30992,6 +31026,10 @@
               }
             },
             "currentHp": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "maximumHp": {
               "minimum": 0,
               "type": "integer"
             },
@@ -31146,6 +31184,7 @@
                 "summary",
                 "sorties",
                 "currentHp",
+                "maximumHp",
                 "chargeStock",
                 "controls"
               ],
@@ -31232,6 +31271,10 @@
                   }
                 },
                 "currentHp": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "maximumHp": {
                   "minimum": 0,
                   "type": "integer"
                 },
@@ -31439,6 +31482,7 @@
               }
             ],
             "currentHp": 0,
+            "maximumHp": 0,
             "chargeStock": 0,
             "controls": {
               "sortie": {
@@ -31521,6 +31565,7 @@
             "diaryEntryId",
             "logId",
             "currentHp",
+            "maximumHp",
             "chargeStock",
             "controls"
           ],
@@ -31587,6 +31632,10 @@
               ]
             },
             "currentHp": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "maximumHp": {
               "minimum": 0,
               "type": "integer"
             },
@@ -31743,6 +31792,7 @@
                 "diaryEntryId",
                 "logId",
                 "currentHp",
+                "maximumHp",
                 "chargeStock",
                 "controls"
               ],
@@ -31809,6 +31859,10 @@
                   ]
                 },
                 "currentHp": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "maximumHp": {
                   "minimum": 0,
                   "type": "integer"
                 },
@@ -32011,6 +32065,7 @@
             "diaryEntryId": "xxxxxxx",
             "logId": "xxxxxxx",
             "currentHp": 0,
+            "maximumHp": 0,
             "chargeStock": 0,
             "controls": {
               "sortie": {

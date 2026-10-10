@@ -41,6 +41,7 @@ export function getSortieUnavailableReason(input: SortieAvailabilityInput): Sort
 
 export interface SortieControlFacts {
   currentHp: number;
+  maximumHp: number;
   chargeStock: number;
   controls: { sortie: { available: boolean; unavailableReason: SortieUnavailableReason | null }; godsBattle: { available: boolean; unavailableReason: SortieUnavailableReason | null } };
 }
@@ -54,5 +55,5 @@ export function getSortieControlFacts(party: Party, nowMs: number, chargeDuratio
     const reason = getSortieUnavailableReason({ party, godsBattle, hp: party.currentHp, maximumHp, chargeStock });
     return { available: reason === null, unavailableReason: reason };
   };
-  return { currentHp: Math.max(0, Math.floor(party.currentHp)), chargeStock, controls: { sortie: control(false), godsBattle: control(true) } };
+  return { currentHp: Math.max(0, Math.floor(party.currentHp)), maximumHp: Math.floor(maximumHp), chargeStock, controls: { sortie: control(false), godsBattle: control(true) } };
 }
