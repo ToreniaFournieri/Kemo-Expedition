@@ -24,7 +24,7 @@
 - *note:* item might have multiple bonus. sword may have `d.HP` but subtle value.
 
 #### 3.1.2 Item list
--　Tier 9 and 10 are Multiplier-Only Tiers. (Uncommon/Rare item upgrade reference)
+-　Tier 9 and 10 are Multiplier-Only Tiers.
 
 |Tier| D   | E   | F    | G     | H  | J      | K     | L  | M     | N    | P    | Q  　  |
 |----|-----|-----|------|-------|----|--------|-------|----|-------|------|------|-------|
@@ -82,6 +82,7 @@
 | `rare` | A | xN base_power x rarity.amplifier, X-bonus, E-bonus, base-bonus with +2 tier upgrade(except penalty) |
 | `rare` | B | xN base_power x rarity.amplifier, X-bonus, Y-bonus, base-bonus with +2 tier upgrade(except penalty) |
 | `rare` | C | xN base_power x rarity.amplifier, Y-bonus, C-bonus, base-bonus with +2 tier upgrade(except penalty) |
+| `rare` | D | xN base_power x rarity.amplifier, X-bonus, E-bonus, base-bonus with +2 tier upgrade(except penalty) |
 | `epic` | none | xN base_power x rarity.amplifier, X-bonus, C-bonus, B-bonus, but **no base-bonus** |
 | `mythic` | none | xN base_power x rarity.amplifier, X-bonus, Y-bonus, C-bonus, B-bonus, but no base-bonus |
 
@@ -189,12 +190,12 @@ inventory = {
 - Selling price and Purchesing price in Felis's Junk shop calculation 
   - `item_tier` = 1-8
   - `enhancement`: 0-6
-  - `itemRarity`: `common` = 1, `uncommon` = 3, `rare` = 10, `epic` = 30, `mythic` = 300. 
+  - `rarity.price_multiplier`: Price multiplier based on `itemRarity`: `common` = 1, `uncommon` = 3, `rare` = 10, `epic` = 30, `mythic` = 300. 
   - `super_rare`: If yes, 100, if no, 1.
   - Round up the final calculated price to the nearest integer.
-  - Selling_price = (10 + 2 x `item_tier` ) x (1 + `enhancement`/5) x `itemRarity` x `super_rare`
-  - Unidentified Purchesing_price = (4 + 2 x `item_tier` ) x `itemRarity` x 10
-  - Identified Purchesing_price = (4 + 2 x `item_tier` ) x `itemRarity`  x (1 + `enhancement`) x `super_rare` x 40
+  - Selling_price = (10 + 2 x `item_tier` ) x (1 + `enhancement`/5) x `rarity.price_multiplier` x `super_rare`
+  - Unidentified Purchesing_price = (4 + 2 x `item_tier` ) x `rarity.price_multiplier` x 10
+  - Identified Purchesing_price = (4 + 2 x `item_tier` ) x `rarity.price_multiplier` x (1 + `enhancement`) x `super_rare` x 40
 
 
 

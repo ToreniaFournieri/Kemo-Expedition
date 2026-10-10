@@ -73,21 +73,21 @@
 | 0 | no item | 49 |
 | 1 | win | 1 |
 
-- `t.elite_rare_reward_bag_default` table
+- `t.rare_reward_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 49 |
 | 1 | win | 1 |
 
-- `t.boss_rare_reward_bag_default` table
+- `t.epic_reward_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 49 |
 | 1 | win | 1 |
 
-- `t.mythic_rare_reward_bag_default` table
+- `t.mythic_reward_bag_default` table
 
 | ID | title | tickets |
 |-----|---------|------|

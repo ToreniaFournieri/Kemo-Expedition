@@ -133,7 +133,7 @@
     - 当たり残り remaining
   - エピックレア報酬: epic reward_bag remaining / total counts 
     - 当たり残り remaining
-  - 神魔レア報酬: mythic rare reward_bag remaining / total counts 
+  - 神魔レア報酬: mythic reward_bag remaining / total counts 
     - 当たり残り remaining
   -	称号付与: enhancement_bag remaining / total counts
     - 名工の残り remaining / initial counts
@@ -144,7 +144,7 @@
     - 究極の残り remaining / initial counts
   - 超レア称号付与: Rare_superRare_bag remaining / total counts
     - 超レア残り remaining / initial counts
-  - Button (報酬初期化): Initialize `t.common_reward_bag`, `t.uncommon_reward_bag`, `t.elite_rare_reward_bag`, `t.boss_rare_reward_bag`  , `t.mythic_rare_reward_bag`  and `t.enhancement_bag`, `t.rare_superRare_bag`
+  - Button (報酬初期化): Initialize `t.common_reward_bag`, `t.uncommon_reward_bag`, `t.rare_reward_bag`, `t.epic_reward_bag`  , `t.mythic_reward_bag`  and `t.enhancement_bag`, `t.rare_superRare_bag`
 
 - **サイドクエスト**
   - サイドクエスト抽選: side_quest_bag total
@@ -170,7 +170,7 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
 - View Settings:
   - Visibility: Shows all items in the database (including undiscovered items).
   - Standardized Stats: Displays item data at base level (Enhancement = 0, SuperRare = 0).
-  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, エピックレアのみ, 神魔レアのみ: [ALL] [C] [U] [R] [E] [M]
+  - Filter button by rarelity (right-aligned): 全て表示, ノーマルのみ, アンコモンのみ, レアのみ, エピックレアのみ, 神魔レアのみ: [ALL] [C] [U] [R] [E] [M]
   	- IF player selects [M],   神魔レアのみ: [ALL] [C] [U] [R] [E]　**[M]** 
 - Item category tabs: (same as Inventory tab's item list)
   - [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
@@ -498,9 +498,9 @@ HP: 312                 タイプ: 神魔
   - Default: Real time
   - affects side quest duration.
   - Unlimited: Immediately processes side quests using AFK emulation, without waiting for real time to pass.
-- Gods Battle condition: boss items require Normal / Simple(1)
+- Gods Battle condition: Epic items require Normal / Simple(1)
   - Default: Normal
-  - Simple: 1 boss rare item instead of actual setting
+  - Simple: 1 Epic item instead of actual setting
 - Gods Strength: Normal / Very Weak `debug mode for god battle`
   - Default: Normal
 - Party unlock +1 PT unlock

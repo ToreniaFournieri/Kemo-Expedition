@@ -28,7 +28,7 @@
     - Existing party Diary entries remain until a new entry is created for that Party. Creating an entry removes only the oldest entries needed to restore the 12-entry maximum; opening, loading, or saving the game must not remove entries.
 - The **party diary** is updated when any of the following events occur:
   - The party is defeated.
-  - The party obtains a Boss Rare or Mythic Rare item.
+  - The party obtains a Epic or Mythic item.
   - A Gods Battle occurs.
   - The party obtains a Super Rare item.
 - The **global Diary** is updated when any of the following events occur:
@@ -70,8 +70,8 @@
 
 **日誌更新**
 * 超レア通知 (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
-* エリートレア通知 (pull down list) 全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default:恐ろしい以上)
-* ボスレア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
+* レア通知 (pull down list) 全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default:恐ろしい以上)
+* エピックレア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
 * 神魔戦通知 (pull down list) あり/なし
 * 神魔レア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
 * 一般通知 敗北のみ/敗北と引分/敗北と引分と撤退/全て/なし (Default: 敗北のみ)
@@ -101,7 +101,7 @@ line 2 gray text:     2026/02/11 21:00
 **Title of party diary**
 ```
 (Left-Aligned)         (Right-aligned)
-line 1: [PT2]ボスレア(秘奥真理の書) 獲得      ▼
+line 1: [PT2]エピックレア(秘奥真理の書) 獲得      ▼
 line 2 gray text: ケイナイアン平原      2026/02/12 20:28
 (Left-Aligned)         (Right-aligned)
 line 1: [PT1] 敗北の記録           ▼

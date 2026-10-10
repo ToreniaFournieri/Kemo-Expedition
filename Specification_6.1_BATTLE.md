@@ -772,19 +772,19 @@ If `a.*` with phase = START:
 - For every item listed in the enemy's potential drop items,
   - Chance: 1
   - Note: M from `Difficulty Offset` and (God of Oblivion) (Additional Super Rare Chance Tickets)
-  - If the item is common,
+  - If the `itemRarity` is `common`,
     - Draw tickets from `t.common_reward_bag` equal to the total ticket count.
 	- If `t.reward_bag`.value = '1', then get one ticket from `t.common_enhancement_bag`.
     - If `t.enhancement_bag`.value >= 2, then get one + M ticket from `t.common_superRare_bag`.
-  - If the item is uncommon,
+  - If the `itemRarity`  is `uncommon`,
     - Draw tickets from `t.uncommon_reward_bag` equal to the total ticket count.
     - If `t.uncommon_reward_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
     - If `t.enhancement_bag`.value >= 1, then get one + M  ticket from `t.rare_superRare_bag`.
-  - If the item is elite rare or boss rare,
+  - If the `itemRarity`  is `rare` or `epic`,
     - Draw tickets from `t.rare_reward_bag`  equal to the total ticket count.
     - If `t.rare_reward_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
     - If `t.enhancement_bag`.value >= 1, then get one + M  ticket from `t.rare_superRare_bag`.
-  - If the item is mythic,
+  - If the `itemRarity` is `mythic`,
     - Draw tickets from `t.mythic_reward_bag` equal to the total ticket count.
     - If `t.rare_mythic_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
     - If `t.enhancement_bag`.value >= 1, then get one + M ticket from `t.rare_superRare_bag`.

@@ -133,7 +133,7 @@
 - Item list:
   - Stacked by item variant
   - Shows state:`s.owned` items and **equiped items**.
-  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, エピックレアのみ, 神魔レアのみ: [ALL] [C] [U] [R] [E] [M] |超レア: ON/OFF
+  - Filter button by rarelity (right-aligned): 全て表示, ノーマルのみ, アンコモンのみ, レアのみ, エピックレアのみ, 神魔レアのみ: [ALL] [C] [U] [R] [E] [M] |超レア: ON/OFF
     - IF player selects [M],   神魔レアのみ: [ALL] [C] [U] [R] [E] **[M]** 
     - 超レア[ON/OFF] default: OFF, if ON, filter superRare >= 1.
   - Inventory includes item category tabs:

@@ -420,7 +420,7 @@
 
 
 
-### 3.2.2 Mythic rare item from gods
+### 3.2.2 Mythic item from gods
 
 | Item ID | Drop by | Item type     | name | unique ability |
 |--------|--------|---------------|-------------| ------|

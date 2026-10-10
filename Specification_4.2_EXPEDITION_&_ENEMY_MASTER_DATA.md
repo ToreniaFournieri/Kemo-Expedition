@@ -26,7 +26,7 @@
 | class.lord | Defensive |
 
 **Common Item Pool**
-- Once the Drop Set is determined, select the items in @Specification_3.2_ITEM_MASTER_DATA.md whose `x.item_tier` matches the enemy's expedition tier, whose `x.rarity` is `C`, and whose `x.item_type` matches the listed item types.
+- Once the Drop Set is determined, select the items in @Specification_3.2_ITEM_MASTER_DATA.md whose `x.item_tier` matches the enemy's expedition tier, whose `x.itemRarity` is `C`, and whose `x.item_type` matches the listed item types.
 - Append the selected numeric `x.item_id` values to the enemy's `x.item_ids` list.
   
 | Drop set | item types |
@@ -37,7 +37,7 @@
 | Defensive | `i.armor`, `i.robe`, `i.shield` |
 
 
-- Rare items drop, Enemy
+- Enemy
   - For rooms that specify a range (e.g., 1-2), enemies are selected from all entries matching the current expedition, floor, and room range.
   - Each room within the range must contain a different enemy.
   - Once an enemy has been selected for a room, it cannot be selected again for another room in the same range.

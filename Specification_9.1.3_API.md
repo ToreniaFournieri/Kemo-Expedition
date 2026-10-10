@@ -405,7 +405,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
           * `<diaryEntryId>/<diaryTitle>/<diarySubtitle>/<timeStamp>`
           * timeStamp: YYYYMMDD HH:MM
         * Example:
-          `["120/Defeat Record/Leporian Moon Palace/20260916 22:04", "1/Boss Rare acquired (Moon-Hare Aegis)/Leporian Moon Palace/20260916 21:52"]`
+          `["120/Defeat Record/Leporian Moon Palace/20260916 22:04", "1/Epic acquired (Moon-Hare Aegis)/Leporian Moon Palace/20260916 21:52"]`
 
 * `read/observation` does not modify game state.
 * Diary entries remain unread until explicitly marked as read through the corresponding Commit API.
@@ -1896,7 +1896,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Parameters:
   * `category`
-  * `rarity`
+  * `itemRarity`
   * `tier`
   * `itemId`
   * `searchAbility`
@@ -1948,7 +1948,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Format:
       * `itemId`
       * `name`
-      * `rarity`
+      * `itemRarity`
       * `tier`
       * `ability`
       * `cBonus`
