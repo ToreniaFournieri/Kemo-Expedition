@@ -1,0 +1,1 @@
+{"score":-8.610647745924597,"calls":[{"path":"/commit/build/character/1/removeEquipment","params":{"targetEquipment":[3,4,6,10]}},{"path":"/commit/build/character/1/equip","params":{"targetEquipment":["0/8103/4/0","0/8306/1/0","0/7402/0/0","0/7205/3/0"]}}],"jfree0":{"shade:1":1,"ward:1":2,"fort:1":1,"might:1":0,"focus:1":0,"arcana:1":0}}

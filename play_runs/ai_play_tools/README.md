@@ -70,3 +70,9 @@ Built during the 2026/10/03 D8-boss run (`AI_play_report/v0.9.8(11)_Claude_Norma
   slot of the listed characters and keeps the best boss-only variant. `tools/farm2.mjs` = farm.mjs + top-tier drops/12 h (`TOP`).
 * Lessons: D6 boss (Procyonian `a.illusion`) needs #6309 on each ranged attacker; farm at the depth before the first unbeatable elite
   (D6 2f-3, D7 3f-3); re-plan right after Lv30 (new slot); D8 loops 1,800 s.
+
+## Additions (2026/10/10 ClaudeItem run, `AI_play_report/v0.10.1(33)_ClaudeItem_Normal_API_Exp8Boss_ItemRarityCheck_20261010.md`)
+* Run folder `play_runs/normal_api_exp8_ClaudeItem_20261010/`. `client/boss.sh tag d "weights"` = export + boss-only damage/kills/reach for none / proxyopt A / hpopt H plans.
+* `client/t.py` scans every response for stale rarity tokens (`stale_rarity.log`) and `itemRarity` usage (`itemrarity_seen.log`).
+* Electron can be started from the repo root (`./node_modules/electron/dist/Electron.app/Contents/MacOS/Electron scripts/run-api-play-session.cjs --environment=prod`) with `BOKEMO_PLAY_USERDATA` / `BOKEMO_PLAY_DESCRIPTOR` set; no app snapshot needed.
+* `run.py` stops on "BOSS OPEN / no gates": plan the boss then. Use `STALL=0` and `stopOpen=0` for farm and boss-attempt loops.
