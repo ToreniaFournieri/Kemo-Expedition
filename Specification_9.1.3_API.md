@@ -613,12 +613,11 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Optimizes the party build for the current destination and depth limit.
 * This does not advance progression, return rewards, consume live randomness, write Diary entries, change equipment, consume charge, or change the save revision.
-* Items equipped by non-target characters and by other parties are not used.
 
 * Parameters:
   * `targets`
     * Required.
-    * Array of characters to optimize.
+    * Array of characters to optimize. All specified characters must belong to the party identified by `{p}`.
     * Format: `[{characterId, changeableComponents}]`
     * For each target character:
       * `changeableComponents`
@@ -628,6 +627,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
         * `lineage`: Boolean
         * `predisposition`: Boolean
         * `equipment`: Boolean
+          * If `false`, the character's equipment remains unchanged and cannot be removed to equip another character.
+          * Locked equipment is never changed ortaken.
         * `jewels`: Boolean
         * If a component cannot be changed due to character-specific restrictions (e.g., a unique character), ignore the corresponding setting.
   * `considerOrderChange`
@@ -643,8 +644,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Default: `normal`
     * Options:
       * `normal`: Consider the individual target character's equipment and items in the inventory. Ignore equipment equipped by other party members.
-      * `withinTargets`: Consider the equipment of characters specified by `characterId` in `targets`, along with items in the inventory.
-      * `global`: Consider all characters' equipment and items in the inventory.
+      * `withinTargets`: Consider the equipment of characters specified by `characterId` in `targets`, along with items in the inventory. Locked equipment is never taken.
+      * `global`: Considers equipment and inventory items across all characters, including those in other parties. Locked equipment is never taken.
   * `objective`
     * Optional.
     * Default: `success`.
@@ -722,7 +723,6 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * ID of this search result. Used by `party/{p}/applyGaResult`.
     * Only the latest result per party is kept. A new `gaSearch` for the same party invalidates the previous ID.
     * The result is not save state. It is lost when the application restarts.
-    * If `considerItemsScope` is `global`, any equipment removals from other characters required by the result must also be included in the result and applied before other changes.
 
 **2-3-3. `character/status`**
 
