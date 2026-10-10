@@ -35,6 +35,7 @@ import { diarySettingsView } from './diaryView';
 import { countUnreadGlobalDiaryLogs, GLOBAL_DIARY_PARTY_NUMBER } from '../../game/globalDiary';
 import { formatItem } from './itemFormat';
 import { retainedLogIdOf } from './battleLogs';
+import { applyGaResult, type StoredGaResult } from './gaSearch';
 
 // SpecRef: 9.1 | Desktop distribution | Application API
 // This is the transport-neutral gameplay-mutation slice of the `/api/v1` commit dispatcher. It owns exactly the
@@ -106,6 +107,8 @@ export interface ApiV1CommitContext {
   readonly debugSettings?: DebugSettings;
   /** The ordinary player's real Enemy Edit pane settings; absent for an API account, whose settings are its own stored values. */
   readonly enemyEditSettings?: ColosseumEnemySettings;
+  /** The latest in-memory `gaSearch` result of a party (by party number), for `applyGaResult`; absent when none is kept. */
+  readonly gaResult?: (partyNumber: number) => StoredGaResult | undefined;
 }
 
 /** What a sortie needs to know about the live party cycle (Spec 5.1.1). */
@@ -275,6 +278,11 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       const after = getSortieControlFacts(next.parties[partyIndex], context.simulatedAt, chargeScale);
       data = godsBattle ? { outcome: battleOutcome, ...godsResult, ...after } : { summary: `${sorties.length}/${sortieCount}`, sorties, ...after };
     }
+  } else if (operation.match(/^commit\/build\/party\/(\d+)\/applyGaResult$/)) {
+    // SpecRef: 9.1.3 | Commit | 3-3-2 party/{p}/applyGaResult
+    const applied = applyGaResult(next, Number(operation.split('/')[3]), parameters, context);
+    next = applied.state;
+    data = applied.data;
   } else if (operation.match(/^commit\/build\/party\/(\d+)$/)) {
     const partyNumber = Number(operation.split('/').at(-1));
     const partyIndex = next.parties.findIndex((entry) => entry.id === partyNumber);

@@ -13,6 +13,7 @@ import { setColosseumEnemySettingsOverride } from '../../game/colosseum';
 import { accountEnemyEditSettingsOf } from './enemyEditPane';
 import { claimNextDelivery, settleDelivery, type ApiV1DeliveryOutcome, type ApiV1DeliveryRecord } from './deliveries';
 import { completeDeliveredBenefit } from './deliveryCompletion';
+import { parseGaSearchRequest, runGaSearch, type StoredGaResult } from './gaSearch';
 
 // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | One transport-neutral Application API
 // SpecRef: 9.1.3 | API | React UI, Desktop, and AI/CUI HTTP adapters share these handlers
@@ -33,8 +34,8 @@ export interface ApplicationApiPorts {
     enemyLevelOffset: () => number;
     cycleDurationScale: () => number;
     applyAutoEquipment: ApiV1CommitAuthorityDependencies['applyAutoEquipment'];
-    /** Private, non-persisted forecast simulation; must not touch the live game state or RNG. */
-    simulate: (state: GameState, partyIndex: number, count: number) => Promise<unknown>;
+    /** Private, non-persisted forecast simulation; must not touch the live game state or RNG. `seed` fixes its random numbers. */
+    simulate: (state: GameState, partyIndex: number, count: number, seed?: number) => Promise<unknown>;
     /** Durably persists a trusted in-process player's state before it is published. */
     persistPlayer: (state: GameState) => Promise<void>;
     /** SpecRef: 9.1.4.15 | Used instead of `persistPlayer` only for `commit/setting/backup/import`/`reset`: the new
@@ -165,6 +166,8 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
     accountSaveReusable = true;
   }
   let idleSimulatedAt = ports.runtime.now();
+  // SpecRef: 9.1.3 | 2-3-2 gaSearch `gaResultId` | Only the latest result per party is kept, in memory (not save state).
+  const gaResults = new Map<number, StoredGaResult>();
 
   const failure = (status: number, code: string, message: string, details?: Record<string, unknown>): ApiV1ApplicationResponse => ({
     status,
@@ -302,6 +305,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       const { session } = login;
       activeIdentity = session.identity;
       accountSaveReusable = false;
+      gaResults.clear();
       authority.replaceSnapshot({ state: session.state, control: session.control as ApiV1ControlMetadata, simulatedAt: session.simulatedAt });
       syncAccountDebugOverride();
       ports.onSessionActive(true, session.identity.userId, request.headless === true);
@@ -314,6 +318,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       if (!logout.ok) return failure(logout.status, logout.code, logout.message, logout.details);
       activeIdentity = null;
       accountSaveReusable = false;
+      gaResults.clear();
       idleSimulatedAt = ports.runtime.now();
       authority.replaceSnapshot({ state: logout.restoredState, control: emptyControl(), simulatedAt: idleSimulatedAt });
       syncAccountDebugOverride();
@@ -334,6 +339,43 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       const start = lastEventId ? events.findIndex((event) => event.eventId === lastEventId) : -1;
       if (lastEventId && start < 0) return failure(400, 'invalid_cursor', 'The popup replay cursor is unavailable.');
       return { revision: snapshot.control.revisionHighWater, data: { events: events.slice(start + 1) } };
+    }
+
+    const gaSearch = operation.match(/^read\/build\/party\/(\d+)\/gaSearch$/);
+    if (gaSearch) {
+      // SpecRef: 9.1.3 | Read | 2-3-2 party/{p}/gaSearch | a POST Read like `simulationRun`: private, never committed.
+      const snapshot = authority.getSnapshot();
+      const revision = snapshot.control.revisionHighWater;
+      if (request.expectedRevision !== undefined && Number(request.expectedRevision) !== revision) {
+        return failure(409, 'stale_revision', 'The supplied revision is stale.', { currentRevision: revision });
+      }
+      const partyIndex = snapshot.state.parties.findIndex((party) => party.id === Number(gaSearch[1]));
+      if (partyIndex < 0) return failure(404, 'not_found', 'The requested projection is unavailable.');
+      // HTTP sends the members as the POST body; the in-process adapter sends them as `parameters` (with the path's `p`).
+      const { pathParameters: _path, transport: _transport, expectedRevision: _revision, uploadedFiles: _files, parameters: _parameters, ...body } = request;
+      const { p: _party, ...inProcessParameters } = parameters;
+      try {
+        const searchRequest = parseGaSearchRequest(snapshot.state, partyIndex, trustedInProcess ? inProcessParameters : body);
+        const outcome = await runGaSearch(snapshot.state, partyIndex, searchRequest, {
+          simulate: (state, index, count, seed) => ports.runtime.simulate(state, index, count, seed),
+          now: ports.runtime.now,
+          createSeed: ports.runtime.createRandomSeed,
+          createOpaqueId: ports.runtime.createOpaqueId,
+          revision,
+          commitContext: {
+            simulatedAt: activeIdentity ? snapshot.simulatedAt : ports.runtime.now(),
+            gameMode: ports.runtime.gameMode(),
+            enemyLevelOffset: ports.runtime.enemyLevelOffset(),
+            applyAutoEquipment: ports.runtime.applyAutoEquipment,
+            now: ports.runtime.now,
+          },
+        });
+        gaResults.set(outcome.stored.partyNumber, outcome.stored);
+        return { revision, data: outcome.data };
+      } catch (error) {
+        const details = describeInvalidRequest(error);
+        return failure(400, 'invalid_request', invalidRequestMessage(details, 'The request is invalid.'), { ...details });
+      }
     }
 
     if (operation.startsWith('read/') || operation.startsWith('resources/')) {
@@ -399,6 +441,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       createRandomSeed: ports.runtime.createRandomSeed,
       now: ports.runtime.now,
       notifyPopupActivity: ports.runtime.notifyPopupActivity,
+      gaResult: (partyNumber) => gaResults.get(partyNumber),
       persist: async (snapshot, control, { stateChanged }) => {
         if (identity) await persistAccount(identity, snapshot, control, stateChanged);
         else if ((operation === 'commit/setting/backup/import' || operation === 'commit/setting/backup/reset') && ports.runtime.persistPlayerReplacement) await ports.runtime.persistPlayerReplacement(snapshot);
