@@ -1454,7 +1454,9 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 **3-3-2. `party/{p}/applyGaResult`**
 
 * Applies every change in a `gaSearch` result to party `{p}` in one atomic request.
-* This operation is not recorded in the `undo` or `redo` history and clears the existing history of all affected party members in `changeSummary`.
+* Undo and Redo:
+  * Each character with at least one entry in `changeSummary` gets exactly one Undo step: their equipment state before this operation.
+  * Only equipment, jewels, and Auto Equipment `mode` are restored by Undo. Changes to race, class, lineage, predisposition, order, and deity are not reverted.
 
 * Parameters:
   * `gaResultId`
