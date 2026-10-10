@@ -66,10 +66,15 @@ export interface GaParameters {
 
 export interface GaTarget { characterId: number; components: Record<Component, boolean> }
 
+// SpecRef: 9.1.3 | 2-3-2 gaSearch `considerItemsScope` | whose worn items the search may consider besides the Inventory.
+export const GA_ITEMS_SCOPES = ['normal', 'withinTargets', 'global'] as const;
+export type GaItemsScope = typeof GA_ITEMS_SCOPES[number];
+
 export interface GaSearchRequest {
   targets: GaTarget[];
   considerOrderChange: boolean;
   considerDeityChange: boolean;
+  considerItemsScope: GaItemsScope;
   objective: GaObjective;
   parameters: GaParameters;
 }
@@ -122,7 +127,7 @@ function readInteger(source: Record<string, unknown>, key: keyof typeof INTEGER_
 
 /** Validates a `gaSearch` request against party `{p}` (Spec 9.1.3, 2-3-2). Throws `invalid_request:<field>` or `not_found`. */
 export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: Record<string, unknown>): GaSearchRequest {
-  const allowed = new Set(['targets', 'considerOrderChange', 'considerDeityChange', 'objective', 'gaParameters']);
+  const allowed = new Set(['targets', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'gaParameters']);
   const unknown = Object.keys(raw).find((key) => !allowed.has(key));
   if (unknown !== undefined) invalid(`${unknown}.unknown_member`);
   const party = state.parties[partyIndex];
@@ -147,6 +152,8 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
     if (character.isUnique) { components.raceGender = false; components.lineage = false; components.predisposition = false; }
     return { characterId, components };
   });
+  const considerItemsScope = raw.considerItemsScope === undefined ? 'normal' : raw.considerItemsScope;
+  if (typeof considerItemsScope !== 'string' || !(GA_ITEMS_SCOPES as readonly string[]).includes(considerItemsScope)) invalid('considerItemsScope');
   const objective = raw.objective === undefined ? 'success' : raw.objective;
   if (typeof objective !== 'string' || !(GA_OBJECTIVES as readonly string[]).includes(objective)) invalid('objective');
   const source = raw.gaParameters === undefined ? {} : raw.gaParameters;
@@ -168,6 +175,7 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
     targets,
     considerOrderChange: readBoolean(raw, 'considerOrderChange', 'considerOrderChange', false),
     considerDeityChange: readBoolean(raw, 'considerDeityChange', 'considerDeityChange', false),
+    considerItemsScope: considerItemsScope as GaItemsScope,
     objective: objective as GaObjective,
     parameters: {
       effort: effort as GaEffort,
@@ -193,19 +201,34 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
  * The party facts a result depends on: order, deity, and every member's build and equipment, plus the owned count of
  * each item variant and Jewel the result equips or attaches. Other inventory changes (new drops) do not invalidate it.
  */
-export function gaBuildFingerprint(state: GameState, partyIndex: number, usedVariants: readonly string[], usedJewels: readonly string[]): string {
+export function gaBuildFingerprint(state: GameState, partyIndex: number, usedVariants: readonly string[], usedJewels: readonly string[], outsideCharacterIds: readonly number[] = []): string {
   const party = state.parties[partyIndex];
+  const signature = (item: Item | null) => item ? `${getVariantKey(item)}/${item.jewel ? `${item.jewel.key}:${item.jewel.rank}` : ''}` : null;
   const owned = (key: string) => { const entry = state.global.inventory[key]; return entry && entry.status === 'owned' ? entry.count : 0; };
   return JSON.stringify({
     order: party.characters.map((character) => character.id),
     deity: getDeityId(party.deity.name),
     members: party.characters.map((character) => ({
       build: describeCharacterBuildCurrent(character),
-      equipment: character.equipment.map((item) => item ? `${getVariantKey(item)}/${item.jewel ? `${item.jewel.key}:${item.jewel.rank}` : ''}` : null),
+      equipment: character.equipment.map(signature),
     })),
+    // `considerItemsScope: global` takes items from characters outside the party; their equipment is build-relevant too.
+    outside: [...new Set(outsideCharacterIds)].sort((a, b) => a - b).map((id) => [id, state.parties.flatMap((entry) => entry.characters).find((entry) => entry.id === id)?.equipment.map(signature) ?? null]),
     items: [...new Set(usedVariants)].sort().map((key) => [key, owned(key)]),
     jewels: [...new Set(usedJewels)].sort().map((key) => [key, state.global.jewels[key] ?? 0]),
   });
+}
+
+/** The fingerprint a stored result must still match: the Items and Jewels its `changeSummary` places and the characters it touches. */
+function fingerprintOfSummary(state: GameState, partyIndex: number, changeSummary: readonly GaChangeEntry[]): string {
+  const usedVariants = changeSummary.filter((entry) => entry.endpoint.endsWith('/equip')).map((entry) => {
+    const [, id, enhancement, superRare] = String(entry.parameters.targetEquipment).split('/');
+    return `${id}-${enhancement}-${superRare}`;
+  });
+  const usedJewels = changeSummary.filter((entry) => entry.endpoint.endsWith('/jewelAttach')).map((entry) => String(entry.parameters.jewelToSet));
+  const inParty = new Set(state.parties[partyIndex].characters.map((character) => character.id));
+  const outside = changeSummary.map((entry) => Number(entry.endpoint.match(CHARACTER_ENDPOINT)?.[1])).filter((id) => Number.isInteger(id) && id > 0 && !inParty.has(id));
+  return gaBuildFingerprint(state, partyIndex, usedVariants, usedJewels, outside);
 }
 
 // ---------------- Genome ----------------
@@ -218,13 +241,25 @@ interface Genome {
   equipment: Record<number, (SlotGene | null)[]>;
 }
 
+/** A worn, unlocked item of a character outside `targets` that `considerItemsScope: global` may take. */
+interface Donor { characterId: number; partyIndex: number; slot: number; key: string }
+
 interface SearchModel {
   base: GameState;
   partyIndex: number;
   request: GaSearchRequest;
-  /** Item variants the search may place, by variant key: the item and how many exist (free + worn by changeable targets). */
+  /** Item variants the search may place, by variant key: the item and how many shared copies exist (Inventory + shared worn + donors). */
   pool: Map<string, { item: Item; total: number }>;
-  poolKeys: string[];
+  /** Shared copies that need no donor: the Inventory plus the items worn by equipment targets when the scope pools them. */
+  sharedBase: Record<string, number>;
+  /** Copies only one character may use: its own worn items under `normal`, and the fixed items of an equipment-locked target. */
+  own: Record<number, Record<string, number>>;
+  /** Variant keys each target may place (shared or its own). */
+  keysFor: Record<number, string[]>;
+  /** Locked worn items of targets: they keep their slot and Jewel and are never taken (Spec 9.1.3, 2-3-2 `equipment`). */
+  frozen: Record<number, Map<number, Item>>;
+  /** Items `global` may take from other characters, in the order they are taken (the party first, then the other parties). */
+  donors: Donor[];
   /** Jewels the search may attach: free plus those on targets whose Jewels are changeable. */
   jewelTotals: Record<string, number>;
   buildOptions: Record<number, Partial<Record<BuildField, string[]>>>;
@@ -244,9 +279,32 @@ function buildModel(state: GameState, partyIndex: number, request: GaSearchReque
     if (entry) entry.total += count;
     else pool.set(key, { item: { ...item, jewel: null, isLocked: false }, total: count });
   };
+  const sharedBase: Record<string, number> = {};
+  const own: SearchModel['own'] = {};
+  const frozen: SearchModel['frozen'] = {};
+  const donors: Donor[] = [];
   const equipmentTargets = request.targets.filter((target) => target.components.equipment);
   if (equipmentTargets.length > 0) {
-    for (const entry of Object.values(state.global.inventory)) if (entry.status === 'owned' && entry.count > 0) add(entry.item, entry.count);
+    for (const entry of Object.values(state.global.inventory)) {
+      if (entry.status !== 'owned' || entry.count <= 0) continue;
+      add(entry.item, entry.count);
+      sharedBase[getVariantKey(entry.item)] = (sharedBase[getVariantKey(entry.item)] ?? 0) + entry.count;
+    }
+    // SpecRef: 9.1.3 | 2-3-2 gaSearch `considerItemsScope` | `global` also takes unlocked items worn outside `targets`.
+    if (request.considerItemsScope === 'global') {
+      const targetIds = new Set(request.targets.map((target) => target.characterId));
+      const order = [partyIndex, ...state.parties.map((_, index) => index).filter((index) => index !== partyIndex)];
+      for (const index of order) {
+        for (const character of state.parties[index].characters) {
+          if (targetIds.has(character.id)) continue;
+          character.equipment.forEach((item, slot) => {
+            if (!item || item.isLocked) return;
+            add(item, 1);
+            donors.push({ characterId: character.id, partyIndex: index, slot, key: getVariantKey(item) });
+          });
+        }
+      }
+    }
   }
   const jewelTotals: Record<string, number> = {};
   if (request.targets.some((target) => target.components.jewels)) {
@@ -258,11 +316,21 @@ function buildModel(state: GameState, partyIndex: number, request: GaSearchReque
     const character = party.characters.find((candidate) => candidate.id === target.characterId)!;
     // A Jewels-only target keeps its items; its slot genes still carry the Jewels.
     if (target.components.equipment || target.components.jewels) {
-      for (const item of character.equipment) if (item) add(item, 1);
+      const ownCounts: Record<string, number> = {};
+      const fixed = new Map<number, Item>();
+      character.equipment.forEach((item, slot) => {
+        if (!item) return;
+        // Locked equipment is never changed or taken: it stays in its slot with its Jewel.
+        if (item.isLocked) { fixed.set(slot, item); return; }
+        const key = getVariantKey(item);
+        if (target.components.equipment && request.considerItemsScope !== 'normal') { add(item, 1); sharedBase[key] = (sharedBase[key] ?? 0) + 1; }
+        else { add(item, 0); ownCounts[key] = (ownCounts[key] ?? 0) + 1; }
+        const jewel = jewelKeyOf(item);
+        if (target.components.jewels && jewel) jewelTotals[jewel] = (jewelTotals[jewel] ?? 0) + 1;
+      });
+      own[character.id] = ownCounts;
+      frozen[character.id] = fixed;
       current.equipment[character.id] = character.equipment.map((item) => item ? { k: getVariantKey(item), j: jewelKeyOf(item) } : null);
-    }
-    if (target.components.jewels) {
-      for (const item of character.equipment) { const key = jewelKeyOf(item); if (key) jewelTotals[key] = (jewelTotals[key] ?? 0) + 1; }
     }
     const describe = describeCharacterBuildCurrent(character);
     const options: Partial<Record<BuildField, string[]>> = {};
@@ -281,8 +349,12 @@ function buildModel(state: GameState, partyIndex: number, request: GaSearchReque
     buildOptions[character.id] = options;
     current.builds[character.id] = genes;
   }
+  const keysFor: SearchModel['keysFor'] = {};
+  for (const target of request.targets) {
+    keysFor[target.characterId] = [...pool.keys()].filter((key) => (pool.get(key)!.total > 0) || (own[target.characterId]?.[key] ?? 0) > 0);
+  }
   return {
-    base: state, partyIndex, request, pool, poolKeys: [...pool.keys()], jewelTotals, buildOptions,
+    base: state, partyIndex, request, pool, sharedBase, own, keysFor, frozen, donors, jewelTotals, buildOptions,
     deityOptions: request.considerDeityChange ? validPartyDeityIds(state, party) : [current.deity], current,
   };
 }
@@ -357,7 +429,7 @@ function decode(model: SearchModel, input: Genome, random: () => number): Decode
   }
 
   const party = state.parties[partyIndex];
-  const left: Record<string, number> = Object.fromEntries([...model.pool].map(([key, entry]) => [key, entry.total]));
+  const supply = createSupply(model);
   const jewelsLeft: Record<string, number> = { ...model.jewelTotals };
   const characters = party.characters.map((character) => ({ ...character }));
   const holes: [Character, number][] = [];
@@ -372,12 +444,14 @@ function decode(model: SearchModel, input: Genome, random: () => number): Decode
       : original.map((item, slot) => item ? { k: getVariantKey(item), j: genome.equipment[character.id]?.[slot]?.j ?? null } : null);
     const equipment: (Item | null)[] = new Array(maxSlots).fill(null);
     const repaired: (SlotGene | null)[] = new Array(maxSlots).fill(null);
+    const fixed = model.frozen[character.id];
     for (let slot = 0; slot < maxSlots; slot += 1) {
+      const locked = fixed?.get(slot);
+      if (locked) { equipment[slot] = locked; repaired[slot] = { k: getVariantKey(locked), j: jewelKeyOf(locked) }; continue; }
       const gene = genes[slot];
       if (!gene) continue;
       const entry = model.pool.get(gene.k);
-      if (!entry || (left[gene.k] ?? 0) <= 0 || !canCharacterEquipCategory(character, entry.item.category)) { holes.push([character, slot]); continue; }
-      left[gene.k] -= 1;
+      if (!entry || !canCharacterEquipCategory(character, entry.item.category) || !supply.take(character.id, gene.k)) { holes.push([character, slot]); continue; }
       const item: Item = { ...entry.item, jewel: null };
       let jewel: string | null = null;
       if (target.components.jewels) {
@@ -395,11 +469,11 @@ function decode(model: SearchModel, input: Genome, random: () => number): Decode
     genome.equipment[character.id] = repaired;
   }
   for (const [character, slot] of holes) {
-    for (let attempt = 0; attempt < 30 && model.poolKeys.length > 0; attempt += 1) {
-      const key = model.poolKeys[Math.floor(random() * model.poolKeys.length)];
+    const keys = model.keysFor[character.id] ?? [];
+    for (let attempt = 0; attempt < 30 && keys.length > 0; attempt += 1) {
+      const key = keys[Math.floor(random() * keys.length)];
       const entry = model.pool.get(key)!;
-      if ((left[key] ?? 0) <= 0 || !canCharacterEquipCategory(character, entry.item.category)) continue;
-      left[key] -= 1;
+      if (!canCharacterEquipCategory(character, entry.item.category) || !supply.take(character.id, key)) continue;
       character.equipment[slot] = { ...entry.item, jewel: null };
       genome.equipment[character.id][slot] = { k: key, j: null };
       break;
@@ -407,7 +481,59 @@ function decode(model: SearchModel, input: Genome, random: () => number): Decode
   }
   const parties = [...state.parties];
   parties[partyIndex] = { ...party, characters };
-  return { state: { ...state, parties }, genome };
+  return { state: { ...state, parties: removeDonorItems(model, parties, partyIndex, characters, supply) }, genome };
+}
+
+interface Supply { sharedLeft: Record<string, number>; ownLeft: Record<number, Record<string, number>>; take: (characterId: number, key: string) => boolean; available: (characterId: number, key: string) => boolean }
+
+/** The copies a decode may hand out: a character's own copies first, then the shared ones (Inventory, pooled worn items, donors). */
+function createSupply(model: SearchModel): Supply {
+  const sharedLeft: Record<string, number> = Object.fromEntries([...model.pool].map(([key, entry]) => [key, entry.total]));
+  const ownLeft: Record<number, Record<string, number>> = Object.fromEntries(Object.entries(model.own).map(([id, counts]) => [id, { ...counts }]));
+  const available = (characterId: number, key: string) => (ownLeft[characterId]?.[key] ?? 0) > 0 || (sharedLeft[key] ?? 0) > 0;
+  const take = (characterId: number, key: string) => {
+    const counts = ownLeft[characterId];
+    if (counts && (counts[key] ?? 0) > 0) { counts[key] -= 1; return true; }
+    if ((sharedLeft[key] ?? 0) > 0) { sharedLeft[key] -= 1; return true; }
+    return false;
+  };
+  return { sharedLeft, ownLeft, take, available };
+}
+
+/**
+ * `considerItemsScope: global`: the shared copies the targets use beyond the Inventory and their own released items are
+ * taken from the donors, in donor order. Returns the parties with those slots emptied.
+ */
+function removeDonorItems(model: SearchModel, parties: GameState['parties'], partyIndex: number, characters: Character[], supply: Supply): GameState['parties'] {
+  if (model.donors.length === 0) return parties;
+  const deficit: Record<string, number> = {};
+  for (const [key, entry] of model.pool) {
+    const used = entry.total - (supply.sharedLeft[key] ?? 0);
+    const need = used - (model.sharedBase[key] ?? 0);
+    if (need > 0) deficit[key] = need;
+  }
+  const removals = new Map<number, number[]>();
+  for (const donor of model.donors) {
+    if ((deficit[donor.key] ?? 0) <= 0) continue;
+    deficit[donor.key] -= 1;
+    removals.set(donor.characterId, [...(removals.get(donor.characterId) ?? []), donor.slot]);
+  }
+  if (removals.size === 0) return parties;
+  const strip = (character: Character): Character => {
+    const slots = removals.get(character.id);
+    if (!slots) return character;
+    const equipment = [...character.equipment];
+    for (const slot of slots) equipment[slot] = null;
+    return { ...character, equipment };
+  };
+  const next = [...parties];
+  const own = next[partyIndex];
+  next[partyIndex] = { ...own, characters: characters.map(strip) };
+  next.forEach((entry, index) => {
+    if (index === partyIndex || !entry.characters.some((character) => removals.has(character.id))) return;
+    next[index] = { ...entry, characters: entry.characters.map(strip) };
+  });
+  return next;
 }
 
 const genomeKey = (genome: Genome): string => JSON.stringify(genome);
@@ -433,6 +559,10 @@ function countChanges(model: SearchModel, decoded: Decoded): number {
     }
     count += (removed > 0 ? 1 : 0) + (jewelRemoved > 0 ? 1 : 0);
   }
+  // `global` donors: one `removeEquipment` entry per character that lost items.
+  const donorIds = new Set(model.donors.map((donor) => donor.characterId));
+  const emptied = (state: GameState, id: number) => state.parties.flatMap((entry) => entry.characters).find((entry) => entry.id === id)!.equipment.filter(Boolean).length;
+  for (const id of donorIds) if (emptied(decoded.state, id) < emptied(model.base, id)) count += 1;
   return count;
 }
 
@@ -514,20 +644,22 @@ function heuristicGenomes(model: SearchModel): Genome[] {
   const party = model.base.parties[model.partyIndex];
   const make = (score: (item: Item, character: Character) => number): Genome => {
     const genome = cloneGenome(model.current);
-    const left: Record<string, number> = Object.fromEntries([...model.pool].map(([key, entry]) => [key, entry.total]));
+    const supply = createSupply(model);
     for (const target of model.request.targets) {
       if (!target.components.equipment) continue;
       const character = party.characters.find((entry) => entry.id === target.characterId)!;
       const maxSlots = computeCharacterStats(character, party.level).maxEquipSlots;
       const slots: (SlotGene | null)[] = [];
       for (let slot = 0; slot < maxSlots; slot += 1) {
+        const locked = model.frozen[character.id]?.get(slot);
+        if (locked) { slots.push({ k: getVariantKey(locked), j: jewelKeyOf(locked) }); continue; }
         let best: string | null = null; let bestScore = -Infinity;
         for (const [key, entry] of model.pool) {
-          if ((left[key] ?? 0) <= 0 || !canCharacterEquipCategory(character, entry.item.category)) continue;
+          if (!supply.available(character.id, key) || !canCharacterEquipCategory(character, entry.item.category)) continue;
           const value = score(entry.item, character);
           if (value > bestScore) { bestScore = value; best = key; }
         }
-        if (best) left[best] -= 1;
+        if (best) supply.take(character.id, best);
         slots.push(best ? { k: best, j: null } : null);
       }
       genome.equipment[character.id] = slots;
@@ -561,7 +693,7 @@ function mutate(model: SearchModel, input: Genome, random: () => number): Genome
       if (slots.length === 0) continue;
       const slot = Math.floor(random() * slots.length);
       const weighted: string[] = [];
-      for (const key of model.poolKeys) for (let weight = tierWeight(key); weight > 0; weight -= 1) weighted.push(key);
+      for (const key of model.keysFor[id] ?? []) for (let weight = tierWeight(key); weight > 0; weight -= 1) weighted.push(key);
       if (weighted.length > 0) slots[slot] = { k: pick(weighted), j: null };
     } else if (kind === 'swap') {
       const a = pick(equipmentTargets); const b = pick(equipmentTargets);
@@ -628,10 +760,11 @@ export function planGaChangeSummary(base: GameState, partyIndex: number, best: G
     scratch = applyApiV1Commit(endpoint, scratch, parameters, { ...commitContext, equipmentHistory: {} }).state;
     entries.push({ endpoint, parameters });
   };
-  const after = (id: number) => target.characters.find((entry) => entry.id === id)!;
+  const after = (id: number) => best.parties.flatMap((entry) => entry.characters).find((entry) => entry.id === id)!;
   const sameSlot = (a: Item | null | undefined, b: Item | null | undefined) => Boolean(a && b && getVariantKey(a) === getVariantKey(b));
-  // 1. Free every slot whose item changes (all characters first, so items can move between them).
-  for (const character of party.characters) {
+  // 1. Free every slot whose item changes (all characters first, so items can move between them). `considerItemsScope:
+  // global` can take items from characters of other parties, so every party is covered.
+  for (const character of [...party.characters, ...base.parties.filter((_, index) => index !== partyIndex).flatMap((entry) => entry.characters)]) {
     const slots = character.equipment.map((item, slot) => (item && !sameSlot(item, after(character.id).equipment[slot]) ? slot : -1)).filter((slot) => slot >= 0);
     if (slots.length > 0) run(`commit/build/character/${character.id}/removeEquipment`, { targetEquipment: slots });
   }
@@ -803,11 +936,6 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
     before: buildSimulationRunData(verifyBefore.result, dependencies.revision, 'ga-verify').overview,
     after: buildSimulationRunData(verifyAfter.result, dependencies.revision, 'ga-verify').overview,
   };
-  const usedVariants = changeSummary.filter((entry) => entry.endpoint.endsWith('/equip')).map((entry) => {
-    const [, id, enhancement, superRare] = String(entry.parameters.targetEquipment).split('/');
-    return `${id}-${enhancement}-${superRare}`;
-  });
-  const usedJewels = changeSummary.filter((entry) => entry.endpoint.endsWith('/jewelAttach')).map((entry) => String(entry.parameters.jewelToSet));
   const gaResultId = dependencies.createOpaqueId();
   const elapsedSeconds = Math.round((dependencies.now() - startedAt) / 100) / 10;
   const stored: StoredGaResult = {
@@ -817,7 +945,7 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
     verdict: rating.verdict,
     forecast,
     changeSummary,
-    fingerprint: gaBuildFingerprint(state, partyIndex, usedVariants, usedJewels),
+    fingerprint: fingerprintOfSummary(state, partyIndex, changeSummary),
   };
   return {
     stored,
@@ -873,29 +1001,26 @@ export function applyGaResult(state: GameState, partyNumber: number, parameters:
   const stored = context.gaResult?.(partyNumber);
   if (!stored || stored.gaResultId !== gaResultId) throw new Error('illegal_action:ga_result_unavailable');
   if (stored.verdict === 'noChange') throw new Error('illegal_action:ga_result_no_change');
-  const usedVariants = stored.changeSummary.filter((entry) => entry.endpoint.endsWith('/equip')).map((entry) => {
-    const [, id, enhancement, superRare] = String(entry.parameters.targetEquipment).split('/');
-    return `${id}-${enhancement}-${superRare}`;
-  });
-  const usedJewels = stored.changeSummary.filter((entry) => entry.endpoint.endsWith('/jewelAttach')).map((entry) => String(entry.parameters.jewelToSet));
-  if (gaBuildFingerprint(state, partyIndex, usedVariants, usedJewels) !== stored.fingerprint) throw new Error('illegal_action:ga_result_stale');
+  if (fingerprintOfSummary(state, partyIndex, stored.changeSummary) !== stored.fingerprint) throw new Error('illegal_action:ga_result_stale');
 
   const confirmationRequired = stored.verdict === 'worse' || stored.verdict === 'noisy';
   const warnings = confirmationRequired ? [{ key: GA_APPLY_WARNING_KEY, args: {} }] : [];
   const changedIds = [...new Set(stored.changeSummary.map((entry) => Number(entry.endpoint.match(CHARACTER_ENDPOINT)?.[1])).filter((id) => Number.isInteger(id) && id > 0))];
   const equipmentIds = new Set(stored.changeSummary.map((entry) => Number(entry.endpoint.match(EQUIPMENT_ENDPOINT)?.[1])).filter((id) => Number.isInteger(id) && id > 0));
 
+  // `considerItemsScope: global` results also change characters of other parties, so each character is looked up on its own party.
+  const partyOf = (source: GameState, characterId: number) => source.parties.findIndex((entry) => entry.characters.some((character) => character.id === characterId));
   // Every entry runs against a private history bag: the internal steps record nothing (Spec 9.1.3, 3-3-2 Undo and Redo).
   const run = (source: GameState): GameState => {
     let next = source;
     for (const entry of stored.changeSummary) next = applyApiV1Commit(entry.endpoint, next, entry.parameters, { ...context, equipmentHistory: {} }).state;
     for (const id of equipmentIds) {
-      next = gameReducer(next, { type: 'UPDATE_CHARACTER', partyIndex, characterId: id, updates: { autoEquipmentMode: mode === 'SEMI' ? 1 : 0 } });
+      next = gameReducer(next, { type: 'UPDATE_CHARACTER', partyIndex: partyOf(next, id), characterId: id, updates: { autoEquipmentMode: mode === 'SEMI' ? 1 : 0 } });
     }
     return next;
   };
   const statusOf = (source: GameState) => changedIds.map((characterId) => {
-    const party = source.parties[partyIndex];
+    const party = source.parties[partyOf(source, characterId)];
     const index = party.characters.findIndex((entry) => entry.id === characterId);
     return { characterId, calculatedStatus: buildCalculatedStatus(party.characters[index], computePartyStats(party).characterStats[index], party.level) };
   });
@@ -908,8 +1033,8 @@ export function applyGaResult(state: GameState, partyNumber: number, parameters:
   if (confirmationRequired && confirmation !== 'yes') invalid('confirmation_required');
   const next = run(state);
   for (const characterId of changedIds) {
-    const before = state.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
-    const after = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
+    const before = state.parties[partyOf(state, characterId)].characters.find((entry) => entry.id === characterId)!;
+    const after = next.parties[partyOf(next, characterId)].characters.find((entry) => entry.id === characterId)!;
     const snapshot = snapshotCharacterEquipment(before, context.simulatedAt);
     if (sameEquipmentSnapshot(snapshot, snapshotCharacterEquipment(after, context.simulatedAt))) continue;
     context.equipmentHistory[String(characterId)] = recordEquipmentState(context.equipmentHistory[String(characterId)] ?? { undo: [], redo: [] }, snapshot);

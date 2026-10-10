@@ -795,11 +795,24 @@ definitions in 9.1.3.
   result unless `timeBudgetSeconds` stops it first.
 * Validation: `targets` is 1 to 6 unique members of party `{p}` (otherwise
   `invalid_request`, field `targets.characterId`); omitted `changeableComponents`
-  members are `false`. `eliteCount` may not exceed `populationSize / 4`. An
+  members are `false`. `considerItemsScope` is `normal` when omitted; any other value
+  than `normal`, `withinTargets`, or `global` is `invalid_request`, field
+  `considerItemsScope`. `eliteCount` may not exceed `populationSize / 4`. An
   unknown member anywhere is `invalid_request`. A missing party is `not_found`.
-* Candidates: `equipment` lets the search place any owned item variant (free in
-  the Inventory or worn by a target whose equipment is changeable) that the
-  character can equip, up to its slot count. `jewels` lets it place free Jewels
+* Candidates: `equipment` lets the search place any owned item variant that the
+  character can equip, up to its slot count, from the items `considerItemsScope`
+  makes available: the Inventory and the character's own worn items (`normal`);
+  also the items worn by the other targets whose equipment is changeable
+  (`withinTargets`); also the unlocked items worn by every other character of any
+  party (`global`). A locked item worn by a target keeps its slot and Jewel and is
+  never offered to anyone; a target whose `equipment` is `false` keeps its items,
+  which are never offered either. Under `global` the items a result takes from
+  other characters are the ones it needs beyond the Inventory and the targets'
+  own released items, taken from the party's non-targets first and then from the
+  other parties in order; `changeSummary` lists one `removeEquipment` entry per
+  emptied character, before any other entry, and `applyGaResult` also reports and
+  records Undo for those characters. A stored result is stale when the equipment
+  of a character it touches outside party `{p}` changed. `jewels` lets it place free Jewels
   and those on targets whose Jewels are changeable; with `jewels` but not
   `equipment`, the items stay and only their Jewels change, and with `equipment`
   but not `jewels`, an item that stays in its slot keeps its Jewel and a new item
@@ -1295,7 +1308,7 @@ use the same operation without HTTP authentication headers.
   Commit envelope or idempotency key. Omission uses the admission revision; a
   supplied mismatch returns `stale_revision` before private computation.
   `gaSearch` POST accepts its 9.1.3 members (`targets`, `considerOrderChange`,
-  `considerDeityChange`, `objective`, `gaParameters`) and an optional
+  `considerDeityChange`, `considerItemsScope`, `objective`, `gaParameters`) and an optional
   `expectedRevision` the same way.
   `numberOfRun` is an integer 1 ~ 1000 and defaults to 100; any other value is
   `invalid_request`.

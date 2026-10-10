@@ -22218,6 +22218,23 @@
             "type": "boolean",
             "default": false
           },
+          "considerItemsScope": {
+            "anyOf": [
+              {
+                "const": "normal",
+                "type": "string"
+              },
+              {
+                "const": "withinTargets",
+                "type": "string"
+              },
+              {
+                "const": "global",
+                "type": "string"
+              }
+            ],
+            "default": "normal"
+          },
           "objective": {
             "anyOf": [
               {

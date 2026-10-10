@@ -159,4 +159,99 @@ fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_r
   fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_result_stale', applied.state);
 }
 
+// ---------------- considerItemsScope ----------------
+// SpecRef: 9.1.3 | 2-3-2 gaSearch `considerItemsScope` | `normal`, `withinTargets`, `global`; locked equipment is never changed or taken.
+{
+  assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets }).considerItemsScope, 'normal');
+  for (const scope of ['normal', 'withinTargets', 'global']) assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets, considerItemsScope: scope }).considerItemsScope, scope);
+  rejects({ targets: equipmentTargets, considerItemsScope: 'onlyInventory' }, 'invalid_request:considerItemsScope');
+  rejects({ targets: equipmentTargets, considerItemsScope: 1 }, 'invalid_request:considerItemsScope');
+
+  // A geared party: the search result applied to the stripped save, with the leftover items still in the Inventory.
+  const geared = applyApiV1Commit(path, base, { gaResultId: stored.gaResultId, simulation: false }, context()).state;
+  const wornKeys = (state: GameState, characterId: number) => state.parties.flatMap((party) => party.characters).find((entry) => entry.id === characterId)!.equipment.filter(Boolean).map((item) => `${item!.id}/${item!.enhancement}/${item!.superRare}`);
+  const inventoryKeys = (state: GameState) => new Set(Object.values(state.global.inventory).filter((entry) => entry.status === 'owned' && entry.count > 0).map((entry) => `${entry.item.id}/${entry.item.enhancement}/${entry.item.superRare}`));
+  const [first, second, third] = ids;
+  assert.ok(wornKeys(geared, first).length > 0 && wornKeys(geared, second).length > 0 && wornKeys(geared, third).length > 0);
+  const targets = [first, second].map((characterId) => ({ characterId, changeableComponents: { equipment: true } }));
+  const run = (state: GameState, scope: string, extraTargets = targets) => search(state, { targets: extraTargets, considerItemsScope: scope, gaParameters: { ...small, generations: 4, seed: 11 } });
+  const characterOf = (entry: { endpoint: string }) => Number(entry.endpoint.split('/')[3]);
+  const equippedKey = (entry: { parameters: Record<string, unknown> }) => String(entry.parameters.targetEquipment).split('/').slice(1).join('/');
+
+  // `normal`: only the targets change, and an item worn by another target is not taken (own items and the Inventory only).
+  {
+    const result = await run(geared, 'normal');
+    const entries = (result.data as { changeSummary: { endpoint: string; parameters: Record<string, unknown> }[] }).changeSummary;
+    const inventory = inventoryKeys(geared);
+    for (const entry of entries) {
+      assert.ok([first, second].includes(characterOf(entry)), `normal changes only targets: ${entry.endpoint}`);
+      if (!entry.endpoint.endsWith('/equip')) continue;
+      const key = equippedKey(entry);
+      assert.ok(inventory.has(key) || wornKeys(geared, characterOf(entry)).includes(key), `normal: ${key} is neither in the Inventory nor the character's own`);
+    }
+    // The result applies as written.
+    if (entries.length > 0) applyApiV1Commit(path, geared, { gaResultId: result.stored.gaResultId, simulation: false, confirmation: 'yes' }, context(result.stored));
+  }
+
+  // `withinTargets` and `global`: every result applies as written; `withinTargets` never touches characters outside `targets`.
+  for (const scope of ['withinTargets', 'global']) {
+    const result = await run(geared, scope);
+    const entries = (result.data as { changeSummary: { endpoint: string }[] }).changeSummary;
+    if (scope === 'withinTargets') for (const entry of entries) assert.ok([first, second].includes(characterOf(entry)), `withinTargets changes only targets: ${entry.endpoint}`);
+    if (entries.length > 0) applyApiV1Commit(path, geared, { gaResultId: result.stored.gaResultId, simulation: false, confirmation: 'yes' }, context(result.stored));
+  }
+
+  // Only `global` can take items worn outside `targets`, including by another party: with an empty Inventory, a stripped
+  // party gets gear only from the donors of party 2 (whose loss does not touch the simulated party).
+  {
+    const donorParty = { ...geared.parties[0], id: 2, name: 'PT2', characters: geared.parties[0].characters.map((character) => ({ ...character, id: character.id + 100 })) };
+    const donorState: GameState = { ...base, parties: [base.parties[0], donorParty], global: { ...base.global, inventory: {} } };
+    const donorIds = donorParty.characters.map((character) => character.id);
+    for (const scope of ['normal', 'withinTargets']) {
+      const none = await run(donorState, scope, equipmentTargets);
+      assert.deepEqual((none.data as { changeSummary: unknown[] }).changeSummary, [], `${scope} has nothing to equip`);
+    }
+    const result = await run(donorState, 'global', equipmentTargets);
+    const entries = (result.data as { changeSummary: { endpoint: string; parameters: Record<string, unknown> }[] }).changeSummary;
+    const equips = entries.filter((entry) => entry.endpoint.endsWith('/equip'));
+    const removals = entries.filter((entry) => entry.endpoint.endsWith('/removeEquipment'));
+    assert.ok(equips.length > 0 && equips.every((entry) => ids.includes(characterOf(entry))), 'global equips the party from other parties');
+    assert.ok(removals.length > 0 && removals.every((entry) => donorIds.includes(characterOf(entry))), 'donors are emptied');
+    assert.ok(entries.slice(0, removals.length).every((entry) => entry.endpoint.endsWith('/removeEquipment')), 'removals come before any equip');
+    const taken = removals.reduce((sum, entry) => sum + (entry.parameters.targetEquipment as number[]).length, 0);
+    assert.equal(taken, equips.length, 'every taken item is placed and none is created');
+    const applied = applyApiV1Commit(path, donorState, { gaResultId: result.stored.gaResultId, simulation: false, confirmation: 'yes' }, context(result.stored)).state;
+    assert.equal(ids.reduce((sum, id) => sum + wornKeys(applied, id).length, 0), equips.length);
+    assert.equal(donorIds.reduce((sum, id) => sum + wornKeys(applied, id).length, 0), donorIds.reduce((sum, id) => sum + wornKeys(donorState, id).length, 0) - taken);
+    // The stored result goes stale when a donor's equipment changes.
+    const tampered: GameState = { ...donorState, parties: [donorState.parties[0], gameReducer(donorState, { type: 'REMOVE_ALL_EQUIPMENT', partyIndex: 1, characterId: characterOf(removals[0]) }).parties[1]] };
+    let message = '';
+    try { applyApiV1Commit(path, tampered, { gaResultId: result.stored.gaResultId, simulation: true }, context(result.stored)); } catch (error) { message = String(error); }
+    assert.ok(message.includes('illegal_action:ga_result_stale'), message);
+  }
+
+  // Locked equipment of a target is never changed, and locked equipment elsewhere is never taken (`global`).
+  {
+    let locked = geared;
+    for (const characterId of [first, third]) {
+      const character = locked.parties[0].characters.find((entry) => entry.id === characterId)!;
+      const slot = character.equipment.findIndex(Boolean);
+      locked = gameReducer(locked, { type: 'UPDATE_CHARACTER', partyIndex: 0, characterId, updates: { autoEquipmentMode: 2 } });
+      locked = applyApiV1Commit(`commit/build/character/${characterId}/lockEquipment`, locked, { targetEquipment: slot }, context()).state;
+    }
+    const before = (characterId: number) => locked.parties[0].characters.find((entry) => entry.id === characterId)!.equipment;
+    const lockedSlot = (characterId: number) => before(characterId).findIndex((item) => item?.isLocked);
+    const result = await run(locked, 'global');
+    const applied = (result.data as { changeSummary: unknown[] }).changeSummary.length > 0
+      ? applyApiV1Commit(path, locked, { gaResultId: result.stored.gaResultId, simulation: false, confirmation: 'yes' }, context(result.stored)).state
+      : locked;
+    for (const characterId of [first, third]) {
+      const slot = lockedSlot(characterId);
+      const after = applied.parties[0].characters.find((entry) => entry.id === characterId)!.equipment[slot];
+      assert.equal(after?.id, before(characterId)[slot]?.id, `locked slot ${slot} of ${characterId} is unchanged`);
+      assert.equal(after?.isLocked, true);
+    }
+  }
+}
+
 console.log('gaSearch profile ok');

@@ -291,6 +291,7 @@ const directBodySchemas = {
     expectedRevision: optional(Type.Integer({ minimum: 0 })),
     targets: nonEmptyArray(strict({ characterId: integerId, changeableComponents: optional(gaComponents) }), { maxItems: 6 }),
     considerOrderChange: optional(Type.Boolean(), false), considerDeityChange: optional(Type.Boolean(), false),
+    considerItemsScope: optional(literals('normal', 'withinTargets', 'global'), 'normal'),
     objective: optional(literals('success', 'minDefeat', 'bossDamage', 'experience'), 'success'), gaParameters: optional(gaParameters),
   }),
 };
