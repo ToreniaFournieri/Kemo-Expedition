@@ -638,6 +638,13 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Boolean.
     * Optional.
     * Default: `false`
+  * `considerItemsScope`
+    * Optional.
+    * Defualt: `onlyInventory`
+    * Options:
+      * `onlyInventory`: Consider inventory only. Do not consider equipment from other party members.
+      * `withinTargets`: Consider items in the inventory and equipment equipped by the selected target characters.
+      * `global`: Consider items in the inventory and equipment equipped by all characters.
   * `objective`
     * Optional.
     * Default: `success`.
@@ -1131,7 +1138,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * Return:
   * `current`:
     * `superRareThreshold`
-    * `bossThreshold`
+    * `epicThreshold`
     * `mythicThreshold`
     * `rareThreshold`
     * `sideQuestThreshold`
@@ -1144,7 +1151,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `validOptions`:
     * `superRareThreshold`
       * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
-    * `bossThreshold`
+    * `epicThreshold`
       * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
     * `mythicThreshold`
       * Allowed values: `all`, `1`, `2`, `3`, `4`, `5`, `6`, `none`.
