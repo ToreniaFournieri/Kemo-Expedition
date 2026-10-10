@@ -76,3 +76,8 @@ Built during the 2026/10/03 D8-boss run (`AI_play_report/v0.9.8(11)_Claude_Norma
 * `client/t.py` scans every response for stale rarity tokens (`stale_rarity.log`) and `itemRarity` usage (`itemrarity_seen.log`).
 * Electron can be started from the repo root (`./node_modules/electron/dist/Electron.app/Contents/MacOS/Electron scripts/run-api-play-session.cjs --environment=prod`) with `BOKEMO_PLAY_USERDATA` / `BOKEMO_PLAY_DESCRIPTOR` set; no app snapshot needed.
 * `run.py` stops on "BOSS OPEN / no gates": plan the boss then. Use `STALL=0` and `stopOpen=0` for farm and boss-attempt loops.
+
+## Additions (2026/10/10 ClaudeEXP run, `AI_play_report/v0.10.1(34)_ClaudeEXP_Normal_API_Exp8Boss_EarlyLv30_20261010.md`)
+* Run folder `play_runs/normal_api_exp8_ClaudeEXP_20261010/` (copy of the ClaudeItem client/tools; `cad.mjs` now prints `xp/12h`).
+* Lesson: at a stuck gate sweep `proxyopt` element weights (fire:3 / ice:3 / thunder:3) and `lever.mjs` deity labels before any GA; fire:3 raised the D7 route 6 % to 24 %, thunder:3 raised D8 gate 2 from 12 % to 52 %.
+* `run.py` "BOSS OPEN" = boss fightable (entryGate/godEntry shown); `godGate` = boss dead. Confirm with the Global Diary `bossFirstClear`.
