@@ -19,7 +19,7 @@ function formatEquipmentState(state: SavedEquipmentSet): string[] {
 
 /**
  * The comparable snapshot of one character's equipment state: exact items, slots, locks, and Jewel assignment
- * (Spec 9.1.3, 2-3-3), plus the auto-equipment mode, so a mode change alone is an Undo step.
+ * (Spec 9.1.3, 2-3-4), plus the auto-equipment mode, so a mode change alone is an Undo step.
  */
 export function snapshotCharacterEquipment(character: Pick<Character, 'equipment' | 'autoEquipmentMode'>, createdAt: number): SavedEquipmentSet {
   return { ...createEquipmentSetSnapshot(character.equipment, true), name: 'API history', createdAt, autoEquipmentMode: character.autoEquipmentMode ?? 0 };

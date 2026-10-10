@@ -17,7 +17,7 @@ const EDITABLE_RACES = new Set<RaceId>([
   'lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian',
   'leporian', 'cervin', 'murid', 'mimorian',
 ]);
-// SpecRef: 9.1.3 | 3-3-2 changeBuild | Class IDs are accepted both bare (`guardian`) and prefixed (`class.guardian`).
+// SpecRef: 9.1.3 | 3-3-3 changeBuild | Class IDs are accepted both bare (`guardian`) and prefixed (`class.guardian`).
 const stripClassPrefix = (id: string): string => id.startsWith('class.') ? id.slice('class.'.length) : id;
 
 const ALLOWED_PARAMETERS = new Set(['name', 'uniqueSelection', 'racesAndGender', 'mainClassId', 'subClassId', 'lineage', 'predisposition']);
@@ -41,7 +41,7 @@ export interface CharacterBuildChangePlan {
   equipmentSlotsRemoved: number;
   invalidEquipment: number;
   requiresConfirmation: boolean;
-  /** Empty unless confirmation is required (Spec 9.1.3, 3-3-2). */
+  /** Empty unless confirmation is required (Spec 9.1.3, 3-3-3). */
   warnings: CharacterBuildWarning[];
 }
 
@@ -54,7 +54,7 @@ function currentRaceAndGender(character: Character): string {
     : `${character.raceId}/${character.gender}`;
 }
 
-// SpecRef: 9.1.3 | 2-3-2 character/status `current`; 9.1.4.9 | changeBuild returns the complete new `current`
+// SpecRef: 9.1.3 | 2-3-3 character/status `current`; 9.1.4.9 | changeBuild returns the complete new `current`
 /** A character's public build facts: the `current` of `read/build/character/status` and of `changeBuild`. */
 export function describeCharacterBuildCurrent(character: Character) {
   return {

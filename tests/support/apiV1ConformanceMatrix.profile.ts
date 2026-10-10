@@ -362,7 +362,7 @@ const commitFixtures: Record<string, CommitFixture> = {
   'commit/build/character/{characterId}/saveEquipmentSet': { request: async (client) => ({ path: await characterPath(client), parameters: { equipmentSet: { name: 'Matrix' } } }) },
   'commit/build/character/{characterId}/loadEquipmentSet': {
     request: async (client) => {
-      // Selling one saved item makes the load partial, which is the case that asks for confirmation (Spec 9.1.3, 3-3-12).
+      // Selling one saved item makes the load partial, which is the case that asks for confirmation (Spec 9.1.3, 3-3-13).
       const setId = await saveSet(client);
       await client.commitOk('commit/build/character/{characterId}/removeAllEquipment', { path: await characterPath(client) });
       await client.commitOk('commit/base/sellInventoryItems', { parameters: { items: [(await ownedItems(client, 'armor'))[0]] } });

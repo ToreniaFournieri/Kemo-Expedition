@@ -73,7 +73,7 @@ function request(parameters: Record<string, unknown>, overrides: Partial<ApiV1Co
   return { operation: path(characterId, 'changeBuild'), expectedRevision: 0, idempotencyKey: 'change-build-key-001', requestId: 'build', parameters, uploadedFiles: {}, state: base, simulatedAt: now, control: control(), ...overrides };
 }
 
-// The contract's own confirmation protocol (Spec 9.1.3, 3-3-2): `simulation` reports without committing, and a change
+// The contract's own confirmation protocol (Spec 9.1.3, 3-3-3): `simulation` reports without committing, and a change
 // that needs confirmation applies only with `confirmation: yes`. The generic 9.1.4.5 challenge is never issued.
 {
   const simulated = change(base, characterId, riskyParameters, { simulation: true });
@@ -210,7 +210,7 @@ fails(base, uniqueCharacterId, { name: 'renamed unique' }, 'illegal_action', { s
 console.log('apiV1BuildChange profile ok');
 
 // SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique selection: "固有"
-// SpecRef: 9.1.3 | 3-3-2 changeBuild | uniqueSelection
+// SpecRef: 9.1.3 | 3-3-3 changeBuild | uniqueSelection
 {
   const kemo = base.parties[0].characters[0];
   const normalId = base.parties[0].characters[2].id;

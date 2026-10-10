@@ -590,7 +590,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 **2-3. `read/build`**
 
-**2-3-1 `party/{p}`**
+**2-3-1. `party/{p}`**
 
 * Parameters: none.
 
@@ -609,13 +609,17 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `characterId` (character IDs) currently available for party ordering.
       * Example:  `[101, 102, 103, 104, 105, 106]`
 
-**2-3-2 `party/{p}/gaSearch`**
+**2-3-2. `party/{p}/gaSearch`**
 
-* Optimize the party build for the current destination and depth limit.
+* Optimizes the party build for the current destination and depth limit.
+* This does not advance progression, return rewards, consume live randomness, write Diary entries, change equipment, consume charge, or change the save revision.
+* Items equipped by non-target characters and by other parties are not used.
 
 * Parameters:
-  * `targetCharacterIds`: Array of character IDs to optimize.
-    * Format : `[{characterId, changeableComponents}]`
+  * `targets`
+    * Required.
+    * Array of characters to optimize.
+    * Format: `[{characterId, changeableComponents}]`
     * For each target character:
       * `changeableComponents`
         * `raceGender`: Boolean
@@ -629,62 +633,62 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `considerOrderChange`
     * Boolean.
     * Optional.
-    * Defualt: `false`
+    * Default: `false`
   * `considerDeityChange`
     * Boolean.
     * Optional.
-    * Defualt: `false`
+    * Default: `false`
   * `objective`
     * Optional.
     * Default: `success`.
     * `success`, `minDefeat`, `bossDamage`, `experience`
-  * `gaParametersSimple`
-    * `effort`
-      * `low`, `medium`, `high`
-      * Optional.
-      * Default: `low`
-
-| `effort` | `populationSize` | `generations` | `quickRuns` | `confirmRuns` |
-|---|---|---|---|---|
-| `low` | 12 | 15 | 30 | 150 |
-| `medium` | 24 | 40 | 50 | 300 |
-| `high` | 48 | 80 | 100 | 600 |    
-
-  * `gaParametersDetails`
+    * `bossDamage` simulates the boss room of the current destination even if the depth limit stops before the boss.
+  * `gaParameters`
     * Optional.
+    * `effort` selects a preset. Values in the preset table are used unless they are specified explicitly.
 
-| Parameter | Type | Default | Range | Description |
-|---|---|---|---|---|
-| `effort` | String | `low` | `low` / `medium` / `high` | Preset that sets every parameter below. Explicit values override the preset. |
-| `populationSize` | Integer | `24` | 8 ~ 64 | Number of candidate builds per generation. |
-| `generations` | Integer | `40` | 1 ~ 200 | Number of generations to run. |
-| `eliteCount` | Integer | `3` | 0 ~ populationSize / 4 | Best builds copied unchanged to the next generation. |
-| `mutationRate` | Number | `0.35` | 0 ~ 1 | Probability that a child build is mutated. |
-| `tournamentSize` | Integer | `3` | 2 ~ 8 | Number of candidates compared when selecting each parent. |
-| `quickRuns` | Integer | `50` | 10 ~ 300 | Simulation runs used to score every candidate. |
-| `confirmRuns` | Integer | `300` | 50 ~ 1000 | Simulation runs (different seed) used to re-score the top candidates. |
-| `confirmTopN` | Integer | `5` | 1 ~ 10 | Number of top candidates re-scored with `confirmRuns` each generation. |
-| `seed` | Integer | Random | Any integer | Fixed seed for a reproducible result. |
-| `maxChanges` | Integer | None | 1 ~ | Penalizes builds that need more changes than this value. |
-| `seedWithHeuristics` | Boolean | `true` | `true` / `false` | Adds heuristic attack-focused and HP-focused builds to the first generation. |
-| `timeBudgetSeconds` | Integer | `30` | 5 ~ 300 | Hard time limit. When reached, the search returns the best build so far. |
+    | `effort` | `populationSize` | `generations` | `quickRuns` | `confirmRuns` | `timeBudgetSeconds` |
+    |---|---|---|---|---|---|
+    | `low` | 12 | 15 | 30 | 150 | 15 |
+    | `medium` | 24 | 40 | 50 | 300 | 60 |
+    | `high` | 48 | 80 | 100 | 600 | 180 |
+
+    | Parameter | Type | Default | Range | Description |
+    |---|---|---|---|---|
+    | `effort` | String | `low` | `low` / `medium` / `high` | Preset for `populationSize`, `generations`, `quickRuns`, `confirmRuns`, and `timeBudgetSeconds`. Explicit values override the preset. |
+    | `populationSize` | Integer | From `effort` | 8 ~ 64 | Number of candidate builds per generation. |
+    | `generations` | Integer | From `effort` | 1 ~ 200 | Number of generations to run. |
+    | `quickRuns` | Integer | From `effort` | 10 ~ 300 | Simulation runs used to score every candidate. |
+    | `confirmRuns` | Integer | From `effort` | 50 ~ 1000 | Simulation runs (different seed) used to re-score the top candidates. |
+    | `timeBudgetSeconds` | Integer | From `effort` | 5 ~ 300 | Hard time limit. When reached, the search returns the best build so far. |
+    | `verifyRuns` | Integer | `500` | 100 ~ 1000 | Simulation runs (new independent seed) used to compare the current build and the best build after the search. Used for `verdict` and `forecast`. |
+    | `eliteCount` | Integer | `3` | 0 ~ populationSize / 4 | Best builds copied unchanged to the next generation. |
+    | `mutationRate` | Number | `0.35` | 0 ~ 1 | Probability that a child build is mutated. |
+    | `tournamentSize` | Integer | `3` | 2 ~ 8 | Number of candidates compared when selecting each parent. |
+    | `confirmTopN` | Integer | `5` | 1 ~ 10 | Number of top candidates re-scored with `confirmRuns` each generation. |
+    | `seed` | Integer | Random | Any integer | Fixed seed for a reproducible result. |
+    | `maxChanges` | Integer | None (no limit) | 1 ~ 100 | Maximum number of entries in `changeSummary`. Builds that need more changes are not selected. |
+    | `seedWithHeuristics` | Boolean | `true` | `true` / `false` | Adds heuristic attack-focused and HP-focused builds to the first generation. |
 
 * Return:
   * `verdict`
     * Rating of the best build compared with the current build.
     * Judged on a separate verification simulation (`verifyRuns`, independent seed), not on the scores used during the search.
-    * `<rate>` = Standard error (SE) is computed from the before and after rates.
-      * `success`: success rate for the selected objective.
-      * `minDefeat`: the defeat rate, where lower is better.
-      * `bossDamage`: boss damage share.
-      * `experience` : EXP per run. This isn’t a percentage, so “10 percentage points” doesn’t apply; it needs a relative threshold such as +20%.
-
+    * `<rate>`: measured value for the selected `objective`.
+      * `success`: success rate (clear + return).
+      * `minDefeat`: defeat rate. A lower value is an improvement.
+      * `bossDamage`: average share of boss HP dealt in the boss room.
+      * `experience`: average EXP per run.
+    * `<gain>`: improvement of `<rate>` from the current build to the best build.
+      * Percentage points for `success`, `minDefeat`, and `bossDamage`.
+      * Relative change (%) for `experience`.
+    * Standard error (SE) is computed from the before and after verification runs.
     * Values:
-      * `veryGood`: `<rate>` improves by 10 percentage points or more, and the improvement is larger than 2 SE.
-      * `good`: `<rate>` improves by more than 2 SE, but by less than 10 percentage points.
-      * `noisy`: `<rate>` improves, but by no more than 2 SE. The gain may come from chance.
-      * `noChange`: No better build was found. `changeSummary` is empty.
-      * `worse`: The verification run is lower than the current build by more than 2 SE. `changeSummary` is still returned but should not be applied.
+      * `veryGood`: `<gain>` is at or above the threshold (10 percentage points; 20% for `experience`), and larger than 2 SE.
+      * `good`: `<gain>` is larger than 2 SE, but below the `veryGood` threshold.
+      * `noisy`: `<rate>` differs from the current build by no more than 2 SE, in either direction. The difference may come from chance.
+      * `noChange`: No different build was found. `changeSummary` is empty.
+      * `worse`: `<rate>` is worse than the current build by more than 2 SE. `changeSummary` is still returned but should not be applied.
   * `forecast`
     * `before`: `overview` of the current build (same format as `{p}/simulationRun`).
     * `after`: `overview` of the best build (same format as `{p}/simulationRun`).
@@ -701,15 +705,16 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       6. `commit/build/character/{characterId}/jewelAttach`
     * Example:
       `[{"endpoint":"commit/build/character/101/removeEquipment","parameters":{"targetEquipment":[0,2]}},{"endpoint":"commit/build/character/101/equip","parameters":{"targetEquipment":"0/1101/2/0","targetSlot":0}}]`
+    * When applying `changeSummary` step by step, use the latest save revision as `expectedRevision` for each call.
   * `revision`
     * Save revision the search was based on.
-    * Use it as `expectedRevision` when applying `changeSummary`. If the game state has changed, the commit is rejected.
   * `evaluations`
     * Number of builds evaluated.
   * `elapsedSeconds`
   * `gaResultId`
     * ID of this search result. Used by `party/{p}/applyGaResult`.
     * Only the latest result per party is kept. A new `gaSearch` for the same party invalidates the previous ID.
+    * The result is not save state. It is lost when the application restarts.
 
 **2-3-3. `character/status`**
 
@@ -1475,7 +1480,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * Validation:
   * The request is rejected when:
     * `gaResultId` is unknown, or was replaced by a newer `gaSearch` for the same party.
-    * The current save revision differs from the `revision` of the `gaSearch` result.
+    * Build-relevant state changed after the `gaSearch` (party order, deity, inventory, jewels, or the build or equipment of any character in party `{p}`).
+      * Other revision changes (e.g., progression) do not invalidate the result.
     * `verdict` is `noChange`.
   * `confirmationRequired` is `true` when:
     * `verdict` is `worse` or `noisy`.

@@ -729,7 +729,7 @@ export default function PartyTab({
     setShowAutoEquipmentHelp(true);
   };
 
-  // SpecRef: 9.1.3 | Commit | 3-3-2 character/{characterId}/changeBuild
+  // SpecRef: 9.1.3 | Commit | 3-3-3 character/{characterId}/changeBuild
   // The API decides whether a build change needs confirmation and reports the warnings: the edit is first simulated
   // (nothing is committed), and only a confirmed change is committed. The tab holds no hypothetical-stats logic of its own.
   const CHANGE_BUILD_WARNING_TEXT: Record<string, (args: Record<string, number>) => string> = {
@@ -795,7 +795,7 @@ export default function PartyTab({
     ? retainedEquipCategory
     : availableCategories.includes('armor') ? 'armor' : availableCategories[0] ?? 'armor';
 
-  // SpecRef: 9.1.3 | Read | 2-3-5 character/equipmentEvaluation
+  // SpecRef: 9.1.3 | Read | 2-3-6 character/equipmentEvaluation
   // Every displayed defense preview is evaluated against one immutable Application API snapshot. The tab only formats
   // the returned deltas; it does not simulate equipment or recalculate character status.
   const previewTargetSlot = selectingSlot ?? Array.from({ length: stats.maxEquipSlots }).findIndex((_, index) => !char.equipment[index]);

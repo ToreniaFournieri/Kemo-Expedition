@@ -23,14 +23,14 @@ const optional = (schema, defaultValue) => Type.Optional(defaultValue === undefi
 const literals = (...values) => Type.Union(values.map((value) => Type.Literal(value)));
 const nonEmptyArray = (items, options = {}) => Type.Array(items, { minItems: 1, ...options });
 const integerId = Type.Integer({ minimum: 1 });
-// SpecRef: 9.1.3 | 2-3-2..2-3-5 | one character ID or an array of unique IDs; the response lists the characters in request order.
+// SpecRef: 9.1.3 | 2-3-3..2-3-6 | one character ID or an array of unique IDs; the response lists the characters in request order.
 const characterIds = Type.Union([integerId, nonEmptyArray(integerId, { uniqueItems: true, maxItems: 36 })]);
 const characterReads = (properties) => strict({ characters: nonEmptyArray(strict({ characterId: integerId, ...properties }), { maxItems: 36 }) });
 const partyNumber = Type.Integer({ minimum: 1, maximum: 6 });
 // Spec 9.1.4: Diary scope `0` is the Global Diary; `1–6` are Party Diaries.
 const diaryScopeNumber = Type.Integer({ minimum: 0, maximum: 6 });
 const stableKey = Type.String({ minLength: 1, maxLength: 200 });
-// SpecRef: 9.1.3 | 3-3-2 changeBuild | `uniqueSelection` is `none` or a `uniqueCharacterId`.
+// SpecRef: 9.1.3 | 3-3-3 changeBuild | `uniqueSelection` is `none` or a `uniqueCharacterId`.
 const uniqueSelectionValue = stableKey;
 const itemFormat = Type.String({ pattern: '^(?:0|[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*))$' });
 const presentItemFormat = Type.String({ pattern: '^[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$' });
@@ -294,7 +294,7 @@ const availability = strict({ available: Type.Boolean(), unavailableReason: Type
 const equipmentEntryFormat = Type.String({ pattern: '^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$' });
 sampleOverrides.set(equipmentEntryFormat, '0');
 const equipmentEntryList = Type.Array(equipmentEntryFormat);
-// SpecRef: 9.1.3 | 2-3-3 read/build/character/equipment | validOptions.undoEquipment and redoEquipment
+// SpecRef: 9.1.3 | 2-3-4 read/build/character/equipment | validOptions.undoEquipment and redoEquipment
 const equipmentHistoryAction = strict({ equipmentStates: Type.Array(Type.Array(equipmentEntryFormat), { maxItems: 30 }), available: Type.Boolean(), unavailableReason: Type.Union([Type.String(), Type.Null()]) });
 const equipmentCommitCurrent = strict({
   mode: literals('FULL', 'SEMI', 'OFF'),
@@ -343,7 +343,7 @@ const diaryEntrySummary = strict({
   sideQuest: Type.Union([Type.Null(), strict({ label: diaryLabel, jewelKey: literals('might', 'arcana', 'fort', 'ward', 'shade', 'focus'), jewelRank: Type.Integer({ minimum: 1, maximum: 8 }) })]),
   unlock: Type.Union([Type.Null(), strict({ boss: Type.Boolean(), partySlot: Type.Integer({ minimum: 2, maximum: 6 }) })]),
 });
-// Spec 9.1.3 2-3-2 / 9.1.4.9: a character's build `current`, shared by the status read and `changeBuild`.
+// Spec 9.1.3 2-3-3 / 9.1.4.9: a character's build `current`, shared by the status read and `changeBuild`.
 const characterBuildCurrent = strict({ uniqueSelection: uniqueSelectionValue, name: Type.String({ minLength: 1 }), racesAndGender: stableKey, mainClassId: stableKey, subClassId: stableKey, lineage: Type.Union([stableKey, Type.Null()]), predisposition: Type.Union([stableKey, Type.Null()]) });
 const range = strict({ min: Type.Number(), max: Type.Number(), step: optional(Type.Number()) });
 // Spec 9.1.4.3: paginated lists include `nextCursor`, or null when complete.

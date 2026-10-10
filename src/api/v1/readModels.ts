@@ -140,7 +140,7 @@ function equipmentEntry(item: Item | null, slotIndex: number): string {
   return item ? formatEquipmentEntry(slotIndex, item, item.isLocked === true, item.jewel) : '0';
 }
 
-// SpecRef: 9.1.3 | 2-3-3 equipment | Array in equipment-slot order; an empty slot is `0`.
+// SpecRef: 9.1.3 | 2-3-4 equipment | Array in equipment-slot order; an empty slot is `0`.
 /**
  * Every slot the character has, including trailing empty ones the saved equipment array may not store. Empty entries
  * past the last slot (left by a save from before a class change trimmed them) are not slots and are not listed.
@@ -150,7 +150,7 @@ function equipmentEntries(character: Character, maxEquipSlots: number): string[]
   return Array.from({ length: Math.max(lastEquipped + 1, maxEquipSlots) }, (_, slot) => equipmentEntry(character.equipment[slot] ?? null, slot));
 }
 
-/** The API's one spelling of Auto Equipment mode (9.1.3 2-3-3 `mode`), shared by every projection. */
+/** The API's one spelling of Auto Equipment mode (9.1.3 2-3-4 `mode`), shared by every projection. */
 export function autoEquipmentModeName(mode: Character['autoEquipmentMode']): 'FULL' | 'SEMI' | 'OFF' {
   return mode === 2 ? 'FULL' : mode === 1 ? 'SEMI' : 'OFF';
 }
@@ -951,7 +951,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   }
   const characterRead = operationId.match(/^read\/build\/character\/(status|equipment|equipmentSet|equipmentEvaluation)$/);
   if (characterRead) {
-    // SpecRef: 9.1.3 | 2-3-2..2-3-5 | `characterId` is one ID or an array of IDs; the remaining parameters apply to every listed character.
+    // SpecRef: 9.1.3 | 2-3-3..2-3-6 | `characterId` is one ID or an array of IDs; the remaining parameters apply to every listed character.
     if (parameters.characterId === undefined) throw new Error('invalid_request:characterId');
     const requestedIds = (Array.isArray(parameters.characterId) ? parameters.characterId : [parameters.characterId]).map(Number);
     if (requestedIds.length === 0 || requestedIds.length > 36 || requestedIds.some((id) => !Number.isInteger(id) || id < 1)) throw new Error('invalid_request:characterId');
@@ -995,7 +995,7 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
         };
       }
       if (characterRead[1] === 'equipmentEvaluation') {
-        // SpecRef: 9.1.3 | Read | 2-3-5 character/equipmentEvaluation
+        // SpecRef: 9.1.3 | Read | 2-3-6 character/equipmentEvaluation
         const requested = parameters.targetItems === undefined ? [] : Array.isArray(parameters.targetItems) ? parameters.targetItems : [parameters.targetItems];
         const requestedChanges = parameters.equipmentChanges === undefined ? [] : Array.isArray(parameters.equipmentChanges) ? parameters.equipmentChanges : [parameters.equipmentChanges];
         if (requested.length === 0 && requestedChanges.length === 0) throw new Error('invalid_request:targetItems.or_equipmentChanges_required');

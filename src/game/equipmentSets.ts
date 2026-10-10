@@ -56,7 +56,7 @@ export function getSavedEquipmentSlot(entry: SavedEquipmentEntry, legacyIndex: n
 
 /**
  * Creates an exact, in-memory equipment snapshot: items, locks, and, with `includeJewels`, the Jewel assignment. Saved
- * sets (Spec 8.2.4) and Undo/Redo states (Spec 9.1.3, 2-3-3) both record Jewels.
+ * sets (Spec 8.2.4) and Undo/Redo states (Spec 9.1.3, 2-3-4) both record Jewels.
  */
 export function createEquipmentSetSnapshot(equipment: readonly (Item | null | undefined)[], includeJewels = false): SavedEquipmentSet {
   return {
@@ -242,7 +242,7 @@ export function applyEquipmentSet(
 }
 
 /**
- * Whether an Undo/Redo state can be restored exactly now (Spec 9.1.3, 2-3-3): every item must be available (in the
+ * Whether an Undo/Redo state can be restored exactly now (Spec 9.1.3, 2-3-4): every item must be available (in the
  * inventory or already worn), the character must have the aptitude, the slot must exist, and every recorded Jewel must
  * be available (in the Jewel inventory or worn now) and valid for its item. One unavailable item or Jewel makes the
  * whole state unavailable; partial restoration is never allowed.

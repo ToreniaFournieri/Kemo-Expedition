@@ -35,7 +35,7 @@ export function characterEditToChangeBuildParameters(character: EditableCharacte
   return parameters;
 }
 
-// SpecRef: 9.1.3 | Commit | 3-3-2 character/{characterId}/changeBuild
+// SpecRef: 9.1.3 | Commit | 3-3-3 character/{characterId}/changeBuild
 /** What the Party editor asks of `changeBuild`: a simulation (no commit) or a commit, with the player's answer if needed. */
 export type CharacterBuildRequest = { simulation: true } | { simulation: false; confirmation?: 'yes' | 'no' };
 

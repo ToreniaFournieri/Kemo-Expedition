@@ -308,7 +308,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const action = characterMatch[2];
     const characterBefore = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
     // SpecRef: 8.2.4 | Equipment management | three-state toggle(手動/補助/一任)
-    // SpecRef: 9.1.3 | 3-3-3/3-3-4/3-3-5/3-3-9/3-3-10/3-3-12 | If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
+    // SpecRef: 9.1.3 | 3-3-4/3-3-5/3-3-6/3-3-10/3-3-11/3-3-13 | If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
     // A manual equipment change (equip, remove one or all, Jewel attach or remove, loading a set) made while FULL demotes
     // the character to SEMI. The Party pane makes these changes through the same commands. Undo and Redo instead restore
     // the mode recorded with the target state.
@@ -322,7 +322,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const sameEquipment = sameEquipmentSnapshot;
     const recordsEquipmentHistory = !['saveEquipmentSet', 'deleteEquipmentSet', 'renameEquipmentSet', 'undoEquipment', 'redoEquipment'].includes(action);
     if (action === 'changeBuild') {
-      // SpecRef: 9.1.3 | Commit | 3-3-2 character/{characterId}/changeBuild
+      // SpecRef: 9.1.3 | Commit | 3-3-3 character/{characterId}/changeBuild
       // `simulation` validates and reports without committing; `confirmation` answers a reported warning. This operation
       // owns its confirmation, so it never issues the generic 9.1.4.5 confirmation challenge.
       const { simulation, confirmation, ...buildParameters } = parameters;
@@ -438,13 +438,13 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       };
     }
     else if (action === 'equip') {
-      // SpecRef: 9.1.3 | 3-3-5 equip | `remainsMode: true` preserves the current auto-equipment mode.
+      // SpecRef: 9.1.3 | 3-3-6 equip | `remainsMode: true` preserves the current auto-equipment mode.
       if (parameters.remainsMode !== undefined && typeof parameters.remainsMode !== 'boolean') throw new Error('invalid_request:remainsMode');
       const maxSlots = computeCharacterStats(characterBefore, next.parties[partyIndex].level).maxEquipSlots;
       const steps = planEquipOperation(characterBefore, next.global.inventory, parameters.targetEquipment, maxSlots, parameters.targetSlot);
       for (const step of steps) reduce({ type: 'EQUIP_ITEM', partyIndex, characterId, slotIndex: step.slotIndex, itemKey: step.itemKey });
       if (parameters.remainsMode !== true) demoteFullAutoEquipment();
-      // SpecRef: 9.1.3 | 3-3-5 equip | An unlocked item equipped while the mode is kept stays open to automatic
+      // SpecRef: 9.1.3 | 3-3-6 equip | An unlocked item equipped while the mode is kept stays open to automatic
       // equipment (a later FULL pass may replace it), so the caller is warned; `lockEquipment` keeps it.
       const equipped = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!.equipment;
       const unlocked = parameters.remainsMode === true ? steps.filter((step) => equipped[step.slotIndex]?.isLocked !== true).length : 0;

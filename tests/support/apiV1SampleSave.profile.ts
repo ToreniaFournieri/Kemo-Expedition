@@ -265,7 +265,7 @@ const target = targetParty.characters.find((character) => character.equipment.so
   ?? targetParty.characters.find((character) => character.equipment.some((item) => item?.jewel))!;
 assert.ok(target, 'a character with Jewels');
 const equipmentOf = (source: GameState) => source.parties.flatMap((party) => party.characters).find((character) => character.id === target.id)!.equipment;
-// Undo/Redo restore items, locks, and the recorded Jewel assignment exactly (Spec 9.1.3, 2-3-3). A saved set restores
+// Undo/Redo restore items, locks, and the recorded Jewel assignment exactly (Spec 9.1.3, 2-3-4). A saved set restores
 // items and locks only and assigns Jewels independently (Spec 8.2.4), so every Jewel present must at least be valid for
 // its item's category; `exactJewels` selects which contract to assert.
 const assertRestored = (restored: GameState, message: string, exactJewels: boolean) => {

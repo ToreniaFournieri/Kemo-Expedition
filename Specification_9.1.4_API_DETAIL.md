@@ -654,7 +654,7 @@ definitions in 9.1.3.
   level's EXP, 0 at the maximum level), `currentHp`, `deityTotalDonation`, and
   `deityNextRankThreshold` (`null` at the maximum rank).
 
-* Every projection spells the Auto Equipment mode the way 9.1.3 (2-3-3 `mode`) and
+* Every projection spells the Auto Equipment mode the way 9.1.3 (2-3-4 `mode`) and
   the `autoEquipment` commit do: `FULL`, `SEMI`, or `OFF`. This includes the
   `party` projection's `characters[].autoEquipmentMode`.
 * Equipment arrays (the `party` projection's `characters[].equipment` and
@@ -669,7 +669,7 @@ definitions in 9.1.3.
   The command is still applied. Otherwise `warnings` is empty.
 * `changeBuild` uses the same UI validation as the Party editor and owns its
   confirmation through the `simulation` and `confirmation` parameters defined in
-  9.1.3 (3-3-2); it never issues the generic 9.1.4.5 challenge.
+  9.1.3 (3-3-3); it never issues the generic 9.1.4.5 challenge.
   * `simulation` is required and must be a boolean. `simulation: true` validates
     and reports without committing: it is a valid no-op (no revision change, no
     state change, no equipment-history entry) that still records the idempotency
@@ -677,7 +677,7 @@ definitions in 9.1.3.
   * The response `data` always includes `calculatedStatus`, `confirmationRequired`,
     `warnings`, and `applied`, plus the complete new `current` object.
   * `calculatedStatus` is the 9.1.4.14 `CalculatedStatus` of the character (the
-    same shape as 2-3-2) with the requested build. With `simulation: true` it is a
+    same shape as 2-3-3) with the requested build. With `simulation: true` it is a
     preview of the status a `confirmation: "yes"` commit would produce, including
     the effect of any equipment the change would remove; after a commit it is the
     committed status, and after `confirmation: "no"` it is the unchanged status. `warnings` are semantic
@@ -699,7 +699,7 @@ definitions in 9.1.3.
     the revision returned by the simulation as `expectedRevision`, so a change made
     in between is rejected as `stale_revision`. The trusted in-process adapter
     supplies the current revision on the caller's behalf.
-* `equipmentEvaluation` (9.1.3, 2-3-5) is a Read operation. `targetItems` is one
+* `equipmentEvaluation` (9.1.3, 2-3-6) is a Read operation. `targetItems` is one
   `<Item Format>/<jewelType>:<jewelRank>` value or a nonempty array of unique
   values, encoded as one or repeated `targetItems` query parameters (`0` is not
   an item; the lock digit is ignored). As in `equipmentChanges`, the Jewel part
@@ -732,7 +732,7 @@ definitions in 9.1.3.
   `jewelRemove`, `targetEquipment` is one slot index or an array of slot indices.
   Duplicate indices are invalid.
 * A manual equipment change made while `autoEquipment.mode` is `FULL` sets it to
-  `SEMI` (9.1.3 3-3-3 to 3-3-16; 8.2.4): `equip`, `removeEquipment`,
+  `SEMI` (9.1.3 3-3-4 to 3-3-17; 8.2.4): `equip`, `removeEquipment`,
   `removeAllEquipment`, `jewelAttach`, `jewelRemove`, `loadEquipmentSet`,
   `undoEquipment`, and `redoEquipment`. `lockEquipment` and `unlockEquipment` only
   mark items and keep the mode. The Party pane makes these changes through the same
@@ -758,7 +758,7 @@ definitions in 9.1.3.
     requirement: it cannot make an entry unavailable, and a stored Jewel found in
     an older save is discarded when it is loaded.
   * An Undo/Redo state records the item, slot, lock, and Jewel assignment
-    (Spec 9.1.3, 2-3-3), and its restore is exact and all or nothing. One
+    (Spec 9.1.3, 2-3-4), and its restore is exact and all or nothing. One
     unavailable item or Jewel (missing, already used elsewhere, or not valid for
     its item) makes the whole state unavailable, and no partial restore happens.
     A change that only moves Jewels adds an Undo entry.

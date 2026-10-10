@@ -10,7 +10,7 @@ import { getJewelCBonusValue, getJewelDRankBonus, JEWEL_DEFS, JEWELS_BY_ITEM_CAT
 import { getItemById, getSuperRareBonuses, ITEMS } from '../../src/data/items.ts';
 import { t } from '../../src/i18n/index.ts';
 
-// SpecRef: 9.1.3 | Read | 2-3-5 character/{characterId}/equipmentEvaluation
+// SpecRef: 9.1.3 | Read | 2-3-6 character/{characterId}/equipmentEvaluation
 const at = Date.parse('2026-01-01T00:00:00.000Z');
 const context: ApiV1ReadContext = {
   revision: 7, environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, inGameTime: at,
