@@ -419,8 +419,8 @@ at least one party member has an empty equipment slot.
     - Jewels on unchanged slots count as already used for the "one Jewel per item type and rank" rule.
     - Jewels on other characters are never taken. Locked equipment keeps its Jewel.
   - **Same dice:** Builds that are compared with each other are simulated with the same seed, so the difference comes from the build, not from luck.
-    - Steps 2–4: every candidate uses `quickRuns` and one shared seed. The reference build is also simulated once with `quickRuns` and that seed, and each candidate is compared with that result (not with the step 1 baseline).
-    - Step 5: every build uses `finalTuningRuns` and a second shared seed, including the reference build.
+    - Steps 2–4: every candidate uses `quickRuns` and one shared seed. The current build is also simulated once with `quickRuns` and that seed, and each candidate is compared with that result (not with the step 1 baseline).
+    - Step 5: every build uses `finalTuningRuns` and a second shared seed, including the current build.
     - Steps 1 and 6: both use `baselineRuns` and a third shared seed.
   - **Score** (per `objective`):
     - `success`: success rate (clear + return).
@@ -467,7 +467,7 @@ at least one party member has an empty equipment slot.
    - Record the top `max(2, floor(abilityTrialRuns / 5))` candidates that qualify. If none qualify, record none.
 
 5. Final tuning (greedy)
-   - Start from the reference build. Every simulation in this step uses `finalTuningRuns`.
+   - Start from the current build. Every simulation in this step uses `finalTuningRuns`.
    - Add pass:
      - Put all candidates recorded in steps 2–4 into one list, sorted by their improvement (best first).
      - Go through the list in order. Add each candidate to the build, and keep it only if the score improves compared with the build before adding it (`improvement > 0`).
@@ -477,7 +477,7 @@ at least one party member has an empty equipment slot.
    - Swap pass:
      - For steps 2 and 3, try each other recorded candidate in place of the kept one. Keep the swap only if the score improves.
    - The result is the tuned build.
-   - If no candidate is kept, the tuned build is the reference build (Jewel reassignment only). Step 6 still checks it.
+   - If no candidate is kept, there is no change.
 
 6. Run the simulation after tuning (final check)
    - Simulate the tuned build with `baselineRuns` runs, using the same seed as step 1.

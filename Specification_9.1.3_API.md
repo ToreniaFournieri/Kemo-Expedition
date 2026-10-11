@@ -148,7 +148,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 3-3. commit/build
      party/{p}
-     party/{p}/applyGaResult
+     party/{p}/applyBuildResult
      character/{characterId}/changeBuild
      character/{characterId}/removeAllEquipment
      character/{characterId}/removeEquipment
@@ -724,9 +724,9 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `evaluations`
     * Number of builds evaluated.
   * `elapsedSeconds`
-  * `gaResultId`
-    * ID of this search result. Used by `party/{p}/applyGaResult`.
-    * Only the latest result per party is kept. A new `gaSearch` for the same party invalidates the previous ID.
+  * `buildResultId`
+    * ID of this search result. Used by `party/{p}/applyBuildResult`.
+    * Only the latest result per party is kept. A new `gaSearch` for the same party, or a `stagedEquipmentTuning` for any character in it, invalidates the previous ID.
     * The result is not save state. It is lost when the application restarts.
 
 **2-3-3. `character/status`**
@@ -960,9 +960,9 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `simulationRuns`
     * Total number of simulation runs used.
   * `elapsedSeconds`
-  * `gaResultId`
+  * `buildResultId`
     * Returned only when `accepted` is `true`.
-    * Used by `party/{p}/applyGaResult`, where `{p}` is the character's party.
+    * Used by `party/{p}/applyBuildResult`, where `{p}` is the character's party.
     * Only the latest result per party is kept. A new `gaSearch` or `stagedEquipmentTuning` for any character in the same party invalidates the previous ID.
     * The result is not save state. It is lost when the application restarts.
 
@@ -1521,18 +1521,18 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Partial updates are allowed.
 
-**3-3-2. `party/{p}/applyGaResult`**
+**3-3-2. `party/{p}/applyBuildResult`**
 
-* Applies every change in a `gaSearch` result to party `{p}` in one atomic request.
+* Applies every change in a `gaSearch` or `stagedEquipmentTuning` result to party `{p}` in one atomic request.
 * Undo and Redo:
   * Each character with at least one entry in `changeSummary` gets exactly one Undo step: their equipment state before this operation.
   * Only equipment, jewels, and Auto Equipment `mode` are restored by Undo. Changes to race, class, lineage, predisposition, order, and deity are not reverted.
 
 * Parameters:
-  * `gaResultId`
+  * `buildResultId`
     * Required.
     * String.
-    * `gaResultId` returned by `read/build/party/{p}/gaSearch`.
+    * `buildResultId` returned by `read/build/party/{p}/gaSearch` or by `read/build/character/stagedEquipmentTuning` for a character in party `{p}`.
   * `autoEquipmentMode`
     * Optional.
     * Default: `SEMI`.
@@ -1551,12 +1551,13 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Validation:
   * The request is rejected when:
-    * `gaResultId` is unknown, or was replaced by a newer `gaSearch` for the same party.
-    * Build-relevant state changed after the `gaSearch` (party order, deity, inventory, jewels, or the build or equipment of any character in party `{p}`).
+    * `buildResultId` is unknown, or was replaced by a newer `gaSearch` or `stagedEquipmentTuning` for any character in the same party.
+    * Build-relevant state changed after the search or tuning (party order, deity, inventory, jewels, or the build or equipment of any character in party `{p}`).
       * Other revision changes (e.g., progression) do not invalidate the result.
-    * `verdict` is `noChange`.
+    * A `gaSearch` result's `verdict` is `noChange`.
   * `confirmationRequired` is `true` when:
-    * `verdict` is `worse` or `noisy`.
+    * A `gaSearch` result's `verdict` is `worse` or `noisy`.
+  * A `stagedEquipmentTuning` result never requires confirmation, because only a tuning that passed its final check (7.1.5 step 6) returns a `buildResultId`.
 
 * Atomicity:
   * All changes in `changeSummary` are applied as one commit.
