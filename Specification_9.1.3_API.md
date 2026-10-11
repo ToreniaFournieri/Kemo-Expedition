@@ -113,7 +113,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
      character/equipment
      character/equipmentSet
      character/equipmentEvaluation
-     character/gaEquipmentSearch
+     character/stagedEquipmentTuning
 
 2-4. read/base
      searchItems
@@ -911,6 +911,9 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 **2-3-7. `character/stagedEquipmentTuning`**
 
+* Tunes the equipment of one character with `7.1.5 Staged Equipment Tuning`.
+* This does not advance progression, return rewards, consume live randomness, write Diary entries, change equipment, consume charge, or change the save revision.
+
 * Parameters:
   * `characterId`
     * Required.
@@ -924,19 +927,42 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `defenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
   * `abilityTrialRuns` (e.g., `0`, `20`, `40`; default: `20`)
   * `abilityCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
-  * `finalTuningTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
   * `minImprovement` (e.g., `0.03`, `0.07`, `0.10`; default: `0.07`)
   * `minGateImprovement` (e.g., `0.03`, `0.07`, `0.10`; default: `0.07`)
   * `objective`
     * Optional.
     * Default: `success`.
-    * `success`, `minDefeat`, `bossDamage`, `experience`
+    * `success`, `minDefeat`, `bossDamage`
     * `bossDamage` simulates the boss room of the current destination even if the depth limit stops before the boss.
 
 * Return:
+  * `accepted`
+    * Boolean. `true` if the tuned build passed the final check (7.1.5 step 6).
+  * `objective`
+  * `before`
+    * `overview` of the current build from step 1 (same format as `{p}/simulationRun`).
+  * `after`
+    * `overview` of the tuned build from step 6 (same format as `{p}/simulationRun`).
+  * `improvement`, `gain`, `standardError`
+    * Values used in the final check (7.1.5 step 6).
+  * `bottleneckRoom`
+    * Floor and room found in step 1. Example: `3f-2`
+  * `steps`
+    * What each step recorded and what step 5 kept.
+    * `offenseElement`, `defenseElement`, `ability`: recorded candidates with their improvement.
+    * `finalTuning`: candidates kept in step 5.
+  * `changeSummary`
+    * Ordered array of Commit API calls that turns the current build into the tuned build, including Jewel changes. Same format and order as `party/{p}/gaSearch`.
+    * Empty when `accepted` is `false`.
+  * `revision`
+    * Save revision the tuning was based on.
+  * `simulationRuns`
+    * Total number of simulation runs used.
+  * `elapsedSeconds`
   * `gaResultId`
-    * ID of this search result. Used by `party/{p}/applyGaResult`.
-    * Only the latest result per party is kept. A new `gaSearch` for the same party invalidates the previous ID.
+    * Returned only when `accepted` is `true`.
+    * Used by `party/{p}/applyGaResult`, where `{p}` is the character's party.
+    * Only the latest result per party is kept. A new `gaSearch` or `stagedEquipmentTuning` for any character in the same party invalidates the previous ID.
     * The result is not save state. It is lost when the application restarts.
 
 **2-4. `read/base`**
