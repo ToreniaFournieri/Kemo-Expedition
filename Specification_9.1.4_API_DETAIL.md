@@ -129,7 +129,7 @@ after the response has been prepared. Fundamental responses use
   non-cacheable computation (and `gaSearch` takes nested parameters). They remain
   Read operations and must not commit anything. `gaSearch` and an accepted
   `stagedEquipmentTuning` keep their latest result per party in memory for
-  `applyGaResult`; that result is not save state and changes no revision.
+  `applyBuildResult`; that result is not save state and changes no revision.
 * Every `GET` endpoint except the popup event stream also answers `HEAD` with
   the status and headers (including `ETag`) that `GET` would return, and no body.
   A `405` for a `GET` endpoint lists `Allow: GET, HEAD`.
@@ -308,7 +308,7 @@ All JSON Commit requests use this transport envelope:
 
 This generic challenge applies to operations that do not define their own
 confirmation (`backup/import`, `backup/reset`, and partial `loadEquipmentSet`).
-`changeBuild` and `applyGaResult` are excluded: they confirm through their
+`changeBuild` and `applyBuildResult` are excluded: they confirm through their
 `simulation` and `confirmation` parameters (9.1.4.9).
 
 `backup/import` and `backup/reset` (9.1.3, 3-6-5-2/3-6-5-3) each accept an
@@ -813,7 +813,7 @@ definitions in 9.1.3.
   other characters are the ones it needs beyond the Inventory and the targets'
   own released items, taken from the party's non-targets first and then from the
   other parties in order; `changeSummary` lists one `removeEquipment` entry per
-  emptied character, before any other entry, and `applyGaResult` also reports and
+  emptied character, before any other entry, and `applyBuildResult` also reports and
   records Undo for those characters. A stored result is stale when the equipment
   of a character it touches outside party `{p}` changed. `jewels` lets it place free Jewels
   and those on targets whose Jewels are changeable; with `jewels` but not
@@ -879,24 +879,29 @@ definitions in 9.1.3.
   `removeEquipment` and `jewelRemove` list the character's slots in one entry, and
   `changeBuild` carries only the changed members with `simulation: false`.
   `revision` is the revision of the snapshot that was searched.
-* `applyGaResult` (9.1.3, 3-3-2) owns its confirmation like `changeBuild`:
-  `simulation` is required; `simulation: true` reports `applied` (the
-  `changeSummary`), `verdict`, `forecast`, `confirmationRequired`, `warnings`, and
-  the resulting `calculatedStatus` (one `{characterId, calculatedStatus}` per
-  character with an entry) without committing. With `verdict` `noisy` or `worse`,
-  `confirmationRequired` is `true`, `warnings` holds
-  `api.warning.applyGaResult.unconfirmedImprovement`, and a commit needs
+* `applyBuildResult` (9.1.3, 3-3-2) applies the party's kept result, from
+  `gaSearch` or from `stagedEquipmentTuning` for any of its members (one result
+  per party: the latest of either replaces the other). It owns its confirmation
+  like `changeBuild`: `simulation` is required; `simulation: true` reports
+  `applied` (the `changeSummary`), `verdict` (the `gaSearch` verdict, `null` for a
+  tuning result), `forecast`, `confirmationRequired`, `warnings`, and the
+  resulting `calculatedStatus` (one `{characterId, calculatedStatus}` per
+  character with an entry) without committing. With a `gaSearch` `verdict` of
+  `noisy` or `worse`, `confirmationRequired` is `true`, `warnings` holds
+  `api.warning.applyBuildResult.unconfirmedImprovement`, and a commit needs
   `confirmation: "yes"` (a missing one is `invalid_request`, field
   `confirmation`); `confirmation: "no"` cancels with `applied: []` and no
-  revision change. `confirmation` with `simulation: true` is `invalid_request`.
-* `applyGaResult` rejections: an unknown or replaced `gaResultId` (or none kept,
-  for example after a restart, `logIn`, or `logOut`) is `illegal_action`
-  (`ga_result_unavailable`); `verdict: noChange` is `ga_result_no_change`. Its
-  build-relevant state (9.1.3, 3-3-2) is compared by: party order and deity, each
-  party member's build and equipment (items and Jewels), and the owned count of
-  every item variant and Jewel the result equips or attaches. A difference is
-  `ga_result_stale`; other inventory, Gold, and progression changes are not.
-* `applyGaResult` applies every entry in order in one transaction and is rejected
+  revision change. A tuning result never requires confirmation. `confirmation`
+  with `simulation: true` is `invalid_request`.
+* `applyBuildResult` rejections: an unknown or replaced `buildResultId` (or none
+  kept, for example after a restart, `logIn`, or `logOut`) is `illegal_action`
+  (`build_result_unavailable`); a `gaSearch` result with `verdict: noChange` is
+  `build_result_no_change`. Its build-relevant state (9.1.3, 3-3-2) is compared
+  by: party order and deity, each party member's build and equipment (items and
+  Jewels), and the owned count of every item variant and Jewel the result equips
+  or attaches. A difference is `build_result_stale`; other inventory, Gold, and
+  progression changes are not.
+* `applyBuildResult` applies every entry in order in one transaction and is rejected
   atomically if any entry fails. `autoEquipmentMode` (`SEMI` by default; `FULL` is
   `invalid_request`) is set on every character with an equipment or Jewel entry.
   The internal calls record no Undo step; afterwards each character with an entry
@@ -907,10 +912,12 @@ definitions in 9.1.3.
 **Staged Equipment Tuning**
 
 * `stagedEquipmentTuning` (9.1.3, 2-3-7; 7.1.5) tunes the equipment of one
-  character with the same private forecast as `simulationRun`. Its seeds derive
-  from one fresh random seed per request: one for the item draws, one shared by
-  every quick run of steps 2–4, one shared by every run of step 5, and one shared
-  by the baseline (step 1) and the final check (step 6). `bossDamage` simulates
+  character with the same private forecast as `simulationRun`. Every seed derives
+  from `seed` (a fresh random one when omitted, returned as `seed` either way): one
+  for the item draws, one shared by every quick run of steps 2–4, one shared by
+  every run of step 5, and one shared by the baseline (step 1) and the final check
+  (step 6), so the same `seed` on the same revision repeats the whole tuning.
+  `bossDamage` simulates
   with every Clear-Gate of the destination open and the depth limit `all`, as
   `gaSearch` does.
 * Validation: `characterId` is required; a character in no party is `not_found`.
@@ -920,8 +927,8 @@ definitions in 9.1.3.
   `...CandidateCount` 1–3. `minImprovement` and `minGateImprovement` are numbers
   from 0 to 10. `offenseElementRequest` is `noRequest`, `e.fire`, `e.ice`,
   `e.thunder`, or `e.none`; `objective` is `success`, `minDefeat`, or
-  `bossDamage`. Any other value or an unknown member is `invalid_request` naming
-  the member.
+  `bossDamage`; `seed` is any safe integer. Any other value or an unknown member
+  is `invalid_request` naming the member.
 * Items: the owned Inventory and the character's own unlocked items, never items
   worn by others; locked items keep their slot and Jewel. A slot changes only
   within the character's slot count, and a candidate whose new items leave an item
@@ -932,12 +939,17 @@ definitions in 9.1.3.
   multipliers), and the same `c.accuracy`, `c.evasion`, or `c.penet` value. A candidate never mixes more offense elements than the build it
   starts from. Empty slots are not filled for their own sake; a step may use one
   for the item it places.
-* Jewels: each simulated build gets the 7.1.2.2 step 8 allocation from the free
-  Jewels plus those on the character's unlocked items. When the Inventory holds a
-  Jewel type and rank the character lacks, every item gets the highest free rank of
-  its category's Jewel in category order, one per type and rank; a slot left
-  without one keeps the Jewel it had when that Jewel is still free and fits.
-  Without such a Jewel only that second rule applies (8-3 skips the assignment).
+* Jewels: a slot whose item did not change keeps its Jewel, locked slots
+  included. Only the slots whose item changed get one, by the 7.1.2.2 step 8
+  allocation: in category order, each changed item gets the highest rank of its
+  category's Jewel (the Jewel Category Mapping) from the Inventory Jewels (whatever
+  the Jewel Priority Party) and the Jewels freed from the replaced items. A type
+  and rank already on an unchanged slot, or given to an earlier changed slot, is
+  not given again; a changed item with no such Jewel left gets none (a freed Jewel
+  of another type does not follow it). Jewels of other characters are never used.
+  The current build is never re-allocated: steps 2–4 compare each candidate with
+  the current build as it is on the quick seed, and step 5 starts from it on its
+  own seed.
 * Bottleneck: the room with the most Draw + Retreat + Defeat ends (the earliest
   on a tie); with none, the boss room if a run reached it, else the latest
   reached elite room, else `null`. Its enemies are every enemy the room can
@@ -988,11 +1000,15 @@ definitions in 9.1.3.
   and `changes` (`<slotIndex>=<Item Format>` for every slot it changes; Jewels
   follow from the allocation). `simulationRuns` counts every simulated run (a
   build simulated twice on the same seed and run count is simulated once).
-* Acceptance also needs a non-empty `changeSummary`; it is built like the
-  `gaSearch` one. An accepted result is kept as the party's `applyGaResult`
-  result with the `gaSearch` verdict of its step 6 rates (`good` or `veryGood`);
-  any tuning of a party member discards the party's previous result, so a
-  rejected tuning leaves none.
+* No change: when step 5 keeps no candidate (or no step recorded one), the tuned
+  build is the current build: step 6 is not simulated again (`after` equals
+  `before`, `improvement` and `gain` are 0), `accepted` is `false`, and
+  `changeSummary` is `[]`. Acceptance also needs a non-empty `changeSummary`; it
+  is built like the `gaSearch` one, so a one-item swap lists only that slot's
+  `removeEquipment`, `equip`, and `jewelAttach` entries. An accepted result is
+  kept as the party's `applyBuildResult` result and returns `buildResultId`; any
+  tuning of a party member discards the party's previous result, so a rejected
+  tuning leaves none.
 
 **Base**
 
@@ -1226,8 +1242,8 @@ operations use shared tokens: `debug_mode_required` (the dev/beta restriction),
 `api_account_display_setting` (a runtime display setting sent by an API account),
 `theme_unavailable`, `nothing_to_undo`, `nothing_to_redo`,
 `equipment_unavailable`, `deity_locked`, `deity_in_use`, and `variant_not_sold`.
-`applyGaResult` uses `ga_result_unavailable`, `ga_result_stale`, and
-`ga_result_no_change` (9.1.4.9).
+`applyBuildResult` uses `build_result_unavailable`, `build_result_stale`, and
+`build_result_no_change` (9.1.4.9).
 
 `control_lease_expired` is returned to the session whose lease expired from
 inactivity until that client logs in or out again; after that, or for any other
@@ -1313,7 +1329,7 @@ use the same operation without HTTP authentication headers.
 | POST | `/api/v1/commit/expedition/{p}/godsBattle` | Session | Resolve one Gods Battle. |
 | POST | `/api/v1/commit/expedition/{p}/resetStatistics` | Session | Reset the party's expedition statistics. |
 | POST | `/api/v1/commit/build/party/{p}` | Session | Change party build. |
-| POST | `/api/v1/commit/build/party/{p}/applyGaResult` | Session | Apply the latest `gaSearch` result. |
+| POST | `/api/v1/commit/build/party/{p}/applyBuildResult` | Session | Apply the latest `gaSearch` or `stagedEquipmentTuning` result. |
 | POST | `/api/v1/commit/build/character/{characterId}/changeBuild` | Session | Change character build. |
 | POST | `/api/v1/commit/build/character/{characterId}/removeAllEquipment` | Session | Remove all equipment. |
 | POST | `/api/v1/commit/build/character/{characterId}/removeEquipment` | Session | Remove selected slots. |

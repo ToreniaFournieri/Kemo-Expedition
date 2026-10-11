@@ -13,7 +13,7 @@ import { setColosseumEnemySettingsOverride } from '../../game/colosseum';
 import { accountEnemyEditSettingsOf } from './enemyEditPane';
 import { claimNextDelivery, settleDelivery, type ApiV1DeliveryOutcome, type ApiV1DeliveryRecord } from './deliveries';
 import { completeDeliveredBenefit } from './deliveryCompletion';
-import { parseGaSearchRequest, runGaSearch, type GaSearchDependencies, type StoredGaResult } from './gaSearch';
+import { parseGaSearchRequest, runGaSearch, type GaSearchDependencies, type StoredBuildResult } from './gaSearch';
 import { parseStagedTuningRequest, runStagedEquipmentTuning } from './stagedEquipmentTuning';
 
 // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | One transport-neutral Application API
@@ -167,9 +167,9 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
     accountSaveReusable = true;
   }
   let idleSimulatedAt = ports.runtime.now();
-  // SpecRef: 9.1.3 | 2-3-2 gaSearch `gaResultId` | Only the latest result per party is kept, in memory (not save state).
-  // SpecRef: 9.1.3 | 2-3-7 stagedEquipmentTuning `gaResultId` | A tuning of any member replaces it too.
-  const gaResults = new Map<number, StoredGaResult>();
+  // SpecRef: 9.1.3 | 2-3-2 gaSearch `buildResultId` | Only the latest result per party is kept, in memory (not save state).
+  // SpecRef: 9.1.3 | 2-3-7 stagedEquipmentTuning `buildResultId` | A tuning of any member replaces it too.
+  const buildResults = new Map<number, StoredBuildResult>();
   /** The search collaborators of `gaSearch` and `stagedEquipmentTuning` for one snapshot. */
   const searchDependencies = (snapshot: ReturnType<typeof authority.getSnapshot>, revision: number): GaSearchDependencies => ({
     simulate: (state, index, count, seed) => ports.runtime.simulate(state, index, count, seed),
@@ -322,7 +322,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       const { session } = login;
       activeIdentity = session.identity;
       accountSaveReusable = false;
-      gaResults.clear();
+      buildResults.clear();
       authority.replaceSnapshot({ state: session.state, control: session.control as ApiV1ControlMetadata, simulatedAt: session.simulatedAt });
       syncAccountDebugOverride();
       ports.onSessionActive(true, session.identity.userId, request.headless === true);
@@ -335,7 +335,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       if (!logout.ok) return failure(logout.status, logout.code, logout.message, logout.details);
       activeIdentity = null;
       accountSaveReusable = false;
-      gaResults.clear();
+      buildResults.clear();
       idleSimulatedAt = ports.runtime.now();
       authority.replaceSnapshot({ state: logout.restoredState, control: emptyControl(), simulatedAt: idleSimulatedAt });
       syncAccountDebugOverride();
@@ -374,7 +374,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       try {
         const searchRequest = parseGaSearchRequest(snapshot.state, partyIndex, trustedInProcess ? inProcessParameters : body);
         const outcome = await runGaSearch(snapshot.state, partyIndex, searchRequest, searchDependencies(snapshot, revision));
-        gaResults.set(outcome.stored.partyNumber, outcome.stored);
+        buildResults.set(outcome.stored.partyNumber, outcome.stored);
         return { revision, data: outcome.data };
       } catch (error) {
         const details = describeInvalidRequest(error);
@@ -394,8 +394,8 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
         const tuningRequest = parseStagedTuningRequest(snapshot.state, trustedInProcess ? parameters : body);
         const outcome = await runStagedEquipmentTuning(snapshot.state, tuningRequest, searchDependencies(snapshot, revision));
         // Any tuning replaces the party's kept result; only an accepted one leaves a new result behind.
-        if (outcome.stored) gaResults.set(outcome.partyNumber, outcome.stored);
-        else gaResults.delete(outcome.partyNumber);
+        if (outcome.stored) buildResults.set(outcome.partyNumber, outcome.stored);
+        else buildResults.delete(outcome.partyNumber);
         return { revision, data: outcome.data };
       } catch (error) {
         if (error instanceof Error && error.message === 'not_found') return failure(404, 'not_found', 'The requested projection is unavailable.');
@@ -467,7 +467,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       createRandomSeed: ports.runtime.createRandomSeed,
       now: ports.runtime.now,
       notifyPopupActivity: ports.runtime.notifyPopupActivity,
-      gaResult: (partyNumber) => gaResults.get(partyNumber),
+      buildResult: (partyNumber) => buildResults.get(partyNumber),
       persist: async (snapshot, control, { stateChanged }) => {
         if (identity) await persistAccount(identity, snapshot, control, stateChanged);
         else if ((operation === 'commit/setting/backup/import' || operation === 'commit/setting/backup/reset') && ports.runtime.persistPlayerReplacement) await ports.runtime.persistPlayerReplacement(snapshot);

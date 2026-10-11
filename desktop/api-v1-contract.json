@@ -22367,7 +22367,7 @@
             "revision",
             "evaluations",
             "elapsedSeconds",
-            "gaResultId",
+            "buildResultId",
             "verification"
           ],
           "properties": {
@@ -22472,7 +22472,7 @@
               "minimum": 0,
               "type": "number"
             },
-            "gaResultId": {
+            "buildResultId": {
               "minLength": 1,
               "maxLength": 200,
               "type": "string"
@@ -22585,7 +22585,7 @@
                 "revision",
                 "evaluations",
                 "elapsedSeconds",
-                "gaResultId",
+                "buildResultId",
                 "verification"
               ],
               "properties": {
@@ -22690,7 +22690,7 @@
                   "minimum": 0,
                   "type": "number"
                 },
-                "gaResultId": {
+                "buildResultId": {
                   "minLength": 1,
                   "maxLength": 200,
                   "type": "string"
@@ -22816,7 +22816,7 @@
             "revision": 0,
             "evaluations": 0,
             "elapsedSeconds": 0,
-            "gaResultId": "xxxxxxx",
+            "buildResultId": "xxxxxxx",
             "verification": {
               "objective": "success",
               "runs": 1,
@@ -25213,6 +25213,9 @@
               }
             ],
             "default": "success"
+          },
+          "seed": {
+            "type": "integer"
           }
         }
       },
@@ -25233,7 +25236,8 @@
             "changeSummary",
             "revision",
             "simulationRuns",
-            "elapsedSeconds"
+            "elapsedSeconds",
+            "seed"
           ],
           "properties": {
             "accepted": {
@@ -25578,7 +25582,10 @@
               "minimum": 0,
               "type": "number"
             },
-            "gaResultId": {
+            "seed": {
+              "type": "integer"
+            },
+            "buildResultId": {
               "minLength": 1,
               "maxLength": 200,
               "type": "string"
@@ -25633,7 +25640,8 @@
                 "changeSummary",
                 "revision",
                 "simulationRuns",
-                "elapsedSeconds"
+                "elapsedSeconds",
+                "seed"
               ],
               "properties": {
                 "accepted": {
@@ -25978,7 +25986,10 @@
                   "minimum": 0,
                   "type": "number"
                 },
-                "gaResultId": {
+                "seed": {
+                  "type": "integer"
+                },
+                "buildResultId": {
                   "minLength": 1,
                   "maxLength": 200,
                   "type": "string"
@@ -26079,7 +26090,8 @@
             ],
             "revision": 0,
             "simulationRuns": 0,
-            "elapsedSeconds": 0
+            "elapsedSeconds": 0,
+            "seed": 1
           }
         }
       }
@@ -34274,10 +34286,10 @@
     },
     {
       "method": "POST",
-      "path": "/api/v1/commit/build/party/{p}/applyGaResult",
+      "path": "/api/v1/commit/build/party/{p}/applyBuildResult",
       "access": "session",
-      "purpose": "Apply the latest `gaSearch` result.",
-      "operationId": "commit/build/party/{p}/applyGaResult",
+      "purpose": "Apply the latest `gaSearch` or `stagedEquipmentTuning` result.",
+      "operationId": "commit/build/party/{p}/applyBuildResult",
       "transport": "json",
       "pathParameters": {
         "additionalProperties": false,
@@ -34321,11 +34333,11 @@
             "additionalProperties": false,
             "type": "object",
             "required": [
-              "gaResultId",
+              "buildResultId",
               "simulation"
             ],
             "properties": {
-              "gaResultId": {
+              "buildResultId": {
                 "minLength": 1,
                 "maxLength": 200,
                 "type": "string"
@@ -34471,24 +34483,31 @@
             "verdict": {
               "anyOf": [
                 {
-                  "const": "veryGood",
-                  "type": "string"
+                  "anyOf": [
+                    {
+                      "const": "veryGood",
+                      "type": "string"
+                    },
+                    {
+                      "const": "good",
+                      "type": "string"
+                    },
+                    {
+                      "const": "noisy",
+                      "type": "string"
+                    },
+                    {
+                      "const": "noChange",
+                      "type": "string"
+                    },
+                    {
+                      "const": "worse",
+                      "type": "string"
+                    }
+                  ]
                 },
                 {
-                  "const": "good",
-                  "type": "string"
-                },
-                {
-                  "const": "noisy",
-                  "type": "string"
-                },
-                {
-                  "const": "noChange",
-                  "type": "string"
-                },
-                {
-                  "const": "worse",
-                  "type": "string"
+                  "type": "null"
                 }
               ]
             },
@@ -34867,24 +34886,31 @@
                 "verdict": {
                   "anyOf": [
                     {
-                      "const": "veryGood",
-                      "type": "string"
+                      "anyOf": [
+                        {
+                          "const": "veryGood",
+                          "type": "string"
+                        },
+                        {
+                          "const": "good",
+                          "type": "string"
+                        },
+                        {
+                          "const": "noisy",
+                          "type": "string"
+                        },
+                        {
+                          "const": "noChange",
+                          "type": "string"
+                        },
+                        {
+                          "const": "worse",
+                          "type": "string"
+                        }
+                      ]
                     },
                     {
-                      "const": "good",
-                      "type": "string"
-                    },
-                    {
-                      "const": "noisy",
-                      "type": "string"
-                    },
-                    {
-                      "const": "noChange",
-                      "type": "string"
-                    },
-                    {
-                      "const": "worse",
-                      "type": "string"
+                      "type": "null"
                     }
                   ]
                 },
@@ -35199,7 +35225,7 @@
             "expectedRevision": 0,
             "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
             "parameters": {
-              "gaResultId": "xxxxxxx",
+              "buildResultId": "xxxxxxx",
               "simulation": true
             }
           }

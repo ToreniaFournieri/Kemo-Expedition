@@ -5,15 +5,15 @@ import { canCharacterEquipCategory } from '../../game/equipmentSets';
 import { listExpeditionRoomEnemyCandidates } from '../../game/expeditionBattleRoom';
 import { getExpeditionSimulationRoomCoordinate } from '../../game/expeditionSimulation';
 import { getItemBasePower } from '../../game/itemPower';
-import { AUTO_JEWEL_ASSIGNMENT_CATEGORY_ORDER, AUTO_JEWEL_KEY_BY_ITEM_CATEGORY, isJewelAllowedForCategory } from '../../game/jewel';
+import { AUTO_JEWEL_ASSIGNMENT_CATEGORY_ORDER, AUTO_JEWEL_KEY_BY_ITEM_CATEGORY } from '../../game/jewel';
 import { getCharacterMultiplier } from '../../game/partyComputation';
 import {
   getVariantKey, type AbilityId, type Bonus, type Character, type ElementalOffense, type ElementalResistance, type EnemyDef,
-  type ExpeditionSimulationResult, type GameState, type Item, type ItemCategory, type JewelKey,
+  type ExpeditionSimulationResult, type GameState, type Item, type ItemCategory,
 } from '../../types';
 import {
-  createRandom, deriveSeed, fingerprintOfSummary, planGaChangeSummary, prepareObjectiveState, rateGaResult,
-  type GaChangeEntry, type GaSearchDependencies, type StoredGaResult,
+  createRandom, deriveSeed, fingerprintOfSummary, planGaChangeSummary, prepareObjectiveState,
+  type GaChangeEntry, type GaSearchDependencies, type StoredBuildResult,
 } from './gaSearch';
 import { buildSimulationRunData, floorRoomLabel } from './simulationView';
 
@@ -47,13 +47,15 @@ export interface StagedTuningRequest extends Record<IntegerParameter, number>, R
   objective: TuningObjective;
   /** The requested offense element, or `null` for `noRequest`. */
   offenseElementRequest: ElementalOffense | null;
+  /** The requested seed, or `null` for a random one. */
+  seed: number | null;
 }
 
 function invalid(field: string): never { throw new Error(`invalid_request:${field}`); }
 
 /** Validates a `stagedEquipmentTuning` request (Spec 9.1.3, 2-3-7). Throws `invalid_request:<field>` or `not_found`. */
 export function parseStagedTuningRequest(state: GameState, raw: Record<string, unknown>): StagedTuningRequest {
-  const allowed = new Set(['characterId', 'baselineRuns', 'offenseElementRequest', 'objective', ...Object.keys(INTEGER_PARAMETERS), ...Object.keys(RATIO_PARAMETERS)]);
+  const allowed = new Set(['characterId', 'baselineRuns', 'offenseElementRequest', 'objective', 'seed', ...Object.keys(INTEGER_PARAMETERS), ...Object.keys(RATIO_PARAMETERS)]);
   const unknown = Object.keys(raw).find((key) => !allowed.has(key));
   if (unknown !== undefined) invalid(`${unknown}.unknown_member`);
   const characterId = raw.characterId;
@@ -77,9 +79,12 @@ export function parseStagedTuningRequest(state: GameState, raw: Record<string, u
   if (typeof request !== 'string' || !(OFFENSE_REQUESTS as readonly string[]).includes(request)) invalid('offenseElementRequest');
   const objective = raw.objective === undefined ? 'success' : raw.objective;
   if (typeof objective !== 'string' || !(TUNING_OBJECTIVES as readonly string[]).includes(objective)) invalid('objective');
+  const seed = raw.seed === undefined ? null : raw.seed;
+  if (seed !== null && (typeof seed !== 'number' || !Number.isSafeInteger(seed))) invalid('seed');
   return {
     characterId, partyIndex, objective: objective as TuningObjective,
     offenseElementRequest: request === 'noRequest' ? null : request.slice(2) as ElementalOffense,
+    seed: seed as number | null,
     ...integers, ...ratios,
   };
 }
@@ -150,13 +155,10 @@ interface TuningModel {
   facts: Map<string, ItemFacts>;
   /** Pool keys the character can equip, by category. */
   byCategory: Map<ItemCategory, string[]>;
-  /** Free Jewels plus those on the character's unlocked items. */
-  jewelPool: Record<string, number>;
-  /** Jewel type and rank on locked items; each is allowed once per character (7.1.2.2 step 8-2). */
-  lockedJewels: Set<string>;
-  /** The Inventory holds a Jewel type and rank the character does not have (7.1.2.2 step 8-3 skips allocation otherwise). */
-  newJewels: boolean;
-  reference: Loadout;
+  /** The Jewels in the Inventory; with those freed from replaced items they fill the changed slots. */
+  freeJewels: Record<string, number>;
+  /** The current items: every candidate and the tuned build are compared with this build as it is. */
+  current: Loadout;
   /** Highest power of each category over the pool and the current items, to compare items across categories. */
   bestPower: Map<ItemCategory, number>;
 }
@@ -183,26 +185,20 @@ function buildModel(state: GameState, partyIndex: number, characterId: number): 
   }
   const locked = new Set<number>();
   const open: number[] = [];
-  const jewelPool: Record<string, number> = {};
-  for (const [key, count] of Object.entries(state.global.jewels)) if (count > 0) jewelPool[key] = count;
-  const owned = new Set<string>();
-  const lockedJewels = new Set<string>();
-  const reference: Loadout = new Array(length).fill(null);
+  const freeJewels: Record<string, number> = {};
+  for (const [key, count] of Object.entries(state.global.jewels)) if (count > 0) freeJewels[key] = count;
+  const current: Loadout = new Array(length).fill(null);
   for (let slot = 0; slot < length; slot += 1) {
     const item = character.equipment[slot] ?? null;
-    const jewel = jewelKeyOf(item);
-    if (jewel) owned.add(jewel);
     if (item?.isLocked) {
       locked.add(slot);
-      reference[slot] = factsOf(item);
-      if (jewel) lockedJewels.add(jewel);
+      current[slot] = factsOf(item);
       continue;
     }
     if (item) {
       const key = factsOf(item);
       pool.set(key, (pool.get(key) ?? 0) + 1);
-      reference[slot] = key;
-      if (jewel) jewelPool[jewel] = (jewelPool[jewel] ?? 0) + 1;
+      current[slot] = key;
     }
     if (slot < slotCount) open.push(slot);
   }
@@ -215,8 +211,7 @@ function buildModel(state: GameState, partyIndex: number, characterId: number): 
     byCategory.set(category, [...(byCategory.get(category) ?? []), key]);
   }
   for (const keys of byCategory.values()) keys.sort();
-  const newJewels = Object.keys(state.global.jewels).some((key) => (state.global.jewels[key] ?? 0) > 0 && !owned.has(key));
-  return { state, partyIndex, character, open, locked, pool, facts, byCategory, jewelPool, lockedJewels, newJewels, reference, bestPower };
+  return { state, partyIndex, character, open, locked, pool, facts, byCategory, freeJewels, current, bestPower };
 }
 
 const factsAt = (model: TuningModel, loadout: Loadout, slot: number): ItemFacts | null => {
@@ -309,16 +304,16 @@ function placeOne(model: TuningModel, loadout: Loadout, accept: (facts: ItemFact
 }
 
 /**
- * Final checks of a candidate loadout: it differs from the reference, it uses no more copies than the pool holds, no item
+ * Final checks of a candidate loadout: it differs from the current build, it uses no more copies than the pool holds, no item
  * it placed shares a non-stacking bonus with another item, every item still has a slot (an item granting
  * `c.equip_slot` may have been replaced), and it does not mix more offense elements than the build it came from.
  */
 function acceptable(model: TuningModel, loadout: Loadout, from: Loadout): boolean {
-  if (loadoutKey(loadout) === loadoutKey(model.reference)) return false;
+  if (loadoutKey(loadout) === loadoutKey(model.current)) return false;
   const used = new Map<string, number>();
   loadout.forEach((key, slot) => { if (key && !model.locked.has(slot)) used.set(key, (used.get(key) ?? 0) + 1); });
   if ([...used].some(([key, count]) => count > (model.pool.get(key) ?? 0))) return false;
-  const placed = model.open.filter((slot) => loadout[slot] !== null && loadout[slot] !== model.reference[slot]);
+  const placed = model.open.filter((slot) => loadout[slot] !== null && loadout[slot] !== model.current[slot]);
   for (const slot of placed) {
     const signatures = new Set(model.facts.get(loadout[slot]!)!.signatures);
     if (signatures.size > 0 && loadout.some((other, index) => other && index !== slot && model.facts.get(other)!.signatures.some((signature) => signatures.has(signature)))) return false;
@@ -331,51 +326,47 @@ function acceptable(model: TuningModel, loadout: Loadout, from: Loadout): boolea
 
 // ---------------- Jewels ----------------
 
-/** The loadout as equipment, without Jewels on unlocked slots (locked items keep theirs). */
+/** The loadout as equipment: an unchanged slot keeps its item and Jewel, a changed slot gets its new item without one. */
 function equipmentOf(model: TuningModel, loadout: Loadout): (Item | null)[] {
   return loadout.map((key, slot) => {
-    if (model.locked.has(slot)) return model.character.equipment[slot] ?? null;
+    if (model.locked.has(slot) || key === model.current[slot]) return model.character.equipment[slot] ?? null;
     return key ? { ...model.facts.get(key)!.item, jewel: null } : null;
   });
 }
 
 /**
- * Jewel allocation of 7.1.2.2 step 8 for a simulated build, with the Inventory always considered (Spec 7.1.5 Jewels).
- * The pool is the free Jewels plus those on the character's unlocked items; a locked item keeps its Jewel. When the
- * Inventory offers a Jewel type and rank the character lacks, each item gets the highest rank of its category's Jewel
- * in category order, one per type and rank. A slot left without one keeps the Jewel it had when that Jewel is still free
- * and fits the item (AUTO leaves an unassigned slot's Jewel in place); without a new Jewel only that second pass runs.
+ * Jewels of a simulated build (Spec 7.1.5 Jewels): unchanged slots, locked ones included, keep their Jewels, and only the
+ * slots whose item changed get one, by the 7.1.2.2 step 8 allocation: each changed item, in category order, gets the
+ * highest rank of its category's Jewel. The candidates are the Inventory Jewels (whatever the Jewel Priority Party) and the
+ * Jewels freed from the replaced items; a type and rank already on an unchanged slot or given earlier is not given again.
+ * Jewels of other characters are never used.
  */
 function allocateJewels(model: TuningModel, loadout: Loadout): (Item | null)[] {
   const equipment = equipmentOf(model, loadout);
-  const pool = { ...model.jewelPool };
-  const memory = new Set(model.lockedJewels);
-  const assigned = new Set<number>();
-  const take = (slot: number, key: JewelKey, rank: number) => {
-    const id = `${key}:${rank}`;
-    pool[id] -= 1;
-    memory.add(id);
-    assigned.add(slot);
-    equipment[slot] = { ...equipment[slot]!, jewel: { key, rank } };
-  };
-  if (model.newJewels) {
-    for (const category of AUTO_JEWEL_ASSIGNMENT_CATEGORY_ORDER) {
-      const key = AUTO_JEWEL_KEY_BY_ITEM_CATEGORY[category];
-      if (!key) continue;
-      equipment.forEach((item, slot) => {
-        if (!item || model.locked.has(slot) || item.category !== category) return;
-        for (let rank = 8; rank >= 1; rank -= 1) {
-          if ((pool[`${key}:${rank}`] ?? 0) > 0 && !memory.has(`${key}:${rank}`)) { take(slot, key, rank); return; }
-        }
-      });
+  const changed = model.open.filter((slot) => loadout[slot] !== model.current[slot]);
+  if (changed.length === 0) return equipment;
+  const pool = { ...model.freeJewels };
+  for (const slot of changed) {
+    const freed = jewelKeyOf(model.character.equipment[slot]);
+    if (freed) pool[freed] = (pool[freed] ?? 0) + 1;
+  }
+  const used = new Set(equipment.flatMap((item, slot) => (changed.includes(slot) ? [] : [jewelKeyOf(item)].filter((id): id is string => id !== null))));
+  for (const category of AUTO_JEWEL_ASSIGNMENT_CATEGORY_ORDER) {
+    const key = AUTO_JEWEL_KEY_BY_ITEM_CATEGORY[category];
+    if (!key) continue;
+    for (const slot of changed) {
+      const item = equipment[slot];
+      if (!item || item.category !== category) continue;
+      for (let rank = 8; rank >= 1; rank -= 1) {
+        const id = `${key}:${rank}`;
+        if ((pool[id] ?? 0) <= 0 || used.has(id)) continue;
+        pool[id] -= 1;
+        used.add(id);
+        equipment[slot] = { ...item, jewel: { key, rank } };
+        break;
+      }
     }
   }
-  model.character.equipment.forEach((before, slot) => {
-    const item = equipment[slot];
-    const id = jewelKeyOf(before);
-    if (!item || !id || !before?.jewel || assigned.has(slot) || model.locked.has(slot)) return;
-    if ((pool[id] ?? 0) > 0 && !memory.has(id) && isJewelAllowedForCategory(item.category, before.jewel.key)) take(slot, before.jewel.key, before.jewel.rank);
-  });
   return equipment;
 }
 
@@ -472,12 +463,12 @@ interface Candidate {
   /** `e.fire`, `['r.thunder']`, or the abilities the item adds. */
   label: { element?: string; resistance?: string[]; abilities?: string[] };
   loadout: Loadout;
-  /** Slots that differ from the reference, with the key placed there. */
+  /** Slots that differ from the current build, with the key placed there. */
   changes: { slot: number; key: string }[];
   improvement: number;
 }
 
-const changesOf = (model: TuningModel, loadout: Loadout) => loadout.flatMap((key, slot) => (key !== model.reference[slot] && key !== null ? [{ slot, key }] : []));
+const changesOf = (model: TuningModel, loadout: Loadout) => loadout.flatMap((key, slot) => (key !== model.current[slot] && key !== null ? [{ slot, key }] : []));
 
 /** Item Format of a pool key (`<locked>/<id>/<enhancement>/<superRare>`, the lock of the owned variant). */
 const itemFormatOf = (model: TuningModel, key: string): string => {
@@ -491,7 +482,7 @@ const itemFormatOf = (model: TuningModel, key: string): string => {
  * weakest slots that can take an item of it get one, more of them on each trial (all of them on the last).
  */
 function offenseCandidate(model: TuningModel, element: ElementalOffense, trial: number, trials: number, random: () => number): Loadout | null {
-  const loadout = [...model.reference];
+  const loadout = [...model.current];
   const matches = (facts: ItemFacts) => (element === 'none' ? facts.offense.size === 0 : facts.offense.size === 1 && facts.offense.has(element));
   for (const slot of model.open) {
     const facts = factsAt(model, loadout, slot);
@@ -517,7 +508,7 @@ function offenseCandidate(model: TuningModel, element: ElementalOffense, trial: 
       changed.add(slot);
     }
   }
-  return acceptable(model, loadout, model.reference) ? loadout : null;
+  return acceptable(model, loadout, model.current) ? loadout : null;
 }
 
 /**
@@ -526,8 +517,8 @@ function offenseCandidate(model: TuningModel, element: ElementalOffense, trial: 
  * New items never bring another offense element.
  */
 function defenseCandidate(model: TuningModel, combination: ReadonlySet<Element>, trial: number, random: () => number): Loadout | null {
-  const loadout = [...model.reference];
-  const offense = offenseElementsOf(model, model.reference);
+  const loadout = [...model.current];
+  const offense = offenseElementsOf(model, model.current);
   const compatible = (facts: ItemFacts) => [...facts.offense].every((element) => offense.has(element)) && [...facts.resists].every((element) => combination.has(element));
   for (const slot of [...model.locked]) if ([...(factsAt(model, loadout, slot)?.resists ?? [])].some((element) => !combination.has(element))) return null;
   for (const slot of model.open) {
@@ -537,24 +528,24 @@ function defenseCandidate(model: TuningModel, combination: ReadonlySet<Element>,
     if (!key) return null;
     loadout[slot] = key;
   }
-  const changed = new Set(model.open.filter((slot) => loadout[slot] !== model.reference[slot]));
+  const changed = new Set(model.open.filter((slot) => loadout[slot] !== model.current[slot]));
   for (const element of ELEMENTS) {
     if (!combination.has(element) || resistancesOf(model, loadout).has(element)) continue;
     const slot = placeOne(model, loadout, (facts) => compatible(facts) && facts.resists.has(element), trial, random, changed);
     if (slot < 0) return null;
     changed.add(slot);
   }
-  return acceptable(model, loadout, model.reference) ? loadout : null;
+  return acceptable(model, loadout, model.current) ? loadout : null;
 }
 
 /** Step 4 build: the item `key` in the best open slot (an empty slot, then its own category, its group, any category). */
 function abilityCandidate(model: TuningModel, key: string): Loadout | null {
-  const loadout = [...model.reference];
+  const loadout = [...model.current];
   const category = model.facts.get(key)!.item.category;
   const slot = placementSlots(model, loadout, category).find((entry) => fits(model, loadout, entry, key));
   if (slot === undefined) return null;
   loadout[slot] = key;
-  return acceptable(model, loadout, model.reference) ? loadout : null;
+  return acceptable(model, loadout, model.current) ? loadout : null;
 }
 
 /**
@@ -584,15 +575,16 @@ function addCandidate(model: TuningModel, loadout: Loadout, changed: ReadonlySet
 export interface StagedTuningOutcome {
   partyNumber: number;
   data: Record<string, unknown>;
-  /** The result `applyGaResult` can apply; only an accepted tuning has one. */
-  stored: StoredGaResult | null;
+  /** The result `applyBuildResult` can apply; only an accepted tuning has one. */
+  stored: StoredBuildResult | null;
 }
 
 /** Runs `stagedEquipmentTuning` (Spec 7.1.5; 9.1.3, 2-3-7). Never changes `state`. */
 export async function runStagedEquipmentTuning(state: GameState, request: StagedTuningRequest, dependencies: GaSearchDependencies): Promise<StagedTuningOutcome> {
   const startedAt = dependencies.now();
   const { partyIndex, objective } = request;
-  const seed = dependencies.createSeed();
+  // SpecRef: 7.1.5 | Same dice | the item draws and the three run seeds all derive from `seed`.
+  const seed = request.seed ?? dependencies.createSeed();
   const random = createRandom(deriveSeed(seed, 0));
   const quickSeed = deriveSeed(seed, 1); const finalSeed = deriveSeed(seed, 2); const baselineSeed = deriveSeed(seed, 3);
   const model = buildModel(state, partyIndex, request.characterId);
@@ -604,7 +596,9 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
   const cache = new Map<string, number>();
   const scoreLoadout = async (loadout: Loadout, runs: number, simulationSeed: number): Promise<number> => {
     const key = `${runs}:${simulationSeed}:${loadoutKey(loadout)}`;
-    if (!cache.has(key)) cache.set(key, scoreOf(objective, await simulate(withEquipment(model, allocateJewels(model, loadout)), runs, simulationSeed)));
+    // The current items are the current build as it is.
+    const target = loadoutKey(loadout) === loadoutKey(model.current) ? state : withEquipment(model, allocateJewels(model, loadout));
+    if (!cache.has(key)) cache.set(key, scoreOf(objective, await simulate(target, runs, simulationSeed)));
     return cache.get(key)!;
   };
 
@@ -614,15 +608,15 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
   const bottleneck = findBottleneck(state, partyIndex, baseline);
   const enemies = bottleneck.enemies;
 
-  // Steps 2–4 compare every candidate with the reference build (the current items with Jewels re-allocated) on one quick seed.
+  // Steps 2–4 compare every candidate with the current build as it is, on one quick seed.
   const recorded: Record<TuningStep, Candidate[]> = { offenseElement: [], defenseElement: [], ability: [] };
   const anyStep = request.offenseElementTrialRuns > 0 || request.defenseElementTrialRuns > 0 || request.abilityTrialRuns > 0;
-  const referenceQuick = anyStep ? await scoreLoadout(model.reference, request.quickRuns, quickSeed) : 0;
+  const currentQuick = anyStep ? await scoreLoadout(model.current, request.quickRuns, quickSeed) : 0;
   const tried = new Set<string>();
   const evaluate = async (step: TuningStep, label: Candidate['label'], loadout: Loadout | null, into: Candidate[]) => {
     if (!loadout || tried.has(`${step}:${loadoutKey(loadout)}`)) return;
     tried.add(`${step}:${loadoutKey(loadout)}`);
-    const improvement = tuningImprovement(objective, referenceQuick, await scoreLoadout(loadout, request.quickRuns, quickSeed));
+    const improvement = tuningImprovement(objective, currentQuick, await scoreLoadout(loadout, request.quickRuns, quickSeed));
     into.push({ step, label, loadout, changes: changesOf(model, loadout), improvement });
   };
   const record = (step: TuningStep, candidates: Candidate[], trials: number) => {
@@ -632,7 +626,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
 
   // 2. Offense elements: the requested one, or the elements the bottleneck enemies resist least.
   if (request.offenseElementTrialRuns > 0) {
-    const current = offenseElementsOf(model, model.reference);
+    const current = offenseElementsOf(model, model.current);
     // A build that already mixes elements has no current element: every element is an alternative.
     const currentElement: ElementalOffense | null = current.size === 0 ? 'none' : current.size === 1 ? [...current][0] : null;
     const order: ElementalOffense[] = ['ice', 'thunder', 'fire', 'none'];
@@ -651,7 +645,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
 
   // 3. Defense elements: resistance combinations, the ones that resist the bottleneck enemies' attack element first.
   if (request.defenseElementTrialRuns > 0) {
-    const current = resistancesOf(model, model.reference);
+    const current = resistancesOf(model, model.current);
     const attacks = enemies.map((enemy) => enemy.elementalOffense).filter((element): element is Element => element !== 'none');
     const combinations: Set<Element>[] = [];
     for (let mask = 0; mask < 8; mask += 1) combinations.push(new Set(ELEMENTS.filter((_, index) => (mask & (1 << index)) !== 0)));
@@ -677,7 +671,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
     const row = party.characters.findIndex((entry) => entry.id === model.character.id) + 1;
     const owned = new Set(computeCharacterStats(model.character, party.level, row).abilities.map((ability) => ability.id));
     const enemyAbilities = new Set(enemies.flatMap((enemy) => enemy.abilities.map((ability) => ability.id as string)));
-    const offense = offenseElementsOf(model, model.reference);
+    const offense = offenseElementsOf(model, model.current);
     // One entry per item ID: its strongest variant left in the pool.
     const byItem = new Map<number, string>();
     for (const keys of model.byCategory.values()) {
@@ -685,7 +679,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
         const facts = model.facts.get(key)!;
         const adds = facts.abilities.filter((ability) => !owned.has(ability));
         if (adds.length === 0 || ![...facts.offense].every((element) => offense.size === 0 || offense.has(element))) continue;
-        if (usageOf(model, model.reference, key) >= (model.pool.get(key) ?? 0)) continue;
+        if (usageOf(model, model.current, key) >= (model.pool.get(key) ?? 0)) continue;
         const previous = byItem.get(facts.item.id);
         if (!previous || facts.power > model.facts.get(previous)!.power) byItem.set(facts.item.id, key);
       }
@@ -709,10 +703,10 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
   const all = [...recorded.offenseElement, ...recorded.defenseElement, ...recorded.ability].sort((a, b) => b.improvement - a.improvement);
   interface Kept { candidate: Candidate; improvement: number }
   let kept: Kept[] = [];
-  let tuned: Loadout = model.reference;
+  let tuned: Loadout = model.current;
   if (all.length > 0) {
     const combine = (list: readonly Candidate[]): Loadout | null => {
-      let build = { loadout: [...model.reference] as Loadout, changed: new Set<number>() };
+      let build = { loadout: [...model.current] as Loadout, changed: new Set<number>() };
       for (const candidate of list) {
         const next = addCandidate(model, build.loadout, build.changed, candidate);
         if (!next) return null;
@@ -720,7 +714,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
       }
       return build.loadout;
     };
-    let bestScore = await scoreLoadout(model.reference, request.finalTuningRuns, finalSeed);
+    let bestScore = await scoreLoadout(model.current, request.finalTuningRuns, finalSeed);
     for (const candidate of all) {
       if (candidate.step !== 'ability' && kept.some((entry) => entry.candidate.step === candidate.step)) continue;
       const loadout = combine([...kept.map((entry) => entry.candidate), candidate]);
@@ -743,14 +737,15 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
     }
   }
 
-  // 6. Final check on the baseline seed: the tuned build (Jewels re-allocated) against the current build as it is.
-  const tunedEquipment = allocateJewels(model, tuned);
-  const tunedState = withEquipment(model, tunedEquipment);
-  const after = await simulate(tunedState, STAGED_TUNING_BASELINE_RUNS, baselineSeed);
+  // 6. Final check on the baseline seed: the tuned build against the current build as it is. When step 5 kept nothing there
+  // is no change, and the current build's baseline is its own result.
+  const changed = loadoutKey(tuned) !== loadoutKey(model.current);
+  const tunedState = changed ? withEquipment(model, allocateJewels(model, tuned)) : state;
+  const after = changed ? await simulate(tunedState, STAGED_TUNING_BASELINE_RUNS, baselineSeed) : baseline;
   const afterScore = scoreOf(objective, after);
   const improvement = tuningImprovement(objective, beforeScore, afterScore);
   const luck = tuningLuckCheck(objective, beforeScore, afterScore, STAGED_TUNING_BASELINE_RUNS);
-  let accepted = improvement >= request.minGateImprovement && luck.passed;
+  let accepted = changed && improvement >= request.minGateImprovement && luck.passed;
   let changeSummary: GaChangeEntry[] = [];
   if (accepted) {
     try {
@@ -766,13 +761,12 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
     after: buildSimulationRunData(after, dependencies.revision, 'staged-tuning').overview,
   };
   const partyNumber = state.parties[partyIndex].id;
-  let stored: StoredGaResult | null = null;
-  const gaResultId = accepted ? dependencies.createOpaqueId() : null;
-  if (gaResultId) {
-    const variance = (rate: number) => rate * (1 - rate);
+  let stored: StoredBuildResult | null = null;
+  const buildResultId = accepted ? dependencies.createOpaqueId() : null;
+  if (buildResultId) {
+    // A tuning result has no verdict: it passed its final check, so `applyBuildResult` never asks for confirmation.
     stored = {
-      gaResultId, partyNumber, revision: dependencies.revision,
-      verdict: rateGaResult(objective, { rate: beforeScore, variance: variance(beforeScore) }, { rate: afterScore, variance: variance(afterScore) }, STAGED_TUNING_BASELINE_RUNS, true).verdict,
+      buildResultId, source: 'stagedEquipmentTuning', partyNumber, revision: dependencies.revision, verdict: null,
       forecast, changeSummary, fingerprint: fingerprintOfSummary(state, partyIndex, changeSummary),
     };
   }
@@ -780,7 +774,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
   const describe = (candidate: Candidate) => ({ ...candidate.label, improvement: round4(candidate.improvement), changes: describeChanges(candidate.changes) });
   // The changes each kept candidate made in the tuned build, after any move to another slot.
   const finalTuning = kept.map((entry, position) => {
-    const before = kept.slice(0, position).reduce<{ loadout: Loadout; changed: Set<number> }>((build, previous) => addCandidate(model, build.loadout, build.changed, previous.candidate)!, { loadout: [...model.reference], changed: new Set() });
+    const before = kept.slice(0, position).reduce<{ loadout: Loadout; changed: Set<number> }>((build, previous) => addCandidate(model, build.loadout, build.changed, previous.candidate)!, { loadout: [...model.current], changed: new Set() });
     const next = addCandidate(model, before.loadout, before.changed, entry.candidate)!;
     const changes = next.loadout.flatMap((key, slot) => (key !== before.loadout[slot] && key !== null ? [{ slot, key }] : []));
     return { step: entry.candidate.step, index: recorded[entry.candidate.step].indexOf(entry.candidate), ...entry.candidate.label, improvement: round4(entry.improvement), changes: describeChanges(changes) };
@@ -807,7 +801,8 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
       revision: dependencies.revision,
       simulationRuns,
       elapsedSeconds: Math.round((dependencies.now() - startedAt) / 100) / 10,
-      ...(gaResultId ? { gaResultId } : {}),
+      seed,
+      ...(buildResultId ? { buildResultId } : {}),
     },
   };
 }

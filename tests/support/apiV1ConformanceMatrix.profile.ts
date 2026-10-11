@@ -351,11 +351,11 @@ const commitFixtures: Record<string, CommitFixture> = {
       return { path: { p: 1 }, parameters: { order } };
     },
   },
-  'commit/build/party/{p}/applyGaResult': {
+  'commit/build/party/{p}/applyBuildResult': {
     save: gaImprovable,
     request: async (client) => {
-      const result = await client.read('read/build/party/{p}/gaSearch', { p: 1 }, await gaSearchBody(client)) as { gaResultId: string };
-      return { path: { p: 1 }, parameters: { gaResultId: result.gaResultId, simulation: false, confirmation: 'yes' } };
+      const result = await client.read('read/build/party/{p}/gaSearch', { p: 1 }, await gaSearchBody(client)) as { buildResultId: string };
+      return { path: { p: 1 }, parameters: { buildResultId: result.buildResultId, simulation: false, confirmation: 'yes' } };
     },
   },
   'commit/build/character/{characterId}/changeBuild': {

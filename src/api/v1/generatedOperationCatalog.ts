@@ -42,7 +42,7 @@ export const API_V1_OPERATIONS = [
   {"method":"POST","path":"/api/v1/commit/expedition/{p}/godsBattle","access":"session","purpose":"Resolve one Gods Battle.","operationId":"commit/expedition/{p}/godsBattle"},
   {"method":"POST","path":"/api/v1/commit/expedition/{p}/resetStatistics","access":"session","purpose":"Reset the party's expedition statistics.","operationId":"commit/expedition/{p}/resetStatistics"},
   {"method":"POST","path":"/api/v1/commit/build/party/{p}","access":"session","purpose":"Change party build.","operationId":"commit/build/party/{p}"},
-  {"method":"POST","path":"/api/v1/commit/build/party/{p}/applyGaResult","access":"session","purpose":"Apply the latest `gaSearch` result.","operationId":"commit/build/party/{p}/applyGaResult"},
+  {"method":"POST","path":"/api/v1/commit/build/party/{p}/applyBuildResult","access":"session","purpose":"Apply the latest `gaSearch` or `stagedEquipmentTuning` result.","operationId":"commit/build/party/{p}/applyBuildResult"},
   {"method":"POST","path":"/api/v1/commit/build/character/{characterId}/changeBuild","access":"session","purpose":"Change character build.","operationId":"commit/build/character/{characterId}/changeBuild"},
   {"method":"POST","path":"/api/v1/commit/build/character/{characterId}/removeAllEquipment","access":"session","purpose":"Remove all equipment.","operationId":"commit/build/character/{characterId}/removeAllEquipment"},
   {"method":"POST","path":"/api/v1/commit/build/character/{characterId}/removeEquipment","access":"session","purpose":"Remove selected slots.","operationId":"commit/build/character/{characterId}/removeEquipment"},

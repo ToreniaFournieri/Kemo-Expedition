@@ -6,7 +6,7 @@ const path = require('node:path');
 const test = require('node:test');
 const { build } = require('esbuild');
 
-test('gaSearch finds and verifies a better build, and applyGaResult applies it as one Undo step per character', async t => {
+test('gaSearch finds and verifies a better build, and applyBuildResult applies it as one Undo step per character', async t => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'bokemo-api-v1-ga-'));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   const output = path.join(directory, 'profile.mjs');
