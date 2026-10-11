@@ -418,8 +418,10 @@ interface Decoded { state: GameState; genome: Genome }
 
 /**
  * Applies a genome to a private copy of the state with repair: an invalid build change keeps the current value, and a
- * slot whose item is unavailable or not equippable is refilled from the remaining pool. Party HP is derived from the
- * characters, so the party gets new character arrays (its stats cache is keyed by array identity).
+ * slot whose item is unavailable or not equippable is refilled from the remaining pool. An empty slot of an equipment
+ * target is filled too: a filled slot only adds power, so no candidate (the current build's included) keeps a free slot
+ * while a usable item is left. Party HP is derived from the characters, so the party gets new character arrays (its
+ * stats cache is keyed by array identity).
  */
 function decode(model: SearchModel, input: Genome, random: () => number): Decoded {
   const genome = cloneGenome(input);
@@ -479,7 +481,8 @@ function decode(model: SearchModel, input: Genome, random: () => number): Decode
       const locked = fixed?.get(slot);
       if (locked) { equipment[slot] = locked; repaired[slot] = { k: getVariantKey(locked), j: jewelKeyOf(locked) }; continue; }
       const gene = genes[slot];
-      if (!gene) continue;
+      // An empty slot of an equipment target is a hole like an unusable gene (a Jewels-only target keeps its items).
+      if (!gene) { if (target.components.equipment) holes.push([character, slot]); continue; }
       const entry = model.pool.get(gene.k);
       if (!entry || !canCharacterEquipCategory(character, entry.item.category) || !supply.take(character.id, gene.k)) { holes.push([character, slot]); continue; }
       const item: Item = { ...entry.item, jewel: null };
@@ -498,21 +501,33 @@ function decode(model: SearchModel, input: Genome, random: () => number): Decode
     character.equipment = equipment;
     genome.equipment[character.id] = repaired;
   }
+  // A hole takes a usable copy at random, weighted toward higher tiers. A copy that needs no donor (`global`) is
+  // preferred, so filling a slot strips another character only when nothing else is left.
   for (const [character, slot] of holes) {
-    const keys = model.keysFor[character.id] ?? [];
-    for (let attempt = 0; attempt < 30 && keys.length > 0; attempt += 1) {
-      const key = keys[Math.floor(random() * keys.length)];
-      const entry = model.pool.get(key)!;
-      if (!canCharacterEquipCategory(character, entry.item.category) || !supply.take(character.id, key)) continue;
-      character.equipment[slot] = { ...entry.item, jewel: null };
-      genome.equipment[character.id][slot] = { k: key, j: null };
-      break;
-    }
+    const usable = (model.keysFor[character.id] ?? []).filter((key) => supply.available(character.id, key) && canCharacterEquipCategory(character, model.pool.get(key)!.item.category));
+    const withoutDonor = usable.filter((key) => !needsDonor(model, supply, character.id, key));
+    const key = pickByTier(withoutDonor.length > 0 ? withoutDonor : usable, random);
+    if (key === null) continue;
+    supply.take(character.id, key);
+    character.equipment[slot] = { ...model.pool.get(key)!.item, jewel: null };
+    genome.equipment[character.id][slot] = { k: key, j: null };
   }
   const parties = [...state.parties];
   parties[partyIndex] = { ...party, characters };
   return { state: { ...state, parties: removeDonorItems(model, parties, partyIndex, characters, supply) }, genome };
 }
+
+/** A key drawn at random, weighted by `tierWeight`; null when there is none. */
+function pickByTier(keys: readonly string[], random: () => number): string | null {
+  if (keys.length === 0) return null;
+  let roll = random() * keys.reduce((sum, key) => sum + tierWeight(key), 0);
+  for (const key of keys) { roll -= tierWeight(key); if (roll < 0) return key; }
+  return keys[keys.length - 1];
+}
+
+/** Whether the next copy of `key` would come from a donor (`global`): the character's own and the pooled copies are used up. */
+const needsDonor = (model: SearchModel, supply: Supply, characterId: number, key: string): boolean =>
+  (supply.ownLeft[characterId]?.[key] ?? 0) <= 0 && (supply.sharedLeft[key] ?? 0) <= model.pool.get(key)!.total - (model.sharedBase[key] ?? 0);
 
 interface Supply { sharedLeft: Record<string, number>; ownLeft: Record<number, Record<string, number>>; take: (characterId: number, key: string) => boolean; available: (characterId: number, key: string) => boolean }
 
@@ -670,35 +685,45 @@ const attackScore = (item: Item, stats: ReturnType<typeof computeCharacterStats>
 };
 const durabilityScore = (item: Item): number => ((item.partyHP ?? 0) + 0.5 * ((item.physicalDefense ?? 0) + (item.magicalDefense ?? 0)) + 10 * (item.vitalityBonus ?? 0)) * (1 + 0.1 * item.enhancement);
 
-/** Greedy builds from the item fields alone: one attack-focused and one HP/defense-focused (no Jewels, no build change). */
+/**
+ * Greedy builds from the item fields alone (no Jewels, no build change): one attack-focused and one HP/defense-focused
+ * loadout, and the current build with only its empty slots filled the same two ways. `decode` fills a free slot at
+ * random (tier-weighted); these give the search a greedy fill to compare with.
+ */
 function heuristicGenomes(model: SearchModel): Genome[] {
   const party = model.base.parties[model.partyIndex];
-  const make = (score: (item: Item, character: Character) => number): Genome => {
+  const targets = model.request.targets.filter((target) => target.components.equipment);
+  const make = (score: (item: Item, character: Character) => number, keepCurrent: boolean): Genome | null => {
     const genome = cloneGenome(model.current);
     const supply = createSupply(model);
-    for (const target of model.request.targets) {
-      if (!target.components.equipment) continue;
+    // A fill keeps every worn item, so their copies are taken before any free slot is filled.
+    if (keepCurrent) for (const target of targets) for (const gene of genome.equipment[target.characterId] ?? []) if (gene) supply.take(target.characterId, gene.k);
+    let filled = false;
+    for (const target of targets) {
       const character = party.characters.find((entry) => entry.id === target.characterId)!;
       const maxSlots = computeCharacterStats(character, party.level).maxEquipSlots;
       const slots: (SlotGene | null)[] = [];
       for (let slot = 0; slot < maxSlots; slot += 1) {
         const locked = model.frozen[character.id]?.get(slot);
         if (locked) { slots.push({ k: getVariantKey(locked), j: jewelKeyOf(locked) }); continue; }
+        const kept = keepCurrent ? model.current.equipment[character.id]?.[slot] : null;
+        if (kept) { slots.push({ ...kept }); continue; }
         let best: string | null = null; let bestScore = -Infinity;
         for (const [key, entry] of model.pool) {
           if (!supply.available(character.id, key) || !canCharacterEquipCategory(character, entry.item.category)) continue;
           const value = score(entry.item, character);
           if (value > bestScore) { bestScore = value; best = key; }
         }
-        if (best) supply.take(character.id, best);
+        if (best) { supply.take(character.id, best); filled = true; }
         slots.push(best ? { k: best, j: null } : null);
       }
       genome.equipment[character.id] = slots;
     }
-    return genome;
+    return keepCurrent && !filled ? null : genome;
   };
   const statsById = new Map(party.characters.map((character, index) => [character.id, computeCharacterStats(character, party.level, index + 1)]));
-  return [make((item, character) => attackScore(item, statsById.get(character.id)!)), make((item) => durabilityScore(item))];
+  const attack = (item: Item, character: Character) => attackScore(item, statsById.get(character.id)!);
+  return [make(attack, false), make(durabilityScore, false), make(attack, true), make(durabilityScore, true)].filter((genome): genome is Genome => genome !== null);
 }
 
 // ---------------- Mutation and crossover ----------------
@@ -896,13 +921,16 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
     confirmCache.set(entry.key, entry.confirm);
   };
 
+  // The current build with its empty slots filled (a filled slot only adds power) is the search's start and its fallback
+  // result; the live build itself is the fallback only when that fill alone needs more than `maxChanges` entries.
   const currentIndividual = individual(model.current);
-  // The repaired current genome may differ from the live build only when the live build is itself invalid; keep the live one.
+  const live: Individual = { genome: model.current, decoded: { state, genome: model.current }, key: 'live', changes: 0 };
+  const fallback = allowed(currentIndividual) ? currentIndividual : live;
   let population: Individual[] = [currentIndividual];
   if (request.parameters.seedWithHeuristics) for (const genome of heuristicGenomes(model)) population.push(individual(genome));
   while (population.length < request.parameters.populationSize) population.push(individual(mutate(model, population[Math.floor(random() * population.length)].genome, random)));
-  let best: Individual = currentIndividual;
-  await scoreConfirm(currentIndividual);
+  let best: Individual = fallback;
+  await scoreConfirm(fallback);
 
   for (let generation = 0; generation < request.parameters.generations && !outOfTime(); generation += 1) {
     for (const entry of population) { if (outOfTime()) break; await scoreQuick(entry); }
@@ -928,32 +956,32 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
     population = next;
   }
 
-  // Final selection: the best confirmed builds and the current one are re-scored on a fresh seed with twice the confirm
+  // Final selection: the best confirmed builds and the fallback are re-scored on a fresh seed with twice the confirm
   // runs. The top confirm score is biased upward (it won partly by luck on the confirm seed); this stage removes most of that
   // before the independent verification.
   const confirmed = new Map<string, Individual>();
-  for (const entry of [...population, best]) if (entry.confirm !== undefined && entry.key !== currentIndividual.key) confirmed.set(entry.key, entry);
+  for (const entry of [...population, best]) if (entry.confirm !== undefined && entry.key !== fallback.key) confirmed.set(entry.key, entry);
   const finalists = [...confirmed.values()].sort((a, b) => b.confirm! - a.confirm!).slice(0, 3);
-  if (finalists.length > 0 && (finalists[0].confirm ?? -Infinity) > (currentIndividual.confirm ?? -Infinity)) {
+  if (finalists.length > 0 && (finalists[0].confirm ?? -Infinity) > (fallback.confirm ?? -Infinity)) {
     const finalRuns = Math.min(1000, request.parameters.confirmRuns * 2);
-    const currentFinal = await evaluate(currentIndividual.decoded, finalRuns, finalSeed);
+    const currentFinal = await evaluate(fallback.decoded, finalRuns, finalSeed);
     let bestFinal = currentFinal;
-    best = currentIndividual;
+    best = fallback;
     for (const entry of finalists) {
       const measured = await evaluate(entry.decoded, finalRuns, finalSeed);
       if (measured.fitness > bestFinal.fitness) { bestFinal = measured; best = entry; }
     }
-    // A finalist replaces the current build only when it is ahead by at least one standard error of the objective's rate.
-    if (best !== currentIndividual) {
+    // A finalist replaces the fallback only when it is ahead by at least one standard error of the objective's rate.
+    if (best !== fallback) {
       const margin = rateGaResult(objective, currentFinal, bestFinal, finalRuns, true);
-      if (!(margin.gain > margin.standardError)) best = currentIndividual;
+      if (!(margin.gain > margin.standardError)) best = fallback;
     }
   } else {
-    best = currentIndividual;
+    best = fallback;
   }
 
   // Verification: the current and the best build on one fresh seed (Spec 9.1.3, 2-3-2 `verdict`).
-  const changed = best.key !== currentIndividual.key && best.changes > 0;
+  const changed = best.changes > 0;
   let changeSummary: GaChangeEntry[] = [];
   let bestState = state;
   if (changed) {

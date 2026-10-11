@@ -282,4 +282,24 @@ fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_r
   fails({ gaResultId: taken.stored.gaResultId, simulation: true }, 'illegal_action:ga_result_stale', released, taken.stored);
 }
 
+// ---------------- Empty slots ----------------
+// SpecRef: 9.1.4.9 | gaSearch Candidates | an equipment target never keeps an empty slot while a usable item is left.
+{
+  // One free slot on an otherwise geared party: random `replace` mutations alone used to leave it empty (`noChange`).
+  const fresh = createFreshGameState('ja', now);
+  const guardian = fresh.parties[0].characters[0];
+  const emptied = applyApiV1Commit(`commit/build/character/${guardian.id}/removeEquipment`, fresh, { targetEquipment: [0] }, context()).state;
+  const targets = fresh.parties[0].characters.map((character) => ({ characterId: character.id, changeableComponents: { equipment: true } }));
+  const fillsGuardian = (entries: { endpoint: string; parameters: Record<string, unknown> }[]) => entries.some((entry) => entry.endpoint === `commit/build/character/${guardian.id}/equip` && entry.parameters.targetSlot === 0);
+  const filled = await search(emptied, { targets, gaParameters: small });
+  assert.ok(['veryGood', 'good'].includes(String(filled.data.verdict)), `verdict ${filled.data.verdict}`);
+  assert.ok(fillsGuardian(filled.data.changeSummary as never), 'the free slot is filled');
+  // Filling is not left to the search: even one generation without heuristic seeds returns the current build filled.
+  const bare = await search(emptied, { targets, gaParameters: { ...small, generations: 1, seedWithHeuristics: false } });
+  assert.ok(fillsGuardian(bare.data.changeSummary as never), 'the fallback result is the current build with its free slot filled');
+  // A Jewels-only target keeps its items, free slot included.
+  const jewelsOnly = await search(emptied, { targets: [{ characterId: guardian.id, changeableComponents: { jewels: true } }], gaParameters: small });
+  assert.ok(!fillsGuardian(jewelsOnly.data.changeSummary as never), 'a Jewels-only target is not filled');
+}
+
 console.log('gaSearch profile ok');

@@ -829,16 +829,27 @@ definitions in 9.1.3.
   and the stored result is stale when a different party (or none) holds that deity.
 * Search: the first population holds the current build and, with
   `seedWithHeuristics`, one attack-focused and one HP/defense-focused greedy
-  build; the rest are mutants. Each generation scores every candidate with
+  build, plus, when an equipment target has an empty slot, the current build
+  with only its empty slots filled the same two greedy ways (every worn item
+  stays); the rest are mutants. Each generation scores every candidate with
   `quickRuns`, re-scores the `confirmTopN` best with `confirmRuns`, keeps
   `eliteCount` unchanged, and fills the rest by tournament selection (size
   `tournamentSize`), per-character crossover, and mutation (`mutationRate`;
   1–3 changes among item replace, item swap, Jewel change, build value, order
   swap, and deity). A candidate that needs more than `maxChanges` entries is never
   selected. After the last generation (or the time budget), the three best
-  confirmed builds and the current build are re-scored on the final seed with
-  twice `confirmRuns` (at most 1000), and a build replaces the current one only
+  confirmed builds and the fallback are re-scored on the final seed with
+  twice `confirmRuns` (at most 1000), and a build replaces the fallback only
   when its rate is ahead by at least one standard error.
+* Empty slots: a filled slot only adds power, so no candidate of an equipment
+  target keeps an empty slot while a usable item is left. Every candidate, the
+  current build's included, fills each empty slot (and each slot whose item is
+  unavailable or not equippable) at random among the usable items, weighted
+  toward higher item tiers; under `global` an item that needs no donor is
+  preferred. The fallback result is the current build with its empty slots
+  filled, so a search returns at least that fill; it is the unchanged current
+  build only when the fill alone needs more than `maxChanges` entries. A target
+  whose `equipment` is `false` (Jewels only) keeps its items and free slots.
 * Objectives: the search maximizes `ln(success)` for `success`, the average boss
   damage share for `bossDamage`, and average EXP per run for `experience`; a
   small reached-rooms term (weighted by the failure share) breaks ties while
@@ -855,7 +866,7 @@ definitions in 9.1.3.
   `verifyRuns` runs each. The standard error uses the binomial variance of the two
   rates (`success`, `minDefeat`; the Bernoulli bound `p(1 - p)` for `bossDamage`)
   or the per-run EXP variance (`experience`). `noChange` means no different build
-  passed the final selection; `changeSummary` is then `[]` and `forecast.after`
+  passed the final selection and no empty slot could be filled; `changeSummary` is then `[]` and `forecast.after`
   equals `forecast.before`. The response also returns `verification`:
   `{objective, runs, before, after, gain, standardError, seed}` with the measured
   rates, the gain in percentage points (percent for `experience`; `null` when the
