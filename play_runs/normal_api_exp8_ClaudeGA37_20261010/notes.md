@@ -32,7 +32,7 @@
   on the two rangers (FREEZE) -> bossDamage 67 %, success 9.8 %; D6 boss died on the 18th attempt. Locks need FULL mode
   (lockEquipment requires autoEquipment FULL), so "freeze via equipment:false" is the practical way to pin an item.
 - N16: D6 took 6.2 d (4.75 -> 10.99). Lv28->30 at D6 5f-3 took ~2 d of farming.
-- N17 (BUG, code-confirmed): gaSearch builds the current genome from `character.equipment.map(...)`
+- N17 (WITHDRAWN 2026-10-11: decode() pads genomes to maxEquipSlots, see repro_slot/README.md for the real, search-quality effect): gaSearch builds the current genome from `character.equipment.map(...)`
   (src/api/v1/gaSearch.ts ~l.333), but the stored equipment array can be shorter than `maxEquipSlots`
   (readModels.ts l.1001 says so). `mutate` 'replace' picks `slot < slots.length` and crossover maps over the child's array,
   so a slot past the stored array (new Lv30 slot, or extra slots from a class/race change) is never filled. Only the two
