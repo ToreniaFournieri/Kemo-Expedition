@@ -914,7 +914,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * Parameters:
   * `characterId`
     * Required.
-  * `baselineRuns` (fixed: `1000`)
+  * `baselineRuns` (constant: `1000`)
   * `quickRuns` (e.g., `100`, `300`, `1000`; default: `100`)
   * `finalTuningRuns` (e.g., `300`, `500`, `1000`; default: `500`)
   * `offenseElementRequest` (e.g., `e.fire`, `e.thunder`, `e.ice`, `e.none`; default: `noRequest`)
@@ -922,11 +922,11 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `offenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
   * `defenseElementTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
   * `defenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
-  * `abilityTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
+  * `abilityTrialRuns` (e.g., `0`, `20`, `40`; default: `20`)
   * `abilityCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
   * `finalTuningTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
-  * `minImprovement` (e.g., `0.01`, `0.03`, `0.05`; default: `0.03`)
-  * `minGateImprovement` (e.g., `0.03`, `0.05`, `0.10`; default: `0.05`)
+  * `minImprovement` (e.g., `0.03`, `0.07`, `0.10`; default: `0.07`)
+  * `minGateImprovement` (e.g., `0.03`, `0.07`, `0.10`; default: `0.07`)
   * `objective`
     * Optional.
     * Default: `success`.
