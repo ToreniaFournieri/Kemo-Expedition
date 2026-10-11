@@ -411,8 +411,8 @@ at least one party member has an empty equipment slot.
   - Do not select multiple items with the same bonus, since duplicate bonuses do not stack (e.g., two items with `r.ice+0.20` give the same effect as one).
   - Setting a step's `...TrialRuns` to `0` skips that step.
   - `objective` improvement:
-    - `success`: `candidateSuccess / currentSuccess`. If `currentSuccess` is `0`, treat it as `0.1`.
-    - `minDefeat`: `currentDefeat / candidateDefeat`. If `candidateDefeat` is `0`, treat it as `0.1`.
+    - `success`: `candidateSuccess / currentSuccess`. If `currentSuccess` is `0`, treat it as `0.001`.
+    - `minDefeat`: `currentDefeat / candidateDefeat`. If `candidateDefeat` is `0`, treat it as `0.001`.
     - `bossDamage`: `candidateDamage / currentDamage`. If `currentDamage` is `0`, treat it as `0.1`.
     - Improvement is calculated as `ratio - 1` (e.g., `1.03` means a 3% improvement).
 
