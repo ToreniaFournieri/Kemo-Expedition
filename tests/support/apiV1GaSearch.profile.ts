@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createFreshGameState, gameReducer, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
 import { GA_EFFORT_PRESETS, parseGaSearchRequest, rateGaResult, runGaSearch, type GaSearchDependencies, type StoredGaResult } from '../../src/api/v1/gaSearch';
+import { getDeityId } from '../../src/game/deity';
 import type { GameState } from '../../src/types';
 
 // SpecRef: 9.1.3 | Read | 2-3-2 party/{p}/gaSearch
@@ -252,6 +253,33 @@ fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_r
       assert.equal(after?.isLocked, true);
     }
   }
+}
+
+// ---------------- considerDeityChange ----------------
+// SpecRef: 9.1.3 | 2-3-2 gaSearch `considerDeityChange` | `none`, `unoccupiedDeities`, `allDeities` (frees a deity another party holds).
+{
+  assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets }).considerDeityChange, 'none');
+  for (const scope of ['none', 'unoccupiedDeities', 'allDeities']) assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets, considerDeityChange: scope }).considerDeityChange, scope);
+  rejects({ targets: equipmentTargets, considerDeityChange: true }, 'invalid_request:considerDeityChange');
+  rejects({ targets: equipmentTargets, considerDeityChange: 'occupiedDeities' }, 'invalid_request:considerDeityChange');
+
+  // Party 2 holds Fortification, the only unlocked deity, which the faithless party 1 gains from.
+  const fresh = createFreshGameState('ja', now);
+  const own = { ...fresh.parties[0], deity: { ...fresh.parties[0].deity, name: 'None' } };
+  const holder = { ...fresh.parties[0], id: 2, name: 'PT2', characters: fresh.parties[0].characters.map((character) => ({ ...character, id: character.id + 100 })), deity: { ...fresh.parties[0].deity, name: 'God of Fortification' } };
+  const held: GameState = { ...fresh, parties: [own, holder], global: { ...fresh.global, unlockedDeities: ['God of Fortification'] } };
+  const deityRun = (scope: string) => search(held, { targets: [{ characterId: own.characters[0].id }], considerDeityChange: scope, gaParameters: small });
+  assert.deepEqual((await deityRun('unoccupiedDeities')).data.changeSummary, [], 'unoccupiedDeities never offers a held deity');
+  const taken = await deityRun('allDeities');
+  assert.deepEqual(taken.data.changeSummary, [
+    { endpoint: 'commit/build/party/2', parameters: { deityId: 'none' } },
+    { endpoint: 'commit/build/party/1', parameters: { deityId: 'fortification' } },
+  ], 'allDeities frees the held deity right before taking it');
+  const applied = applyApiV1Commit(path, held, { gaResultId: taken.stored.gaResultId, simulation: false }, context(taken.stored)).state;
+  assert.deepEqual(applied.parties.map((party) => getDeityId(party.deity.name)), ['fortification', 'none']);
+  // The stored result goes stale when the holder no longer holds that deity.
+  const released = gameReducer(held, { type: 'UPDATE_PARTY_DEITY', partyIndex: 1, deityName: 'None' });
+  fails({ gaResultId: taken.stored.gaResultId, simulation: true }, 'illegal_action:ga_result_stale', released, taken.stored);
 }
 
 console.log('gaSearch profile ok');

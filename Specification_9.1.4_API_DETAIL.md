@@ -797,7 +797,9 @@ definitions in 9.1.3.
   `invalid_request`, field `targets.characterId`); omitted `changeableComponents`
   members are `false`. `considerItemsScope` is `normal` when omitted; any other value
   than `normal`, `withinTargets`, or `global` is `invalid_request`, field
-  `considerItemsScope`. `eliteCount` may not exceed `populationSize / 4`. An
+  `considerItemsScope`. `considerDeityChange` is `none` when omitted; any other
+  value than `none`, `unoccupiedDeities`, or `allDeities` (a boolean included) is
+  `invalid_request`, field `considerDeityChange`. `eliteCount` may not exceed `populationSize / 4`. An
   unknown member anywhere is `invalid_request`. A missing party is `not_found`.
 * Candidates: `equipment` lets the search place any owned item variant that the
   character can equip, up to its slot count, from the items `considerItemsScope`
@@ -819,8 +821,12 @@ definitions in 9.1.3.
   gets none. Build components choose from the same options as
   `read/build/character/status`, are validated by the `changeBuild` rules in party
   order, and an invalid choice keeps the current value. `considerOrderChange`
-  permutes the whole party; `considerDeityChange` chooses from
-  `read/build/party/{p}` `validOptions.deityId`.
+  permutes the whole party. `considerDeityChange: unoccupiedDeities` chooses from
+  `read/build/party/{p}` `validOptions.deityId`; `allDeities` also offers every
+  unlocked deity another party holds. A result that takes such a deity frees it
+  first: `changeSummary` lists `commit/build/party/{holder}` with `deityId: "none"`
+  right before party `{p}`'s own deity entry, so the holder is left with no deity,
+  and the stored result is stale when a different party (or none) holds that deity.
 * Search: the first population holds the current build and, with
   `seedWithHeuristics`, one attack-focused and one HP/defense-focused greedy
   build; the rest are mutants. Each generation scores every candidate with

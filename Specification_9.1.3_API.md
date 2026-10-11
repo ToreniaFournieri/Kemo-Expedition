@@ -636,9 +636,13 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Optional.
     * Default: `false`
   * `considerDeityChange`
-    * Boolean.
+    * String enum.
     * Optional.
-    * Default: `false`
+    * Default: `none`
+    * Options: `none`, `unoccupiedDeities`, `allDeities`
+      * `none`: Does not consider changing deities.
+      * `unoccupiedDeities`: Considers switching to any deity not currently in use by another party.
+      * `allDeities`: Considers all deities, including those used by other parties.      
   * `considerItemsScope`
     * Optional.
     * Default: `normal`

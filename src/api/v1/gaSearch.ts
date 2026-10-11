@@ -7,7 +7,7 @@ import { getDeityId, getDeityNameFromId } from '../../game/deity';
 import { canCharacterEquipCategory } from '../../game/equipmentSets';
 import { isJewelAllowedForCategory } from '../../game/jewel';
 import { gameReducer } from '../../hooks/useGameState';
-import { getVariantKey, type Character, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey } from '../../types';
+import { getVariantKey, type Character, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party } from '../../types';
 import { describeCharacterBuildCurrent, planCharacterBuildChange } from './buildChange';
 import { recordEquipmentState } from '../../game/equipmentHistory';
 import { computePartyStats } from '../../game/partyComputation';
@@ -70,10 +70,14 @@ export interface GaTarget { characterId: number; components: Record<Component, b
 export const GA_ITEMS_SCOPES = ['normal', 'withinTargets', 'global'] as const;
 export type GaItemsScope = typeof GA_ITEMS_SCOPES[number];
 
+// SpecRef: 9.1.3 | 2-3-2 gaSearch `considerDeityChange` | which deities the search may give the party.
+export const GA_DEITY_SCOPES = ['none', 'unoccupiedDeities', 'allDeities'] as const;
+export type GaDeityScope = typeof GA_DEITY_SCOPES[number];
+
 export interface GaSearchRequest {
   targets: GaTarget[];
   considerOrderChange: boolean;
-  considerDeityChange: boolean;
+  considerDeityChange: GaDeityScope;
   considerItemsScope: GaItemsScope;
   objective: GaObjective;
   parameters: GaParameters;
@@ -154,6 +158,8 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
   });
   const considerItemsScope = raw.considerItemsScope === undefined ? 'normal' : raw.considerItemsScope;
   if (typeof considerItemsScope !== 'string' || !(GA_ITEMS_SCOPES as readonly string[]).includes(considerItemsScope)) invalid('considerItemsScope');
+  const considerDeityChange = raw.considerDeityChange === undefined ? 'none' : raw.considerDeityChange;
+  if (typeof considerDeityChange !== 'string' || !(GA_DEITY_SCOPES as readonly string[]).includes(considerDeityChange)) invalid('considerDeityChange');
   const objective = raw.objective === undefined ? 'success' : raw.objective;
   if (typeof objective !== 'string' || !(GA_OBJECTIVES as readonly string[]).includes(objective)) invalid('objective');
   const source = raw.gaParameters === undefined ? {} : raw.gaParameters;
@@ -174,7 +180,7 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
   return {
     targets,
     considerOrderChange: readBoolean(raw, 'considerOrderChange', 'considerOrderChange', false),
-    considerDeityChange: readBoolean(raw, 'considerDeityChange', 'considerDeityChange', false),
+    considerDeityChange: considerDeityChange as GaDeityScope,
     considerItemsScope: considerItemsScope as GaItemsScope,
     objective: objective as GaObjective,
     parameters: {
@@ -201,8 +207,9 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
  * The party facts a result depends on: order, deity, and every member's build and equipment, plus the owned count of
  * each item variant and Jewel the result equips or attaches. Other inventory changes (new drops) do not invalidate it.
  */
-export function gaBuildFingerprint(state: GameState, partyIndex: number, usedVariants: readonly string[], usedJewels: readonly string[], outsideCharacterIds: readonly number[] = []): string {
+export function gaBuildFingerprint(state: GameState, partyIndex: number, usedVariants: readonly string[], usedJewels: readonly string[], outsideCharacterIds: readonly number[] = [], takenDeity: string | null = null): string {
   const party = state.parties[partyIndex];
+  const holder = takenDeity === null ? -1 : deityHolderIndex(state, partyIndex, takenDeity);
   const signature = (item: Item | null) => item ? `${getVariantKey(item)}/${item.jewel ? `${item.jewel.key}:${item.jewel.rank}` : ''}` : null;
   const owned = (key: string) => { const entry = state.global.inventory[key]; return entry && entry.status === 'owned' ? entry.count : 0; };
   return JSON.stringify({
@@ -216,11 +223,19 @@ export function gaBuildFingerprint(state: GameState, partyIndex: number, usedVar
     outside: [...new Set(outsideCharacterIds)].sort((a, b) => a - b).map((id) => [id, state.parties.flatMap((entry) => entry.characters).find((entry) => entry.id === id)?.equipment.map(signature) ?? null]),
     items: [...new Set(usedVariants)].sort().map((key) => [key, owned(key)]),
     jewels: [...new Set(usedJewels)].sort().map((key) => [key, state.global.jewels[key] ?? 0]),
+    // `considerDeityChange: allDeities` frees the deity it takes from the party holding it; that holder is build-relevant too.
+    deityHolder: holder >= 0 ? state.parties[holder].id : null,
   });
+}
+
+/** Index of the other party that holds deity `id`, or -1 (no deity is never held). */
+function deityHolderIndex(state: GameState, partyIndex: number, id: string): number {
+  return id === 'none' ? -1 : state.parties.findIndex((party, index) => index !== partyIndex && getDeityId(party.deity.name) === id);
 }
 
 /** The fingerprint a stored result must still match: the Items and Jewels its `changeSummary` places and the characters it touches. */
 function fingerprintOfSummary(state: GameState, partyIndex: number, changeSummary: readonly GaChangeEntry[]): string {
+  const deityEntry = changeSummary.find((entry) => entry.endpoint === `commit/build/party/${state.parties[partyIndex].id}` && entry.parameters.deityId !== undefined);
   const usedVariants = changeSummary.filter((entry) => entry.endpoint.endsWith('/equip')).map((entry) => {
     const [, id, enhancement, superRare] = String(entry.parameters.targetEquipment).split('/');
     return `${id}-${enhancement}-${superRare}`;
@@ -228,7 +243,7 @@ function fingerprintOfSummary(state: GameState, partyIndex: number, changeSummar
   const usedJewels = changeSummary.filter((entry) => entry.endpoint.endsWith('/jewelAttach')).map((entry) => String(entry.parameters.jewelToSet));
   const inParty = new Set(state.parties[partyIndex].characters.map((character) => character.id));
   const outside = changeSummary.map((entry) => Number(entry.endpoint.match(CHARACTER_ENDPOINT)?.[1])).filter((id) => Number.isInteger(id) && id > 0 && !inParty.has(id));
-  return gaBuildFingerprint(state, partyIndex, usedVariants, usedJewels, outside);
+  return gaBuildFingerprint(state, partyIndex, usedVariants, usedJewels, outside, deityEntry ? String(deityEntry.parameters.deityId) : null);
 }
 
 // ---------------- Genome ----------------
@@ -355,8 +370,19 @@ function buildModel(state: GameState, partyIndex: number, request: GaSearchReque
   }
   return {
     base: state, partyIndex, request, pool, sharedBase, own, keysFor, frozen, donors, jewelTotals, buildOptions,
-    deityOptions: request.considerDeityChange ? validPartyDeityIds(state, party) : [current.deity], current,
+    deityOptions: deityOptionsFor(state, party, request.considerDeityChange), current,
   };
+}
+
+/**
+ * `considerDeityChange` choices: `unoccupiedDeities` is `read/build/party/{p}` `validOptions.deityId`; `allDeities` adds
+ * every unlocked deity another party holds (that party is left with no deity).
+ */
+function deityOptionsFor(state: GameState, party: Party, scope: GaDeityScope): string[] {
+  const current = getDeityId(party.deity.name);
+  if (scope === 'none') return [current];
+  if (scope === 'unoccupiedDeities') return validPartyDeityIds(state, party);
+  return [...new Set(['none', current, ...state.global.unlockedDeities.map(getDeityId)])];
 }
 
 const cloneGenome = (genome: Genome): Genome => ({
@@ -401,8 +427,12 @@ function decode(model: SearchModel, input: Genome, random: () => number): Decode
   const partyIndex = model.partyIndex;
   if (genome.deity !== model.current.deity) {
     const deityName = getDeityNameFromId(genome.deity);
-    if (deityName) state = gameReducer(state, { type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
-    else genome.deity = model.current.deity;
+    if (deityName) {
+      // A deity another party holds (`allDeities`) is freed first, as `changeSummary` does.
+      const holder = deityHolderIndex(state, partyIndex, genome.deity);
+      if (holder >= 0) state = gameReducer(state, { type: 'UPDATE_PARTY_DEITY', partyIndex: holder, deityName: 'None' });
+      state = gameReducer(state, { type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
+    } else genome.deity = model.current.deity;
   }
   if (genome.order.join(',') !== model.current.order.join(',')) {
     for (let destination = 0; destination < genome.order.length; destination += 1) {
@@ -543,6 +573,7 @@ function countChanges(model: SearchModel, decoded: Decoded): number {
   const before = model.base.parties[model.partyIndex];
   const after = decoded.state.parties[model.partyIndex];
   let count = decoded.genome.deity !== model.current.deity || decoded.genome.order.join(',') !== model.current.order.join(',') ? 1 : 0;
+  if (deityHolderIndex(model.base, model.partyIndex, decoded.genome.deity) >= 0) count += 1;
   for (const target of model.request.targets) {
     const genes = decoded.genome.builds[target.characterId] ?? {};
     if (Object.entries(genes).some(([field, value]) => value !== model.current.builds[target.characterId][field as BuildField])) count += 1;
@@ -768,9 +799,14 @@ export function planGaChangeSummary(base: GameState, partyIndex: number, best: G
     const slots = character.equipment.map((item, slot) => (item && !sameSlot(item, after(character.id).equipment[slot]) ? slot : -1)).filter((slot) => slot >= 0);
     if (slots.length > 0) run(`commit/build/character/${character.id}/removeEquipment`, { targetEquipment: slots });
   }
-  // 2. Deity and order.
+  // 2. Deity and order. A deity another party holds (`considerDeityChange: allDeities`) is freed first: that party gets none.
   const party2: Record<string, unknown> = {};
-  if (getDeityId(target.deity.name) !== getDeityId(party.deity.name)) party2.deityId = getDeityId(target.deity.name);
+  const deity = getDeityId(target.deity.name);
+  if (deity !== getDeityId(party.deity.name)) {
+    const holder = deityHolderIndex(scratch, partyIndex, deity);
+    if (holder >= 0) run(`commit/build/party/${scratch.parties[holder].id}`, { deityId: 'none' });
+    party2.deityId = deity;
+  }
   if (target.characters.map((entry) => entry.id).join(',') !== party.characters.map((entry) => entry.id).join(',')) party2.order = target.characters.map((entry) => entry.id);
   if (Object.keys(party2).length > 0) run(`commit/build/party/${party.id}`, party2);
   // 3. Build changes.

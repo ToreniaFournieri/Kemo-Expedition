@@ -35,6 +35,9 @@ const apiAccountStore = createApiAccountStore({ userDataPath: app.getPath('userD
 function apiV1RendererTimeoutMs(operation) {
   if (operation === 'fundamental/status') return 15_000;
   if (operation === 'fundamental/logIn') return 600_000;
+  // gaSearch may search for its whole 300 s `timeBudgetSeconds` cap (Spec 9.1.3, 2-3-2), then runs the final selection
+  // and verification forecasts past it; those get the ordinary 120 s allowance on top.
+  if (operation === 'read/build/party/{p}/gaSearch') return 420_000;
   return 120_000;
 }
 

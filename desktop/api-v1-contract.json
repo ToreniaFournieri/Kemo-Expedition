@@ -22215,8 +22215,21 @@
             "default": false
           },
           "considerDeityChange": {
-            "type": "boolean",
-            "default": false
+            "anyOf": [
+              {
+                "const": "none",
+                "type": "string"
+              },
+              {
+                "const": "unoccupiedDeities",
+                "type": "string"
+              },
+              {
+                "const": "allDeities",
+                "type": "string"
+              }
+            ],
+            "default": "none"
           },
           "considerItemsScope": {
             "anyOf": [
