@@ -124,11 +124,12 @@ after the response has been prepared. Fundamental responses use
   `revision`. A response must not combine values from different revisions.
 * Read, Help, and Resource operations do not mutate game state, consume live random
   values, advance time, mark Diary entries read, or persist derived state.
-* Reads use `GET`, except `simulationRun` and `gaSearch`, which use `POST` because
-  they perform substantial non-cacheable computation (and `gaSearch` takes nested
-  parameters). They remain Read operations and must not commit anything.
-  `gaSearch` keeps its latest result per party in memory for `applyGaResult`;
-  that result is not save state and changes no revision.
+* Reads use `GET`, except `simulationRun`, `gaSearch`, and
+  `stagedEquipmentTuning`, which use `POST` because they perform substantial
+  non-cacheable computation (and `gaSearch` takes nested parameters). They remain
+  Read operations and must not commit anything. `gaSearch` and an accepted
+  `stagedEquipmentTuning` keep their latest result per party in memory for
+  `applyGaResult`; that result is not save state and changes no revision.
 * Every `GET` endpoint except the popup event stream also answers `HEAD` with
   the status and headers (including `ETag`) that `GET` would return, and no body.
   A `405` for a `GET` endpoint lists `Allow: GET, HEAD`.
@@ -903,6 +904,96 @@ definitions in 9.1.3.
   step, its state before the operation, and a character whose equipment state did
   not change gets none (an identical step would block its earlier history).
 
+**Staged Equipment Tuning**
+
+* `stagedEquipmentTuning` (9.1.3, 2-3-7; 7.1.5) tunes the equipment of one
+  character with the same private forecast as `simulationRun`. Its seeds derive
+  from one fresh random seed per request: one for the item draws, one shared by
+  every quick run of steps 2–4, one shared by every run of step 5, and one shared
+  by the baseline (step 1) and the final check (step 6). `bossDamage` simulates
+  with every Clear-Gate of the destination open and the depth limit `all`, as
+  `gaSearch` does.
+* Validation: `characterId` is required; a character in no party is `not_found`.
+  `baselineRuns` may be sent only as `1000`. Integer ranges: `quickRuns` 10–1000,
+  `finalTuningRuns` 50–1000, `offenseElementTrialRuns` 0–10,
+  `defenseElementTrialRuns` 0–20, `abilityTrialRuns` 0–50, and each
+  `...CandidateCount` 1–3. `minImprovement` and `minGateImprovement` are numbers
+  from 0 to 10. `offenseElementRequest` is `noRequest`, `e.fire`, `e.ice`,
+  `e.thunder`, or `e.none`; `objective` is `success`, `minDefeat`, or
+  `bossDamage`. Any other value or an unknown member is `invalid_request` naming
+  the member.
+* Items: the owned Inventory and the character's own unlocked items, never items
+  worn by others; locked items keep their slot and Jewel. A slot changes only
+  within the character's slot count, and a candidate whose new items leave an item
+  without a slot (a replaced `c.equip_slot`) is dropped. A newly placed item may
+  not share a non-stacking bonus with another worn item: the same type and value
+  of any bonus entry of the item or its Super Rare title other than `b.` base
+  status bonuses and abilities (so `c.` bonuses, `r.` resistances, and
+  multipliers), and the same `c.accuracy`, `c.evasion`, or `c.penet` value. A candidate never mixes more offense elements than the build it
+  starts from. Empty slots are not filled for their own sake; a step may use one
+  for the item it places.
+* Jewels: each simulated build gets the 7.1.2.2 step 8 allocation from the free
+  Jewels plus those on the character's unlocked items. When the Inventory holds a
+  Jewel type and rank the character lacks, every item gets the highest free rank of
+  its category's Jewel in category order, one per type and rank; a slot left
+  without one keeps the Jewel it had when that Jewel is still free and fits.
+  Without such a Jewel only that second rule applies (8-3 skips the assignment).
+* Bottleneck: the room with the most Draw + Retreat + Defeat ends (the earliest
+  on a tie); with none, the boss room if a run reached it, else the latest
+  reached elite room, else `null`. Its enemies are every enemy the room can
+  draw. An element is resisted least when the enemies' average resistance
+  multiplier for it is highest (an enemy with that element's null, absorb, or
+  reflect counts 0; `e.none` counts 1). `a.X-breaker` matches an enemy with
+  `a.X`; the protect breakers also match that element's reflect and absorb, and
+  `a.m-barrier-breaker` also matches magical reflect and absorb.
+* Step 2 (per element and trial): every unlocked item of another element becomes
+  an item of the same category with the new element, or with no element when the
+  category has none; a locked item of another element, or a slot with neither
+  option, drops the element. When the build still lacks the new element, the
+  weakest open slots that can take an item of it get one: on trial `t` of `T`,
+  `round(n × (t + 1) / T)` of the `n` eligible slots (at least one). Elements no
+  slot can take are skipped before `offenseElementCandidateCount` is applied.
+  A build that already mixes elements tries every element.
+* Step 3 (per combination and trial): the combinations are the subsets of
+  `r.fire`, `r.ice`, and `r.thunder` (the empty one is `r.none`), excluding the
+  resistances the current items give, ordered by how many bottleneck enemies
+  attack with an element they cover, then by how few resistances change. Every
+  unlocked item resisting an element outside the combination becomes an item of
+  the same category that does not; each element of the combination still
+  unresisted gets one item resisting it. New items carry no other offense element
+  than the current build. Infeasible combinations are skipped before
+  `defenseElementCandidateCount` is applied.
+* Step 4: one candidate per item ID (its strongest owned variant) that adds an
+  ability the character lacks and brings no other offense element; breakers that
+  match the bottleneck enemies are drawn first. Each trial draws up to
+  `abilityCandidateCount` items not drawn before and places each alone.
+* Draws and slots: trial 0 takes the strongest item (the Party pane's
+  category-scaled `target d. bonus`, 7.1.2.2 step 4) and the best slot; later
+  trials draw an item at random weighted by that value squared, and an added item
+  goes to one of the three best slots. The best slot is an empty one, then the
+  one whose item is weakest next to the best item of its category; a filled slot
+  keeps its category, except that an ability item may also replace an item of its
+  group (`i.weapon`, `i.NoA`) or, failing that, of any category. A candidate
+  identical to one already tried in the step is not recorded twice.
+* Step 5 moves a change whose slot an earlier kept candidate changed to the next
+  best open slot, and skips the candidate when none fits. The swap pass runs for
+  step 2, then step 3. `finalTuning` lists the kept candidates in order: `step`,
+  `index` (its position in that step's list), its label, the improvement it
+  added, and the changes it made in the tuned build after any move.
+* Response: `before` and `after` are the `overview` strings; `improvement`,
+  `gain`, and `standardError` are the step 6 values (`gain` and
+  `standardError` as fractions of the score, not percentage points), rounded to
+  four decimals like every candidate's `improvement`. Each recorded candidate
+  carries its label (`element`, `resistance`, or `abilities`), `improvement`,
+  and `changes` (`<slotIndex>=<Item Format>` for every slot it changes; Jewels
+  follow from the allocation). `simulationRuns` counts every simulated run (a
+  build simulated twice on the same seed and run count is simulated once).
+* Acceptance also needs a non-empty `changeSummary`; it is built like the
+  `gaSearch` one. An accepted result is kept as the party's `applyGaResult`
+  result with the `gaSearch` verdict of its step 6 rates (`good` or `veryGood`);
+  any tuning of a party member discards the party's previous result, so a
+  rejected tuning leaves none.
+
 **Base**
 
 * Multi-item sell, purchase, and unlock requests validate all entries and the
@@ -1203,6 +1294,7 @@ use the same operation without HTTP authentication headers.
 | GET | `/api/v1/read/build/character/equipment` | Session | Equipment/mode. |
 | GET | `/api/v1/read/build/character/equipmentSet` | Session | Saved equipment sets. |
 | GET | `/api/v1/read/build/character/equipmentEvaluation` | Session | Evaluate items and Jewels for the character. |
+| POST | `/api/v1/read/build/character/stagedEquipmentTuning` | Session | Private staged equipment tuning of one character. |
 | GET | `/api/v1/read/base/searchItems` | Session | Search known items. |
 | GET | `/api/v1/read/base/jewelPriorityParty` | Session | Jewel priority. |
 | GET | `/api/v1/read/base/shopInfo` | Session | Shop status/information. |
@@ -1326,7 +1418,8 @@ use the same operation without HTTP authentication headers.
   supplied mismatch returns `stale_revision` before private computation.
   `gaSearch` POST accepts its 9.1.3 members (`targets`, `considerOrderChange`,
   `considerDeityChange`, `considerItemsScope`, `objective`, `gaParameters`) and an optional
-  `expectedRevision` the same way.
+  `expectedRevision` the same way; so does `stagedEquipmentTuning` with its 9.1.3
+  members (`characterId` and the tuning parameters).
   `numberOfRun` is an integer 1 ~ 1000 and defaults to 100; any other value is
   `invalid_request`.
 * A parameter is required unless marked optional, given a default, or contained

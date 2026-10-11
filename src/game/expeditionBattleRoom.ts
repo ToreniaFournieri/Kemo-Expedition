@@ -124,6 +124,33 @@ export function selectExpeditionRoomEnemy(
   return enemies[Math.floor(random() * enemies.length)] ?? null;
 }
 
+/**
+ * Every enemy `selectExpeditionRoomEnemy` can pick for this room, without drawing one (the Colosseum's configured enemy
+ * is not listed).
+ */
+export function listExpeditionRoomEnemyCandidates(room: ExpeditionBattleRoomDefinition, floorNumber: number): EnemyDef[] {
+  if (room.poolId === 99 || room.bossId === 9901) return [];
+  if (room.type === 'battle_Boss' && room.bossId) {
+    const boss = getBossEnemy(room.bossId);
+    return boss ? [boss] : [];
+  }
+  if ((room.enemyIds?.length ?? 0) > 0) {
+    const explicitEnemies = room.enemyIds!
+      .map((enemyId) => getEnemyById(enemyId))
+      .filter((enemy): enemy is EnemyDef => enemy !== undefined);
+    if (explicitEnemies.length > 0) return explicitEnemies.sort((a, b) => a.id - b.id);
+  }
+  if (!room.poolId) return [];
+  if (room.type === 'battle_Elite') {
+    const elites = getSortedElitesByPool(room.poolId);
+    return floorNumber <= elites.length ? [elites[floorNumber - 1]] : [...elites];
+  }
+  const enemies = getSortedEnemiesByPool(room.poolId);
+  const poolOffset = Math.max(0, Math.min(5, floorNumber - 1)) * 5;
+  const floorPool = enemies.slice(poolOffset, poolOffset + 5);
+  return floorPool.length > 0 ? floorPool : [...enemies];
+}
+
 function getGodShortName(displayName: string): string {
   return displayName.split(/[ ,]/)[0] ?? displayName;
 }

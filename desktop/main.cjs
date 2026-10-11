@@ -38,6 +38,8 @@ function apiV1RendererTimeoutMs(operation) {
   // gaSearch may search for its whole 300 s `timeBudgetSeconds` cap (Spec 9.1.3, 2-3-2), then runs the final selection
   // and verification forecasts past it; those get the ordinary 120 s allowance on top.
   if (operation === 'read/build/party/{p}/gaSearch') return 420_000;
+  // stagedEquipmentTuning has no time budget: its largest parameters (Spec 9.1.4.9 ranges) simulate about 270,000 runs.
+  if (operation === 'read/build/character/stagedEquipmentTuning') return 600_000;
   return 120_000;
 }
 

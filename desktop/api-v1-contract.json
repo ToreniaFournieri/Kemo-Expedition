@@ -25076,6 +25076,1015 @@
       }
     },
     {
+      "method": "POST",
+      "path": "/api/v1/read/build/character/stagedEquipmentTuning",
+      "access": "session",
+      "purpose": "Private staged equipment tuning of one character.",
+      "operationId": "read/build/character/stagedEquipmentTuning",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "characterId"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "characterId": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "baselineRuns": {
+            "const": 1000,
+            "type": "number",
+            "default": 1000
+          },
+          "quickRuns": {
+            "minimum": 10,
+            "maximum": 1000,
+            "type": "integer",
+            "default": 100
+          },
+          "finalTuningRuns": {
+            "minimum": 50,
+            "maximum": 1000,
+            "type": "integer",
+            "default": 500
+          },
+          "offenseElementTrialRuns": {
+            "minimum": 0,
+            "maximum": 10,
+            "type": "integer",
+            "default": 3
+          },
+          "offenseElementCandidateCount": {
+            "minimum": 1,
+            "maximum": 3,
+            "type": "integer",
+            "default": 2
+          },
+          "defenseElementTrialRuns": {
+            "minimum": 0,
+            "maximum": 20,
+            "type": "integer",
+            "default": 5
+          },
+          "defenseElementCandidateCount": {
+            "minimum": 1,
+            "maximum": 3,
+            "type": "integer",
+            "default": 2
+          },
+          "abilityTrialRuns": {
+            "minimum": 0,
+            "maximum": 50,
+            "type": "integer",
+            "default": 20
+          },
+          "abilityCandidateCount": {
+            "minimum": 1,
+            "maximum": 3,
+            "type": "integer",
+            "default": 2
+          },
+          "offenseElementRequest": {
+            "anyOf": [
+              {
+                "const": "noRequest",
+                "type": "string"
+              },
+              {
+                "const": "e.fire",
+                "type": "string"
+              },
+              {
+                "const": "e.ice",
+                "type": "string"
+              },
+              {
+                "const": "e.thunder",
+                "type": "string"
+              },
+              {
+                "const": "e.none",
+                "type": "string"
+              }
+            ],
+            "default": "noRequest"
+          },
+          "minImprovement": {
+            "minimum": 0,
+            "maximum": 10,
+            "type": "number",
+            "default": 0.07
+          },
+          "minGateImprovement": {
+            "minimum": 0,
+            "maximum": 10,
+            "type": "number",
+            "default": 0.07
+          },
+          "objective": {
+            "anyOf": [
+              {
+                "const": "success",
+                "type": "string"
+              },
+              {
+                "const": "minDefeat",
+                "type": "string"
+              },
+              {
+                "const": "bossDamage",
+                "type": "string"
+              }
+            ],
+            "default": "success"
+          }
+        }
+      },
+      "response": {
+        "data": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "accepted",
+            "objective",
+            "before",
+            "after",
+            "improvement",
+            "gain",
+            "standardError",
+            "bottleneckRoom",
+            "steps",
+            "changeSummary",
+            "revision",
+            "simulationRuns",
+            "elapsedSeconds"
+          ],
+          "properties": {
+            "accepted": {
+              "type": "boolean"
+            },
+            "objective": {
+              "anyOf": [
+                {
+                  "const": "success",
+                  "type": "string"
+                },
+                {
+                  "const": "minDefeat",
+                  "type": "string"
+                },
+                {
+                  "const": "bossDamage",
+                  "type": "string"
+                }
+              ]
+            },
+            "before": {
+              "type": "string"
+            },
+            "after": {
+              "type": "string"
+            },
+            "improvement": {
+              "type": "number"
+            },
+            "gain": {
+              "type": "number"
+            },
+            "standardError": {
+              "minimum": 0,
+              "type": "number"
+            },
+            "bottleneckRoom": {
+              "anyOf": [
+                {
+                  "pattern": "^[1-6]f-[1-4]$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "steps": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "offenseElement",
+                "defenseElement",
+                "ability",
+                "finalTuning"
+              ],
+              "properties": {
+                "offenseElement": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "element",
+                      "improvement",
+                      "changes"
+                    ],
+                    "properties": {
+                      "element": {
+                        "anyOf": [
+                          {
+                            "const": "e.fire",
+                            "type": "string"
+                          },
+                          {
+                            "const": "e.ice",
+                            "type": "string"
+                          },
+                          {
+                            "const": "e.thunder",
+                            "type": "string"
+                          },
+                          {
+                            "const": "e.none",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "improvement": {
+                        "type": "number"
+                      },
+                      "changes": {
+                        "type": "array",
+                        "items": {
+                          "pattern": "^[0-9]+=[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$",
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "defenseElement": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "resistance",
+                      "improvement",
+                      "changes"
+                    ],
+                    "properties": {
+                      "resistance": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "const": "r.fire",
+                              "type": "string"
+                            },
+                            {
+                              "const": "r.ice",
+                              "type": "string"
+                            },
+                            {
+                              "const": "r.thunder",
+                              "type": "string"
+                            },
+                            {
+                              "const": "r.none",
+                              "type": "string"
+                            }
+                          ]
+                        }
+                      },
+                      "improvement": {
+                        "type": "number"
+                      },
+                      "changes": {
+                        "type": "array",
+                        "items": {
+                          "pattern": "^[0-9]+=[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$",
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "ability": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "abilities",
+                      "improvement",
+                      "changes"
+                    ],
+                    "properties": {
+                      "abilities": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "improvement": {
+                        "type": "number"
+                      },
+                      "changes": {
+                        "type": "array",
+                        "items": {
+                          "pattern": "^[0-9]+=[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$",
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "finalTuning": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "step",
+                      "index",
+                      "improvement",
+                      "changes"
+                    ],
+                    "properties": {
+                      "step": {
+                        "anyOf": [
+                          {
+                            "const": "offenseElement",
+                            "type": "string"
+                          },
+                          {
+                            "const": "defenseElement",
+                            "type": "string"
+                          },
+                          {
+                            "const": "ability",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "index": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "element": {
+                        "anyOf": [
+                          {
+                            "const": "e.fire",
+                            "type": "string"
+                          },
+                          {
+                            "const": "e.ice",
+                            "type": "string"
+                          },
+                          {
+                            "const": "e.thunder",
+                            "type": "string"
+                          },
+                          {
+                            "const": "e.none",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "resistance": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "const": "r.fire",
+                              "type": "string"
+                            },
+                            {
+                              "const": "r.ice",
+                              "type": "string"
+                            },
+                            {
+                              "const": "r.thunder",
+                              "type": "string"
+                            },
+                            {
+                              "const": "r.none",
+                              "type": "string"
+                            }
+                          ]
+                        }
+                      },
+                      "abilities": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "improvement": {
+                        "type": "number"
+                      },
+                      "changes": {
+                        "type": "array",
+                        "items": {
+                          "pattern": "^[0-9]+=[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$",
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "changeSummary": {
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "endpoint",
+                  "parameters"
+                ],
+                "properties": {
+                  "endpoint": {
+                    "pattern": "^commit/build/",
+                    "type": "string"
+                  },
+                  "parameters": {
+                    "type": "object",
+                    "patternProperties": {
+                      "^(.*)$": {
+                        "anyOf": [
+                          {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "revision": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "simulationRuns": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "elapsedSeconds": {
+              "minimum": 0,
+              "type": "number"
+            },
+            "gaResultId": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            }
+          }
+        },
+        "envelope": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "apiVersion",
+            "schemaVersion",
+            "requestId",
+            "observedAt",
+            "data"
+          ],
+          "properties": {
+            "apiVersion": {
+              "const": "v1",
+              "type": "string"
+            },
+            "schemaVersion": {
+              "const": 1,
+              "type": "number"
+            },
+            "requestId": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            },
+            "revision": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "observedAt": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "accepted",
+                "objective",
+                "before",
+                "after",
+                "improvement",
+                "gain",
+                "standardError",
+                "bottleneckRoom",
+                "steps",
+                "changeSummary",
+                "revision",
+                "simulationRuns",
+                "elapsedSeconds"
+              ],
+              "properties": {
+                "accepted": {
+                  "type": "boolean"
+                },
+                "objective": {
+                  "anyOf": [
+                    {
+                      "const": "success",
+                      "type": "string"
+                    },
+                    {
+                      "const": "minDefeat",
+                      "type": "string"
+                    },
+                    {
+                      "const": "bossDamage",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "before": {
+                  "type": "string"
+                },
+                "after": {
+                  "type": "string"
+                },
+                "improvement": {
+                  "type": "number"
+                },
+                "gain": {
+                  "type": "number"
+                },
+                "standardError": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "bottleneckRoom": {
+                  "anyOf": [
+                    {
+                      "pattern": "^[1-6]f-[1-4]$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "steps": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "offenseElement",
+                    "defenseElement",
+                    "ability",
+                    "finalTuning"
+                  ],
+                  "properties": {
+                    "offenseElement": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "element",
+                          "improvement",
+                          "changes"
+                        ],
+                        "properties": {
+                          "element": {
+                            "anyOf": [
+                              {
+                                "const": "e.fire",
+                                "type": "string"
+                              },
+                              {
+                                "const": "e.ice",
+                                "type": "string"
+                              },
+                              {
+                                "const": "e.thunder",
+                                "type": "string"
+                              },
+                              {
+                                "const": "e.none",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "improvement": {
+                            "type": "number"
+                          },
+                          "changes": {
+                            "type": "array",
+                            "items": {
+                              "pattern": "^[0-9]+=[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$",
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "defenseElement": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "resistance",
+                          "improvement",
+                          "changes"
+                        ],
+                        "properties": {
+                          "resistance": {
+                            "minItems": 1,
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "const": "r.fire",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "r.ice",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "r.thunder",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "r.none",
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          },
+                          "improvement": {
+                            "type": "number"
+                          },
+                          "changes": {
+                            "type": "array",
+                            "items": {
+                              "pattern": "^[0-9]+=[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$",
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "ability": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "abilities",
+                          "improvement",
+                          "changes"
+                        ],
+                        "properties": {
+                          "abilities": {
+                            "minItems": 1,
+                            "type": "array",
+                            "items": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            }
+                          },
+                          "improvement": {
+                            "type": "number"
+                          },
+                          "changes": {
+                            "type": "array",
+                            "items": {
+                              "pattern": "^[0-9]+=[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$",
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "finalTuning": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "step",
+                          "index",
+                          "improvement",
+                          "changes"
+                        ],
+                        "properties": {
+                          "step": {
+                            "anyOf": [
+                              {
+                                "const": "offenseElement",
+                                "type": "string"
+                              },
+                              {
+                                "const": "defenseElement",
+                                "type": "string"
+                              },
+                              {
+                                "const": "ability",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "index": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "element": {
+                            "anyOf": [
+                              {
+                                "const": "e.fire",
+                                "type": "string"
+                              },
+                              {
+                                "const": "e.ice",
+                                "type": "string"
+                              },
+                              {
+                                "const": "e.thunder",
+                                "type": "string"
+                              },
+                              {
+                                "const": "e.none",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "resistance": {
+                            "minItems": 1,
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "const": "r.fire",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "r.ice",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "r.thunder",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "r.none",
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          },
+                          "abilities": {
+                            "minItems": 1,
+                            "type": "array",
+                            "items": {
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "type": "string"
+                            }
+                          },
+                          "improvement": {
+                            "type": "number"
+                          },
+                          "changes": {
+                            "type": "array",
+                            "items": {
+                              "pattern": "^[0-9]+=[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$",
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "changeSummary": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "endpoint",
+                      "parameters"
+                    ],
+                    "properties": {
+                      "endpoint": {
+                        "pattern": "^commit/build/",
+                        "type": "string"
+                      },
+                      "parameters": {
+                        "type": "object",
+                        "patternProperties": {
+                          "^(.*)$": {
+                            "anyOf": [
+                              {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "boolean"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "revision": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "simulationRuns": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "elapsedSeconds": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "gaResultId": {
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "errors": [
+        "authentication_failed",
+        "authentication_required",
+        "control_lease_expired",
+        "control_lease_invalid",
+        "internal_error",
+        "invalid_request",
+        "login_required",
+        "not_found",
+        "runtime_unavailable",
+        "stale_revision"
+      ],
+      "restrictions": {
+        "environments": "all",
+        "requiresDebugMode": false,
+        "requiresLogin": true
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {},
+          "query": {},
+          "body": {
+            "characterId": 1
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        },
+        "response": {
+          "data": {
+            "accepted": true,
+            "objective": "success",
+            "before": "xxxxxxx",
+            "after": "xxxxxxx",
+            "improvement": 1,
+            "gain": 1,
+            "standardError": 0,
+            "bottleneckRoom": "1f-1",
+            "steps": {
+              "offenseElement": [
+                {
+                  "element": "e.fire",
+                  "improvement": 1,
+                  "changes": [
+                    "0=0/1101/2/0"
+                  ]
+                }
+              ],
+              "defenseElement": [
+                {
+                  "resistance": [
+                    "r.fire"
+                  ],
+                  "improvement": 1,
+                  "changes": [
+                    "0=0/1101/2/0"
+                  ]
+                }
+              ],
+              "ability": [
+                {
+                  "abilities": [
+                    "xxxxxxx"
+                  ],
+                  "improvement": 1,
+                  "changes": [
+                    "0=0/1101/2/0"
+                  ]
+                }
+              ],
+              "finalTuning": [
+                {
+                  "step": "offenseElement",
+                  "index": 0,
+                  "improvement": 1,
+                  "changes": [
+                    "0=0/1101/2/0"
+                  ]
+                }
+              ]
+            },
+            "changeSummary": [
+              {
+                "endpoint": "commit/build/character/101/equip",
+                "parameters": {}
+              }
+            ],
+            "revision": 0,
+            "simulationRuns": 0,
+            "elapsedSeconds": 0
+          }
+        }
+      }
+    },
+    {
       "method": "GET",
       "path": "/api/v1/read/base/searchItems",
       "access": "session",

@@ -23,6 +23,7 @@ export const API_V1_OPERATIONS = [
   {"method":"GET","path":"/api/v1/read/build/character/equipment","access":"session","purpose":"Equipment/mode.","operationId":"read/build/character/equipment"},
   {"method":"GET","path":"/api/v1/read/build/character/equipmentSet","access":"session","purpose":"Saved equipment sets.","operationId":"read/build/character/equipmentSet"},
   {"method":"GET","path":"/api/v1/read/build/character/equipmentEvaluation","access":"session","purpose":"Evaluate items and Jewels for the character.","operationId":"read/build/character/equipmentEvaluation"},
+  {"method":"POST","path":"/api/v1/read/build/character/stagedEquipmentTuning","access":"session","purpose":"Private staged equipment tuning of one character.","operationId":"read/build/character/stagedEquipmentTuning"},
   {"method":"GET","path":"/api/v1/read/base/searchItems","access":"session","purpose":"Search known items.","operationId":"read/base/searchItems"},
   {"method":"GET","path":"/api/v1/read/base/jewelPriorityParty","access":"session","purpose":"Jewel priority.","operationId":"read/base/jewelPriorityParty"},
   {"method":"GET","path":"/api/v1/read/base/shopInfo","access":"session","purpose":"Shop status/information.","operationId":"read/base/shopInfo"},

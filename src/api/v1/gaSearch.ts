@@ -234,7 +234,7 @@ function deityHolderIndex(state: GameState, partyIndex: number, id: string): num
 }
 
 /** The fingerprint a stored result must still match: the Items and Jewels its `changeSummary` places and the characters it touches. */
-function fingerprintOfSummary(state: GameState, partyIndex: number, changeSummary: readonly GaChangeEntry[]): string {
+export function fingerprintOfSummary(state: GameState, partyIndex: number, changeSummary: readonly GaChangeEntry[]): string {
   const deityEntry = changeSummary.find((entry) => entry.endpoint === `commit/build/party/${state.parties[partyIndex].id}` && entry.parameters.deityId !== undefined);
   const usedVariants = changeSummary.filter((entry) => entry.endpoint.endsWith('/equip')).map((entry) => {
     const [, id, enhancement, superRare] = String(entry.parameters.targetEquipment).split('/');
@@ -396,7 +396,7 @@ const cloneGenome = (genome: Genome): Genome => ({
 const tierWeight = (key: string): number => Math.max(1, Math.floor(Number(key.split('-')[0]) / 1000) ** 2);
 
 /** xorshift32: a small deterministic stream for the search itself (selection, crossover, mutation, repair). */
-function createRandom(seed: number): () => number {
+export function createRandom(seed: number): () => number {
   let value = (seed >>> 0) || 0x9e3779b9;
   return () => {
     value ^= value << 13; value >>>= 0;
@@ -407,7 +407,7 @@ function createRandom(seed: number): () => number {
 }
 
 /** Derives the independent seeds of the quick, confirm, and verification runs from the request seed. */
-const deriveSeed = (seed: number, stream: number): number => {
+export const deriveSeed = (seed: number, stream: number): number => {
   let value = (seed ^ Math.imul(stream + 1, 0x9e3779b1)) >>> 0;
   value = Math.imul(value ^ (value >>> 16), 0x85ebca6b) >>> 0;
   value = Math.imul(value ^ (value >>> 13), 0xc2b2ae35) >>> 0;
@@ -615,7 +615,7 @@ function countChanges(model: SearchModel, decoded: Decoded): number {
 // ---------------- Objective ----------------
 
 /** Opens every Clear-Gate of the destination and the whole depth, so a `bossDamage` run can reach the boss room. */
-function prepareObjectiveState(state: GameState, partyIndex: number, objective: GaObjective): GameState {
+export function prepareObjectiveState(state: GameState, partyIndex: number, objective: GaObjective): GameState {
   if (objective !== 'bossDamage') return state;
   const party = state.parties[partyIndex];
   const dungeonId = party.selectedDungeonId;

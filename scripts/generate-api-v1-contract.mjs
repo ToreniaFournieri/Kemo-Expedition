@@ -13,7 +13,7 @@ const operations = [...specification.matchAll(rowPattern)].map((match) => ({
   method: match[1], path: match[2], access: match[3].toLowerCase(), purpose: match[4].trim(),
   operationId: match[2].slice('/api/v1/'.length),
 }));
-if (operations.length !== 87) throw new Error(`Expected 87 /api/v1 operations, found ${operations.length}.`);
+if (operations.length !== 88) throw new Error(`Expected 88 /api/v1 operations, found ${operations.length}.`);
 if (new Set(operations.map(({ method, path }) => `${method} ${path}`)).size !== operations.length) throw new Error('Duplicate /api/v1 method/path pair in the endpoint index.');
 if (operations.some(({ path }) => !path.startsWith('/api/v1/'))) throw new Error('Non-v1 route found in the v1 endpoint index.');
 
@@ -285,6 +285,12 @@ const gaParameters = strict({
   ...Object.fromEntries(Object.entries(gaIntegers).map(([key, [minimum, maximum]]) => [key, optional(Type.Integer({ minimum, maximum }))])),
   mutationRate: optional(Type.Number({ minimum: 0, maximum: 1 })), seed: optional(Type.Integer()), seedWithHeuristics: optional(Type.Boolean(), true),
 });
+// SpecRef: 9.1.3 | Read | 2-3-7 character/stagedEquipmentTuning | a POST Read body like `gaSearch`; ranges in 9.1.4.9.
+const tuningIntegers = {
+  quickRuns: [10, 1000, 100], finalTuningRuns: [50, 1000, 500], offenseElementTrialRuns: [0, 10, 3], offenseElementCandidateCount: [1, 3, 2],
+  defenseElementTrialRuns: [0, 20, 5], defenseElementCandidateCount: [1, 3, 2], abilityTrialRuns: [0, 50, 20], abilityCandidateCount: [1, 3, 2],
+};
+const tuningObjective = literals('success', 'minDefeat', 'bossDamage');
 const directBodySchemas = {
   'fundamental/signUp': strict({ ...identity, language: optional(language, 'ja') }), 'fundamental/logIn': strict({ ...identity, headless: optional(Type.Boolean(), false) }), 'fundamental/logOut': empty,
   'read/build/party/{p}/gaSearch': strict({
@@ -293,6 +299,15 @@ const directBodySchemas = {
     considerOrderChange: optional(Type.Boolean(), false), considerDeityChange: optional(literals('none', 'unoccupiedDeities', 'allDeities'), 'none'),
     considerItemsScope: optional(literals('normal', 'withinTargets', 'global'), 'normal'),
     objective: optional(literals('success', 'minDefeat', 'bossDamage', 'experience'), 'success'), gaParameters: optional(gaParameters),
+  }),
+  'read/build/character/stagedEquipmentTuning': strict({
+    expectedRevision: optional(Type.Integer({ minimum: 0 })),
+    characterId: integerId,
+    baselineRuns: optional(Type.Literal(1000), 1000),
+    ...Object.fromEntries(Object.entries(tuningIntegers).map(([key, [minimum, maximum, value]]) => [key, optional(Type.Integer({ minimum, maximum }), value)])),
+    offenseElementRequest: optional(literals('noRequest', 'e.fire', 'e.ice', 'e.thunder', 'e.none'), 'noRequest'),
+    minImprovement: optional(Type.Number({ minimum: 0, maximum: 10 }), 0.07), minGateImprovement: optional(Type.Number({ minimum: 0, maximum: 10 }), 0.07),
+    objective: optional(tuningObjective, 'success'),
   }),
 };
 
@@ -314,6 +329,9 @@ const gaForecast = strict({ before: Type.String(), after: Type.String() });
 const gaChangeEndpoint = Type.String({ pattern: '^commit/build/' });
 sampleOverrides.set(gaChangeEndpoint, 'commit/build/character/101/equip');
 const gaChangeEntry = strict({ endpoint: gaChangeEndpoint, parameters: Type.Record(Type.String(), Type.Union([scalar, Type.Array(Type.Integer({ minimum: 0 }))])) });
+// SpecRef: 9.1.4.9 | stagedEquipmentTuning | one changed slot of a candidate: `<slotIndex>=<Item Format>`.
+const tuningChange = Type.String({ pattern: '^[0-9]+=[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$' });
+sampleOverrides.set(tuningChange, '0=0/1101/2/0');
 const availability = strict({ available: Type.Boolean(), unavailableReason: Type.Union([Type.String(), Type.Null()]) });
 const equipmentEntryFormat = Type.String({ pattern: '^(?:0|[0-9]+/[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)(?:/(?:might|arcana|fort|ward|shade|focus):[1-8])?)$' });
 sampleOverrides.set(equipmentEntryFormat, '0');
@@ -524,6 +542,24 @@ const responseDataSchemas = {
     evaluations: Type.Integer({ minimum: 0 }), elapsedSeconds: Type.Number({ minimum: 0 }), gaResultId: stableKey,
     verification: strict({ objective: gaObjective, runs: Type.Integer({ minimum: 1 }), before: Type.Number({ minimum: 0 }), after: Type.Number({ minimum: 0 }), gain: Type.Union([Type.Number(), Type.Null()]), standardError: Type.Number({ minimum: 0 }), seed: Type.Integer() }),
   }),
+  // SpecRef: 9.1.3 | 2-3-7 stagedEquipmentTuning | the final check, what each step recorded, and the Commit API calls of the tuned build.
+  'read/build/character/stagedEquipmentTuning': strict({
+    accepted: Type.Boolean(), objective: tuningObjective, before: Type.String(), after: Type.String(),
+    improvement: Type.Number(), gain: Type.Number(), standardError: Type.Number({ minimum: 0 }),
+    bottleneckRoom: Type.Union([floorRoomKey, Type.Null()]),
+    steps: strict({
+      offenseElement: Type.Array(strict({ element: literals('e.fire', 'e.ice', 'e.thunder', 'e.none'), improvement: Type.Number(), changes: Type.Array(tuningChange) })),
+      defenseElement: Type.Array(strict({ resistance: nonEmptyArray(literals('r.fire', 'r.ice', 'r.thunder', 'r.none')), improvement: Type.Number(), changes: Type.Array(tuningChange) })),
+      ability: Type.Array(strict({ abilities: nonEmptyArray(stableKey), improvement: Type.Number(), changes: Type.Array(tuningChange) })),
+      finalTuning: Type.Array(strict({
+        step: literals('offenseElement', 'defenseElement', 'ability'), index: Type.Integer({ minimum: 0 }),
+        element: optional(literals('e.fire', 'e.ice', 'e.thunder', 'e.none')), resistance: optional(nonEmptyArray(literals('r.fire', 'r.ice', 'r.thunder', 'r.none'))), abilities: optional(nonEmptyArray(stableKey)),
+        improvement: Type.Number(), changes: Type.Array(tuningChange),
+      })),
+    }),
+    changeSummary: Type.Array(gaChangeEntry), revision: Type.Integer({ minimum: 0 }), simulationRuns: Type.Integer({ minimum: 0 }),
+    elapsedSeconds: Type.Number({ minimum: 0 }), gaResultId: optional(stableKey),
+  }),
   'read/build/character/status': characterReads({ calculatedStatus, current: characterBuildCurrent, editableFields: strict({ name: Type.Boolean() }), validOptions: strict({ uniqueSelection: Type.Array(uniqueSelectionValue), racesAndGender: Type.Array(stableKey), mainClassId: Type.Array(stableKey), subClassId: Type.Array(stableKey), lineage: Type.Array(stableKey), predisposition: Type.Array(stableKey) }) }),
   'read/build/character/equipment': characterReads({ current: strict({ mode: literals('FULL', 'SEMI', 'OFF'), equipment: equipmentEntryList }), validOptions: strict({ mode: Type.Array(literals('FULL', 'SEMI', 'OFF')), numberOfEmptyEquipmentSlots: Type.Integer({ minimum: 0 }), undoEquipment: equipmentHistoryAction, redoEquipment: equipmentHistoryAction }) }),
   'read/build/character/equipmentSet': characterReads({ equipmentSets: Type.Array(strict({ equipmentSetId: integerId, equipmentSet })) }),
@@ -723,7 +759,9 @@ function errorsFor(operation, query) {
   if (operation.operationId === 'fundamental/signUp') codes.add('already_exists');
   if (operation.operationId === 'fundamental/logIn') { codes.add('control_unavailable'); codes.add('not_found'); }
   if (operation.operationId === 'fundamental/logOut') codes.add('save_failed');
-  if (operation.operationId.endsWith('/simulationRun') || operation.operationId.endsWith('/gaSearch')) codes.add('stale_revision');
+  if (operation.operationId.endsWith('/simulationRun') || operation.operationId.endsWith('/gaSearch') || operation.operationId.endsWith('/stagedEquipmentTuning')) codes.add('stale_revision');
+  // `characterId` travels in the body, so the path-template detection above misses the unknown character.
+  if (operation.operationId === 'read/build/character/stagedEquipmentTuning') codes.add('not_found');
   const list = [...codes].sort();
   for (const code of list) if (!KNOWN_ERROR_CODES.has(code)) throw new Error(`Unknown error code referenced by ${operation.operationId}: ${code}`);
   return list;
