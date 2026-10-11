@@ -385,101 +385,67 @@ at least one party member has an empty equipment slot.
   - `read/build/character/stagedEquipmentTuning`
   - `read/expedition/{p}/simulationRun`
 
-- This is a read API. It never changes the save. If the final check (step 6) passes, the result returns the changes as `changeSummary` (see `9.1.3`, 2-3-7).
+* **Parameters:**
+  * `baselineRuns` (constant: `1000`)
+  * `quickRuns` (e.g., `100`, `300`, `1000`; default: `100`)
+  * `finalTuningRuns` (e.g., `300`, `500`, `1000`; default: `500`)
+  * `offenseElementRequest` (e.g., `e.fire`, `e.thunder`, `e.ice`, `e.none`; default: `noRequest`)
+  * `offenseElementTrialRuns` (e.g., `0`, `3`, `6`; default: `3`)
+  * `offenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
+  * `defenseElementTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
+  * `defenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
+  * `abilityTrialRuns` (e.g., `0`, `20`, `40`; default: `20`)
+  * `abilityCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
+  * `finalTuningTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
+  * `minImprovement` (e.g., `0.03`, `0.07`, `0.10`; default: `0.07`)
+  * `minGateImprovement` (e.g., `0.03`, `0.07`, `0.10`; default: `0.07`)
+  * `objective`
+    * Optional.
+    * Default: `success`.
+    * `success`, `minDefeat`, `bossDamage`.
+    * `bossDamage` simulates the boss room of the current destination even if the depth limit stops before the boss.
 
-- **Parameters:**
-  - `baselineRuns` (constant: `1000`)
-  - `quickRuns` (e.g., `100`, `300`, `1000`; default: `100`)
-  - `finalTuningRuns` (e.g., `300`, `500`, `1000`; default: `500`)
-  - `offenseElementRequest` (e.g., `e.fire`, `e.thunder`, `e.ice`, `e.none`; default: `noRequest`)
-  - `offenseElementTrialRuns` (e.g., `0`, `3`, `6`; default: `3`)
-  - `offenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
-  - `defenseElementTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
-  - `defenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
-  - `abilityTrialRuns` (e.g., `0`, `20`, `40`; default: `20`)
-  - `abilityCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
-  - `minImprovement` (e.g., `0.03`, `0.07`, `0.10`; default: `0.07`)
-  - `minGateImprovement` (e.g., `0.03`, `0.07`, `0.10`; default: `0.07`)
-  - `objective`
-    - Optional.
-    - Default: `success`.
-    - `success`, `minDefeat`, `bossDamage`
-    - `bossDamage` simulates the boss room of the current destination even if the depth limit stops before the boss.
 
 - **General rules:**
-  - Items come from the Inventory and this character's own equipment. Equipment of other characters is never taken. Locked equipment is never changed.
+  - Evaluate each candidate with `quickRuns` simulation runs. Accept it only if it improves on the current build by at least `minImprovement`.
   - Do not select multiple items with the same bonus, since duplicate bonuses do not stack (e.g., two items with `r.ice+0.20` give the same effect as one).
   - Setting a step's `...TrialRuns` to `0` skips that step.
-  - **Jewels:**
-    - Every build that is simulated gets its Jewels assigned with the Jewel allocation logic of `7.1.2.2` step 8.
-    - Unlike AUTO, eligible Jewels in the Inventory are always considered, even if the character's party is not the `Jewel Priority Party`.
-    - Jewels on other characters are never taken. Locked equipment keeps its Jewel.
-    - **Reference build:** the current equipment with Jewels assigned this way. Steps 2–5 compare candidates with the reference build, so a candidate gets credit only for its equipment change, not for the Jewel reassignment.
-    - Steps 1 and 6 compare with the current build as it is (with its current Jewels).
-  - **Same dice:** Builds that are compared with each other are simulated with the same seed, so the difference comes from the build, not from luck.
-    - Steps 2–4: every candidate uses `quickRuns` and one shared seed. The reference build is also simulated once with `quickRuns` and that seed, and each candidate is compared with that result (not with the step 1 baseline).
-    - Step 5: every build uses `finalTuningRuns` and a second shared seed, including the reference build.
-    - Steps 1 and 6: both use `baselineRuns` and a third shared seed.
-  - **Score** (per `objective`):
-    - `success`: success rate (clear + return).
-    - `minDefeat`: defeat rate. Lower is better.
-    - `bossDamage`: average share of boss HP dealt in the boss room.
-  - **Improvement:**
-    - `success`, `bossDamage`: `ratio = candidateScore / currentScore`
-    - `minDefeat`: `ratio = currentScore / candidateScore`
-    - A score of `0` in the denominator is treated as `0.001`.
-    - If both scores are `0`, `ratio = 1`.
-    - `improvement = ratio - 1` (e.g., `ratio = 1.07` means a 7% improvement).
-  - **Qualify:** In steps 2–4, a candidate qualifies only if `improvement >= minImprovement`.
-  - **Luck check:** Used in step 6.
-    - `gain = afterScore - beforeScore` (for `minDefeat`: `beforeScore - afterScore`).
-    - `SE = sqrt(beforeScore × (1 - beforeScore) / runs + afterScore × (1 - afterScore) / runs)`
-    - `SE` is how much the difference usually moves by luck alone. `gain > 2 × SE` means the gain is very unlikely to be luck.
+  - `objective` improvement:
+    - `success`: `candidateSuccess / currentSuccess`. If `currentSuccess` is `0`, treat it as `0.001`.
+    - `minDefeat`: `currentDefeat / candidateDefeat`. If `candidateDefeat` is `0`, treat it as `0.001`.
+    - `bossDamage`: `candidateDamage / currentDamage`. If `currentDamage` is `0`, treat it as `0.1`.
+    - Improvement is calculated as `ratio - 1` (e.g., `1.03` means a 3% improvement).
 
-1. Run a baseline simulation and find the bottleneck
-   - Simulate the current build with `baselineRuns` runs (same as `read/expedition/{p}/simulationRun` with `numberOfRun=baselineRuns`).
-   - Bottleneck room: the room in `detail` with the highest `Draw + Retreat + Defeat`.
-     - If no run ends before the end of the route, use the boss room. If the boss room is out of reach, use the latest elite room.
-   - Bottleneck enemies: the enemies of the bottleneck room. Steps 2–4 use them to decide what to try first.
+1. Run a baseline simulation before tuning
+   - Call `read/expedition/{p}/simulationRun` with `numberOfRun=baselineRuns`.
+   - Identify bottlenecks.
 
 2. Evaluate alternative offense elements
    - If `offenseElementRequest` is specified, use only the requested element and skip evaluating other elements.
    - Otherwise, choose up to `offenseElementCandidateCount` elements other than the current one from `e.ice`, `e.thunder`, `e.fire`, and `e.none`.
-     - Try first the elements the bottleneck enemies resist least (e.g., an enemy with `r.fire_x1.3` and `r.ice_x1/5`: try `e.fire` before `e.ice`).
    - Do not mix equipment of different elements. When switching elements, replace all elemental equipment.
-     - If a slot's category has no item of the new element (e.g., `i.sword` has only `e.fire`), use an item of the same category with no element.
    - Repeat this step `offenseElementTrialRuns` times, drawing new items for each trial.
-   - Record the top `max(2, floor(offenseElementTrialRuns / 5))` candidates that qualify. If none qualify, record none.
+   - Record the top `max(2, floor(...TrialRuns / 5))` candidate combinations that improve by at least `minImprovement`. Candidates below this threshold are excluded. If none qualify, record none.
 
 3. Evaluate alternative defense elements
    - Build up to `defenseElementCandidateCount` combinations from `r.ice`, `r.thunder`, `r.fire`, and `r.none`, excluding the current combination.
-     - Try first the combination that resists the bottleneck enemies' attack element (e.g., `r.thunder` against `e.thunder+20`).
    - Repeat this step `defenseElementTrialRuns` times, drawing new items for each trial.
-   - Record the top `max(2, floor(defenseElementTrialRuns / 5))` candidates that qualify. If none qualify, record none.
+   - Record the top `max(2, floor(...TrialRuns / 5))` candidate combinations that improve by at least `minImprovement`. Candidates below this threshold are excluded. If none qualify, record none.
 
 4. Evaluate alternative item abilities
    - Check the abilities granted by the current equipment.
-   - Try up to `abilityCandidateCount` items that grant abilities the character doesn't already have, each replacing one or more unlocked items.
-     - Try first items that grant `a.X-breaker` when a bottleneck enemy has `a.X` (e.g., `a.illusion-breaker` against `a.illusion`).
-   - Repeat this step `abilityTrialRuns` times, drawing new items for each trial. Do not draw an item that was already tried in this step.
-   - Record the top `max(2, floor(abilityTrialRuns / 5))` candidates that qualify. If none qualify, record none.
+   - Try up to `abilityCandidateCount` items that grant abilities the character doesn't already have, each replacing one or more unlocked equipment.
+   - Repeat this step `abilityTrialRuns` times, drawing new items for each trial.
+   - Record the top `max(2, floor(...TrialRuns / 5))` candidate combinations that improve by at least `minImprovement`. Candidates below this threshold are excluded. If none qualify, record none.
 
-5. Final tuning (greedy)
-   - Start from the reference build. Every simulation in this step uses `finalTuningRuns`.
-   - Add pass:
-     - Put all candidates recorded in steps 2–4 into one list, sorted by their improvement (best first).
-     - Go through the list in order. Add each candidate to the build, and keep it only if the score improves compared with the build before adding it (`improvement > 0`).
-     - The build holds at most one step 2 candidate and one step 3 candidate. Skip a step 2 or step 3 candidate if one from the same step is already kept.
-     - Step 4 candidates can be combined (several ability items).
-     - If a candidate needs a slot that an earlier kept candidate already changed, use another unlocked slot. If no unlocked slot is left, skip the candidate.
-   - Swap pass:
-     - For steps 2 and 3, try each other recorded candidate in place of the kept one. Keep the swap only if the score improves.
-   - The result is the tuned build.
-   - If no candidate is kept, the tuned build is the reference build (Jewel reassignment only). Step 6 still checks it.
+5. Final tuning
+   - Evaluate combinations of the top candidates from steps 2, 3, and 4, and select the combination with the best result. For example:
+     - Top-ranked combination: the top candidate from each step (Step 2: Top 1, Step 3: Top 1, Step 4: Top 1)
+     - Other combinations: e.g., Step 2: Top 2, Step 3: current, Step 4: Top 1
+   - build the combination greedily, not from every pairing.
+   - Repeat this step `finalTuningTrialRuns` times.
 
-6. Run the simulation after tuning (final check)
-   - Simulate the tuned build with `baselineRuns` runs, using the same seed as step 1.
-   - Accept the tuned build only if both are true:
-     - `improvement >= minGateImprovement`
-     - `gain > 2 × SE`
-   - Otherwise, discard the changes and keep the original build. `changeSummary` is empty.
+6. Run the simulation after tuning
+   - Call `read/expedition/{p}/simulationRun` with `numberOfRun=baselineRuns`.
+   - Compare the results with the baseline. Accept the tuned build only if it improves by at least `minGateImprovement`.
+   - Otherwise, discard the changes and keep the original build.
