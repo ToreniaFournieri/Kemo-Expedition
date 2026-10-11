@@ -388,6 +388,7 @@ at least one party member has an empty equipment slot.
 - **Parameters:**
   - `baselineRuns` (fixed: `1000`)
   - `quickRuns` (e.g., `100`, `300`, `1000`; default: `100`)
+  - `finalTuningRuns` (e.g., `300`, `500`, `1000`; default: `500`)
   - `offenseElementRequest` (e.g., `e.fire`, `e.thunder`, `e.ice`, `e.none`; default: `noRequest`)
   - `offenseElementc (e.g., `0`, `3`, `6`; default: `3`)
   - `offenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)

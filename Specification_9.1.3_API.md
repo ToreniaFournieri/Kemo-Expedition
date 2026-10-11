@@ -916,6 +916,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Required.
   * `baselineRuns` (fixed: `1000`)
   * `quickRuns` (e.g., `100`, `300`, `1000`; default: `100`)
+  * `finalTuningRuns` (e.g., `300`, `500`, `1000`; default: `500`)
   * `offenseElementRequest` (e.g., `e.fire`, `e.thunder`, `e.ice`, `e.none`; default: `noRequest`)
   * `offenseElementTrialRuns` (e.g., `0`, `3`, `6`; default: `3`)
   * `offenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
@@ -924,7 +925,6 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `abilityTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
   * `abilityCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
   * `finalTuningTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
-  * `finalTuningCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
   * `minImprovement` (e.g., `0.01`, `0.03`, `0.05`; default: `0.03`)
   * `minGateImprovement` (e.g., `0.03`, `0.05`, `0.10`; default: `0.05`)
   * `objective`
