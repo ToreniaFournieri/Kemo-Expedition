@@ -412,11 +412,12 @@ at least one party member has an empty equipment slot.
   - Do not select multiple items with the same bonus, since duplicate bonuses do not stack (e.g., two items with `r.ice+0.20` give the same effect as one).
   - Setting a step's `...TrialRuns` to `0` skips that step.
   - **Jewels:**
-    - Every build that is simulated gets its Jewels assigned with the Jewel allocation logic of `7.1.2.2` step 8.
-    - Unlike AUTO, eligible Jewels in the Inventory are always considered, even if the character's party is not the `Jewel Priority Party`.
+    - Only slots whose item changed get a new Jewel. Jewels on unchanged slots are kept as they are.
+    - For the changed slots, assign Jewels with the Jewel allocation logic of `7.1.2.2` step 8, using:
+      - the Jewels freed from the items that left the character, and
+      - eligible Jewels in the Inventory, even if the character's party is not the `Jewel Priority Party` (unlike AUTO).
+    - Jewels on unchanged slots count as already used for the "one Jewel per item type and rank" rule.
     - Jewels on other characters are never taken. Locked equipment keeps its Jewel.
-    - **Reference build:** the current equipment with Jewels assigned this way. Steps 2–5 compare candidates with the reference build, so a candidate gets credit only for its equipment change, not for the Jewel reassignment.
-    - Steps 1 and 6 compare with the current build as it is (with its current Jewels).
   - **Same dice:** Builds that are compared with each other are simulated with the same seed, so the difference comes from the build, not from luck.
     - Steps 2–4: every candidate uses `quickRuns` and one shared seed. The reference build is also simulated once with `quickRuns` and that seed, and each candidate is compared with that result (not with the step 1 baseline).
     - Step 5: every build uses `finalTuningRuns` and a second shared seed, including the reference build.
