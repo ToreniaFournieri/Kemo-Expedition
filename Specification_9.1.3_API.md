@@ -934,6 +934,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Default: `success`.
     * `success`, `minDefeat`, `bossDamage`
     * `bossDamage` simulates the boss room of the current destination even if the depth limit stops before the boss.
+  * `seed`
 
 * Return:
   * `accepted`

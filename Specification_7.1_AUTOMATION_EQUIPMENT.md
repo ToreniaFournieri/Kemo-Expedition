@@ -405,6 +405,7 @@ at least one party member has an empty equipment slot.
     - Default: `success`.
     - `success`, `minDefeat`, `bossDamage`
     - `bossDamage` simulates the boss room of the current destination even if the depth limit stops before the boss.
+  - `seed`
 
 - **General rules:**
   - Items come from the Inventory and this character's own equipment. Equipment of other characters is never taken. Locked equipment is never changed.
