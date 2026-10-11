@@ -379,20 +379,60 @@ at least one party member has an empty equipment slot.
   - empty slot to equip item: PT2ニャンは 恐ろしい月鋼鏃の矢を装備した
   - exist item to equip another item: PT2ニャンは 恐ろしい月鋼鏃の矢 を 魔性の瞬撃の月鋼矢に装備しなおした 
 
+#### 7.1.5 Staged Equipment Tuning
 
+- **Read APIs:**
+  - `read/build/character/stagedEquipmentTuning`
+  - `read/expedition/{p}/simulationRun`
 
-#### 7.1.5 GA Equipment Search
+- **Parameters:**
+  - `baselineRuns` (fixed: `1000`)
+  - `quickRuns` (e.g., `100`, `300`, `1000`; default: `100`)
+  - `offenseElementRequest` (e.g., `e.fire`, `e.thunder`, `e.ice`, `e.none`; default: `noRequest`)
+  - `offenseElementTrialRuns` (e.g., `0`, `3`, `6`; default: `3`)
+  - `offenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
+  - `defenseElementTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
+  - `defenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
+  - `abilityTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
+  - `abilityCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
+  - `finalTuningTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
+  - `finalTuningCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
+  - `minImprovement` (e.g., `0.01`, `0.03`, `0.05`; default: `0.03`)
+  - `minGateImprovement` (e.g., `0.03`, `0.05`, `0.10`; default: `0.05`)
 
-- (TBA)
+- **General rules:**
+  - Evaluate each candidate with `quickRuns` simulation runs. Accept it only if it improves on the current build by at least `minImprovement`.
+  - Do not select multiple items with the same bonus, since duplicate bonuses do not stack (e.g., two items with `r.ice+0.20` give the same effect as one).
+  - Setting a step's `...TrialRuns` to `0` skips that step.
 
-- **API Read:**
-  - `read/build/character/gaEquipmentSearch`
+1. Run a baseline simulation before tuning
+   - Call `read/expedition/{p}/simulationRun` with `numberOfRun=baselineRuns`.
+   - Identify bottlenecks.
 
+2. Evaluate alternative offense elements
+   - If `offenseElementRequest` is specified, use only the requested element and skip evaluating other elements.
+   - Otherwise, choose up to `offenseElementCandidateCount` elements other than the current one from `e.ice`, `e.thunder`, `e.fire`, and `e.none`.
+   - Do not mix equipment of different elements. When switching elements, replace all elemental equipment.
+   - Temporarily lock the elemental equipment during evaluation.
+   - Repeat this step `offenseElementTrialRuns` times.
 
-- (1) Equipment locking layer 
-  - `equipment` ability check.
-  - Test which ability of items helps to improve. If it has a meaningful improvement, lock the item internally.
+3. Evaluate alternative defense elements
+   - Build up to `defenseElementCandidateCount` combinations from `r.ice`, `r.thunder`, `r.fire`, and `r.none`, excluding the current combination.
+   - Temporarily lock the elemental equipment during evaluation.
+   - Repeat this step `defenseElementTrialRuns` times.
 
-- (2) Equipment tactical layer
-  - For each character, `equipment` tuning. 
-  - This layer focuses on target defense or offense values.
+4. Evaluate alternative item abilities
+   - Check the abilities granted by the current equipment.
+   - Try up to `abilityCandidateCount` items that grant abilities the character doesn't already have, each replacing one or more randomly chosen pieces of equipment.
+   - Lock any item that improves results by at least `minImprovement`.
+   - Repeat this step `abilityTrialRuns` times.
+
+5. Final tuning
+   - Try up to `finalTuningCandidateCount` replacements, each swapping one unlocked piece of equipment for a different item.
+   - Focus on reaching the target offense or defense values.
+   - Repeat this step `finalTuningTrialRuns` times.
+
+6. Run the simulation after tuning
+   - Call `read/expedition/{p}/simulationRun` with `numberOfRun=baselineRuns`.
+   - Compare the results with the baseline. Accept the tuned build only if it improves by at least `minGateImprovement`.
+   - Otherwise, discard the changes and keep the original build.
