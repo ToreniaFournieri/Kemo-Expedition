@@ -389,16 +389,21 @@ at least one party member has an empty equipment slot.
   - `baselineRuns` (fixed: `1000`)
   - `quickRuns` (e.g., `100`, `300`, `1000`; default: `100`)
   - `offenseElementRequest` (e.g., `e.fire`, `e.thunder`, `e.ice`, `e.none`; default: `noRequest`)
-  - `offenseElementTrialRuns` (e.g., `0`, `3`, `6`; default: `3`)
+  - `offenseElementc (e.g., `0`, `3`, `6`; default: `3`)
   - `offenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
   - `defenseElementTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
   - `defenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
-  - `abilityTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
+  - `abilityTrialRuns` (e.g., `0`, `20`, `40`; default: `20`)
   - `abilityCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
   - `finalTuningTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
-  - `finalTuningCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
-  - `minImprovement` (e.g., `0.01`, `0.03`, `0.05`; default: `0.03`)
-  - `minGateImprovement` (e.g., `0.03`, `0.05`, `0.10`; default: `0.05`)
+  - `minImprovement` (e.g., `0.03`, `0.07`, `0.10`; default: `0.07`)
+  - `minGateImprovement` (e.g., `0.05`, `0.10`, `0.15`; default: `0.10`)
+  - `objective`
+    - Optional.
+    - Default: `success`.
+    - `success`, `minDefeat`, `bossDamage`, `experience`
+    - `bossDamage` simulates the boss room of the current destination even if the depth limit stops before the boss.
+
 
 - **General rules:**
   - Evaluate each candidate with `quickRuns` simulation runs. Accept it only if it improves on the current build by at least `minImprovement`.
@@ -413,24 +418,28 @@ at least one party member has an empty equipment slot.
    - If `offenseElementRequest` is specified, use only the requested element and skip evaluating other elements.
    - Otherwise, choose up to `offenseElementCandidateCount` elements other than the current one from `e.ice`, `e.thunder`, `e.fire`, and `e.none`.
    - Do not mix equipment of different elements. When switching elements, replace all elemental equipment.
-   - Temporarily lock the elemental equipment during evaluation.
-   - Repeat this step `offenseElementTrialRuns` times.
+   - Once an element is accepted, keep that gear locked through steps 3–4.
+   - Repeat this step `offenseElementTrialRuns` times, drawing new items for each trial.
+   - Record the top `max(2, floor(...TrialRuns / 3))` candidate combinations that improve by at least `minImprovement`. Candidates below this threshold are excluded. If none qualify, record none.
 
 3. Evaluate alternative defense elements
    - Build up to `defenseElementCandidateCount` combinations from `r.ice`, `r.thunder`, `r.fire`, and `r.none`, excluding the current combination.
-   - Temporarily lock the elemental equipment during evaluation.
-   - Repeat this step `defenseElementTrialRuns` times.
+   - Once an element is accepted, keep that gear locked through steps 3–4.
+   - Repeat this step `defenseElementTrialRuns` times, drawing new items for each trial.
+   - Record the top `max(2, floor(...TrialRuns / 3))` candidate combinations that improve by at least `minImprovement`. Candidates below this threshold are excluded. If none qualify, record none.
 
 4. Evaluate alternative item abilities
    - Check the abilities granted by the current equipment.
-   - Try up to `abilityCandidateCount` items that grant abilities the character doesn't already have, each replacing one or more randomly chosen pieces of equipment.
+   - Try up to `abilityCandidateCount` items that grant abilities the character doesn't already have, each replacing one or more unlocked equipment.
    - Lock any item that improves results by at least `minImprovement`.
-   - Repeat this step `abilityTrialRuns` times.
+   - Repeat this step `abilityTrialRuns` times, drawing new items for each trial.
+   - Record the top `max(2, floor(...TrialRuns / 3))` candidate combinations that improve by at least `minImprovement`. Candidates below this threshold are excluded. If none qualify, record none.
 
 5. Final tuning
-   - Try up to `finalTuningCandidateCount` replacements, each swapping one unlocked piece of equipment for a different item.
-   - Focus on reaching the target offense or defense values.
-   - Repeat this step `finalTuningTrialRuns` times.
+   - Evaluate combinations of the top candidates from steps 2, 3, and 4, and select the combination with the best result. For example:
+     - Top-ranked combination: the top candidate from each step (Step 2: Top 1, Step 3: Top 1, Step 4: Top 1)
+     - Other combinations: e.g., Step 2: Top 2, Step 3: current, Step 4: Top 1
+   - Repeat this step `finalTuningTrialRuns` times, drawing new items for each trial.
 
 6. Run the simulation after tuning
    - Call `read/expedition/{p}/simulationRun` with `numberOfRun=baselineRuns`.

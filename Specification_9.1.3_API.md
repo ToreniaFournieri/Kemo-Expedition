@@ -927,6 +927,11 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `finalTuningCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
   * `minImprovement` (e.g., `0.01`, `0.03`, `0.05`; default: `0.03`)
   * `minGateImprovement` (e.g., `0.03`, `0.05`, `0.10`; default: `0.05`)
+  * `objective`
+    * Optional.
+    * Default: `success`.
+    * `success`, `minDefeat`, `bossDamage`, `experience`
+    * `bossDamage` simulates the boss room of the current destination even if the depth limit stops before the boss.
 
 * Return:
   * `gaResultId`
