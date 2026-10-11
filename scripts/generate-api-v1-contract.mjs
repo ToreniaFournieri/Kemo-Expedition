@@ -242,8 +242,8 @@ const commitParameters = {
   'commit/expedition/{p}/changeExpedition': strict({ destination: optional(integerId), destinationMode: optional(literals('auto', 'fixed')), depthLimit: optional(Type.String({ pattern: '^(?:[1-9][0-9]*f-[1-9][0-9]*|beforeBoss|all)$' })), difficultyOffset: optional(Type.Integer({ minimum: 0, multipleOf: 2 })) }),
   'commit/expedition/{p}/sortie': strict({ numberOfSortie: optional(Type.Integer({ minimum: 1, maximum: 6 })) }), 'commit/expedition/{p}/godsBattle': empty, 'commit/expedition/{p}/resetStatistics': empty,
   'commit/build/party/{p}': strict({ deityId: optional(stableKey), order: optional(nonEmptyArray(integerId, { minItems: 6, maxItems: 6, uniqueItems: true })) }),
-  // SpecRef: 9.1.3 | 3-3-2 applyGaResult | `FULL` is not allowed: Auto Equipment would replace the applied build.
-  'commit/build/party/{p}/applyGaResult': strict({ gaResultId: stableKey, autoEquipmentMode: optional(literals('SEMI', 'OFF'), 'SEMI'), simulation: Type.Boolean(), confirmation: Type.Optional(Type.Union([Type.Literal('yes'), Type.Literal('no')])) }),
+  // SpecRef: 9.1.3 | 3-3-2 applyBuildResult | `FULL` is not allowed: Auto Equipment would replace the applied build.
+  'commit/build/party/{p}/applyBuildResult': strict({ buildResultId: stableKey, autoEquipmentMode: optional(literals('SEMI', 'OFF'), 'SEMI'), simulation: Type.Boolean(), confirmation: Type.Optional(Type.Union([Type.Literal('yes'), Type.Literal('no')])) }),
   'commit/build/character/{characterId}/changeBuild': strict({ name: optional(Type.String({ minLength: 1, maxLength: 100 })), uniqueSelection: optional(uniqueSelectionValue), racesAndGender: optional(stableKey), mainClassId: optional(stableKey), subClassId: optional(stableKey), lineage: optional(stableKey), predisposition: optional(stableKey), simulation: Type.Boolean(), confirmation: Type.Optional(Type.Union([Type.Literal('yes'), Type.Literal('no')])) }),
   'commit/build/character/{characterId}/removeAllEquipment': empty,
   'commit/build/character/{characterId}/removeEquipment': strict({ targetEquipment: equipmentTarget }),
@@ -307,7 +307,7 @@ const directBodySchemas = {
     ...Object.fromEntries(Object.entries(tuningIntegers).map(([key, [minimum, maximum, value]]) => [key, optional(Type.Integer({ minimum, maximum }), value)])),
     offenseElementRequest: optional(literals('noRequest', 'e.fire', 'e.ice', 'e.thunder', 'e.none'), 'noRequest'),
     minImprovement: optional(Type.Number({ minimum: 0, maximum: 10 }), 0.07), minGateImprovement: optional(Type.Number({ minimum: 0, maximum: 10 }), 0.07),
-    objective: optional(tuningObjective, 'success'),
+    objective: optional(tuningObjective, 'success'), seed: optional(Type.Integer()),
   }),
 };
 
@@ -539,7 +539,7 @@ const responseDataSchemas = {
   'read/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }), validOptions: strict({ deityId: Type.Array(stableKey), order: Type.Array(integerId) }) }),
   'read/build/party/{p}/gaSearch': strict({
     verdict: gaVerdict, forecast: gaForecast, changeSummary: Type.Array(gaChangeEntry), revision: Type.Integer({ minimum: 0 }),
-    evaluations: Type.Integer({ minimum: 0 }), elapsedSeconds: Type.Number({ minimum: 0 }), gaResultId: stableKey,
+    evaluations: Type.Integer({ minimum: 0 }), elapsedSeconds: Type.Number({ minimum: 0 }), buildResultId: stableKey,
     verification: strict({ objective: gaObjective, runs: Type.Integer({ minimum: 1 }), before: Type.Number({ minimum: 0 }), after: Type.Number({ minimum: 0 }), gain: Type.Union([Type.Number(), Type.Null()]), standardError: Type.Number({ minimum: 0 }), seed: Type.Integer() }),
   }),
   // SpecRef: 9.1.3 | 2-3-7 stagedEquipmentTuning | the final check, what each step recorded, and the Commit API calls of the tuned build.
@@ -558,7 +558,7 @@ const responseDataSchemas = {
       })),
     }),
     changeSummary: Type.Array(gaChangeEntry), revision: Type.Integer({ minimum: 0 }), simulationRuns: Type.Integer({ minimum: 0 }),
-    elapsedSeconds: Type.Number({ minimum: 0 }), gaResultId: optional(stableKey),
+    elapsedSeconds: Type.Number({ minimum: 0 }), seed: Type.Integer(), buildResultId: optional(stableKey),
   }),
   'read/build/character/status': characterReads({ calculatedStatus, current: characterBuildCurrent, editableFields: strict({ name: Type.Boolean() }), validOptions: strict({ uniqueSelection: Type.Array(uniqueSelectionValue), racesAndGender: Type.Array(stableKey), mainClassId: Type.Array(stableKey), subClassId: Type.Array(stableKey), lineage: Type.Array(stableKey), predisposition: Type.Array(stableKey) }) }),
   'read/build/character/equipment': characterReads({ current: strict({ mode: literals('FULL', 'SEMI', 'OFF'), equipment: equipmentEntryList }), validOptions: strict({ mode: Type.Array(literals('FULL', 'SEMI', 'OFF')), numberOfEmptyEquipmentSlots: Type.Integer({ minimum: 0 }), undoEquipment: equipmentHistoryAction, redoEquipment: equipmentHistoryAction }) }),
@@ -596,7 +596,8 @@ const responseDataSchemas = {
   'commit/expedition/{p}/godsBattle': strict({ outcome: Type.Union([expeditionOutcome, Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]), ...sortieControlFacts }),
   'commit/expedition/{p}/resetStatistics': empty,
   'commit/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }) }),
-  'commit/build/party/{p}/applyGaResult': strict({ applied: Type.Array(gaChangeEntry), confirmationRequired: Type.Boolean(), warnings: Type.Array(semanticText), verdict: gaVerdict, forecast: gaForecast, calculatedStatus: Type.Array(strict({ characterId: integerId, calculatedStatus })) }),
+  // `verdict` is the `gaSearch` verdict, or `null` for a `stagedEquipmentTuning` result.
+  'commit/build/party/{p}/applyBuildResult': strict({ applied: Type.Array(gaChangeEntry), confirmationRequired: Type.Boolean(), warnings: Type.Array(semanticText), verdict: Type.Union([gaVerdict, Type.Null()]), forecast: gaForecast, calculatedStatus: Type.Array(strict({ characterId: integerId, calculatedStatus })) }),
   'commit/build/character/{characterId}/changeBuild': strict({ calculatedStatus, current: characterBuildCurrent, confirmationRequired: Type.Boolean(), warnings: Type.Array(semanticText), applied: Type.Boolean() }),
   'commit/build/character/{characterId}/removeAllEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/removeEquipment': strict({ current: equipmentCommitCurrent }),

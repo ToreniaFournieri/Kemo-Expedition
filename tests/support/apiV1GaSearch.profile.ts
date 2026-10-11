@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { createFreshGameState, gameReducer, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
-import { GA_EFFORT_PRESETS, parseGaSearchRequest, rateGaResult, runGaSearch, type GaSearchDependencies, type StoredGaResult } from '../../src/api/v1/gaSearch';
+import { GA_EFFORT_PRESETS, parseGaSearchRequest, rateGaResult, runGaSearch, type GaSearchDependencies, type StoredBuildResult } from '../../src/api/v1/gaSearch';
 import { getDeityId } from '../../src/game/deity';
 import type { GameState } from '../../src/types';
 
 // SpecRef: 9.1.3 | Read | 2-3-2 party/{p}/gaSearch
-// SpecRef: 9.1.3 | Commit | 3-3-2 party/{p}/applyGaResult
-// SpecRef: 9.1.4.9 | Operation-specific completion rules | gaSearch and applyGaResult
+// SpecRef: 9.1.3 | Commit | 3-3-2 party/{p}/applyBuildResult
+// SpecRef: 9.1.4.9 | Operation-specific completion rules | gaSearch and applyBuildResult
 
 const now = Date.parse('2026-01-01T00:00:00.000Z');
 
@@ -27,7 +27,7 @@ const small = { seed: 7, populationSize: 8, generations: 3, quickRuns: 10, confi
 function dependencies(): GaSearchDependencies {
   return {
     simulate: (target, index, count, seed) => simulateExpeditionRuns(target, index, 'mode.normal', count, undefined, 0, seed),
-    now: () => now, createSeed: () => 99, createOpaqueId: () => 'ga-result-1', revision: 4,
+    now: () => now, createSeed: () => 99, createOpaqueId: () => 'build-result-1', revision: 4,
     commitContext: { simulatedAt: now, gameMode: 'mode.normal', enemyLevelOffset: 0, applyAutoEquipment: (s) => s, now: () => now },
   };
 }
@@ -97,37 +97,37 @@ assert.equal(rateGaResult('experience', { rate: 100, variance: 400 }, { rate: 11
 assert.equal(rateGaResult('experience', { rate: 100, variance: 400 }, { rate: 125, variance: 400 }, 500, true).verdict, 'veryGood');
 assert.equal(rateGaResult('success', { rate: 0.4, variance: 0.24 }, { rate: 0.4, variance: 0.24 }, 500, false).verdict, 'noChange');
 
-// ---------------- applyGaResult ----------------
+// ---------------- applyBuildResult ----------------
 
-const stored: StoredGaResult = outcome.stored;
-const path = 'commit/build/party/1/applyGaResult';
-function context(result: StoredGaResult | null = stored, equipmentHistory: ApiV1CommitContext['equipmentHistory'] = {}): ApiV1CommitContext {
-  return { simulatedAt: now, gameMode: 'mode.normal', enemyLevelOffset: 0, settings: {}, equipmentHistory, uploadedFiles: {}, canonicalFiles: {}, applyAutoEquipment: (s) => s, createDeliveryId: () => 'd', now: () => now, gaResult: () => result ?? undefined };
+const stored: StoredBuildResult = outcome.stored;
+const path = 'commit/build/party/1/applyBuildResult';
+function context(result: StoredBuildResult | null = stored, equipmentHistory: ApiV1CommitContext['equipmentHistory'] = {}): ApiV1CommitContext {
+  return { simulatedAt: now, gameMode: 'mode.normal', enemyLevelOffset: 0, settings: {}, equipmentHistory, uploadedFiles: {}, canonicalFiles: {}, applyAutoEquipment: (s) => s, createDeliveryId: () => 'd', now: () => now, buildResult: () => result ?? undefined };
 }
-function fails(parameters: Record<string, unknown>, marker: string, state: GameState = base, result: StoredGaResult | null = stored): void {
+function fails(parameters: Record<string, unknown>, marker: string, state: GameState = base, result: StoredBuildResult | null = stored): void {
   let message = '';
   try { applyApiV1Commit(path, state, parameters, context(result)); } catch (error) { message = String(error); }
   assert.ok(message.includes(marker), `${JSON.stringify(parameters)} expected ${marker}, got ${message}`);
 }
-fails({ gaResultId: stored.gaResultId }, 'invalid_request:simulation');
-fails({ gaResultId: stored.gaResultId, simulation: false, autoEquipmentMode: 'FULL' }, 'invalid_request:autoEquipmentMode');
-fails({ gaResultId: stored.gaResultId, simulation: true, confirmation: 'yes' }, 'invalid_request:confirmation_with_simulation');
-fails({ gaResultId: 'another-result', simulation: false }, 'illegal_action:ga_result_unavailable');
-fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_result_unavailable', base, null);
-fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_result_no_change', base, { ...stored, verdict: 'noChange' });
+fails({ buildResultId: stored.buildResultId }, 'invalid_request:simulation');
+fails({ buildResultId: stored.buildResultId, simulation: false, autoEquipmentMode: 'FULL' }, 'invalid_request:autoEquipmentMode');
+fails({ buildResultId: stored.buildResultId, simulation: true, confirmation: 'yes' }, 'invalid_request:confirmation_with_simulation');
+fails({ buildResultId: 'another-result', simulation: false }, 'illegal_action:build_result_unavailable');
+fails({ buildResultId: stored.buildResultId, simulation: false }, 'illegal_action:build_result_unavailable', base, null);
+fails({ buildResultId: stored.buildResultId, simulation: false }, 'illegal_action:build_result_no_change', base, { ...stored, verdict: 'noChange' });
 {
   // Build-relevant state changed after the search: the party order here.
   const reordered = gameReducer(base, { type: 'REORDER_PARTY_CHARACTER', partyIndex: 0, fromIndex: 0, toIndex: 1 });
-  fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_result_stale', reordered);
+  fails({ buildResultId: stored.buildResultId, simulation: false }, 'illegal_action:build_result_stale', reordered);
   // Progression that leaves the build alone (time, gold) does not invalidate the result.
   const richer: GameState = { ...base, global: { ...base.global, gold: base.global.gold + 1000 } };
-  applyApiV1Commit(path, richer, { gaResultId: stored.gaResultId, simulation: true }, context());
+  applyApiV1Commit(path, richer, { buildResultId: stored.buildResultId, simulation: true }, context());
 }
 {
   // `noisy` and `worse` need `confirmation: "yes"`; `no` cancels without a change.
-  const noisy: StoredGaResult = { ...stored, verdict: 'noisy' };
-  fails({ gaResultId: stored.gaResultId, simulation: false }, 'invalid_request:confirmation_required', base, noisy);
-  const cancelled = applyApiV1Commit(path, base, { gaResultId: stored.gaResultId, simulation: false, confirmation: 'no' }, context(noisy));
+  const noisy: StoredBuildResult = { ...stored, verdict: 'noisy' };
+  fails({ buildResultId: stored.buildResultId, simulation: false }, 'invalid_request:confirmation_required', base, noisy);
+  const cancelled = applyApiV1Commit(path, base, { buildResultId: stored.buildResultId, simulation: false, confirmation: 'no' }, context(noisy));
   assert.equal(cancelled.state, base);
   assert.deepEqual(cancelled.data.applied, []);
   assert.equal(cancelled.data.confirmationRequired, true);
@@ -135,7 +135,7 @@ fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_r
 }
 {
   // `simulation: true` reports the changes and the resulting status without committing.
-  const preview = applyApiV1Commit(path, base, { gaResultId: stored.gaResultId, simulation: true }, context());
+  const preview = applyApiV1Commit(path, base, { buildResultId: stored.buildResultId, simulation: true }, context());
   assert.equal(preview.state, base);
   assert.deepEqual(preview.data.applied, stored.changeSummary);
   assert.equal(preview.data.confirmationRequired, false);
@@ -144,7 +144,7 @@ fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_r
 {
   // The commit applies every entry, sets the requested mode, and records exactly one Undo step per changed character.
   const history: ApiV1CommitContext['equipmentHistory'] = {};
-  const applied = applyApiV1Commit(path, base, { gaResultId: stored.gaResultId, simulation: false, autoEquipmentMode: 'OFF' }, context(stored, history));
+  const applied = applyApiV1Commit(path, base, { buildResultId: stored.buildResultId, simulation: false, autoEquipmentMode: 'OFF' }, context(stored, history));
   const changed = [...new Set(stored.changeSummary.map((entry) => Number(entry.endpoint.split('/')[3])))];
   for (const characterId of changed) {
     const character = applied.state.parties[0].characters.find((entry) => entry.id === characterId)!;
@@ -157,7 +157,7 @@ fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_r
   const undone = applyApiV1Commit(`commit/build/character/${changed[0]}/undoEquipment`, applied.state, {}, context(stored, history));
   assert.ok(undone.state.parties[0].characters.find((entry) => entry.id === changed[0])!.equipment.every((item) => !item));
   // The applied result no longer matches the build it was searched for.
-  fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_result_stale', applied.state);
+  fails({ buildResultId: stored.buildResultId, simulation: false }, 'illegal_action:build_result_stale', applied.state);
 }
 
 // ---------------- considerItemsScope ----------------
@@ -169,7 +169,7 @@ fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_r
   rejects({ targets: equipmentTargets, considerItemsScope: 1 }, 'invalid_request:considerItemsScope');
 
   // A geared party: the search result applied to the stripped save, with the leftover items still in the Inventory.
-  const geared = applyApiV1Commit(path, base, { gaResultId: stored.gaResultId, simulation: false }, context()).state;
+  const geared = applyApiV1Commit(path, base, { buildResultId: stored.buildResultId, simulation: false }, context()).state;
   const wornKeys = (state: GameState, characterId: number) => state.parties.flatMap((party) => party.characters).find((entry) => entry.id === characterId)!.equipment.filter(Boolean).map((item) => `${item!.id}/${item!.enhancement}/${item!.superRare}`);
   const inventoryKeys = (state: GameState) => new Set(Object.values(state.global.inventory).filter((entry) => entry.status === 'owned' && entry.count > 0).map((entry) => `${entry.item.id}/${entry.item.enhancement}/${entry.item.superRare}`));
   const [first, second, third] = ids;
@@ -191,7 +191,7 @@ fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_r
       assert.ok(inventory.has(key) || wornKeys(geared, characterOf(entry)).includes(key), `normal: ${key} is neither in the Inventory nor the character's own`);
     }
     // The result applies as written.
-    if (entries.length > 0) applyApiV1Commit(path, geared, { gaResultId: result.stored.gaResultId, simulation: false, confirmation: 'yes' }, context(result.stored));
+    if (entries.length > 0) applyApiV1Commit(path, geared, { buildResultId: result.stored.buildResultId, simulation: false, confirmation: 'yes' }, context(result.stored));
   }
 
   // `withinTargets` and `global`: every result applies as written; `withinTargets` never touches characters outside `targets`.
@@ -199,7 +199,7 @@ fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_r
     const result = await run(geared, scope);
     const entries = (result.data as { changeSummary: { endpoint: string }[] }).changeSummary;
     if (scope === 'withinTargets') for (const entry of entries) assert.ok([first, second].includes(characterOf(entry)), `withinTargets changes only targets: ${entry.endpoint}`);
-    if (entries.length > 0) applyApiV1Commit(path, geared, { gaResultId: result.stored.gaResultId, simulation: false, confirmation: 'yes' }, context(result.stored));
+    if (entries.length > 0) applyApiV1Commit(path, geared, { buildResultId: result.stored.buildResultId, simulation: false, confirmation: 'yes' }, context(result.stored));
   }
 
   // Only `global` can take items worn outside `targets`, including by another party: with an empty Inventory, a stripped
@@ -221,14 +221,14 @@ fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_r
     assert.ok(entries.slice(0, removals.length).every((entry) => entry.endpoint.endsWith('/removeEquipment')), 'removals come before any equip');
     const taken = removals.reduce((sum, entry) => sum + (entry.parameters.targetEquipment as number[]).length, 0);
     assert.equal(taken, equips.length, 'every taken item is placed and none is created');
-    const applied = applyApiV1Commit(path, donorState, { gaResultId: result.stored.gaResultId, simulation: false, confirmation: 'yes' }, context(result.stored)).state;
+    const applied = applyApiV1Commit(path, donorState, { buildResultId: result.stored.buildResultId, simulation: false, confirmation: 'yes' }, context(result.stored)).state;
     assert.equal(ids.reduce((sum, id) => sum + wornKeys(applied, id).length, 0), equips.length);
     assert.equal(donorIds.reduce((sum, id) => sum + wornKeys(applied, id).length, 0), donorIds.reduce((sum, id) => sum + wornKeys(donorState, id).length, 0) - taken);
     // The stored result goes stale when a donor's equipment changes.
     const tampered: GameState = { ...donorState, parties: [donorState.parties[0], gameReducer(donorState, { type: 'REMOVE_ALL_EQUIPMENT', partyIndex: 1, characterId: characterOf(removals[0]) }).parties[1]] };
     let message = '';
-    try { applyApiV1Commit(path, tampered, { gaResultId: result.stored.gaResultId, simulation: true }, context(result.stored)); } catch (error) { message = String(error); }
-    assert.ok(message.includes('illegal_action:ga_result_stale'), message);
+    try { applyApiV1Commit(path, tampered, { buildResultId: result.stored.buildResultId, simulation: true }, context(result.stored)); } catch (error) { message = String(error); }
+    assert.ok(message.includes('illegal_action:build_result_stale'), message);
   }
 
   // Locked equipment of a target is never changed, and locked equipment elsewhere is never taken (`global`).
@@ -244,7 +244,7 @@ fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_r
     const lockedSlot = (characterId: number) => before(characterId).findIndex((item) => item?.isLocked);
     const result = await run(locked, 'global');
     const applied = (result.data as { changeSummary: unknown[] }).changeSummary.length > 0
-      ? applyApiV1Commit(path, locked, { gaResultId: result.stored.gaResultId, simulation: false, confirmation: 'yes' }, context(result.stored)).state
+      ? applyApiV1Commit(path, locked, { buildResultId: result.stored.buildResultId, simulation: false, confirmation: 'yes' }, context(result.stored)).state
       : locked;
     for (const characterId of [first, third]) {
       const slot = lockedSlot(characterId);
@@ -275,11 +275,11 @@ fails({ gaResultId: stored.gaResultId, simulation: false }, 'illegal_action:ga_r
     { endpoint: 'commit/build/party/2', parameters: { deityId: 'none' } },
     { endpoint: 'commit/build/party/1', parameters: { deityId: 'fortification' } },
   ], 'allDeities frees the held deity right before taking it');
-  const applied = applyApiV1Commit(path, held, { gaResultId: taken.stored.gaResultId, simulation: false }, context(taken.stored)).state;
+  const applied = applyApiV1Commit(path, held, { buildResultId: taken.stored.buildResultId, simulation: false }, context(taken.stored)).state;
   assert.deepEqual(applied.parties.map((party) => getDeityId(party.deity.name)), ['fortification', 'none']);
   // The stored result goes stale when the holder no longer holds that deity.
   const released = gameReducer(held, { type: 'UPDATE_PARTY_DEITY', partyIndex: 1, deityName: 'None' });
-  fails({ gaResultId: taken.stored.gaResultId, simulation: true }, 'illegal_action:ga_result_stale', released, taken.stored);
+  fails({ buildResultId: taken.stored.buildResultId, simulation: true }, 'illegal_action:build_result_stale', released, taken.stored);
 }
 
 // ---------------- Empty slots ----------------

@@ -88,12 +88,15 @@ export interface GaChangeEntry { endpoint: string; parameters: Record<string, un
 
 export interface GaForecast { before: string; after: string }
 
-/** What `applyGaResult` needs from a search; kept in memory only (Spec 9.1.3: not save state). */
-export interface StoredGaResult {
-  gaResultId: string;
+/** What `applyBuildResult` needs from a search or tuning; kept in memory only (Spec 9.1.3: not save state). */
+export interface StoredBuildResult {
+  buildResultId: string;
+  /** The Read that produced it: only a `gaSearch` result has a `verdict` that can reject or need confirmation (3-3-2). */
+  source: 'gaSearch' | 'stagedEquipmentTuning';
   partyNumber: number;
   revision: number;
-  verdict: GaVerdict;
+  /** The `gaSearch` verdict; `null` for a `stagedEquipmentTuning` result. */
+  verdict: GaVerdict | null;
   forecast: GaForecast;
   changeSummary: GaChangeEntry[];
   /** Build-relevant facts at search time (Spec 9.1.3, 3-3-2 Validation). */
@@ -202,7 +205,7 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
   };
 }
 
-// SpecRef: 9.1.3 | 3-3-2 applyGaResult Validation | build-relevant state
+// SpecRef: 9.1.3 | 3-3-2 applyBuildResult Validation | build-relevant state
 /**
  * The party facts a result depends on: order, deity, and every member's build and equipment, plus the owned count of
  * each item variant and Jewel the result equips or attaches. Other inventory changes (new drops) do not invalidate it.
@@ -869,7 +872,7 @@ export function planGaChangeSummary(base: GameState, partyIndex: number, best: G
 
 // ---------------- Search ----------------
 
-export interface GaSearchOutcome { data: Record<string, unknown>; stored: StoredGaResult }
+export interface GaSearchOutcome { data: Record<string, unknown>; stored: StoredBuildResult }
 
 /** Runs `gaSearch` for party `{p}` (Spec 9.1.3, 2-3-2). Never changes `state`. */
 export async function runGaSearch(state: GameState, partyIndex: number, request: GaSearchRequest, dependencies: GaSearchDependencies): Promise<GaSearchOutcome> {
@@ -1000,10 +1003,11 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
     before: buildSimulationRunData(verifyBefore.result, dependencies.revision, 'ga-verify').overview,
     after: buildSimulationRunData(verifyAfter.result, dependencies.revision, 'ga-verify').overview,
   };
-  const gaResultId = dependencies.createOpaqueId();
+  const buildResultId = dependencies.createOpaqueId();
   const elapsedSeconds = Math.round((dependencies.now() - startedAt) / 100) / 10;
-  const stored: StoredGaResult = {
-    gaResultId,
+  const stored: StoredBuildResult = {
+    buildResultId,
+    source: 'gaSearch',
     partyNumber: state.parties[partyIndex].id,
     revision: dependencies.revision,
     verdict: rating.verdict,
@@ -1020,7 +1024,7 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
       revision: dependencies.revision,
       evaluations,
       elapsedSeconds,
-      gaResultId,
+      buildResultId,
       // SpecRef: 9.1.4.9 | gaSearch | the measured `<rate>` values, gain, and standard error behind `verdict`.
       verification: {
         objective,
@@ -1035,25 +1039,27 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   };
 }
 
-// ---------------- applyGaResult ----------------
+// ---------------- applyBuildResult ----------------
 
-// SpecRef: 9.1.3 | Commit | 3-3-2 party/{p}/applyGaResult
-export const GA_APPLY_WARNING_KEY = 'api.warning.applyGaResult.unconfirmedImprovement';
+// SpecRef: 9.1.3 | Commit | 3-3-2 party/{p}/applyBuildResult
+export const BUILD_APPLY_WARNING_KEY = 'api.warning.applyBuildResult.unconfirmedImprovement';
 
 const EQUIPMENT_ENDPOINT = /^commit\/build\/character\/(\d+)\/(removeEquipment|equip|jewelRemove|jewelAttach)$/;
 const CHARACTER_ENDPOINT = /^commit\/build\/character\/(\d+)\//;
 
 /**
- * Applies a stored `gaSearch` result to party `{p}` as one transaction: every `changeSummary` entry runs through the
- * Commit API handler in order, the changed characters get the requested Auto Equipment mode, and each character whose
- * equipment state changed gets exactly one Undo step (its state before this operation).
+ * Applies a stored `gaSearch` or `stagedEquipmentTuning` result to party `{p}` as one transaction: every `changeSummary`
+ * entry runs through the Commit API handler in order, the changed characters get the requested Auto Equipment mode, and
+ * each character whose equipment state changed gets exactly one Undo step (its state before this operation). Only a
+ * `gaSearch` verdict can reject the result (`noChange`) or require confirmation (`noisy`, `worse`); a tuning result passed
+ * its final check and never needs one.
  */
-export function applyGaResult(state: GameState, partyNumber: number, parameters: Record<string, unknown>, context: ApiV1CommitContext): { state: GameState; data: Record<string, unknown> } {
-  const allowed = new Set(['gaResultId', 'autoEquipmentMode', 'simulation', 'confirmation']);
+export function applyBuildResult(state: GameState, partyNumber: number, parameters: Record<string, unknown>, context: ApiV1CommitContext): { state: GameState; data: Record<string, unknown> } {
+  const allowed = new Set(['buildResultId', 'autoEquipmentMode', 'simulation', 'confirmation']);
   const unknown = Object.keys(parameters).find((key) => !allowed.has(key));
   if (unknown !== undefined) invalid(`${unknown}.unknown_member`);
-  const { gaResultId, simulation, confirmation } = parameters;
-  if (typeof gaResultId !== 'string' || gaResultId.length === 0) invalid('gaResultId');
+  const { buildResultId, simulation, confirmation } = parameters;
+  if (typeof buildResultId !== 'string' || buildResultId.length === 0) invalid('buildResultId');
   const mode = parameters.autoEquipmentMode === undefined ? 'SEMI' : parameters.autoEquipmentMode;
   if (mode !== 'SEMI' && mode !== 'OFF') invalid('autoEquipmentMode');
   if (typeof simulation !== 'boolean') invalid('simulation');
@@ -1062,13 +1068,13 @@ export function applyGaResult(state: GameState, partyNumber: number, parameters:
   const partyIndex = state.parties.findIndex((party) => party.id === partyNumber);
   if (partyIndex < 0) throw new Error('not_found');
 
-  const stored = context.gaResult?.(partyNumber);
-  if (!stored || stored.gaResultId !== gaResultId) throw new Error('illegal_action:ga_result_unavailable');
-  if (stored.verdict === 'noChange') throw new Error('illegal_action:ga_result_no_change');
-  if (fingerprintOfSummary(state, partyIndex, stored.changeSummary) !== stored.fingerprint) throw new Error('illegal_action:ga_result_stale');
+  const stored = context.buildResult?.(partyNumber);
+  if (!stored || stored.buildResultId !== buildResultId) throw new Error('illegal_action:build_result_unavailable');
+  if (stored.source === 'gaSearch' && stored.verdict === 'noChange') throw new Error('illegal_action:build_result_no_change');
+  if (fingerprintOfSummary(state, partyIndex, stored.changeSummary) !== stored.fingerprint) throw new Error('illegal_action:build_result_stale');
 
-  const confirmationRequired = stored.verdict === 'worse' || stored.verdict === 'noisy';
-  const warnings = confirmationRequired ? [{ key: GA_APPLY_WARNING_KEY, args: {} }] : [];
+  const confirmationRequired = stored.source === 'gaSearch' && (stored.verdict === 'worse' || stored.verdict === 'noisy');
+  const warnings = confirmationRequired ? [{ key: BUILD_APPLY_WARNING_KEY, args: {} }] : [];
   const changedIds = [...new Set(stored.changeSummary.map((entry) => Number(entry.endpoint.match(CHARACTER_ENDPOINT)?.[1])).filter((id) => Number.isInteger(id) && id > 0))];
   const equipmentIds = new Set(stored.changeSummary.map((entry) => Number(entry.endpoint.match(EQUIPMENT_ENDPOINT)?.[1])).filter((id) => Number.isInteger(id) && id > 0));
 
