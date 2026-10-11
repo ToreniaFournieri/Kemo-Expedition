@@ -1,0 +1,109 @@
+{
+ "verdict": "noisy",
+ "forecast": {
+  "before": "Success 25.6% / Draw 20.2% / Retreat 35.6% / Defeat 18.6%",
+  "after": "Success 30.8% / Draw 14.2% / Retreat 33.2% / Defeat 21.8%"
+ },
+ "changeSummary": [
+  {
+   "endpoint": "commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     12
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     8
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     5,
+     7
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/party/1",
+   "parameters": {
+    "order": [
+     6,
+     1,
+     4,
+     2,
+     3,
+     5
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/7303/2/0",
+    "targetSlot": 12
+   }
+  },
+  {
+   "endpoint": "commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": "0/1201/4/0",
+    "targetSlot": 8
+   }
+  },
+  {
+   "endpoint": "commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": "0/6213/2/0",
+    "targetSlot": 5
+   }
+  },
+  {
+   "endpoint": "commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": "0/7107/5/0",
+    "targetSlot": 7
+   }
+  },
+  {
+   "endpoint": "commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 5,
+    "jewelToSet": "might:1"
+   }
+  },
+  {
+   "endpoint": "commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 7,
+    "jewelToSet": "might:1"
+   }
+  },
+  {
+   "endpoint": "commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 8,
+    "jewelToSet": "might:1"
+   }
+  }
+ ],
+ "revision": 2855,
+ "evaluations": 928,
+ "elapsedSeconds": 93.8,
+ "gaResultId": "85e8487c-6897-4ace-bfb9-5c09c29e95cb",
+ "verification": {
+  "objective": "success",
+  "runs": 500,
+  "before": 0.256,
+  "after": 0.308,
+  "gain": 5.2,
+  "standardError": 2.84,
+  "seed": 1082161940
+ }
+}

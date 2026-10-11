@@ -81,3 +81,14 @@ Built during the 2026/10/03 D8-boss run (`AI_play_report/v0.9.8(11)_Claude_Norma
 * Run folder `play_runs/normal_api_exp8_ClaudeEXP_20261010/` (copy of the ClaudeItem client/tools; `cad.mjs` now prints `xp/12h`).
 * Lesson: at a stuck gate sweep `proxyopt` element weights (fire:3 / ice:3 / thunder:3) and `lever.mjs` deity labels before any GA; fire:3 raised the D7 route 6 % to 24 %, thunder:3 raised D8 gate 2 from 12 % to 52 %.
 * `run.py` "BOSS OPEN" = boss fightable (entryGate/godEntry shown); `godGate` = boss dead. Confirm with the Global Diary `bossFirstClear`.
+
+## Additions (2026/10/10 ClaudeGA37 run, `AI_play_report/v0.10.1(37)_ClaudeGA37_Normal_API_Exp8Boss_InGameGA2_20261010.md`)
+* Run folder `play_runs/normal_api_exp8_ClaudeGA37_20261010/` (in-game `gaSearch` only, build 37). `client/env.sh` points `t.py` at a
+  descriptor/token file outside the repo (`BOKEMO_PLAY_DESCRIPTOR`, `BOKEMO_PLAY_STATE`).
+* `client/hl.py n [obs] [stopOpen]` = build-36 HP-aware loop: elapse ~one cycle (learned from the last sortie's HP loss and
+  Fortification), top up 90 s until HP is full, first sortie at full HP, extra ones at `HPF2`; `AUTOGA=objective:effort` re-searches
+  on gate-floor change and every `NST` observations.
+* `client/ga.py objective effort [apply]` (env `COMP`, `SCOPE` default `global`, `FREEZE=cids` keeps those characters' items,
+  `TB` default 90 s), `client/stage.sh d n1 n2` (destination -> gate loop -> boss polish -> boss loop), `client/polish.sh [boss]`.
+* Lessons: search all components at once; restart from a hand-made attacker of the right element when the GA builds tanks;
+  pin ability items (6309) by freezing their owner; free deities taken by new parties.
