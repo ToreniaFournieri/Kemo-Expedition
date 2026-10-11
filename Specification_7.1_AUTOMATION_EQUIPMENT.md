@@ -378,3 +378,21 @@ at least one party member has an empty equipment slot.
 - notification logic. 
   - empty slot to equip item: PT2ニャンは 恐ろしい月鋼鏃の矢を装備した
   - exist item to equip another item: PT2ニャンは 恐ろしい月鋼鏃の矢 を 魔性の瞬撃の月鋼矢に装備しなおした 
+
+
+
+#### 7.1.5 GA Equipment Search
+
+- (TBA)
+
+- **API Read:**
+  - `read/build/character/gaEquipmentSearch`
+
+
+- (1) Equipment locking layer 
+  - `equipment` ability check.
+  - Test which ability of items helps to improve. If it has a meaningful improvement, lock the item internally.
+
+- (2) Equipment tactical layer
+  - For each character, `equipment` tuning. 
+  - This layer focuses on target defense or offense values.
