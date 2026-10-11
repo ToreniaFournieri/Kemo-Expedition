@@ -406,6 +406,10 @@ at least one party member has an empty equipment slot.
     - `success`, `minDefeat`, `bossDamage`
     - `bossDamage` simulates the boss room of the current destination even if the depth limit stops before the boss.
   - `seed`
+    - Optional.
+    - Integer.
+    - Default: random.
+    - Fixed seed for a reproducible result. The same `seed` on the same save revision gives the same result.
 
 - **General rules:**
   - Items come from the Inventory and this character's own equipment. Equipment of other characters is never taken. Locked equipment is never changed.
@@ -422,6 +426,7 @@ at least one party member has an empty equipment slot.
     - Steps 2–4: every candidate uses `quickRuns` and one shared seed. The current build is also simulated once with `quickRuns` and that seed, and each candidate is compared with that result (not with the step 1 baseline).
     - Step 5: every build uses `finalTuningRuns` and a second shared seed, including the current build.
     - Steps 1 and 6: both use `baselineRuns` and a third shared seed.
+    - These three seeds and the random item draws all derive from `seed`.
   - **Score** (per `objective`):
     - `success`: success rate (clear + return).
     - `minDefeat`: defeat rate. Lower is better.

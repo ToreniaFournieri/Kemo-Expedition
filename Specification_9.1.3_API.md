@@ -935,6 +935,10 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * `success`, `minDefeat`, `bossDamage`
     * `bossDamage` simulates the boss room of the current destination even if the depth limit stops before the boss.
   * `seed`
+    * Optional.
+    * Integer.
+    * Default: random.
+    * Fixed seed for a reproducible result. Every seed the tuning uses derives from it (7.1.5). The same `seed` on the same save revision gives the same result.
 
 * Return:
   * `accepted`
@@ -960,6 +964,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `simulationRuns`
     * Total number of simulation runs used.
   * `elapsedSeconds`
+  * `seed`
+    * The seed used: the requested one, or the random one chosen. Send it again to reproduce the result.
   * `buildResultId`
     * Returned only when `accepted` is `true`.
     * Used by `party/{p}/applyBuildResult`, where `{p}` is the character's party.
