@@ -1,78 +1,66 @@
 {
- "accepted": true,
+ "accepted": false,
  "objective": "success",
  "scoredBy": "success",
- "before": "Success 18.9% / Draw 0.1% / Retreat 28.2% / Defeat 52.8%",
- "after": "Success 24.3% / Draw 0.1% / Retreat 25.5% / Defeat 50.1%",
- "improvement": 0.2857,
- "gain": 0.054,
- "standardError": 0.0184,
- "bottleneckRoom": "2f-4",
+ "before": "Success 2.9% / Draw 6.0% / Retreat 62.9% / Defeat 28.2%",
+ "after": "Success 3.8% / Draw 5.5% / Retreat 60.8% / Defeat 29.9%",
+ "improvement": 0.3103,
+ "gain": 0.009,
+ "standardError": 0.008,
+ "bottleneckRoom": "3f-4",
  "steps": {
-  "offenseElement": [
-   {
-    "element": "e.fire",
-    "improvement": 0.4082,
-    "changes": [
-     "5=0/5213/0/0"
-    ]
-   }
-  ],
+  "offenseElement": [],
   "defenseElement": [
    {
     "resistance": [
-     "r.none"
+     "r.ice",
+     "r.thunder"
     ],
-    "improvement": 0.1837,
+    "improvement": 1.8333,
     "changes": [
-     "1=0/5109/3/0",
-     "4=0/5103/1/0"
+     "6=0/3313/0/0"
     ]
    },
    {
     "resistance": [
-     "r.none"
+     "r.ice",
+     "r.thunder"
     ],
-    "improvement": 0.1224,
+    "improvement": 1.3333,
     "changes": [
-     "1=0/5217/0/0",
-     "4=0/4103/4/0"
+     "0=0/3313/0/0"
     ]
    }
   ],
-  "ability": [],
+  "ability": [
+   {
+    "abilities": [
+     "a.requiem"
+    ],
+    "improvement": 1.1667,
+    "changes": [
+     "7=0/7408/0/0"
+    ]
+   }
+  ],
   "finalTuning": [
    {
-    "step": "offenseElement",
+    "step": "defenseElement",
     "index": 0,
-    "element": "e.fire",
-    "improvement": 0.6795,
+    "resistance": [
+     "r.ice",
+     "r.thunder"
+    ],
+    "improvement": 0.2941,
     "changes": [
-     "5=0/5213/0/0"
+     "6=0/3313/0/0"
     ]
    }
   ]
  },
- "changeSummary": [
-  {
-   "endpoint": "commit/build/character/4/removeEquipment",
-   "parameters": {
-    "targetEquipment": [
-     5
-    ]
-   }
-  },
-  {
-   "endpoint": "commit/build/character/4/equip",
-   "parameters": {
-    "targetEquipment": "0/5213/0/0",
-    "targetSlot": 5
-   }
-  }
- ],
- "revision": 539,
- "simulationRuns": 8500,
- "elapsedSeconds": 3.5,
- "seed": 1097597040,
- "buildResultId": "73a1abc8-dd15-4592-884b-3e1ad593db73"
+ "changeSummary": [],
+ "revision": 1860,
+ "simulationRuns": 11200,
+ "elapsedSeconds": 6,
+ "seed": 3856563709
 }

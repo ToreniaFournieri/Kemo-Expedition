@@ -2,89 +2,79 @@
  "accepted": true,
  "objective": "success",
  "scoredBy": "success",
- "before": "Success 22.1% / Draw 0.3% / Retreat 24.2% / Defeat 53.4%",
- "after": "Success 31.5% / Draw 0.4% / Retreat 20.3% / Defeat 47.8%",
- "improvement": 0.4253,
- "gain": 0.094,
- "standardError": 0.0197,
- "bottleneckRoom": "2f-4",
+ "before": "Success 2.7% / Draw 6.8% / Retreat 64.1% / Defeat 26.4%",
+ "after": "Success 5.0% / Draw 7.8% / Retreat 58.5% / Defeat 28.7%",
+ "improvement": 0.8519,
+ "gain": 0.023,
+ "standardError": 0.0086,
+ "bottleneckRoom": "3f-4",
  "steps": {
   "offenseElement": [
    {
-    "element": "e.fire",
-    "improvement": 0.3333,
+    "element": "e.thunder",
+    "improvement": 0.2222,
     "changes": [
-     "1=0/5317/0/0",
-     "7=0/2111/1/0"
-    ]
-   },
-   {
-    "element": "e.fire",
-    "improvement": 0.3333,
-    "changes": [
-     "1=0/5317/0/0",
-     "7=0/5111/2/0"
+     "9=0/6221/2/0"
     ]
    }
   ],
   "defenseElement": [
    {
     "resistance": [
-     "r.thunder",
-     "r.fire"
+     "r.ice",
+     "r.thunder"
     ],
-    "improvement": 0.2778,
+    "improvement": 1.2222,
     "changes": [
-     "3=0/3219/1/0"
+     "4=0/7304/0/0"
     ]
    },
    {
     "resistance": [
-     "r.thunder",
-     "r.fire"
+     "r.ice",
+     "r.thunder"
     ],
-    "improvement": 0.1852,
+    "improvement": 0.3333,
     "changes": [
-     "0=0/3315/0/0",
-     "5=0/5219/0/0"
+     "7=0/7317/0/0"
     ]
    }
   ],
   "ability": [
    {
     "abilities": [
-     "a.boost"
-    ],
-    "improvement": 0.6111,
-    "changes": [
-     "0=0/4406/0/0"
-    ]
-   },
-   {
-    "abilities": [
      "a.anti-overwatch"
     ],
-    "improvement": 0.2407,
+    "improvement": 1.8889,
     "changes": [
-     "0=0/4303/3/0"
-    ]
-   },
-   {
-    "abilities": [
-     "a.null-life-drain"
-    ],
-    "improvement": 0.2222,
-    "changes": [
-     "0=0/2307/0/0"
+     "4=0/4303/3/0"
     ]
    },
    {
     "abilities": [
      "a.dryproof"
     ],
-    "improvement": 0.1296,
+    "improvement": 1.5556,
     "changes": [
-     "0=0/4203/0/0"
+     "4=0/4203/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.null-life-drain"
+    ],
+    "improvement": 1.4444,
+    "changes": [
+     "4=0/2307/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.true-sight"
+    ],
+    "improvement": 1.4444,
+    "changes": [
+     "4=0/1406/0/0"
     ]
    }
   ],
@@ -93,21 +83,11 @@
     "step": "ability",
     "index": 0,
     "abilities": [
-     "a.boost"
+     "a.anti-overwatch"
     ],
-    "improvement": 0.031,
+    "improvement": 0.5238,
     "changes": [
-     "0=0/4406/0/0"
-    ]
-   },
-   {
-    "step": "offenseElement",
-    "index": 0,
-    "element": "e.fire",
-    "improvement": 0.2248,
-    "changes": [
-     "1=0/5317/0/0",
-     "7=0/2111/1/0"
+     "4=0/4303/3/0"
     ]
    }
   ]
@@ -117,37 +97,21 @@
    "endpoint": "commit/build/character/5/removeEquipment",
    "parameters": {
     "targetEquipment": [
-     0,
-     1,
-     7
+     4
     ]
    }
   },
   {
    "endpoint": "commit/build/character/5/equip",
    "parameters": {
-    "targetEquipment": "0/4406/0/0",
-    "targetSlot": 0
-   }
-  },
-  {
-   "endpoint": "commit/build/character/5/equip",
-   "parameters": {
-    "targetEquipment": "0/5317/0/0",
-    "targetSlot": 1
-   }
-  },
-  {
-   "endpoint": "commit/build/character/5/equip",
-   "parameters": {
-    "targetEquipment": "0/2111/1/0",
-    "targetSlot": 7
+    "targetEquipment": "0/4303/3/0",
+    "targetSlot": 4
    }
   }
  ],
- "revision": 540,
- "simulationRuns": 11900,
- "elapsedSeconds": 4.9,
- "seed": 3675093335,
- "buildResultId": "813e6093-ef4c-4315-894f-aa5ee8383237"
+ "revision": 1860,
+ "simulationRuns": 12600,
+ "elapsedSeconds": 7.6,
+ "seed": 4021123475,
+ "buildResultId": "b714c817-83fe-4af7-8a9b-2b2d4d574531"
 }

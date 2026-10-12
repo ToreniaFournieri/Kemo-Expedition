@@ -22,6 +22,7 @@ def obs():
     print('  OBS dest',p['destination'],p['depthLimit'],'lv',p.get('level'),'hp',p['currentHp'],'/',p['maximumHp'],'|',g,'| last',p['disclosedOutcome'],flush=True)
     stall=(g==last); last=g
     if any(x[0]=='godGate' for x in g): return 'killed'
+    if int(os.environ.get('STOPLV','0')) and (p.get('level') or 0)>=int(os.environ['STOPLV']): return 'level'
     return 'gates' if any(x[0] in ('eliteGate','bossGate') for x in g) else 'Entry gate'
 def el(s):
     c,j=t.post('/commit/progress/elapsed',{'elapsedSeconds':s},tag='el')
@@ -93,6 +94,7 @@ for i in range(n):
     if (i+1)%ob==0 or i==n-1:
         g=obs(); autoga()
         if g=='killed': print('BOSS KILLED'); break
+        if g=='level': print('LEVEL REACHED'); break
         if stopOpen and g=='Entry gate': print('BOSS OPEN / no gates'); break
         if STALLSTOP and stall: print('STALL'); break
 print('calls',t.calls(),'sortieRuns',runs,'sortieCalls',sorties,'extraEl',extra,'skipped',skipped,'tally',tally,'S',S)
