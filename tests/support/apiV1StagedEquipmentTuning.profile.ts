@@ -6,7 +6,7 @@ import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/comm
 import { deriveSeed, type GaSearchDependencies, type StoredBuildResult } from '../../src/api/v1/gaSearch';
 import { prepareObjectiveState } from '../../src/api/v1/objectiveMeasure';
 import { buildSimulationRunData } from '../../src/api/v1/simulationView';
-import { countersBottleneck, parseStagedTuningRequest, runStagedEquipmentTuning, tuningImprovement, tuningLuckCheck } from '../../src/api/v1/stagedEquipmentTuning';
+import { bottleneckCounterRows, countersBottleneck, parseStagedTuningRequest, runStagedEquipmentTuning, tuningImprovement, tuningLuckCheck } from '../../src/api/v1/stagedEquipmentTuning';
 import { getDungeonById } from '../../src/data/dungeons';
 import { hydrateGameState } from '../../src/game/saveCodec';
 import { decodePersistedState } from '../../src/game/storageCompression';
@@ -29,6 +29,8 @@ function dependencies(): GaSearchDependencies {
 const tune = (state: GameState, raw: Record<string, unknown>) => runStagedEquipmentTuning(state, parseStagedTuningRequest(state, raw), dependencies());
 interface TuningData {
   accepted: boolean; scoredBy: string; before: string; after: string; improvement: number; gain: number; standardError: number; bottleneckRoom: string | null;
+  bottleneckCounters: { ability: string; answers: string[]; status: string }[];
+  candidatesTried: Record<'offenseElement' | 'defenseElement' | 'ability', number>;
   steps: Record<'offenseElement' | 'defenseElement' | 'ability', { improvement: number; changes: string[]; element?: string }[]> & { finalTuning: { step: string; index: number; improvement: number; changes: string[] }[] };
   changeSummary: { endpoint: string; parameters: Record<string, unknown> }[]; simulationRuns: number; seed: number; buildResultId?: string;
 }
@@ -99,6 +101,16 @@ assert.ok(countersBottleneck('domain_breaker', new Set(), 'terrain.silence-field
 assert.ok(countersBottleneck('output_stabilizer', new Set(), 'terrain.gravity'), 'output-stabilizer counters a penalty terrain');
 assert.ok(!countersBottleneck('output_stabilizer', new Set(), 'terrain.low-gravity'), 'output-stabilizer is no counter on a bonus terrain');
 assert.ok(!countersBottleneck('true_sight', new Set(), null), 'no terrain, no terrain counter');
+assert.deepEqual(
+  bottleneckCounterRows(new Set(['oblivion', 'fire_absorb', 'illusion', 'bulwark_breaker']), 'terrain.deletion'),
+  [
+    { ability: 'illusion_breaker', answers: ['a.illusion'] },
+    { ability: 'fire_protect_breaker', answers: ['a.fire-absorb'] },
+    { ability: 'unforgettable', answers: ['a.oblivion', 'terrain.deletion'] },
+  ],
+  'the counters of a room in map order, one row per counter with everything it answers there',
+);
+assert.deepEqual(bottleneckCounterRows(new Set(), 'terrain.rotwood'), [], 'rotwood has no counter');
 near(tuningImprovement('success', 0.1, 0.12), 0.2, 'near 0 the success side decides (7.1.5 example)');
 near(tuningImprovement('success', 0.93, 0.95), 0.4, 'near 1 the failure side decides (7.1.5 example)');
 assert.ok(tuningImprovement('success', 0.95, 0.97) >= 0.07, 'a 7% threshold can be met above 93.5%');
@@ -139,6 +151,8 @@ assert.equal(tuningImprovement('success', 1, 1), 0, 'equal scores are no change'
   assert.equal(data.buildResultId, undefined);
   assert.equal(outcome.stored, null);
   assert.deepEqual([data.steps.offenseElement, data.steps.defenseElement, data.steps.ability, data.steps.finalTuning], [[], [], [], []]);
+  assert.deepEqual(data.candidatesTried, { offenseElement: 0, defenseElement: 0, ability: 0 }, 'no step had anything to try');
+  assert.ok(data.bottleneckCounters.every((counter) => counter.status !== 'tried'), 'nothing was tried');
   // Empty slots are not filled for their own sake. Step 5 keeps nothing, so there is no change: no Jewel-only result, and
   // step 6 is not simulated again (the tuned build is the current build).
   assert.equal(data.after, data.before);
@@ -267,6 +281,31 @@ const data = outcome.data as unknown as TuningData;
   assert.equal(buildSimulationRunData(forecast, 0, 'check').overview, boss.before);
   assert.equal(forecast.boss?.reached, 1000);
   assert.deepEqual(forecast.rooms.filter((room) => room.reached > 0).map((room) => room.room), [24], 'only the boss room is fought');
+}
+
+// ---------------- Counters of the bottleneck room (Spec 7.1.5.1; 9.1.4.9 `bottleneckCounters`) ----------------
+// The Expedition 6 boss room of party 3 has an `a.illusion` enemy on a `terrain.echo-domain` floor. The Inventory holds an
+// `a.illusion-breaker` item but no `a.domain-breaker` one.
+{
+  const guardian = sample.parties[partyIndex].characters.find((character) => character.mainClassId === 'guardian')!;
+  const request = { characterId: guardian.id, objective: 'bossDamage', offenseElementTrialRuns: 0, defenseElementTrialRuns: 0, quickRuns: 50, finalTuningRuns: 50, seed: 3 };
+  const counters = (data: TuningData) => Object.fromEntries(data.bottleneckCounters.map((counter) => [counter.ability, `${counter.status} ${counter.answers.join(',')}`]));
+  const tuned = (await tune(sample, request)).data as unknown as TuningData;
+  assert.equal(tuned.bottleneckRoom, '6f-4');
+  assert.deepEqual(counters(tuned), { 'a.illusion-breaker': 'tried a.illusion', 'a.domain-breaker': 'noItem terrain.echo-domain' });
+  assert.ok(tuned.candidatesTried.ability > 0 && tuned.candidatesTried.ability >= tuned.steps.ability.length, 'every recorded candidate was tried');
+  assert.deepEqual([tuned.candidatesTried.offenseElement, tuned.candidatesTried.defenseElement], [0, 0], 'a step with 0 trials tries nothing');
+  // With step 4 off, an item that grants the counter is left untried.
+  const skipped = (await tune(sample, { ...request, abilityTrialRuns: 0 })).data as unknown as TuningData;
+  assert.deepEqual(counters(skipped), { 'a.illusion-breaker': 'notTried a.illusion', 'a.domain-breaker': 'noItem terrain.echo-domain' });
+  assert.equal(skipped.candidatesTried.ability, 0);
+  // A character that already has the counter does not need it.
+  const breaker = Object.values(sample.global.inventory).find((entry) => entry.status === 'owned' && entry.count > 0
+    && entry.item.bonuses?.some((bonus) => bonus.type === 'ability' && bonus.abilityId === 'illusion_breaker'))!.item;
+  const wearing: GameState = structuredClone(sample);
+  const worn = wearing.parties[partyIndex].characters.find((character) => character.id === guardian.id)!;
+  worn.equipment = worn.equipment.map((item, slot) => (slot === 0 ? { ...breaker, jewel: null } : item));
+  assert.equal(counters((await tune(wearing, request)).data as unknown as TuningData)['a.illusion-breaker'], 'owned a.illusion');
 }
 
 // ---------------- Jewels: only the changed slot ----------------

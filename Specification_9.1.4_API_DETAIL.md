@@ -1031,6 +1031,22 @@ definitions in 9.1.3.
   and `changes` (`<slotIndex>=<Item Format>` for every slot it changes; Jewels
   follow from the allocation). `simulationRuns` counts every simulated run (a
   build simulated twice on the same seed and run count is simulated once).
+* Diagnostics: the response also returns `candidatesTried` and
+  `bottleneckCounters`, after `bottleneckRoom`.
+  * `candidatesTried` is `{offenseElement, defenseElement, ability}`: the
+    candidates each step simulated on the quick runs, recorded or not. `0` means
+    the step had nothing to try, or its `...TrialRuns` was `0`.
+  * `bottleneckCounters` lists every counter of the bottleneck (above), in map
+    order, as `{ability, answers, status}`. `answers` holds the enemy abilities
+    and the terrain it answers in that room. `status` is one of:
+    * `owned`: the character already has it (for `a.null-counter`, any party
+      member).
+    * `tried`: step 4 simulated an item that adds it.
+    * `notTried`: an item that adds it is in the step 4 pool, but step 4
+      simulated none: its trials were `0` or ran out, or no slot keeps the build
+      valid.
+    * `noItem`: no item in the step 4 pool adds it (none owned, none the
+      character can equip, or each brings another offense element).
 * No change: when step 5 keeps no candidate (or no step recorded one), the tuned
   build is the current build: step 6 is not simulated again (`after` equals
   `before`, `improvement` and `gain` are 0), `accepted` is `false`, and

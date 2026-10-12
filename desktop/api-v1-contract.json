@@ -25285,6 +25285,8 @@
             "gain",
             "standardError",
             "bottleneckRoom",
+            "bottleneckCounters",
+            "candidatesTried",
             "steps",
             "changeSummary",
             "revision",
@@ -25358,6 +25360,77 @@
                   "type": "null"
                 }
               ]
+            },
+            "bottleneckCounters": {
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "ability",
+                  "answers",
+                  "status"
+                ],
+                "properties": {
+                  "ability": {
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "answers": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    }
+                  },
+                  "status": {
+                    "anyOf": [
+                      {
+                        "const": "owned",
+                        "type": "string"
+                      },
+                      {
+                        "const": "tried",
+                        "type": "string"
+                      },
+                      {
+                        "const": "notTried",
+                        "type": "string"
+                      },
+                      {
+                        "const": "noItem",
+                        "type": "string"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "candidatesTried": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "offenseElement",
+                "defenseElement",
+                "ability"
+              ],
+              "properties": {
+                "offenseElement": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "defenseElement": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "ability": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
             },
             "steps": {
               "additionalProperties": false,
@@ -25710,6 +25783,8 @@
                 "gain",
                 "standardError",
                 "bottleneckRoom",
+                "bottleneckCounters",
+                "candidatesTried",
                 "steps",
                 "changeSummary",
                 "revision",
@@ -25783,6 +25858,77 @@
                       "type": "null"
                     }
                   ]
+                },
+                "bottleneckCounters": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "ability",
+                      "answers",
+                      "status"
+                    ],
+                    "properties": {
+                      "ability": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "answers": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "status": {
+                        "anyOf": [
+                          {
+                            "const": "owned",
+                            "type": "string"
+                          },
+                          {
+                            "const": "tried",
+                            "type": "string"
+                          },
+                          {
+                            "const": "notTried",
+                            "type": "string"
+                          },
+                          {
+                            "const": "noItem",
+                            "type": "string"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "candidatesTried": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "offenseElement",
+                    "defenseElement",
+                    "ability"
+                  ],
+                  "properties": {
+                    "offenseElement": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "defenseElement": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "ability": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
                 },
                 "steps": {
                   "additionalProperties": false,
@@ -26134,6 +26280,20 @@
             "gain": 1,
             "standardError": 0,
             "bottleneckRoom": "1f-1",
+            "bottleneckCounters": [
+              {
+                "ability": "xxxxxxx",
+                "answers": [
+                  "xxxxxxx"
+                ],
+                "status": "owned"
+              }
+            ],
+            "candidatesTried": {
+              "offenseElement": 0,
+              "defenseElement": 0,
+              "ability": 0
+            },
             "steps": {
               "offenseElement": [
                 {
