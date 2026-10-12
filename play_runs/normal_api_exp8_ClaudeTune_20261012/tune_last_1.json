@@ -1,0 +1,21 @@
+{
+ "accepted": false,
+ "objective": "bossDamage",
+ "before": "Success 0.0% / Draw 0.3% / Retreat 14.5% / Defeat 85.2%",
+ "after": "Success 0.0% / Draw 0.3% / Retreat 14.5% / Defeat 85.2%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.0163,
+ "bottleneckRoom": "6f-4",
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [],
+  "ability": [],
+  "finalTuning": []
+ },
+ "changeSummary": [],
+ "revision": 598,
+ "simulationRuns": 2800,
+ "elapsedSeconds": 2.1,
+ "seed": 3649421994
+}
