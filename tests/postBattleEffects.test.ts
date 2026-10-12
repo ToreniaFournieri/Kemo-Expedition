@@ -112,3 +112,19 @@ test('Rotwood blocks elite restoration and emits its fact at the existing positi
   assert.deepEqual(result.preContinuationFacts.map((fact) => fact.type), ['terrain-rotwood']);
   assert.equal(draws.length, 4);
 });
+
+test('Rotwood blocks First Aid healing and emits its fact without a deity', () => {
+  const { result } = resolve({
+    currentHp: 500,
+    floorNumber: 3,
+    roomInFloor: 4,
+    roomType: 'battle_Elite',
+    terrainEffect: 'terrain.rotwood',
+    characters: [
+      { name: 'Front', firstAidLevel: 3, firstAidHpContribution: 400, thunderResistance: 0.5 },
+      { name: 'Back', firstAidLevel: 0, firstAidHpContribution: 0, thunderResistance: 2 },
+    ],
+  });
+  assert.equal(result.preContinuationHp, 500);
+  assert.deepEqual(result.preContinuationFacts.map((fact) => fact.type), ['terrain-rotwood']);
+});

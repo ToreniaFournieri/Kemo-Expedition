@@ -2117,6 +2117,41 @@ test('advanced COMBAT owns Illusion consumption, reflected lethality, and immedi
   assert.equal(terrain.events.find((event) => event.opcode === 'random_flavor')?.aux0, 6);
 });
 
+test('terrain.sniper-domain takes priority over Illusion unless Domain Breaker is present', () => {
+  const run = (breaker: boolean) => executeBattleProtocol(encodeBattleProtocolInput(combatNormalInput({
+    terrainEffect: 'terrain.sniper-domain',
+    combatants: combatNormalInput().combatants.map((combatant, index) => index === 1
+      ? { ...combatant, rangedAttack: 10, rangedNoA: 1, abilities: breaker ? [{ id: 'domain_breaker', level: 1 }] : [] }
+      : { ...combatant, abilities: [{ id: 'illusion', level: 1 }] }),
+    randomValues: [0, 0, 0, 0, 0, 0, 0, 0],
+  })));
+  const sniper = run(false);
+  assert.equal(sniper.protocolError, 0);
+  assert.ok(!sniper.events.some((event) => event.abilityId === 'illusion'), 'Illusion is neither consumed nor logged');
+  assert.ok(sniper.partyHp < 1_000_000, 'the guaranteed hit lands');
+  const broken = run(true);
+  assert.equal(broken.protocolError, 0);
+  assert.ok(broken.events.some((event) => event.opcode === 'nullified' && event.abilityId === 'illusion'));
+});
+
+test('terrain.rotwood disables Life Drain healing', () => {
+  const run = (terrainEffect?: string) => executeBattleProtocol(encodeBattleProtocolInput(combatReactiveInput({
+    terrainEffect,
+    enemyHp: 50,
+    enemyMaxHp: 100,
+    combatants: combatNormalInput().combatants.map((combatant, index) => index === 1
+      ? { ...combatant, meleeAttack: 10, meleeNoA: 1, rangedNoA: 0, abilities: [{ id: 'life_drain', level: 5 }] }
+      : combatant),
+    randomValues: [0, 0, 0, 0, 0, 0, 0, 0],
+  })));
+  const normal = run();
+  assert.equal(normal.protocolError, 0);
+  assert.ok(normal.events.some((event) => event.opcode === 'heal' && event.abilityId === 'life_drain'));
+  const rotwood = run('terrain.rotwood');
+  assert.equal(rotwood.protocolError, 0);
+  assert.ok(!rotwood.events.some((event) => event.opcode === 'heal' && event.abilityId === 'life_drain'));
+});
+
 test('advanced COMBAT resets native state and uses one measured Wasm invocation', () => {
   beginBattleKernelMeasurement();
   const first = executeBattleProtocol(encodeBattleProtocolInput(combatNormalInput()));
