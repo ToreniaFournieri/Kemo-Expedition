@@ -352,6 +352,27 @@ for (const [thrown, code] of [['illegal_action:charge_insufficient', 'illegal_ac
   assert.ok(totalChunks > 0, 'short steps must still complete Cycles');
   assert.equal(simulatedAt, long.simulatedAt, 'the clock advances by the same total time');
 
+  // SpecRef: 9.1.4.4 | Each `parties` entry reports its carry and what is left of its next Cycle; sending exactly that
+  // completes the Cycle, which ends at maximum HP.
+  {
+    const last = await stageApiV1ElapsedProgression(state, { elapsedSeconds: 60 }, { ...options, simulatedAt, carriedMsByPartyId: carried });
+    const cycleMs = cycleMsOf(last.state);
+    const entries = last.data.parties as { partyNumber: number; currentHp: number; maximumHp: number; carriedSeconds: number; secondsToNextCycle: number }[];
+    for (const entry of entries) {
+      const carriedMs = last.carriedMsByPartyId[String(entry.partyNumber)] ?? 0;
+      assert.equal(entry.carriedSeconds, Math.floor(carriedMs / 1_000), `party ${entry.partyNumber} carriedSeconds`);
+      assert.equal(entry.secondsToNextCycle, Math.ceil((cycleMs[String(entry.partyNumber)] - carriedMs) / 1_000), `party ${entry.partyNumber} secondsToNextCycle`);
+    }
+    const target = entries.find((entry) => entry.secondsToNextCycle >= 60)!;
+    assert.ok(target, 'the fixture needs a party more than a minute from its next Cycle');
+    const index = last.state.parties.findIndex((party) => party.id === target.partyNumber);
+    const wounded = { ...last.state, parties: last.state.parties.map((party, partyIndex) => (partyIndex === index ? { ...party, currentHp: 1 } : party)) };
+    const healed = await stageApiV1ElapsedProgression(wounded, { elapsedSeconds: target.secondsToNextCycle }, { ...options, simulatedAt: last.simulatedAt, carriedMsByPartyId: last.carriedMsByPartyId });
+    const after = (healed.data.parties as typeof entries).find((entry) => entry.partyNumber === target.partyNumber)!;
+    assert.ok((healed.carriedMsByPartyId[String(target.partyNumber)] ?? 0) < 1_000, 'exactly one Cycle completed, with under a second left over');
+    assert.equal(after.currentHp, after.maximumHp, 'the completed Cycle ends at maximum HP');
+  }
+
   const noOp = await stageApiV1ElapsedProgression(state, {}, { ...options, simulatedAt, carriedMsByPartyId: carried });
   assert.deepEqual(noOp.carriedMsByPartyId, carried);
   assert.equal(noOp.state, state);

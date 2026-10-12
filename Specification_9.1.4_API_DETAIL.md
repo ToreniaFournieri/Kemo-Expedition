@@ -662,6 +662,18 @@ definitions in 9.1.3.
   instead of sending a Sortie that `party_exhausted` or `charge_insufficient` would refuse.
   A Sortie is available at any `currentHp` above 0 (the Expedition button's rule), so compare
   `currentHp` with `maximumHp` to judge whether the party is worth sending.
+* The same three responses (each `elapsed` `parties` entry) also return `carriedSeconds`
+  and `secondsToNextCycle`, for the party's next `elapsed` Cycle (9.1.4.4).
+  * `carriedSeconds`: the effective time the party carries toward that Cycle, in
+    whole seconds rounded down. A successful `sortie` or `godsBattle` drops the
+    carry, so it returns `0`.
+  * `secondsToNextCycle`: the Cycle's length, priced from the party as it stands
+    the way the next Chunk prices it, minus the carry, rounded up (at least `0`).
+    A completed Cycle ends at maximum HP, so after a Sortie one `elapsed` of
+    `max(60, secondsToNextCycle)` seconds heals the party. Up to the 12-hour
+    request cap, AFK efficiency is 1, so these are request seconds.
+  * It is exact while the party stays as it is. A change that reprices the Cycle
+    (for example, its deity, destination, or last expedition) changes it.
 * `read/observation/expedition`'s party entries add `level` and `experienceRatio` (as in `read/observation/party`).
 * `read/observation/party`'s `party` adds `experienceRatio` (whole percent of the current
   level's EXP, 0 at the maximum level), `currentHp`, `deityTotalDonation`, and

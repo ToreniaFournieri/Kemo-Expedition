@@ -31883,7 +31883,9 @@
                   "currentHp",
                   "maximumHp",
                   "chargeStock",
-                  "controls"
+                  "controls",
+                  "carriedSeconds",
+                  "secondsToNextCycle"
                 ],
                 "properties": {
                   "partyNumber": {
@@ -32000,6 +32002,14 @@
                         }
                       }
                     }
+                  },
+                  "carriedSeconds": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "secondsToNextCycle": {
+                    "minimum": 0,
+                    "type": "integer"
                   }
                 }
               }
@@ -32088,7 +32098,9 @@
                       "currentHp",
                       "maximumHp",
                       "chargeStock",
-                      "controls"
+                      "controls",
+                      "carriedSeconds",
+                      "secondsToNextCycle"
                     ],
                     "properties": {
                       "partyNumber": {
@@ -32205,6 +32217,14 @@
                             }
                           }
                         }
+                      },
+                      "carriedSeconds": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "secondsToNextCycle": {
+                        "minimum": 0,
+                        "type": "integer"
                       }
                     }
                   }
@@ -32316,7 +32336,9 @@
                     "available": true,
                     "unavailableReason": "gods_battle_unavailable"
                   }
-                }
+                },
+                "carriedSeconds": 0,
+                "secondsToNextCycle": 0
               }
             ]
           }
@@ -32926,7 +32948,9 @@
             "currentHp",
             "maximumHp",
             "chargeStock",
-            "controls"
+            "controls",
+            "carriedSeconds",
+            "secondsToNextCycle"
           ],
           "properties": {
             "summary": {
@@ -33119,6 +33143,14 @@
                   }
                 }
               }
+            },
+            "carriedSeconds": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "secondsToNextCycle": {
+              "minimum": 0,
+              "type": "integer"
             }
           }
         },
@@ -33171,7 +33203,9 @@
                 "currentHp",
                 "maximumHp",
                 "chargeStock",
-                "controls"
+                "controls",
+                "carriedSeconds",
+                "secondsToNextCycle"
               ],
               "properties": {
                 "summary": {
@@ -33364,6 +33398,14 @@
                       }
                     }
                   }
+                },
+                "carriedSeconds": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "secondsToNextCycle": {
+                  "minimum": 0,
+                  "type": "integer"
                 }
               }
             },
@@ -33478,7 +33520,9 @@
                 "available": true,
                 "unavailableReason": "gods_battle_unavailable"
               }
-            }
+            },
+            "carriedSeconds": 0,
+            "secondsToNextCycle": 0
           }
         }
       }
@@ -33552,7 +33596,9 @@
             "currentHp",
             "maximumHp",
             "chargeStock",
-            "controls"
+            "controls",
+            "carriedSeconds",
+            "secondsToNextCycle"
           ],
           "properties": {
             "outcome": {
@@ -33725,6 +33771,14 @@
                   }
                 }
               }
+            },
+            "carriedSeconds": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "secondsToNextCycle": {
+              "minimum": 0,
+              "type": "integer"
             }
           }
         },
@@ -33779,7 +33833,9 @@
                 "currentHp",
                 "maximumHp",
                 "chargeStock",
-                "controls"
+                "controls",
+                "carriedSeconds",
+                "secondsToNextCycle"
               ],
               "properties": {
                 "outcome": {
@@ -33952,6 +34008,14 @@
                       }
                     }
                   }
+                },
+                "carriedSeconds": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "secondsToNextCycle": {
+                  "minimum": 0,
+                  "type": "integer"
                 }
               }
             },
@@ -34061,7 +34125,9 @@
                 "available": true,
                 "unavailableReason": "gods_battle_unavailable"
               }
-            }
+            },
+            "carriedSeconds": 0,
+            "secondsToNextCycle": 0
           }
         }
       }

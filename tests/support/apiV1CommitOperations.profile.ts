@@ -526,6 +526,15 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   const rewards = okSorties[0].rewards;
   assert.equal(rewards.length, ok.state.parties[0].lastExpeditionLog?.rewards.length ?? 0);
   for (const reward of rewards) assert.match(reward, /^[01]\/[1-9][0-9]*\/[0-6]\/[0-9]+$/);
+  // SpecRef: 9.1.4.4 | A sortie restarts the party's Cycle and drops its carry, so the next `elapsed` Cycle is a whole one,
+  // priced from the party as the sortie left it.
+  {
+    const { getApproxAfkCycleDurationMs } = await import('../../src/game/afkScheduler');
+    const timing = ok.data as { carriedSeconds: number; secondsToNextCycle: number };
+    assert.equal(timing.carriedSeconds, 0);
+    assert.equal(timing.secondsToNextCycle, Math.ceil(getApproxAfkCycleDurationMs(ok.state.parties[0], 1, { deityDonations: ok.state.global.deityDonations }) / 1_000));
+    assert.ok(timing.secondsToNextCycle > 0);
+  }
 
   // No charge, no expedition (the button refuses too).
   refuses(withParty(seed, { instantExpeditionStock: 0, instantExpeditionChargeStartedAt: at }), 'charge_insufficient');
