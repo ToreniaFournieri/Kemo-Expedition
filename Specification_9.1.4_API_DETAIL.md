@@ -970,11 +970,17 @@ definitions in 9.1.3.
 * Bottleneck: the room with the most Draw + Retreat + Defeat ends (the earliest
   on a tie); with none, the boss room if a run reached it, else the latest
   reached elite room, else `null`. With `bossDamage` it is always the boss room. Its enemies are every enemy the room can
-  draw. An element is resisted least when the enemies' average resistance
+  draw, and its terrain is the terrain effect of the room's floor. An element is
+  resisted least when the enemies' average resistance
   multiplier for it is highest (an enemy with that element's null, absorb, or
-  reflect counts 0; `e.none` counts 1). `a.X-breaker` matches an enemy with
-  `a.X`; the protect breakers also match that element's reflect and absorb, and
-  `a.m-barrier-breaker` also matches magical reflect and absorb.
+  reflect counts 0; `e.none` counts 1).
+* Counters (7.1.5.1): an ability counters the bottleneck when the Counter ability
+  map pairs it with an ability of any bottleneck enemy or with the bottleneck
+  terrain. The enemy side uses the battle's ability IDs, so the protect breakers
+  answer that element's reflect and absorb, and `a.m-barrier-breaker` answers
+  `a.m-barrier` and magical reflect and absorb. `a.output-stabilizer` counts only
+  on the four penalty terrains, and `terrain.rotwood` has no counter. With no
+  bottleneck room there is no counter.
 * Step 2 (per element and trial): every unlocked item of another element becomes
   an item of the same category with the new element, or with no element when the
   category has none; a locked item of another element, or a slot with neither
@@ -993,8 +999,10 @@ definitions in 9.1.3.
   than the current build. Infeasible combinations are skipped before
   `defenseElementCandidateCount` is applied.
 * Step 4: one candidate per item ID (its strongest owned variant) that adds an
-  ability the character lacks and brings no other offense element; breakers that
-  match the bottleneck enemies are drawn first. Each trial draws up to
+  ability the character lacks and brings no other offense element. Before each
+  draw, the items left that add a counter of the bottleneck (above) are the draw
+  pool; when none is left, every item left is. `a.null-counter` is party-wide: it
+  counts as a counter only while no party member has it. Each trial draws up to
   `abilityCandidateCount` items not drawn before and places each alone.
 * Draws and slots: trial 0 takes the strongest item (the Party pane's
   category-scaled `target d. bonus`, 7.1.2.2 step 4) and the best slot; later
@@ -1016,7 +1024,9 @@ definitions in 9.1.3.
   and `after` are the `overview` strings; `improvement`,
   `gain`, and `standardError` are the step 6 values (`gain` and
   `standardError` as fractions of the score, not percentage points), rounded to
-  four decimals like every candidate's `improvement`. Each recorded candidate
+  four decimals like every candidate's `improvement`. `improvement` is a ratio,
+  so it grows very large near a score of 0 or 1 (`0.1%` → `44.6%` is
+  `improvement: 445`); compare tunings by `gain`. Each recorded candidate
   carries its label (`element`, `resistance`, or `abilities`), `improvement`,
   and `changes` (`<slotIndex>=<Item Format>` for every slot it changes; Jewels
   follow from the allocation). `simulationRuns` counts every simulated run (a
