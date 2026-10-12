@@ -552,6 +552,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Runs the current expedition simulation `numberOfRun` times and returns the result.
 * this does not advance progression, return rewards, consume live randomness, write Diary entries, change equipment, or consume charge.
+* It does not replace or invalidate a kept build result (`buildResultId`). Use it to measure the current build without a search.
 
 * Parameters: 
   * `numberOfRun`
@@ -559,6 +560,17 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Default: 100.
     * Integer.
     * Range: 1 ~ 1000.
+  * `objective`
+    * Optional.
+    * `success`, `minDefeat`, `bossDamage`, `experience`, `progress`
+    * When set, the response also returns `rate` and `standardError` for this objective.
+      * `rate` is measured the same way as the `<rate>` of `party/{p}/gaSearch` (`progress`: 7.1.5 Score).
+    * With `bossDamage`, only the boss battle is simulated (same as `party/{p}/gaSearch`), and `overview` and `detail` describe that battle.
+  * `seed`
+    * Optional.
+    * Integer.
+    * Default: random.
+    * Fixed seed for a reproducible result. The same `seed`, `numberOfRun`, and `objective` on the same save revision give the same result.
 
 * Return:
 * `overview`
@@ -574,6 +586,14 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Success means that the party wins the battle in that room.
     * Example:
       `["1f-1/Success 90.0% / Draw 4.1% / Retreat 2.0% / Defeat 3.9% / Not reached 0.0%","1f-2/Success 50.0% / Draw 10.0% / Retreat 20.0% / Defeat 14.1% / Not reached 5.9%"]`
+  * `rate`
+    * Returned only when `objective` is set.
+    * Same unit as the `<rate>` of `party/{p}/gaSearch`. `progress`: a value from `0` to `1`.
+  * `standardError`
+    * Returned only when `objective` is set.
+    * `sqrt(variance / numberOfRun)`, with the per-run variance of 7.1.5 (Luck check).
+  * `seed`
+    * The seed used: the requested one, or the random one chosen. Send it again to reproduce the result.
 
 **2-2-4. `{p}/chargeStock`**
 
@@ -655,7 +675,10 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Optional.
     * Default: `success`.
     * `success`, `minDefeat`, `bossDamage`, `experience`
-    * `bossDamage` simulates the boss room of the current destination even if the depth limit stops before the boss.
+    * `success`: `progress` (7.1.5 Score) breaks ties between builds, mainly while successes are rare. The search still has a signal when every build is at `0` (for example, every run reaches the boss and draws).
+    * `bossDamage` simulates only the boss battle of the current destination.
+      * Each run starts the boss battle at full party HP.
+      * The rooms before it, the gates, and the depth limit are ignored. HP lost on the way to the boss is not counted; use `success` to include it.
   * `gaParameters`
     * Optional.
     * `effort` selects a preset. Values in the preset table are used unless they are specified explicitly.
@@ -690,12 +713,12 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * `<rate>`: measured value for the selected `objective`.
       * `success`: success rate (clear + return).
       * `minDefeat`: defeat rate. A lower value is an improvement.
-      * `bossDamage`: average share of boss HP dealt in the boss room.
+      * `bossDamage`: average share of boss HP dealt in the boss battle. A win counts as `1`.
       * `experience`: average EXP per run.
     * `<gain>`: improvement of `<rate>` from the current build to the best build.
       * Percentage points for `success`, `minDefeat`, and `bossDamage`.
       * Relative change (%) for `experience`.
-    * Standard error (SE) is computed from the before and after verification runs.
+    * Standard error (SE) is computed from the before and after verification runs, with the per-run variance of `<rate>` (7.1.5 Luck check). For `bossDamage`, this is the variance of the per-run boss share.
     * Values:
       * `veryGood`: `<gain>` is at or above the threshold (10 percentage points; 20% for `experience`), and larger than 2 SE.
       * `good`: `<gain>` is larger than 2 SE, but below the `veryGood` threshold.
@@ -705,6 +728,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `forecast`
     * `before`: `overview` of the current build (same format as `{p}/simulationRun`).
     * `after`: `overview` of the best build (same format as `{p}/simulationRun`).
+    * With `bossDamage`, both describe the boss battle only.
   * `changeSummary`
     * Ordered array of Commit API calls that turns the current build into the best build.
     * Each entry can be sent directly to the Commit API.
@@ -918,7 +942,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `characterId`
     * Required.
   * `baselineRuns` (constant: `1000`)
-  * `quickRuns` (e.g., `100`, `300`, `1000`; default: `100`)
+  * `quickRuns` (e.g., `100`, `300`, `1000`; default: `300`)
   * `finalTuningRuns` (e.g., `300`, `500`, `1000`; default: `500`)
   * `offenseElementRequest` (e.g., `e.fire`, `e.thunder`, `e.ice`, `e.none`; default: `noRequest`)
   * `offenseElementTrialRuns` (e.g., `0`, `3`, `6`; default: `3`)
@@ -933,7 +957,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Optional.
     * Default: `success`.
     * `success`, `minDefeat`, `bossDamage`
-    * `bossDamage` simulates the boss room of the current destination even if the depth limit stops before the boss.
+    * `bossDamage` simulates only the boss battle of the current destination, from full party HP (same as `party/{p}/gaSearch`).
   * `seed`
     * Optional.
     * Integer.
@@ -944,18 +968,24 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `accepted`
     * Boolean. `true` if the tuned build passed the final check (7.1.5 step 6).
   * `objective`
+  * `scoredBy`
+    * The score the tuning used: the same as `objective`, or `progress` when `objective` is `success` and the step 1 success rate is `0` (7.1.5 Score).
   * `before`
     * `overview` of the current build from step 1 (same format as `{p}/simulationRun`).
   * `after`
     * `overview` of the tuned build from step 6 (same format as `{p}/simulationRun`).
+    * With `bossDamage`, `before` and `after` describe the boss battle only.
   * `improvement`, `gain`, `standardError`
-    * Values used in the final check (7.1.5 step 6).
+    * Values used in the final check (7.1.5 step 6), in the `scoredBy` score.
   * `bottleneckRoom`
     * Floor and room found in step 1. Example: `3f-2`
+    * With `bossDamage`, always the boss room.
   * `steps`
     * What each step recorded and what step 5 kept.
-    * `offenseElement`, `defenseElement`, `ability`: recorded candidates with their improvement.
-    * `finalTuning`: candidates kept in step 5.
+    * `offenseElement`, `defenseElement`, `ability`: recorded candidates with their improvement over the current build (steps 2–4 seed).
+    * `finalTuning`: candidates kept in step 5, in order.
+      * Each `improvement` is the improvement of the build with this candidate and every candidate before it, over the current build (7.1.5 step 5, Report).
+      * The last entry's `improvement` is the step 5 improvement of the tuned build. Step 6 re-checks it on another seed (`improvement` above).
   * `changeSummary`
     * Ordered array of Commit API calls that turns the current build into the tuned build, including Jewel changes. Same format and order as `party/{p}/gaSearch`.
     * Empty when `accepted` is `false`.

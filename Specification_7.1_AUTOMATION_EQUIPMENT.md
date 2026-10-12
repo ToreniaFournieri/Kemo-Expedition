@@ -389,7 +389,7 @@ at least one party member has an empty equipment slot.
 
 - **Parameters:**
   - `baselineRuns` (constant: `1000`)
-  - `quickRuns` (e.g., `100`, `300`, `1000`; default: `100`)
+  - `quickRuns` (e.g., `100`, `300`, `1000`; default: `300`)
   - `finalTuningRuns` (e.g., `300`, `500`, `1000`; default: `500`)
   - `offenseElementRequest` (e.g., `e.fire`, `e.thunder`, `e.ice`, `e.none`; default: `noRequest`)
   - `offenseElementTrialRuns` (e.g., `0`, `3`, `6`; default: `3`)
@@ -404,7 +404,9 @@ at least one party member has an empty equipment slot.
     - Optional.
     - Default: `success`.
     - `success`, `minDefeat`, `bossDamage`
-    - `bossDamage` simulates the boss room of the current destination even if the depth limit stops before the boss.
+    - `bossDamage` simulates only the boss battle of the current destination.
+      - Each run starts the boss battle at full party HP.
+      - The rooms before it, the gates, and the depth limit are ignored. HP lost on the way to the boss is not counted; use `success` to include it.
   - `seed`
     - Optional.
     - Integer.
@@ -429,24 +431,36 @@ at least one party member has an empty equipment slot.
     - These three seeds and the random item draws all derive from `seed`.
   - **Score** (per `objective`):
     - `success`: success rate (clear + return).
+      - If the success rate in step 1 is `0`, every step uses `progress` instead, because every build would tie at `0`. The response reports this as `scoredBy: progress`.
     - `minDefeat`: defeat rate. Lower is better.
-    - `bossDamage`: average share of boss HP dealt in the boss room.
-  - **Improvement:**
-    - `success`, `bossDamage`: `ratio = candidateScore / currentScore`
-    - `minDefeat`: `ratio = currentScore / candidateScore`
-    - A score of `0` in the denominator is treated as `0.001`.
-    - If both scores are `0`, `ratio = 1`.
+    - `bossDamage`: average share of boss HP dealt in the boss battle. A win counts as `1`.
+    - `progress`: average over runs of `(rooms cleared + share) / rooms on the route`.
+      - `share`: if the run ended by losing or drawing a battle, the share of enemy HP dealt in that battle. Otherwise `0`.
+      - Rooms on the route: the rooms up to the depth limit or the first closed gate.
+      - A run that clears every room on the route scores `1`.
+  - **Improvement:** the relative change on the rarer side of the score.
+    - `success`, `bossDamage`, `progress`: `ratio = max(candidateScore / currentScore, (1 - currentScore) / (1 - candidateScore))`
+    - `minDefeat`: `ratio = max(currentScore / candidateScore, (1 - candidateScore) / (1 - currentScore))`
+    - In words: the larger of the relative rise of the good outcome and the relative fall of the bad outcome. Near `0` the first ratio decides, and near `1` the second one does, so `minImprovement` and `minGateImprovement` can be met at any score.
+    - Examples (`success`):
+      - `10% → 12%`: `max(1.200, 1.023) = 1.200`, a 20% improvement.
+      - `93% → 95%`: `max(1.022, 1.400) = 1.400`, a 40% improvement (failures fall from 7% to 5%).
+    - A denominator of `0` is treated as `0.001`.
+    - If both scores are equal, `ratio = 1`.
     - `improvement = ratio - 1` (e.g., `ratio = 1.07` means a 7% improvement).
   - **Qualify:** In steps 2–4, a candidate qualifies only if `improvement >= minImprovement`.
   - **Luck check:** Used in step 6.
     - `gain = afterScore - beforeScore` (for `minDefeat`: `beforeScore - afterScore`).
-    - `SE = sqrt(beforeScore × (1 - beforeScore) / runs + afterScore × (1 - afterScore) / runs)`
+    - `SE = sqrt(beforeVariance / runs + afterVariance / runs)`
+      - `variance`: the variance of the per-run score (the average of the squared per-run scores, minus the square of the average score).
+      - For `success` and `minDefeat`, each run scores `0` or `1`, so `variance = score × (1 - score)`.
     - `SE` is how much the difference usually moves by luck alone. `gain > 2 × SE` means the gain is very unlikely to be luck.
 
 1. Run a baseline simulation and find the bottleneck
    - Simulate the current build with `baselineRuns` runs (same as `read/expedition/{p}/simulationRun` with `numberOfRun=baselineRuns`).
    - Bottleneck room: the room in `detail` with the highest `Draw + Retreat + Defeat`.
      - If no run ends before the end of the route, use the boss room. If the boss room is out of reach, use the latest elite room.
+     - With `bossDamage`, the bottleneck room is always the boss room.
    - Bottleneck enemies: the enemies of the bottleneck room. Steps 2–4 use them to decide what to try first.
 
 2. Evaluate alternative offense elements
@@ -483,6 +497,7 @@ at least one party member has an empty equipment slot.
      - For steps 2 and 3, try each other recorded candidate in place of the kept one. Keep the swap only if the score improves.
    - The result is the tuned build.
    - If no candidate is kept, there is no change.
+   - Report: for each kept candidate, in the order of the kept list, the improvement of the build with this candidate and every candidate before it, compared with the current build (step 5 seed). After a swap, the swapped-in candidate takes the place of the one it replaced. The last value is the improvement of the tuned build.
 
 6. Run the simulation after tuning (final check)
    - Simulate the tuned build with `baselineRuns` runs, using the same seed as step 1.
