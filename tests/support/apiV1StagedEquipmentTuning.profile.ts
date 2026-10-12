@@ -4,8 +4,10 @@ import path from 'node:path';
 import { createFreshGameState, gameReducer, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
 import { deriveSeed, type GaSearchDependencies, type StoredBuildResult } from '../../src/api/v1/gaSearch';
+import { prepareObjectiveState } from '../../src/api/v1/objectiveMeasure';
 import { buildSimulationRunData } from '../../src/api/v1/simulationView';
 import { parseStagedTuningRequest, runStagedEquipmentTuning, tuningImprovement, tuningLuckCheck } from '../../src/api/v1/stagedEquipmentTuning';
+import { getDungeonById } from '../../src/data/dungeons';
 import { hydrateGameState } from '../../src/game/saveCodec';
 import { decodePersistedState } from '../../src/game/storageCompression';
 import type { GameState } from '../../src/types';
@@ -19,15 +21,15 @@ const seed = 5;
 
 function dependencies(): GaSearchDependencies {
   return {
-    simulate: (target, index, count, simulationSeed) => simulateExpeditionRuns(target, index, 'mode.normal', count, undefined, 0, simulationSeed),
+    simulate: (target, index, count, simulationSeed, options) => simulateExpeditionRuns(target, index, 'mode.normal', count, undefined, 0, simulationSeed, options),
     now: () => now, createSeed: () => seed, createOpaqueId: () => 'tuning-result-1', revision: 3,
     commitContext: { simulatedAt: now, gameMode: 'mode.normal', enemyLevelOffset: 0, applyAutoEquipment: (s) => s, now: () => now },
   };
 }
 const tune = (state: GameState, raw: Record<string, unknown>) => runStagedEquipmentTuning(state, parseStagedTuningRequest(state, raw), dependencies());
 interface TuningData {
-  accepted: boolean; before: string; after: string; improvement: number; gain: number; standardError: number; bottleneckRoom: string | null;
-  steps: Record<'offenseElement' | 'defenseElement' | 'ability', { improvement: number; changes: string[]; element?: string }[]> & { finalTuning: { step: string; index: number; changes: string[] }[] };
+  accepted: boolean; scoredBy: string; before: string; after: string; improvement: number; gain: number; standardError: number; bottleneckRoom: string | null;
+  steps: Record<'offenseElement' | 'defenseElement' | 'ability', { improvement: number; changes: string[]; element?: string }[]> & { finalTuning: { step: string; index: number; improvement: number; changes: string[] }[] };
   changeSummary: { endpoint: string; parameters: Record<string, unknown> }[]; simulationRuns: number; seed: number; buildResultId?: string;
 }
 type Equipment = GameState['parties'][number]['characters'][number]['equipment'];
@@ -73,7 +75,7 @@ rejects({ characterId: firstId, seed: '7' }, 'invalid_request:seed');
     { ...parsed },
     {
       characterId: firstId, partyIndex: 0, objective: 'success', offenseElementRequest: null, seed: null,
-      quickRuns: 100, finalTuningRuns: 500, offenseElementTrialRuns: 3, offenseElementCandidateCount: 2, defenseElementTrialRuns: 5,
+      quickRuns: 300, finalTuningRuns: 500, offenseElementTrialRuns: 3, offenseElementCandidateCount: 2, defenseElementTrialRuns: 5,
       defenseElementCandidateCount: 2, abilityTrialRuns: 20, abilityCandidateCount: 2, minImprovement: 0.07, minGateImprovement: 0.07,
     },
     'the 9.1.3 defaults',
@@ -84,18 +86,32 @@ rejects({ characterId: firstId, seed: '7' }, 'invalid_request:seed');
 
 // ---------------- Improvement and the luck check (Spec 7.1.5 General rules) ----------------
 
-assert.ok(Math.abs(tuningImprovement('success', 0.5, 0.535) - 0.07) < 1e-9);
-assert.ok(Math.abs(tuningImprovement('bossDamage', 0.4, 0.3) + 0.25) < 1e-9);
-assert.ok(Math.abs(tuningImprovement('minDefeat', 0.2, 0.1) - 1) < 1e-9, 'a lower defeat rate is an improvement');
-assert.ok(Math.abs(tuningImprovement('success', 0, 0.01) - 9) < 1e-9, 'a zero denominator counts as 0.001');
-assert.ok(Math.abs(tuningImprovement('minDefeat', 0.1, 0) - 99) < 1e-9);
+// The relative change on the rarer side: the rise of the good outcome or the fall of the bad one, whichever is larger.
+const near = (actual: number, expected: number, label: string) => assert.ok(Math.abs(actual - expected) < 1e-9, `${label}: ${actual} != ${expected}`);
+near(tuningImprovement('success', 0.1, 0.12), 0.2, 'near 0 the success side decides (7.1.5 example)');
+near(tuningImprovement('success', 0.93, 0.95), 0.4, 'near 1 the failure side decides (7.1.5 example)');
+assert.ok(tuningImprovement('success', 0.95, 0.97) >= 0.07, 'a 7% threshold can be met above 93.5%');
+near(tuningImprovement('success', 0.5, 0.535), 0.5 / 0.465 - 1, 'the larger of the two ratios');
+near(tuningImprovement('progress', 0.8, 0.84), 0.2 / 0.16 - 1, '`progress` is scored like `success`');
+near(tuningImprovement('bossDamage', 0.4, 0.3), 0.6 / 0.7 - 1, 'a worse score is a negative improvement');
+assert.ok(tuningImprovement('success', 0.6, 0.5) < 0 && tuningImprovement('minDefeat', 0.1, 0.2) < 0, 'worse on both sides is negative');
+near(tuningImprovement('minDefeat', 0.2, 0.1), 1, 'a lower defeat rate is an improvement');
+near(tuningImprovement('minDefeat', 0.9, 0.85), 0.15 / 0.1 - 1, 'near 1 the non-defeat side decides for `minDefeat`');
+near(tuningImprovement('success', 0, 0.01), 9, 'a zero denominator counts as 0.001');
+near(tuningImprovement('minDefeat', 0.1, 0), 99, 'a zero denominator counts as 0.001');
 assert.equal(tuningImprovement('success', 0, 0), 0, 'two zero scores are no change');
+assert.equal(tuningImprovement('success', 1, 1), 0, 'equal scores are no change');
 {
-  const luck = tuningLuckCheck('success', 0.4, 0.5, 1000);
+  const binary = (rate: number) => ({ rate, variance: rate * (1 - rate) });
+  const luck = tuningLuckCheck('success', binary(0.4), binary(0.5), 1000);
   assert.ok(Math.abs(luck.standardError - Math.sqrt(0.24 / 1000 + 0.25 / 1000)) < 1e-12);
   assert.ok(luck.passed);
-  assert.equal(tuningLuckCheck('success', 0.4, 0.43, 1000).passed, false, 'three points on 1000 runs may be luck');
-  assert.ok(Math.abs(tuningLuckCheck('minDefeat', 0.3, 0.2, 1000).gain - 0.1) < 1e-12, 'minDefeat gains when defeats fall');
+  assert.equal(tuningLuckCheck('success', binary(0.4), binary(0.43), 1000).passed, false, 'three points on 1000 runs may be luck');
+  assert.ok(Math.abs(tuningLuckCheck('minDefeat', binary(0.3), binary(0.2), 1000).gain - 0.1) < 1e-12, 'minDefeat gains when defeats fall');
+  // A share's per-run variance is below the Bernoulli bound p(1 - p), so a real share gain is not mistaken for luck.
+  const share = tuningLuckCheck('bossDamage', { rate: 0.42, variance: 0.04 }, { rate: 0.463, variance: 0.04 }, 1000);
+  assert.ok(Math.abs(share.standardError - Math.sqrt(0.08 / 1000)) < 1e-12);
+  assert.ok(share.passed && !tuningLuckCheck('bossDamage', binary(0.42), binary(0.463), 1000).passed);
 }
 
 // ---------------- Nothing to try ----------------
@@ -107,6 +123,7 @@ assert.equal(tuningImprovement('success', 0, 0), 0, 'two zero scores are no chan
   const outcome = await tune(state, { characterId: firstId });
   const data = outcome.data as unknown as TuningData;
   assert.equal(data.accepted, false);
+  assert.equal(data.scoredBy, 'success', 'a build with successes is scored by its objective');
   assert.deepEqual(data.changeSummary, []);
   assert.equal(data.buildResultId, undefined);
   assert.equal(outcome.stored, null);
@@ -115,7 +132,7 @@ assert.equal(tuningImprovement('success', 0, 0), 0, 'two zero scores are no chan
   // step 6 is not simulated again (the tuned build is the current build).
   assert.equal(data.after, data.before);
   assert.deepEqual([data.improvement, data.gain], [0, 0]);
-  assert.equal(data.simulationRuns, 1000 + 100, 'the baseline and the quick run of the current build');
+  assert.equal(data.simulationRuns, 1000 + 300, 'the baseline and the quick run of the current build');
   assert.match(String(data.bottleneckRoom), /^[1-6]f-[1-4]$/);
   assert.deepEqual(state, before, 'the tuning never changes the state it read');
   const off = (await tune(state, { characterId: firstId, offenseElementTrialRuns: 0, defenseElementTrialRuns: 0, abilityTrialRuns: 0 })).data as unknown as TuningData;
@@ -126,6 +143,20 @@ assert.equal(tuningImprovement('success', 0, 0), 0, 'two zero scores are no chan
   const seeded = (await tune(state, { characterId: firstId, seed: 123 })).data as unknown as TuningData;
   assert.equal(seeded.seed, 123, 'a requested seed is echoed');
   assert.deepEqual((await tune(state, { characterId: firstId, seed: 123 })).data, seeded);
+}
+
+// ---------------- `success` at 0: the tuning scores `progress` (Spec 7.1.5 Score) ----------------
+{
+  // A fresh party sent to Expedition 8 with every gate open dies in its first rooms: every build ties at 0 successes.
+  assert.ok(getDungeonById(8), 'Expedition 8 exists in the test environment');
+  let state = gameReducer(fresh, { type: 'REMOVE_ALL_EQUIPMENT', partyIndex: 0, characterId: firstId });
+  state = { ...state, parties: [{ ...state.parties[0], selectedDungeonId: 8, defeatedBossExpeditions: { 7: true } }, ...state.parties.slice(1)] };
+  state = prepareObjectiveState(state, 0, 'bossDamage');
+  const hopeless = (await tune(state, { characterId: firstId, seed: 21 })).data as unknown as TuningData;
+  assert.match(hopeless.before, /^Success 0\.0% /);
+  assert.equal(hopeless.scoredBy, 'progress');
+  const success = (await tune(state, { characterId: firstId, seed: 21, objective: 'minDefeat' })).data as unknown as TuningData;
+  assert.equal(success.scoredBy, 'minDefeat', 'only `success` falls back to `progress`');
 }
 
 // ---------------- A real, heavy save ----------------
@@ -157,6 +188,7 @@ const data = outcome.data as unknown as TuningData;
     assert.ok(recorded.every((candidate, index) => candidate.improvement >= 0.07 && (index === 0 || recorded[index - 1].improvement >= candidate.improvement)), `${step} order`);
   }
   assert.ok(data.steps.finalTuning.length > 0 && data.steps.finalTuning.every((entry) => entry.index >= 0 && entry.changes.length > 0));
+  assert.equal(data.scoredBy, 'success');
   assert.ok(data.steps.finalTuning.filter((entry) => entry.step === 'offenseElement').length <= 1 && data.steps.finalTuning.filter((entry) => entry.step === 'defenseElement').length <= 1);
   // Only the tuned character changes, with items from the Inventory or its own equipment, and its locked slot is untouched.
   const inventory = new Set(Object.values(locked.global.inventory).filter((entry) => entry.status === 'owned' && entry.count > 0).map((entry) => `${entry.item.id}/${entry.item.enhancement}/${entry.item.superRare}`));
@@ -193,6 +225,14 @@ const data = outcome.data as unknown as TuningData;
   assertDistinctJewels(after.equipment, 'the tuned ninja');
   const forecast = await simulateExpeditionRuns(applied, partyIndex, 'mode.normal', 1000, undefined, 0, deriveSeed(seed, 3));
   assert.equal(buildSimulationRunData(forecast, 0, 'check').overview, data.after);
+  // `finalTuning` improvements are cumulative over the current build on the step 5 seed: the last one is the tuned build's.
+  const successOn = async (target: GameState) => {
+    const result = await simulateExpeditionRuns(target, partyIndex, 'mode.normal', 500, undefined, 0, deriveSeed(seed, 2));
+    return (result.Clear + result.Return) / result.total;
+  };
+  const last = data.steps.finalTuning[data.steps.finalTuning.length - 1];
+  assert.equal(last.improvement, Math.round(tuningImprovement('success', await successOn(locked), await successOn(applied)) * 1e4) / 1e4);
+  assert.ok(last.improvement > 0);
   // The old operation name is gone, not an alias.
   assert.throws(() => applyApiV1Commit(`commit/build/party/${locked.parties[partyIndex].id}/applyGaResult`, locked, { gaResultId: data.buildResultId, simulation: true }, commitContext(outcome.stored)), /invalid_request/);
 }
@@ -204,6 +244,18 @@ const data = outcome.data as unknown as TuningData;
   assert.deepEqual([fire.steps.defenseElement, fire.steps.ability], [[], []]);
   assert.equal(fire.seed, 11);
   assert.deepEqual((await tune(sample, request)).data, fire, 'the same seed on the same save repeats the result');
+}
+
+// ---------------- `bossDamage`: the boss battle alone (Spec 7.1.5 objective) ----------------
+{
+  const boss = (await tune(sample, { characterId: ninja.id, objective: 'bossDamage', offenseElementTrialRuns: 1, defenseElementTrialRuns: 0, abilityTrialRuns: 0, seed: 3 })).data as unknown as TuningData;
+  assert.equal(boss.scoredBy, 'bossDamage');
+  assert.equal(boss.bottleneckRoom, '6f-4', 'the bottleneck is always the boss room');
+  // The forecast is the boss battle from full HP: every run reaches it, so nothing is left unreached or retreated from.
+  const forecast = await simulateExpeditionRuns(sample, partyIndex, 'mode.normal', 1000, undefined, 0, deriveSeed(3, 3), { bossRoomOnly: true });
+  assert.equal(buildSimulationRunData(forecast, 0, 'check').overview, boss.before);
+  assert.equal(forecast.boss?.reached, 1000);
+  assert.deepEqual(forecast.rooms.filter((room) => room.reached > 0).map((room) => room.room), [24], 'only the boss room is fought');
 }
 
 // ---------------- Jewels: only the changed slot ----------------

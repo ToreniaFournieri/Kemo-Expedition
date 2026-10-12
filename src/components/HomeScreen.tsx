@@ -642,12 +642,13 @@ export function GameRuntimeHost({
         enemyLevelOffset: () => apiRuntimeRef.current.enemyLevelOffset,
         cycleDurationScale: () => apiCycleDurationScaleRef.current,
         applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
-        simulate: async (snapshot, partyIndex, count, seed) => {
+        simulate: async (snapshot, partyIndex, count, seed, options) => {
           // SpecRef: 8.3 | Simulation Run progress is an in-process exception to the API boundary: only the Expedition
           // pane's own in-flight request registers a listener, and it is captured at start so later runs never report into it.
           const onProgress = simulationProgressListenerRef.current ?? undefined;
-          // A seeded run belongs to a GA search, which never reports into that pane.
-          return simulateExpeditionRuns(snapshot, partyIndex, gameModeRef.current, count, seed === undefined ? onProgress : undefined, apiRuntimeRef.current.enemyLevelOffset, seed);
+          // A search's seeded runs never report into that pane; a Simulation Run read does, seeded or not.
+          const reports = options?.reportProgress ?? seed === undefined;
+          return simulateExpeditionRuns(snapshot, partyIndex, gameModeRef.current, count, reports ? onProgress : undefined, apiRuntimeRef.current.enemyLevelOffset, seed, { bossRoomOnly: options?.bossRoomOnly === true });
         },
         persistPlayer: async (snapshot) => { await apiActionsRef.current.persistApiState(snapshot); },
         persistPlayerReplacement: async (snapshot) => { await apiActionsRef.current.persistApiStateReplacement(snapshot); },

@@ -287,10 +287,12 @@ const gaParameters = strict({
 });
 // SpecRef: 9.1.3 | Read | 2-3-7 character/stagedEquipmentTuning | a POST Read body like `gaSearch`; ranges in 9.1.4.9.
 const tuningIntegers = {
-  quickRuns: [10, 1000, 100], finalTuningRuns: [50, 1000, 500], offenseElementTrialRuns: [0, 10, 3], offenseElementCandidateCount: [1, 3, 2],
+  quickRuns: [10, 1000, 300], finalTuningRuns: [50, 1000, 500], offenseElementTrialRuns: [0, 10, 3], offenseElementCandidateCount: [1, 3, 2],
   defenseElementTrialRuns: [0, 20, 5], defenseElementCandidateCount: [1, 3, 2], abilityTrialRuns: [0, 50, 20], abilityCandidateCount: [1, 3, 2],
 };
 const tuningObjective = literals('success', 'minDefeat', 'bossDamage');
+// SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `objective` adds `rate` and `standardError`; `seed` repeats a forecast.
+const simulationObjective = literals('success', 'minDefeat', 'bossDamage', 'experience', 'progress');
 const directBodySchemas = {
   'fundamental/signUp': strict({ ...identity, language: optional(language, 'ja') }), 'fundamental/logIn': strict({ ...identity, headless: optional(Type.Boolean(), false) }), 'fundamental/logOut': empty,
   'read/build/party/{p}/gaSearch': strict({
@@ -534,6 +536,7 @@ const responseDataSchemas = {
       columns: Type.Tuple(['floorRoom', 'notReached', 'victory', 'clear', 'return', 'draw', 'retreat', 'defeat', 'successfulHp.full', 'successfulHp.from90', 'successfulHp.from80', 'successfulHp.from70', 'successfulHp.from60', 'successfulHp.from50', 'successfulHp.from40', 'successfulHp.below40', 'retreatHp.from30', 'retreatHp.from20', 'retreatHp.from10', 'retreatHp.below10'].map((name) => Type.Literal(name))),
       rows: Type.Array(Type.Tuple([floorRoomKey, ...Array.from({ length: 19 }, () => count)])),
     }),
+    rate: optional(Type.Number({ minimum: 0 })), standardError: optional(Type.Number({ minimum: 0 })), seed: Type.Integer(),
   }),
   'read/expedition/{p}/chargeStock': strict({ chargeStock: Type.Integer({ minimum: 0, maximum: 6 }), chargeDuration: Type.Integer({ minimum: 0 }) }),
   'read/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }), validOptions: strict({ deityId: Type.Array(stableKey), order: Type.Array(integerId) }) }),
@@ -544,7 +547,7 @@ const responseDataSchemas = {
   }),
   // SpecRef: 9.1.3 | 2-3-7 stagedEquipmentTuning | the final check, what each step recorded, and the Commit API calls of the tuned build.
   'read/build/character/stagedEquipmentTuning': strict({
-    accepted: Type.Boolean(), objective: tuningObjective, before: Type.String(), after: Type.String(),
+    accepted: Type.Boolean(), objective: tuningObjective, scoredBy: literals('success', 'minDefeat', 'bossDamage', 'progress'), before: Type.String(), after: Type.String(),
     improvement: Type.Number(), gain: Type.Number(), standardError: Type.Number({ minimum: 0 }),
     bottleneckRoom: Type.Union([floorRoomKey, Type.Null()]),
     steps: strict({
@@ -777,7 +780,7 @@ const commitEnvelope = (parameters) => strict({ expectedRevision: Type.Integer({
 function pathSchemaFor(operation) { const name = operation.path.match(/\{([^}]+)\}/)?.[1]; return name ? pathSchemas[name] : empty; }
 function bodySchemaFor(operation) {
   if (directBodySchemas[operation.operationId]) return directBodySchemas[operation.operationId];
-  if (operation.operationId.endsWith('/simulationRun')) return strict({ expectedRevision: optional(Type.Integer({ minimum: 0 })), numberOfRun: optional(Type.Integer({ minimum: 1, maximum: 1000 }), 100) });
+  if (operation.operationId.endsWith('/simulationRun')) return strict({ expectedRevision: optional(Type.Integer({ minimum: 0 })), numberOfRun: optional(Type.Integer({ minimum: 1, maximum: 1000 }), 100), objective: optional(simulationObjective), seed: optional(Type.Integer()) });
   if (operation.operationId.startsWith('commit/')) return commitEnvelope(commitParameters[operation.operationId]);
   return empty;
 }
