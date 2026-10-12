@@ -2,21 +2,97 @@
  "accepted": false,
  "objective": "success",
  "scoredBy": "success",
- "before": "Success 23.0% / Draw 0.2% / Retreat 25.4% / Defeat 51.4%",
- "after": "Success 23.0% / Draw 0.2% / Retreat 25.4% / Defeat 51.4%",
- "improvement": 0,
- "gain": 0,
- "standardError": 0.0188,
- "bottleneckRoom": "2f-4",
+ "before": "Success 3.3% / Draw 6.6% / Retreat 60.4% / Defeat 29.7%",
+ "after": "Success 3.2% / Draw 5.6% / Retreat 64.3% / Defeat 26.9%",
+ "improvement": -0.001,
+ "gain": -0.001,
+ "standardError": 0.0079,
+ "bottleneckRoom": "3f-4",
  "steps": {
-  "offenseElement": [],
-  "defenseElement": [],
-  "ability": [],
-  "finalTuning": []
+  "offenseElement": [
+   {
+    "element": "e.ice",
+    "improvement": 0.125,
+    "changes": [
+     "4=0/2303/1/0"
+    ]
+   }
+  ],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.ice"
+    ],
+    "improvement": 0.375,
+    "changes": [
+     "1=0/7302/3/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.ice"
+    ],
+    "improvement": 0.25,
+    "changes": [
+     "4=0/7209/3/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.bulwark-breaker"
+    ],
+    "improvement": 0.875,
+    "changes": [
+     "1=0/5403/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.anti-overwatch"
+    ],
+    "improvement": 0.25,
+    "changes": [
+     "1=0/4303/3/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.boost"
+    ],
+    "improvement": 0.25,
+    "changes": [
+     "4=0/4406/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.life-drain"
+    ],
+    "improvement": 0.125,
+    "changes": [
+     "4=0/7306/0/0"
+    ]
+   }
+  ],
+  "finalTuning": [
+   {
+    "step": "ability",
+    "index": 0,
+    "abilities": [
+     "a.bulwark-breaker"
+    ],
+    "improvement": 0.1176,
+    "changes": [
+     "1=0/5403/0/0"
+    ]
+   }
+  ]
  },
  "changeSummary": [],
- "revision": 540,
- "simulationRuns": 4600,
- "elapsedSeconds": 1.9,
- "seed": 2938339588
+ "revision": 1860,
+ "simulationRuns": 11100,
+ "elapsedSeconds": 6.2,
+ "seed": 373420628
 }
