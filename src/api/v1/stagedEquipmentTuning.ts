@@ -383,7 +383,7 @@ function withEquipment(model: TuningModel, equipment: (Item | null)[]): GameStat
 
 // ---------------- Bottleneck ----------------
 
-interface Bottleneck { room: number | null; enemies: EnemyDef[] }
+interface Bottleneck { room: number | null; enemies: EnemyDef[]; terrain: string | null }
 
 /**
  * Step 1: the room with the most Draw + Retreat + Defeat ends. When no run ends early, the boss room if a run reached it,
@@ -391,7 +391,7 @@ interface Bottleneck { room: number | null; enemies: EnemyDef[] }
  */
 function findBottleneck(state: GameState, partyIndex: number, result: ExpeditionSimulationResult, bossOnly: boolean): Bottleneck {
   const dungeon = getDungeonById(state.parties[partyIndex].selectedDungeonId);
-  if (!dungeon) return { room: null, enemies: [] };
+  if (!dungeon) return { room: null, enemies: [], terrain: null };
   const roomDef = (room: number) => {
     const { floor, roomInFloor } = getExpeditionSimulationRoomCoordinate(room);
     return { floor, def: dungeon.floors.find((entry) => entry.floorNumber === floor)?.rooms[roomInFloor - 1] };
@@ -411,9 +411,13 @@ function findBottleneck(state: GameState, partyIndex: number, result: Expedition
     const elite = [...reached].reverse().find((entry) => roomDef(entry.room).def!.type === 'battle_Elite');
     room = boss?.room ?? elite?.room ?? null;
   }
-  if (room === null) return { room: null, enemies: [] };
+  if (room === null) return { room: null, enemies: [], terrain: null };
   const { floor, def } = roomDef(room);
-  return { room, enemies: def ? listExpeditionRoomEnemyCandidates(def, floor) : [] };
+  return {
+    room,
+    enemies: def ? listExpeditionRoomEnemyCandidates(def, floor) : [],
+    terrain: dungeon.floors.find((entry) => entry.floorNumber === floor)?.terrainEffect ?? null,
+  };
 }
 
 /** How much damage of `element` the bottleneck enemies take on average (1 = neutral; null, absorb, and reflect take none). */
@@ -426,13 +430,56 @@ function elementAffinity(enemies: readonly EnemyDef[], element: ElementalOffense
   }, 0) / enemies.length;
 }
 
-/** The enemy abilities an `a.X-breaker` ability defeats (the protect and barrier breakers also cover reflect and absorb). */
-function brokenAbilities(ability: AbilityId): string[] {
-  if (!ability.endsWith('_breaker')) return [];
-  const target = ability.slice(0, -'_breaker'.length);
-  if (target.endsWith('_protect')) { const element = target.slice(0, -'_protect'.length); return [`${element}_reflect`, `${element}_absorb`]; }
-  if (target === 'm_barrier') return ['m_barrier', 'magical_reflect', 'magical_absorb'];
-  return [target];
+/**
+ * SpecRef: 7.1.5.1 | Counter ability map | Enemy ability counters. Each counter ability lists the enemy abilities it answers
+ * (the protect and barrier breakers also cover reflect and absorb).
+ */
+const ENEMY_ABILITY_COUNTERS: Readonly<Record<string, readonly string[]>> = {
+  null_counter: ['counter', 're_counter'],
+  illusion_breaker: ['illusion'],
+  bulwark_breaker: ['bulwark'],
+  defender_breaker: ['defender'],
+  m_barrier_breaker: ['m_barrier', 'magical_reflect', 'magical_absorb'],
+  fire_protect_breaker: ['fire_reflect', 'fire_absorb'],
+  ice_protect_breaker: ['ice_reflect', 'ice_absorb'],
+  thunder_protect_breaker: ['thunder_reflect', 'thunder_absorb'],
+  pursuit: ['stealth', 'flee'],
+  rage_breaker: ['rage'],
+  momentum_breaker: ['momentum'],
+  execution_null: ['execution'],
+  anti_ambush: ['ambush'],
+  anti_overwatch: ['overwatch'],
+  unforgettable: ['oblivion', 'fading_memory'],
+  null_shock: ['shock'],
+  null_corrode: ['corrode'],
+  null_life_drain: ['life_drain'],
+  null_death_touch: ['death_touch'],
+  null_burn: ['burn'],
+  null_bind: ['bind'],
+  coldproof: ['frostbite'],
+  requiem: ['reanimate'],
+};
+
+/** SpecRef: 7.1.5.1 | Counter ability map | Terrain counters (`a.output-stabilizer` only on penalty terrains). */
+const TERRAIN_COUNTERS: Readonly<Record<string, readonly string[]>> = {
+  output_stabilizer: ['terrain.rough-waves', 'terrain.heavy-wind', 'terrain.burrow', 'terrain.gravity'],
+  wind_rider: ['terrain.tailwind'],
+  true_sight: ['terrain.fog', 'terrain.ash-haze'],
+  equation_breaker: ['terrain.machine-logic', 'terrain.silence-field'],
+  domain_breaker: ['terrain.floor-domain', 'terrain.cap-domain', 'terrain.echo-domain', 'terrain.silence-field',
+    'terrain.duelist-domain', 'terrain.sniper-domain', 'terrain.spell-domain'],
+  defiance: ['terrain.suppression'],
+  unforgettable: ['terrain.deletion'],
+  dryproof: ['terrain.dry'],
+  vine_cutter: ['terrain.vine-snare'],
+  mana_ward: ['terrain.crystal-zone', 'terrain.mana-burn'],
+  siege: ['terrain.fortified'],
+};
+
+/** Whether `ability` counters an ability of a bottleneck enemy or the bottleneck room's terrain. */
+export function countersBottleneck(ability: string, enemyAbilities: ReadonlySet<string>, terrain: string | null): boolean {
+  return (ENEMY_ABILITY_COUNTERS[ability] ?? []).some((target) => enemyAbilities.has(target))
+    || (terrain !== null && (TERRAIN_COUNTERS[ability] ?? []).includes(terrain));
 }
 
 // ---------------- Scores ----------------
@@ -679,7 +726,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
     record('defenseElement', candidates, request.defenseElementTrialRuns);
   }
 
-  // 4. Ability items: items granting an ability the character lacks, breakers of the bottleneck enemies' abilities first.
+  // 4. Ability items: items granting an ability the character lacks, counters of the bottleneck room (7.1.5.1) first.
   if (request.abilityTrialRuns > 0) {
     const party = state.parties[partyIndex];
     const row = party.characters.findIndex((entry) => entry.id === model.character.id) + 1;
@@ -698,7 +745,10 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
         if (!previous || facts.power > model.facts.get(previous)!.power) byItem.set(facts.item.id, key);
       }
     }
-    const breaks = (key: string) => model.facts.get(key)!.abilities.some((ability) => !owned.has(ability) && brokenAbilities(ability).some((target) => enemyAbilities.has(target)));
+    // A party-wide counter (`a.null-counter`) is already covered when any party member has it.
+    const partyOwned = new Set(party.characters.flatMap((entry, index) => computeCharacterStats(entry, party.level, index + 1).abilities.map((ability) => ability.id as string)));
+    const breaks = (key: string) => model.facts.get(key)!.abilities.some((ability) => !owned.has(ability)
+      && !(ability === 'null_counter' && partyOwned.has(ability)) && countersBottleneck(ability, enemyAbilities, bottleneck.terrain));
     const remaining = [...byItem.values()].sort();
     const candidates: Candidate[] = [];
     for (let trial = 0; trial < request.abilityTrialRuns && remaining.length > 0; trial += 1) {
