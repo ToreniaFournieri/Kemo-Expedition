@@ -481,7 +481,9 @@ at least one party member has an empty equipment slot.
 4. Evaluate alternative item abilities
    - Check the abilities granted by the current equipment.
    - Try up to `abilityCandidateCount` items that grant abilities the character doesn't already have, each replacing one or more unlocked items.
-     - Try first items that grant `a.X-breaker` when a bottleneck enemy has `a.X` (e.g., `a.illusion-breaker` against `a.illusion`).
+     - Try first items that grant a counter ability of `7.1.5.1` for the bottleneck room (e.g., `a.illusion-breaker` against an enemy with `a.illusion`; `a.true-sight` on a `terrain.fog` floor).
+       - A counter ability applies only if the character does not have it yet, and for a party-wide counter (marked in the table) only if no party member has it.
+       - If no item grants a counter ability, draw from all items as usual.
    - Repeat this step `abilityTrialRuns` times, drawing new items for each trial. Do not draw an item that was already tried in this step.
    - Record the top `max(2, floor(abilityTrialRuns / 5))` candidates that qualify. If none qualify, record none.
 
@@ -505,3 +507,58 @@ at least one party member has an empty equipment slot.
      - `improvement >= minGateImprovement`
      - `gain > 2 × SE`
    - Otherwise, discard the changes and keep the original build. `changeSummary` is empty.
+
+##### 7.1.5.1 Counter ability map
+
+- Used by step 4 to decide which abilities to try first. The map lists only **explicit** counters: abilities that the specification names as the answer to an enemy ability or a terrain effect.
+- Counters that work only through the battle rules (attack type, timing, melee avoidance, etc.) are not listed. The element steps (2 and 3) and the simulation itself cover them.
+- A row applies to the bottleneck room (step 1) when:
+  - **Enemy ability:** at least one enemy of the bottleneck room has the ability.
+  - **Terrain:** the terrain effect of the bottleneck room's floor is the listed terrain.
+
+**Enemy ability counters**
+
+| Enemy ability | Counter ability | Note |
+|-|-|-|
+| `a.counter`, `a.re-counter` | `a.null-counter` | Party-wide |
+| `a.illusion` | `a.illusion-breaker` | |
+| `a.bulwark` | `a.bulwark-breaker` | |
+| `a.defender` | `a.defender-breaker` | |
+| `a.m-barrier`, `a.magical-reflect`, `a.magical-absorb` | `a.m-barrier-breaker` | |
+| fire reflect / absorb | `a.fire-protect-breaker` | |
+| ice reflect / absorb | `a.ice-protect-breaker` | |
+| thunder reflect / absorb | `a.thunder-protect-breaker` | |
+| `a.stealth`, `a.flee` | `a.pursuit` | |
+| `a.rage` | `a.rage-breaker` | |
+| `a.momentum` | `a.momentum-breaker` | |
+| `a.execution` | `a.execution-null` | |
+| `a.ambush` | `a.anti-ambush` | |
+| `a.overwatch` | `a.anti-overwatch` | |
+| `a.oblivion`, `a.fading_memory` | `a.unforgettable` | |
+| `a.shock` | `a.null-shock` | |
+| `a.corrode` | `a.null-corrode` | |
+| `a.life-drain` | `a.null-life-drain` | |
+| `a.death-touch` | `a.null-death-touch` | |
+| `a.burn` | `a.null-burn` | |
+| `a.bind` | `a.null-bind` | |
+| `a.frostbite` | `a.coldproof` | |
+| `a.reanimate` | `a.requiem` | |
+
+**Terrain counters**
+
+| Terrain | Counter ability | Note |
+|-|-|-|
+| `terrain.rough-waves`, `terrain.heavy-wind`, `terrain.burrow`, `terrain.gravity` | `a.output-stabilizer` | Penalty terrains only. Not a counter on `terrain.low-gravity` and `terrain.limestone-cave`: it would also remove their bonus |
+| `terrain.tailwind` | `a.wind-rider` | |
+| `terrain.fog`, `terrain.ash-haze` | `a.true-sight` | |
+| `terrain.machine-logic`, `terrain.silence-field` | `a.equation-breaker` | |
+| `terrain.floor-domain`, `terrain.cap-domain`, `terrain.echo-domain`, `terrain.silence-field`, `terrain.duelist-domain`, `terrain.sniper-domain`, `terrain.spell-domain` | `a.domain-breaker` | |
+| `terrain.suppression` | `a.defiance` | |
+| `terrain.deletion` | `a.unforgettable` | |
+| `terrain.dry` | `a.dryproof` | |
+| `terrain.vine-snare` | `a.vine-cutter` | |
+| `terrain.crystal-zone`, `terrain.mana-burn` | `a.mana-ward` | |
+| `terrain.fortified` | `a.siege` | |
+
+- `terrain.rotwood` disables healing abilities (`a.first-aid`, `a.regeneration`, `a.life-drain`, `God of Restoration`), but has no counter ability. A candidate that adds one of them does not gain priority from this map there.
+- Terrains not listed (e.g., `terrain.decay`, `terrain.heatwave`, `terrain.leakage`, `terrain.exposure`, `terrain.dark-field`, `terrain.frenzy`, `terrain.predation`, `terrain.sacred-judgement`, `terrain.conduction`, `terrain.thunderstorm`, `terrain.chain-lightning`, `terrain.chill`, `terrain.looping-path`, `terrain.transcendence`, `terrain.gehenna`) have no explicit counter ability, so they add no priority.
