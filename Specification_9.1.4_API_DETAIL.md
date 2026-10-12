@@ -548,6 +548,16 @@ definitions in 9.1.3.
   `expectedPerRun` gives the mean `experience`, `itemDrops`, and
   `dropSaleValue` (the drops' Gold value when sold) of one run, and `totals`
   holds the exact sums over all runs.
+* `simulationRun` always runs on a fixed seed: the requested `seed`, or a fresh
+  random one, returned as `seed` either way, so the same `seed`, `numberOfRun`,
+  and `objective` on the same revision repeat the forecast (battles included).
+  With `objective` (`success`, `minDefeat`, `bossDamage`, `experience`, or
+  `progress`), the response also returns `rate`, measured exactly as `gaSearch`
+  and `stagedEquipmentTuning` measure it, and `standardError`
+  (`sqrt(variance / numberOfRun)` with the per-run variance of 7.1.5). With
+  `bossDamage` the forecast is that objective's boss battle alone (see GA
+  search), so `overview`, `detail`, `rooms`, and `depthLimit` describe it. The
+  read never replaces or invalidates a kept `buildResultId`.
 * The Expedition and compact projections report each party's real state:
   `state` is `state.<name>` of the live party cycle for the ordinary player's runtime
   (`state.rest`, `state.sell`, `state.free_action`, `state.sound_sleep`,
@@ -852,21 +862,25 @@ definitions in 9.1.3.
   build only when the fill alone needs more than `maxChanges` entries. A target
   whose `equipment` is `false` (Jewels only) keeps its items and free slots.
 * Objectives: the search maximizes `ln(success)` for `success`, the average boss
-  damage share for `bossDamage`, and average EXP per run for `experience`; a
-  small reached-rooms term (weighted by the failure share) breaks ties while
-  successes are rare. `minDefeat` minimizes the defeat rate without lowering the
-  success rate: a candidate whose success rate on the same seed is below the
-  current build's is penalized, so a build that cannot win (and only draws) is
-  never chosen.
-* `bossDamage` measures the boss room of the current destination: every
-  Clear-Gate of that destination counts as open and the depth limit is `all` for
-  every run of that search, including the verification, so its `forecast` describes
-  that setup. A run that does not reach the boss deals a share of 0, and a boss kill
-  counts as 1.
+  damage share for `bossDamage`, and average EXP per run for `experience`. For
+  `success`, a `progress` term (7.1.5 Score: rooms cleared plus the enemy-HP share
+  of a lost or drawn last battle, over the rooms on the route; weighted by the
+  failure share) breaks ties while successes are rare, so every run drawing the
+  boss still gives a signal. The final selection breaks an exact success tie
+  the same way: a finalist with the fallback's success rate replaces it when
+  its `progress` is ahead by more than one standard error. `minDefeat` minimizes
+  the defeat rate without lowering the success rate: a candidate whose success
+  rate on the same seed is below the current build's is penalized, so a build
+  that cannot win (and only draws) is never chosen.
+* `bossDamage` measures the boss battle of the current destination alone: every
+  Clear-Gate of that destination counts as open and the depth limit is `all`,
+  and each run skips every room before the boss room and starts the boss battle
+  at full party HP, for every run of that search, including the verification, so
+  its `forecast` describes that battle. A boss kill counts as a share of 1.
 * `verdict` compares the current build and the result on the verification seed with
-  `verifyRuns` runs each. The standard error uses the binomial variance of the two
-  rates (`success`, `minDefeat`; the Bernoulli bound `p(1 - p)` for `bossDamage`)
-  or the per-run EXP variance (`experience`). `noChange` means no different build
+  `verifyRuns` runs each. The standard error uses the per-run variance of each
+  rate: binomial for `success` and `minDefeat`, the per-run boss share variance
+  for `bossDamage`, and the per-run EXP variance for `experience`. `noChange` means no different build
   passed the final selection and no empty slot could be filled; `changeSummary` is then `[]` and `forecast.after`
   equals `forecast.before`. The response also returns `verification`:
   `{objective, runs, before, after, gain, standardError, seed}` with the measured
@@ -917,9 +931,12 @@ definitions in 9.1.3.
   for the item draws, one shared by every quick run of steps 2–4, one shared by
   every run of step 5, and one shared by the baseline (step 1) and the final check
   (step 6), so the same `seed` on the same revision repeats the whole tuning.
-  `bossDamage` simulates
-  with every Clear-Gate of the destination open and the depth limit `all`, as
-  `gaSearch` does.
+  `bossDamage` simulates the boss battle alone from full party HP, with every
+  Clear-Gate of the destination open and the depth limit `all`, as `gaSearch`
+  does. With `success`, a step 1 success rate of 0 makes every step score
+  `progress` instead (`scoredBy: progress`); `minDefeat` and `bossDamage` always
+  score themselves. Improvements use the rarer-side ratio of 7.1.5 for every
+  score, and the step 6 luck check uses each score's per-run variance.
 * Validation: `characterId` is required; a character in no party is `not_found`.
   `baselineRuns` may be sent only as `1000`. Integer ranges: `quickRuns` 10–1000,
   `finalTuningRuns` 50–1000, `offenseElementTrialRuns` 0–10,
@@ -952,7 +969,7 @@ definitions in 9.1.3.
   own seed.
 * Bottleneck: the room with the most Draw + Retreat + Defeat ends (the earliest
   on a tie); with none, the boss room if a run reached it, else the latest
-  reached elite room, else `null`. Its enemies are every enemy the room can
+  reached elite room, else `null`. With `bossDamage` it is always the boss room. Its enemies are every enemy the room can
   draw. An element is resisted least when the enemies' average resistance
   multiplier for it is highest (an enemy with that element's null, absorb, or
   reflect counts 0; `e.none` counts 1). `a.X-breaker` matches an enemy with
@@ -990,9 +1007,13 @@ definitions in 9.1.3.
 * Step 5 moves a change whose slot an earlier kept candidate changed to the next
   best open slot, and skips the candidate when none fits. The swap pass runs for
   step 2, then step 3. `finalTuning` lists the kept candidates in order: `step`,
-  `index` (its position in that step's list), its label, the improvement it
-  added, and the changes it made in the tuned build after any move.
-* Response: `before` and `after` are the `overview` strings; `improvement`,
+  `index` (its position in that step's list), its label, its `improvement`, and
+  the changes it made in the tuned build after any move. `improvement` is
+  cumulative: the build with this candidate and every one before it against the
+  current build on the step 5 seed (re-scored after a swap), so the last entry
+  is the tuned build's step 5 improvement.
+* Response: `scoredBy` is the score used (`objective`, or `progress`); `before`
+  and `after` are the `overview` strings; `improvement`,
   `gain`, and `standardError` are the step 6 values (`gain` and
   `standardError` as fractions of the score, not percentage points), rounded to
   four decimals like every candidate's `improvement`. Each recorded candidate
@@ -1429,15 +1450,16 @@ use the same operation without HTTP authentication headers.
   scalar to a one-element array. Empty arrays are invalid unless explicitly
   allowed. Reject duplicate IDs except repeated item variants in `equip`, where
   repetition requests multiple owned copies.
-* `simulationRun` POST accepts `{expectedRevision?: number, numberOfRun?: number}` directly, with no
+* `simulationRun` POST accepts `{expectedRevision?: number, numberOfRun?: number, objective?: string, seed?: number}` directly, with no
   Commit envelope or idempotency key. Omission uses the admission revision; a
   supplied mismatch returns `stale_revision` before private computation.
   `gaSearch` POST accepts its 9.1.3 members (`targets`, `considerOrderChange`,
   `considerDeityChange`, `considerItemsScope`, `objective`, `gaParameters`) and an optional
   `expectedRevision` the same way; so does `stagedEquipmentTuning` with its 9.1.3
   members (`characterId` and the tuning parameters).
-  `numberOfRun` is an integer 1 ~ 1000 and defaults to 100; any other value is
-  `invalid_request`.
+  `numberOfRun` is an integer 1 ~ 1000 and defaults to 100; `objective` is one
+  of `success`, `minDefeat`, `bossDamage`, `experience`, `progress`; `seed` is any
+  safe integer. Any other value is `invalid_request`.
 * A parameter is required unless marked optional, given a default, or contained
   in an explicitly partial update. Partial updates preserve omitted members; an
   empty update is a no-op. `null` is accepted only where explicitly documented.

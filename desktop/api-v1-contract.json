@@ -20748,6 +20748,33 @@
             "maximum": 1000,
             "type": "integer",
             "default": 100
+          },
+          "objective": {
+            "anyOf": [
+              {
+                "const": "success",
+                "type": "string"
+              },
+              {
+                "const": "minDefeat",
+                "type": "string"
+              },
+              {
+                "const": "bossDamage",
+                "type": "string"
+              },
+              {
+                "const": "experience",
+                "type": "string"
+              },
+              {
+                "const": "progress",
+                "type": "string"
+              }
+            ]
+          },
+          "seed": {
+            "type": "integer"
           }
         }
       },
@@ -20767,7 +20794,8 @@
             "totals",
             "omittedRooms",
             "detail",
-            "rooms"
+            "rooms",
+            "seed"
           ],
           "properties": {
             "simulatedRevision": {
@@ -21168,6 +21196,17 @@
                   }
                 }
               }
+            },
+            "rate": {
+              "minimum": 0,
+              "type": "number"
+            },
+            "standardError": {
+              "minimum": 0,
+              "type": "number"
+            },
+            "seed": {
+              "type": "integer"
             }
           }
         },
@@ -21218,7 +21257,8 @@
                 "totals",
                 "omittedRooms",
                 "detail",
-                "rooms"
+                "rooms",
+                "seed"
               ],
               "properties": {
                 "simulatedRevision": {
@@ -21619,6 +21659,17 @@
                       }
                     }
                   }
+                },
+                "rate": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "standardError": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "seed": {
+                  "type": "integer"
                 }
               }
             }
@@ -21746,7 +21797,8 @@
                   0
                 ]
               ]
-            }
+            },
+            "seed": 1
           }
         }
       }
@@ -25116,7 +25168,7 @@
             "minimum": 10,
             "maximum": 1000,
             "type": "integer",
-            "default": 100
+            "default": 300
           },
           "finalTuningRuns": {
             "minimum": 50,
@@ -25226,6 +25278,7 @@
           "required": [
             "accepted",
             "objective",
+            "scoredBy",
             "before",
             "after",
             "improvement",
@@ -25255,6 +25308,26 @@
                 },
                 {
                   "const": "bossDamage",
+                  "type": "string"
+                }
+              ]
+            },
+            "scoredBy": {
+              "anyOf": [
+                {
+                  "const": "success",
+                  "type": "string"
+                },
+                {
+                  "const": "minDefeat",
+                  "type": "string"
+                },
+                {
+                  "const": "bossDamage",
+                  "type": "string"
+                },
+                {
+                  "const": "progress",
                   "type": "string"
                 }
               ]
@@ -25630,6 +25703,7 @@
               "required": [
                 "accepted",
                 "objective",
+                "scoredBy",
                 "before",
                 "after",
                 "improvement",
@@ -25659,6 +25733,26 @@
                     },
                     {
                       "const": "bossDamage",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "scoredBy": {
+                  "anyOf": [
+                    {
+                      "const": "success",
+                      "type": "string"
+                    },
+                    {
+                      "const": "minDefeat",
+                      "type": "string"
+                    },
+                    {
+                      "const": "bossDamage",
+                      "type": "string"
+                    },
+                    {
+                      "const": "progress",
                       "type": "string"
                     }
                   ]
@@ -26033,6 +26127,7 @@
           "data": {
             "accepted": true,
             "objective": "success",
+            "scoredBy": "success",
             "before": "xxxxxxx",
             "after": "xxxxxxx",
             "improvement": 1,

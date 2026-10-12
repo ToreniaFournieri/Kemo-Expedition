@@ -35,6 +35,11 @@ export interface RunExpeditionApplicationCommand {
    * so their battles reuse enemy objects and prepared battle inputs.
    */
   readonly forecastEncounterCache?: Map<string, EnemyDef>;
+  /**
+   * Forecast only: fight the destination's boss battle alone, from the run's starting (full) HP, and skip every room
+   * before it (Spec 7.1.5 / 9.1.3 `bossDamage`).
+   */
+  readonly bossRoomOnly?: boolean;
 }
 
 /** Explicit caller-owned authorities for a future application command runner. */

@@ -816,11 +816,23 @@ export interface ExpeditionSimulationResult {
   totals?: { experience: number; itemDrops: number; dropSaleValue: number };
   /**
    * Boss room facts over all runs: `reached` runs that fought the boss, `kills` won, and `damageShare` the sum of each
-   * run's dealt damage over the boss's maximum HP (capped at 1; 0 for a run that never reached it).
+   * run's dealt damage over the boss's maximum HP (capped at 1; 0 for a run that never reached it), and
+   * `damageShareSquareSum` the sum of each run's share squared (the per-run variance of `bossDamage`).
    */
-  boss?: { reached: number; kills: number; damageShare: number };
+  boss?: { reached: number; kills: number; damageShare: number; damageShareSquareSum?: number };
   /** Sum of each run's EXP squared, for the variance of the GA search's `experience` objective. */
   experienceSquareSum?: number;
+  /**
+   * Each run's progress in rooms: the rooms it cleared, plus the share of enemy HP dealt in its last battle when it lost or
+   * drew that battle (Spec 7.1.5 `progress`, before dividing by the rooms on the route). `sum` and `squareSum` over all runs.
+   */
+  progress?: { sum: number; squareSum: number };
+}
+
+/** Options of a private expedition forecast. */
+export interface ExpeditionSimulationOptions {
+  /** Fight only the destination's boss battle, from full party HP (Spec 7.1.5 / 9.1.3 `bossDamage`). */
+  bossRoomOnly?: boolean;
 }
 
 export interface ExpeditionSimulationRoomResult {

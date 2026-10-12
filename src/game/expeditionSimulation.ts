@@ -91,7 +91,10 @@ export function createExpeditionSimulationRoomResults(
   }));
 }
 
-/** Add one run to all 24 graph bars, including rooms after termination. */
+/**
+ * Add one run to all 24 graph bars, including rooms after termination. `firstRoomIndex` is the bar of the run's first room
+ * (a boss-only forecast starts at the boss room); the bars before it are rooms the run never entered.
+ */
 export function aggregateExpeditionSimulationRooms(
   rooms: ExpeditionSimulationRoomResult[],
   completedRooms: number,
@@ -99,22 +102,24 @@ export function aggregateExpeditionSimulationRooms(
   battlesByRoom: readonly { remainingPartyHP: number }[],
   maxPartyHp: number,
   endedAtGate = false,
+  firstRoomIndex = 0,
 ): void {
   // A closed Clear-Gate stops the run at the door: the gate's own row is a room no one entered, so the Return belongs to the last room passed.
-  const reachedRooms = Math.min(EXPEDITION_SIMULATION_ROOM_COUNT, Math.max(0, Math.floor(completedRooms) - (endedAtGate ? 1 : 0)));
+  const reachedRooms = Math.min(EXPEDITION_SIMULATION_ROOM_COUNT - firstRoomIndex, Math.max(0, Math.floor(completedRooms) - (endedAtGate ? 1 : 0)));
   rooms.forEach((room, index) => {
-    if (index >= reachedRooms) {
+    const position = index - firstRoomIndex;
+    if (position < 0 || position >= reachedRooms) {
       room.NotReached += 1;
       return;
     }
     room.reached += 1;
-    const status = index === reachedRooms - 1 ? terminalStatus : 'Victory';
+    const status = position === reachedRooms - 1 ? terminalStatus : 'Victory';
     room[status] += 1;
     if (status === 'Victory' || status === 'Clear' || status === 'Return') {
-      const bucket = getExpeditionSimulationSuccessfulHpBucket(battlesByRoom[index]?.remainingPartyHP ?? 0, maxPartyHp);
+      const bucket = getExpeditionSimulationSuccessfulHpBucket(battlesByRoom[position]?.remainingPartyHP ?? 0, maxPartyHp);
       room.successfulHp[bucket] += 1;
     } else if (status === 'Retreat') {
-      const bucket = getExpeditionSimulationRetreatHpBucket(battlesByRoom[index]?.remainingPartyHP ?? 0, maxPartyHp);
+      const bucket = getExpeditionSimulationRetreatHpBucket(battlesByRoom[position]?.remainingPartyHP ?? 0, maxPartyHp);
       room.retreatHp[bucket] += 1;
     }
   });

@@ -27,6 +27,7 @@ import {
   EnemyDef,
   ExpeditionDepthLimit,
   ExpeditionDestinationMode,
+  ExpeditionSimulationOptions,
   ExpeditionSimulationResult,
   SavedEquipmentSet,
 } from '../types';
@@ -51,7 +52,7 @@ import {
   createDefaultExpeditionApplicationAdapterFactory,
   DEFAULT_UNLOCKED_DEITIES,
 } from '../game/expeditionApplicationAdapters';
-import { aggregateExpeditionSimulationRooms, createExpeditionSimulationRoomResults, EXPEDITION_SIMULATION_RUN_COUNT } from '../game/expeditionSimulation';
+import { aggregateExpeditionSimulationRooms, createExpeditionSimulationRoomResults, EXPEDITION_SIMULATION_ROOM_COUNT, EXPEDITION_SIMULATION_RUN_COUNT } from '../game/expeditionSimulation';
 import { getDiarySettingsWithDefaults } from '../game/diarySettings';
 import { normalizeImportedBags } from '../game/bagMigration';
 import { migrateLegacyInventory } from '../game/inventoryMigration';
@@ -4769,6 +4770,16 @@ export function resolveSimulationRunForTesting(
   return { state: resolvedState, resolution: createExpeditionForecastResolution(log) };
 }
 
+/** The graph bar (0-based, four rooms per floor) of a destination's boss room; the last bar when it has none. */
+function bossRoomIndexOf(dungeonId: number): number {
+  const dungeon = getDungeonById(dungeonId);
+  for (const floor of dungeon?.floors ?? []) {
+    const roomIndex = floor.rooms.findIndex((room) => room.type === 'battle_Boss');
+    if (roomIndex >= 0) return (floor.floorNumber - 1) * 4 + roomIndex;
+  }
+  return EXPEDITION_SIMULATION_ROOM_COUNT - 1;
+}
+
 /**
  * SpecRef: 8.3 | UI_EXPEDITION | Simulation Run
  *
@@ -4785,10 +4796,14 @@ export async function simulateExpeditionRuns(
   enemyLevelOffset: number = 0,
   /** A fixed forecast seed (the GA search compares builds on the same random numbers); a fresh one when omitted. */
   fixedSeed?: number,
+  options: ExpeditionSimulationOptions = {},
 ): Promise<ExpeditionSimulationResult> {
   void memoryMonitor.recordEvent('simulation_start');
   const total = Math.max(1, Math.floor(count));
   const sandbox = createSimulationSandbox(state, partyIndex);
+  // A boss-only forecast starts at the boss room, so its battle is that room's bar and every earlier bar is not reached.
+  const bossRoomOnly = options.bossRoomOnly === true;
+  const firstRoomIndex = bossRoomOnly ? bossRoomIndexOf(state.parties[partyIndex].selectedDungeonId) : 0;
   // All forecasts share the sandbox party status, so they also share enemies and prepared battle inputs.
   const forecastEncounterCache = new Map<string, EnemyDef>();
   const seed = new Uint32Array(1);
@@ -4807,8 +4822,9 @@ export async function simulateExpeditionRuns(
     total,
     rooms: createExpeditionSimulationRoomResults(total),
     totals: { experience: 0, itemDrops: 0, dropSaleValue: 0 },
-    boss: { reached: 0, kills: 0, damageShare: 0 },
+    boss: { reached: 0, kills: 0, damageShare: 0, damageShareSquareSum: 0 },
     experienceSquareSum: 0,
+    progress: { sum: 0, squareSum: 0 },
   };
 
   let sliceStartedAt = performance.now();
@@ -4828,6 +4844,7 @@ export async function simulateExpeditionRuns(
         computed: sandbox.authoritativePartyStatus,
       },
       forecastEncounterCache,
+      ...(bossRoomOnly ? { bossRoomOnly: true } : {}),
     }));
     const resolvedState = battleRandom ? withForecastBattleSeedSource(nextBattleSeed, resolveRun) : resolveRun();
     const resolution = forecastResolutionByState.get(resolvedState);
@@ -4838,12 +4855,22 @@ export async function simulateExpeditionRuns(
     result.totals!.itemDrops += resolution.rewards.length + resolution.autoSellCount;
     result.totals!.dropSaleValue += resolution.autoSellProfit
       + resolution.rewards.reduce((sum, item) => sum + calculateSellPrice(item, resolution.autoSellMultiplier), 0);
+    const shareOf = (battle: { outcome: string; damageDealt: number; enemyHp: number }) => (battle.outcome === 'victory' ? 1 : Math.min(1, battle.damageDealt / Math.max(1, battle.enemyHp)));
     const bossBattle = resolution.battleDiagnostics.find((battle) => battle.isBoss && battle.enemyId !== undefined);
     if (bossBattle) {
       result.boss!.reached += 1;
       if (bossBattle.outcome === 'victory') result.boss!.kills += 1;
-      result.boss!.damageShare += bossBattle.outcome === 'victory' ? 1 : Math.min(1, bossBattle.damageDealt / Math.max(1, bossBattle.enemyHp));
+      const share = shareOf(bossBattle);
+      result.boss!.damageShare += share;
+      result.boss!.damageShareSquareSum! += share * share;
     }
+    // SpecRef: 7.1.5 | General rules | Score `progress`: the rooms cleared, plus the enemy-HP share of a lost or drawn last battle.
+    const battles = resolution.battleDiagnostics.filter((battle) => battle.enemyId !== undefined);
+    const lastBattle = battles[battles.length - 1];
+    const runProgress = battles.filter((battle) => battle.outcome === 'victory').length
+      + (lastBattle && lastBattle.outcome !== 'victory' ? shareOf(lastBattle) : 0);
+    result.progress!.sum += runProgress;
+    result.progress!.squareSum += runProgress * runProgress;
 
     let terminalStatus: 'Clear' | 'Return' | 'Draw' | 'Retreat' | 'Defeat';
     if (resolution.outcome === 'Clear') {
@@ -4871,6 +4898,7 @@ export async function simulateExpeditionRuns(
       resolution.battleDiagnostics,
       sandbox.authoritativePartyStatus.partyStats.hp,
       resolution.endedAtGate,
+      firstRoomIndex,
     );
 
     const completed = index + 1;

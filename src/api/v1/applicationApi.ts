@@ -1,4 +1,4 @@
-import type { ExpeditionLog, GameState } from '../../types';
+import type { ExpeditionLog, ExpeditionSimulationOptions, GameState } from '../../types';
 import { describeInvalidRequest, invalidRequestMessage } from './requestErrors';
 import { buildApiV1ReadData, type ApiV1ReadContext } from './readModels';
 import { SerializedApplicationApiAuthority, type ApiV1CommitAuthorityDependencies, type ApiV1ControlMetadata, type ApiV1InternalTransactionDependencies } from './authority';
@@ -35,8 +35,12 @@ export interface ApplicationApiPorts {
     enemyLevelOffset: () => number;
     cycleDurationScale: () => number;
     applyAutoEquipment: ApiV1CommitAuthorityDependencies['applyAutoEquipment'];
-    /** Private, non-persisted forecast simulation; must not touch the live game state or RNG. `seed` fixes its random numbers. */
-    simulate: (state: GameState, partyIndex: number, count: number, seed?: number) => Promise<unknown>;
+    /**
+     * Private, non-persisted forecast simulation; must not touch the live game state or RNG. `seed` fixes its random numbers.
+     * `options.bossRoomOnly` fights the boss battle alone; `options.reportProgress` marks a Simulation Run read, which reports
+     * into the Expedition pane like an unseeded forecast (a search's seeded runs never do).
+     */
+    simulate: (state: GameState, partyIndex: number, count: number, seed?: number, options?: ExpeditionSimulationOptions & { reportProgress?: boolean }) => Promise<unknown>;
     /** Durably persists a trusted in-process player's state before it is published. */
     persistPlayer: (state: GameState) => Promise<void>;
     /** SpecRef: 9.1.4.15 | Used instead of `persistPlayer` only for `commit/setting/backup/import`/`reset`: the new
@@ -172,7 +176,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
   const buildResults = new Map<number, StoredBuildResult>();
   /** The search collaborators of `gaSearch` and `stagedEquipmentTuning` for one snapshot. */
   const searchDependencies = (snapshot: ReturnType<typeof authority.getSnapshot>, revision: number): GaSearchDependencies => ({
-    simulate: (state, index, count, seed) => ports.runtime.simulate(state, index, count, seed),
+    simulate: (state, index, count, seed, options) => ports.runtime.simulate(state, index, count, seed, options),
     now: ports.runtime.now,
     createSeed: ports.runtime.createRandomSeed,
     createOpaqueId: ports.runtime.createOpaqueId,
@@ -410,7 +414,10 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
         return failure(409, 'stale_revision', 'The supplied revision is stale.', { currentRevision: snapshot.control.revisionHighWater });
       }
       // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `numberOfRun` is optional, default 100, an integer 1 ~ 1000.
-      const readParameters = operation.endsWith('/simulationRun') ? { ...parameters, ...(request.numberOfRun !== undefined ? { numberOfRun: request.numberOfRun } : {}) } : parameters;
+      // `objective` and `seed` (2-2-3) travel the same way.
+      const readParameters = operation.endsWith('/simulationRun')
+        ? { ...parameters, ...Object.fromEntries((['numberOfRun', 'objective', 'seed'] as const).filter((key) => request[key] !== undefined).map((key) => [key, request[key]])) }
+        : parameters;
       try {
         const data = await buildApiV1ReadData(operation, snapshot.state, readParameters, {
           revision: snapshot.control.revisionHighWater,
@@ -419,7 +426,10 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
           enemyLevelOffset: ports.runtime.enemyLevelOffset(),
           // The player's in-game time is the wall clock of the request; an API account's is its own clock.
           inGameTime: activeIdentity ? snapshot.simulatedAt : ports.runtime.now(),
-          simulation: (partyIndex, count) => ports.runtime.simulate(snapshot.state, partyIndex, count),
+          simulation: (partyIndex, count, forecast) => (forecast
+            ? ports.runtime.simulate(forecast.state, partyIndex, count, forecast.seed, { ...forecast.options, reportProgress: true })
+            : ports.runtime.simulate(snapshot.state, partyIndex, count)),
+          createSeed: ports.runtime.createRandomSeed,
           control: snapshot.control,
           // The live cycle and the disclosed logs belong to the ordinary player's runtime; an API account has neither, and its
           // charge clock runs at its own debug Speed of Time.

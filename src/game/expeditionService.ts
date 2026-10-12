@@ -86,6 +86,8 @@ export interface RunExpeditionServiceInput<TPresentation> {
   ) => ExpeditionRewardInstallation<TPresentation>;
   readonly encounterCache?: Map<string, EnemyDef>;
   readonly battleOptions?: BattleExecutionOptions;
+  /** Skip every room before the boss room, so the run is the boss battle alone (a forecast of `bossDamage`). */
+  readonly bossRoomOnly?: boolean;
 }
 
 export interface ExpeditionServiceResult<TPresentation> {
@@ -113,6 +115,7 @@ export function runExpeditionService<TPresentation>(
     for (let roomIndex = 0; roomIndex < floor.rooms.length; roomIndex += 1) {
       if (transaction.ended) break;
       const room = floor.rooms[roomIndex];
+      if (input.bossRoomOnly && room.type !== 'battle_Boss') continue;
       const roomCounter = transaction.beginRoom();
       const roomInFloor = roomIndex + 1;
       const gate = checkClearGateRequirement({

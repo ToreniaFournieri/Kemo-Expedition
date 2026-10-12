@@ -12,9 +12,10 @@ import {
   type ExpeditionSimulationResult, type GameState, type Item, type ItemCategory,
 } from '../../types';
 import {
-  createRandom, deriveSeed, fingerprintOfSummary, planGaChangeSummary, prepareObjectiveState,
+  createRandom, deriveSeed, fingerprintOfSummary, planGaChangeSummary,
   type GaChangeEntry, type GaSearchDependencies, type StoredBuildResult,
 } from './gaSearch';
+import { measureObjective, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount, type ObjectiveMeasure } from './objectiveMeasure';
 import { buildSimulationRunData, floorRoomLabel } from './simulationView';
 
 // SpecRef: 7.1.5 | Staged Equipment Tuning
@@ -26,12 +27,14 @@ import { buildSimulationRunData, floorRoomLabel } from './simulationView';
 
 export const TUNING_OBJECTIVES = ['success', 'minDefeat', 'bossDamage'] as const;
 export type TuningObjective = typeof TUNING_OBJECTIVES[number];
+/** The score a tuning compares builds by: its objective, or `progress` when `success` is 0 in step 1 (`scoredBy`). */
+export type TuningScore = TuningObjective | 'progress';
 export const STAGED_TUNING_BASELINE_RUNS = 1000;
 const OFFENSE_REQUESTS = ['noRequest', 'e.fire', 'e.ice', 'e.thunder', 'e.none'] as const;
 
 /** `[minimum, maximum, default]` of each integer parameter (Spec 9.1.3, 2-3-7; ranges in 9.1.4.9). */
 const INTEGER_PARAMETERS = {
-  quickRuns: [10, 1000, 100], finalTuningRuns: [50, 1000, 500],
+  quickRuns: [10, 1000, 300], finalTuningRuns: [50, 1000, 500],
   offenseElementTrialRuns: [0, 10, 3], offenseElementCandidateCount: [1, 3, 2],
   defenseElementTrialRuns: [0, 20, 5], defenseElementCandidateCount: [1, 3, 2],
   abilityTrialRuns: [0, 50, 20], abilityCandidateCount: [1, 3, 2],
@@ -384,9 +387,9 @@ interface Bottleneck { room: number | null; enemies: EnemyDef[] }
 
 /**
  * Step 1: the room with the most Draw + Retreat + Defeat ends. When no run ends early, the boss room if a run reached it,
- * otherwise the latest elite room a run reached.
+ * otherwise the latest elite room a run reached. A `bossDamage` forecast is the boss battle alone: always the boss room.
  */
-function findBottleneck(state: GameState, partyIndex: number, result: ExpeditionSimulationResult): Bottleneck {
+function findBottleneck(state: GameState, partyIndex: number, result: ExpeditionSimulationResult, bossOnly: boolean): Bottleneck {
   const dungeon = getDungeonById(state.parties[partyIndex].selectedDungeonId);
   if (!dungeon) return { room: null, enemies: [] };
   const roomDef = (room: number) => {
@@ -395,9 +398,12 @@ function findBottleneck(state: GameState, partyIndex: number, result: Expedition
   };
   let room: number | null = null;
   let worst = 0;
-  for (const entry of result.rooms) {
-    const ends = entry.Draw + entry.Retreat + entry.Defeat;
-    if (ends > worst) { worst = ends; room = entry.room; }
+  if (bossOnly) room = result.rooms.find((entry) => roomDef(entry.room).def?.type === 'battle_Boss')?.room ?? null;
+  else {
+    for (const entry of result.rooms) {
+      const ends = entry.Draw + entry.Retreat + entry.Defeat;
+      if (ends > worst) { worst = ends; room = entry.room; }
+    }
   }
   if (room === null) {
     const reached = result.rooms.filter((entry) => entry.reached > 0 && roomDef(entry.room).def);
@@ -431,24 +437,23 @@ function brokenAbilities(ability: AbilityId): string[] {
 
 // ---------------- Scores ----------------
 
-function scoreOf(objective: TuningObjective, result: ExpeditionSimulationResult): number {
-  const runs = Math.max(1, result.total);
-  if (objective === 'minDefeat') return result.Defeat / runs;
-  if (objective === 'bossDamage') return (result.boss?.damageShare ?? 0) / runs;
-  return (result.Clear + result.Return) / runs;
+/**
+ * SpecRef: 7.1.5 | General rules | Improvement: the relative change on the rarer side of the score, `ratio - 1`. The ratio is
+ * the larger of the rise of the good outcome and the fall of the bad one, so a threshold can be met near 0 and near 1 alike;
+ * a zero denominator counts as 0.001, and equal scores are no change.
+ */
+export function tuningImprovement(score: TuningScore, current: number, candidate: number): number {
+  if (current === candidate) return 0;
+  // `minDefeat` is lower-is-better: its good outcome is the non-defeat rate.
+  const [before, after] = score === 'minDefeat' ? [1 - current, 1 - candidate] : [current, candidate];
+  const divide = (numerator: number, denominator: number) => numerator / (denominator === 0 ? 0.001 : denominator);
+  return Math.max(divide(after, before), divide(1 - before, 1 - after)) - 1;
 }
 
-// SpecRef: 7.1.5 | General rules | Improvement: `ratio - 1`; a zero denominator counts as 0.001, two zeros as no change.
-export function tuningImprovement(objective: TuningObjective, current: number, candidate: number): number {
-  if (current === 0 && candidate === 0) return 0;
-  const ratio = objective === 'minDefeat' ? current / (candidate === 0 ? 0.001 : candidate) : candidate / (current === 0 ? 0.001 : current);
-  return ratio - 1;
-}
-
-// SpecRef: 7.1.5 | General rules | Luck check: `gain > 2 × SE` with the binomial SE of the two scores.
-export function tuningLuckCheck(objective: TuningObjective, before: number, after: number, runs: number): { gain: number; standardError: number; passed: boolean } {
-  const gain = objective === 'minDefeat' ? before - after : after - before;
-  const standardError = Math.sqrt((before * (1 - before)) / runs + (after * (1 - after)) / runs);
+// SpecRef: 7.1.5 | General rules | Luck check: `gain > 2 × SE`, with the per-run variance of each score.
+export function tuningLuckCheck(score: TuningScore, before: ObjectiveMeasure, after: ObjectiveMeasure, runs: number): { gain: number; standardError: number; passed: boolean } {
+  const gain = score === 'minDefeat' ? before.rate - after.rate : after.rate - before.rate;
+  const standardError = Math.sqrt(before.variance / runs + after.variance / runs);
   return { gain, standardError, passed: gain > 2 * standardError };
 }
 
@@ -589,24 +594,33 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
   const quickSeed = deriveSeed(seed, 1); const finalSeed = deriveSeed(seed, 2); const baselineSeed = deriveSeed(seed, 3);
   const model = buildModel(state, partyIndex, request.characterId);
   let simulationRuns = 0;
+  const options = objectiveSimulationOptions(objective);
   const simulate = async (target: GameState, runs: number, simulationSeed: number): Promise<ExpeditionSimulationResult> => {
     simulationRuns += runs;
-    return await dependencies.simulate(prepareObjectiveState(target, partyIndex, objective), partyIndex, runs, simulationSeed) as ExpeditionSimulationResult;
+    return await dependencies.simulate(prepareObjectiveState(target, partyIndex, objective), partyIndex, runs, simulationSeed, options) as ExpeditionSimulationResult;
   };
+  // Equipment does not change the route (its gates and depth limit), so `progress` divides by one room count throughout.
+  const routeRooms = routeRoomCount(prepareObjectiveState(state, partyIndex, objective).parties[partyIndex]);
+
+  // 1. Baseline and bottleneck (the current build as it is, Jewels included).
+  const baseline = await simulate(state, STAGED_TUNING_BASELINE_RUNS, baselineSeed);
+  // SpecRef: 7.1.5 | General rules | Score: with no success in step 1 every build would tie at 0, so every step scores
+  // `progress` instead.
+  const scoredBy: TuningScore = objective === 'success' && measureObjective('success', baseline, routeRooms).rate === 0 ? 'progress' : objective;
+  const measureOf = (result: ExpeditionSimulationResult) => measureObjective(scoredBy, result, routeRooms);
+  const before = measureOf(baseline);
+  const beforeScore = before.rate;
+  const bottleneck = findBottleneck(state, partyIndex, baseline, options.bossRoomOnly === true);
+  const enemies = bottleneck.enemies;
+
   const cache = new Map<string, number>();
   const scoreLoadout = async (loadout: Loadout, runs: number, simulationSeed: number): Promise<number> => {
     const key = `${runs}:${simulationSeed}:${loadoutKey(loadout)}`;
     // The current items are the current build as it is.
     const target = loadoutKey(loadout) === loadoutKey(model.current) ? state : withEquipment(model, allocateJewels(model, loadout));
-    if (!cache.has(key)) cache.set(key, scoreOf(objective, await simulate(target, runs, simulationSeed)));
+    if (!cache.has(key)) cache.set(key, measureOf(await simulate(target, runs, simulationSeed)).rate);
     return cache.get(key)!;
   };
-
-  // 1. Baseline and bottleneck (the current build as it is, Jewels included).
-  const baseline = await simulate(state, STAGED_TUNING_BASELINE_RUNS, baselineSeed);
-  const beforeScore = scoreOf(objective, baseline);
-  const bottleneck = findBottleneck(state, partyIndex, baseline);
-  const enemies = bottleneck.enemies;
 
   // Steps 2–4 compare every candidate with the current build as it is, on one quick seed.
   const recorded: Record<TuningStep, Candidate[]> = { offenseElement: [], defenseElement: [], ability: [] };
@@ -616,7 +630,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
   const evaluate = async (step: TuningStep, label: Candidate['label'], loadout: Loadout | null, into: Candidate[]) => {
     if (!loadout || tried.has(`${step}:${loadoutKey(loadout)}`)) return;
     tried.add(`${step}:${loadoutKey(loadout)}`);
-    const improvement = tuningImprovement(objective, currentQuick, await scoreLoadout(loadout, request.quickRuns, quickSeed));
+    const improvement = tuningImprovement(scoredBy, currentQuick, await scoreLoadout(loadout, request.quickRuns, quickSeed));
     into.push({ step, label, loadout, changes: changesOf(model, loadout), improvement });
   };
   const record = (step: TuningStep, candidates: Candidate[], trials: number) => {
@@ -701,39 +715,45 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
 
   // 5. Final tuning: a greedy add pass over every recorded candidate, then a swap pass for the element steps.
   const all = [...recorded.offenseElement, ...recorded.defenseElement, ...recorded.ability].sort((a, b) => b.improvement - a.improvement);
-  interface Kept { candidate: Candidate; improvement: number }
-  let kept: Kept[] = [];
+  const combine = (list: readonly Candidate[]): Loadout | null => {
+    let build = { loadout: [...model.current] as Loadout, changed: new Set<number>() };
+    for (const candidate of list) {
+      const next = addCandidate(model, build.loadout, build.changed, candidate);
+      if (!next) return null;
+      build = next;
+    }
+    return build.loadout;
+  };
+  let kept: Candidate[] = [];
   let tuned: Loadout = model.current;
   if (all.length > 0) {
-    const combine = (list: readonly Candidate[]): Loadout | null => {
-      let build = { loadout: [...model.current] as Loadout, changed: new Set<number>() };
-      for (const candidate of list) {
-        const next = addCandidate(model, build.loadout, build.changed, candidate);
-        if (!next) return null;
-        build = next;
-      }
-      return build.loadout;
-    };
     let bestScore = await scoreLoadout(model.current, request.finalTuningRuns, finalSeed);
     for (const candidate of all) {
-      if (candidate.step !== 'ability' && kept.some((entry) => entry.candidate.step === candidate.step)) continue;
-      const loadout = combine([...kept.map((entry) => entry.candidate), candidate]);
+      if (candidate.step !== 'ability' && kept.some((entry) => entry.step === candidate.step)) continue;
+      const loadout = combine([...kept, candidate]);
       if (!loadout) continue;
       const score = await scoreLoadout(loadout, request.finalTuningRuns, finalSeed);
-      const improvement = tuningImprovement(objective, bestScore, score);
-      if (improvement > 0) { kept.push({ candidate, improvement }); bestScore = score; tuned = loadout; }
+      if (tuningImprovement(scoredBy, bestScore, score) > 0) { kept.push(candidate); bestScore = score; tuned = loadout; }
     }
     for (const step of ['offenseElement', 'defenseElement'] as const) {
       for (const other of recorded[step]) {
-        const index = kept.findIndex((entry) => entry.candidate.step === step);
-        if (index < 0 || kept[index].candidate === other) continue;
-        const swapped = kept.map((entry, position) => (position === index ? { candidate: other, improvement: 0 } : entry));
-        const loadout = combine(swapped.map((entry) => entry.candidate));
+        const index = kept.findIndex((entry) => entry.step === step);
+        if (index < 0 || kept[index] === other) continue;
+        const swapped = kept.map((entry, position) => (position === index ? other : entry));
+        const loadout = combine(swapped);
         if (!loadout) continue;
         const score = await scoreLoadout(loadout, request.finalTuningRuns, finalSeed);
-        const improvement = tuningImprovement(objective, bestScore, score);
-        if (improvement > 0) { swapped[index].improvement = improvement; kept = swapped; bestScore = score; tuned = loadout; }
+        if (tuningImprovement(scoredBy, bestScore, score) > 0) { kept = swapped; bestScore = score; tuned = loadout; }
       }
+    }
+  }
+  // SpecRef: 7.1.5 | Step 5 Report | each kept candidate's improvement is the build with it and every candidate before it,
+  // over the current build on the step 5 seed (after a swap too). Scores already simulated come from the cache.
+  const cumulative: number[] = [];
+  if (kept.length > 0) {
+    const currentFinal = await scoreLoadout(model.current, request.finalTuningRuns, finalSeed);
+    for (let position = 0; position < kept.length; position += 1) {
+      cumulative.push(tuningImprovement(scoredBy, currentFinal, await scoreLoadout(combine(kept.slice(0, position + 1))!, request.finalTuningRuns, finalSeed)));
     }
   }
 
@@ -742,9 +762,9 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
   const changed = loadoutKey(tuned) !== loadoutKey(model.current);
   const tunedState = changed ? withEquipment(model, allocateJewels(model, tuned)) : state;
   const after = changed ? await simulate(tunedState, STAGED_TUNING_BASELINE_RUNS, baselineSeed) : baseline;
-  const afterScore = scoreOf(objective, after);
-  const improvement = tuningImprovement(objective, beforeScore, afterScore);
-  const luck = tuningLuckCheck(objective, beforeScore, afterScore, STAGED_TUNING_BASELINE_RUNS);
+  const afterMeasure = measureOf(after);
+  const improvement = tuningImprovement(scoredBy, beforeScore, afterMeasure.rate);
+  const luck = tuningLuckCheck(scoredBy, before, afterMeasure, STAGED_TUNING_BASELINE_RUNS);
   let accepted = changed && improvement >= request.minGateImprovement && luck.passed;
   let changeSummary: GaChangeEntry[] = [];
   if (accepted) {
@@ -774,10 +794,10 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
   const describe = (candidate: Candidate) => ({ ...candidate.label, improvement: round4(candidate.improvement), changes: describeChanges(candidate.changes) });
   // The changes each kept candidate made in the tuned build, after any move to another slot.
   const finalTuning = kept.map((entry, position) => {
-    const before = kept.slice(0, position).reduce<{ loadout: Loadout; changed: Set<number> }>((build, previous) => addCandidate(model, build.loadout, build.changed, previous.candidate)!, { loadout: [...model.current], changed: new Set() });
-    const next = addCandidate(model, before.loadout, before.changed, entry.candidate)!;
-    const changes = next.loadout.flatMap((key, slot) => (key !== before.loadout[slot] && key !== null ? [{ slot, key }] : []));
-    return { step: entry.candidate.step, index: recorded[entry.candidate.step].indexOf(entry.candidate), ...entry.candidate.label, improvement: round4(entry.improvement), changes: describeChanges(changes) };
+    const previous = kept.slice(0, position).reduce<{ loadout: Loadout; changed: Set<number> }>((build, earlier) => addCandidate(model, build.loadout, build.changed, earlier)!, { loadout: [...model.current], changed: new Set() });
+    const next = addCandidate(model, previous.loadout, previous.changed, entry)!;
+    const changes = next.loadout.flatMap((key, slot) => (key !== previous.loadout[slot] && key !== null ? [{ slot, key }] : []));
+    return { step: entry.step, index: recorded[entry.step].indexOf(entry), ...entry.label, improvement: round4(cumulative[position]), changes: describeChanges(changes) };
   });
   return {
     partyNumber,
@@ -785,6 +805,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
     data: {
       accepted,
       objective,
+      scoredBy,
       before: forecast.before,
       after: forecast.after,
       improvement: round4(improvement),

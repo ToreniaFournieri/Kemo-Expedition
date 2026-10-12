@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { createFreshGameState, gameReducer, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
-import { GA_EFFORT_PRESETS, parseGaSearchRequest, rateGaResult, runGaSearch, type GaSearchDependencies, type StoredBuildResult } from '../../src/api/v1/gaSearch';
+import { deriveSeed, GA_EFFORT_PRESETS, parseGaSearchRequest, rateGaResult, runGaSearch, type GaSearchDependencies, type StoredBuildResult } from '../../src/api/v1/gaSearch';
+import { measureObjective, prepareObjectiveState, routeRoomCount } from '../../src/api/v1/objectiveMeasure';
+import { buildApiV1ReadData } from '../../src/api/v1/readModels';
+import { buildSimulationRunData } from '../../src/api/v1/simulationView';
+import type { ExpeditionSimulationResult } from '../../src/types';
 import { getDeityId } from '../../src/game/deity';
 import type { GameState } from '../../src/types';
 
@@ -22,11 +26,11 @@ const base = strippedSave();
 const baseBefore = structuredClone(base);
 const ids = base.parties[0].characters.map((character) => character.id);
 const equipmentTargets = ids.map((characterId) => ({ characterId, changeableComponents: { equipment: true } }));
-const small = { seed: 7, populationSize: 8, generations: 3, quickRuns: 10, confirmRuns: 50, verifyRuns: 100, eliteCount: 2 };
+const small = { seed: 8, populationSize: 8, generations: 3, quickRuns: 10, confirmRuns: 50, verifyRuns: 100, eliteCount: 2 };
 
 function dependencies(): GaSearchDependencies {
   return {
-    simulate: (target, index, count, seed) => simulateExpeditionRuns(target, index, 'mode.normal', count, undefined, 0, seed),
+    simulate: (target, index, count, seed, options) => simulateExpeditionRuns(target, index, 'mode.normal', count, undefined, 0, seed, options),
     now: () => now, createSeed: () => 99, createOpaqueId: () => 'build-result-1', revision: 4,
     commitContext: { simulatedAt: now, gameMode: 'mode.normal', enemyLevelOffset: 0, applyAutoEquipment: (s) => s, now: () => now },
   };
@@ -300,6 +304,67 @@ fails({ buildResultId: stored.buildResultId, simulation: false }, 'illegal_actio
   // A Jewels-only target keeps its items, free slot included.
   const jewelsOnly = await search(emptied, { targets: [{ characterId: guardian.id, changeableComponents: { jewels: true } }], gaParameters: small });
   assert.ok(!fillsGuardian(jewelsOnly.data.changeSummary as never), 'a Jewels-only target is not filled');
+}
+
+// ---------------- Objective measures (Spec 7.1.5 Score and Luck check) ----------------
+{
+  const result = {
+    Clear: 3, Return: 1, Draw: 2, Retreat: 1, Defeat: 3, total: 10, rooms: [],
+    boss: { reached: 4, kills: 1, damageShare: 2, damageShareSquareSum: 1.5 }, experienceSquareSum: 1000, totals: { experience: 80, itemDrops: 0, dropSaleValue: 0 },
+    progress: { sum: 30, squareSum: 120 },
+  } as ExpeditionSimulationResult;
+  const close = (actual: { rate: number; variance: number }, expected: { rate: number; variance: number }, label: string) => {
+    assert.ok(Math.abs(actual.rate - expected.rate) < 1e-12 && Math.abs(actual.variance - expected.variance) < 1e-12, `${label}: ${JSON.stringify(actual)}`);
+  };
+  close(measureObjective('success', result, 6), { rate: 0.4, variance: 0.24 }, 'success is Bernoulli');
+  close(measureObjective('minDefeat', result, 6), { rate: 0.3, variance: 0.21 }, 'minDefeat is Bernoulli');
+  close(measureObjective('bossDamage', result, 6), { rate: 0.2, variance: 0.15 - 0.04 }, 'the per-run share variance, below the 0.16 bound');
+  close(measureObjective('bossDamage', { ...result, boss: { reached: 4, kills: 1, damageShare: 2 } }, 6), { rate: 0.2, variance: 0.16 }, 'without squares: the Bernoulli bound');
+  close(measureObjective('experience', result, 6), { rate: 8, variance: 100 - 64 }, 'the per-run EXP variance');
+  close(measureObjective('progress', result, 6), { rate: 0.5, variance: (12 - 9) / 36 }, 'progress in rooms over the route rooms');
+}
+
+// ---------------- `bossDamage`: the boss battle alone, from full HP ----------------
+{
+  const fresh = createFreshGameState('ja', now);
+  const prepared = prepareObjectiveState(fresh, 0, 'bossDamage');
+  const bossOnly = await simulateExpeditionRuns(prepared, 0, 'mode.normal', 40, undefined, 0, 9, { bossRoomOnly: true });
+  assert.equal(bossOnly.boss?.reached, 40, 'every run fights the boss');
+  assert.deepEqual(bossOnly.rooms.filter((room) => room.reached > 0).map((room) => room.room), [24], 'and nothing else');
+  assert.ok(bossOnly.boss!.damageShareSquareSum! <= bossOnly.boss!.damageShare + 1e-9, 'a share squared is at most the share');
+  const route = await simulateExpeditionRuns(prepared, 0, 'mode.normal', 40, undefined, 0, 9);
+  assert.ok(route.progress!.sum >= 0 && route.progress!.sum <= 40 * routeRoomCount(prepared.parties[0]), 'progress counts rooms');
+  // The search scores and verifies the same boss-only forecast.
+  const targets = fresh.parties[0].characters.map((character) => ({ characterId: character.id, changeableComponents: { equipment: true } }));
+  const searched = await runGaSearch(fresh, 0, parseGaSearchRequest(fresh, 0, { targets, objective: 'bossDamage', gaParameters: small }), dependencies());
+  const verification = searched.data.verification as { before: number; runs: number };
+  const verifyBefore = await simulateExpeditionRuns(prepared, 0, 'mode.normal', verification.runs, undefined, 0, deriveSeed(small.seed, 3), { bossRoomOnly: true });
+  assert.equal(verification.before, measureObjective('bossDamage', verifyBefore, 0).rate);
+  assert.equal((searched.data.forecast as { before: string }).before, buildSimulationRunData(verifyBefore, 0, 'check').overview);
+}
+
+// ---------------- `simulationRun` `objective` and `seed` (Spec 9.1.3, 2-2-3) ----------------
+{
+  const fresh = createFreshGameState('ja', now);
+  const read = (parameters: Record<string, unknown>) => buildApiV1ReadData('read/expedition/1/simulationRun', fresh, parameters, {
+    revision: 1, environment: 'desktop', gameMode: 'mode.normal', enemyLevelOffset: 0, inGameTime: now, createSeed: () => 77,
+    simulation: (partyIndex, count, forecast) => simulateExpeditionRuns(forecast?.state ?? fresh, partyIndex, 'mode.normal', count, undefined, 0, forecast?.seed, forecast?.options),
+  }) as Promise<Record<string, unknown>>;
+  const strip = ({ seedDomain: _domain, ...rest }: Record<string, unknown>) => rest;
+  const plain = await read({ numberOfRun: 30 });
+  assert.equal(plain.seed, 77, 'the random seed chosen is returned');
+  assert.equal('rate' in plain, false, 'no `rate` without an objective');
+  assert.deepEqual(strip(await read({ numberOfRun: 30, seed: 77 })), strip(plain), 'the returned seed repeats the forecast');
+  const boss = await read({ numberOfRun: 30, objective: 'bossDamage', seed: 5 });
+  const direct = await simulateExpeditionRuns(prepareObjectiveState(fresh, 0, 'bossDamage'), 0, 'mode.normal', 30, undefined, 0, 5, { bossRoomOnly: true });
+  const measured = measureObjective('bossDamage', direct, 0);
+  assert.deepEqual([boss.rate, boss.standardError, boss.seed], [measured.rate, Math.sqrt(measured.variance / 30), 5]);
+  assert.equal(boss.overview, buildSimulationRunData(direct, 0, 'check').overview, '`overview` describes the boss battle');
+  const progress = await read({ numberOfRun: 30, objective: 'progress', seed: 5 });
+  assert.ok(typeof progress.rate === 'number' && progress.rate >= 0 && progress.rate <= 1);
+  for (const [parameters, marker] of [[{ objective: 'speed' }, 'invalid_request:objective'], [{ seed: 1.5 }, 'invalid_request:seed']] as const) {
+    await assert.rejects(read(parameters), new RegExp(marker));
+  }
 }
 
 console.log('gaSearch profile ok');

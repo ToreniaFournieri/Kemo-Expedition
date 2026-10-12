@@ -2,12 +2,11 @@ import { CLASSES } from '../../data/classes';
 import { LINEAGES } from '../../data/lineages';
 import { PREDISPOSITIONS } from '../../data/predispositions';
 import { computeCharacterStats } from '../../game/characterComputation';
-import { getBossGateKey, getEliteGateKey } from '../../game/clearGateCore';
 import { getDeityId, getDeityNameFromId } from '../../game/deity';
 import { canCharacterEquipCategory } from '../../game/equipmentSets';
 import { isJewelAllowedForCategory } from '../../game/jewel';
 import { gameReducer } from '../../hooks/useGameState';
-import { getVariantKey, type Character, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party } from '../../types';
+import { getVariantKey, type Character, type ExpeditionSimulationOptions, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party } from '../../types';
 import { describeCharacterBuildCurrent, planCharacterBuildChange } from './buildChange';
 import { recordEquipmentState } from '../../game/equipmentHistory';
 import { computePartyStats } from '../../game/partyComputation';
@@ -15,6 +14,7 @@ import { buildCalculatedStatus } from './calculatedStatus';
 import { applyApiV1Commit, type ApiV1CommitContext } from './commitOperations';
 import { sameEquipmentSnapshot, snapshotCharacterEquipment } from './equipmentHistoryFacts';
 import { validPartyDeityIds, validRaceAndGenderOptions } from './readModels';
+import { measureObjective, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount, type ObjectiveMeasure } from './objectiveMeasure';
 import { buildSimulationRunData } from './simulationView';
 
 // SpecRef: 9.1.3 | Read | 2-3-2 party/{p}/gaSearch
@@ -104,7 +104,8 @@ export interface StoredBuildResult {
 }
 
 export interface GaSearchDependencies {
-  simulate: (state: GameState, partyIndex: number, count: number, seed: number) => Promise<unknown>;
+  /** A private forecast on a fixed seed; `options.bossRoomOnly` fights the boss battle alone (`bossDamage`). */
+  simulate: (state: GameState, partyIndex: number, count: number, seed: number, options?: ExpeditionSimulationOptions) => Promise<unknown>;
   /** Wall clock (ms) for the time budget and `elapsedSeconds`. */
   now: () => number;
   createSeed: () => number;
@@ -617,48 +618,31 @@ function countChanges(model: SearchModel, decoded: Decoded): number {
 
 // ---------------- Objective ----------------
 
-/** Opens every Clear-Gate of the destination and the whole depth, so a `bossDamage` run can reach the boss room. */
-export function prepareObjectiveState(state: GameState, partyIndex: number, objective: GaObjective): GameState {
-  if (objective !== 'bossDamage') return state;
-  const party = state.parties[partyIndex];
-  const dungeonId = party.selectedDungeonId;
-  const clearGateStatus = { ...party.clearGateStatus };
-  for (let floor = 1; floor <= 5; floor += 1) clearGateStatus[getEliteGateKey(dungeonId, floor)] = true;
-  clearGateStatus[getBossGateKey(dungeonId)] = true;
-  const parties = [...state.parties];
-  parties[partyIndex] = { ...party, clearGateStatus, expeditionDepthLimit: 'all' };
-  return { ...state, parties };
+interface Measured {
+  rate: number; variance: number; fitness: number; result: ExpeditionSimulationResult;
+  /** `success` only: the `progress` measure that breaks ties between builds. */
+  progress?: ObjectiveMeasure;
 }
-
-interface Measured { rate: number; variance: number; fitness: number; result: ExpeditionSimulationResult }
 
 /**
  * The objective's `<rate>` (Spec 9.1.3, 2-3-2 `verdict`), its per-run variance, and the search fitness (higher is better).
  * `baselineSuccess` is the current build's success rate on the same seed: `minDefeat` may not trade successes for safety
- * (a build that cannot win draws every battle and never loses).
+ * (a build that cannot win draws every battle and never loses). `routeRooms` scales the `success` tie-break.
  */
-function measure(objective: GaObjective, result: ExpeditionSimulationResult, baselineSuccess: number | null = null): Measured {
+function measure(objective: GaObjective, result: ExpeditionSimulationResult, routeRooms: number, baselineSuccess: number | null = null): Measured {
   const runs = Math.max(1, result.total);
-  const success = (result.Clear + result.Return) / runs;
-  // Rooms reached per run give a smooth signal before the first success (a build that goes deeper is closer); it is
-  // weighted by the failure share so it only breaks ties while successes are rare.
-  const progress = result.rooms.reduce((sum, room) => sum + room.reached, 0) / (runs * Math.max(1, result.rooms.length));
+  const { rate, variance } = measureObjective(objective, result, routeRooms);
   if (objective === 'minDefeat') {
-    const defeat = result.Defeat / runs;
+    const success = (result.Clear + result.Return) / runs;
     const successLoss = baselineSuccess === null ? 0 : Math.max(0, baselineSuccess - success);
-    return { rate: defeat, variance: defeat * (1 - defeat), fitness: -defeat - 5 * successLoss + 0.01 * success, result };
+    return { rate, variance, fitness: -rate - 5 * successLoss + 0.01 * success, result };
   }
-  if (objective === 'bossDamage') {
-    const share = (result.boss?.damageShare ?? 0) / runs;
-    // Without per-run shares the variance uses the Bernoulli bound p(1 - p), the largest a [0, 1] value can have.
-    return { rate: share, variance: share * (1 - share), fitness: share + 0.1 * progress * (1 - share), result };
-  }
-  if (objective === 'experience') {
-    const mean = (result.totals?.experience ?? 0) / runs;
-    const squares = (result.experienceSquareSum ?? 0) / runs;
-    return { rate: mean, variance: Math.max(0, squares - mean * mean), fitness: mean, result };
-  }
-  return { rate: success, variance: success * (1 - success), fitness: Math.log(Math.max(success, 0.5 / runs)) + 0.1 * progress * (1 - success), result };
+  // A `bossDamage` run is the boss battle alone, so its share is the whole signal.
+  if (objective === 'bossDamage' || objective === 'experience') return { rate, variance, fitness: rate, result };
+  // SpecRef: 9.1.3 | 2-3-2 `objective` `success` | `progress` (7.1.5) breaks ties while successes are rare, weighted by the
+  // failure share: a build that clears more rooms, or deals more of a lost battle's enemy HP, is closer to a success.
+  const progress = measureObjective('progress', result, routeRooms);
+  return { rate, variance, fitness: Math.log(Math.max(rate, 0.5 / runs)) + 0.1 * progress.rate * (1 - rate), result, progress };
 }
 
 interface Rating { verdict: GaVerdict; gain: number; standardError: number }
@@ -883,10 +867,12 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   const quickSeed = deriveSeed(seed, 1); const confirmSeed = deriveSeed(seed, 2); const verifySeed = deriveSeed(seed, 3); const finalSeed = deriveSeed(seed, 4);
   const model = buildModel(state, partyIndex, request);
   const objective = request.objective;
+  // Builds do not change the route (its gates and depth limit), so its room count is the same for every candidate.
+  const routeRooms = routeRoomCount(prepareObjectiveState(state, partyIndex, objective).parties[partyIndex]);
   let evaluations = 0;
   const simulateOnce = async (target: GameState, runs: number, simulationSeed: number): Promise<ExpeditionSimulationResult> => {
     evaluations += 1;
-    return await dependencies.simulate(prepareObjectiveState(target, partyIndex, objective), partyIndex, runs, simulationSeed) as ExpeditionSimulationResult;
+    return await dependencies.simulate(prepareObjectiveState(target, partyIndex, objective), partyIndex, runs, simulationSeed, objectiveSimulationOptions(objective)) as ExpeditionSimulationResult;
   };
   // The current build's success rate per (runs, seed), the `minDefeat` baseline.
   const baselines = new Map<string, number>();
@@ -898,7 +884,7 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   };
   const evaluate = async (decoded: Decoded, runs: number, simulationSeed: number): Promise<Measured> => {
     const baseline = await baselineOf(runs, simulationSeed);
-    return measure(objective, await simulateOnce(decoded.state, runs, simulationSeed), baseline);
+    return measure(objective, await simulateOnce(decoded.state, runs, simulationSeed), routeRooms, baseline);
   };
   const outOfTime = () => dependencies.now() >= deadline;
 
@@ -974,10 +960,14 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
       const measured = await evaluate(entry.decoded, finalRuns, finalSeed);
       if (measured.fitness > bestFinal.fitness) { bestFinal = measured; best = entry; }
     }
-    // A finalist replaces the fallback only when it is ahead by at least one standard error of the objective's rate.
+    // A finalist replaces the fallback only when it is ahead by at least one standard error of the objective's rate. For
+    // `success`, `progress` breaks a tie the same way (every build at 0 successes, for example).
     if (best !== fallback) {
       const margin = rateGaResult(objective, currentFinal, bestFinal, finalRuns, true);
-      if (!(margin.gain > margin.standardError)) best = fallback;
+      const progressAhead = (before?: ObjectiveMeasure, after?: ObjectiveMeasure) => before !== undefined && after !== undefined
+        && after.rate - before.rate > Math.sqrt(before.variance / finalRuns + after.variance / finalRuns);
+      const tieBroken = bestFinal.rate === currentFinal.rate && progressAhead(currentFinal.progress, bestFinal.progress);
+      if (!(margin.gain > margin.standardError) && !tieBroken) best = fallback;
     }
   } else {
     best = fallback;

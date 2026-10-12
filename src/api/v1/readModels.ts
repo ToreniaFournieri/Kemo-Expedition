@@ -28,6 +28,7 @@ import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentH
 import { apiExpeditionOutcome, apiExpeditionOutcomeOrNull } from './expeditionOutcome.ts';
 import { buildBattleLogData, buildBattleRoomData, buildRoomResources, retainedLogIdOf } from './battleLogs.ts';
 import { buildSimulationRunData, describeSimulationDepthReach } from './simulationView.ts';
+import { MEASURED_OBJECTIVES, measureObjective, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount, type MeasuredObjective } from './objectiveMeasure.ts';
 import { describeCharacterBuildCurrent, validUniqueSelections } from './buildChange.ts';
 import { EQUIPMENT_EVALUATION_LIMIT } from './requestLimits.ts';
 import { paginate } from './pagination.ts';
@@ -60,7 +61,7 @@ import { getPartyClairvoyanceAccess } from '../../game/clairvoyanceAccess.ts';
 import type { DebugSettings } from '../../game/debugSettings.ts';
 import type { ColosseumEnemySettings } from '../../game/colosseum.ts';
 import { accountEnemyEditSettingsOf, describeEnemyEditPane, enemyEditPaneValidOptions } from './enemyEditPane.ts';
-import { MAX_LEVEL, type DiaryLog, type EnemyDef, type ExpeditionLog, type Character, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party, type RandomBag } from '../../types/index.ts';
+import { MAX_LEVEL, type DiaryLog, type EnemyDef, type ExpeditionLog, type Character, type ExpeditionSimulationOptions, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party, type RandomBag } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
 
@@ -80,7 +81,13 @@ export interface ApiV1ReadContext {
   readonly gameMode: 'mode.normal' | 'mode.orca';
   readonly enemyLevelOffset: number;
   readonly inGameTime: number;
-  readonly simulation?: (partyIndex: number, count: number) => Promise<unknown>;
+  /**
+   * A private forecast of party `partyIndex`: of `forecast.state` when given (an objective's prepared state, 9.1.3 2-2-3
+   * `objective`), else of the read's state; on `forecast.seed` when given, else on fresh random numbers.
+   */
+  readonly simulation?: (partyIndex: number, count: number, forecast?: { state: GameState; seed: number; options: ExpeditionSimulationOptions }) => Promise<unknown>;
+  /** A fresh random seed for a forecast whose seed was not requested (Web Crypto when absent). */
+  readonly createSeed?: () => number;
   /** The live party cycle of a party (by index) for the ordinary player's runtime; absent for an API account. */
   readonly partyCycle?: (partyIndex: number) => ApiV1PartyCycleView | undefined;
   /**
@@ -959,7 +966,20 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       if (!context.simulation) throw new Error('runtime_unavailable');
       const numberOfRun = parameters.numberOfRun === undefined ? SIMULATION_RUN_DEFAULT : parameters.numberOfRun;
       if (typeof numberOfRun !== 'number' || !Number.isInteger(numberOfRun) || numberOfRun < 1 || numberOfRun > SIMULATION_RUN_MAX) throw new Error('invalid_request:numberOfRun');
-      return buildSimulationRunData(await context.simulation(index, numberOfRun) as ExpeditionSimulationResult, context.revision, crypto.randomUUID(), describeSimulationDepthReach(party));
+      // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | optional `objective` (adds `rate` and `standardError`, measured like
+      // `gaSearch`) and `seed` (a reproducible forecast; the seed used is returned either way).
+      const objective = parameters.objective;
+      if (objective !== undefined && (typeof objective !== 'string' || !(MEASURED_OBJECTIVES as readonly string[]).includes(objective))) throw new Error('invalid_request:objective');
+      const requestedSeed = parameters.seed;
+      if (requestedSeed !== undefined && (typeof requestedSeed !== 'number' || !Number.isSafeInteger(requestedSeed))) throw new Error('invalid_request:seed');
+      const seed = (requestedSeed as number | undefined) ?? context.createSeed?.() ?? crypto.getRandomValues(new Uint32Array(1))[0];
+      const measured = objective as MeasuredObjective | undefined;
+      const forecastState = measured ? prepareObjectiveState(state, index, measured) : state;
+      const result = await context.simulation(index, numberOfRun, { state: forecastState, seed, options: objectiveSimulationOptions(measured ?? 'success') }) as ExpeditionSimulationResult;
+      const data = buildSimulationRunData(result, context.revision, crypto.randomUUID(), describeSimulationDepthReach(forecastState.parties[index]));
+      if (!measured) return { ...data, seed };
+      const { rate, variance } = measureObjective(measured, result, routeRoomCount(forecastState.parties[index]));
+      return { ...data, rate, standardError: Math.sqrt(variance / Math.max(1, result.total)), seed };
     }
     const charge = getInstantExpeditionChargeState(party, context.inGameTime, context.chargeDurationScale ?? 1);
     return { chargeStock: charge.stock, chargeDuration: charge.remainingMs <= 0 ? 0 : Math.ceil(charge.remainingMs / 1000) };

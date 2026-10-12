@@ -161,6 +161,7 @@ export function runExpeditionApplication(
     refillBag: adapters.refillBag,
     installRecoveredItems: inventoryCoordinator.installRecoveredItems,
     ...(adapters.encounterCache ? { encounterCache: adapters.encounterCache } : {}),
+    ...(command.bossRoomOnly && command.resolutionMode === 'forecast' ? { bossRoomOnly: true } : {}),
     ...(command.battleOutputMode === 'result-only'
       ? {
         battleOptions: {
