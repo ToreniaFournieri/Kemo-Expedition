@@ -675,7 +675,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Optional.
     * Default: `success`.
     * `success`, `minDefeat`, `bossDamage`, `experience`
-    * `success`: `progress` (7.1.5 Score) breaks ties between builds, mainly while successes are rare. The search still has a signal when every build is at `0` (for example, every run reaches the boss and draws).
+    * `success`: `progress` (7.1.5 Score) breaks ties between builds, mainly while successes are rare. The search still has a signal when every build is at `0` (for example, every run reaches the boss and draws). If both builds are still at `0` in the verification runs, `verdict` is judged on `progress` too (see `verdict`).
     * `bossDamage` simulates only the boss battle of the current destination.
       * Each run starts the boss battle at full party HP.
       * The rooms before it, the gates, and the depth limit are ignored. HP lost on the way to the boss is not counted; use `success` to include it.
@@ -712,13 +712,15 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Judged on a separate verification simulation (`verifyRuns`, independent seed), not on the scores used during the search.
     * `<rate>`: measured value for the selected `objective`.
       * `success`: success rate (clear + return).
+        * If the current build and the best build both have a success rate of `0` in the verification runs, `<rate>` is `progress` (7.1.5 Score) instead, because both would tie at `0`.
+        * If either build has a success rate above `0`, `<rate>` stays the success rate.
       * `minDefeat`: defeat rate. A lower value is an improvement.
       * `bossDamage`: average share of boss HP dealt in the boss battle. A win counts as `1`.
       * `experience`: average EXP per run.
     * `<gain>`: improvement of `<rate>` from the current build to the best build.
-      * Percentage points for `success`, `minDefeat`, and `bossDamage`.
+      * Percentage points for `success`, `minDefeat`, `bossDamage`, and `progress`.
       * Relative change (%) for `experience`.
-    * Standard error (SE) is computed from the before and after verification runs, with the per-run variance of `<rate>` (7.1.5 Luck check). For `bossDamage`, this is the variance of the per-run boss share.
+    * Standard error (SE) is computed from the before and after verification runs, with the per-run variance of `<rate>` (7.1.5 Luck check). For `bossDamage`, this is the variance of the per-run boss share. For `progress`, this is the variance of the per-run `progress`.
     * Values:
       * `veryGood`: `<gain>` is at or above the threshold (10 percentage points; 20% for `experience`), and larger than 2 SE.
       * `good`: `<gain>` is larger than 2 SE, but below the `veryGood` threshold.
