@@ -1,0 +1,42 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 23.6% / Draw 0.4% / Retreat 24.5% / Defeat 51.5%",
+ "after": "Success 25.0% / Draw 0.0% / Retreat 18.0% / Defeat 57.0%",
+ "improvement": 0.0593,
+ "gain": 0.014,
+ "standardError": 0.0192,
+ "bottleneckRoom": "2f-4",
+ "steps": {
+  "offenseElement": [
+   {
+    "element": "e.fire",
+    "improvement": 0.1605,
+    "changes": [
+     "4=0/4312/2/0",
+     "6=0/4213/2/0"
+    ]
+   }
+  ],
+  "defenseElement": [],
+  "ability": [],
+  "finalTuning": [
+   {
+    "step": "offenseElement",
+    "index": 0,
+    "element": "e.fire",
+    "improvement": 0.0756,
+    "changes": [
+     "4=0/4312/2/0",
+     "6=0/4213/2/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [],
+ "revision": 540,
+ "simulationRuns": 7500,
+ "elapsedSeconds": 3.2,
+ "seed": 2075710763
+}
