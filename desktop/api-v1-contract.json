@@ -22534,6 +22534,7 @@
               "type": "object",
               "required": [
                 "objective",
+                "scoredBy",
                 "runs",
                 "before",
                 "after",
@@ -22558,6 +22559,30 @@
                     },
                     {
                       "const": "experience",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "scoredBy": {
+                  "anyOf": [
+                    {
+                      "const": "success",
+                      "type": "string"
+                    },
+                    {
+                      "const": "minDefeat",
+                      "type": "string"
+                    },
+                    {
+                      "const": "bossDamage",
+                      "type": "string"
+                    },
+                    {
+                      "const": "experience",
+                      "type": "string"
+                    },
+                    {
+                      "const": "progress",
                       "type": "string"
                     }
                   ]
@@ -22752,6 +22777,7 @@
                   "type": "object",
                   "required": [
                     "objective",
+                    "scoredBy",
                     "runs",
                     "before",
                     "after",
@@ -22776,6 +22802,30 @@
                         },
                         {
                           "const": "experience",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "scoredBy": {
+                      "anyOf": [
+                        {
+                          "const": "success",
+                          "type": "string"
+                        },
+                        {
+                          "const": "minDefeat",
+                          "type": "string"
+                        },
+                        {
+                          "const": "bossDamage",
+                          "type": "string"
+                        },
+                        {
+                          "const": "experience",
+                          "type": "string"
+                        },
+                        {
+                          "const": "progress",
                           "type": "string"
                         }
                       ]
@@ -22871,6 +22921,7 @@
             "buildResultId": "xxxxxxx",
             "verification": {
               "objective": "success",
+              "scoredBy": "success",
               "runs": 1,
               "before": 0,
               "after": 0,

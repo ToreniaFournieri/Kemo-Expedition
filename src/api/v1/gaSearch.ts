@@ -647,8 +647,9 @@ function measure(objective: GaObjective, result: ExpeditionSimulationResult, rou
 
 interface Rating { verdict: GaVerdict; gain: number; standardError: number }
 
-// SpecRef: 9.1.3 | 2-3-2 `verdict` | 10 percentage points (20% for `experience`) and 2 standard errors.
-export function rateGaResult(objective: GaObjective, before: { rate: number; variance: number }, after: { rate: number; variance: number }, runs: number, changed: boolean): Rating {
+// SpecRef: 9.1.3 | 2-3-2 `verdict` | 10 percentage points (20% for `experience`) and 2 standard errors. `progress` is rated
+// like `success`: higher is better, in percentage points.
+export function rateGaResult(objective: GaObjective | 'progress', before: { rate: number; variance: number }, after: { rate: number; variance: number }, runs: number, changed: boolean): Rating {
   if (!changed) return { verdict: 'noChange', gain: 0, standardError: 0 };
   const lowerIsBetter = objective === 'minDefeat';
   const relative = objective === 'experience';
@@ -988,7 +989,11 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   const verifyRuns = request.parameters.verifyRuns;
   const verifyBefore = await evaluate({ state, genome: model.current }, verifyRuns, verifySeed);
   const verifyAfter = changeSummary.length > 0 ? await evaluate({ state: bestState, genome: best.genome }, verifyRuns, verifySeed) : verifyBefore;
-  const rating = rateGaResult(objective, verifyBefore, verifyAfter, verifyRuns, changeSummary.length > 0);
+  // SpecRef: 9.1.3 | 2-3-2 `verdict` `<rate>` | `success`: when both builds have no success in the verification runs, the
+  // success rates tie at 0, so the verdict is judged on `progress` (the score the search broke the tie with).
+  const scoredBy: GaObjective | 'progress' = objective === 'success' && verifyBefore.rate === 0 && verifyAfter.rate === 0 ? 'progress' : objective;
+  const scoreOf = (measured: Measured): ObjectiveMeasure => (scoredBy === 'progress' ? measured.progress! : measured);
+  const rating = rateGaResult(scoredBy, scoreOf(verifyBefore), scoreOf(verifyAfter), verifyRuns, changeSummary.length > 0);
   const forecast: GaForecast = {
     before: buildSimulationRunData(verifyBefore.result, dependencies.revision, 'ga-verify').overview,
     after: buildSimulationRunData(verifyAfter.result, dependencies.revision, 'ga-verify').overview,
@@ -1018,9 +1023,10 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
       // SpecRef: 9.1.4.9 | gaSearch | the measured `<rate>` values, gain, and standard error behind `verdict`.
       verification: {
         objective,
+        scoredBy,
         runs: verifyRuns,
-        before: verifyBefore.rate,
-        after: verifyAfter.rate,
+        before: scoreOf(verifyBefore).rate,
+        after: scoreOf(verifyAfter).rate,
         gain: Number.isFinite(rating.gain) ? Math.round(rating.gain * 100) / 100 : null,
         standardError: Math.round(rating.standardError * 100) / 100,
         seed,

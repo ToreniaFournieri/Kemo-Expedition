@@ -545,7 +545,7 @@ const responseDataSchemas = {
   'read/build/party/{p}/gaSearch': strict({
     verdict: gaVerdict, forecast: gaForecast, changeSummary: Type.Array(gaChangeEntry), revision: Type.Integer({ minimum: 0 }),
     evaluations: Type.Integer({ minimum: 0 }), elapsedSeconds: Type.Number({ minimum: 0 }), buildResultId: stableKey,
-    verification: strict({ objective: gaObjective, runs: Type.Integer({ minimum: 1 }), before: Type.Number({ minimum: 0 }), after: Type.Number({ minimum: 0 }), gain: Type.Union([Type.Number(), Type.Null()]), standardError: Type.Number({ minimum: 0 }), seed: Type.Integer() }),
+    verification: strict({ objective: gaObjective, scoredBy: literals('success', 'minDefeat', 'bossDamage', 'experience', 'progress'), runs: Type.Integer({ minimum: 1 }), before: Type.Number({ minimum: 0 }), after: Type.Number({ minimum: 0 }), gain: Type.Union([Type.Number(), Type.Null()]), standardError: Type.Number({ minimum: 0 }), seed: Type.Integer() }),
   }),
   // SpecRef: 9.1.3 | 2-3-7 stagedEquipmentTuning | the final check, what each step recorded, and the Commit API calls of the tuned build.
   'read/build/character/stagedEquipmentTuning': strict({
