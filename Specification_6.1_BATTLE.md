@@ -67,7 +67,7 @@ If `a.*` with phase = START:
 
 - `terrain.silence-field`
   - Skip all subsequent `actor abilities` part.
-  - Exception: actor who has `a.equation-breaker`.
+  - Exception: actor who has `a.equation-breaker` or `a.domain-breaker`.
 
 **Actor abilities**
 
@@ -156,7 +156,8 @@ If `a.*` with phase = START:
   - If opponent.`a.frostbite`1 and (actor doesn't have `a.coldproof`) and terrain != `terrain.machine-logic`: -1 (minimum 1)
 
   - **Terrain effects**
-    - If `terrain.tailwind` and (actor doesn't has `a.wind-rider`) and (actor is a party member): +**1d3**,
+    - If `terrain.tailwind` and (actor is a party member): +**1d3**,
+      - If actor has `a.wind-rider`: +**2d3** instead.
     - If `terrain.enemy-high-ground` and actor is an enemy: +**1d3**,
 
 - Actions are resolved in descending order of roll result.
@@ -252,6 +253,7 @@ If `a.*` with phase = START:
  
 - **Regeneration**
   - Triggered by `a.regeneration`
+  - Exception: If `terrain.rotwood`, no HP is healed and no `log.regeneration` is output.
   - actor.`d.HP` = min(actor.max_HP, actor.HP + (N x 0.01) x actor.damage_taken_in_this_battle)
   - Log: `log.regeneration`
     - Heal: (✚ XXX)  Left-Aligned, gray text
@@ -385,6 +387,7 @@ If `a.*` with phase = START:
 - If (`attack_type = ranged`) and (opponent.`a.illusion`1) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. Log: `log.illusion‘
 - If (`attack_type = ranged`) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. Log: `log.illusion‘.
 - If (`attack_type = ranged`) and (opponent.`a.illusion`) and (the `a.illusion` is enable) and (actor has `a.illusion-breaker`), disable the `a.illusion` for this battle. Log: `log.illusion-breaker`
+- **Exception (`terrain.sniper-domain`)**: If `terrain.sniper-domain` and (`attack_type = ranged`) and neither actor nor **opponent** has `a.domain-breaker`, all three illusion rules above are not applied (`terrain.sniper-domain` takes priority over `a.illusion`). `a.illusion` is not consumed, and no illusion log is output.
 
 ##### 6.1.3.2 Reactive ability
 - Priority: On-strike > Counter > Ally-follow-up
@@ -404,6 +407,7 @@ If `a.*` with phase = START:
        - Heal actor:
        - heal += dealt_damage × N
        - Log: `log.life-drain` + "(吸血: 与ダメージのN倍回復: ✚heal)"
+      - Exception: If `terrain.rotwood`, no HP is healed and no `log.life-drain` is output.
       - Exception: If actor has `a.null-life-drain`, do not apply life-drain.
         - Log: `log.null-life-drain` + (吸血無効)
 
@@ -425,13 +429,13 @@ If `a.*` with phase = START:
     - Roll bind check:
        - If success → apply `incapacitated` status.
     - Log: `log.bind` + "(拘束:行動不能)"
-    - Exception: If actor has `a.bind`, do not apply `incapacitated` status.
+    - Exception: If **opponent** has `a.null-bind`, do not apply `incapacitated` status.
     　　- Log: `log.null-bind` + (拘束無効)
       
   - If actor.`a.requiem` and (opponent.`a.reanimate` has used) and actor hit at least once to the opponent:
     - Set opponent HP to 0. 
     - Log: `log.requiem` + "(鎮魂歌)"
-    - Exception: If actor has `a.requiem`, do not apply requiem.
+    - Exception: If **opponent** has `a.null-requiem`, do not apply requiem.
     　　- Log: `log.null-requiem` + (鎮魂無効)
 
 **Counter**
@@ -674,6 +678,7 @@ If `a.*` with phase = START:
   - **Override of terrain effect**
     - If {`terrain.sniper-domain` and (`attack_type = ranged`)} or {`terrain.spell-domain` and (`attack_type = magical`)} or {`terrain.duelist-domain` and (`attack_type = melee`)}: All hits are treated as successful.
       - Exception: If actor or **opponent** has `a.domain-breaker`, these effects are ignored.
+      - Priority: `terrain.sniper-domain` > `a.illusion` (see 6.1.3.1 `opponent-reactive`). `terrain.sniper-domain` > `a.deflection` as well, because this override returns before the chance calculation.
     - If override condition is met: return true (skip calculation below)
   - Roll: Return Random(0, 1.0) <= chance
 
@@ -732,8 +737,9 @@ If `a.*` with phase = START:
       - If `God of Restoration` and `log.terrain.rotwood`: Log: `log.terrain.rotwood` 
     - IF `God of Attrition`: **reduce 5% of remaining HP**
       - Log: "消耗の神への代償！" + "(HP消耗-N)"
-  　- If party member has `a.first-aid`:　**Heal N% of the party member's `d.HP`** (not party.`d.HP`)
+  　- If party member has `a.first-aid` and (Terrain is not `terrain.rotwood`):　**Heal N% of the party member's `d.HP`** (not party.`d.HP`)
       - Log: `log.first-aid` + "(HP回復+N)"
+      - If party member has `a.first-aid` and `terrain.rotwood`: no HP is healed. Log: `log.terrain.rotwood`
   - Normal and Elite rooms
     - If `terrain.rejuvenation`: Heal 2% of **missing HP**
 	  - Log: `log.terrain.rejuvenation` + "(HP回復+N)"
