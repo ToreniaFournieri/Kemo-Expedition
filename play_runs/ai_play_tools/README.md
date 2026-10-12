@@ -92,3 +92,13 @@ Built during the 2026/10/03 D8-boss run (`AI_play_report/v0.9.8(11)_Claude_Norma
   `TB` default 90 s), `client/stage.sh d n1 n2` (destination -> gate loop -> boss polish -> boss loop), `client/polish.sh [boss]`.
 * Lessons: search all components at once; restart from a hand-made attacker of the right element when the GA builds tanks;
   pin ability items (6309) by freezing their owner; free deities taken by new parties.
+
+## Additions (2026/10/12 ClaudeTune run, `AI_play_report/v0.10.1(41)_ClaudeTune_Normal_API_Exp8Boss_StagedTuning_20261012.md`)
+* Run folder `play_runs/normal_api_exp8_ClaudeTune_20261012/` (in-game tools only, build 41: `stagedEquipmentTuning` + `gaSearch`).
+  `client/tune.py cids objective [apply]` (env `EXTRA` json, `SEED`, `MODE`) tunes characters one by one and applies with
+  `applyBuildResult`; `client/wall.sh [gaObj] [effort] [cids] [tuneObj]` = GA (all components, global) then tuning when the
+  GA forecast is under `SKIP` (80 %); `hl.py` calls `wall.sh` on stalls (`AUTOGA`, `TUNE`); `client/meter.py objective`
+  = exact rate via a zero-component gaSearch (replaces the kept result); `sim.py`, `elem.py`, `freept.py P` (strip a new party).
+* `tools/tunecheck.ts` / `tools/tunetrace.ts`: offline post-run checks (identity control, trace of every tuning simulation).
+* Lessons: re-plan at every stall (SEMI freezes gear), extra sorties only at >= 95 % HP at streak gates, farm under 60 %,
+  bosses = bossDamage GA until success > 0, then success GA; never FULL-refresh the GA's hybrid classes.

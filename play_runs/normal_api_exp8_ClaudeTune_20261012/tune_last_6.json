@@ -1,0 +1,61 @@
+{
+ "accepted": false,
+ "objective": "bossDamage",
+ "before": "Success 0.0% / Draw 0.5% / Retreat 16.2% / Defeat 83.3%",
+ "after": "Success 0.0% / Draw 0.5% / Retreat 16.2% / Defeat 83.3%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.0165,
+ "bottleneckRoom": "6f-4",
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.thunder",
+     "r.fire"
+    ],
+    "improvement": 0.2186,
+    "changes": [
+     "6=0/3305/0/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.thunder",
+     "r.fire"
+    ],
+    "improvement": 0.2186,
+    "changes": [
+     "0=0/3305/0/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.null-corrode"
+    ],
+    "improvement": 0.2186,
+    "changes": [
+     "3=0/3302/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.anti-overwatch"
+    ],
+    "improvement": 0.2186,
+    "changes": [
+     "4=0/4303/0/0"
+    ]
+   }
+  ],
+  "finalTuning": []
+ },
+ "changeSummary": [],
+ "revision": 598,
+ "simulationRuns": 4400,
+ "elapsedSeconds": 3.3,
+ "seed": 3536624448
+}
