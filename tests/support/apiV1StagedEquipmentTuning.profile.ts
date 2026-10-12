@@ -6,7 +6,7 @@ import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/comm
 import { deriveSeed, type GaSearchDependencies, type StoredBuildResult } from '../../src/api/v1/gaSearch';
 import { prepareObjectiveState } from '../../src/api/v1/objectiveMeasure';
 import { buildSimulationRunData } from '../../src/api/v1/simulationView';
-import { parseStagedTuningRequest, runStagedEquipmentTuning, tuningImprovement, tuningLuckCheck } from '../../src/api/v1/stagedEquipmentTuning';
+import { countersBottleneck, parseStagedTuningRequest, runStagedEquipmentTuning, tuningImprovement, tuningLuckCheck } from '../../src/api/v1/stagedEquipmentTuning';
 import { getDungeonById } from '../../src/data/dungeons';
 import { hydrateGameState } from '../../src/game/saveCodec';
 import { decodePersistedState } from '../../src/game/storageCompression';
@@ -88,6 +88,17 @@ rejects({ characterId: firstId, seed: '7' }, 'invalid_request:seed');
 
 // The relative change on the rarer side: the rise of the good outcome or the fall of the bad one, whichever is larger.
 const near = (actual: number, expected: number, label: string) => assert.ok(Math.abs(actual - expected) < 1e-9, `${label}: ${actual} != ${expected}`);
+// 7.1.5.1 Counter ability map
+assert.ok(countersBottleneck('illusion_breaker', new Set(['illusion']), null), 'a breaker counters its enemy ability');
+assert.ok(countersBottleneck('thunder_protect_breaker', new Set(['thunder_absorb']), null), 'a protect breaker covers absorb');
+assert.ok(countersBottleneck('null_bind', new Set(['bind']), null), 'the null family counters its enemy ability');
+assert.ok(!countersBottleneck('illusion_breaker', new Set(['bulwark']), null), 'no counter without the enemy ability');
+assert.ok(countersBottleneck('true_sight', new Set(), 'terrain.fog'), 'a terrain counter applies on its terrain');
+assert.ok(!countersBottleneck('true_sight', new Set(), 'terrain.tailwind'), 'a terrain counter does not apply elsewhere');
+assert.ok(countersBottleneck('domain_breaker', new Set(), 'terrain.silence-field'), 'domain-breaker counters the silence field');
+assert.ok(countersBottleneck('output_stabilizer', new Set(), 'terrain.gravity'), 'output-stabilizer counters a penalty terrain');
+assert.ok(!countersBottleneck('output_stabilizer', new Set(), 'terrain.low-gravity'), 'output-stabilizer is no counter on a bonus terrain');
+assert.ok(!countersBottleneck('true_sight', new Set(), null), 'no terrain, no terrain counter');
 near(tuningImprovement('success', 0.1, 0.12), 0.2, 'near 0 the success side decides (7.1.5 example)');
 near(tuningImprovement('success', 0.93, 0.95), 0.4, 'near 1 the failure side decides (7.1.5 example)');
 assert.ok(tuningImprovement('success', 0.95, 0.97) >= 0.07, 'a 7% threshold can be met above 93.5%');
