@@ -423,6 +423,8 @@ const clearGateFact = strict({ kind: literals('eliteGate', 'bossGate', 'entryGat
 const sideQuestFact = strict({ id: Type.Integer({ minimum: 0 }), type: stableKey, target: Type.Number({ minimum: 1 }), progress: Type.Number({ minimum: 0 }), percent: percentage, hasDeadline: Type.Boolean(), remainingMs: Type.Number({ minimum: 0 }) });
 const sortieControl = strict({ available: Type.Boolean(), unavailableReason: Type.Union([literals('gods_battle_unavailable', 'entry_gate_locked', 'party_exhausted', 'already_moving_to_gods_battle', 'charge_insufficient'), Type.Null()]) });
 const sortieControlFacts = { currentHp: Type.Integer({ minimum: 0 }), maximumHp: Type.Integer({ minimum: 0 }), chargeStock: Type.Integer({ minimum: 0 }), controls: strict({ sortie: sortieControl, godsBattle: sortieControl }) };
+// SpecRef: 9.1.4.4 | the carried sub-Cycle progress and what is left of the party's next Cycle
+const cycleTimingFacts = { carriedSeconds: Type.Integer({ minimum: 0 }), secondsToNextCycle: Type.Integer({ minimum: 0 }) };
 const expeditionProjectionSchema = strict({ parties: Type.Array(strict({
   partyNumber, name: Type.String({ minLength: 1 }), state: stableKey,
   stateStartedAt: Type.Union([isoTimestamp, Type.Null()]), stateDurationMs: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]), stateExpectedEndAt: Type.Union([isoTimestamp, Type.Null()]),
@@ -543,13 +545,15 @@ const responseDataSchemas = {
   'read/build/party/{p}/gaSearch': strict({
     verdict: gaVerdict, forecast: gaForecast, changeSummary: Type.Array(gaChangeEntry), revision: Type.Integer({ minimum: 0 }),
     evaluations: Type.Integer({ minimum: 0 }), elapsedSeconds: Type.Number({ minimum: 0 }), buildResultId: stableKey,
-    verification: strict({ objective: gaObjective, runs: Type.Integer({ minimum: 1 }), before: Type.Number({ minimum: 0 }), after: Type.Number({ minimum: 0 }), gain: Type.Union([Type.Number(), Type.Null()]), standardError: Type.Number({ minimum: 0 }), seed: Type.Integer() }),
+    verification: strict({ objective: gaObjective, scoredBy: literals('success', 'minDefeat', 'bossDamage', 'experience', 'progress'), runs: Type.Integer({ minimum: 1 }), before: Type.Number({ minimum: 0 }), after: Type.Number({ minimum: 0 }), gain: Type.Union([Type.Number(), Type.Null()]), standardError: Type.Number({ minimum: 0 }), seed: Type.Integer() }),
   }),
   // SpecRef: 9.1.3 | 2-3-7 stagedEquipmentTuning | the final check, what each step recorded, and the Commit API calls of the tuned build.
   'read/build/character/stagedEquipmentTuning': strict({
     accepted: Type.Boolean(), objective: tuningObjective, scoredBy: literals('success', 'minDefeat', 'bossDamage', 'progress'), before: Type.String(), after: Type.String(),
     improvement: Type.Number(), gain: Type.Number(), standardError: Type.Number({ minimum: 0 }),
     bottleneckRoom: Type.Union([floorRoomKey, Type.Null()]),
+    bottleneckCounters: Type.Array(strict({ ability: stableKey, answers: nonEmptyArray(stableKey), status: literals('owned', 'tried', 'notTried', 'noItem') })),
+    candidatesTried: strict({ offenseElement: count, defenseElement: count, ability: count }),
     steps: strict({
       offenseElement: Type.Array(strict({ element: literals('e.fire', 'e.ice', 'e.thunder', 'e.none'), improvement: Type.Number(), changes: Type.Array(tuningChange) })),
       defenseElement: Type.Array(strict({ resistance: nonEmptyArray(literals('r.fire', 'r.ice', 'r.thunder', 'r.none')), improvement: Type.Number(), changes: Type.Array(tuningChange) })),
@@ -592,11 +596,11 @@ const responseDataSchemas = {
   'read/setting/enemyEditPane': strict({ current: strict(enemyEditCurrent), validOptions: strict({ enemyLevel: range, terrainEffect: Type.Array(Type.String()), enemyType: Type.Array(Type.String()), mainClass: Type.Array(stableKey), subClass: Type.Array(Type.String()), addedAbilities: strict({ maximumEntries: Type.Integer({ minimum: 0 }), abilityId: Type.Array(stableKey), level: strict({ min: Type.Integer(), max: Type.Integer() }) }) }) }),
   'read/setting/modeSelect': strict({ current: strict(modeSelectCurrent), validOptions: strict({ mode: Type.Array(modeKey), enemyLevelOffset: range, language: Type.Array(language), darkMode: Type.Array(Type.String()), autoRepeat: Type.Array(Type.Boolean()), showExpeditionStats: Type.Array(Type.Boolean()), theme: Type.Array(themeKey) }) }),
   'read/setting/debug': strict({ current: strict(debugCurrent), validOptions: strict({ runtimeDiagnostics: booleanOptions, clairvoyance: booleanOptions, speedOfTime: Type.Array(Type.String()), godsBattleCondition: Type.Array(Type.String()), godsStrength: Type.Array(Type.String()), debugStoreOpen: booleanOptions, displayFlavorCondition: booleanOptions, displayAfkDuration: booleanOptions, displayAllBestiary: booleanOptions, displayAllCompendium: booleanOptions, displayAllGlossary: booleanOptions, colosseumMode: booleanOptions }) }),
-  'commit/progress/elapsed': strict({ requestedElapsedSeconds: Type.Integer({ minimum: 0 }), acceptedElapsedSeconds: Type.Integer({ minimum: 0 }), cappedElapsedSeconds: Type.Integer({ minimum: 0 }), elapsedSeconds: Type.Integer({ minimum: 0 }), inGameTime: isoTimestamp, parties: Type.Array(strict({ partyNumber, ...sortieControlFacts })) }),
+  'commit/progress/elapsed': strict({ requestedElapsedSeconds: Type.Integer({ minimum: 0 }), acceptedElapsedSeconds: Type.Integer({ minimum: 0 }), cappedElapsedSeconds: Type.Integer({ minimum: 0 }), elapsedSeconds: Type.Integer({ minimum: 0 }), inGameTime: isoTimestamp, parties: Type.Array(strict({ partyNumber, ...sortieControlFacts, ...cycleTimingFacts })) }),
   'commit/progress/progressReport': strict({ deliveryId: stableKey, status: Type.Literal('queued') }),
   'commit/expedition/{p}/changeExpedition': strict({ current: strict({ destination: integerId, destinationMode: literals('auto', 'fixed'), depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0, multipleOf: 2 }) }) }),
-  'commit/expedition/{p}/sortie': strict({ summary: Type.String(), sorties: Type.Array(strict({ battleOutcome: Type.Union([expeditionOutcome, Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]) }), { minItems: 1, maxItems: 6 }), ...sortieControlFacts }),
-  'commit/expedition/{p}/godsBattle': strict({ outcome: Type.Union([expeditionOutcome, Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]), ...sortieControlFacts }),
+  'commit/expedition/{p}/sortie': strict({ summary: Type.String(), sorties: Type.Array(strict({ battleOutcome: Type.Union([expeditionOutcome, Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]) }), { minItems: 1, maxItems: 6 }), ...sortieControlFacts, ...cycleTimingFacts }),
+  'commit/expedition/{p}/godsBattle': strict({ outcome: Type.Union([expeditionOutcome, Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]), ...sortieControlFacts, ...cycleTimingFacts }),
   'commit/expedition/{p}/resetStatistics': empty,
   'commit/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }) }),
   // `verdict` is the `gaSearch` verdict, or `null` for a `stagedEquipmentTuning` result.

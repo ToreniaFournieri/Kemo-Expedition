@@ -3,7 +3,7 @@ import { getApproxAfkCycleDurationMs, getEffectiveAfkElapsedMs } from '../../gam
 import { applyAchievementMilestones } from '../../game/globalDiary';
 import { simulateAfkPartyChunkForWorker } from '../../hooks/useGameState';
 import type { GameState } from '../../types';
-import { getSortieControlFacts } from './sortieAvailability';
+import { getCycleTimingFacts, getSortieControlFacts } from './sortieAvailability';
 
 // SpecRef: 9.1.4.4 | Atomic progression across multiple Chunks
 
@@ -68,14 +68,15 @@ export async function stageApiV1ElapsedProgression(
   // call instead of being discarded, so short elapsed steps add up to the same Cycles as one long step.
   // A call that processes no time leaves every carried remainder untouched.
   if (effectiveElapsedMs <= 0) {
+    const carriedMsByPartyId = Object.fromEntries(Object.entries(options.carriedMsByPartyId ?? {})
+      .map(([partyId, carriedMs]) => [partyId, normalizeCarriedMs(carriedMs)] as const)
+      .filter(([, carriedMs]) => carriedMs > 0));
     return {
       state,
       simulatedAt,
       chunkCount: 0,
-      carriedMsByPartyId: Object.fromEntries(Object.entries(options.carriedMsByPartyId ?? {})
-        .map(([partyId, carriedMs]) => [partyId, normalizeCarriedMs(carriedMs)] as const)
-        .filter(([, carriedMs]) => carriedMs > 0)),
-      data: { requestedElapsedSeconds, acceptedElapsedSeconds, cappedElapsedSeconds, elapsedSeconds, inGameTime: new Date(simulatedAt).toISOString(), parties: partyControls(state, simulatedAt, options.cycleDurationScale) },
+      carriedMsByPartyId,
+      data: { requestedElapsedSeconds, acceptedElapsedSeconds, cappedElapsedSeconds, elapsedSeconds, inGameTime: new Date(simulatedAt).toISOString(), parties: partyControls(state, simulatedAt, options.cycleDurationScale, carriedMsByPartyId) },
     };
   }
   const remainingMsByParty = stagedState.parties.map((party) => effectiveElapsedMs + normalizeCarriedMs(options.carriedMsByPartyId?.[String(party.id)]));
@@ -148,12 +149,17 @@ export async function stageApiV1ElapsedProgression(
       cappedElapsedSeconds,
       elapsedSeconds,
       inGameTime: new Date(simulatedAt).toISOString(),
-      parties: partyControls(stagedState, simulatedAt, options.cycleDurationScale),
+      parties: partyControls(stagedState, simulatedAt, options.cycleDurationScale, carriedMsByPartyId),
     },
   };
 }
 
 // SpecRef: 9.1.3 | 3-3-1 progress/elapsed | `parties`: each party's `currentHp`, `maximumHp`, `chargeStock`, and `controls` after the step
-function partyControls(state: GameState, simulatedAt: number, scale: number) {
-  return state.parties.map((party) => ({ partyNumber: party.id, ...getSortieControlFacts(party, simulatedAt, scale) }));
+// SpecRef: 9.1.4.4 | and its carried sub-Cycle progress with what is left of its next Cycle
+function partyControls(state: GameState, simulatedAt: number, scale: number, carriedMsByPartyId: Record<string, number>) {
+  return state.parties.map((party) => ({
+    partyNumber: party.id,
+    ...getSortieControlFacts(party, simulatedAt, scale),
+    ...getCycleTimingFacts(party, carriedMsByPartyId[String(party.id)] ?? 0, scale, state.global.deityDonations),
+  }));
 }

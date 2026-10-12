@@ -1,3 +1,4 @@
+import { getApproxAfkCycleDurationMs } from '../../game/afkScheduler.ts';
 import { isDungeonEntryUnlocked, isGodsBattleAvailable } from '../../game/clearGate.ts';
 import { getInstantExpeditionChargeState } from '../../game/instantExpedition.ts';
 import { computePartyStats } from '../../game/partyComputation.ts';
@@ -56,4 +57,19 @@ export function getSortieControlFacts(party: Party, nowMs: number, chargeDuratio
     return { available: reason === null, unavailableReason: reason };
   };
   return { currentHp: Math.max(0, Math.floor(party.currentHp)), maximumHp: Math.floor(maximumHp), chargeStock, controls: { sortie: control(false), godsBattle: control(true) } };
+}
+
+export interface CycleTimingFacts {
+  carriedSeconds: number;
+  secondsToNextCycle: number;
+}
+
+// SpecRef: 9.1.4.4 | the carried sub-Cycle progress, and what is left of the party's next `elapsed` Cycle
+/**
+ * The effective time a party carries toward its next Cycle and about how much more completes it: the Cycle priced from the
+ * party as it stands, as the next `elapsed` Chunk would price it. A completed Cycle ends at maximum HP.
+ */
+export function getCycleTimingFacts(party: Party, carriedMs: number, cycleDurationScale: number, deityDonations: Record<string, number> | undefined): CycleTimingFacts {
+  const cycleMs = getApproxAfkCycleDurationMs(party, cycleDurationScale, { deityDonations });
+  return { carriedSeconds: Math.floor(carriedMs / 1_000), secondsToNextCycle: Math.ceil(Math.max(0, cycleMs - carriedMs) / 1_000) };
 }

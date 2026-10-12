@@ -76,9 +76,10 @@ rejects({ targets: equipmentTargets, unknownMember: true }, 'invalid_request:unk
 // The search improves a stripped party, verifies it on a fresh seed, and repeats exactly for the same seed.
 const outcome = await search(base, { targets: equipmentTargets, gaParameters: small });
 {
-  const data = outcome.data as { verdict: string; changeSummary: { endpoint: string; parameters: Record<string, unknown> }[]; forecast: { before: string; after: string }; verification: { before: number; after: number } };
+  const data = outcome.data as { verdict: string; changeSummary: { endpoint: string; parameters: Record<string, unknown> }[]; forecast: { before: string; after: string }; verification: { scoredBy: string; before: number; after: number } };
   assert.ok(data.verdict === 'veryGood' || data.verdict === 'good', `verdict ${data.verdict}`);
   assert.ok(data.verification.after > data.verification.before);
+  assert.equal(data.verification.scoredBy, 'success', 'a build that succeeds is judged on its success rate');
   assert.ok(data.changeSummary.length > 0);
   assert.ok(data.changeSummary.every((entry) => entry.endpoint.startsWith('commit/build/character/') && entry.endpoint.endsWith('/equip')), 'only equip calls for an empty party');
   assert.match(data.forecast.before, /^Success [0-9.]+% \/ Draw/);
@@ -100,6 +101,11 @@ assert.equal(rateGaResult('minDefeat', { rate: 0.3, variance: 0.21 }, { rate: 0.
 assert.equal(rateGaResult('experience', { rate: 100, variance: 400 }, { rate: 115, variance: 400 }, 500, true).verdict, 'good');
 assert.equal(rateGaResult('experience', { rate: 100, variance: 400 }, { rate: 125, variance: 400 }, 500, true).verdict, 'veryGood');
 assert.equal(rateGaResult('success', { rate: 0.4, variance: 0.24 }, { rate: 0.4, variance: 0.24 }, 500, false).verdict, 'noChange');
+// `progress` is rated like `success`: percentage points of the route, 10 of them for `veryGood`.
+assert.equal(rateGaResult('progress', { rate: 0.5, variance: 0.01 }, { rate: 0.62, variance: 0.01 }, 500, true).verdict, 'veryGood');
+assert.equal(rateGaResult('progress', { rate: 0.5, variance: 0.01 }, { rate: 0.55, variance: 0.01 }, 500, true).verdict, 'good');
+assert.equal(rateGaResult('progress', { rate: 0.5, variance: 0.01 }, { rate: 0.4, variance: 0.01 }, 500, true).verdict, 'worse');
+assert.equal(rateGaResult('success', { rate: 0, variance: 0 }, { rate: 0, variance: 0 }, 500, true).verdict, 'noisy', 'two zero success rates tell nothing');
 
 // ---------------- applyBuildResult ----------------
 
@@ -341,6 +347,24 @@ fails({ buildResultId: stored.buildResultId, simulation: false }, 'illegal_actio
   const verifyBefore = await simulateExpeditionRuns(prepared, 0, 'mode.normal', verification.runs, undefined, 0, deriveSeed(small.seed, 3), { bossRoomOnly: true });
   assert.equal(verification.before, measureObjective('bossDamage', verifyBefore, 0).rate);
   assert.equal((searched.data.forecast as { before: string }).before, buildSimulationRunData(verifyBefore, 0, 'check').overview);
+}
+
+// ---------------- `success` at 0 on both builds: the verdict is judged on `progress` (Spec 9.1.3, 2-3-2) ----------------
+{
+  // A fresh party on the whole of Expedition 1, every gate open, never beats the boss: both builds stay at 0 successes, so
+  // only `progress` can tell them apart (it used to be `noisy` 0 → 0).
+  const fresh = createFreshGameState('ja', now);
+  const hopeless = prepareObjectiveState(fresh, 0, 'bossDamage');
+  const targets = hopeless.parties[0].characters.map((character) => ({ characterId: character.id, changeableComponents: { equipment: true } }));
+  const searched = await search(hopeless, { targets, gaParameters: small });
+  const verification = searched.data.verification as { objective: string; scoredBy: string; runs: number; before: number; after: number; gain: number; standardError: number };
+  assert.deepEqual([verification.objective, verification.scoredBy], ['success', 'progress']);
+  const verifyBefore = await simulateExpeditionRuns(hopeless, 0, 'mode.normal', verification.runs, undefined, 0, deriveSeed(small.seed, 3));
+  assert.equal(measureObjective('success', verifyBefore, 0).rate, 0);
+  assert.equal(verification.before, measureObjective('progress', verifyBefore, routeRoomCount(hopeless.parties[0])).rate, '`before` is the current build\'s progress');
+  assert.ok(['veryGood', 'good'].includes(String(searched.data.verdict)), `verdict ${searched.data.verdict}`);
+  assert.ok(verification.after > verification.before && verification.gain > 2 * verification.standardError && verification.standardError > 0);
+  assert.equal(verification.gain, Math.round((verification.after - verification.before) * 1e4) / 100, 'the gain in percentage points of progress');
 }
 
 // ---------------- `simulationRun` `objective` and `seed` (Spec 9.1.3, 2-2-3) ----------------

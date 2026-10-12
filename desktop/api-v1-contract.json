@@ -22534,6 +22534,7 @@
               "type": "object",
               "required": [
                 "objective",
+                "scoredBy",
                 "runs",
                 "before",
                 "after",
@@ -22558,6 +22559,30 @@
                     },
                     {
                       "const": "experience",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "scoredBy": {
+                  "anyOf": [
+                    {
+                      "const": "success",
+                      "type": "string"
+                    },
+                    {
+                      "const": "minDefeat",
+                      "type": "string"
+                    },
+                    {
+                      "const": "bossDamage",
+                      "type": "string"
+                    },
+                    {
+                      "const": "experience",
+                      "type": "string"
+                    },
+                    {
+                      "const": "progress",
                       "type": "string"
                     }
                   ]
@@ -22752,6 +22777,7 @@
                   "type": "object",
                   "required": [
                     "objective",
+                    "scoredBy",
                     "runs",
                     "before",
                     "after",
@@ -22776,6 +22802,30 @@
                         },
                         {
                           "const": "experience",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "scoredBy": {
+                      "anyOf": [
+                        {
+                          "const": "success",
+                          "type": "string"
+                        },
+                        {
+                          "const": "minDefeat",
+                          "type": "string"
+                        },
+                        {
+                          "const": "bossDamage",
+                          "type": "string"
+                        },
+                        {
+                          "const": "experience",
+                          "type": "string"
+                        },
+                        {
+                          "const": "progress",
                           "type": "string"
                         }
                       ]
@@ -22871,6 +22921,7 @@
             "buildResultId": "xxxxxxx",
             "verification": {
               "objective": "success",
+              "scoredBy": "success",
               "runs": 1,
               "before": 0,
               "after": 0,
@@ -25285,6 +25336,8 @@
             "gain",
             "standardError",
             "bottleneckRoom",
+            "bottleneckCounters",
+            "candidatesTried",
             "steps",
             "changeSummary",
             "revision",
@@ -25358,6 +25411,77 @@
                   "type": "null"
                 }
               ]
+            },
+            "bottleneckCounters": {
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "ability",
+                  "answers",
+                  "status"
+                ],
+                "properties": {
+                  "ability": {
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "answers": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    }
+                  },
+                  "status": {
+                    "anyOf": [
+                      {
+                        "const": "owned",
+                        "type": "string"
+                      },
+                      {
+                        "const": "tried",
+                        "type": "string"
+                      },
+                      {
+                        "const": "notTried",
+                        "type": "string"
+                      },
+                      {
+                        "const": "noItem",
+                        "type": "string"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "candidatesTried": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "offenseElement",
+                "defenseElement",
+                "ability"
+              ],
+              "properties": {
+                "offenseElement": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "defenseElement": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "ability": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
             },
             "steps": {
               "additionalProperties": false,
@@ -25710,6 +25834,8 @@
                 "gain",
                 "standardError",
                 "bottleneckRoom",
+                "bottleneckCounters",
+                "candidatesTried",
                 "steps",
                 "changeSummary",
                 "revision",
@@ -25783,6 +25909,77 @@
                       "type": "null"
                     }
                   ]
+                },
+                "bottleneckCounters": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "ability",
+                      "answers",
+                      "status"
+                    ],
+                    "properties": {
+                      "ability": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "answers": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "status": {
+                        "anyOf": [
+                          {
+                            "const": "owned",
+                            "type": "string"
+                          },
+                          {
+                            "const": "tried",
+                            "type": "string"
+                          },
+                          {
+                            "const": "notTried",
+                            "type": "string"
+                          },
+                          {
+                            "const": "noItem",
+                            "type": "string"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "candidatesTried": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "offenseElement",
+                    "defenseElement",
+                    "ability"
+                  ],
+                  "properties": {
+                    "offenseElement": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "defenseElement": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "ability": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
                 },
                 "steps": {
                   "additionalProperties": false,
@@ -26134,6 +26331,20 @@
             "gain": 1,
             "standardError": 0,
             "bottleneckRoom": "1f-1",
+            "bottleneckCounters": [
+              {
+                "ability": "xxxxxxx",
+                "answers": [
+                  "xxxxxxx"
+                ],
+                "status": "owned"
+              }
+            ],
+            "candidatesTried": {
+              "offenseElement": 0,
+              "defenseElement": 0,
+              "ability": 0
+            },
             "steps": {
               "offenseElement": [
                 {
@@ -31723,7 +31934,9 @@
                   "currentHp",
                   "maximumHp",
                   "chargeStock",
-                  "controls"
+                  "controls",
+                  "carriedSeconds",
+                  "secondsToNextCycle"
                 ],
                 "properties": {
                   "partyNumber": {
@@ -31840,6 +32053,14 @@
                         }
                       }
                     }
+                  },
+                  "carriedSeconds": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "secondsToNextCycle": {
+                    "minimum": 0,
+                    "type": "integer"
                   }
                 }
               }
@@ -31928,7 +32149,9 @@
                       "currentHp",
                       "maximumHp",
                       "chargeStock",
-                      "controls"
+                      "controls",
+                      "carriedSeconds",
+                      "secondsToNextCycle"
                     ],
                     "properties": {
                       "partyNumber": {
@@ -32045,6 +32268,14 @@
                             }
                           }
                         }
+                      },
+                      "carriedSeconds": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "secondsToNextCycle": {
+                        "minimum": 0,
+                        "type": "integer"
                       }
                     }
                   }
@@ -32156,7 +32387,9 @@
                     "available": true,
                     "unavailableReason": "gods_battle_unavailable"
                   }
-                }
+                },
+                "carriedSeconds": 0,
+                "secondsToNextCycle": 0
               }
             ]
           }
@@ -32766,7 +32999,9 @@
             "currentHp",
             "maximumHp",
             "chargeStock",
-            "controls"
+            "controls",
+            "carriedSeconds",
+            "secondsToNextCycle"
           ],
           "properties": {
             "summary": {
@@ -32959,6 +33194,14 @@
                   }
                 }
               }
+            },
+            "carriedSeconds": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "secondsToNextCycle": {
+              "minimum": 0,
+              "type": "integer"
             }
           }
         },
@@ -33011,7 +33254,9 @@
                 "currentHp",
                 "maximumHp",
                 "chargeStock",
-                "controls"
+                "controls",
+                "carriedSeconds",
+                "secondsToNextCycle"
               ],
               "properties": {
                 "summary": {
@@ -33204,6 +33449,14 @@
                       }
                     }
                   }
+                },
+                "carriedSeconds": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "secondsToNextCycle": {
+                  "minimum": 0,
+                  "type": "integer"
                 }
               }
             },
@@ -33318,7 +33571,9 @@
                 "available": true,
                 "unavailableReason": "gods_battle_unavailable"
               }
-            }
+            },
+            "carriedSeconds": 0,
+            "secondsToNextCycle": 0
           }
         }
       }
@@ -33392,7 +33647,9 @@
             "currentHp",
             "maximumHp",
             "chargeStock",
-            "controls"
+            "controls",
+            "carriedSeconds",
+            "secondsToNextCycle"
           ],
           "properties": {
             "outcome": {
@@ -33565,6 +33822,14 @@
                   }
                 }
               }
+            },
+            "carriedSeconds": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "secondsToNextCycle": {
+              "minimum": 0,
+              "type": "integer"
             }
           }
         },
@@ -33619,7 +33884,9 @@
                 "currentHp",
                 "maximumHp",
                 "chargeStock",
-                "controls"
+                "controls",
+                "carriedSeconds",
+                "secondsToNextCycle"
               ],
               "properties": {
                 "outcome": {
@@ -33792,6 +34059,14 @@
                       }
                     }
                   }
+                },
+                "carriedSeconds": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "secondsToNextCycle": {
+                  "minimum": 0,
+                  "type": "integer"
                 }
               }
             },
@@ -33901,7 +34176,9 @@
                 "available": true,
                 "unavailableReason": "gods_battle_unavailable"
               }
-            }
+            },
+            "carriedSeconds": 0,
+            "secondsToNextCycle": 0
           }
         }
       }
