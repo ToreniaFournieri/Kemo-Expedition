@@ -187,11 +187,11 @@ Legend:
 
 1. **`a.wind-rider` in 6.1.** Resolved: 6.1 now gives `+1d3` on tailwind, `+2d3` with `a.wind-rider`, matching the glossary and the native code.
 2. **`a.wind-rider` is a trade-off ability.** It improves tailwind but makes `heavy-wind` ranged x0.50. It is not a pure counter.
-3. **`terrain.rotwood`.** Resolved in spec: `Goddess of Restoration`, `a.first-aid`, `a.regeneration` and `a.life-drain` are disabled. Runtime change pending: `postBattleEffects.ts` and the native engine only handle Restoration.
+3. **`terrain.rotwood`.** Resolved in spec and runtime (build 43): `Goddess of Restoration`, `a.first-aid`, `a.regeneration` and `a.life-drain` are disabled.
 4. **`a.counter` vs magic.** `f.counter` is limited to `ranged` / `melee` attack types, but the Counter block (6.1 line 437) has no explicit type gate. Confirm that magic does not trigger `a.counter`.
 5. **Spec exception typos.** Resolved: bind now checks the opponent's `a.null-bind`, requiem checks the opponent's `a.null-requiem`, and `a.null-requiem` was added to the glossary (it already exists in code). Open: corrode, life-drain and death-touch exceptions still say "actor has" although the immune side is the opponent.
 6. **`a.domain-breaker`.** Partly present already: 6.1 handled floor, cap, echo and the hit override. Resolved: `terrain.silence-field` now also exempts `a.domain-breaker` holders. `terrain.spell-domain` is missing from the native START "prevented" log list (hit override itself is handled).
-7. **`a.illusion` vs `sniper-domain`.** Resolved in spec: `terrain.sniper-domain` wins, illusion is not consumed. Runtime change pending: the native engine currently checks illusion in its own path.
+7. **`a.illusion` vs `sniper-domain`.** Resolved in spec and runtime (build 43): `terrain.sniper-domain` wins, illusion is not consumed.
 8. **`terrain.silence-field` text.** The glossary says no `[効]` ability triggers; 6.1 says it skips the "actor abilities" section only, except for `a.equation-breaker` holders. Check whether START-phase timed abilities (defender, absorb, etc.) are skipped.
 9. **`a.stealth` Murid.** Spec treats it as party-only in one note and enemy-capable in the log. The `a.pursuit` counter applies in both cases.
 10. **Gaps.** No explicit counters exist for `decay`, `heatwave`, `leakage`, `exposure`, `dark-field`, `frenzy`, `predation`, `sacred-judgement`, `conduction`, `thunderstorm`, `chain-lightning`, `chill`, `looping-path`, `transcendence`, `gehenna`. Decide which should stay as pure build choices.

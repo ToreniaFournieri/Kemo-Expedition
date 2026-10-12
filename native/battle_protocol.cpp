@@ -1795,13 +1795,14 @@ CombatResult resolve_normal_combat(const InputHeader& input, BattleStateCore& st
         const u32 hit_attempts = actor->side == Side::Enemy ? 1 : attempts;
         bool illusion_negated = false;
         bool party_illusion_active = false;
-        if (profile_index == 0 && actor->side == Side::Enemy && !state.party_illusion_consumed) {
+        const bool sniper_domain_priority = domain_guarantees_hit(input, *actor, *target, 0) && profile_index == 0;
+        if (profile_index == 0 && actor->side == Side::Enemy && !state.party_illusion_consumed && !sniper_domain_priority) {
           for (int index = 0; index < state.combatant_count; ++index) {
             const auto& candidate = state.combatants[index];
             if (candidate.side == Side::Party && active_ability_level(candidate, protocol::AbilityId::Illusion) >= 2) party_illusion_active = true;
           }
         }
-        const bool personal_illusion_active = profile_index == 0 && active_ability_level(*target, protocol::AbilityId::Illusion) > 0 && !target->illusion_consumed;
+        const bool personal_illusion_active = profile_index == 0 && !sniper_domain_priority && active_ability_level(*target, protocol::AbilityId::Illusion) > 0 && !target->illusion_consumed;
         if (party_illusion_active || personal_illusion_active) {
           if (active_ability_level(*actor, protocol::AbilityId::IllusionBreaker) > 0) {
             if (party_illusion_active) state.party_illusion_consumed = true;
@@ -2184,6 +2185,7 @@ CombatResult emit_reactive_strike(const InputHeader& input, BattleStateCore& sta
                                   ReactiveStrikeResult& result) {
   if (result.attempts == 0xffff'ffffu) return CombatResult::TapeExhausted;
   if (attack_type == 1 && action_id == static_cast<u32>(protocol::ActionId::Counter) && result.hits > 0 &&
+      !domain_guarantees_hit(input, actor, target, 0) &&
       active_ability_level(target, protocol::AbilityId::Illusion) > 0 && !target.illusion_consumed) {
     target.illusion_consumed = true;
     result.calculated = 0.0;
@@ -2241,7 +2243,7 @@ CombatResult apply_close_checkpoint(const InputHeader&, BattleStateCore& state,
     if (!blocked) target.offense_multiplier *= corrode[corrode_level >= 5 ? 4 : corrode_level - 1];
   }
   const int drain_level = active_ability_level(actor, protocol::AbilityId::LifeDrain);
-  if (drain_level > 0 && result.applied > 0.0) {
+  if (drain_level > 0 && result.applied > 0.0 && state.terrain_id != static_cast<u16>(protocol::TerrainId::Rotwood)) {
     const bool blocked = active_ability_level(target, protocol::AbilityId::NullLifeDrain) > 0;
     if (blocked) {
       if (!emit_state_event(state, protocol::EventOpcode::Nullified, 2, actor.id, target.id,
@@ -2446,7 +2448,7 @@ CombatResult resolve_timed_combat_slot(const InputHeader& input, BattleStateCore
   };
 
   auto trigger_regeneration = [&]() -> CombatResult {
-    if (attack != 3 || timing != 3) return CombatResult::Ok;
+    if (attack != 3 || timing != 3 || input.terrain_id == static_cast<u16>(protocol::TerrainId::Rotwood)) return CombatResult::Ok;
     const int regen[] = {10,15,19,22,24}; const int l = active_ability_level(enemy, protocol::AbilityId::Regeneration); if (l > 0 && enemy.damage_taken > 0) { const double h = apply_checkpoint_heal(state, enemy, __builtin_floor(enemy.damage_taken * level_value(l, regen, 5) / 100.0)); if (h > 0 && !emit(enemy, nullptr, protocol::AbilityId::Regeneration, 3, h)) return CombatResult::EventCapacity; } for (u32 i=0;i<party_count;++i) { auto& o=*parties[i]; const int pl=active_ability_level(o,protocol::AbilityId::Regeneration); if(pl>0&&state.party_damage_taken>0){const double h=apply_checkpoint_heal(state,o,__builtin_floor(state.party_damage_taken*level_value(pl,regen,5)/100.0));if(h>0&&!emit(o,nullptr,protocol::AbilityId::Regeneration,3,h))return CombatResult::EventCapacity;}}
     return CombatResult::Ok;
   };
@@ -2537,7 +2539,8 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
     state.events[state.event_count - 1].attempts = result.attempts;
     if (profile_index == 0) {
       bool party_illusion_active = false;
-      if (target.side == Side::Party && !state.party_illusion_consumed) {
+      const bool sniper_domain_priority = domain_guarantees_hit(input, actor, target, 0);
+      if (target.side == Side::Party && !state.party_illusion_consumed && !sniper_domain_priority) {
         for (u32 index = 0; index < party_count; ++index) {
           if (active_ability_level(*parties[index], protocol::AbilityId::Illusion) >= 2) {
             party_illusion_active = true;
@@ -2545,7 +2548,7 @@ CombatResult resolve_reactive_combat(const InputHeader& input, BattleStateCore& 
           }
         }
       }
-      const bool personal_illusion_active = active_ability_level(target, protocol::AbilityId::Illusion) > 0 &&
+      const bool personal_illusion_active = !sniper_domain_priority && active_ability_level(target, protocol::AbilityId::Illusion) > 0 &&
           !target.illusion_consumed;
       if (party_illusion_active || personal_illusion_active) {
         const bool broken = active_ability_level(actor, protocol::AbilityId::IllusionBreaker) > 0;
@@ -3156,6 +3159,7 @@ int battle_protocol_execute(u32 byte_length) {
   reset(state);
   state.party_hp = input->party_hp;
   state.party_max_hp = input->party_max_hp;
+  state.terrain_id = input->terrain_id;
   state.enemy_hp = input->enemy_hp;
   state.enemy_max_hp = input->enemy_max_hp;
   state.consume_random_flavor = end_checkpoint;
