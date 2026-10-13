@@ -40,7 +40,7 @@ def autoga():
         print('  '+'\n  '.join(r.stdout.strip().split('\n')[:40]),flush=True)
         gakey=key; nst=0
         open(os.environ['BOKEMO_PLAY_DIR']+'/replan.log','a').write(str(key)+'\n'+r.stdout+'\n')
-obs(); last=None
+obs(); gakey=(last[0][0],last[0][2]) if last else None; last=None   # seed the gate key so the first floor change re-plans
 for i in range(n):
     S=max(60,stnc) if stnc is not None else S0
     r=el(S)

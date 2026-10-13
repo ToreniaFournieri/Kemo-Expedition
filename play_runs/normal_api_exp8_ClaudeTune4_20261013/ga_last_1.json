@@ -1,22 +1,67 @@
 {
- "verdict": "noChange",
+ "verdict": "veryGood",
  "forecast": {
-  "before": "Success 5.2% / Draw 0.6% / Retreat 67.6% / Defeat 26.6%",
-  "after": "Success 5.2% / Draw 0.6% / Retreat 67.6% / Defeat 26.6%"
+  "before": "Success 12.6% / Draw 2.0% / Retreat 41.6% / Defeat 43.8%",
+  "after": "Success 26.2% / Draw 3.4% / Retreat 23.6% / Defeat 46.8%"
  },
- "changeSummary": [],
- "revision": 340,
- "evaluations": 830,
- "elapsedSeconds": 305.5,
- "buildResultId": "93a2829b-c494-4ea9-ab56-ad052f35349a",
+ "changeSummary": [
+  {
+   "endpoint": "commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     3,
+     5
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/party/1",
+   "parameters": {
+    "deityId": "precision"
+   }
+  },
+  {
+   "endpoint": "commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": "0/3103/3/0",
+    "targetSlot": 4
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/3103/3/0",
+    "targetSlot": 3
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/4205/1/0",
+    "targetSlot": 5
+   }
+  }
+ ],
+ "revision": 533,
+ "evaluations": 667,
+ "elapsedSeconds": 307,
+ "buildResultId": "472a0ea8-d02a-41bc-a7b2-0f73a7dd4a69",
  "verification": {
   "objective": "success",
   "scoredBy": "success",
   "runs": 500,
-  "before": 0.052,
-  "after": 0.052,
-  "gain": 0,
-  "standardError": 0,
-  "seed": 622181636
+  "before": 0.126,
+  "after": 0.262,
+  "gain": 13.6,
+  "standardError": 2.46,
+  "seed": 1457224278
  }
 }

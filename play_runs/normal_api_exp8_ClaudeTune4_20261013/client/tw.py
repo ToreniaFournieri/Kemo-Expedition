@@ -22,7 +22,7 @@ if C!='-':
 else: na,rt=0,0.0
 if (rt is None and na==0) or (rt is not None and rt<GATH) or os.environ.get('FORCEGA')=='1':
     env=dict(os.environ); env['COMP']=env.get('COMP','equipment,jewels,mainClass,subClass,lineage,predisposition,raceGender')
-    if E=='big': env['GAX']='{"populationSize":64,"generations":200,"quickRuns":300,"confirmRuns":1000,"timeBudgetSeconds":300}'; eff='high'
+    if E=='big': env['GAX']='{"populationSize":64,"generations":200,"quickRuns":300,"confirmRuns":1000,"timeBudgetSeconds":'+os.environ.get("TBB","300")+'}'; eff='high'
     else: env['GAX']=env.get('GAX','{}'); eff=E
     r=subprocess.run(['python3','ga.py',O,eff],capture_output=True,text=True,cwd=H,env=env)
     print('GA '+'\n  '.join(l[:240] for l in r.stdout.strip().split('\n')[:5]),flush=True)

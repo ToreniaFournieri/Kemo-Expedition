@@ -30,3 +30,16 @@
 - **Container restart** at real 00:50 UTC during the D3 boss re-plan (after the bossDamage GA apply, call 470).
   Electron restarted with the same userData; first logIn returned 503 `runtime_unavailable` for a few seconds, then 200.
   The save kept everything up to the last commit (depth `all`, tuning + GA applies). Boss-only after farm + GA: kill 98.3 %; route 1.3 %.
+- D3 boss route GA x2: 0.6 -> 3.4 % (good), then noChange; route 7.3 %, boss-only 90 %. Clear on run 12: 10-14T14:35 (1.64 d, call 510).
+- D4 arrive: route 63 %, tunings 0/4 (counters a.anti-ambush / a.dryproof noItem), GA 68 -> 98 %.
+- hl2 bug (mine): the initial obs did not seed the AUTOGA gate key, so the first floor change after a loop start waited for
+  the NST stall (gate 2 sat 12 loops at 43 %). Fixed.
+- D4 gates 2-5: one tuning accepted per re-plan (r./e. switches), GAs 43 -> 62, 51 -> 57, 66 -> 89, 73 -> 89, 31 -> 65 %.
+  The GA took donors 103/105 (Party 2 unlocked, FULL mode, deity cunning). Freed PT2 (freept.py 2: 7 calls) at 10-15T04:01 (2.20 d).
+- Real time 01:50 UTC (2 h 50 m used). Gate GA budget cut to 180 s (TBB) to save real time.
+- D4 boss gate (2-streak): tuning + GA(180 s) noChange at 11.6 %, then 15 -> 41 %; opened 10-15T13:26 (2.60 d, call 738).
+  Boss-route GA at the open boss: before 0, after 0.2 % -> verdict `noisy`, scoredBy success (one success in 500 blocks the
+  build-45 progress verdict).
+- D4 boss: bossDamage tuning char 5 accepted e.ice + r.fire (+20 pt share, kill 0 -> 10.5 %), GA share 0.82 -> 0.99 (kill 90 %),
+  success GA route 12.6 -> 26 %. Clear on the 4th run 10-15T14:48 (2.65 d, call 761).
+- D5 arrive: route 100 % (no re-plan, 2 calls).
