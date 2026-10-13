@@ -1,144 +1,111 @@
 {
  "verdict": "veryGood",
  "forecast": {
-  "before": "Success 0.0% / Draw 0.0% / Retreat 35.8% / Defeat 64.2%",
-  "after": "Success 10.0% / Draw 3.0% / Retreat 56.0% / Defeat 31.0%"
+  "before": "Success 3.8% / Draw 6.2% / Retreat 62.8% / Defeat 27.2%",
+  "after": "Success 18.8% / Draw 6.6% / Retreat 53.4% / Defeat 21.2%"
  },
  "changeSummary": [
+  {
+   "endpoint": "commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     5
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     7
+    ]
+   }
+  },
   {
    "endpoint": "commit/build/character/6/removeEquipment",
    "parameters": {
     "targetEquipment": [
-     0,
+     1,
      6
     ]
    }
   },
   {
-   "endpoint": "commit/build/character/3/removeEquipment",
+   "endpoint": "commit/build/character/405/removeEquipment",
    "parameters": {
     "targetEquipment": [
-     1,
-     10
-    ]
-   }
-  },
-  {
-   "endpoint": "commit/build/character/1/removeEquipment",
-   "parameters": {
-    "targetEquipment": [
-     2,
-     13
-    ]
-   }
-  },
-  {
-   "endpoint": "commit/build/character/4/removeEquipment",
-   "parameters": {
-    "targetEquipment": [
-     0
-    ]
-   }
-  },
-  {
-   "endpoint": "commit/build/character/5/removeEquipment",
-   "parameters": {
-    "targetEquipment": [
-     7,
-     8
+     5
     ]
    }
   },
   {
    "endpoint": "commit/build/party/1",
    "parameters": {
-    "deityId": "fertility",
-    "order": [
-     1,
-     3,
-     2,
-     6,
-     4,
-     5
-    ]
+    "deityId": "precision"
    }
   },
   {
-   "endpoint": "commit/build/character/1/changeBuild",
+   "endpoint": "commit/build/character/2/changeBuild",
    "parameters": {
-    "mainClassId": "guardian",
+    "predisposition": "inquisitive",
     "simulation": false
    }
   },
   {
-   "endpoint": "commit/build/character/6/equip",
+   "endpoint": "commit/build/character/6/changeBuild",
    "parameters": {
-    "targetEquipment": "0/6103/4/0",
-    "targetSlot": 0
+    "mainClassId": "duelist",
+    "simulation": false
    }
   },
   {
-   "endpoint": "commit/build/character/6/equip",
+   "endpoint": "commit/build/character/4/changeBuild",
    "parameters": {
-    "targetEquipment": "0/6103/5/0",
-    "targetSlot": 6
-   }
-  },
-  {
-   "endpoint": "commit/build/character/3/equip",
-   "parameters": {
-    "targetEquipment": "0/5305/0/0",
-    "targetSlot": 1
+    "predisposition": "evasive",
+    "simulation": false
    }
   },
   {
    "endpoint": "commit/build/character/3/equip",
    "parameters": {
-    "targetEquipment": "0/4205/1/0",
-    "targetSlot": 10
+    "targetEquipment": "0/7101/3/0",
+    "targetSlot": 5
    }
   },
   {
-   "endpoint": "commit/build/character/1/equip",
+   "endpoint": "commit/build/character/2/equip",
    "parameters": {
-    "targetEquipment": "0/5102/4/0",
-    "targetSlot": 2
-   }
-  },
-  {
-   "endpoint": "commit/build/character/4/equip",
-   "parameters": {
-    "targetEquipment": "0/4203/0/0",
-    "targetSlot": 0
-   }
-  },
-  {
-   "endpoint": "commit/build/character/5/equip",
-   "parameters": {
-    "targetEquipment": "0/4110/2/0",
+    "targetEquipment": "0/7213/1/51",
     "targetSlot": 7
    }
   },
   {
-   "endpoint": "commit/build/character/5/equip",
+   "endpoint": "commit/build/character/6/equip",
    "parameters": {
-    "targetEquipment": "0/6304/1/0",
-    "targetSlot": 8
+    "targetEquipment": "0/7402/0/0",
+    "targetSlot": 1
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/3310/1/0",
+    "targetSlot": 6
    }
   }
  ],
- "revision": 1590,
- "evaluations": 1137,
- "elapsedSeconds": 206.4,
- "buildResultId": "5aa32f12-f936-4d89-a0f5-d6e416a386e7",
+ "revision": 2344,
+ "evaluations": 1070,
+ "elapsedSeconds": 210.1,
+ "buildResultId": "d2b2490b-c34b-44e1-8276-1fffb1f36c15",
  "verification": {
   "objective": "success",
   "scoredBy": "success",
   "runs": 500,
-  "before": 0,
-  "after": 0.1,
-  "gain": 10,
-  "standardError": 1.34,
-  "seed": 75819869
+  "before": 0.038,
+  "after": 0.188,
+  "gain": 15,
+  "standardError": 1.95,
+  "seed": 1107632670
  }
 }

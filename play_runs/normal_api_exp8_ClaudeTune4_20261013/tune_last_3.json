@@ -2,31 +2,16 @@
  "accepted": false,
  "objective": "bossDamage",
  "scoredBy": "bossDamage",
- "before": "Success 7.6% / Draw 53.0% / Retreat 0.0% / Defeat 39.4%",
- "after": "Success 7.6% / Draw 53.0% / Retreat 0.0% / Defeat 39.4%",
+ "before": "Success 0.0% / Draw 100.0% / Retreat 0.0% / Defeat 0.0%",
+ "after": "Success 0.0% / Draw 100.0% / Retreat 0.0% / Defeat 0.0%",
  "improvement": 0,
  "gain": 0,
- "standardError": 0.0058,
+ "standardError": 0.003,
  "bottleneckRoom": "6f-4",
- "bottleneckCounters": [
-  {
-   "ability": "a.illusion-breaker",
-   "answers": [
-    "a.illusion"
-   ],
-   "status": "noItem"
-  },
-  {
-   "ability": "a.domain-breaker",
-   "answers": [
-    "terrain.echo-domain"
-   ],
-   "status": "noItem"
-  }
- ],
+ "bottleneckCounters": [],
  "candidatesTried": {
   "offenseElement": 0,
-  "defenseElement": 8,
+  "defenseElement": 10,
   "ability": 8
  },
  "steps": {
@@ -36,8 +21,8 @@
   "finalTuning": []
  },
  "changeSummary": [],
- "revision": 1588,
- "simulationRuns": 6100,
- "elapsedSeconds": 2.3,
- "seed": 892075282
+ "revision": 2343,
+ "simulationRuns": 6700,
+ "elapsedSeconds": 2.5,
+ "seed": 846687755
 }

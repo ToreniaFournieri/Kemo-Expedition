@@ -1,90 +1,28 @@
 {
- "accepted": true,
+ "accepted": false,
  "objective": "bossDamage",
  "scoredBy": "bossDamage",
- "before": "Success 8.1% / Draw 52.5% / Retreat 0.0% / Defeat 39.4%",
- "after": "Success 22.6% / Draw 43.8% / Retreat 0.0% / Defeat 33.6%",
- "improvement": 0.6374,
- "gain": 0.0686,
- "standardError": 0.0049,
+ "before": "Success 0.0% / Draw 100.0% / Retreat 0.0% / Defeat 0.0%",
+ "after": "Success 0.0% / Draw 100.0% / Retreat 0.0% / Defeat 0.0%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.003,
  "bottleneckRoom": "6f-4",
- "bottleneckCounters": [
-  {
-   "ability": "a.illusion-breaker",
-   "answers": [
-    "a.illusion"
-   ],
-   "status": "noItem"
-  },
-  {
-   "ability": "a.domain-breaker",
-   "answers": [
-    "terrain.echo-domain"
-   ],
-   "status": "noItem"
-  }
- ],
+ "bottleneckCounters": [],
  "candidatesTried": {
-  "offenseElement": 5,
-  "defenseElement": 7,
-  "ability": 14
+  "offenseElement": 6,
+  "defenseElement": 6,
+  "ability": 18
  },
  "steps": {
   "offenseElement": [],
   "defenseElement": [],
-  "ability": [
-   {
-    "abilities": [
-     "a.anti-ambush"
-    ],
-    "improvement": 0.5461,
-    "changes": [
-     "8=0/4318/1/0"
-    ]
-   },
-   {
-    "abilities": [
-     "a.mana-ward"
-    ],
-    "improvement": 0.1104,
-    "changes": [
-     "8=0/2402/1/0"
-    ]
-   }
-  ],
-  "finalTuning": [
-   {
-    "step": "ability",
-    "index": 0,
-    "abilities": [
-     "a.anti-ambush"
-    ],
-    "improvement": 0.5922,
-    "changes": [
-     "8=0/4318/1/0"
-    ]
-   }
-  ]
+  "ability": [],
+  "finalTuning": []
  },
- "changeSummary": [
-  {
-   "endpoint": "commit/build/character/5/equip",
-   "parameters": {
-    "targetEquipment": "0/4318/1/0",
-    "targetSlot": 8
-   }
-  },
-  {
-   "endpoint": "commit/build/character/5/jewelAttach",
-   "parameters": {
-    "targetEquipment": 8,
-    "jewelToSet": "arcana:2"
-   }
-  }
- ],
- "revision": 1588,
- "simulationRuns": 11600,
+ "changeSummary": [],
+ "revision": 2343,
+ "simulationRuns": 10300,
  "elapsedSeconds": 4.4,
- "seed": 702566570,
- "buildResultId": "af9fea49-af3a-42e1-8e98-e152b1383aee"
+ "seed": 4257821639
 }

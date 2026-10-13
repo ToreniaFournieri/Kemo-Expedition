@@ -68,3 +68,13 @@
   (progress). Depth probe with the boss build: 4f-3 12 %, 5f-3 5 %, all 0 %, ~1,150 EXP/run.
 - Farm: success GA at 5f-3 3.6 -> 25 % (2,153 EXP/run incl. Retreats); farm loop STOPLV=30 with re-plans every 36 loops
   (60 -> 66, 66 -> 71, 72 -> 79 %): Lv27 79 % -> Lv30 from 10-20T~10:00 to 10-23T02:15 (10.13 d, call 2040), real 04:10.
+- D6 boss at Lv30: bossDamage tunings char 2 e.fire switch with two 6309 (+22.5 pt share), char 5 a.anti-ambush (+6.9 pt);
+  bossDamage GA kill 98 %; success GA 0 -> 10 %; boss-only 66 %, route 8 %. Clear on the 4th run 10-23T04:22 (10.22 d, call 2064).
+- D7 arrive 87 % (no re-plan); gates 2-5 with one GA each (77 -> 90, 82 -> 89, 56 -> 73 %, gate 5 noChange 19 % then cleared).
+  Boss gate (2-streak) 1 -> 3, 4 -> 4 (noisy), 11 (noChange): five GAs gave nothing. Stopped re-plans at real 04:48 and
+  ground the gate without GA: open after 1 game day (60 sorties) at 10-26T13:39 (13.60 d, call 2552, Lv32), 1 real minute.
+- D7 boss: boss-only share 0.37 (100 % Draw), route 0 %.
+- D7 boss re-plan at Lv32: tunings 0/4; bossDamage GA share 0.38 -> 0.62 (kill 0 %, Defeat 55 %); success GA scoredBy progress
+  0.23 -> 0.76 veryGood, but it reverted the boss build (share 0.37, 100 % Draw). Route-vs-boss conflict.
+- D7 farm 5f-3 (54 %, 2,869 EXP, 17.6 drops/run, no GA during the farm): 10-26T13:39 -> 10-29T12:12, Lv32 -> 33 43 %,
+  180 sortie runs, 2 real minutes (real 04:56).

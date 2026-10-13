@@ -1,129 +1,28 @@
 {
- "accepted": true,
+ "accepted": false,
  "objective": "bossDamage",
  "scoredBy": "bossDamage",
- "before": "Success 0.0% / Draw 31.1% / Retreat 0.0% / Defeat 68.9%",
- "after": "Success 5.9% / Draw 55.4% / Retreat 0.0% / Defeat 38.7%",
- "improvement": 1.2703,
- "gain": 0.2253,
- "standardError": 0.0051,
+ "before": "Success 0.0% / Draw 100.0% / Retreat 0.0% / Defeat 0.0%",
+ "after": "Success 0.0% / Draw 100.0% / Retreat 0.0% / Defeat 0.0%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.0031,
  "bottleneckRoom": "6f-4",
- "bottleneckCounters": [
-  {
-   "ability": "a.illusion-breaker",
-   "answers": [
-    "a.illusion"
-   ],
-   "status": "owned"
-  },
-  {
-   "ability": "a.domain-breaker",
-   "answers": [
-    "terrain.echo-domain"
-   ],
-   "status": "noItem"
-  }
- ],
+ "bottleneckCounters": [],
  "candidatesTried": {
-  "offenseElement": 6,
-  "defenseElement": 7,
-  "ability": 12
+  "offenseElement": 5,
+  "defenseElement": 10,
+  "ability": 14
  },
  "steps": {
-  "offenseElement": [
-   {
-    "element": "e.fire",
-    "improvement": 1.158,
-    "changes": [
-     "0=0/6309/1/0",
-     "3=0/6309/1/0",
-     "4=0/4213/2/0",
-     "10=0/5215/2/0"
-    ]
-   },
-   {
-    "element": "e.ice",
-    "improvement": 0.1,
-    "changes": [
-     "0=0/2213/2/0",
-     "3=0/2304/0/0"
-    ]
-   }
-  ],
+  "offenseElement": [],
   "defenseElement": [],
   "ability": [],
-  "finalTuning": [
-   {
-    "step": "offenseElement",
-    "index": 0,
-    "element": "e.fire",
-    "improvement": 1.2012,
-    "changes": [
-     "0=0/6309/1/0",
-     "3=0/6309/1/0",
-     "4=0/4213/2/0",
-     "10=0/5215/2/0"
-    ]
-   }
-  ]
+  "finalTuning": []
  },
- "changeSummary": [
-  {
-   "endpoint": "commit/build/character/2/removeEquipment",
-   "parameters": {
-    "targetEquipment": [
-     0,
-     3,
-     4
-    ]
-   }
-  },
-  {
-   "endpoint": "commit/build/character/2/equip",
-   "parameters": {
-    "targetEquipment": "0/6309/1/0",
-    "targetSlot": 0
-   }
-  },
-  {
-   "endpoint": "commit/build/character/2/equip",
-   "parameters": {
-    "targetEquipment": "0/6309/1/0",
-    "targetSlot": 3
-   }
-  },
-  {
-   "endpoint": "commit/build/character/2/equip",
-   "parameters": {
-    "targetEquipment": "0/4213/2/0",
-    "targetSlot": 4
-   }
-  },
-  {
-   "endpoint": "commit/build/character/2/equip",
-   "parameters": {
-    "targetEquipment": "0/5215/2/0",
-    "targetSlot": 10
-   }
-  },
-  {
-   "endpoint": "commit/build/character/2/jewelAttach",
-   "parameters": {
-    "targetEquipment": 0,
-    "jewelToSet": "shade:1"
-   }
-  },
-  {
-   "endpoint": "commit/build/character/2/jewelAttach",
-   "parameters": {
-    "targetEquipment": 10,
-    "jewelToSet": "might:1"
-   }
-  }
- ],
- "revision": 1587,
- "simulationRuns": 11300,
- "elapsedSeconds": 4.3,
- "seed": 1333086739,
- "buildResultId": "dc24c894-efee-44f3-96ea-8180211ea439"
+ "changeSummary": [],
+ "revision": 2343,
+ "simulationRuns": 10000,
+ "elapsedSeconds": 3.9,
+ "seed": 2397147082
 }
