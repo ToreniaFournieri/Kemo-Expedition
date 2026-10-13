@@ -1,50 +1,90 @@
 {
- "accepted": false,
- "objective": "success",
- "scoredBy": "success",
- "before": "Success 19.7% / Draw 3.9% / Retreat 40.1% / Defeat 36.3%",
- "after": "Success 19.7% / Draw 3.9% / Retreat 40.1% / Defeat 36.3%",
- "improvement": 0,
- "gain": 0,
- "standardError": 0.0178,
+ "accepted": true,
+ "objective": "bossDamage",
+ "scoredBy": "bossDamage",
+ "before": "Success 8.1% / Draw 52.5% / Retreat 0.0% / Defeat 39.4%",
+ "after": "Success 22.6% / Draw 43.8% / Retreat 0.0% / Defeat 33.6%",
+ "improvement": 0.6374,
+ "gain": 0.0686,
+ "standardError": 0.0049,
  "bottleneckRoom": "6f-4",
  "bottleneckCounters": [
   {
-   "ability": "a.bulwark-breaker",
+   "ability": "a.illusion-breaker",
    "answers": [
-    "a.bulwark"
-   ],
-   "status": "tried"
-  },
-  {
-   "ability": "a.fire-protect-breaker",
-   "answers": [
-    "a.fire-reflect"
+    "a.illusion"
    ],
    "status": "noItem"
   },
   {
-   "ability": "a.siege",
+   "ability": "a.domain-breaker",
    "answers": [
-    "terrain.fortified"
+    "terrain.echo-domain"
    ],
    "status": "noItem"
   }
  ],
  "candidatesTried": {
   "offenseElement": 5,
-  "defenseElement": 5,
-  "ability": 9
+  "defenseElement": 7,
+  "ability": 14
  },
  "steps": {
   "offenseElement": [],
   "defenseElement": [],
-  "ability": [],
-  "finalTuning": []
+  "ability": [
+   {
+    "abilities": [
+     "a.anti-ambush"
+    ],
+    "improvement": 0.5461,
+    "changes": [
+     "8=0/4318/1/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.mana-ward"
+    ],
+    "improvement": 0.1104,
+    "changes": [
+     "8=0/2402/1/0"
+    ]
+   }
+  ],
+  "finalTuning": [
+   {
+    "step": "ability",
+    "index": 0,
+    "abilities": [
+     "a.anti-ambush"
+    ],
+    "improvement": 0.5922,
+    "changes": [
+     "8=0/4318/1/0"
+    ]
+   }
+  ]
  },
- "changeSummary": [],
- "revision": 816,
- "simulationRuns": 7000,
- "elapsedSeconds": 13.7,
- "seed": 866032649
+ "changeSummary": [
+  {
+   "endpoint": "commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": "0/4318/1/0",
+    "targetSlot": 8
+   }
+  },
+  {
+   "endpoint": "commit/build/character/5/jewelAttach",
+   "parameters": {
+    "targetEquipment": 8,
+    "jewelToSet": "arcana:2"
+   }
+  }
+ ],
+ "revision": 1588,
+ "simulationRuns": 11600,
+ "elapsedSeconds": 4.4,
+ "seed": 702566570,
+ "buildResultId": "af9fea49-af3a-42e1-8e98-e152b1383aee"
 }

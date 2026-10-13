@@ -55,3 +55,16 @@
   29 -> 73 % (veryGood) and gate 5 + boss gate fell. Boss open 10-17T05:13 (4.25 d, call 1112).
 - D5 boss: no re-plan (boss-only 45.7 %, route 20.3 %). Clear on the first sortie 10-17T05:37 (4.27 d, call 1118).
 - Real time 03:00 UTC (4 h used); GA is 93 % of API real time, loops ~1 real min per game day.
+- D6 arrive 97 % (no re-plan). Gate 2: tuning 2 accepted + GA 78 -> 93 %. Gate 3 (5-streak) wall: 3.5 -> 12 -> 14 (noChange)
+  -> 16 -> 27 -> 44 -> 50 (noisy) -> 37 (noChange) % over 96 loops (Lv24 -> 25). Char 2 tuning tried 6309 a.illusion-breaker:
+  +32 % quick, +40 % step 5, step 6 gain +2 pt -> rejected. 33 of 143 tunings so far kept something in step 5 that step 6 rejected.
+- Real time 03:27 UTC (4 h 27 m used), in-game 10-18T10:01 (5.45 d), call 1369. Real time is now binding: loops cost ~1 real
+  min per game day, a GA 2.5-5 min. Switch: long loops, re-plan on gate change or every 36 loops, GA 150 s.
+- D6 long loop (NST 6, GA 150 s): gate 3 fell at Lv26 (10-18T~23:00), gate 4 GA 37 -> 49 %, gate 5 47 -> 56 % then noisy,
+  boss gate 5 -> 13 %, 8 -> 13 %; boss open 10-20T09:32 (7.43 d, call 1680, Lv27 79 %). Route GA at the open boss:
+  scoredBy progress (both 0), noChange.
+- D6 boss at Lv27: 2 bossDamage tunings accepted (e.fire switches, +6 pt share each; counter a.illusion-breaker `owned` by char 2,
+  a.domain-breaker noItem for echo-domain), bossDamage GA share 0.42 -> 0.82 but kill 4 % (Defeat 54 %), route GA noChange
+  (progress). Depth probe with the boss build: 4f-3 12 %, 5f-3 5 %, all 0 %, ~1,150 EXP/run.
+- Farm: success GA at 5f-3 3.6 -> 25 % (2,153 EXP/run incl. Retreats); farm loop STOPLV=30 with re-plans every 36 loops
+  (60 -> 66, 66 -> 71, 72 -> 79 %): Lv27 79 % -> Lv30 from 10-20T~10:00 to 10-23T02:15 (10.13 d, call 2040), real 04:10.

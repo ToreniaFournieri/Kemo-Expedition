@@ -1,81 +1,43 @@
 {
  "accepted": false,
- "objective": "success",
- "scoredBy": "success",
- "before": "Success 2.6% / Draw 5.0% / Retreat 38.0% / Defeat 54.4%",
- "after": "Success 2.6% / Draw 5.0% / Retreat 38.0% / Defeat 54.4%",
+ "objective": "bossDamage",
+ "scoredBy": "bossDamage",
+ "before": "Success 0.0% / Draw 31.6% / Retreat 0.0% / Defeat 68.4%",
+ "after": "Success 0.0% / Draw 31.6% / Retreat 0.0% / Defeat 68.4%",
  "improvement": 0,
  "gain": 0,
- "standardError": 0.0071,
+ "standardError": 0.0049,
  "bottleneckRoom": "6f-4",
  "bottleneckCounters": [
   {
-   "ability": "a.bulwark-breaker",
+   "ability": "a.illusion-breaker",
    "answers": [
-    "a.bulwark"
+    "a.illusion"
    ],
    "status": "noItem"
   },
   {
-   "ability": "a.fire-protect-breaker",
+   "ability": "a.domain-breaker",
    "answers": [
-    "a.fire-reflect"
-   ],
-   "status": "noItem"
-  },
-  {
-   "ability": "a.siege",
-   "answers": [
-    "terrain.fortified"
+    "terrain.echo-domain"
    ],
    "status": "noItem"
   }
  ],
  "candidatesTried": {
   "offenseElement": 0,
-  "defenseElement": 9,
-  "ability": 4
+  "defenseElement": 10,
+  "ability": 6
  },
  "steps": {
   "offenseElement": [],
-  "defenseElement": [
-   {
-    "resistance": [
-     "r.thunder",
-     "r.fire"
-    ],
-    "improvement": 0.375,
-    "changes": [
-     "3=0/3305/0/0"
-    ]
-   },
-   {
-    "resistance": [
-     "r.ice",
-     "r.fire"
-    ],
-    "improvement": 0.25,
-    "changes": [
-     "3=0/2205/0/0"
-    ]
-   }
-  ],
-  "ability": [
-   {
-    "abilities": [
-     "a.true-sight"
-    ],
-    "improvement": 0.25,
-    "changes": [
-     "3=0/1406/0/0"
-    ]
-   }
-  ],
+  "defenseElement": [],
+  "ability": [],
   "finalTuning": []
  },
  "changeSummary": [],
- "revision": 815,
- "simulationRuns": 7200,
- "elapsedSeconds": 15.2,
- "seed": 3438382205
+ "revision": 1587,
+ "simulationRuns": 6100,
+ "elapsedSeconds": 2.5,
+ "seed": 444264028
 }

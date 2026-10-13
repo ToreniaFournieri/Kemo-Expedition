@@ -1,123 +1,68 @@
 {
  "accepted": true,
- "objective": "success",
- "scoredBy": "success",
- "before": "Success 1.9% / Draw 6.1% / Retreat 37.4% / Defeat 54.6%",
- "after": "Success 21.8% / Draw 3.8% / Retreat 37.7% / Defeat 36.7%",
- "improvement": 10.4737,
- "gain": 0.199,
- "standardError": 0.0138,
+ "objective": "bossDamage",
+ "scoredBy": "bossDamage",
+ "before": "Success 0.0% / Draw 31.1% / Retreat 0.0% / Defeat 68.9%",
+ "after": "Success 5.9% / Draw 55.4% / Retreat 0.0% / Defeat 38.7%",
+ "improvement": 1.2703,
+ "gain": 0.2253,
+ "standardError": 0.0051,
  "bottleneckRoom": "6f-4",
  "bottleneckCounters": [
   {
-   "ability": "a.bulwark-breaker",
+   "ability": "a.illusion-breaker",
    "answers": [
-    "a.bulwark"
+    "a.illusion"
    ],
-   "status": "tried"
+   "status": "owned"
   },
   {
-   "ability": "a.fire-protect-breaker",
+   "ability": "a.domain-breaker",
    "answers": [
-    "a.fire-reflect"
+    "terrain.echo-domain"
    ],
    "status": "noItem"
-  },
-  {
-   "ability": "a.siege",
-   "answers": [
-    "terrain.fortified"
-   ],
-   "status": "tried"
   }
  ],
  "candidatesTried": {
-  "offenseElement": 4,
-  "defenseElement": 5,
-  "ability": 8
+  "offenseElement": 6,
+  "defenseElement": 7,
+  "ability": 12
  },
  "steps": {
   "offenseElement": [
    {
-    "element": "e.thunder",
-    "improvement": 0.5,
+    "element": "e.fire",
+    "improvement": 1.158,
     "changes": [
-     "8=0/3215/2/0"
-    ]
-   }
-  ],
-  "defenseElement": [
-   {
-    "resistance": [
-     "r.none"
-    ],
-    "improvement": 2.75,
-    "changes": [
-     "2=0/5312/0/0"
+     "0=0/6309/1/0",
+     "3=0/6309/1/0",
+     "4=0/4213/2/0",
+     "10=0/5215/2/0"
     ]
    },
    {
-    "resistance": [
-     "r.thunder",
-     "r.fire"
-    ],
-    "improvement": 1.75,
+    "element": "e.ice",
+    "improvement": 0.1,
     "changes": [
-     "1=0/3313/0/0"
+     "0=0/2213/2/0",
+     "3=0/2304/0/0"
     ]
    }
   ],
-  "ability": [
-   {
-    "abilities": [
-     "a.siege"
-    ],
-    "improvement": 15.5,
-    "changes": [
-     "9=0/5307/0/0"
-    ]
-   },
-   {
-    "abilities": [
-     "a.anti-overwatch"
-    ],
-    "improvement": 1.25,
-    "changes": [
-     "9=0/4303/1/0"
-    ]
-   },
-   {
-    "abilities": [
-     "a.wind-rider"
-    ],
-    "improvement": 0.5,
-    "changes": [
-     "9=0/1312/0/0"
-    ]
-   }
-  ],
+  "defenseElement": [],
+  "ability": [],
   "finalTuning": [
    {
-    "step": "ability",
+    "step": "offenseElement",
     "index": 0,
-    "abilities": [
-     "a.siege"
-    ],
-    "improvement": 14.1667,
+    "element": "e.fire",
+    "improvement": 1.2012,
     "changes": [
-     "9=0/5307/0/0"
-    ]
-   },
-   {
-    "step": "defenseElement",
-    "index": 1,
-    "resistance": [
-     "r.thunder",
-     "r.fire"
-    ],
-    "improvement": 17.1667,
-    "changes": [
-     "1=0/3313/0/0"
+     "0=0/6309/1/0",
+     "3=0/6309/1/0",
+     "4=0/4213/2/0",
+     "10=0/5215/2/0"
     ]
    }
   ]
@@ -127,29 +72,58 @@
    "endpoint": "commit/build/character/2/removeEquipment",
    "parameters": {
     "targetEquipment": [
-     1,
-     9
+     0,
+     3,
+     4
     ]
    }
   },
   {
    "endpoint": "commit/build/character/2/equip",
    "parameters": {
-    "targetEquipment": "0/3313/0/0",
-    "targetSlot": 1
+    "targetEquipment": "0/6309/1/0",
+    "targetSlot": 0
    }
   },
   {
    "endpoint": "commit/build/character/2/equip",
    "parameters": {
-    "targetEquipment": "0/5307/0/0",
-    "targetSlot": 9
+    "targetEquipment": "0/6309/1/0",
+    "targetSlot": 3
+   }
+  },
+  {
+   "endpoint": "commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": "0/4213/2/0",
+    "targetSlot": 4
+   }
+  },
+  {
+   "endpoint": "commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": "0/5215/2/0",
+    "targetSlot": 10
+   }
+  },
+  {
+   "endpoint": "commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 0,
+    "jewelToSet": "shade:1"
+   }
+  },
+  {
+   "endpoint": "commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 10,
+    "jewelToSet": "might:1"
    }
   }
  ],
- "revision": 815,
- "simulationRuns": 10900,
- "elapsedSeconds": 22.5,
- "seed": 2208417127,
- "buildResultId": "fdad1d6a-0caf-4341-9ede-d0190132445b"
+ "revision": 1587,
+ "simulationRuns": 11300,
+ "elapsedSeconds": 4.3,
+ "seed": 1333086739,
+ "buildResultId": "dc24c894-efee-44f3-96ea-8180211ea439"
 }
