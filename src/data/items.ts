@@ -264,6 +264,12 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
   '反乱の手引': [{ type: 'ability', value: 1, abilityId: 'defiance', abilityLevel: 1 }],
 };
 
+// Special bonuses of items that share a name with another special item; they take priority over the name table.
+const ITEM_ADDITIONAL_BONUS_BY_ID: Record<number, Bonus[]> = {
+  // 小刀: 1405 is `a.vine-cutter` (name table), 3306 is `a.null-bind`.
+  3306: [{ type: 'ability', value: 1, abilityId: 'null_bind', abilityLevel: 1 }],
+};
+
 const ITEM_CORE_CONCEPT_KEYS: Record<ItemCategory, Array<keyof ItemDef>> = {
   armor: ['physicalDefense'],
   robe: ['magicalDefense'],
@@ -300,7 +306,7 @@ function stripItemToCoreConcept(item: ItemDef): void {
 
 // SpecRef: 3.2.1 | Item drop | Special Bonus Override
 function applyAdditionalItemBonus(item: ItemDef): void {
-  const additionalBonuses = ITEM_ADDITIONAL_BONUS_BY_NAME[item.name];
+  const additionalBonuses = ITEM_ADDITIONAL_BONUS_BY_ID[item.id] ?? ITEM_ADDITIONAL_BONUS_BY_NAME[item.name];
   if (!additionalBonuses || additionalBonuses.length === 0) return;
 
   // Special items only keep their core concept plus the special-bonus.

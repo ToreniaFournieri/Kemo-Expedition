@@ -1,12 +1,14 @@
-import { getDungeonById } from '../../data/dungeons';
-import { getSuperRareBonuses } from '../../data/items';
+import { DUNGEONS, getDungeonById } from '../../data/dungeons';
+import { getSuperRareBonuses, ITEMS } from '../../data/items';
 import { computeCharacterStats } from '../../game/characterComputation';
 import { canCharacterEquipCategory } from '../../game/equipmentSets';
 import { listExpeditionRoomEnemyCandidates } from '../../game/expeditionBattleRoom';
 import { getExpeditionSimulationRoomCoordinate } from '../../game/expeditionSimulation';
 import { getItemBasePower } from '../../game/itemPower';
+import { getItemRarityById } from '../../game/itemRarity';
 import { AUTO_JEWEL_ASSIGNMENT_CATEGORY_ORDER, AUTO_JEWEL_KEY_BY_ITEM_CATEGORY } from '../../game/jewel';
 import { getCharacterMultiplier } from '../../game/partyComputation';
+import { getItemTier } from '../../game/pricing';
 import {
   getVariantKey, type AbilityId, type Bonus, type Character, type ElementalOffense, type ElementalResistance, type EnemyDef,
   type ExpeditionSimulationResult, type GameState, type Item, type ItemCategory,
@@ -493,6 +495,52 @@ export function bottleneckCounterRows(enemyAbilities: ReadonlySet<string>, terra
   return [...rows].map(([ability, answers]) => ({ ability, answers }));
 }
 
+// ---------------- Counter sources ----------------
+
+/** Whether the Debug "Display all Compendium" / "Display all Bestiary" settings disclose every item / enemy (9.1.4.7). */
+export interface CounterSourceDisclosure { allItems: boolean; allEnemies: boolean }
+
+export interface CounterItemSource {
+  itemId: number;
+  tier: number;
+  itemRarity: string;
+  droppedBy: { expedition: number; enemyId: number; rooms: string[] }[];
+}
+
+/**
+ * SpecRef: 9.1.4.9 | stagedEquipmentTuning | `bottleneckCounters[].sources`: the revealed items that grant `ability`, the
+ * highest tier first, each with the encountered enemies that drop it and the rooms of each expedition where they appear.
+ * Nothing undisclosed (9.1.4.7): an unrevealed item and an enemy never encountered are left out.
+ */
+export function counterItemSources(state: GameState, ability: string, disclosure: CounterSourceDisclosure): CounterItemSource[] {
+  const revealed = new Set(state.global.revealedItemCompendiumItemIds ?? []);
+  const sources = new Map<number, CounterItemSource>();
+  for (const item of ITEMS) {
+    if (sources.has(item.id) || !(disclosure.allItems || revealed.has(item.id))) continue;
+    if (!(item.bonuses ?? []).some((bonus) => bonus.type === 'ability' && bonus.abilityId === ability)) continue;
+    sources.set(item.id, { itemId: item.id, tier: getItemTier(item.id), itemRarity: getItemRarityById(item.id), droppedBy: [] });
+  }
+  if (sources.size === 0) return [];
+  const encountered = (enemyId: number) => disclosure.allEnemies || (state.global.enemyBattleStats?.[enemyId]?.encounters ?? 0) > 0;
+  for (const dungeon of DUNGEONS) {
+    for (const floor of dungeon.floors) {
+      floor.rooms.forEach((room, index) => {
+        for (const enemy of listExpeditionRoomEnemyCandidates(room, floor.floorNumber)) {
+          if (!encountered(enemy.id)) continue;
+          for (const itemId of new Set(enemy.itemIds)) {
+            const source = sources.get(itemId);
+            if (!source) continue;
+            let entry = source.droppedBy.find((drop) => drop.expedition === dungeon.id && drop.enemyId === enemy.id);
+            if (!entry) source.droppedBy.push(entry = { expedition: dungeon.id, enemyId: enemy.id, rooms: [] });
+            entry.rooms.push(`${floor.floorNumber}f-${index + 1}`);
+          }
+        }
+      });
+    }
+  }
+  return [...sources.values()].sort((a, b) => b.tier - a.tier || a.itemId - b.itemId);
+}
+
 // ---------------- Scores ----------------
 
 /**
@@ -788,6 +836,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
     status: coveredCounter(ability) ? 'owned'
       : triedAbilities.has(ability) ? 'tried'
         : [...byItem.values()].some((key) => (model.facts.get(key)!.abilities as readonly string[]).includes(ability)) ? 'notTried' : 'noItem',
+    sources: counterItemSources(state, ability, dependencies.disclosure ?? { allItems: false, allEnemies: false }),
   }));
 
   // 5. Final tuning: a greedy add pass over every recorded candidate, then a swap pass for the element steps.

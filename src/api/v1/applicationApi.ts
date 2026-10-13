@@ -175,20 +175,25 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
   // SpecRef: 9.1.3 | 2-3-7 stagedEquipmentTuning `buildResultId` | A tuning of any member replaces it too.
   const buildResults = new Map<number, StoredBuildResult>();
   /** The search collaborators of `gaSearch` and `stagedEquipmentTuning` for one snapshot. */
-  const searchDependencies = (snapshot: ReturnType<typeof authority.getSnapshot>, revision: number): GaSearchDependencies => ({
-    simulate: (state, index, count, seed, options) => ports.runtime.simulate(state, index, count, seed, options),
-    now: ports.runtime.now,
-    createSeed: ports.runtime.createRandomSeed,
-    createOpaqueId: ports.runtime.createOpaqueId,
-    revision,
-    commitContext: {
-      simulatedAt: activeIdentity ? snapshot.simulatedAt : ports.runtime.now(),
-      gameMode: ports.runtime.gameMode(),
-      enemyLevelOffset: ports.runtime.enemyLevelOffset(),
-      applyAutoEquipment: ports.runtime.applyAutoEquipment,
+  const searchDependencies = (snapshot: ReturnType<typeof authority.getSnapshot>, revision: number): GaSearchDependencies => {
+    // The Debug settings the reads follow (9.1.4.14): an API account's own, or the ordinary player's Debug pane.
+    const debug = !activeIdentity && ports.runtime.debugSettings ? ports.runtime.debugSettings() : accountDebugSettingsOf(snapshot.control.settings);
+    return {
+      simulate: (state, index, count, seed, options) => ports.runtime.simulate(state, index, count, seed, options),
       now: ports.runtime.now,
-    },
-  });
+      createSeed: ports.runtime.createRandomSeed,
+      createOpaqueId: ports.runtime.createOpaqueId,
+      revision,
+      commitContext: {
+        simulatedAt: activeIdentity ? snapshot.simulatedAt : ports.runtime.now(),
+        gameMode: ports.runtime.gameMode(),
+        enemyLevelOffset: ports.runtime.enemyLevelOffset(),
+        applyAutoEquipment: ports.runtime.applyAutoEquipment,
+        now: ports.runtime.now,
+      },
+      disclosure: { allItems: debug.displayAllCompendium, allEnemies: debug.displayAllBestiary },
+    };
+  };
 
   const failure = (status: number, code: string, message: string, details?: Record<string, unknown>): ApiV1ApplicationResponse => ({
     status,

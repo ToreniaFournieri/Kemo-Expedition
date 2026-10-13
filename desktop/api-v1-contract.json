@@ -25420,7 +25420,8 @@
                 "required": [
                   "ability",
                   "answers",
-                  "status"
+                  "status",
+                  "sources"
                 ],
                 "properties": {
                   "ability": {
@@ -25456,6 +25457,83 @@
                         "type": "string"
                       }
                     ]
+                  },
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "itemId",
+                        "tier",
+                        "itemRarity",
+                        "droppedBy"
+                      ],
+                      "properties": {
+                        "itemId": {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        "tier": {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        "itemRarity": {
+                          "anyOf": [
+                            {
+                              "const": "common",
+                              "type": "string"
+                            },
+                            {
+                              "const": "uncommon",
+                              "type": "string"
+                            },
+                            {
+                              "const": "rare",
+                              "type": "string"
+                            },
+                            {
+                              "const": "epic",
+                              "type": "string"
+                            },
+                            {
+                              "const": "mythic",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "droppedBy": {
+                          "type": "array",
+                          "items": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "expedition",
+                              "enemyId",
+                              "rooms"
+                            ],
+                            "properties": {
+                              "expedition": {
+                                "minimum": 1,
+                                "type": "integer"
+                              },
+                              "enemyId": {
+                                "minimum": 1,
+                                "type": "integer"
+                              },
+                              "rooms": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "pattern": "^[1-6]f-[1-4]$",
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -25918,7 +25996,8 @@
                     "required": [
                       "ability",
                       "answers",
-                      "status"
+                      "status",
+                      "sources"
                     ],
                     "properties": {
                       "ability": {
@@ -25954,6 +26033,83 @@
                             "type": "string"
                           }
                         ]
+                      },
+                      "sources": {
+                        "type": "array",
+                        "items": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "itemId",
+                            "tier",
+                            "itemRarity",
+                            "droppedBy"
+                          ],
+                          "properties": {
+                            "itemId": {
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "tier": {
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "itemRarity": {
+                              "anyOf": [
+                                {
+                                  "const": "common",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "uncommon",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "rare",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "epic",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "mythic",
+                                  "type": "string"
+                                }
+                              ]
+                            },
+                            "droppedBy": {
+                              "type": "array",
+                              "items": {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "expedition",
+                                  "enemyId",
+                                  "rooms"
+                                ],
+                                "properties": {
+                                  "expedition": {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  },
+                                  "enemyId": {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  },
+                                  "rooms": {
+                                    "minItems": 1,
+                                    "type": "array",
+                                    "items": {
+                                      "pattern": "^[1-6]f-[1-4]$",
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -26337,7 +26493,23 @@
                 "answers": [
                   "xxxxxxx"
                 ],
-                "status": "owned"
+                "status": "owned",
+                "sources": [
+                  {
+                    "itemId": 1,
+                    "tier": 1,
+                    "itemRarity": "common",
+                    "droppedBy": [
+                      {
+                        "expedition": 1,
+                        "enemyId": 1,
+                        "rooms": [
+                          "1f-1"
+                        ]
+                      }
+                    ]
+                  }
+                ]
               }
             ],
             "candidatesTried": {

@@ -552,7 +552,13 @@ const responseDataSchemas = {
     accepted: Type.Boolean(), objective: tuningObjective, scoredBy: literals('success', 'minDefeat', 'bossDamage', 'progress'), before: Type.String(), after: Type.String(),
     improvement: Type.Number(), gain: Type.Number(), standardError: Type.Number({ minimum: 0 }),
     bottleneckRoom: Type.Union([floorRoomKey, Type.Null()]),
-    bottleneckCounters: Type.Array(strict({ ability: stableKey, answers: nonEmptyArray(stableKey), status: literals('owned', 'tried', 'notTried', 'noItem') })),
+    bottleneckCounters: Type.Array(strict({
+      ability: stableKey, answers: nonEmptyArray(stableKey), status: literals('owned', 'tried', 'notTried', 'noItem'),
+      sources: Type.Array(strict({
+        itemId: integerId, tier: Type.Integer({ minimum: 1 }), itemRarity: literals('common', 'uncommon', 'rare', 'epic', 'mythic'),
+        droppedBy: Type.Array(strict({ expedition: integerId, enemyId: integerId, rooms: nonEmptyArray(floorRoomKey) })),
+      })),
+    })),
     candidatesTried: strict({ offenseElement: count, defenseElement: count, ability: count }),
     steps: strict({
       offenseElement: Type.Array(strict({ element: literals('e.fire', 'e.ice', 'e.thunder', 'e.none'), improvement: Type.Number(), changes: Type.Array(tuningChange) })),

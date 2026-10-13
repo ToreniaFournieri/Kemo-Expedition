@@ -113,6 +113,8 @@ export interface GaSearchDependencies {
   revision: number;
   /** The commit context `changeSummary` is dry-run against, so every entry is a call the Commit API accepts. */
   commitContext: Pick<ApiV1CommitContext, 'simulatedAt' | 'gameMode' | 'enemyLevelOffset' | 'applyAutoEquipment' | 'now'>;
+  /** The Debug "Display all Compendium" / "Display all Bestiary" settings in force (tuning `sources`); both off by default. */
+  disclosure?: { allItems: boolean; allEnemies: boolean };
 }
 
 function invalid(field: string): never { throw new Error(`invalid_request:${field}`); }

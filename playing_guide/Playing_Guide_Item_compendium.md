@@ -120,7 +120,7 @@ Environment: Desktop Orca; `mode.orca`; enemy offset `+5`; Debug Mode OFF.
 | 3205 | Shield | 3 | U | Ripple Shield | HP+57 [Evasion +9, Thunder defense 7%] |
 | 3103 | Shield | 3 | C | Clamshell Shield | HP+42 [Evasion +11] |
 | 3407 | Sword | 3 | E | Thunder Rite | Melee attack +58 STR +1 Thunder attack +3% |
-| 3306 | Sword | 3 | R | Vinecutter Knife | Melee attack +48 [Vine CutterLv1] |
+| 3306 | Sword | 3 | R | Bindcutter Knife | Melee attack +48 [Null BindLv1] |
 | 3207 | Sword | 3 | U | Tideblade Dirk | Melee attack +39 [Accuracy +4, Melee attack +20%] |
 | 3104 | Sword | 3 | C | Shellblade Dirk | Melee attack +29 [Accuracy +3, Melee attack +21%] |
 | 3308 | Katana | 3 | R | Wraithblade | Melee attack +63 Magic defense +19 [Melee hits-1.4, Evasion -3, Pen+5, Melee attack +8%] |

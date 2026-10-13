@@ -1055,7 +1055,7 @@ definitions in 9.1.3.
     candidates each step simulated on the quick runs, recorded or not. `0` means
     the step had nothing to try, or its `...TrialRuns` was `0`.
   * `bottleneckCounters` lists every counter of the bottleneck (above), in map
-    order, as `{ability, answers, status}`. `answers` holds the enemy abilities
+    order, as `{ability, answers, status, sources}`. `answers` holds the enemy abilities
     and the terrain it answers in that room. `status` is one of:
     * `owned`: the character already has it (for `a.null-counter`, any party
       member).
@@ -1065,6 +1065,20 @@ definitions in 9.1.3.
       valid.
     * `noItem`: no item in the step 4 pool adds it (none owned, none the
       character can equip, or each brings another offense element).
+  * `sources` tells where the counter's items come from, so a player can pick
+    where to farm one, or one of a higher tier. It lists every item granting
+    the ability, owned or not and whatever its category, highest tier first
+    (then by item ID), as `{itemId, tier, itemRarity, droppedBy}`. `droppedBy`
+    lists the enemies that drop it as `{expedition, enemyId, rooms}`, by
+    expedition and then the enemy's first room; `rooms` are the rooms
+    (`<floor>f-<room>`) of that expedition where the enemy can appear, in
+    route order. Nothing undisclosed (9.1.4.7): an item is listed only once the
+    Item Compendium reveals it, and an enemy only once it has been encountered
+    (the `itemCompendium` and `bestiary` rules, including the Debug "Display
+    all" settings). So `droppedBy` is empty while no encountered enemy drops
+    the item, and `sources` is empty while no granting item is revealed. A
+    counter is not always obtainable before its threat, and a strong item may
+    beat it: `sources` informs, the simulation decides.
 * No change: when step 5 keeps no candidate (or no step recorded one), the tuned
   build is the current build: step 6 is not simulated again (`after` equals
   `before`, `improvement` and `gain` are 0), `accepted` is `false`, and

@@ -6,7 +6,7 @@ import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/comm
 import { deriveSeed, type GaSearchDependencies, type StoredBuildResult } from '../../src/api/v1/gaSearch';
 import { prepareObjectiveState } from '../../src/api/v1/objectiveMeasure';
 import { buildSimulationRunData } from '../../src/api/v1/simulationView';
-import { bottleneckCounterRows, countersBottleneck, parseStagedTuningRequest, runStagedEquipmentTuning, tuningImprovement, tuningLuckCheck } from '../../src/api/v1/stagedEquipmentTuning';
+import { bottleneckCounterRows, counterItemSources, countersBottleneck, parseStagedTuningRequest, runStagedEquipmentTuning, tuningImprovement, tuningLuckCheck } from '../../src/api/v1/stagedEquipmentTuning';
 import { getDungeonById } from '../../src/data/dungeons';
 import { hydrateGameState } from '../../src/game/saveCodec';
 import { decodePersistedState } from '../../src/game/storageCompression';
@@ -29,7 +29,7 @@ function dependencies(): GaSearchDependencies {
 const tune = (state: GameState, raw: Record<string, unknown>) => runStagedEquipmentTuning(state, parseStagedTuningRequest(state, raw), dependencies());
 interface TuningData {
   accepted: boolean; scoredBy: string; before: string; after: string; improvement: number; gain: number; standardError: number; bottleneckRoom: string | null;
-  bottleneckCounters: { ability: string; answers: string[]; status: string }[];
+  bottleneckCounters: { ability: string; answers: string[]; status: string; sources: ReturnType<typeof counterItemSources> }[];
   candidatesTried: Record<'offenseElement' | 'defenseElement' | 'ability', number>;
   steps: Record<'offenseElement' | 'defenseElement' | 'ability', { improvement: number; changes: string[]; element?: string }[]> & { finalTuning: { step: string; index: number; improvement: number; changes: string[] }[] };
   changeSummary: { endpoint: string; parameters: Record<string, unknown> }[]; simulationRuns: number; seed: number; buildResultId?: string;
@@ -293,6 +293,26 @@ const data = outcome.data as unknown as TuningData;
   const tuned = (await tune(sample, request)).data as unknown as TuningData;
   assert.equal(tuned.bottleneckRoom, '6f-4');
   assert.deepEqual(counters(tuned), { 'a.illusion-breaker': 'tried a.illusion', 'a.domain-breaker': 'noItem terrain.echo-domain' });
+  // `sources`: the revealed items granting each counter, with the encountered enemies that drop them and their rooms. The
+  // save has met the Expedition 6 floor 2 elite that drops 鉄礫 (6309); 境断 (8406, `a.domain-breaker`) is not revealed.
+  const sourcesOf = (data: TuningData) => Object.fromEntries(data.bottleneckCounters.map((counter) => [counter.ability, counter.sources]));
+  assert.deepEqual(sourcesOf(tuned), {
+    'a.illusion-breaker': [{ itemId: 6309, tier: 6, itemRarity: 'rare', droppedBy: [{ expedition: 6, enemyId: 291, rooms: ['2f-4'] }] }],
+    'a.domain-breaker': [],
+  });
+  // Nothing undisclosed (9.1.4.7): an enemy never encountered is not named, and an unrevealed item is not listed.
+  const unmet: GameState = structuredClone(sample);
+  unmet.global.enemyBattleStats = { ...unmet.global.enemyBattleStats, 291: { defeats: 0, encounters: 0 } };
+  assert.deepEqual(counterItemSources(unmet, 'illusion_breaker', { allItems: false, allEnemies: false }), [{ itemId: 6309, tier: 6, itemRarity: 'rare', droppedBy: [] }]);
+  const unrevealed: GameState = structuredClone(sample);
+  unrevealed.global.revealedItemCompendiumItemIds = unrevealed.global.revealedItemCompendiumItemIds.filter((id) => id !== 6309);
+  assert.deepEqual(counterItemSources(unrevealed, 'illusion_breaker', { allItems: false, allEnemies: false }), []);
+  // The Debug "Display all" settings disclose everything: 8406 is listed, and no enemy drops it.
+  assert.deepEqual(counterItemSources(sample, 'domain_breaker', { allItems: true, allEnemies: true }), [{ itemId: 8406, tier: 8, itemRarity: 'epic', droppedBy: [] }]);
+  // Highest tier first: `a.requiem` has a tier-7 sword (7407) and a tier-7 arrow (7408, dropped by the Expedition 7 elite).
+  const requiem = counterItemSources(sample, 'requiem', { allItems: true, allEnemies: true });
+  assert.deepEqual(requiem.map((source) => source.itemId), [7407, 7408]);
+  assert.ok(requiem[1].droppedBy.some((drop) => drop.expedition === 7 && drop.enemyId === 326), JSON.stringify(requiem[1].droppedBy));
   assert.ok(tuned.candidatesTried.ability > 0 && tuned.candidatesTried.ability >= tuned.steps.ability.length, 'every recorded candidate was tried');
   assert.deepEqual([tuned.candidatesTried.offenseElement, tuned.candidatesTried.defenseElement], [0, 0], 'a step with 0 trials tries nothing');
   // With step 4 off, an item that grants the counter is left untried.

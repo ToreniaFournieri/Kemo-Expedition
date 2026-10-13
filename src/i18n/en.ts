@@ -2078,7 +2078,7 @@ const en = {
   'item.name.7317': 'Swiftsteed Guide Staff',
   'item.name.1221': 'Apprentice Formulae',
   'item.name.1405': 'Vinecutter Knife',
-  'item.name.3306': 'Vinecutter Knife',
+  'item.name.3306': 'Bindcutter Knife',
   'item.name.2219': 'Crystal Staff',
   'item.name.2209': 'Crystal Uchigatana',
   'item.name.3319': 'Deeptide Core Catalyst',
