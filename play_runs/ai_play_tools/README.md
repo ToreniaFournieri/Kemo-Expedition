@@ -111,3 +111,15 @@ Built during the 2026/10/03 D8-boss run (`AI_play_report/v0.9.8(11)_Claude_Norma
   `tw.py` honours `TBB` (GA budget) and `QR` (quickRuns); `tune.py` logs `candidatesTried` / `bottleneckCounters` and stops at `STOPHI`.
 * Lessons: GA is ~87 % of real time, loops ~1 real min per game day, so grind streak gates without re-plans when real time
   is short; farm Lv30 at D6 5f-3 before the D6 boss; QR=100 gives ~2.5x GA evaluations.
+
+## Ability scoreboard (2026/10/13, build 47) — do this in every run
+`AI_play_report/Ability_scoreboard.md` collects what `stagedEquipmentTuning` accepted and rejected across all AI play runs,
+per ability and item: strong abilities (accepted often), weak ones (tried often, rarely accepted), and abilities no run ever tried.
+* **During the run:** `client/t.py` appends every `stagedEquipmentTuning` response, as returned, to `tuning_responses.jsonl` in
+  `$BOKEMO_PLAY_DIR` (`{n, build, request, data}`; no extra API call). Call `GET /fundamental/status` once at the start so `build`
+  is filled. A run with its own client must write the same file. Keep it in the run folder and commit it with the run.
+* **After the run (with the AI play report):** `python3 play_runs/ai_play_tools/scoreboard/ability_scoreboard.py` from the repo
+  root regenerates the board from every run folder; commit it with the report. Older runs are back-filled from `tune_log.jsonl`
+  (only the candidates that passed the quick check, so no tried counts or `freeGain`).
+* Read the board's "How to read" first: rank by accepted, not passed; never tried means not owned (availability, by design);
+  `freeGain` (build 47+) separates the ability's own value from the item that carries it.

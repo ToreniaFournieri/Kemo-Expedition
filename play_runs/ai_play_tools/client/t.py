@@ -3,6 +3,7 @@ W=os.environ.get('BOKEMO_PLAY_DIR',os.path.dirname(os.path.abspath(__file__)))  
 D=json.load(open(W+'/desc.json'))
 SF=W+'/tstate.json'
 REC=W+'/batch_calls.jsonl'   # replayable record: every API call with input + duration
+TUNE=W+'/tuning_responses.jsonl'   # every stagedEquipmentTuning response, for the ability scoreboard
 USER=os.environ.get('BOKEMO_PLAY_USER','ClaudeS55Exp8')
 def st(): return json.load(open(SF)) if os.path.exists(SF) else {'n':0}
 def sv(s): json.dump(s,open(SF,'w'))
@@ -19,8 +20,12 @@ def raw(method,path,body=None,sess=True,tag='',params=None):
         c,j=e.code,json.loads(e.read() or b'{}')
     ms=round((time.time()-t0)*1000)
     if isinstance(j,dict) and isinstance(j.get('revision'),int): s['rev']=j['revision']
-    sv(s)
     d=j.get('data') if isinstance(j,dict) else None
+    if path=='/fundamental/status' and c==200 and isinstance(d,dict) and d.get('versionBuild'): s['build']=d['versionBuild']
+    sv(s)
+    # Ability scoreboard (../scoreboard/ability_scoreboard.py): keep every staged tuning response as returned.
+    if path=='/read/build/character/stagedEquipmentTuning' and c==200 and isinstance(d,dict):
+        open(TUNE,'a').write(json.dumps({'n':s['n'],'build':s.get('build'),'request':body,'data':d},ensure_ascii=False)+'\n')
     rec={'n':s['n'],'method':method,'path':path,'parameters':params if params is not None else (body if method=='POST' and not (isinstance(body,dict) and 'idempotencyKey' in body) else None),
          'status':c,'ms':ms,'tag':tag,'igt':(d or {}).get('inGameTime') if isinstance(d,dict) else None,
          'err':(j.get('error') or {}).get('code') if isinstance(j,dict) else None}
