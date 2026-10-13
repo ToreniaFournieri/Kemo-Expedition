@@ -4,7 +4,7 @@ import path from 'node:path';
 import { createFreshGameState, gameReducer, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
 import { deriveSeed, type GaSearchDependencies, type StoredBuildResult } from '../../src/api/v1/gaSearch';
-import { prepareObjectiveState } from '../../src/api/v1/objectiveMeasure';
+import { measureObjective, prepareObjectiveState } from '../../src/api/v1/objectiveMeasure';
 import { buildSimulationRunData } from '../../src/api/v1/simulationView';
 import { bottleneckCounterRows, counterItemSources, countersBottleneck, parseStagedTuningRequest, runStagedEquipmentTuning, tuningImprovement, tuningLuckCheck } from '../../src/api/v1/stagedEquipmentTuning';
 import { getDungeonById } from '../../src/data/dungeons';
@@ -29,8 +29,10 @@ function dependencies(): GaSearchDependencies {
 const tune = (state: GameState, raw: Record<string, unknown>) => runStagedEquipmentTuning(state, parseStagedTuningRequest(state, raw), dependencies());
 interface TuningData {
   accepted: boolean; scoredBy: string; before: string; after: string; improvement: number; gain: number; standardError: number; bottleneckRoom: string | null;
-  bottleneckCounters: { ability: string; answers: string[]; status: string; sources: ReturnType<typeof counterItemSources> }[];
+  destination: number; level: number;
+  bottleneckCounters: { ability: string; answers: string[]; status: string; freeGain: number | null; freeStandardError: number | null; sources: ReturnType<typeof counterItemSources> }[];
   candidatesTried: Record<'offenseElement' | 'defenseElement' | 'ability', number>;
+  triedCandidates: Record<'offenseElement' | 'defenseElement' | 'ability', { improvement: number; changes: string[]; recorded: boolean; element?: string; resistance?: string[]; abilities?: string[] }[]>;
   steps: Record<'offenseElement' | 'defenseElement' | 'ability', { improvement: number; changes: string[]; element?: string }[]> & { finalTuning: { step: string; index: number; improvement: number; changes: string[] }[] };
   changeSummary: { endpoint: string; parameters: Record<string, unknown> }[]; simulationRuns: number; seed: number; buildResultId?: string;
 }
@@ -309,6 +311,28 @@ const data = outcome.data as unknown as TuningData;
   assert.deepEqual(counterItemSources(unrevealed, 'illusion_breaker', { allItems: false, allEnemies: false }), []);
   // The Debug "Display all" settings disclose everything: 8406 is listed, and no enemy drops it.
   assert.deepEqual(counterItemSources(sample, 'domain_breaker', { allItems: true, allEnemies: true }), [{ itemId: 8406, tier: 8, itemRarity: 'epic', droppedBy: [] }]);
+  // The record a scoreboard needs: where and at what level, every simulated candidate (recorded or not), and what each counter
+  // is worth to the character for free, on the quick seed against the current build.
+  assert.equal(tuned.destination, sample.parties[partyIndex].selectedDungeonId);
+  assert.equal(tuned.level, sample.parties[partyIndex].level);
+  for (const step of ['offenseElement', 'defenseElement', 'ability'] as const) {
+    assert.equal(tuned.triedCandidates[step].length, tuned.candidatesTried[step], `${step}: one entry per simulated candidate`);
+    const strip = ({ recorded: _recorded, ...entry }: TuningData['triedCandidates'][typeof step][number]) => entry;
+    assert.deepEqual(tuned.triedCandidates[step].filter((entry) => entry.recorded).map(strip).sort((a, b) => b.improvement - a.improvement), tuned.steps[step]);
+  }
+  assert.ok(tuned.triedCandidates.ability.some((entry) => !entry.recorded), 'a candidate below the bar is still listed');
+  {
+    const domain = tuned.bottleneckCounters.find((counter) => counter.ability === 'a.domain-breaker')!;
+    const quick = (target: GameState) => simulateExpeditionRuns(prepareObjectiveState(target, partyIndex, 'bossDamage'), partyIndex, 'mode.normal', 50, undefined, 0, deriveSeed(3, 1), { bossRoomOnly: true });
+    const share = async (target: GameState) => measureObjective('bossDamage', await quick(target), 1);
+    const granted: GameState = structuredClone(sample);
+    const holder = granted.parties[partyIndex].characters.find((character) => character.id === guardian.id)!;
+    const slot = holder.equipment.findIndex((item) => item !== null);
+    holder.equipment[slot] = { ...holder.equipment[slot]!, bonuses: [...(holder.equipment[slot]!.bonuses ?? []), { type: 'ability', value: 1, abilityId: 'domain_breaker', abilityLevel: 1 }] };
+    const [before, after] = [await share(sample), await share(granted)];
+    assert.equal(domain.freeGain, Math.round((after.rate - before.rate) * 1e4) / 1e4, 'freeGain is the free ability against the current build');
+    assert.equal(domain.freeStandardError, Math.round(Math.sqrt(before.variance / 50 + after.variance / 50) * 1e4) / 1e4);
+  }
   // Highest tier first: `a.requiem` has a tier-7 sword (7407) and a tier-7 arrow (7408, dropped by the Expedition 7 elite).
   const requiem = counterItemSources(sample, 'requiem', { allItems: true, allEnemies: true });
   assert.deepEqual(requiem.map((source) => source.itemId), [7407, 7408]);
@@ -325,7 +349,9 @@ const data = outcome.data as unknown as TuningData;
   const wearing: GameState = structuredClone(sample);
   const worn = wearing.parties[partyIndex].characters.find((character) => character.id === guardian.id)!;
   worn.equipment = worn.equipment.map((item, slot) => (slot === 0 ? { ...breaker, jewel: null } : item));
-  assert.equal(counters((await tune(wearing, request)).data as unknown as TuningData)['a.illusion-breaker'], 'owned a.illusion');
+  const worn2 = (await tune(wearing, request)).data as unknown as TuningData;
+  assert.equal(counters(worn2)['a.illusion-breaker'], 'owned a.illusion');
+  assert.deepEqual(worn2.bottleneckCounters.filter((counter) => counter.status === 'owned').map((counter) => [counter.freeGain, counter.freeStandardError]), [[null, null]], 'an owned counter is not re-checked');
 }
 
 // ---------------- Jewels: only the changed slot ----------------

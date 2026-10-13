@@ -1049,13 +1049,21 @@ definitions in 9.1.3.
   and `changes` (`<slotIndex>=<Item Format>` for every slot it changes; Jewels
   follow from the allocation). `simulationRuns` counts every simulated run (a
   build simulated twice on the same seed and run count is simulated once).
-* Diagnostics: the response also returns `candidatesTried` and
-  `bottleneckCounters`, after `bottleneckRoom`.
+* Diagnostics: the response also returns `destination` and `level` (the
+  party's destination and level the tuning ran for) before `bottleneckRoom`,
+  and `bottleneckCounters`, `candidatesTried`, and `triedCandidates` after it.
+  With the request, each response is a complete record of one tuning, so
+  records from many runs can be compared.
   * `candidatesTried` is `{offenseElement, defenseElement, ability}`: the
     candidates each step simulated on the quick runs, recorded or not. `0` means
     the step had nothing to try, or its `...TrialRuns` was `0`.
+  * `triedCandidates` has the same keys and lists those candidates in the
+    order they were simulated, each as in `steps` (label, `improvement`,
+    `changes`) plus `recorded` (whether the step recorded it). The recorded
+    ones are the entries of `steps`.
   * `bottleneckCounters` lists every counter of the bottleneck (above), in map
-    order, as `{ability, answers, status, sources}`. `answers` holds the enemy abilities
+    order, as `{ability, answers, status, freeGain, freeStandardError,
+    sources}`. `answers` holds the enemy abilities
     and the terrain it answers in that room. `status` is one of:
     * `owned`: the character already has it (for `a.null-counter`, any party
       member).
@@ -1065,6 +1073,19 @@ definitions in 9.1.3.
       valid.
     * `noItem`: no item in the step 4 pool adds it (none owned, none the
       character can equip, or each brings another offense element).
+  * `freeGain` is what the ability itself is worth to this character in this
+    room, apart from any item that grants it: the current build with the
+    ability added to the character's first worn item (level 1, as an item
+    grants it; nothing else changes) against the current build, both with
+    `quickRuns` runs on the quick seed. It is the `scoredBy` score's gain
+    (positive is better, also for `minDefeat`) as a fraction, with
+    `freeStandardError` computed like step 6's. Both are `null` when the status
+    is `owned` or the character wears no item. A `freeGain` near or below 0
+    means the counter does little or harms here (for example, a breaker that
+    also removes a terrain bonus the character uses); a clear `freeGain` with a
+    rejected or missing item means the ability helps and the item does not. The
+    check adds `quickRuns` runs per counter to `simulationRuns` and changes no
+    draw or result.
   * `sources` tells where the counter's items come from, so a player can pick
     where to farm one, or one of a higher tier. It lists every item granting
     the ability, owned or not and whatever its category, highest tier first

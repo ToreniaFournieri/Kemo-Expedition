@@ -551,15 +551,22 @@ const responseDataSchemas = {
   'read/build/character/stagedEquipmentTuning': strict({
     accepted: Type.Boolean(), objective: tuningObjective, scoredBy: literals('success', 'minDefeat', 'bossDamage', 'progress'), before: Type.String(), after: Type.String(),
     improvement: Type.Number(), gain: Type.Number(), standardError: Type.Number({ minimum: 0 }),
+    destination: integerId, level: Type.Integer({ minimum: 1 }),
     bottleneckRoom: Type.Union([floorRoomKey, Type.Null()]),
     bottleneckCounters: Type.Array(strict({
       ability: stableKey, answers: nonEmptyArray(stableKey), status: literals('owned', 'tried', 'notTried', 'noItem'),
+      freeGain: Type.Union([Type.Number(), Type.Null()]), freeStandardError: Type.Union([Type.Number({ minimum: 0 }), Type.Null()]),
       sources: Type.Array(strict({
         itemId: integerId, tier: Type.Integer({ minimum: 1 }), itemRarity: literals('common', 'uncommon', 'rare', 'epic', 'mythic'),
         droppedBy: Type.Array(strict({ expedition: integerId, enemyId: integerId, rooms: nonEmptyArray(floorRoomKey) })),
       })),
     })),
     candidatesTried: strict({ offenseElement: count, defenseElement: count, ability: count }),
+    triedCandidates: strict({
+      offenseElement: Type.Array(strict({ element: literals('e.fire', 'e.ice', 'e.thunder', 'e.none'), improvement: Type.Number(), changes: Type.Array(tuningChange), recorded: Type.Boolean() })),
+      defenseElement: Type.Array(strict({ resistance: nonEmptyArray(literals('r.fire', 'r.ice', 'r.thunder', 'r.none')), improvement: Type.Number(), changes: Type.Array(tuningChange), recorded: Type.Boolean() })),
+      ability: Type.Array(strict({ abilities: nonEmptyArray(stableKey), improvement: Type.Number(), changes: Type.Array(tuningChange), recorded: Type.Boolean() })),
+    }),
     steps: strict({
       offenseElement: Type.Array(strict({ element: literals('e.fire', 'e.ice', 'e.thunder', 'e.none'), improvement: Type.Number(), changes: Type.Array(tuningChange) })),
       defenseElement: Type.Array(strict({ resistance: nonEmptyArray(literals('r.fire', 'r.ice', 'r.thunder', 'r.none')), improvement: Type.Number(), changes: Type.Array(tuningChange) })),

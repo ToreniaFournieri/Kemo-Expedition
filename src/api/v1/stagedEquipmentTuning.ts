@@ -719,14 +719,15 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
   const bottleneck = findBottleneck(state, partyIndex, baseline, options.bossRoomOnly === true);
   const enemies = bottleneck.enemies;
 
-  const cache = new Map<string, number>();
-  const scoreLoadout = async (loadout: Loadout, runs: number, simulationSeed: number): Promise<number> => {
+  const cache = new Map<string, ObjectiveMeasure>();
+  const measureLoadout = async (loadout: Loadout, runs: number, simulationSeed: number): Promise<ObjectiveMeasure> => {
     const key = `${runs}:${simulationSeed}:${loadoutKey(loadout)}`;
     // The current items are the current build as it is.
     const target = loadoutKey(loadout) === loadoutKey(model.current) ? state : withEquipment(model, allocateJewels(model, loadout));
-    if (!cache.has(key)) cache.set(key, measureOf(await simulate(target, runs, simulationSeed)).rate);
+    if (!cache.has(key)) cache.set(key, measureOf(await simulate(target, runs, simulationSeed)));
     return cache.get(key)!;
   };
+  const scoreLoadout = async (loadout: Loadout, runs: number, simulationSeed: number): Promise<number> => (await measureLoadout(loadout, runs, simulationSeed)).rate;
 
   // Steps 2–4 compare every candidate with the current build as it is, on one quick seed.
   const recorded: Record<TuningStep, Candidate[]> = { offenseElement: [], defenseElement: [], ability: [] };
@@ -744,7 +745,10 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
     into.push({ step, label, loadout, changes: changesOf(model, loadout), improvement });
     return true;
   };
+  // Every candidate each step simulated, recorded or not (`triedCandidates`).
+  const simulated: Record<TuningStep, Candidate[]> = { offenseElement: [], defenseElement: [], ability: [] };
   const record = (step: TuningStep, candidates: Candidate[], trials: number) => {
+    simulated[step] = candidates;
     recorded[step] = candidates.filter((candidate) => candidate.improvement >= request.minImprovement)
       .sort((a, b) => b.improvement - a.improvement).slice(0, Math.max(2, Math.floor(trials / 5)));
   };
@@ -830,14 +834,31 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
     record('ability', candidates, request.abilityTrialRuns);
   }
   // SpecRef: 9.1.4.9 | stagedEquipmentTuning | what became of each counter of the bottleneck room (7.1.5.1).
-  const bottleneckCounters = bottleneckCounterRows(enemyAbilities, bottleneck.terrain).map(({ ability, answers }) => ({
-    ability: `a.${ability.replace(/_/g, '-')}`,
-    answers,
-    status: coveredCounter(ability) ? 'owned'
-      : triedAbilities.has(ability) ? 'tried'
-        : [...byItem.values()].some((key) => (model.facts.get(key)!.abilities as readonly string[]).includes(ability)) ? 'notTried' : 'noItem',
-    sources: counterItemSources(state, ability, dependencies.disclosure ?? { allItems: false, allEnemies: false }),
-  }));
+  // SpecRef: 9.1.4.9 | stagedEquipmentTuning | `freeGain`: the current build with the counter granted to the character for
+  // free (added to its first item, no item change), against the current build on the quick seed: what the ability itself is
+  // worth here, apart from any item that grants it. `null` when the character already has it or wears no item.
+  const firstWorn = model.character.equipment.findIndex((item) => item !== null);
+  const freeCheck = async (ability: string): Promise<{ freeGain: number | null; freeStandardError: number | null }> => {
+    if (coveredCounter(ability) || firstWorn < 0) return { freeGain: null, freeStandardError: null };
+    const equipment = model.character.equipment.map((item, slot) => (item && slot === firstWorn
+      ? { ...item, bonuses: [...(item.bonuses ?? []), { type: 'ability' as const, value: 1, abilityId: ability as AbilityId, abilityLevel: 1 }] }
+      : item));
+    const free = measureOf(await simulate(withEquipment(model, equipment), request.quickRuns, quickSeed));
+    const check = tuningLuckCheck(scoredBy, await measureLoadout(model.current, request.quickRuns, quickSeed), free, request.quickRuns);
+    return { freeGain: round4(check.gain), freeStandardError: round4(check.standardError) };
+  };
+  const bottleneckCounters: { ability: string; answers: string[]; status: string; freeGain: number | null; freeStandardError: number | null; sources: CounterItemSource[] }[] = [];
+  for (const { ability, answers } of bottleneckCounterRows(enemyAbilities, bottleneck.terrain)) {
+    bottleneckCounters.push({
+      ability: `a.${ability.replace(/_/g, '-')}`,
+      answers,
+      status: coveredCounter(ability) ? 'owned'
+        : triedAbilities.has(ability) ? 'tried'
+          : [...byItem.values()].some((key) => (model.facts.get(key)!.abilities as readonly string[]).includes(ability)) ? 'notTried' : 'noItem',
+      ...await freeCheck(ability),
+      sources: counterItemSources(state, ability, dependencies.disclosure ?? { allItems: false, allEnemies: false }),
+    });
+  }
 
   // 5. Final tuning: a greedy add pass over every recorded candidate, then a swap pass for the element steps.
   const all = [...recorded.offenseElement, ...recorded.defenseElement, ...recorded.ability].sort((a, b) => b.improvement - a.improvement);
@@ -937,9 +958,15 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
       improvement: round4(improvement),
       gain: round4(luck.gain),
       standardError: round4(luck.standardError),
+      destination: party.selectedDungeonId,
+      level: party.level,
       bottleneckRoom: bottleneck.room === null ? null : floorRoomLabel(bottleneck.room),
       bottleneckCounters,
       candidatesTried,
+      // SpecRef: 9.1.4.9 | stagedEquipmentTuning | every candidate each step simulated, with whether the step recorded it.
+      triedCandidates: Object.fromEntries((['offenseElement', 'defenseElement', 'ability'] as const).map((step) => [
+        step, simulated[step].map((candidate) => ({ ...describe(candidate), recorded: recorded[step].includes(candidate) })),
+      ])),
       steps: {
         offenseElement: recorded.offenseElement.map(describe),
         defenseElement: recorded.defenseElement.map(describe),
