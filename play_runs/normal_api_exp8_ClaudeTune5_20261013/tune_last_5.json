@@ -1,0 +1,104 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 6.4% / Draw 19.5% / Retreat 59.2% / Defeat 14.9%",
+ "after": "Success 5.2% / Draw 21.2% / Retreat 58.5% / Defeat 15.1%",
+ "improvement": -0.0127,
+ "gain": -0.012,
+ "standardError": 0.0104,
+ "bottleneckRoom": "5f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.defiance",
+   "answers": [
+    "terrain.suppression"
+   ],
+   "status": "tried"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 3,
+  "defenseElement": 6,
+  "ability": 14
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.ice"
+    ],
+    "improvement": 0.5333,
+    "changes": [
+     "7=0/7317/0/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.thunder"
+    ],
+    "improvement": 0.1333,
+    "changes": [
+     "7=0/3315/0/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.anti-overwatch"
+    ],
+    "improvement": 1.2,
+    "changes": [
+     "8=0/4303/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.dryproof"
+    ],
+    "improvement": 1.2,
+    "changes": [
+     "8=0/4203/1/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.coldproof"
+    ],
+    "improvement": 1.2,
+    "changes": [
+     "8=0/2405/2/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.command"
+    ],
+    "improvement": 0.7333,
+    "changes": [
+     "7=0/5407/0/0"
+    ]
+   }
+  ],
+  "finalTuning": [
+   {
+    "step": "ability",
+    "index": 3,
+    "abilities": [
+     "a.command"
+    ],
+    "improvement": 0.0333,
+    "changes": [
+     "7=0/5407/0/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [],
+ "revision": 2634,
+ "simulationRuns": 12700,
+ "elapsedSeconds": 7.8,
+ "seed": 2589224401
+}

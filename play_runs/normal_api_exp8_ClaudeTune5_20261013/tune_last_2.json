@@ -1,0 +1,36 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 5.0% / Draw 19.2% / Retreat 59.4% / Defeat 16.4%",
+ "after": "Success 5.0% / Draw 19.2% / Retreat 59.4% / Defeat 16.4%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.0097,
+ "bottleneckRoom": "5f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.defiance",
+   "answers": [
+    "terrain.suppression"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 5,
+  "defenseElement": 4,
+  "ability": 13
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [],
+  "ability": [],
+  "finalTuning": []
+ },
+ "changeSummary": [],
+ "revision": 2634,
+ "simulationRuns": 7900,
+ "elapsedSeconds": 4.3,
+ "seed": 73903177
+}

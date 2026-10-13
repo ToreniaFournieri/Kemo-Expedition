@@ -111,3 +111,9 @@ Built during the 2026/10/03 D8-boss run (`AI_play_report/v0.9.8(11)_Claude_Norma
   `tw.py` honours `TBB` (GA budget) and `QR` (quickRuns); `tune.py` logs `candidatesTried` / `bottleneckCounters` and stops at `STOPHI`.
 * Lessons: GA is ~87 % of real time, loops ~1 real min per game day, so grind streak gates without re-plans when real time
   is short; farm Lv30 at D6 5f-3 before the D6 boss; QR=100 gives ~2.5x GA evaluations.
+
+## Additions (2026/10/13 ClaudeTune5 run, `AI_play_report/v0.10.1(45)_ClaudeTune5_Normal_API_Exp8Boss_TuningParameters_20261013.md`)
+* Run folder `play_runs/normal_api_exp8_ClaudeTune5_20261013/client/`: `stage.sh dest` (arrive + gate loop with AUTOGA), `tvar.py cid objective seed default,cand3,q1000,big`
+  (read-only paired tuning variants on one seed; `APPLY=1` applies the last one), `hl2.py` now skips AUTOGA when the boss gate is open.
+* Lessons: re-plan every 6 observations (`NST=6`) during a grind; a `success` GA scored by `progress` (route 0 %) reverts the boss build, so first lift the route
+  above 0 % (tuning, then `success` GAs keep it); `quickRuns` 1000 shrinks tuning candidates read as +36-45 % at 300 to +3-15 %.

@@ -1,0 +1,78 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 6.6% / Draw 17.0% / Retreat 61.4% / Defeat 15.0%",
+ "after": "Success 6.6% / Draw 17.0% / Retreat 61.4% / Defeat 15.0%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.0111,
+ "bottleneckRoom": "5f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.defiance",
+   "answers": [
+    "terrain.suppression"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 0,
+  "defenseElement": 10,
+  "ability": 6
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.none"
+    ],
+    "improvement": 0.5714,
+    "changes": [
+     "1=0/7402/0/0",
+     "3=0/5101/3/0",
+     "8=0/8201/1/0",
+     "9=0/7101/2/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.ice",
+     "r.thunder"
+    ],
+    "improvement": 0.5714,
+    "changes": [
+     "10=0/2308/0/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.null-corrode"
+    ],
+    "improvement": 0.5714,
+    "changes": [
+     "9=0/3302/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.true-sight"
+    ],
+    "improvement": 0.4286,
+    "changes": [
+     "10=0/1406/1/0"
+    ]
+   }
+  ],
+  "finalTuning": []
+ },
+ "changeSummary": [],
+ "revision": 2634,
+ "simulationRuns": 8600,
+ "elapsedSeconds": 5.3,
+ "seed": 544415904
+}
