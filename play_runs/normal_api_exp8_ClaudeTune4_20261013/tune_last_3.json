@@ -1,0 +1,36 @@
+{
+ "accepted": false,
+ "objective": "bossDamage",
+ "scoredBy": "bossDamage",
+ "before": "Success 0.0% / Draw 93.1% / Retreat 0.0% / Defeat 6.9%",
+ "after": "Success 0.0% / Draw 93.1% / Retreat 0.0% / Defeat 6.9%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.0076,
+ "bottleneckRoom": "6f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.momentum-breaker",
+   "answers": [
+    "a.momentum"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 0,
+  "defenseElement": 9,
+  "ability": 2
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [],
+  "ability": [],
+  "finalTuning": []
+ },
+ "changeSummary": [],
+ "revision": 337,
+ "simulationRuns": 4600,
+ "elapsedSeconds": 1.6,
+ "seed": 3054521367
+}

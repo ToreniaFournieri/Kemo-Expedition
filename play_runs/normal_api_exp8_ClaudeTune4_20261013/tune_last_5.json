@@ -1,0 +1,75 @@
+{
+ "accepted": true,
+ "objective": "bossDamage",
+ "scoredBy": "bossDamage",
+ "before": "Success 0.1% / Draw 92.8% / Retreat 0.0% / Defeat 7.1%",
+ "after": "Success 0.2% / Draw 93.1% / Retreat 0.0% / Defeat 6.7%",
+ "improvement": 0.1137,
+ "gain": 0.0374,
+ "standardError": 0.0077,
+ "bottleneckRoom": "6f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.momentum-breaker",
+   "answers": [
+    "a.momentum"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 5,
+  "defenseElement": 2,
+  "ability": 3
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.thunder"
+    ],
+    "improvement": 0.1048,
+    "changes": [
+     "4=0/3110/3/0"
+    ]
+   }
+  ],
+  "ability": [],
+  "finalTuning": [
+   {
+    "step": "defenseElement",
+    "index": 0,
+    "resistance": [
+     "r.thunder"
+    ],
+    "improvement": 0.108,
+    "changes": [
+     "4=0/3110/3/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [
+  {
+   "endpoint": "commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": "0/3110/3/0",
+    "targetSlot": 4
+   }
+  }
+ ],
+ "revision": 337,
+ "simulationRuns": 6300,
+ "elapsedSeconds": 2.1,
+ "seed": 3475900141,
+ "buildResultId": "7c27cab3-d386-464f-b1c6-ca2ae0fa7680"
+}
