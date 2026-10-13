@@ -1,13 +1,13 @@
 {
  "accepted": false,
- "objective": "bossDamage",
- "scoredBy": "bossDamage",
- "before": "Success 0.0% / Draw 100.0% / Retreat 0.0% / Defeat 0.0%",
- "after": "Success 0.0% / Draw 100.0% / Retreat 0.0% / Defeat 0.0%",
- "improvement": 0,
- "gain": 0,
- "standardError": 0.003,
- "bottleneckRoom": "6f-4",
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 5.5% / Draw 9.7% / Retreat 62.2% / Defeat 22.6%",
+ "after": "Success 3.7% / Draw 10.0% / Retreat 62.8% / Defeat 23.5%",
+ "improvement": -0.0187,
+ "gain": -0.018,
+ "standardError": 0.0094,
+ "bottleneckRoom": "3f-4",
  "bottleneckCounters": [],
  "candidatesTried": {
   "offenseElement": 0,
@@ -16,13 +16,94 @@
  },
  "steps": {
   "offenseElement": [],
-  "defenseElement": [],
-  "ability": [],
-  "finalTuning": []
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.thunder"
+    ],
+    "improvement": 0.2308,
+    "changes": [
+     "2=0/8205/4/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.thunder"
+    ],
+    "improvement": 0.2308,
+    "changes": [
+     "2=0/3103/2/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.true-sight"
+    ],
+    "improvement": 0.1538,
+    "changes": [
+     "2=0/1406/1/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.wind-rider"
+    ],
+    "improvement": 0.1538,
+    "changes": [
+     "1=0/1312/2/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.coldproof"
+    ],
+    "improvement": 0.1538,
+    "changes": [
+     "1=0/2405/0/0"
+    ]
+   }
+  ],
+  "finalTuning": [
+   {
+    "step": "defenseElement",
+    "index": 0,
+    "resistance": [
+     "r.thunder"
+    ],
+    "improvement": 0.0526,
+    "changes": [
+     "2=0/8205/4/0"
+    ]
+   },
+   {
+    "step": "ability",
+    "index": 1,
+    "abilities": [
+     "a.wind-rider"
+    ],
+    "improvement": 0.1053,
+    "changes": [
+     "1=0/1312/2/0"
+    ]
+   },
+   {
+    "step": "ability",
+    "index": 2,
+    "abilities": [
+     "a.coldproof"
+    ],
+    "improvement": 0.4211,
+    "changes": [
+     "4=0/2405/0/0"
+    ]
+   }
+  ]
  },
  "changeSummary": [],
- "revision": 2343,
- "simulationRuns": 6700,
- "elapsedSeconds": 2.5,
- "seed": 846687755
+ "revision": 2877,
+ "simulationRuns": 10700,
+ "elapsedSeconds": 18.6,
+ "seed": 2220842433
 }

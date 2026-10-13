@@ -2929,3 +2929,683 @@
 {"n": 2929, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 2195}, "status": 200, "ms": 187, "tag": "el", "igt": "2026-10-29T13:19:50.580Z", "err": null}
 {"n": 2930, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 127, "tag": "sortie", "igt": null, "err": null}
 {"n": 2931, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 20, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 2932, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 8, "destinationMode": "fixed", "depthLimit": "all"}, "status": 200, "ms": 89, "tag": "dest", "igt": null, "err": null}
+{"n": 2933, "method": "POST", "path": "/read/expedition/1/simulationRun", "parameters": {"numberOfRun": 300, "objective": "success", "seed": 5}, "status": 200, "ms": 265, "tag": "bs", "igt": null, "err": null}
+{"n": 2934, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 29, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 2935, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 2132}, "status": 200, "ms": 200, "tag": "el", "igt": "2026-10-29T13:55:22.580Z", "err": null}
+{"n": 2936, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 60}, "status": 200, "ms": 140, "tag": "el", "igt": "2026-10-29T13:56:22.580Z", "err": null}
+{"n": 2937, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 119, "tag": "sortie", "igt": null, "err": null}
+{"n": 2938, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 109, "tag": "sortie", "igt": null, "err": null}
+{"n": 2939, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1202}, "status": 200, "ms": 227, "tag": "el", "igt": "2026-10-29T14:16:24.580Z", "err": null}
+{"n": 2940, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 106, "tag": "sortie", "igt": null, "err": null}
+{"n": 2941, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1127}, "status": 200, "ms": 183, "tag": "el", "igt": "2026-10-29T14:35:11.580Z", "err": null}
+{"n": 2942, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 137, "tag": "sortie", "igt": null, "err": null}
+{"n": 2943, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1412}, "status": 200, "ms": 226, "tag": "el", "igt": "2026-10-29T14:58:43.580Z", "err": null}
+{"n": 2944, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 153, "tag": "sortie", "igt": null, "err": null}
+{"n": 2945, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1526}, "status": 200, "ms": 235, "tag": "el", "igt": "2026-10-29T15:24:09.580Z", "err": null}
+{"n": 2946, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 86, "tag": "sortie", "igt": null, "err": null}
+{"n": 2947, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1112}, "status": 200, "ms": 221, "tag": "el", "igt": "2026-10-29T15:42:41.580Z", "err": null}
+{"n": 2948, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 121, "tag": "sortie", "igt": null, "err": null}
+{"n": 2949, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 20, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 2950, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 4, "objective": "success"}, "status": 200, "ms": 6030, "tag": "tune", "igt": null, "err": null}
+{"n": 2951, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 2, "objective": "success"}, "status": 200, "ms": 10432, "tag": "tune", "igt": null, "err": null}
+{"n": 2952, "method": "POST", "path": "/commit/build/party/1/applyBuildResult", "parameters": {"buildResultId": "b0518bd9-27d4-4a6b-bede-40dcd8208cb5", "simulation": false}, "status": 200, "ms": 137, "tag": "tuneapply", "igt": null, "err": null}
+{"n": 2953, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 3, "objective": "success"}, "status": 200, "ms": 4681, "tag": "tune", "igt": null, "err": null}
+{"n": 2954, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 5, "objective": "success"}, "status": 200, "ms": 12059, "tag": "tune", "igt": null, "err": null}
+{"n": 2955, "method": "POST", "path": "/read/build/party/1/gaSearch", "parameters": {"targets": [{"characterId": 1, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 2, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 3, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 4, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 5, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 6, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}], "considerOrderChange": true, "considerDeityChange": "allDeities", "considerItemsScope": "global", "objective": "success", "gaParameters": {"effort": "high", "timeBudgetSeconds": 150, "populationSize": 64, "generations": 200, "quickRuns": 100, "confirmRuns": 1000}}, "status": 200, "ms": 155194, "tag": "ga", "igt": null, "err": null}
+{"n": 2956, "method": "POST", "path": "/commit/build/party/1/applyBuildResult", "parameters": {"buildResultId": "f90b0f80-7b2d-4575-b2c8-d26abcaaf3a0", "simulation": false}, "status": 200, "ms": 108, "tag": "gaapply", "igt": null, "err": null}
+{"n": 2957, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1484}, "status": 200, "ms": 248, "tag": "el", "igt": "2026-10-29T16:07:25.580Z", "err": null}
+{"n": 2958, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 60}, "status": 200, "ms": 98, "tag": "el", "igt": "2026-10-29T16:08:25.580Z", "err": null}
+{"n": 2959, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 107, "tag": "sortie", "igt": null, "err": null}
+{"n": 2960, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1238}, "status": 200, "ms": 243, "tag": "el", "igt": "2026-10-29T16:29:03.580Z", "err": null}
+{"n": 2961, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 140, "tag": "sortie", "igt": null, "err": null}
+{"n": 2962, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1163}, "status": 200, "ms": 200, "tag": "el", "igt": "2026-10-29T16:48:26.580Z", "err": null}
+{"n": 2963, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 109, "tag": "sortie", "igt": null, "err": null}
+{"n": 2964, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1199}, "status": 200, "ms": 234, "tag": "el", "igt": "2026-10-29T17:08:25.580Z", "err": null}
+{"n": 2965, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 112, "tag": "sortie", "igt": null, "err": null}
+{"n": 2966, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1199}, "status": 200, "ms": 203, "tag": "el", "igt": "2026-10-29T17:28:24.580Z", "err": null}
+{"n": 2967, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 112, "tag": "sortie", "igt": null, "err": null}
+{"n": 2968, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1187}, "status": 200, "ms": 160, "tag": "el", "igt": "2026-10-29T17:48:11.580Z", "err": null}
+{"n": 2969, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 107, "tag": "sortie", "igt": null, "err": null}
+{"n": 2970, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 14, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 2971, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1457}, "status": 200, "ms": 214, "tag": "el", "igt": "2026-10-29T18:12:28.580Z", "err": null}
+{"n": 2972, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 113, "tag": "sortie", "igt": null, "err": null}
+{"n": 2973, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1295}, "status": 200, "ms": 188, "tag": "el", "igt": "2026-10-29T18:34:03.580Z", "err": null}
+{"n": 2974, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 102, "tag": "sortie", "igt": null, "err": null}
+{"n": 2975, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1535}, "status": 200, "ms": 214, "tag": "el", "igt": "2026-10-29T18:59:38.580Z", "err": null}
+{"n": 2976, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 125, "tag": "sortie", "igt": null, "err": null}
+{"n": 2977, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1121}, "status": 200, "ms": 173, "tag": "el", "igt": "2026-10-29T19:18:19.580Z", "err": null}
+{"n": 2978, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 116, "tag": "sortie", "igt": null, "err": null}
+{"n": 2979, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1259}, "status": 200, "ms": 212, "tag": "el", "igt": "2026-10-29T19:39:18.580Z", "err": null}
+{"n": 2980, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 125, "tag": "sortie", "igt": null, "err": null}
+{"n": 2981, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1199}, "status": 200, "ms": 269, "tag": "el", "igt": "2026-10-29T19:59:17.580Z", "err": null}
+{"n": 2982, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 105, "tag": "sortie", "igt": null, "err": null}
+{"n": 2983, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 26, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 2984, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1358}, "status": 200, "ms": 186, "tag": "el", "igt": "2026-10-29T20:21:55.580Z", "err": null}
+{"n": 2985, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 125, "tag": "sortie", "igt": null, "err": null}
+{"n": 2986, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1151}, "status": 200, "ms": 213, "tag": "el", "igt": "2026-10-29T20:41:06.580Z", "err": null}
+{"n": 2987, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 153, "tag": "sortie", "igt": null, "err": null}
+{"n": 2988, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1646}, "status": 200, "ms": 224, "tag": "el", "igt": "2026-10-29T21:08:32.580Z", "err": null}
+{"n": 2989, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 124, "tag": "sortie", "igt": null, "err": null}
+{"n": 2990, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1256}, "status": 200, "ms": 295, "tag": "el", "igt": "2026-10-29T21:29:28.580Z", "err": null}
+{"n": 2991, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 89, "tag": "sortie", "igt": null, "err": null}
+{"n": 2992, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1166}, "status": 200, "ms": 198, "tag": "el", "igt": "2026-10-29T21:48:54.580Z", "err": null}
+{"n": 2993, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 122, "tag": "sortie", "igt": null, "err": null}
+{"n": 2994, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 132, "tag": "sortie", "igt": null, "err": null}
+{"n": 2995, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1289}, "status": 200, "ms": 267, "tag": "el", "igt": "2026-10-29T22:10:23.580Z", "err": null}
+{"n": 2996, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 139, "tag": "sortie", "igt": null, "err": null}
+{"n": 2997, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 25, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 2998, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1172}, "status": 200, "ms": 226, "tag": "el", "igt": "2026-10-29T22:29:55.580Z", "err": null}
+{"n": 2999, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 113, "tag": "sortie", "igt": null, "err": null}
+{"n": 3000, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1412}, "status": 200, "ms": 183, "tag": "el", "igt": "2026-10-29T22:53:27.580Z", "err": null}
+{"n": 3001, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 153, "tag": "sortie", "igt": null, "err": null}
+{"n": 3002, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1667}, "status": 200, "ms": 251, "tag": "el", "igt": "2026-10-29T23:21:14.580Z", "err": null}
+{"n": 3003, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 99, "tag": "sortie", "igt": null, "err": null}
+{"n": 3004, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1631}, "status": 200, "ms": 214, "tag": "el", "igt": "2026-10-29T23:48:25.580Z", "err": null}
+{"n": 3005, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 81, "tag": "sortie", "igt": null, "err": null}
+{"n": 3006, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1091}, "status": 200, "ms": 166, "tag": "el", "igt": "2026-10-30T00:06:36.580Z", "err": null}
+{"n": 3007, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 125, "tag": "sortie", "igt": null, "err": null}
+{"n": 3008, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1139}, "status": 200, "ms": 218, "tag": "el", "igt": "2026-10-30T00:25:35.580Z", "err": null}
+{"n": 3009, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 106, "tag": "sortie", "igt": null, "err": null}
+{"n": 3010, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 16, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3011, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1274}, "status": 200, "ms": 184, "tag": "el", "igt": "2026-10-30T00:46:49.580Z", "err": null}
+{"n": 3012, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 101, "tag": "sortie", "igt": null, "err": null}
+{"n": 3013, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1232}, "status": 200, "ms": 158, "tag": "el", "igt": "2026-10-30T01:07:21.580Z", "err": null}
+{"n": 3014, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 117, "tag": "sortie", "igt": null, "err": null}
+{"n": 3015, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1142}, "status": 200, "ms": 205, "tag": "el", "igt": "2026-10-30T01:26:23.580Z", "err": null}
+{"n": 3016, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 85, "tag": "sortie", "igt": null, "err": null}
+{"n": 3017, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1490}, "status": 200, "ms": 174, "tag": "el", "igt": "2026-10-30T01:51:13.580Z", "err": null}
+{"n": 3018, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 131, "tag": "sortie", "igt": null, "err": null}
+{"n": 3019, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1646}, "status": 200, "ms": 174, "tag": "el", "igt": "2026-10-30T02:18:39.580Z", "err": null}
+{"n": 3020, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 110, "tag": "sortie", "igt": null, "err": null}
+{"n": 3021, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1076}, "status": 200, "ms": 194, "tag": "el", "igt": "2026-10-30T02:36:35.580Z", "err": null}
+{"n": 3022, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 124, "tag": "sortie", "igt": null, "err": null}
+{"n": 3023, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 44, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3024, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1454}, "status": 200, "ms": 208, "tag": "el", "igt": "2026-10-30T03:00:49.580Z", "err": null}
+{"n": 3025, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 119, "tag": "sortie", "igt": null, "err": null}
+{"n": 3026, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1619}, "status": 200, "ms": 193, "tag": "el", "igt": "2026-10-30T03:27:48.580Z", "err": null}
+{"n": 3027, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 97, "tag": "sortie", "igt": null, "err": null}
+{"n": 3028, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1379}, "status": 200, "ms": 229, "tag": "el", "igt": "2026-10-30T03:50:47.580Z", "err": null}
+{"n": 3029, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 113, "tag": "sortie", "igt": null, "err": null}
+{"n": 3030, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1613}, "status": 200, "ms": 255, "tag": "el", "igt": "2026-10-30T04:17:40.580Z", "err": null}
+{"n": 3031, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 119, "tag": "sortie", "igt": null, "err": null}
+{"n": 3032, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1223}, "status": 200, "ms": 194, "tag": "el", "igt": "2026-10-30T04:38:03.580Z", "err": null}
+{"n": 3033, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 104, "tag": "sortie", "igt": null, "err": null}
+{"n": 3034, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1298}, "status": 200, "ms": 254, "tag": "el", "igt": "2026-10-30T04:59:41.580Z", "err": null}
+{"n": 3035, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 129, "tag": "sortie", "igt": null, "err": null}
+{"n": 3036, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 17, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3037, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1091}, "status": 200, "ms": 203, "tag": "el", "igt": "2026-10-30T05:17:52.580Z", "err": null}
+{"n": 3038, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 115, "tag": "sortie", "igt": null, "err": null}
+{"n": 3039, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1271}, "status": 200, "ms": 190, "tag": "el", "igt": "2026-10-30T05:39:03.580Z", "err": null}
+{"n": 3040, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 101, "tag": "sortie", "igt": null, "err": null}
+{"n": 3041, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1424}, "status": 200, "ms": 197, "tag": "el", "igt": "2026-10-30T06:02:47.580Z", "err": null}
+{"n": 3042, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 104, "tag": "sortie", "igt": null, "err": null}
+{"n": 3043, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1157}, "status": 200, "ms": 220, "tag": "el", "igt": "2026-10-30T06:22:04.580Z", "err": null}
+{"n": 3044, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 102, "tag": "sortie", "igt": null, "err": null}
+{"n": 3045, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1427}, "status": 200, "ms": 208, "tag": "el", "igt": "2026-10-30T06:45:51.580Z", "err": null}
+{"n": 3046, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 113, "tag": "sortie", "igt": null, "err": null}
+{"n": 3047, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1280}, "status": 200, "ms": 227, "tag": "el", "igt": "2026-10-30T07:07:11.580Z", "err": null}
+{"n": 3048, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 104, "tag": "sortie", "igt": null, "err": null}
+{"n": 3049, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 13, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3050, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 4, "objective": "success"}, "status": 200, "ms": 9188, "tag": "tune", "igt": null, "err": null}
+{"n": 3051, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 2, "objective": "success"}, "status": 200, "ms": 12502, "tag": "tune", "igt": null, "err": null}
+{"n": 3052, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 3, "objective": "success"}, "status": 200, "ms": 10688, "tag": "tune", "igt": null, "err": null}
+{"n": 3053, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 5, "objective": "success"}, "status": 200, "ms": 17962, "tag": "tune", "igt": null, "err": null}
+{"n": 3054, "method": "POST", "path": "/commit/build/party/1/applyBuildResult", "parameters": {"buildResultId": "c4a2cae0-9862-4f2d-885f-89d85ae474e1", "simulation": false}, "status": 200, "ms": 81, "tag": "tuneapply", "igt": null, "err": null}
+{"n": 3055, "method": "POST", "path": "/read/build/party/1/gaSearch", "parameters": {"targets": [{"characterId": 1, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 2, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 3, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 4, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 5, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 6, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}], "considerOrderChange": true, "considerDeityChange": "allDeities", "considerItemsScope": "global", "objective": "success", "gaParameters": {"effort": "high", "timeBudgetSeconds": 150, "populationSize": 64, "generations": 200, "quickRuns": 100, "confirmRuns": 1000}}, "status": 200, "ms": 157182, "tag": "ga", "igt": null, "err": null}
+{"n": 3056, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1175}, "status": 200, "ms": 155, "tag": "el", "igt": "2026-10-30T07:26:46.580Z", "err": null}
+{"n": 3057, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 97, "tag": "sortie", "igt": null, "err": null}
+{"n": 3058, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1553}, "status": 200, "ms": 208, "tag": "el", "igt": "2026-10-30T07:52:39.580Z", "err": null}
+{"n": 3059, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 113, "tag": "sortie", "igt": null, "err": null}
+{"n": 3060, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1403}, "status": 200, "ms": 256, "tag": "el", "igt": "2026-10-30T08:16:02.580Z", "err": null}
+{"n": 3061, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 150, "tag": "sortie", "igt": null, "err": null}
+{"n": 3062, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1451}, "status": 200, "ms": 283, "tag": "el", "igt": "2026-10-30T08:40:13.580Z", "err": null}
+{"n": 3063, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 144, "tag": "sortie", "igt": null, "err": null}
+{"n": 3064, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1811}, "status": 200, "ms": 262, "tag": "el", "igt": "2026-10-30T09:10:24.580Z", "err": null}
+{"n": 3065, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 149, "tag": "sortie", "igt": null, "err": null}
+{"n": 3066, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1718}, "status": 200, "ms": 259, "tag": "el", "igt": "2026-10-30T09:39:02.580Z", "err": null}
+{"n": 3067, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 105, "tag": "sortie", "igt": null, "err": null}
+{"n": 3068, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 17, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3069, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 4, "objective": "success"}, "status": 200, "ms": 9605, "tag": "tune", "igt": null, "err": null}
+{"n": 3070, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 2, "objective": "success"}, "status": 200, "ms": 19802, "tag": "tune", "igt": null, "err": null}
+{"n": 3071, "method": "POST", "path": "/commit/build/party/1/applyBuildResult", "parameters": {"buildResultId": "99fd3cca-b5a0-4c7a-a36e-57dbb1724ff2", "simulation": false}, "status": 200, "ms": 66, "tag": "tuneapply", "igt": null, "err": null}
+{"n": 3072, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 3, "objective": "success"}, "status": 200, "ms": 14459, "tag": "tune", "igt": null, "err": null}
+{"n": 3073, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 5, "objective": "success"}, "status": 200, "ms": 18023, "tag": "tune", "igt": null, "err": null}
+{"n": 3074, "method": "POST", "path": "/commit/build/party/1/applyBuildResult", "parameters": {"buildResultId": "d4c2cff5-0170-4ad7-bf27-b5ff412f921a", "simulation": false}, "status": 200, "ms": 70, "tag": "tuneapply", "igt": null, "err": null}
+{"n": 3075, "method": "POST", "path": "/read/build/party/1/gaSearch", "parameters": {"targets": [{"characterId": 1, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 2, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 3, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 4, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 5, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 6, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}], "considerOrderChange": true, "considerDeityChange": "allDeities", "considerItemsScope": "global", "objective": "success", "gaParameters": {"effort": "high", "timeBudgetSeconds": 150, "populationSize": 64, "generations": 200, "quickRuns": 100, "confirmRuns": 1000}}, "status": 200, "ms": 157524, "tag": "ga", "igt": null, "err": null}
+{"n": 3076, "method": "POST", "path": "/commit/build/party/1/applyBuildResult", "parameters": {"buildResultId": "52dab4bf-1140-408c-98f0-34daf9c0e0f3", "simulation": false}, "status": 200, "ms": 89, "tag": "gaapply", "igt": null, "err": null}
+{"n": 3077, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1688}, "status": 200, "ms": 255, "tag": "el", "igt": "2026-10-30T10:07:10.580Z", "err": null}
+{"n": 3078, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 153, "tag": "sortie", "igt": null, "err": null}
+{"n": 3079, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1568}, "status": 200, "ms": 234, "tag": "el", "igt": "2026-10-30T10:33:18.580Z", "err": null}
+{"n": 3080, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 108, "tag": "sortie", "igt": null, "err": null}
+{"n": 3081, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1442}, "status": 200, "ms": 189, "tag": "el", "igt": "2026-10-30T10:57:20.580Z", "err": null}
+{"n": 3082, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 121, "tag": "sortie", "igt": null, "err": null}
+{"n": 3083, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1586}, "status": 200, "ms": 213, "tag": "el", "igt": "2026-10-30T11:23:46.580Z", "err": null}
+{"n": 3084, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 134, "tag": "sortie", "igt": null, "err": null}
+{"n": 3085, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1541}, "status": 200, "ms": 204, "tag": "el", "igt": "2026-10-30T11:49:27.580Z", "err": null}
+{"n": 3086, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 148, "tag": "sortie", "igt": null, "err": null}
+{"n": 3087, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1451}, "status": 200, "ms": 243, "tag": "el", "igt": "2026-10-30T12:13:38.580Z", "err": null}
+{"n": 3088, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 122, "tag": "sortie", "igt": null, "err": null}
+{"n": 3089, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 17, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3090, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1541}, "status": 200, "ms": 213, "tag": "el", "igt": "2026-10-30T12:39:19.580Z", "err": null}
+{"n": 3091, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 99, "tag": "sortie", "igt": null, "err": null}
+{"n": 3092, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1406}, "status": 200, "ms": 211, "tag": "el", "igt": "2026-10-30T13:02:45.580Z", "err": null}
+{"n": 3093, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 126, "tag": "sortie", "igt": null, "err": null}
+{"n": 3094, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1466}, "status": 200, "ms": 217, "tag": "el", "igt": "2026-10-30T13:27:11.580Z", "err": null}
+{"n": 3095, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 90, "tag": "sortie", "igt": null, "err": null}
+{"n": 3096, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1646}, "status": 200, "ms": 232, "tag": "el", "igt": "2026-10-30T13:54:37.580Z", "err": null}
+{"n": 3097, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 115, "tag": "sortie", "igt": null, "err": null}
+{"n": 3098, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1319}, "status": 200, "ms": 243, "tag": "el", "igt": "2026-10-30T14:16:36.580Z", "err": null}
+{"n": 3099, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 127, "tag": "sortie", "igt": null, "err": null}
+{"n": 3100, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1319}, "status": 200, "ms": 185, "tag": "el", "igt": "2026-10-30T14:38:35.580Z", "err": null}
+{"n": 3101, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 125, "tag": "sortie", "igt": null, "err": null}
+{"n": 3102, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 16, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3103, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1289}, "status": 200, "ms": 174, "tag": "el", "igt": "2026-10-30T15:00:04.580Z", "err": null}
+{"n": 3104, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 127, "tag": "sortie", "igt": null, "err": null}
+{"n": 3105, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1598}, "status": 200, "ms": 198, "tag": "el", "igt": "2026-10-30T15:26:42.580Z", "err": null}
+{"n": 3106, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 108, "tag": "sortie", "igt": null, "err": null}
+{"n": 3107, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1580}, "status": 200, "ms": 207, "tag": "el", "igt": "2026-10-30T15:53:02.580Z", "err": null}
+{"n": 3108, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 112, "tag": "sortie", "igt": null, "err": null}
+{"n": 3109, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1559}, "status": 200, "ms": 192, "tag": "el", "igt": "2026-10-30T16:19:01.580Z", "err": null}
+{"n": 3110, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 134, "tag": "sortie", "igt": null, "err": null}
+{"n": 3111, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1379}, "status": 200, "ms": 230, "tag": "el", "igt": "2026-10-30T16:42:00.580Z", "err": null}
+{"n": 3112, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 133, "tag": "sortie", "igt": null, "err": null}
+{"n": 3113, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1397}, "status": 200, "ms": 158, "tag": "el", "igt": "2026-10-30T17:05:17.580Z", "err": null}
+{"n": 3114, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 109, "tag": "sortie", "igt": null, "err": null}
+{"n": 3115, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 9, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3116, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1322}, "status": 200, "ms": 180, "tag": "el", "igt": "2026-10-30T17:27:19.580Z", "err": null}
+{"n": 3117, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 98, "tag": "sortie", "igt": null, "err": null}
+{"n": 3118, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1307}, "status": 200, "ms": 174, "tag": "el", "igt": "2026-10-30T17:49:06.580Z", "err": null}
+{"n": 3119, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 131, "tag": "sortie", "igt": null, "err": null}
+{"n": 3120, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1142}, "status": 200, "ms": 241, "tag": "el", "igt": "2026-10-30T18:08:08.580Z", "err": null}
+{"n": 3121, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 125, "tag": "sortie", "igt": null, "err": null}
+{"n": 3122, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1175}, "status": 200, "ms": 218, "tag": "el", "igt": "2026-10-30T18:27:43.580Z", "err": null}
+{"n": 3123, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 147, "tag": "sortie", "igt": null, "err": null}
+{"n": 3124, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1388}, "status": 200, "ms": 267, "tag": "el", "igt": "2026-10-30T18:50:51.580Z", "err": null}
+{"n": 3125, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 93, "tag": "sortie", "igt": null, "err": null}
+{"n": 3126, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1454}, "status": 200, "ms": 176, "tag": "el", "igt": "2026-10-30T19:15:05.580Z", "err": null}
+{"n": 3127, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 112, "tag": "sortie", "igt": null, "err": null}
+{"n": 3128, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 29, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3129, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 4, "objective": "success"}, "status": 200, "ms": 14454, "tag": "tune", "igt": null, "err": null}
+{"n": 3130, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 2, "objective": "success"}, "status": 200, "ms": 19395, "tag": "tune", "igt": null, "err": null}
+{"n": 3131, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 3, "objective": "success"}, "status": 200, "ms": 11420, "tag": "tune", "igt": null, "err": null}
+{"n": 3132, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 5, "objective": "success"}, "status": 200, "ms": 16913, "tag": "tune", "igt": null, "err": null}
+{"n": 3133, "method": "POST", "path": "/read/build/party/1/gaSearch", "parameters": {"targets": [{"characterId": 1, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 2, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 3, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 4, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 5, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 6, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}], "considerOrderChange": true, "considerDeityChange": "allDeities", "considerItemsScope": "global", "objective": "success", "gaParameters": {"effort": "high", "timeBudgetSeconds": 150, "populationSize": 64, "generations": 200, "quickRuns": 100, "confirmRuns": 1000}}, "status": 200, "ms": 155661, "tag": "ga", "igt": null, "err": null}
+{"n": 3134, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1502}, "status": 200, "ms": 189, "tag": "el", "igt": "2026-10-30T19:40:07.580Z", "err": null}
+{"n": 3135, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 130, "tag": "sortie", "igt": null, "err": null}
+{"n": 3136, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1502}, "status": 200, "ms": 298, "tag": "el", "igt": "2026-10-30T20:05:09.580Z", "err": null}
+{"n": 3137, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 135, "tag": "sortie", "igt": null, "err": null}
+{"n": 3138, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1511}, "status": 200, "ms": 228, "tag": "el", "igt": "2026-10-30T20:30:20.580Z", "err": null}
+{"n": 3139, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 142, "tag": "sortie", "igt": null, "err": null}
+{"n": 3140, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1376}, "status": 200, "ms": 269, "tag": "el", "igt": "2026-10-30T20:53:16.580Z", "err": null}
+{"n": 3141, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 108, "tag": "sortie", "igt": null, "err": null}
+{"n": 3142, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1403}, "status": 200, "ms": 181, "tag": "el", "igt": "2026-10-30T21:16:39.580Z", "err": null}
+{"n": 3143, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 102, "tag": "sortie", "igt": null, "err": null}
+{"n": 3144, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1613}, "status": 200, "ms": 245, "tag": "el", "igt": "2026-10-30T21:43:32.580Z", "err": null}
+{"n": 3145, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 115, "tag": "sortie", "igt": null, "err": null}
+{"n": 3146, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 28, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3147, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1613}, "status": 200, "ms": 187, "tag": "el", "igt": "2026-10-30T22:10:25.580Z", "err": null}
+{"n": 3148, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 113, "tag": "sortie", "igt": null, "err": null}
+{"n": 3149, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1499}, "status": 200, "ms": 205, "tag": "el", "igt": "2026-10-30T22:35:24.580Z", "err": null}
+{"n": 3150, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 87, "tag": "sortie", "igt": null, "err": null}
+{"n": 3151, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 809}, "status": 200, "ms": 168, "tag": "el", "igt": "2026-10-30T22:48:53.580Z", "err": null}
+{"n": 3152, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 142, "tag": "sortie", "igt": null, "err": null}
+{"n": 3153, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1454}, "status": 200, "ms": 253, "tag": "el", "igt": "2026-10-30T23:13:07.580Z", "err": null}
+{"n": 3154, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 98, "tag": "sortie", "igt": null, "err": null}
+{"n": 3155, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1214}, "status": 200, "ms": 153, "tag": "el", "igt": "2026-10-30T23:33:21.580Z", "err": null}
+{"n": 3156, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 104, "tag": "sortie", "igt": null, "err": null}
+{"n": 3157, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1421}, "status": 200, "ms": 239, "tag": "el", "igt": "2026-10-30T23:57:02.580Z", "err": null}
+{"n": 3158, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 106, "tag": "sortie", "igt": null, "err": null}
+{"n": 3159, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 14, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3160, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1505}, "status": 200, "ms": 184, "tag": "el", "igt": "2026-10-31T00:22:07.580Z", "err": null}
+{"n": 3161, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 112, "tag": "sortie", "igt": null, "err": null}
+{"n": 3162, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1145}, "status": 200, "ms": 229, "tag": "el", "igt": "2026-10-31T00:41:12.580Z", "err": null}
+{"n": 3163, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 96, "tag": "sortie", "igt": null, "err": null}
+{"n": 3164, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1307}, "status": 200, "ms": 202, "tag": "el", "igt": "2026-10-31T01:02:59.580Z", "err": null}
+{"n": 3165, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 101, "tag": "sortie", "igt": null, "err": null}
+{"n": 3166, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1322}, "status": 200, "ms": 132, "tag": "el", "igt": "2026-10-31T01:25:01.580Z", "err": null}
+{"n": 3167, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 99, "tag": "sortie", "igt": null, "err": null}
+{"n": 3168, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1334}, "status": 200, "ms": 206, "tag": "el", "igt": "2026-10-31T01:47:15.580Z", "err": null}
+{"n": 3169, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 97, "tag": "sortie", "igt": null, "err": null}
+{"n": 3170, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1424}, "status": 200, "ms": 155, "tag": "el", "igt": "2026-10-31T02:10:59.580Z", "err": null}
+{"n": 3171, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 107, "tag": "sortie", "igt": null, "err": null}
+{"n": 3172, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 14, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3173, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1346}, "status": 200, "ms": 145, "tag": "el", "igt": "2026-10-31T02:33:25.580Z", "err": null}
+{"n": 3174, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 115, "tag": "sortie", "igt": null, "err": null}
+{"n": 3175, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1364}, "status": 200, "ms": 200, "tag": "el", "igt": "2026-10-31T02:56:09.580Z", "err": null}
+{"n": 3176, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 117, "tag": "sortie", "igt": null, "err": null}
+{"n": 3177, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1394}, "status": 200, "ms": 180, "tag": "el", "igt": "2026-10-31T03:19:23.580Z", "err": null}
+{"n": 3178, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 98, "tag": "sortie", "igt": null, "err": null}
+{"n": 3179, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1529}, "status": 200, "ms": 221, "tag": "el", "igt": "2026-10-31T03:44:52.580Z", "err": null}
+{"n": 3180, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 97, "tag": "sortie", "igt": null, "err": null}
+{"n": 3181, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1334}, "status": 200, "ms": 172, "tag": "el", "igt": "2026-10-31T04:07:06.580Z", "err": null}
+{"n": 3182, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 124, "tag": "sortie", "igt": null, "err": null}
+{"n": 3183, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1109}, "status": 200, "ms": 200, "tag": "el", "igt": "2026-10-31T04:25:35.580Z", "err": null}
+{"n": 3184, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 125, "tag": "sortie", "igt": null, "err": null}
+{"n": 3185, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 16, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3186, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1199}, "status": 200, "ms": 152, "tag": "el", "igt": "2026-10-31T04:45:34.580Z", "err": null}
+{"n": 3187, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 97, "tag": "sortie", "igt": null, "err": null}
+{"n": 3188, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 839}, "status": 200, "ms": 162, "tag": "el", "igt": "2026-10-31T04:59:33.580Z", "err": null}
+{"n": 3189, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 140, "tag": "sortie", "igt": null, "err": null}
+{"n": 3190, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1379}, "status": 200, "ms": 247, "tag": "el", "igt": "2026-10-31T05:22:32.580Z", "err": null}
+{"n": 3191, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 129, "tag": "sortie", "igt": null, "err": null}
+{"n": 3192, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1319}, "status": 200, "ms": 201, "tag": "el", "igt": "2026-10-31T05:44:31.580Z", "err": null}
+{"n": 3193, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 101, "tag": "sortie", "igt": null, "err": null}
+{"n": 3194, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1187}, "status": 200, "ms": 241, "tag": "el", "igt": "2026-10-31T06:04:18.580Z", "err": null}
+{"n": 3195, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 132, "tag": "sortie", "igt": null, "err": null}
+{"n": 3196, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1040}, "status": 200, "ms": 229, "tag": "el", "igt": "2026-10-31T06:21:38.580Z", "err": null}
+{"n": 3197, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 137, "tag": "sortie", "igt": null, "err": null}
+{"n": 3198, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 34, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3199, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1295}, "status": 200, "ms": 247, "tag": "el", "igt": "2026-10-31T06:43:13.580Z", "err": null}
+{"n": 3200, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 112, "tag": "sortie", "igt": null, "err": null}
+{"n": 3201, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1490}, "status": 200, "ms": 196, "tag": "el", "igt": "2026-10-31T07:08:03.580Z", "err": null}
+{"n": 3202, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 112, "tag": "sortie", "igt": null, "err": null}
+{"n": 3203, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1358}, "status": 200, "ms": 243, "tag": "el", "igt": "2026-10-31T07:30:41.580Z", "err": null}
+{"n": 3204, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 142, "tag": "sortie", "igt": null, "err": null}
+{"n": 3205, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1340}, "status": 200, "ms": 195, "tag": "el", "igt": "2026-10-31T07:53:01.580Z", "err": null}
+{"n": 3206, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 121, "tag": "sortie", "igt": null, "err": null}
+{"n": 3207, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 980}, "status": 200, "ms": 182, "tag": "el", "igt": "2026-10-31T08:09:21.580Z", "err": null}
+{"n": 3208, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 103, "tag": "sortie", "igt": null, "err": null}
+{"n": 3209, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1205}, "status": 200, "ms": 240, "tag": "el", "igt": "2026-10-31T08:29:26.580Z", "err": null}
+{"n": 3210, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 106, "tag": "sortie", "igt": null, "err": null}
+{"n": 3211, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 29, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3212, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1487}, "status": 200, "ms": 159, "tag": "el", "igt": "2026-10-31T08:54:13.580Z", "err": null}
+{"n": 3213, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 127, "tag": "sortie", "igt": null, "err": null}
+{"n": 3214, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1442}, "status": 200, "ms": 263, "tag": "el", "igt": "2026-10-31T09:18:15.580Z", "err": null}
+{"n": 3215, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 120, "tag": "sortie", "igt": null, "err": null}
+{"n": 3216, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1322}, "status": 200, "ms": 150, "tag": "el", "igt": "2026-10-31T09:40:17.580Z", "err": null}
+{"n": 3217, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 115, "tag": "sortie", "igt": null, "err": null}
+{"n": 3218, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1292}, "status": 200, "ms": 205, "tag": "el", "igt": "2026-10-31T10:01:49.580Z", "err": null}
+{"n": 3219, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 101, "tag": "sortie", "igt": null, "err": null}
+{"n": 3220, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1247}, "status": 200, "ms": 193, "tag": "el", "igt": "2026-10-31T10:22:36.580Z", "err": null}
+{"n": 3221, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 112, "tag": "sortie", "igt": null, "err": null}
+{"n": 3222, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1307}, "status": 200, "ms": 228, "tag": "el", "igt": "2026-10-31T10:44:23.580Z", "err": null}
+{"n": 3223, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 115, "tag": "sortie", "igt": null, "err": null}
+{"n": 3224, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 15, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3225, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 932}, "status": 200, "ms": 156, "tag": "el", "igt": "2026-10-31T10:59:55.580Z", "err": null}
+{"n": 3226, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 141, "tag": "sortie", "igt": null, "err": null}
+{"n": 3227, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1400}, "status": 200, "ms": 216, "tag": "el", "igt": "2026-10-31T11:23:15.580Z", "err": null}
+{"n": 3228, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 112, "tag": "sortie", "igt": null, "err": null}
+{"n": 3229, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1430}, "status": 200, "ms": 229, "tag": "el", "igt": "2026-10-31T11:47:05.580Z", "err": null}
+{"n": 3230, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 105, "tag": "sortie", "igt": null, "err": null}
+{"n": 3231, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1280}, "status": 200, "ms": 186, "tag": "el", "igt": "2026-10-31T12:08:25.580Z", "err": null}
+{"n": 3232, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 129, "tag": "sortie", "igt": null, "err": null}
+{"n": 3233, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1340}, "status": 200, "ms": 225, "tag": "el", "igt": "2026-10-31T12:30:45.580Z", "err": null}
+{"n": 3234, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 112, "tag": "sortie", "igt": null, "err": null}
+{"n": 3235, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1475}, "status": 200, "ms": 184, "tag": "el", "igt": "2026-10-31T12:55:20.580Z", "err": null}
+{"n": 3236, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 122, "tag": "sortie", "igt": null, "err": null}
+{"n": 3237, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 23, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3238, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 4, "objective": "success"}, "status": 200, "ms": 15035, "tag": "tune", "igt": null, "err": null}
+{"n": 3239, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 2, "objective": "success"}, "status": 200, "ms": 20288, "tag": "tune", "igt": null, "err": null}
+{"n": 3240, "method": "POST", "path": "/commit/build/party/1/applyBuildResult", "parameters": {"buildResultId": "ea4ab6b1-4cd7-4159-b085-abfa7d1b074f", "simulation": false}, "status": 200, "ms": 76, "tag": "tuneapply", "igt": null, "err": null}
+{"n": 3241, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 3, "objective": "success"}, "status": 200, "ms": 10077, "tag": "tune", "igt": null, "err": null}
+{"n": 3242, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 5, "objective": "success"}, "status": 200, "ms": 17223, "tag": "tune", "igt": null, "err": null}
+{"n": 3243, "method": "POST", "path": "/read/build/party/1/gaSearch", "parameters": {"targets": [{"characterId": 1, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 2, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 3, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 4, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 5, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 6, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}], "considerOrderChange": true, "considerDeityChange": "allDeities", "considerItemsScope": "global", "objective": "success", "gaParameters": {"effort": "high", "timeBudgetSeconds": 150, "populationSize": 64, "generations": 200, "quickRuns": 100, "confirmRuns": 1000}}, "status": 200, "ms": 158310, "tag": "ga", "igt": null, "err": null}
+{"n": 3244, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1418}, "status": 200, "ms": 147, "tag": "el", "igt": "2026-10-31T13:18:58.580Z", "err": null}
+{"n": 3245, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 125, "tag": "sortie", "igt": null, "err": null}
+{"n": 3246, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1205}, "status": 200, "ms": 213, "tag": "el", "igt": "2026-10-31T13:39:03.580Z", "err": null}
+{"n": 3247, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 180, "tag": "sortie", "igt": null, "err": null}
+{"n": 3248, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1610}, "status": 200, "ms": 189, "tag": "el", "igt": "2026-10-31T14:05:53.580Z", "err": null}
+{"n": 3249, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 104, "tag": "sortie", "igt": null, "err": null}
+{"n": 3250, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1340}, "status": 200, "ms": 266, "tag": "el", "igt": "2026-10-31T14:28:13.580Z", "err": null}
+{"n": 3251, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 127, "tag": "sortie", "igt": null, "err": null}
+{"n": 3252, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1427}, "status": 200, "ms": 181, "tag": "el", "igt": "2026-10-31T14:52:00.580Z", "err": null}
+{"n": 3253, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 114, "tag": "sortie", "igt": null, "err": null}
+{"n": 3254, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1547}, "status": 200, "ms": 196, "tag": "el", "igt": "2026-10-31T15:17:47.580Z", "err": null}
+{"n": 3255, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 107, "tag": "sortie", "igt": null, "err": null}
+{"n": 3256, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 14, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3257, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1010}, "status": 200, "ms": 150, "tag": "el", "igt": "2026-10-31T15:34:37.580Z", "err": null}
+{"n": 3258, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 136, "tag": "sortie", "igt": null, "err": null}
+{"n": 3259, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1280}, "status": 200, "ms": 210, "tag": "el", "igt": "2026-10-31T15:55:57.580Z", "err": null}
+{"n": 3260, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 132, "tag": "sortie", "igt": null, "err": null}
+{"n": 3261, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1487}, "status": 200, "ms": 250, "tag": "el", "igt": "2026-10-31T16:20:44.580Z", "err": null}
+{"n": 3262, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 134, "tag": "sortie", "igt": null, "err": null}
+{"n": 3263, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1112}, "status": 200, "ms": 147, "tag": "el", "igt": "2026-10-31T16:39:16.580Z", "err": null}
+{"n": 3264, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 108, "tag": "sortie", "igt": null, "err": null}
+{"n": 3265, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1427}, "status": 200, "ms": 177, "tag": "el", "igt": "2026-10-31T17:03:03.580Z", "err": null}
+{"n": 3266, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 96, "tag": "sortie", "igt": null, "err": null}
+{"n": 3267, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1262}, "status": 200, "ms": 218, "tag": "el", "igt": "2026-10-31T17:24:05.580Z", "err": null}
+{"n": 3268, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 122, "tag": "sortie", "igt": null, "err": null}
+{"n": 3269, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 14, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3270, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1337}, "status": 200, "ms": 139, "tag": "el", "igt": "2026-10-31T17:46:22.580Z", "err": null}
+{"n": 3271, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 154, "tag": "sortie", "igt": null, "err": null}
+{"n": 3272, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1505}, "status": 200, "ms": 284, "tag": "el", "igt": "2026-10-31T18:11:27.580Z", "err": null}
+{"n": 3273, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 118, "tag": "sortie", "igt": null, "err": null}
+{"n": 3274, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1517}, "status": 200, "ms": 188, "tag": "el", "igt": "2026-10-31T18:36:44.580Z", "err": null}
+{"n": 3275, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 107, "tag": "sortie", "igt": null, "err": null}
+{"n": 3276, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1685}, "status": 200, "ms": 249, "tag": "el", "igt": "2026-10-31T19:04:49.580Z", "err": null}
+{"n": 3277, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 107, "tag": "sortie", "igt": null, "err": null}
+{"n": 3278, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1352}, "status": 200, "ms": 278, "tag": "el", "igt": "2026-10-31T19:27:21.580Z", "err": null}
+{"n": 3279, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 114, "tag": "sortie", "igt": null, "err": null}
+{"n": 3280, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1505}, "status": 200, "ms": 203, "tag": "el", "igt": "2026-10-31T19:52:26.580Z", "err": null}
+{"n": 3281, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 118, "tag": "sortie", "igt": null, "err": null}
+{"n": 3282, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 15, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3283, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1685}, "status": 200, "ms": 178, "tag": "el", "igt": "2026-10-31T20:20:31.580Z", "err": null}
+{"n": 3284, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 122, "tag": "sortie", "igt": null, "err": null}
+{"n": 3285, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1322}, "status": 200, "ms": 235, "tag": "el", "igt": "2026-10-31T20:42:33.580Z", "err": null}
+{"n": 3286, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 97, "tag": "sortie", "igt": null, "err": null}
+{"n": 3287, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1220}, "status": 200, "ms": 156, "tag": "el", "igt": "2026-10-31T21:02:53.580Z", "err": null}
+{"n": 3288, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 102, "tag": "sortie", "igt": null, "err": null}
+{"n": 3289, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1355}, "status": 200, "ms": 201, "tag": "el", "igt": "2026-10-31T21:25:28.580Z", "err": null}
+{"n": 3290, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 114, "tag": "sortie", "igt": null, "err": null}
+{"n": 3291, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1403}, "status": 200, "ms": 254, "tag": "el", "igt": "2026-10-31T21:48:51.580Z", "err": null}
+{"n": 3292, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 163, "tag": "sortie", "igt": null, "err": null}
+{"n": 3293, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1427}, "status": 200, "ms": 228, "tag": "el", "igt": "2026-10-31T22:12:38.580Z", "err": null}
+{"n": 3294, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 102, "tag": "sortie", "igt": null, "err": null}
+{"n": 3295, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 18, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3296, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1172}, "status": 200, "ms": 194, "tag": "el", "igt": "2026-10-31T22:32:10.580Z", "err": null}
+{"n": 3297, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 103, "tag": "sortie", "igt": null, "err": null}
+{"n": 3298, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1352}, "status": 200, "ms": 197, "tag": "el", "igt": "2026-10-31T22:54:42.580Z", "err": null}
+{"n": 3299, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 118, "tag": "sortie", "igt": null, "err": null}
+{"n": 3300, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1292}, "status": 200, "ms": 158, "tag": "el", "igt": "2026-10-31T23:16:14.580Z", "err": null}
+{"n": 3301, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 108, "tag": "sortie", "igt": null, "err": null}
+{"n": 3302, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1409}, "status": 200, "ms": 177, "tag": "el", "igt": "2026-10-31T23:39:43.580Z", "err": null}
+{"n": 3303, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 116, "tag": "sortie", "igt": null, "err": null}
+{"n": 3304, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1277}, "status": 200, "ms": 203, "tag": "el", "igt": "2026-11-01T00:01:00.580Z", "err": null}
+{"n": 3305, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 130, "tag": "sortie", "igt": null, "err": null}
+{"n": 3306, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1355}, "status": 200, "ms": 193, "tag": "el", "igt": "2026-11-01T00:23:35.580Z", "err": null}
+{"n": 3307, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 106, "tag": "sortie", "igt": null, "err": null}
+{"n": 3308, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 20, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3309, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1220}, "status": 200, "ms": 188, "tag": "el", "igt": "2026-11-01T00:43:55.580Z", "err": null}
+{"n": 3310, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 91, "tag": "sortie", "igt": null, "err": null}
+{"n": 3311, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1568}, "status": 200, "ms": 194, "tag": "el", "igt": "2026-11-01T01:10:03.580Z", "err": null}
+{"n": 3312, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 108, "tag": "sortie", "igt": null, "err": null}
+{"n": 3313, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1151}, "status": 200, "ms": 220, "tag": "el", "igt": "2026-11-01T01:29:14.580Z", "err": null}
+{"n": 3314, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 102, "tag": "sortie", "igt": null, "err": null}
+{"n": 3315, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1445}, "status": 200, "ms": 184, "tag": "el", "igt": "2026-11-01T01:53:19.580Z", "err": null}
+{"n": 3316, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 107, "tag": "sortie", "igt": null, "err": null}
+{"n": 3317, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1322}, "status": 200, "ms": 194, "tag": "el", "igt": "2026-11-01T02:15:21.580Z", "err": null}
+{"n": 3318, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 130, "tag": "sortie", "igt": null, "err": null}
+{"n": 3319, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1262}, "status": 200, "ms": 183, "tag": "el", "igt": "2026-11-01T02:36:23.580Z", "err": null}
+{"n": 3320, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 139, "tag": "sortie", "igt": null, "err": null}
+{"n": 3321, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 20, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3322, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 4, "objective": "success"}, "status": 200, "ms": 19170, "tag": "tune", "igt": null, "err": null}
+{"n": 3323, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 2, "objective": "success"}, "status": 200, "ms": 23457, "tag": "tune", "igt": null, "err": null}
+{"n": 3324, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 3, "objective": "success"}, "status": 200, "ms": 16125, "tag": "tune", "igt": null, "err": null}
+{"n": 3325, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 5, "objective": "success"}, "status": 200, "ms": 27280, "tag": "tune", "igt": null, "err": null}
+{"n": 3326, "method": "POST", "path": "/read/build/party/1/gaSearch", "parameters": {"targets": [{"characterId": 1, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 2, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 3, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 4, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 5, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 6, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}], "considerOrderChange": true, "considerDeityChange": "allDeities", "considerItemsScope": "global", "objective": "success", "gaParameters": {"effort": "high", "timeBudgetSeconds": 150, "populationSize": 64, "generations": 200, "quickRuns": 100, "confirmRuns": 1000}}, "status": 200, "ms": 159060, "tag": "ga", "igt": null, "err": null}
+{"n": 3327, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1307}, "status": 200, "ms": 175, "tag": "el", "igt": "2026-11-01T02:58:10.580Z", "err": null}
+{"n": 3328, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 131, "tag": "sortie", "igt": null, "err": null}
+{"n": 3329, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1565}, "status": 200, "ms": 241, "tag": "el", "igt": "2026-11-01T03:24:15.580Z", "err": null}
+{"n": 3330, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 145, "tag": "sortie", "igt": null, "err": null}
+{"n": 3331, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1430}, "status": 200, "ms": 170, "tag": "el", "igt": "2026-11-01T03:48:05.580Z", "err": null}
+{"n": 3332, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 103, "tag": "sortie", "igt": null, "err": null}
+{"n": 3333, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1355}, "status": 200, "ms": 211, "tag": "el", "igt": "2026-11-01T04:10:40.580Z", "err": null}
+{"n": 3334, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 112, "tag": "sortie", "igt": null, "err": null}
+{"n": 3335, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1775}, "status": 200, "ms": 195, "tag": "el", "igt": "2026-11-01T04:40:15.580Z", "err": null}
+{"n": 3336, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 111, "tag": "sortie", "igt": null, "err": null}
+{"n": 3337, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1655}, "status": 200, "ms": 200, "tag": "el", "igt": "2026-11-01T05:07:50.580Z", "err": null}
+{"n": 3338, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 99, "tag": "sortie", "igt": null, "err": null}
+{"n": 3339, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 16, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3340, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1487}, "status": 200, "ms": 150, "tag": "el", "igt": "2026-11-01T05:32:37.580Z", "err": null}
+{"n": 3341, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 113, "tag": "sortie", "igt": null, "err": null}
+{"n": 3342, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1772}, "status": 200, "ms": 257, "tag": "el", "igt": "2026-11-01T06:02:09.580Z", "err": null}
+{"n": 3343, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 183, "tag": "sortie", "igt": null, "err": null}
+{"n": 3344, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1367}, "status": 200, "ms": 290, "tag": "el", "igt": "2026-11-01T06:24:56.580Z", "err": null}
+{"n": 3345, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 146, "tag": "sortie", "igt": null, "err": null}
+{"n": 3346, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1607}, "status": 200, "ms": 249, "tag": "el", "igt": "2026-11-01T06:51:43.580Z", "err": null}
+{"n": 3347, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 153, "tag": "sortie", "igt": null, "err": null}
+{"n": 3348, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1352}, "status": 200, "ms": 190, "tag": "el", "igt": "2026-11-01T07:14:15.580Z", "err": null}
+{"n": 3349, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 116, "tag": "sortie", "igt": null, "err": null}
+{"n": 3350, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1517}, "status": 200, "ms": 187, "tag": "el", "igt": "2026-11-01T07:39:32.580Z", "err": null}
+{"n": 3351, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 99, "tag": "sortie", "igt": null, "err": null}
+{"n": 3352, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 20, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3353, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1487}, "status": 200, "ms": 158, "tag": "el", "igt": "2026-11-01T08:04:19.580Z", "err": null}
+{"n": 3354, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 115, "tag": "sortie", "igt": null, "err": null}
+{"n": 3355, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1514}, "status": 200, "ms": 159, "tag": "el", "igt": "2026-11-01T08:29:33.580Z", "err": null}
+{"n": 3356, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 110, "tag": "sortie", "igt": null, "err": null}
+{"n": 3357, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1634}, "status": 200, "ms": 191, "tag": "el", "igt": "2026-11-01T08:56:47.580Z", "err": null}
+{"n": 3358, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 114, "tag": "sortie", "igt": null, "err": null}
+{"n": 3359, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1622}, "status": 200, "ms": 250, "tag": "el", "igt": "2026-11-01T09:23:49.580Z", "err": null}
+{"n": 3360, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 105, "tag": "sortie", "igt": null, "err": null}
+{"n": 3361, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1514}, "status": 200, "ms": 210, "tag": "el", "igt": "2026-11-01T09:49:03.580Z", "err": null}
+{"n": 3362, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 114, "tag": "sortie", "igt": null, "err": null}
+{"n": 3363, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1694}, "status": 200, "ms": 237, "tag": "el", "igt": "2026-11-01T10:17:17.580Z", "err": null}
+{"n": 3364, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 123, "tag": "sortie", "igt": null, "err": null}
+{"n": 3365, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 32, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3366, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1694}, "status": 200, "ms": 221, "tag": "el", "igt": "2026-11-01T10:45:31.580Z", "err": null}
+{"n": 3367, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 114, "tag": "sortie", "igt": null, "err": null}
+{"n": 3368, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1649}, "status": 200, "ms": 205, "tag": "el", "igt": "2026-11-01T11:13:00.580Z", "err": null}
+{"n": 3369, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 131, "tag": "sortie", "igt": null, "err": null}
+{"n": 3370, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1619}, "status": 200, "ms": 258, "tag": "el", "igt": "2026-11-01T11:39:59.580Z", "err": null}
+{"n": 3371, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 144, "tag": "sortie", "igt": null, "err": null}
+{"n": 3372, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1364}, "status": 200, "ms": 179, "tag": "el", "igt": "2026-11-01T12:02:43.580Z", "err": null}
+{"n": 3373, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 228, "tag": "sortie", "igt": null, "err": null}
+{"n": 3374, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1544}, "status": 200, "ms": 277, "tag": "el", "igt": "2026-11-01T12:28:27.580Z", "err": null}
+{"n": 3375, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 128, "tag": "sortie", "igt": null, "err": null}
+{"n": 3376, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1619}, "status": 200, "ms": 263, "tag": "el", "igt": "2026-11-01T12:55:26.580Z", "err": null}
+{"n": 3377, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 199, "tag": "sortie", "igt": null, "err": null}
+{"n": 3378, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 17, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3379, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1526}, "status": 200, "ms": 167, "tag": "el", "igt": "2026-11-01T13:20:52.580Z", "err": null}
+{"n": 3380, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 103, "tag": "sortie", "igt": null, "err": null}
+{"n": 3381, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1199}, "status": 200, "ms": 264, "tag": "el", "igt": "2026-11-01T13:40:51.580Z", "err": null}
+{"n": 3382, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 90, "tag": "sortie", "igt": null, "err": null}
+{"n": 3383, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1469}, "status": 200, "ms": 231, "tag": "el", "igt": "2026-11-01T14:05:20.580Z", "err": null}
+{"n": 3384, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 145, "tag": "sortie", "igt": null, "err": null}
+{"n": 3385, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1184}, "status": 200, "ms": 219, "tag": "el", "igt": "2026-11-01T14:25:04.580Z", "err": null}
+{"n": 3386, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 194, "tag": "sortie", "igt": null, "err": null}
+{"n": 3387, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1769}, "status": 200, "ms": 272, "tag": "el", "igt": "2026-11-01T14:54:33.580Z", "err": null}
+{"n": 3388, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 131, "tag": "sortie", "igt": null, "err": null}
+{"n": 3389, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1412}, "status": 200, "ms": 282, "tag": "el", "igt": "2026-11-01T15:18:05.580Z", "err": null}
+{"n": 3390, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 119, "tag": "sortie", "igt": null, "err": null}
+{"n": 3391, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 45, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3392, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1352}, "status": 200, "ms": 192, "tag": "el", "igt": "2026-11-01T15:40:37.580Z", "err": null}
+{"n": 3393, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 123, "tag": "sortie", "igt": null, "err": null}
+{"n": 3394, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1217}, "status": 200, "ms": 191, "tag": "el", "igt": "2026-11-01T16:00:54.580Z", "err": null}
+{"n": 3395, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 131, "tag": "sortie", "igt": null, "err": null}
+{"n": 3396, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1310}, "status": 200, "ms": 201, "tag": "el", "igt": "2026-11-01T16:22:44.580Z", "err": null}
+{"n": 3397, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 104, "tag": "sortie", "igt": null, "err": null}
+{"n": 3398, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1385}, "status": 200, "ms": 220, "tag": "el", "igt": "2026-11-01T16:45:49.580Z", "err": null}
+{"n": 3399, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 102, "tag": "sortie", "igt": null, "err": null}
+{"n": 3400, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1715}, "status": 200, "ms": 205, "tag": "el", "igt": "2026-11-01T17:14:24.580Z", "err": null}
+{"n": 3401, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 84, "tag": "sortie", "igt": null, "err": null}
+{"n": 3402, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1352}, "status": 200, "ms": 207, "tag": "el", "igt": "2026-11-01T17:36:56.580Z", "err": null}
+{"n": 3403, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 132, "tag": "sortie", "igt": null, "err": null}
+{"n": 3404, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 16, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3405, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1727}, "status": 200, "ms": 183, "tag": "el", "igt": "2026-11-01T18:05:43.580Z", "err": null}
+{"n": 3406, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 120, "tag": "sortie", "igt": null, "err": null}
+{"n": 3407, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1535}, "status": 200, "ms": 155, "tag": "el", "igt": "2026-11-01T18:31:18.580Z", "err": null}
+{"n": 3408, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 150, "tag": "sortie", "igt": null, "err": null}
+{"n": 3409, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1457}, "status": 200, "ms": 294, "tag": "el", "igt": "2026-11-01T18:55:35.580Z", "err": null}
+{"n": 3410, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 116, "tag": "sortie", "igt": null, "err": null}
+{"n": 3411, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1787}, "status": 200, "ms": 207, "tag": "el", "igt": "2026-11-01T19:25:22.580Z", "err": null}
+{"n": 3412, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 130, "tag": "sortie", "igt": null, "err": null}
+{"n": 3413, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1157}, "status": 200, "ms": 197, "tag": "el", "igt": "2026-11-01T19:44:39.580Z", "err": null}
+{"n": 3414, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 113, "tag": "sortie", "igt": null, "err": null}
+{"n": 3415, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1652}, "status": 200, "ms": 194, "tag": "el", "igt": "2026-11-01T20:12:11.580Z", "err": null}
+{"n": 3416, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 116, "tag": "sortie", "igt": null, "err": null}
+{"n": 3417, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 39, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3418, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1565}, "status": 200, "ms": 209, "tag": "el", "igt": "2026-11-01T20:38:16.580Z", "err": null}
+{"n": 3419, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 122, "tag": "sortie", "igt": null, "err": null}
+{"n": 3420, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1700}, "status": 200, "ms": 195, "tag": "el", "igt": "2026-11-01T21:06:36.580Z", "err": null}
+{"n": 3421, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 120, "tag": "sortie", "igt": null, "err": null}
+{"n": 3422, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1085}, "status": 200, "ms": 210, "tag": "el", "igt": "2026-11-01T21:24:41.580Z", "err": null}
+{"n": 3423, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 139, "tag": "sortie", "igt": null, "err": null}
+{"n": 3424, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1775}, "status": 200, "ms": 227, "tag": "el", "igt": "2026-11-01T21:54:16.580Z", "err": null}
+{"n": 3425, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 96, "tag": "sortie", "igt": null, "err": null}
+{"n": 3426, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1310}, "status": 200, "ms": 155, "tag": "el", "igt": "2026-11-01T22:16:06.580Z", "err": null}
+{"n": 3427, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 103, "tag": "sortie", "igt": null, "err": null}
+{"n": 3428, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1400}, "status": 200, "ms": 183, "tag": "el", "igt": "2026-11-01T22:39:26.580Z", "err": null}
+{"n": 3429, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 122, "tag": "sortie", "igt": null, "err": null}
+{"n": 3430, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 14, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3431, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 4, "objective": "success"}, "status": 200, "ms": 17480, "tag": "tune", "igt": null, "err": null}
+{"n": 3432, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 2, "objective": "success"}, "status": 200, "ms": 22664, "tag": "tune", "igt": null, "err": null}
+{"n": 3433, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 3, "objective": "success"}, "status": 200, "ms": 18310, "tag": "tune", "igt": null, "err": null}
+{"n": 3434, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 5, "objective": "success"}, "status": 200, "ms": 22444, "tag": "tune", "igt": null, "err": null}
+{"n": 3435, "method": "POST", "path": "/read/build/party/1/gaSearch", "parameters": {"targets": [{"characterId": 1, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 2, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 3, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 4, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 5, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}, {"characterId": 6, "changeableComponents": {"equipment": true, "jewels": true, "mainClass": true, "subClass": true, "lineage": true, "predisposition": true, "raceGender": true}}], "considerOrderChange": true, "considerDeityChange": "allDeities", "considerItemsScope": "global", "objective": "success", "gaParameters": {"effort": "high", "timeBudgetSeconds": 150, "populationSize": 64, "generations": 200, "quickRuns": 100, "confirmRuns": 1000}}, "status": 200, "ms": 156532, "tag": "ga", "igt": null, "err": null}
+{"n": 3436, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1370}, "status": 200, "ms": 161, "tag": "el", "igt": "2026-11-01T23:02:16.580Z", "err": null}
+{"n": 3437, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 112, "tag": "sortie", "igt": null, "err": null}
+{"n": 3438, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1349}, "status": 200, "ms": 237, "tag": "el", "igt": "2026-11-01T23:24:45.580Z", "err": null}
+{"n": 3439, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 118, "tag": "sortie", "igt": null, "err": null}
+{"n": 3440, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1484}, "status": 200, "ms": 195, "tag": "el", "igt": "2026-11-01T23:49:29.580Z", "err": null}
+{"n": 3441, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 157, "tag": "sortie", "igt": null, "err": null}
+{"n": 3442, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1412}, "status": 200, "ms": 214, "tag": "el", "igt": "2026-11-02T00:13:01.580Z", "err": null}
+{"n": 3443, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 111, "tag": "sortie", "igt": null, "err": null}
+{"n": 3444, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1457}, "status": 200, "ms": 248, "tag": "el", "igt": "2026-11-02T00:37:18.580Z", "err": null}
+{"n": 3445, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 108, "tag": "sortie", "igt": null, "err": null}
+{"n": 3446, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1322}, "status": 200, "ms": 183, "tag": "el", "igt": "2026-11-02T00:59:20.580Z", "err": null}
+{"n": 3447, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 104, "tag": "sortie", "igt": null, "err": null}
+{"n": 3448, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 15, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3449, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1367}, "status": 200, "ms": 192, "tag": "el", "igt": "2026-11-02T01:22:07.580Z", "err": null}
+{"n": 3450, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 108, "tag": "sortie", "igt": null, "err": null}
+{"n": 3451, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1334}, "status": 200, "ms": 184, "tag": "el", "igt": "2026-11-02T01:44:21.580Z", "err": null}
+{"n": 3452, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 94, "tag": "sortie", "igt": null, "err": null}
+{"n": 3453, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1289}, "status": 200, "ms": 212, "tag": "el", "igt": "2026-11-02T02:05:50.580Z", "err": null}
+{"n": 3454, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 132, "tag": "sortie", "igt": null, "err": null}
+{"n": 3455, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1439}, "status": 200, "ms": 290, "tag": "el", "igt": "2026-11-02T02:29:49.580Z", "err": null}
+{"n": 3456, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 131, "tag": "sortie", "igt": null, "err": null}
+{"n": 3457, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1607}, "status": 200, "ms": 245, "tag": "el", "igt": "2026-11-02T02:56:36.580Z", "err": null}
+{"n": 3458, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 111, "tag": "sortie", "igt": null, "err": null}
+{"n": 3459, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1187}, "status": 200, "ms": 183, "tag": "el", "igt": "2026-11-02T03:16:23.580Z", "err": null}
+{"n": 3460, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 123, "tag": "sortie", "igt": null, "err": null}
+{"n": 3461, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 20, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3462, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1442}, "status": 200, "ms": 202, "tag": "el", "igt": "2026-11-02T03:40:25.580Z", "err": null}
+{"n": 3463, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 155, "tag": "sortie", "igt": null, "err": null}
+{"n": 3464, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1667}, "status": 200, "ms": 277, "tag": "el", "igt": "2026-11-02T04:08:12.580Z", "err": null}
+{"n": 3465, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 110, "tag": "sortie", "igt": null, "err": null}
+{"n": 3466, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1415}, "status": 200, "ms": 222, "tag": "el", "igt": "2026-11-02T04:31:47.580Z", "err": null}
+{"n": 3467, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 133, "tag": "sortie", "igt": null, "err": null}
+{"n": 3468, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1307}, "status": 200, "ms": 207, "tag": "el", "igt": "2026-11-02T04:53:34.580Z", "err": null}
+{"n": 3469, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 145, "tag": "sortie", "igt": null, "err": null}
+{"n": 3470, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1622}, "status": 200, "ms": 223, "tag": "el", "igt": "2026-11-02T05:20:36.580Z", "err": null}
+{"n": 3471, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 125, "tag": "sortie", "igt": null, "err": null}
+{"n": 3472, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1397}, "status": 200, "ms": 220, "tag": "el", "igt": "2026-11-02T05:43:53.580Z", "err": null}
+{"n": 3473, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 139, "tag": "sortie", "igt": null, "err": null}
+{"n": 3474, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 26, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3475, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1187}, "status": 200, "ms": 263, "tag": "el", "igt": "2026-11-02T06:03:40.580Z", "err": null}
+{"n": 3476, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 146, "tag": "sortie", "igt": null, "err": null}
+{"n": 3477, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1562}, "status": 200, "ms": 241, "tag": "el", "igt": "2026-11-02T06:29:42.580Z", "err": null}
+{"n": 3478, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 122, "tag": "sortie", "igt": null, "err": null}
+{"n": 3479, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1592}, "status": 200, "ms": 214, "tag": "el", "igt": "2026-11-02T06:56:14.580Z", "err": null}
+{"n": 3480, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 100, "tag": "sortie", "igt": null, "err": null}
+{"n": 3481, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1637}, "status": 200, "ms": 177, "tag": "el", "igt": "2026-11-02T07:23:31.580Z", "err": null}
+{"n": 3482, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 106, "tag": "sortie", "igt": null, "err": null}
+{"n": 3483, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1427}, "status": 200, "ms": 196, "tag": "el", "igt": "2026-11-02T07:47:18.580Z", "err": null}
+{"n": 3484, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 138, "tag": "sortie", "igt": null, "err": null}
+{"n": 3485, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1352}, "status": 200, "ms": 196, "tag": "el", "igt": "2026-11-02T08:09:50.580Z", "err": null}
+{"n": 3486, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 151, "tag": "sortie", "igt": null, "err": null}
+{"n": 3487, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 21, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3488, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1445}, "status": 200, "ms": 209, "tag": "el", "igt": "2026-11-02T08:33:55.580Z", "err": null}
+{"n": 3489, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 104, "tag": "sortie", "igt": null, "err": null}
+{"n": 3490, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1382}, "status": 200, "ms": 193, "tag": "el", "igt": "2026-11-02T08:56:57.580Z", "err": null}
+{"n": 3491, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 98, "tag": "sortie", "igt": null, "err": null}
+{"n": 3492, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1490}, "status": 200, "ms": 210, "tag": "el", "igt": "2026-11-02T09:21:47.580Z", "err": null}
+{"n": 3493, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 139, "tag": "sortie", "igt": null, "err": null}
+{"n": 3494, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1430}, "status": 200, "ms": 263, "tag": "el", "igt": "2026-11-02T09:45:37.580Z", "err": null}
+{"n": 3495, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 101, "tag": "sortie", "igt": null, "err": null}
+{"n": 3496, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1430}, "status": 200, "ms": 280, "tag": "el", "igt": "2026-11-02T10:09:27.580Z", "err": null}
+{"n": 3497, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 136, "tag": "sortie", "igt": null, "err": null}
+{"n": 3498, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1205}, "status": 200, "ms": 221, "tag": "el", "igt": "2026-11-02T10:29:32.580Z", "err": null}
+{"n": 3499, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 108, "tag": "sortie", "igt": null, "err": null}
+{"n": 3500, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 49, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3501, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1364}, "status": 200, "ms": 179, "tag": "el", "igt": "2026-11-02T10:52:16.580Z", "err": null}
+{"n": 3502, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 109, "tag": "sortie", "igt": null, "err": null}
+{"n": 3503, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1409}, "status": 200, "ms": 211, "tag": "el", "igt": "2026-11-02T11:15:45.580Z", "err": null}
+{"n": 3504, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 118, "tag": "sortie", "igt": null, "err": null}
+{"n": 3505, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1292}, "status": 200, "ms": 216, "tag": "el", "igt": "2026-11-02T11:37:17.580Z", "err": null}
+{"n": 3506, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 117, "tag": "sortie", "igt": null, "err": null}
+{"n": 3507, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1757}, "status": 200, "ms": 225, "tag": "el", "igt": "2026-11-02T12:06:34.580Z", "err": null}
+{"n": 3508, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 115, "tag": "sortie", "igt": null, "err": null}
+{"n": 3509, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1520}, "status": 200, "ms": 206, "tag": "el", "igt": "2026-11-02T12:31:54.580Z", "err": null}
+{"n": 3510, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 129, "tag": "sortie", "igt": null, "err": null}
+{"n": 3511, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1502}, "status": 200, "ms": 191, "tag": "el", "igt": "2026-11-02T12:56:56.580Z", "err": null}
+{"n": 3512, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 108, "tag": "sortie", "igt": null, "err": null}
+{"n": 3513, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 20, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3514, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1475}, "status": 200, "ms": 246, "tag": "el", "igt": "2026-11-02T13:21:31.580Z", "err": null}
+{"n": 3515, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 91, "tag": "sortie", "igt": null, "err": null}
+{"n": 3516, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1265}, "status": 200, "ms": 297, "tag": "el", "igt": "2026-11-02T13:42:36.580Z", "err": null}
+{"n": 3517, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 123, "tag": "sortie", "igt": null, "err": null}
+{"n": 3518, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1505}, "status": 200, "ms": 245, "tag": "el", "igt": "2026-11-02T14:07:41.580Z", "err": null}
+{"n": 3519, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 106, "tag": "sortie", "igt": null, "err": null}
+{"n": 3520, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1352}, "status": 200, "ms": 172, "tag": "el", "igt": "2026-11-02T14:30:13.580Z", "err": null}
+{"n": 3521, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 105, "tag": "sortie", "igt": null, "err": null}
+{"n": 3522, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1667}, "status": 200, "ms": 186, "tag": "el", "igt": "2026-11-02T14:58:00.580Z", "err": null}
+{"n": 3523, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 117, "tag": "sortie", "igt": null, "err": null}
+{"n": 3524, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1442}, "status": 200, "ms": 208, "tag": "el", "igt": "2026-11-02T15:22:02.580Z", "err": null}
+{"n": 3525, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 118, "tag": "sortie", "igt": null, "err": null}
+{"n": 3526, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 26, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3527, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1655}, "status": 200, "ms": 220, "tag": "el", "igt": "2026-11-02T15:49:37.580Z", "err": null}
+{"n": 3528, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 90, "tag": "sortie", "igt": null, "err": null}
+{"n": 3529, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1502}, "status": 200, "ms": 183, "tag": "el", "igt": "2026-11-02T16:14:39.580Z", "err": null}
+{"n": 3530, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 112, "tag": "sortie", "igt": null, "err": null}
+{"n": 3531, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1685}, "status": 200, "ms": 236, "tag": "el", "igt": "2026-11-02T16:42:44.580Z", "err": null}
+{"n": 3532, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 142, "tag": "sortie", "igt": null, "err": null}
+{"n": 3533, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1655}, "status": 200, "ms": 245, "tag": "el", "igt": "2026-11-02T17:10:19.580Z", "err": null}
+{"n": 3534, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 124, "tag": "sortie", "igt": null, "err": null}
+{"n": 3535, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1115}, "status": 200, "ms": 275, "tag": "el", "igt": "2026-11-02T17:28:54.580Z", "err": null}
+{"n": 3536, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 97, "tag": "sortie", "igt": null, "err": null}
+{"n": 3537, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1352}, "status": 200, "ms": 135, "tag": "el", "igt": "2026-11-02T17:51:26.580Z", "err": null}
+{"n": 3538, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 130, "tag": "sortie", "igt": null, "err": null}
+{"n": 3539, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 18, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3540, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 4, "objective": "success"}, "status": 200, "ms": 16566, "tag": "tune", "igt": null, "err": null}
+{"n": 3541, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 2, "objective": "success"}, "status": 200, "ms": 18054, "tag": "tune", "igt": null, "err": null}
+{"n": 3542, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 3, "objective": "success"}, "status": 200, "ms": 18592, "tag": "tune", "igt": null, "err": null}
+{"n": 3543, "method": "POST", "path": "/read/build/character/stagedEquipmentTuning", "parameters": {"characterId": 5, "objective": "success"}, "status": 200, "ms": 26139, "tag": "tune", "igt": null, "err": null}
+{"n": 3544, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 45, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3545, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 2132}, "status": 200, "ms": 250, "tag": "el", "igt": "2026-11-02T18:26:58.580Z", "err": null}
+{"n": 3546, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 124, "tag": "sortie", "igt": null, "err": null}
+{"n": 3547, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1760}, "status": 200, "ms": 296, "tag": "el", "igt": "2026-11-02T18:56:18.580Z", "err": null}
+{"n": 3548, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 116, "tag": "sortie", "igt": null, "err": null}
+{"n": 3549, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1277}, "status": 200, "ms": 251, "tag": "el", "igt": "2026-11-02T19:17:35.580Z", "err": null}
+{"n": 3550, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 108, "tag": "sortie", "igt": null, "err": null}
+{"n": 3551, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1562}, "status": 200, "ms": 242, "tag": "el", "igt": "2026-11-02T19:43:37.580Z", "err": null}
+{"n": 3552, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 139, "tag": "sortie", "igt": null, "err": null}
+{"n": 3553, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1517}, "status": 200, "ms": 318, "tag": "el", "igt": "2026-11-02T20:08:54.580Z", "err": null}
+{"n": 3554, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 139, "tag": "sortie", "igt": null, "err": null}
+{"n": 3555, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1187}, "status": 200, "ms": 277, "tag": "el", "igt": "2026-11-02T20:28:41.580Z", "err": null}
+{"n": 3556, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 152, "tag": "sortie", "igt": null, "err": null}
+{"n": 3557, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 25, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3558, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1502}, "status": 200, "ms": 229, "tag": "el", "igt": "2026-11-02T20:53:43.580Z", "err": null}
+{"n": 3559, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 149, "tag": "sortie", "igt": null, "err": null}
+{"n": 3560, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1577}, "status": 200, "ms": 345, "tag": "el", "igt": "2026-11-02T21:20:00.580Z", "err": null}
+{"n": 3561, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 136, "tag": "sortie", "igt": null, "err": null}
+{"n": 3562, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1637}, "status": 200, "ms": 244, "tag": "el", "igt": "2026-11-02T21:47:17.580Z", "err": null}
+{"n": 3563, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 109, "tag": "sortie", "igt": null, "err": null}
+{"n": 3564, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1550}, "status": 200, "ms": 235, "tag": "el", "igt": "2026-11-02T22:13:07.580Z", "err": null}
+{"n": 3565, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 109, "tag": "sortie", "igt": null, "err": null}
+{"n": 3566, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1655}, "status": 200, "ms": 317, "tag": "el", "igt": "2026-11-02T22:40:42.580Z", "err": null}
+{"n": 3567, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 139, "tag": "sortie", "igt": null, "err": null}
+{"n": 3568, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1205}, "status": 200, "ms": 197, "tag": "el", "igt": "2026-11-02T23:00:47.580Z", "err": null}
+{"n": 3569, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 135, "tag": "sortie", "igt": null, "err": null}
+{"n": 3570, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 13, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3571, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1487}, "status": 200, "ms": 239, "tag": "el", "igt": "2026-11-02T23:25:34.580Z", "err": null}
+{"n": 3572, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 116, "tag": "sortie", "igt": null, "err": null}
+{"n": 3573, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1565}, "status": 200, "ms": 312, "tag": "el", "igt": "2026-11-02T23:51:39.580Z", "err": null}
+{"n": 3574, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 132, "tag": "sortie", "igt": null, "err": null}
+{"n": 3575, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1745}, "status": 200, "ms": 270, "tag": "el", "igt": "2026-11-03T00:20:44.580Z", "err": null}
+{"n": 3576, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 97, "tag": "sortie", "igt": null, "err": null}
+{"n": 3577, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1307}, "status": 200, "ms": 281, "tag": "el", "igt": "2026-11-03T00:42:31.580Z", "err": null}
+{"n": 3578, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 127, "tag": "sortie", "igt": null, "err": null}
+{"n": 3579, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1187}, "status": 200, "ms": 425, "tag": "el", "igt": "2026-11-03T01:02:18.580Z", "err": null}
+{"n": 3580, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 126, "tag": "sortie", "igt": null, "err": null}
+{"n": 3581, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1427}, "status": 200, "ms": 262, "tag": "el", "igt": "2026-11-03T01:26:05.580Z", "err": null}
+{"n": 3582, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 107, "tag": "sortie", "igt": null, "err": null}
+{"n": 3583, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 45, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3584, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1502}, "status": 200, "ms": 243, "tag": "el", "igt": "2026-11-03T01:51:07.580Z", "err": null}
+{"n": 3585, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 123, "tag": "sortie", "igt": null, "err": null}
+{"n": 3586, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1730}, "status": 200, "ms": 321, "tag": "el", "igt": "2026-11-03T02:19:57.580Z", "err": null}
+{"n": 3587, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 140, "tag": "sortie", "igt": null, "err": null}
+{"n": 3588, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1577}, "status": 200, "ms": 385, "tag": "el", "igt": "2026-11-03T02:46:14.580Z", "err": null}
+{"n": 3589, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 158, "tag": "sortie", "igt": null, "err": null}
+{"n": 3590, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1475}, "status": 200, "ms": 335, "tag": "el", "igt": "2026-11-03T03:10:49.580Z", "err": null}
+{"n": 3591, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 174, "tag": "sortie", "igt": null, "err": null}
+{"n": 3592, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1595}, "status": 200, "ms": 285, "tag": "el", "igt": "2026-11-03T03:37:24.580Z", "err": null}
+{"n": 3593, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 170, "tag": "sortie", "igt": null, "err": null}
+{"n": 3594, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1520}, "status": 200, "ms": 345, "tag": "el", "igt": "2026-11-03T04:02:44.580Z", "err": null}
+{"n": 3595, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 152, "tag": "sortie", "igt": null, "err": null}
+{"n": 3596, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 12, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3597, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1502}, "status": 200, "ms": 229, "tag": "el", "igt": "2026-11-03T04:27:46.580Z", "err": null}
+{"n": 3598, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 164, "tag": "sortie", "igt": null, "err": null}
+{"n": 3599, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1247}, "status": 200, "ms": 312, "tag": "el", "igt": "2026-11-03T04:48:33.580Z", "err": null}
+{"n": 3600, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 135, "tag": "sortie", "igt": null, "err": null}
+{"n": 3601, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1205}, "status": 200, "ms": 238, "tag": "el", "igt": "2026-11-03T05:08:38.580Z", "err": null}
+{"n": 3602, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 141, "tag": "sortie", "igt": null, "err": null}
+{"n": 3603, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1505}, "status": 200, "ms": 272, "tag": "el", "igt": "2026-11-03T05:33:43.580Z", "err": null}
+{"n": 3604, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 111, "tag": "sortie", "igt": null, "err": null}
+{"n": 3605, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1523}, "status": 200, "ms": 309, "tag": "el", "igt": "2026-11-03T05:59:06.580Z", "err": null}
+{"n": 3606, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 114, "tag": "sortie", "igt": null, "err": null}
+{"n": 3607, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1421}, "status": 200, "ms": 247, "tag": "el", "igt": "2026-11-03T06:22:47.580Z", "err": null}
+{"n": 3608, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 106, "tag": "sortie", "igt": null, "err": null}
+{"n": 3609, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 35, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 3610, "method": "GET", "path": "/read/observation/diary", "parameters": null, "status": 200, "ms": 52, "tag": "", "igt": null, "err": null}
+{"n": 3611, "method": "POST", "path": "/commit/setting/backup/export", "parameters": {}, "status": 200, "ms": 930, "tag": "export", "igt": null, "err": null}

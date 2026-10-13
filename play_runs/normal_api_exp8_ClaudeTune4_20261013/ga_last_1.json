@@ -1,111 +1,60 @@
 {
- "verdict": "veryGood",
+ "verdict": "noisy",
  "forecast": {
-  "before": "Success 3.8% / Draw 6.2% / Retreat 62.8% / Defeat 27.2%",
-  "after": "Success 18.8% / Draw 6.6% / Retreat 53.4% / Defeat 21.2%"
+  "before": "Success 3.0% / Draw 6.8% / Retreat 66.4% / Defeat 23.8%",
+  "after": "Success 5.0% / Draw 0.8% / Retreat 76.4% / Defeat 17.8%"
  },
  "changeSummary": [
   {
-   "endpoint": "commit/build/character/3/removeEquipment",
+   "endpoint": "commit/build/character/1/removeEquipment",
    "parameters": {
     "targetEquipment": [
-     5
+     3,
+     11
     ]
    }
   },
   {
-   "endpoint": "commit/build/character/2/removeEquipment",
+   "endpoint": "commit/build/character/1/equip",
    "parameters": {
-    "targetEquipment": [
-     7
-    ]
+    "targetEquipment": "0/5103/1/0",
+    "targetSlot": 3
    }
   },
   {
-   "endpoint": "commit/build/character/6/removeEquipment",
+   "endpoint": "commit/build/character/1/equip",
    "parameters": {
-    "targetEquipment": [
-     1,
-     6
-    ]
+    "targetEquipment": "0/7304/1/0",
+    "targetSlot": 11
    }
   },
   {
-   "endpoint": "commit/build/character/405/removeEquipment",
+   "endpoint": "commit/build/character/2/jewelAttach",
    "parameters": {
-    "targetEquipment": [
-     5
-    ]
+    "targetEquipment": 5,
+    "jewelToSet": "might:2"
    }
   },
   {
-   "endpoint": "commit/build/party/1",
+   "endpoint": "commit/build/character/6/jewelAttach",
    "parameters": {
-    "deityId": "precision"
-   }
-  },
-  {
-   "endpoint": "commit/build/character/2/changeBuild",
-   "parameters": {
-    "predisposition": "inquisitive",
-    "simulation": false
-   }
-  },
-  {
-   "endpoint": "commit/build/character/6/changeBuild",
-   "parameters": {
-    "mainClassId": "duelist",
-    "simulation": false
-   }
-  },
-  {
-   "endpoint": "commit/build/character/4/changeBuild",
-   "parameters": {
-    "predisposition": "evasive",
-    "simulation": false
-   }
-  },
-  {
-   "endpoint": "commit/build/character/3/equip",
-   "parameters": {
-    "targetEquipment": "0/7101/3/0",
-    "targetSlot": 5
-   }
-  },
-  {
-   "endpoint": "commit/build/character/2/equip",
-   "parameters": {
-    "targetEquipment": "0/7213/1/51",
-    "targetSlot": 7
-   }
-  },
-  {
-   "endpoint": "commit/build/character/6/equip",
-   "parameters": {
-    "targetEquipment": "0/7402/0/0",
-    "targetSlot": 1
-   }
-  },
-  {
-   "endpoint": "commit/build/character/6/equip",
-   "parameters": {
-    "targetEquipment": "0/3310/1/0",
-    "targetSlot": 6
+    "targetEquipment": 0,
+    "jewelToSet": "shade:2"
    }
   }
  ],
- "revision": 2344,
- "evaluations": 1070,
- "elapsedSeconds": 210.1,
- "buildResultId": "d2b2490b-c34b-44e1-8276-1fffb1f36c15",
+ "revision": 2781,
+ "evaluations": 779,
+ "elapsedSeconds": 156.5,
+ "buildResultId": "e90d31e3-0cd1-4f64-b5ba-46d2f43fce3e",
  "verification": {
   "objective": "success",
   "scoredBy": "success",
   "runs": 500,
-  "before": 0.038,
-  "after": 0.188,
-  "gain": 15,
-  "standardError": 1.95,
-  "seed": 1107632670
+  "before": 0.03,
+  "after": 0.05,
+  "gain": 2,
+  "standardError": 1.24,
+  "seed": 934744790
  }
 }

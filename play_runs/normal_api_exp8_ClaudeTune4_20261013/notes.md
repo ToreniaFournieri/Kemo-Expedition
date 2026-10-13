@@ -78,3 +78,12 @@
   0.23 -> 0.76 veryGood, but it reverted the boss build (share 0.37, 100 % Draw). Route-vs-boss conflict.
 - D7 farm 5f-3 (54 %, 2,869 EXP, 17.6 drops/run, no GA during the farm): 10-26T13:39 -> 10-29T12:12, Lv32 -> 33 43 %,
   180 sortie runs, 2 real minutes (real 04:56).
+- D7 boss after the farm: bossDamage GA share 0.48 -> 0.91, success GA 3.8 -> 18.8 %; boss-only 75.7 %, route 20.3 %.
+  Clear on the 2nd run 10-29T13:19 (16.59 d, call 2929).
+- D8 arrive 91 % (no re-plan). Gates 1-4 by 10-30T09:39 (one GA each: 39 -> 49 %, 63 noChange, 11 -> 36 %); gate 5 until
+  11-01T02:36 (GAs noChange 12 / 18 %); boss gate (2-streak) at 3-5 %, three GAs noisy. Stopped re-plans at real 05:34
+  and ground without GA: the boss gate opened and a **natural AFK run killed the D8 boss** with no boss re-plan:
+  Global Diary bossFirstClear PT1 d8 2026-11-03T05:59:06.580Z = **21.28 game days**, request 3,605 (3,611 total incl.
+  export). Lv34. Real time 05:35 UTC (6 h 35 m).
+- Totals: 274 tunings / 44 accepted (16 %); 79 kept a step-5 candidate that step 6 rejected; 80 gaSearch (304 real min);
+  requests: sortie 1,435, elapsed 1,362, tuning 274, observation 246, applyBuildResult 100, gaSearch 80, simulationRun 60.
