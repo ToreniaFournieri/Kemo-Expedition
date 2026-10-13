@@ -102,3 +102,12 @@ Built during the 2026/10/03 D8-boss run (`AI_play_report/v0.9.8(11)_Claude_Norma
 * `tools/tunecheck.ts` / `tools/tunetrace.ts`: offline post-run checks (identity control, trace of every tuning simulation).
 * Lessons: re-plan at every stall (SEMI freezes gear), extra sorties only at >= 95 % HP at streak gates, farm under 60 %,
   bosses = bossDamage GA until success > 0, then success GA; never FULL-refresh the GA's hybrid classes.
+
+## Additions (2026/10/13 ClaudeTune4 run, `AI_play_report/v0.10.1(45)_ClaudeTune4_Normal_API_Exp8Boss_TuningDiagnostics_20261013.md`)
+* Run folder `play_runs/normal_api_exp8_ClaudeTune4_20261013/` (in-game tools only, build 45, Linux container + `xvfb-run`).
+  `client/hl2.py` = build-45 loop: one `elapsed` of `max(60, secondsToNextCycle)` per loop (exact heal, value kept in the
+  token-state file across runs), then sorties; no HP learning, no top-ups. `client/arrive.sh dest` = destination + 1 route
+  meter + tuning-first re-plan only under `GATH`. `client/probe.py dest depth...` = success / EXP / drops per depth (2 calls each).
+  `tw.py` honours `TBB` (GA budget) and `QR` (quickRuns); `tune.py` logs `candidatesTried` / `bottleneckCounters` and stops at `STOPHI`.
+* Lessons: GA is ~87 % of real time, loops ~1 real min per game day, so grind streak gates without re-plans when real time
+  is short; farm Lv30 at D6 5f-3 before the D6 boss; QR=100 gives ~2.5x GA evaluations.
