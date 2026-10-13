@@ -1,28 +1,109 @@
 {
  "accepted": false,
- "objective": "bossDamage",
- "scoredBy": "bossDamage",
- "before": "Success 0.1% / Draw 99.3% / Retreat 0.0% / Defeat 0.6%",
- "after": "Success 0.1% / Draw 99.3% / Retreat 0.0% / Defeat 0.6%",
- "improvement": 0,
- "gain": 0,
- "standardError": 0.0058,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 18.6% / Draw 5.3% / Retreat 39.2% / Defeat 36.9%",
+ "after": "Success 21.5% / Draw 4.2% / Retreat 37.5% / Defeat 36.8%",
+ "improvement": 0.1559,
+ "gain": 0.029,
+ "standardError": 0.0179,
  "bottleneckRoom": "6f-4",
- "bottleneckCounters": [],
+ "bottleneckCounters": [
+  {
+   "ability": "a.bulwark-breaker",
+   "answers": [
+    "a.bulwark"
+   ],
+   "status": "noItem"
+  },
+  {
+   "ability": "a.fire-protect-breaker",
+   "answers": [
+    "a.fire-reflect"
+   ],
+   "status": "noItem"
+  },
+  {
+   "ability": "a.siege",
+   "answers": [
+    "terrain.fortified"
+   ],
+   "status": "noItem"
+  }
+ ],
  "candidatesTried": {
-  "offenseElement": 1,
-  "defenseElement": 8,
-  "ability": 4
+  "offenseElement": 0,
+  "defenseElement": 6,
+  "ability": 3
  },
  "steps": {
   "offenseElement": [],
-  "defenseElement": [],
-  "ability": [],
-  "finalTuning": []
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.fire"
+    ],
+    "improvement": 0.5306,
+    "changes": [
+     "0=0/4102/3/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.fire"
+    ],
+    "improvement": 0.449,
+    "changes": [
+     "0=0/5102/3/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.true-sight"
+    ],
+    "improvement": 0.3061,
+    "changes": [
+     "2=0/1406/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.wind-rider"
+    ],
+    "improvement": 0.2041,
+    "changes": [
+     "3=0/1312/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.anti-overwatch"
+    ],
+    "improvement": 0.1429,
+    "changes": [
+     "3=0/4303/1/0"
+    ]
+   }
+  ],
+  "finalTuning": [
+   {
+    "step": "ability",
+    "index": 2,
+    "abilities": [
+     "a.anti-overwatch"
+    ],
+    "improvement": 0.0673,
+    "changes": [
+     "3=0/4303/1/0"
+    ]
+   }
+  ]
  },
  "changeSummary": [],
- "revision": 531,
- "simulationRuns": 5200,
- "elapsedSeconds": 2.1,
- "seed": 674451565
+ "revision": 816,
+ "simulationRuns": 8000,
+ "elapsedSeconds": 16.1,
+ "seed": 4077388944
 }

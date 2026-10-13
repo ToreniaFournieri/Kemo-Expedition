@@ -1,15 +1,31 @@
 {
- "verdict": "veryGood",
+ "verdict": "noisy",
  "forecast": {
-  "before": "Success 12.6% / Draw 2.0% / Retreat 41.6% / Defeat 43.8%",
-  "after": "Success 26.2% / Draw 3.4% / Retreat 23.6% / Defeat 46.8%"
+  "before": "Success 17.0% / Draw 3.4% / Retreat 39.8% / Defeat 39.8%",
+  "after": "Success 22.0% / Draw 3.4% / Retreat 34.4% / Defeat 40.2%"
  },
  "changeSummary": [
   {
    "endpoint": "commit/build/character/4/removeEquipment",
    "parameters": {
     "targetEquipment": [
-     4
+     3
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     12
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     3
     ]
    }
   },
@@ -17,51 +33,58 @@
    "endpoint": "commit/build/character/6/removeEquipment",
    "parameters": {
     "targetEquipment": [
-     3,
-     5
+     6
     ]
-   }
-  },
-  {
-   "endpoint": "commit/build/party/1",
-   "parameters": {
-    "deityId": "precision"
    }
   },
   {
    "endpoint": "commit/build/character/4/equip",
    "parameters": {
-    "targetEquipment": "0/3103/3/0",
-    "targetSlot": 4
+    "targetEquipment": "0/5103/1/0",
+    "targetSlot": 3
    }
   },
   {
-   "endpoint": "commit/build/character/6/equip",
+   "endpoint": "commit/build/character/1/equip",
    "parameters": {
-    "targetEquipment": "0/3103/3/0",
+    "targetEquipment": "0/2108/3/0",
+    "targetSlot": 12
+   }
+  },
+  {
+   "endpoint": "commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": "0/5223/0/0",
     "targetSlot": 3
    }
   },
   {
    "endpoint": "commit/build/character/6/equip",
    "parameters": {
-    "targetEquipment": "0/4205/1/0",
-    "targetSlot": 5
+    "targetEquipment": "0/3101/3/0",
+    "targetSlot": 6
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/jewelAttach",
+   "parameters": {
+    "targetEquipment": 1,
+    "jewelToSet": "shade:1"
    }
   }
  ],
- "revision": 533,
- "evaluations": 667,
- "elapsedSeconds": 307,
- "buildResultId": "472a0ea8-d02a-41bc-a7b2-0f73a7dd4a69",
+ "revision": 816,
+ "evaluations": 1181,
+ "elapsedSeconds": 249.4,
+ "buildResultId": "841287d8-68c1-4242-8078-4ded55240c36",
  "verification": {
   "objective": "success",
   "scoredBy": "success",
   "runs": 500,
-  "before": 0.126,
-  "after": 0.262,
-  "gain": 13.6,
-  "standardError": 2.46,
-  "seed": 1457224278
+  "before": 0.17,
+  "after": 0.22,
+  "gain": 5,
+  "standardError": 2.5,
+  "seed": 2450934304
  }
 }

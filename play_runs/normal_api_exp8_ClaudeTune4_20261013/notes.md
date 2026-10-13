@@ -43,3 +43,15 @@
 - D4 boss: bossDamage tuning char 5 accepted e.ice + r.fire (+20 pt share, kill 0 -> 10.5 %), GA share 0.82 -> 0.99 (kill 90 %),
   success GA route 12.6 -> 26 %. Clear on the 4th run 10-15T14:48 (2.65 d, call 761).
 - D5 arrive: route 100 % (no re-plan, 2 calls).
+- D5 gates 1-2 fast (tuning 1 accepted each). Gate 3 (3f, 5-streak) at 12 -> 32 % (GA), then two stall re-plans noisy 32 -> 32.
+  Bottleneck 2f-4 elite with a.illusion: counter a.illusion-breaker `noItem` (6309 is a D6 drop). Step 5 also dropped recorded
+  +10..14 % candidates (quick-run winner's curse). 10-16T01:26 (3.10 d).
+- D5 depth probe: 2f-3 90 % / 844 EXP / 8.3 drops; all (= 3f-3) 41 % / 1,062 EXP / 9.6 drops. D5 EXP is far too low to farm
+  levels (Lv22 -> 27 needs ~771 k).
+- GA with quickRuns 100 (2,248 evals in 300 s, 4x the 300-run GA) and allDeities: 38 -> 45 %. Gear-limited.
+  Loop at `all` (gate attempts + drops) with re-plans every 18 loops (QR=100, 240 s).
+- D5 gates 4-5: re-plans 10 -> 31 %, 38 -> 54 %; gate 5 (3-streak) stuck at 14 % (GA 0 -> 6 %, then noisy). Party 3 unlocked
+  (GA donor 202). Long loop at `all` (NST 4, GA quickRuns 100, allDeities): after 24 loops (Lv24) one re-plan took the route
+  29 -> 73 % (veryGood) and gate 5 + boss gate fell. Boss open 10-17T05:13 (4.25 d, call 1112).
+- D5 boss: no re-plan (boss-only 45.7 %, route 20.3 %). Clear on the first sortie 10-17T05:37 (4.27 d, call 1118).
+- Real time 03:00 UTC (4 h used); GA is 93 % of API real time, loops ~1 real min per game day.

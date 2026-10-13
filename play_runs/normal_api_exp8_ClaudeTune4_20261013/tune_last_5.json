@@ -1,130 +1,50 @@
 {
- "accepted": true,
- "objective": "bossDamage",
- "scoredBy": "bossDamage",
- "before": "Success 0.1% / Draw 99.3% / Retreat 0.0% / Defeat 0.6%",
- "after": "Success 10.5% / Draw 88.9% / Retreat 0.0% / Defeat 0.6%",
- "improvement": 1.086,
- "gain": 0.203,
- "standardError": 0.0061,
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 19.7% / Draw 3.9% / Retreat 40.1% / Defeat 36.3%",
+ "after": "Success 19.7% / Draw 3.9% / Retreat 40.1% / Defeat 36.3%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.0178,
  "bottleneckRoom": "6f-4",
- "bottleneckCounters": [],
- "candidatesTried": {
-  "offenseElement": 3,
-  "defenseElement": 6,
-  "ability": 7
- },
- "steps": {
-  "offenseElement": [
-   {
-    "element": "e.ice",
-    "improvement": 0.4955,
-    "changes": [
-     "2=0/2226/0/0"
-    ]
-   },
-   {
-    "element": "e.thunder",
-    "improvement": 0.0991,
-    "changes": [
-     "2=0/3223/1/0"
-    ]
-   }
-  ],
-  "defenseElement": [
-   {
-    "resistance": [
-     "r.fire"
-    ],
-    "improvement": 0.1411,
-    "changes": [
-     "0=0/4317/0/0",
-     "1=0/4110/4/0",
-     "3=0/4219/0/0"
-    ]
-   },
-   {
-    "resistance": [
-     "r.fire"
-    ],
-    "improvement": 0.0772,
-    "changes": [
-     "0=0/4317/0/0",
-     "1=0/4110/4/0",
-     "4=0/4219/0/0"
-    ]
-   }
-  ],
-  "ability": [],
-  "finalTuning": [
-   {
-    "step": "offenseElement",
-    "index": 0,
-    "element": "e.ice",
-    "improvement": 0.5093,
-    "changes": [
-     "2=0/2226/0/0"
-    ]
-   },
-   {
-    "step": "defenseElement",
-    "index": 0,
-    "resistance": [
-     "r.fire"
-    ],
-    "improvement": 1.155,
-    "changes": [
-     "0=0/4317/0/0",
-     "1=0/4110/4/0",
-     "3=0/4219/0/0"
-    ]
-   }
-  ]
- },
- "changeSummary": [
+ "bottleneckCounters": [
   {
-   "endpoint": "commit/build/character/5/removeEquipment",
-   "parameters": {
-    "targetEquipment": [
-     0,
-     1,
-     2,
-     3
-    ]
-   }
+   "ability": "a.bulwark-breaker",
+   "answers": [
+    "a.bulwark"
+   ],
+   "status": "tried"
   },
   {
-   "endpoint": "commit/build/character/5/equip",
-   "parameters": {
-    "targetEquipment": "0/4317/0/0",
-    "targetSlot": 0
-   }
+   "ability": "a.fire-protect-breaker",
+   "answers": [
+    "a.fire-reflect"
+   ],
+   "status": "noItem"
   },
   {
-   "endpoint": "commit/build/character/5/equip",
-   "parameters": {
-    "targetEquipment": "0/4110/4/0",
-    "targetSlot": 1
-   }
-  },
-  {
-   "endpoint": "commit/build/character/5/equip",
-   "parameters": {
-    "targetEquipment": "0/2226/0/0",
-    "targetSlot": 2
-   }
-  },
-  {
-   "endpoint": "commit/build/character/5/equip",
-   "parameters": {
-    "targetEquipment": "0/4219/0/0",
-    "targetSlot": 3
-   }
+   "ability": "a.siege",
+   "answers": [
+    "terrain.fortified"
+   ],
+   "status": "noItem"
   }
  ],
- "revision": 531,
- "simulationRuns": 9600,
- "elapsedSeconds": 4.3,
- "seed": 3325265831,
- "buildResultId": "0f8de62f-ff03-4f5b-b524-ced085a82fdb"
+ "candidatesTried": {
+  "offenseElement": 5,
+  "defenseElement": 5,
+  "ability": 9
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [],
+  "ability": [],
+  "finalTuning": []
+ },
+ "changeSummary": [],
+ "revision": 816,
+ "simulationRuns": 7000,
+ "elapsedSeconds": 13.7,
+ "seed": 866032649
 }
