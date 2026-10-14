@@ -1,0 +1,93 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 29.6% / Draw 0.8% / Retreat 24.1% / Defeat 45.5%",
+ "after": "Success 29.6% / Draw 0.8% / Retreat 24.1% / Defeat 45.5%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.0204,
+ "bottleneckRoom": "4f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.unforgettable",
+   "answers": [
+    "a.oblivion"
+   ],
+   "status": "noItem"
+  },
+  {
+   "ability": "a.requiem",
+   "answers": [
+    "a.reanimate"
+   ],
+   "status": "owned"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 16,
+  "defenseElement": 21,
+  "ability": 14
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.ice",
+     "r.fire"
+    ],
+    "improvement": 0.1717,
+    "changes": [
+     "5=0/5110/5/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.ice",
+     "r.fire"
+    ],
+    "improvement": 0.0909,
+    "changes": [
+     "5=0/2110/6/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.ice",
+     "r.thunder"
+    ],
+    "improvement": 0.0909,
+    "changes": [
+     "4=0/4207/0/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.anti-overwatch"
+    ],
+    "improvement": 0.0909,
+    "changes": [
+     "8=0/4303/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.dryproof"
+    ],
+    "improvement": 0.0909,
+    "changes": [
+     "8=0/4203/2/0"
+    ]
+   }
+  ],
+  "finalTuning": []
+ },
+ "changeSummary": [],
+ "revision": 3028,
+ "simulationRuns": 19600,
+ "elapsedSeconds": 10.7,
+ "seed": 2129970429
+}

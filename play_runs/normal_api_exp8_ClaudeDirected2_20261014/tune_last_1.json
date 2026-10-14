@@ -1,0 +1,95 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 29.6% / Draw 0.5% / Retreat 26.1% / Defeat 43.8%",
+ "after": "Success 26.8% / Draw 0.2% / Retreat 25.6% / Defeat 47.4%",
+ "improvement": -0.0383,
+ "gain": -0.028,
+ "standardError": 0.0201,
+ "bottleneckRoom": "4f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.unforgettable",
+   "answers": [
+    "a.oblivion"
+   ],
+   "status": "noItem"
+  },
+  {
+   "ability": "a.requiem",
+   "answers": [
+    "a.reanimate"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 0,
+  "defenseElement": 25,
+  "ability": 2
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.ice",
+     "r.thunder"
+    ],
+    "improvement": 0.3289,
+    "changes": [
+     "9=0/7304/0/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.ice",
+     "r.thunder"
+    ],
+    "improvement": 0.3158,
+    "changes": [
+     "8=0/7201/0/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.none"
+    ],
+    "improvement": 0.2895,
+    "changes": [
+     "3=0/6304/3/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.true-sight"
+    ],
+    "improvement": 0.1316,
+    "changes": [
+     "8=0/1406/0/0"
+    ]
+   }
+  ],
+  "finalTuning": [
+   {
+    "step": "ability",
+    "index": 0,
+    "abilities": [
+     "a.true-sight"
+    ],
+    "improvement": 0.037,
+    "changes": [
+     "8=0/1406/0/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [],
+ "revision": 3028,
+ "simulationRuns": 12900,
+ "elapsedSeconds": 7.5,
+ "seed": 1825903420
+}

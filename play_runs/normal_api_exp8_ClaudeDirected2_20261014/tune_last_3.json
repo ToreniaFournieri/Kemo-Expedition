@@ -1,0 +1,43 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 30.2% / Draw 0.9% / Retreat 23.0% / Defeat 45.9%",
+ "after": "Success 30.2% / Draw 0.9% / Retreat 23.0% / Defeat 45.9%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.0205,
+ "bottleneckRoom": "4f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.unforgettable",
+   "answers": [
+    "a.oblivion"
+   ],
+   "status": "noItem"
+  },
+  {
+   "ability": "a.requiem",
+   "answers": [
+    "a.reanimate"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 18,
+  "defenseElement": 23,
+  "ability": 9
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [],
+  "ability": [],
+  "finalTuning": []
+ },
+ "changeSummary": [],
+ "revision": 3064,
+ "simulationRuns": 16300,
+ "elapsedSeconds": 9.5,
+ "seed": 2825294952
+}
