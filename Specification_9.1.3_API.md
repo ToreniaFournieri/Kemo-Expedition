@@ -650,7 +650,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
         * `predisposition`: Boolean
         * `equipment`: Boolean
           * If `false`, the character's equipment remains unchanged and cannot be removed to equip another character.
-          * Locked equipment is never changed ortaken.
+          * Locked equipment is never changed or taken.
         * `jewels`: Boolean
         * If a component cannot be changed due to character-specific restrictions (e.g., a unique character), ignore the corresponding setting.
   * `considerOrderChange`
@@ -770,7 +770,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * All specified characters must belong to the party identified by `{p}`.
     * `changeableComponents` is optional. If omitted, all defaults below apply.
       * `uniqueCharacter`: Boolean, optional, default `false`.
-        * If `true`, a available unique character may be assigned to this slot. If `false`, unique characters are never assigned.
+        * If `true`, an available unique character may be assigned to this slot. If `false`, unique characters are never assigned.
       * `raceGender`: Boolean, optional, default `true`.
       * `mainClass`: Boolean, optional, default `true`.
       * `subClass`: Boolean, optional, default `true`.
@@ -801,14 +801,31 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Every candidate build is compared by this `objective`, and `verdict` is judged on it.
 
   * `tuningParameters`
-    * Optional. [TBD: object shape]
-    * `effort`: String enum (`low`, `medium`, `high`), optional, default `medium`. Selects a preset. Values in the preset table are used unless specified explicitly.
+    * Optional. Object.
+    * `effort` selects a preset. Values in the preset table are used unless they are specified explicitly.
 
-    | `effort` | <parameterA> | <parameterB> |
-    |---|---|---|
-    | `low` | X | X |
-    | `medium` | X | X |
-    | `high` | X | X |
+    | `effort` | `populationSize` | `generations` | `quickRuns` | `confirmRuns` | `timeBudgetSeconds` |
+    |---|---|---|---|---|---|
+    | `low` | 12 | 10 | 30 | 150 | 30 |
+    | `medium` | 16 | 20 | 50 | 300 | 90 |
+    | `high` | 24 | 40 | 100 | 600 | 240 |
+
+    | Parameter | Type | Default | Range | Description |
+    |---|---|---|---|---|
+    | `effort` | String | `medium` | `low` / `medium` / `high` | Preset for `populationSize`, `generations`, `quickRuns`, `confirmRuns`, and `timeBudgetSeconds`. Explicit values override the preset. |
+    | `populationSize` | Integer | From `effort` | 8 ~ 64 | Step 1: number of candidate builds per generation. |
+    | `generations` | Integer | From `effort` | 1 ~ 200 | Step 1: number of generations to run. |
+    | `quickRuns` | Integer | From `effort` | 10 ~ 300 | Simulation runs used to score every Step 1 and Step 3 candidate. |
+    | `confirmRuns` | Integer | From `effort` | 50 ~ 1000 | Simulation runs (different seed) used to re-score the top Step 1 candidates and every Step 2 candidate. |
+    | `timeBudgetSeconds` | Integer | From `effort` | 5 ~ 300 | Hard time limit for Steps 1 to 3. When reached, the current step locks its best result so far and the remaining steps are skipped. |
+    | `verifyRuns` | Integer | `500` | 100 ~ 1000 | Simulation runs (new independent seed) used to compare the current build and the result. Used for `verdict` and `forecast`. |
+    | `eliteCount` | Integer | `2` | 0 ~ populationSize / 4 | Step 1: best builds copied unchanged to the next generation. |
+    | `mutationRate` | Number | `0.35` | 0 ~ 1 | Step 1: probability that a child build is mutated. |
+    | `tournamentSize` | Integer | `3` | 2 ~ 8 | Step 1: number of candidates compared when selecting each parent. |
+    | `confirmTopN` | Integer | `3` | 1 ~ 10 | Step 1: number of top candidates re-scored with `confirmRuns` each generation. |
+    | `seed` | Integer | Random | Any integer | Fixed seed for a reproducible result. |
+
+    * There is no `maxChanges`: a class change and its `autoEquipmentRun` usually need many entries.
 
 * Definition:
   * `Melee class`: `class.duelist`, `class.samurai`, `class.sword-saint`
@@ -862,7 +879,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * A component may be changed only if it is set to `true` in `changeableComponents` and the game rules allow the change.
     * Example: a unique character's gender, lineage, and predisposition cannot be changed, even if the component is `true`.
   * Step 1: High-impact changes
-    * Searches: `raceGender`, `mainClass`, `subClass`, `considerOrderChange`
+    * Searches: `uniqueCharacter`, `raceGender`, `mainClass`, `subClass`, `considerOrderChange`
     * Runs `autoEquipmentRun` for each candidate. `considerItemsScope` and `objective` apply.
     * Selects the best result and locks these parameters. If there is no valid candidate, the original parameters are kept.
   * Step 2: Deity change
