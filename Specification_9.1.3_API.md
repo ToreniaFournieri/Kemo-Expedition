@@ -635,6 +635,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Optimizes the party build for the current destination and depth limit.
 * This does not advance progression, return rewards, consume live randomness, write Diary entries, change equipment, consume charge, or change the save revision.
+* Request time limit: the response is returned within `timeBudgetSeconds` (at most 600 seconds), including the verification. The API waits at most 600 seconds for this request.
 
 * Parameters:
   * `targets`
@@ -712,7 +713,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     | `generations` | Integer | From `effort` | 1 ~ 200 | Number of generations to run. |
     | `quickRuns` | Integer | From `effort` | 10 ~ 300 | Simulation runs used to score every candidate. |
     | `confirmRuns` | Integer | From `effort` | 50 ~ 1000 | Simulation runs (different seed) used to re-score the top candidates. |
-    | `timeBudgetSeconds` | Integer | From `effort` | 5 ~ 300 | Hard time limit. When reached, the search returns the best build so far. |
+    | `timeBudgetSeconds` | Integer | From `effort` | 5 ~ 600 | Hard time limit for the whole request, including the final selection and the verification. The search stops early enough to finish them inside the limit, and then returns the best build so far. |
     | `verifyRuns` | Integer | `500` | 100 ~ 1000 | Simulation runs (new independent seed) used to compare the current build and the best build after the search. Used for `verdict` and `forecast`. |
     | `eliteCount` | Integer | `3` | 0 ~ populationSize / 4 | Best builds copied unchanged to the next generation. |
     | `mutationRate` | Number | `0.35` | 0 ~ 1 | Probability that a child build is mutated. |
@@ -810,6 +811,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 **2-3-3. `party/{p}/directedBuild`**
 
+* Request time limit: same as `party/{p}/gaSearch` (2-3-2). The response is returned within `timeBudgetSeconds` (at most 600 seconds), including the verification.
+
 * Parameters:
   * `direction`
     * Required.
@@ -893,7 +896,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     | `generations` | Integer | From `effort` | 1 ~ 200 | Step 1: number of generations to run. |
     | `quickRuns` | Integer | From `effort` | 10 ~ 300 | Simulation runs used to score every Step 1 and Step 3 candidate. |
     | `confirmRuns` | Integer | From `effort` | 50 ~ 1000 | Simulation runs (different seed) used to re-score the top Step 1 candidates and every Step 2 candidate. |
-    | `timeBudgetSeconds` | Integer | From `effort` | 5 ~ 300 | Hard time limit for Steps 1 to 3. Step 1 may use at most 75% of it; Steps 2 and 3 share the rest, plus any time Step 1 did not use. When a step's limit is reached, it locks its best result so far. When the whole limit is reached, the remaining steps are skipped. |
+    | `timeBudgetSeconds` | Integer | From `effort` | 5 ~ 600 | Hard time limit for the whole request, including the verification. The verification time is set aside first; Step 1 may use at most 75% of the rest, and Steps 2 and 3 share the remainder, plus any time Step 1 did not use. When a step's limit is reached, it locks its best result so far. When the search limit is reached, the remaining steps are skipped, and the verification still runs. |
     | `verifyRuns` | Integer | `500` | 100 ~ 1000 | Simulation runs (new independent seed) used to compare the current build and the result. Used for `verdict` and `forecast`. |
     | `eliteCount` | Integer | `2` | 0 ~ populationSize / 4 | Step 1: best builds copied unchanged to the next generation. |
     | `mutationRate` | Number | From `effort` | 0 ~ 1 | Step 1: probability that a child build is mutated. |
