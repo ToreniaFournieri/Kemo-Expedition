@@ -941,6 +941,18 @@ definitions in 9.1.3.
   step, its state before the operation, and a character whose equipment state did
   not change gets none (an identical step would block its earlier history).
 
+**Directed build**
+
+* `directedBuild` (9.1.3, 2-3-3) is a Read operation that uses `POST`, like `gaSearch`. It never commits anything and changes no revision. Its Return is the `gaSearch` Return (see **GA search**) plus the members below.
+* `verdict`, `forecast`, `verification`, `changeSummary`, `revision`, `evaluations`, and `elapsedSeconds` are produced as for `gaSearch`: the verdict compares the current build and the best build on one independent verification seed, and each `changeSummary` entry is accepted by the Commit API as written.
+  * A deity change is a `commit/build/party/{p}` entry with `deityId`. When another party holds the chosen deity, `changeSummary` lists `commit/build/party/{holder}` with `deityId: "none"` right before it, and the stored result is stale when a different party (or none) holds that deity.
+* `buildResultId` is kept in memory as the party's `applyBuildResult` result. A new `gaSearch`, `directedBuild`, or `stagedEquipmentTuning` for any character of the party replaces it. It is not save state.
+* `seed`: the seed used, the requested one or a random one. Sending it again with the same save and parameters returns the same result unless the time budget stops the search first.
+* `direction`: the requested direction.
+* `composition`: `{before, after}`. Each is `{melee, ranged, magic, support}`, the number of members whose main class is in that category (9.1.3 Definition), counting every member of the party.
+* `skipped`: `null` when the search ran. When the precheck fails it is `{reason: "directionInfeasible", lockedMainClasses}`, where `lockedMainClasses` lists the class IDs of the members whose main class cannot change. The response is then a success with `changeSummary: []`, `verdict: "noChange"`, and `forecast.after` equal to `forecast.before`.
+* `steps`: an object with one entry per executed step of the Process, keyed `step1`, `step2`, and so on. Each entry is `{candidatesTried, selected}`: the number of candidates scored in that step, and a short text describing the selected option, or `null` when the step kept the current value. A step that did not run has no entry.
+
 **Staged Equipment Tuning**
 
 * `stagedEquipmentTuning` (9.1.3, 2-3-8; 7.1.5) tunes the equipment of one

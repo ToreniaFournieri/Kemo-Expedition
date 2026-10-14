@@ -855,18 +855,26 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * Precheck: If the locked main classes make the selected direction impossible to satisfy (including the Support duplicate rule), tuning is skipped and the build is left unchanged.
   * Step 1: High-impact changes
     * Searches: `raceGender`, `mainClass`, `subClass`, `lineage`, `considerOrderChange`
-    * Runs `autoEquipmentRun` for each candidate.
+    * Runs `autoEquipmentRun` for each candidate. `considerItemsScope` and `objective` apply.
     * Selects the best result and locks these parameters.
   * Step 2: Deity change
     * Searches: `considerDeityChange`
     * Selects the best deity and locks it.
   * Step 3: Final tuning
     * Searches: `lineage`, `predisposition`
-    * Runs `autoEquipmentRun` for each candidate.
-  * [TBD: where `considerItemsScope` and `objective` apply]
+    * Runs `autoEquipmentRun` for each candidate. `considerItemsScope` and `objective` apply.
 
 * Return:
-  * [TBA]
+  * Same as `party/{p}/gaSearch` (2-3-2): `verdict`, `forecast`, `changeSummary`, `revision`, `evaluations`, `elapsedSeconds`, `buildResultId`.
+  * `seed`
+  * `direction`
+  * `composition`
+    * Number of members per main class category, before and after.
+  * `skipped`
+    * Why the search did not run (the Process precheck), or `null`.
+  * `steps`
+    * Number of candidates tried and the selected option, for each step of the Process.
+  * Details: `9.1.4`.
 
 
 **2-3-4. `character/status`**
