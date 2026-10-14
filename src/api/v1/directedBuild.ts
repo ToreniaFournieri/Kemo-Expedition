@@ -153,7 +153,7 @@ export function parseDirectedBuildRequest(state: GameState, partyIndex: number, 
     const extraComponent = Object.keys(source).find((key) => !known.includes(key));
     if (extraComponent !== undefined) invalid(`targets.changeableComponents.${extraComponent}.unknown_member`);
     const flags = Object.fromEntries(Object.entries(COMPONENT_DEFAULTS).map(([key, fallback]) => [key, readBoolean(source, key, `targets.changeableComponents.${key}`, fallback)])) as Record<keyof typeof COMPONENT_DEFAULTS, boolean>;
-    return { characterId, ...flags, autoEquipmentRun: readEnum(source, 'autoEquipmentRun', 'targets.changeableComponents.autoEquipmentRun', AUTO_EQUIPMENT_RUNS, 'currentSetting') };
+    return { characterId, ...flags, autoEquipmentRun: readEnum(source, 'autoEquipmentRun', 'targets.changeableComponents.autoEquipmentRun', AUTO_EQUIPMENT_RUNS, 'FULL') };
   });
   const source = raw.tuningParameters === undefined ? {} : raw.tuningParameters;
   if (!isRecord(source)) invalid('tuningParameters');
