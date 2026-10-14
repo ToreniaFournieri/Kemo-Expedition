@@ -773,8 +773,13 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `subClass`: Boolean, optional, default `true`.
       * `lineage`: Boolean, optional, default `false`.
       * `predisposition`: Boolean, optional, default `false`.
-      * `autoEquipmentRun`: Boolean, optional, default `true`.
-        * If `true` and the character's `m.auto_equipment` is `FULL` or `SEMI`, the auto-equipment logic is triggered.
+      * `autoEquipmentRun`: String enum, optional, default `currentSetting`.
+        * Options: `currentSetting`, `FULL`, `SEMI`, `OFF`
+        * The auto-equipment logic (including jewel assignment) is triggered if the value is `FULL` or `SEMI`, or if the value is `currentSetting` and the character's `m.auto_equipment` is `FULL` or `SEMI`.
+          * After the result is committed through another API, the character's `m.auto_equipment` may change from `FULL` to `SEMI`. 
+        * Otherwise (`OFF`, or `currentSetting` with `m.auto_equipment` set to `OFF`), the logic is not triggered.
+          * If a class change leaves equipment that the character can no longer equip.
+
   * `considerOrderChange`
     * Boolean, optional, default `false`.
   * `considerDeityChange`
@@ -818,6 +823,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Not allowed: `class.guardian` + `class.guardian`
 
 * Direction (number of members per main class category):
+  * The direction guides the main class assignment of characters whose `mainClass` is changeable. It does not guarantee the final party composition, because members with `mainClass: false` (or a main class locked by game rules) keep their current main class, and these are still counted.
   * `rapidRanged`
     * `Melee class`: `0-1`
     * `Ranged class`: `2-5`
@@ -851,15 +857,16 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * `Support class`: `1-2`
 
 * Process:
-  * Only components set to `true` in `changeableComponents` may be changed.
+  * A component may be changed only if it is set to `true` in `changeableComponents` and the game rules allow the change.
+    * Example: a unique character's race, gender, or class cannot be changed, even if the component is `true`.
   * Precheck: If the locked main classes make the selected direction impossible to satisfy (including the Support duplicate rule), tuning is skipped and the build is left unchanged.
   * Step 1: High-impact changes
     * Searches: `raceGender`, `mainClass`, `subClass`, `lineage`, `considerOrderChange`
     * Runs `autoEquipmentRun` for each candidate. `considerItemsScope` and `objective` apply.
-    * Selects the best result and locks these parameters.
+    * Selects the best result and locks these parameters. If there is no valid candidate, the original parameters are kept.
   * Step 2: Deity change
     * Searches: `considerDeityChange`
-    * Selects the best deity and locks it.
+    * Selects the best deity and locks it. If there is no valid candidate, the original parameters are kept.
   * Step 3: Final tuning
     * Searches: `lineage`, `predisposition`
     * Runs `autoEquipmentRun` for each candidate. `considerItemsScope` and `objective` apply.

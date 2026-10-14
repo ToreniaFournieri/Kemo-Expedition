@@ -2,7 +2,12 @@
 
 ### 7.1 AUTOMATION EQUIPMENT
 
+- **API Read:**
+  - `read/build/party/{p}/gaSearch`
+  - `read/buildparty/{p}/directedBuild`
+
 #### 7.1.1 AUTO equipment logic
+
 - The behavior of automatic equipment is controlled by `m.auto_equipment`.
  
 | Mode     | Description                    |
@@ -12,6 +17,16 @@
 | `FULL` | Automatically **Run `7.1.2 FULL: Equipment logic`**.    |
 
 - Processing priority: Characters are processed sequentially in party order: Row1 → Row2 → … → Row6…
+
+- Scope:
+  * `considerItemsScope`
+    * Optional.
+    * Default: `normal`
+      * API only. The UI always uses `normal`.
+    * Options:
+      * `normal`: Consider the individual target character's equipment and items in the inventory. Ignore equipment equipped by other party members.
+      * `withinTargets`: Consider the equipment of characters specified by `characterId` in `targets`, along with items in the inventory. Locked equipment is never taken.
+      * `global`: Considers equipment and inventory items across all characters, including those in other parties. Locked equipment is never taken.
 
 #### 7.1.2 FULL: Equipment logic
 
