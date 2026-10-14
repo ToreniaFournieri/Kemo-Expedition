@@ -680,6 +680,21 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * `bossDamage` simulates only the boss battle of the current destination.
       * Each run starts the boss battle at full party HP.
       * The rooms before it, the gates, and the depth limit are ignored. HP lost on the way to the boss is not counted; use `success` to include it.
+  * `objectiveGuard`
+    * Optional. Object. Default: none.
+    * A minimum value on a second objective, so a search for one objective cannot ruin the other.
+    * Format: `{ "<guardObjective>": <minimum> }`, with exactly one member.
+      * `<guardObjective>`: `success` or `bossDamage`. It must differ from `objective`.
+      * `<minimum>`: Number, `0` ~ `1`, measured as the `<rate>` of that objective (see `verdict`). For `success`, it is the success rate (not `progress`).
+    * Example: `"objective": "bossDamage", "objectiveGuard": { "success": 0.05 }` searches for boss damage but keeps the full-route success rate at 5% or more.
+    * The guard is checked on the top candidates only: every candidate re-scored with `confirmRuns` is also measured on the guard objective with `confirmRuns` runs (the confirm seed). Candidates scored only with `quickRuns` are ranked by `objective` alone.
+    * Ranking of the confirmed candidates:
+      1. Candidates that reach `<minimum>` rank above every candidate that does not.
+      2. Among candidates that reach it, the better `objective` score ranks first.
+      3. Among candidates that do not reach it, the higher guard value ranks first; ties are broken by the `objective` score.
+      * So when no candidate reaches the guard, the search returns the build that comes closest to it.
+    * Cost: one extra guard simulation per confirmed candidate, plus the guard measurement in the verification.
+    * See `verification.crossCheck` and `verdict` for how the result reports the guard.
   * `gaParameters`
     * Optional.
     * `effort` selects a preset. Values in the preset table are used unless they are specified explicitly.
@@ -704,6 +719,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     | `tournamentSize` | Integer | `3` | 2 ~ 8 | Number of candidates compared when selecting each parent. |
     | `confirmTopN` | Integer | `5` | 1 ~ 10 | Number of top candidates re-scored with `confirmRuns` each generation. |
     | `seed` | Integer | Random | Any integer | Fixed seed for a reproducible result. |
+    | `verifySeed` | Integer | Derived from `seed` | Any integer | Seed of the verification runs only. The same `verifySeed`, `verifyRuns`, `objective`, and save revision give the same `verification.before`, so two searches on the same save (for example with different `seed` values or another endpoint) can be compared on the same verification runs. The search itself still uses `seed`. |
     | `maxChanges` | Integer | None (no limit) | 1 ~ 100 | Maximum number of entries in `changeSummary`. Builds that need more changes are not selected. |
     | `seedWithHeuristics` | Boolean | `true` | `true` / `false` | Adds heuristic attack-focused and HP-focused builds to the first generation. |
 
@@ -728,10 +744,45 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `noisy`: `<rate>` differs from the current build by no more than 2 SE, in either direction. The difference may come from chance.
       * `noChange`: No different build was found. `changeSummary` is empty.
       * `worse`: `<rate>` is worse than the current build by more than 2 SE. `changeSummary` is still returned but should not be applied.
+    * With `objectiveGuard`: if the current build reaches the guard in the verification runs and the best build does not, `verdict` is `worse`, whatever `<gain>` is.
   * `forecast`
     * `before`: `overview` of the current build (same format as `{p}/simulationRun`).
     * `after`: `overview` of the best build (same format as `{p}/simulationRun`).
     * With `bossDamage`, both describe the boss battle only.
+    * `scope`
+      * The part of the dungeon the forecast simulates. A forecast says nothing about rooms outside it.
+      * Format: `{ "from": <floorRoom>, "to": <floorRoom>, "rooms": <number>, "endsAt": <reason> }`
+        * `from`, `to`: first and last room simulated, in the `<floorRoom>` format of `{p}/simulationRun` `detail` (for example `1f-1`).
+        * `rooms`: number of rooms simulated. This is also the room count `progress` (7.1.5 Score) is divided by.
+        * `endsAt`:
+          * `clearGate`: the route stops before the first closed Clear-Gate (that room is not simulated).
+          * `depthLimit`: the route stops at the party's depth limit.
+          * `dungeonEnd`: the route reaches the last room of the destination.
+          * `bossRoom`: `bossDamage`; only the boss room is simulated (`from` and `to` are that room).
+      * Example: `{ "from": "1f-1", "to": "1f-3", "rooms": 3, "endsAt": "clearGate" }`. A success rate of 99% then covers rooms 1f-1 to 1f-3 only, not the elite rooms behind the gate.
+  * `verification`
+    * The values the `verdict` was judged on.
+    * Format: `{ objective, scoredBy, runs, before, after, gain, standardError, seed, verifySeed, progress, crossCheck }`
+    * `objective`: the requested `objective`.
+    * `scoredBy`: the score the verdict used: `objective`, or `progress` when `objective` is `success` and both builds have a success rate of `0` (see `verdict`).
+    * `runs`: `verifyRuns`.
+    * `before`, `after`: `<rate>` of the current build and the best build, in the `scoredBy` score.
+    * `gain`, `standardError`: `<gain>` and its SE (see `verdict`).
+    * `seed`: the search seed (`gaParameters.seed`, or the random one chosen).
+    * `verifySeed`: the verification seed used. Send it as `gaParameters.verifySeed` to measure another search on the same verification runs.
+    * `progress`
+      * `{ before, after }`: `progress` (7.1.5 Score, `0` ~ `1`) of the current build and the best build in the same verification runs.
+      * Always returned, even when `scoredBy` is not `progress`, so a client can see how far into `forecast.scope` the runs get.
+      * `null` with `bossDamage` (only the boss room is simulated).
+    * `crossCheck`
+      * The second objective, measured on the same two builds for information. It is always returned, with or without `objectiveGuard`.
+      * Format: `{ objective, before, after, minimum, reached }`
+        * `objective`: the `objectiveGuard` objective when it is set. Otherwise: `bossDamage` when `objective` is `success`, `minDefeat`, or `experience`; `success` when `objective` is `bossDamage`.
+        * `before`, `after`: `<rate>` of that objective for the current build and the best build, in `verifyRuns` runs on the verification seed. For `success`, the success rate.
+        * `minimum`: the `objectiveGuard` minimum, or `null` without a guard.
+        * `reached`: `{ before, after }`, Booleans, whether each build reaches `minimum`; `null` without a guard.
+      * `crossCheck` does not change `verdict` unless `objectiveGuard` is set.
+      * Example: `"objective": "bossDamage"` with `crossCheck` `{ "objective": "success", "before": 0.04, "after": 0.0 }` shows a boss build that leaves the route at 0%.
   * `changeSummary`
     * Ordered array of Commit API calls that turns the current build into the best build.
     * Each entry can be sent directly to the Commit API.
@@ -781,6 +832,16 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
         * The auto-equipment logic (including jewel assignment) is triggered if the value is `FULL` or `SEMI`, or if the value is `currentSetting` and the character's `m.auto_equipment` is `FULL` or `SEMI`.
         * Otherwise (`OFF`, or `currentSetting` with `m.auto_equipment` set to `OFF`), the logic is not triggered.
         * Note: If a class change leaves equipment that the character can no longer equip, the game rules (`c.equip_melee`,`c.equip_ranged`, `c.equip_magic`) equipment apply. 
+        * Whether it runs for a member whose build did not change depends on `autoEquipmentScope`.
+
+  * `autoEquipmentScope`
+    * String enum, optional, default `changedOnly`.
+    * Options: `changedOnly`, `allTargets`
+    * `changedOnly`: in each candidate, `autoEquipmentRun` runs only for the targets whose build changed. The other targets keep their current equipment and Jewels, for example the equipment found by `gaSearch` or `stagedEquipmentTuning`.
+      * A target's build has changed when its unique character, race/gender, main class, sub class, lineage, or predisposition differs from the current build. An order change or a deity change alone does not count.
+      * With `withinTargets` or `global`, a changed target may take an unlocked item from an unchanged member. That member then counts as changed and runs `autoEquipmentRun` afterward (party order), so it does not keep an empty slot.
+      * So the candidate with no build change is exactly the current build, equipment included.
+    * `allTargets`: `autoEquipmentRun` runs for every target in every candidate, whether or not its build changed (the behavior before `autoEquipmentScope` existed). Use it to let the search also re-run Auto Equipment on members it does not re-class.
 
   * `considerOrderChange`
     * Boolean, optional, default `false`.
@@ -799,6 +860,21 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Options: `success`, `minDefeat`, `bossDamage`, `experience`.
     * Each option has the same meaning, the same `<rate>`, and the same tie-breaking as the `objective` of `party/{p}/gaSearch` (2-3-2), including `progress` (7.1.5 Score) for `success` and the boss-battle-only simulation for `bossDamage`.
     * Every candidate build is compared by this `objective`, and `verdict` is judged on it.
+  * `objectiveGuard`
+    * Optional. Same format, ranking, and `verdict` rule as the `objectiveGuard` of `party/{p}/gaSearch` (2-3-2).
+    * Applies to the confirmed Step 1 candidates, every Step 2 candidate, and every Step 3 candidate. In Step 3, a candidate replaces the incumbent only if it ranks above it by the `objectiveGuard` ranking.
+  * `directionStrictness`
+    * String enum, optional, default `strict`.
+    * Options: `strict`, `soft`
+    * `strict`: the direction is a rule. Every candidate must reach the smallest achievable `distance` (see Distance). If the current build is farther, it is not a candidate, and the search must change the composition.
+    * `soft`: the direction is a preference. Every composition is a candidate, including the current build. During the search, each member of `distance` makes a candidate's score worse by `directionPenalty`.
+      * The penalty is used for the search ranking only. `verdict` and `verification` are judged on the objective without the penalty.
+      * With `free`, `distance` is always `0`, so `strict` and `soft` are the same.
+  * `directionPenalty`
+    * Number, optional, default `2`. Range `0` ~ `50`.
+    * Used only with `directionStrictness: soft`.
+    * Score penalty per member of `distance`: percentage points for `success`, `minDefeat`, `bossDamage`, and `progress` (a `minDefeat` defeat rate is raised); percent of the current build's average EXP for `experience`.
+    * Example: with `2`, a candidate at `distance` `2` must be 4 points better than a candidate at `distance` `0` to rank above it.
 
   * `tuningParameters`
     * Optional. Object.
@@ -824,6 +900,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     | `tournamentSize` | Integer | `3` | 2 ~ 8 | Step 1: number of candidates compared when selecting each parent. |
     | `confirmTopN` | Integer | `3` | 1 ~ 10 | Step 1: number of top candidates re-scored with `confirmRuns` each generation. |
     | `seed` | Integer | Random | Any integer | Fixed seed for a reproducible result. |
+    | `verifySeed` | Integer | Derived from `seed` | Any integer | Seed of the verification runs only. Same meaning as the `verifySeed` of `party/{p}/gaSearch` (2-3-2). The same `verifySeed` gives `directedBuild` and `gaSearch` the same `verification.before` on the same save. |
 
     * There is no `maxChanges`: a class change and its `autoEquipmentRun` usually need many entries.
 
@@ -840,8 +917,18 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Allowed: `class.guardian` + `class.pilgrim`
     * Not allowed: `class.guardian` + `class.guardian`
 
+* Distance:
+  * How many members a party is away from a direction's ranges. `0` means the party fits the direction.
+  * For each of the four categories, count the members below the minimum and the members above the maximum, then add the four counts:
+    * `distance = Σ over categories ( max(0, minimum − count) + max(0, count − maximum) )`
+  * Example (`rapidRanged`): a party with 0 Melee, 0 Ranged, 3 Magic, and 3 Support classes is at `distance` `5` (Ranged 2 short, Magic 2 over, Support 1 over). A party with 1 / 2 / 1 / 2 is at `0`.
+  * `free` has no ranges, so its `distance` is always `0`.
+  * The smallest achievable distance is the smallest `distance` the party can reach by changing only the main classes of targets with `mainClass: true`, under the Party rules. When every member's main class may change, it is `0` for every direction.
+  * Recomposition: the number of members whose main class category changes, from the current build to a candidate (`Σ |after − before| / 2` over the four categories). Recomposition `0` means the composition is unchanged, even if classes changed within a category.
+
 * Direction (number of members per main class category):
   * The direction guides the main class assignment of characters whose `mainClass` is changeable. If the ranges cannot be fully satisfied, tuning proceeds with the closest achievable composition.
+  * With `directionStrictness: strict`, a direction can only remove candidates that `free` would also consider. It helps only by focusing the search on its compositions; it never finds a build that `free` could not. Use `free` when the goal is the best score, and a direction (or `soft`) when the goal is to steer the party toward a class plan.
   * `rapidRanged`
     * `Melee class`: `0-1`
     * `Ranged class`: `2-5`
@@ -880,21 +967,37 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Example: a unique character's gender, lineage, and predisposition cannot be changed, even if the component is `true`.
   * Step 1: High-impact changes
     * Searches: `uniqueCharacter`, `raceGender`, `mainClass`, `subClass`, `considerOrderChange`
-    * Runs `autoEquipmentRun` for each candidate. `considerItemsScope` and `objective` apply.
+    * Runs `autoEquipmentRun` for each candidate (see `autoEquipmentScope`). `considerItemsScope` and `objective` apply.
+    * The current build is always a candidate when it is valid: with `free`, with `soft`, or with `strict` when it is already at the smallest achievable distance.
+    * Sampling of the first generation (and of any later random candidates):
+      * `free` and `soft`: 60% of the samples are local: they keep the current composition or have a recomposition of 1 or 2. The other 40% draw any valid composition.
+        * With `soft`, the non-local samples draw from the compositions at the smallest achievable distance.
+      * `strict` with any other direction: every sample draws from the compositions at the smallest achievable distance.
+      * Within a composition, classes, races, sub classes, and unique characters are drawn as before.
+    * A candidate is scored once per search. When breeding or sampling produces a candidate that was already scored, it is replaced by a new random sample (up to 4 attempts per slot), so a generation spends its runs on new builds.
     * Selects the best result and locks these parameters. If there is no valid candidate, the original parameters are kept.
   * Step 2: Deity change
     * Searches: `considerDeityChange`
     * Selects the best deity and locks it. If there is no valid candidate, the original parameters are kept.
   * Step 3: Final tuning
     * Searches: `lineage`, `predisposition`
-    * Runs `autoEquipmentRun` for each candidate. `considerItemsScope` and `objective` apply.
+    * Runs `autoEquipmentRun` for each candidate (only the member being tuned, see `autoEquipmentScope`). `considerItemsScope` and `objective` apply.
 
 * Return:
-  * Same as `party/{p}/gaSearch` (2-3-2): `verdict`, `forecast`, `changeSummary`, `revision`, `evaluations`, `elapsedSeconds`, `basis`.
+  * Same as `party/{p}/gaSearch` (2-3-2): `verdict`, `forecast` (including `scope`), `verification` (including `progress` and `crossCheck`), `changeSummary`, `revision`, `evaluations`, `elapsedSeconds`, `basis`.
   * `seed`
   * `direction`
+  * `directionStrictness`
   * `composition`
     * Number of members per main class category, before and after.
+    * Format: `{ before, after, distanceBefore, distance, smallestDistance, recomposition, forcedRecomposition }`
+      * `before`, `after`: `{ melee, ranged, magic, support }` of the current build and the result.
+      * `distanceBefore`: `distance` of the current build for `direction`.
+      * `distance`: `distance` of the result.
+      * `smallestDistance`: the smallest achievable distance (see Distance).
+      * `recomposition`: recomposition from the current build to the result.
+      * `forcedRecomposition`: Boolean. `true` when `directionStrictness` is `strict` and `distanceBefore` is larger than `smallestDistance`. The current build was then not a candidate, and the result had to change the composition.
+        * A `worse` verdict with `forcedRecomposition: true` usually means the direction did not suit the current party, not that the search failed. Use `free` or `soft` to compare.
   * `steps`
     * Number of candidates tried and the selected option, for each step of the Process.
   * Details: `9.1.4`.
