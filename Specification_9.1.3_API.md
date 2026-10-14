@@ -782,20 +782,17 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * `none`: Does not consider changing deities.
     * `unoccupiedDeities`: Considers any deity not currently in use by another party.
     * `allDeities`: Considers all deities, including those in use by other parties.
-      * If the chosen deity is in use by another party, that party's deity assignment is removed and the deity is assigned to this party.
   * `considerItemsScope`
     * String enum, optional, default `normal`.
     * `normal`: Considers the target character's own equipment and inventory items. Equipment worn by other party members is ignored.
-    * `withinTargets`: Considers the equipment of all characters in `targets`, plus inventory items. Locked equipment is never taken.
-    * `global`: Considers equipment and inventory items across all characters, including other parties. Locked equipment is never taken.
+    * `withinTargets`: Considers the equipment of all characters in `targets`, plus inventory items. Locked equipment is never considered.
+    * `global`: Considers equipment and inventory items across all characters, including other parties. Locked equipment is never considered.
   * `objective`
     * String enum, optional, default `success`.
-    * `success`: Maximizes the success rate. `progress` (7.1.5 Score) breaks ties between builds, mainly while successes are rare. If every build is at `0` successes, the search still has a signal. If both builds are still at `0` in the verification runs, `verdict` is judged on `progress` too (see `verdict`).
-    * `minDefeat`
-    * `bossDamage`: Simulates only the boss battle of the current destination.
-      * Each run starts the boss battle at full party HP.
-      * The rooms before it, the gates, and the depth limit are ignored. HP lost on the way to the boss is not counted; use `success` to include it.
-    * `experience`
+    * Options: `success`, `minDefeat`, `bossDamage`, `experience`.
+    * Each option has the same meaning, the same `<rate>`, and the same tie-breaking as the `objective` of `party/{p}/gaSearch` (2-3-2), including `progress` (7.1.5 Score) for `success` and the boss-battle-only simulation for `bossDamage`.
+    * Every candidate build is compared by this `objective`, and `verdict` is judged on it.
+
   * `tuningParameters`
     * Optional. [TBD: object shape]
     * `effort`: String enum (`low`, `medium`, `high`), optional, default `medium`. Selects a preset. Values in the preset table are used unless specified explicitly.

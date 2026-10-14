@@ -172,7 +172,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
   }
   let idleSimulatedAt = ports.runtime.now();
   // SpecRef: 9.1.3 | 2-3-2 gaSearch `buildResultId` | Only the latest result per party is kept, in memory (not save state).
-  // SpecRef: 9.1.3 | 2-3-7 stagedEquipmentTuning `buildResultId` | A tuning of any member replaces it too.
+  // SpecRef: 9.1.3 | 2-3-8 stagedEquipmentTuning `buildResultId` | A tuning of any member replaces it too.
   const buildResults = new Map<number, StoredBuildResult>();
   /** The search collaborators of `gaSearch` and `stagedEquipmentTuning` for one snapshot. */
   const searchDependencies = (snapshot: ReturnType<typeof authority.getSnapshot>, revision: number): GaSearchDependencies => ({
@@ -387,7 +387,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
     }
 
     if (operation === 'read/build/character/stagedEquipmentTuning') {
-      // SpecRef: 9.1.3 | Read | 2-3-7 character/stagedEquipmentTuning | a POST Read like `gaSearch`: private, never committed.
+      // SpecRef: 9.1.3 | Read | 2-3-8 character/stagedEquipmentTuning | a POST Read like `gaSearch`: private, never committed.
       const snapshot = authority.getSnapshot();
       const revision = snapshot.control.revisionHighWater;
       if (request.expectedRevision !== undefined && Number(request.expectedRevision) !== revision) {

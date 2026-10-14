@@ -532,7 +532,7 @@ console.log('apiV1ApplicationApi profile ok');
   assert.deepEqual(hidden.headlessEvents, [true, false, false]);
 }
 
-// SpecRef: 9.1.3 | 2-3-7 stagedEquipmentTuning `buildResultId` | A tuning of any party member replaces the party's kept
+// SpecRef: 9.1.3 | 2-3-8 stagedEquipmentTuning `buildResultId` | A tuning of any party member replaces the party's kept
 // `gaSearch` result, so `applyBuildResult` no longer finds it; a rejected tuning leaves none.
 {
   const h = harness(false, (state, partyIndex, count, seed) => simulateExpeditionRuns(state, partyIndex, 'mode.normal', count, undefined, 0, seed));

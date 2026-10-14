@@ -795,7 +795,7 @@ export default function PartyTab({
     ? retainedEquipCategory
     : availableCategories.includes('armor') ? 'armor' : availableCategories[0] ?? 'armor';
 
-  // SpecRef: 9.1.3 | Read | 2-3-6 character/equipmentEvaluation
+  // SpecRef: 9.1.3 | Read | 2-3-7 character/equipmentEvaluation
   // Every displayed defense preview is evaluated against one immutable Application API snapshot. The tab only formats
   // the returned deltas; it does not simulate equipment or recalculate character status.
   const previewTargetSlot = selectingSlot ?? Array.from({ length: stats.maxEquipSlots }).findIndex((_, index) => !char.equipment[index]);

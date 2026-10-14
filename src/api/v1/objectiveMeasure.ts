@@ -5,7 +5,7 @@ import { hasReachedExpeditionDepthLimit } from '../../game/expeditionEffects/exp
 import type { ExpeditionSimulationOptions, ExpeditionSimulationResult, GameState, Party } from '../../types/index.ts';
 
 // SpecRef: 7.1.5 | General rules | Score and Luck check (the per-run variance)
-// SpecRef: 9.1.3 | Read | 2-2-3 simulationRun `objective`; 2-3-2 gaSearch `objective`; 2-3-7 stagedEquipmentTuning `objective`
+// SpecRef: 9.1.3 | Read | 2-2-3 simulationRun `objective`; 2-3-2 gaSearch `objective`; 2-3-8 stagedEquipmentTuning `objective`
 // The measured value of each objective over one forecast and its per-run variance. `simulationRun`, `gaSearch`, and
 // `stagedEquipmentTuning` share it, so the three report the same number for the same build, runs, and seed.
 

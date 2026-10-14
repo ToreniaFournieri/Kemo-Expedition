@@ -13,7 +13,7 @@ import { decodePersistedState } from '../../src/game/storageCompression';
 import type { GameState } from '../../src/types';
 
 // SpecRef: 7.1.5 | Staged Equipment Tuning
-// SpecRef: 9.1.3 | Read | 2-3-7 character/stagedEquipmentTuning
+// SpecRef: 9.1.3 | Read | 2-3-8 character/stagedEquipmentTuning
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | stagedEquipmentTuning
 
 const now = Date.parse('2026-01-01T00:00:00.000Z');
@@ -49,7 +49,7 @@ function commitContext(stored: StoredBuildResult | null, history: ApiV1CommitCon
   };
 }
 
-// ---------------- Request validation (Spec 9.1.3, 2-3-7) ----------------
+// ---------------- Request validation (Spec 9.1.3, 2-3-8) ----------------
 
 const fresh = createFreshGameState('ja', now);
 const firstId = fresh.parties[0].characters[0].id;
@@ -64,7 +64,7 @@ rejects({ characterId: 999999 }, 'not_found');
 rejects({ characterId: firstId, baselineRuns: 500 }, 'invalid_request:baselineRuns');
 rejects({ characterId: firstId, quickRuns: 5 }, 'invalid_request:quickRuns');
 rejects({ characterId: firstId, finalTuningRuns: 2000 }, 'invalid_request:finalTuningRuns');
-rejects({ characterId: firstId, offenseElementTrialRuns: 11 }, 'invalid_request:offenseElementTrialRuns');
+rejects({ characterId: firstId, offenseElementTrialRuns: 21 }, 'invalid_request:offenseElementTrialRuns');
 rejects({ characterId: firstId, abilityCandidateCount: 0 }, 'invalid_request:abilityCandidateCount');
 rejects({ characterId: firstId, minImprovement: -0.1 }, 'invalid_request:minImprovement');
 rejects({ characterId: firstId, offenseElementRequest: 'e.wind' }, 'invalid_request:offenseElementRequest');
@@ -77,8 +77,8 @@ rejects({ characterId: firstId, seed: '7' }, 'invalid_request:seed');
     { ...parsed },
     {
       characterId: firstId, partyIndex: 0, objective: 'success', offenseElementRequest: null, seed: null,
-      quickRuns: 300, finalTuningRuns: 500, offenseElementTrialRuns: 3, offenseElementCandidateCount: 2, defenseElementTrialRuns: 5,
-      defenseElementCandidateCount: 2, abilityTrialRuns: 20, abilityCandidateCount: 2, minImprovement: 0.07, minGateImprovement: 0.07,
+      quickRuns: 300, finalTuningRuns: 500, offenseElementTrialRuns: 9, offenseElementCandidateCount: 2, defenseElementTrialRuns: 15,
+      defenseElementCandidateCount: 2, abilityTrialRuns: 40, abilityCandidateCount: 2, minImprovement: 0.07, minGateImprovement: 0.07,
     },
     'the 9.1.3 defaults',
   );
@@ -310,11 +310,11 @@ const data = outcome.data as unknown as TuningData;
 
 // ---------------- Jewels: only the changed slot ----------------
 // With 34 spare Jewel types and ranks in the Inventory, the party 5 samurai's tuning swaps one item: `changeSummary` lists
-// only that slot and its Jewel, and every other slot keeps its item and Jewel.
+// only that slot and its Jewel, and every other slot keeps its item and Jewel (the trial counts are pinned to the pre-0.10.1 defaults of 3, 5, and 20, which find a one-item swap).
 {
   const samurai = sample.parties[4].characters.find((character) => character.mainClassId === 'samurai')!;
   assert.ok(Object.values(sample.global.jewels).filter((count) => count > 0).length > 0, 'the save has spare Jewels');
-  const swap = await tune(sample, { characterId: samurai.id });
+  const swap = await tune(sample, { characterId: samurai.id, offenseElementTrialRuns: 3, defenseElementTrialRuns: 5, abilityTrialRuns: 20 });
   const swapped = swap.data as unknown as TuningData;
   assert.equal(swapped.accepted, true, JSON.stringify({ before: swapped.before, after: swapped.after, improvement: swapped.improvement }));
   const changes = swapped.steps.finalTuning.flatMap((entry) => entry.changes);

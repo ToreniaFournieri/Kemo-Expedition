@@ -19,7 +19,7 @@ import { measureObjective, objectiveSimulationOptions, prepareObjectiveState, ro
 import { buildSimulationRunData, floorRoomLabel } from './simulationView';
 
 // SpecRef: 7.1.5 | Staged Equipment Tuning
-// SpecRef: 9.1.3 | Read | 2-3-7 character/stagedEquipmentTuning
+// SpecRef: 9.1.3 | Read | 2-3-8 character/stagedEquipmentTuning
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | stagedEquipmentTuning
 // Tunes one character's equipment in stages: a baseline finds the bottleneck room, steps 2–4 try other offense elements,
 // defense elements, and ability items on quick runs, step 5 combines the qualifying candidates greedily, and step 6
@@ -32,12 +32,12 @@ export type TuningScore = TuningObjective | 'progress';
 export const STAGED_TUNING_BASELINE_RUNS = 1000;
 const OFFENSE_REQUESTS = ['noRequest', 'e.fire', 'e.ice', 'e.thunder', 'e.none'] as const;
 
-/** `[minimum, maximum, default]` of each integer parameter (Spec 9.1.3, 2-3-7; ranges in 9.1.4.9). */
+/** `[minimum, maximum, default]` of each integer parameter (Spec 9.1.3, 2-3-8; ranges in 9.1.4.9). */
 const INTEGER_PARAMETERS = {
   quickRuns: [10, 1000, 300], finalTuningRuns: [50, 1000, 500],
-  offenseElementTrialRuns: [0, 10, 3], offenseElementCandidateCount: [1, 3, 2],
-  defenseElementTrialRuns: [0, 20, 5], defenseElementCandidateCount: [1, 3, 2],
-  abilityTrialRuns: [0, 50, 20], abilityCandidateCount: [1, 3, 2],
+  offenseElementTrialRuns: [0, 20, 9], offenseElementCandidateCount: [1, 3, 2],
+  defenseElementTrialRuns: [0, 40, 15], defenseElementCandidateCount: [1, 3, 2],
+  abilityTrialRuns: [0, 100, 40], abilityCandidateCount: [1, 3, 2],
 } as const;
 type IntegerParameter = keyof typeof INTEGER_PARAMETERS;
 /** `minImprovement` and `minGateImprovement`: a relative improvement, `0` to `10` (1000%). */
@@ -56,7 +56,7 @@ export interface StagedTuningRequest extends Record<IntegerParameter, number>, R
 
 function invalid(field: string): never { throw new Error(`invalid_request:${field}`); }
 
-/** Validates a `stagedEquipmentTuning` request (Spec 9.1.3, 2-3-7). Throws `invalid_request:<field>` or `not_found`. */
+/** Validates a `stagedEquipmentTuning` request (Spec 9.1.3, 2-3-8). Throws `invalid_request:<field>` or `not_found`. */
 export function parseStagedTuningRequest(state: GameState, raw: Record<string, unknown>): StagedTuningRequest {
   const allowed = new Set(['characterId', 'baselineRuns', 'offenseElementRequest', 'objective', 'seed', ...Object.keys(INTEGER_PARAMETERS), ...Object.keys(RATIO_PARAMETERS)]);
   const unknown = Object.keys(raw).find((key) => !allowed.has(key));
@@ -642,7 +642,7 @@ export interface StagedTuningOutcome {
   stored: StoredBuildResult | null;
 }
 
-/** Runs `stagedEquipmentTuning` (Spec 7.1.5; 9.1.3, 2-3-7). Never changes `state`. */
+/** Runs `stagedEquipmentTuning` (Spec 7.1.5; 9.1.3, 2-3-8). Never changes `state`. */
 export async function runStagedEquipmentTuning(state: GameState, request: StagedTuningRequest, dependencies: GaSearchDependencies): Promise<StagedTuningOutcome> {
   const startedAt = dependencies.now();
   const { partyIndex, objective } = request;

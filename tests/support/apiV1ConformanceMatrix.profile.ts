@@ -482,7 +482,7 @@ const readFixtures: Record<string, ReadFixture> = {
   'read/build/character/equipment': { dynamicQuery: characterPath, missingQuery: { characterId: 999999 } },
   'read/build/character/equipmentSet': { dynamicQuery: characterPath, missingQuery: { characterId: 999999 } },
   'read/build/character/equipmentEvaluation': { dynamicQuery: characterPath, query: { equipmentChanges: '1=0' }, missingQuery: { characterId: 999999 } },
-  // SpecRef: 9.1.3 | 2-3-7 stagedEquipmentTuning | steps 2–4 off: the baseline and the final check alone (2 × 1000 runs).
+  // SpecRef: 9.1.3 | 2-3-8 stagedEquipmentTuning | steps 2–4 off: the baseline and the final check alone (2 × 1000 runs).
   'read/build/character/stagedEquipmentTuning': { dynamicQuery: characterPath, query: { offenseElementTrialRuns: 0, defenseElementTrialRuns: 0, abilityTrialRuns: 0 }, missingQuery: { characterId: 999999 } },
   'read/base/searchItems': { query: { state: 'owned' } },
   'resources/glossary': { query: { category: 'Ab.' } },

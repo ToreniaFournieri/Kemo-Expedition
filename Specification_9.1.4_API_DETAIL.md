@@ -679,7 +679,7 @@ definitions in 9.1.3.
   level's EXP, 0 at the maximum level), `currentHp`, `deityTotalDonation`, and
   `deityNextRankThreshold` (`null` at the maximum rank).
 
-* Every projection spells the Auto Equipment mode the way 9.1.3 (2-3-4 `mode`) and
+* Every projection spells the Auto Equipment mode the way 9.1.3 (2-3-5 `mode`) and
   the `autoEquipment` commit do: `FULL`, `SEMI`, or `OFF`. This includes the
   `party` projection's `characters[].autoEquipmentMode`.
 * Equipment arrays (the `party` projection's `characters[].equipment` and
@@ -702,7 +702,7 @@ definitions in 9.1.3.
   * The response `data` always includes `calculatedStatus`, `confirmationRequired`,
     `warnings`, and `applied`, plus the complete new `current` object.
   * `calculatedStatus` is the 9.1.4.14 `CalculatedStatus` of the character (the
-    same shape as 2-3-3) with the requested build. With `simulation: true` it is a
+    same shape as 2-3-4) with the requested build. With `simulation: true` it is a
     preview of the status a `confirmation: "yes"` commit would produce, including
     the effect of any equipment the change would remove; after a commit it is the
     committed status, and after `confirmation: "no"` it is the unchanged status. `warnings` are semantic
@@ -724,7 +724,7 @@ definitions in 9.1.3.
     the revision returned by the simulation as `expectedRevision`, so a change made
     in between is rejected as `stale_revision`. The trusted in-process adapter
     supplies the current revision on the caller's behalf.
-* `equipmentEvaluation` (9.1.3, 2-3-6) is a Read operation. `targetItems` is one
+* `equipmentEvaluation` (9.1.3, 2-3-7) is a Read operation. `targetItems` is one
   `<Item Format>/<jewelType>:<jewelRank>` value or a nonempty array of unique
   values, encoded as one or repeated `targetItems` query parameters (`0` is not
   an item; the lock digit is ignored). As in `equipmentChanges`, the Jewel part
@@ -783,7 +783,7 @@ definitions in 9.1.3.
     requirement: it cannot make an entry unavailable, and a stored Jewel found in
     an older save is discarded when it is loaded.
   * An Undo/Redo state records the item, slot, lock, and Jewel assignment
-    (Spec 9.1.3, 2-3-4), and its restore is exact and all or nothing. One
+    (Spec 9.1.3, 2-3-5), and its restore is exact and all or nothing. One
     unavailable item or Jewel (missing, already used elsewhere, or not valid for
     its item) makes the whole state unavailable, and no partial restore happens.
     A change that only moves Jewels adds an Undo entry.
@@ -943,7 +943,7 @@ definitions in 9.1.3.
 
 **Staged Equipment Tuning**
 
-* `stagedEquipmentTuning` (9.1.3, 2-3-7; 7.1.5) tunes the equipment of one
+* `stagedEquipmentTuning` (9.1.3, 2-3-8; 7.1.5) tunes the equipment of one
   character with the same private forecast as `simulationRun`. Every seed derives
   from `seed` (a fresh random one when omitted, returned as `seed` either way): one
   for the item draws, one shared by every quick run of steps 2–4, one shared by
@@ -957,8 +957,8 @@ definitions in 9.1.3.
   score, and the step 6 luck check uses each score's per-run variance.
 * Validation: `characterId` is required; a character in no party is `not_found`.
   `baselineRuns` may be sent only as `1000`. Integer ranges: `quickRuns` 10–1000,
-  `finalTuningRuns` 50–1000, `offenseElementTrialRuns` 0–10,
-  `defenseElementTrialRuns` 0–20, `abilityTrialRuns` 0–50, and each
+  `finalTuningRuns` 50–1000, `offenseElementTrialRuns` 0–20,
+  `defenseElementTrialRuns` 0–40, `abilityTrialRuns` 0–100, and each
   `...CandidateCount` 1–3. `minImprovement` and `minGateImprovement` are numbers
   from 0 to 10. `offenseElementRequest` is `noRequest`, `e.fire`, `e.ice`,
   `e.thunder`, or `e.none`; `objective` is `success`, `minDefeat`, or
