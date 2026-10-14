@@ -670,9 +670,9 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Optional.
     * Default: `normal`
     * Options:
-      * `normal`: Consider the individual target character's equipment and items in the inventory. Ignore equipment equipped by other party members.
-      * `withinTargets`: Consider the equipment of characters specified by `characterId` in `targets`, along with items in the inventory. Locked equipment is never taken.
-      * `global`: Considers equipment and inventory items across all characters, including those in other parties. Locked equipment is never taken.
+      * `normal`: Candidate items come from the Inventory and the character's own equipment only. Other characters are never touched.
+      * `withinTargets`: Candidate items come from the Inventory and from the equipment of the characters in `targets`. Characters not in `targets` are never touched. Locked items are never taken. Only the initial equipment can be taken: once an item is assigned during the pass, it stays with that character.
+      * `global`: Candidate items come from the Inventory and from every character's equipment, including other parties. Locked items are never taken. Only the initial equipment can be taken: once an item is assigned during the pass, it stays with that character.
   * `objective`
     * Optional.
     * Default: `success`.
@@ -854,10 +854,12 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * `unoccupiedDeities`: Considers any deity not currently in use by another party.
     * `allDeities`: Considers all deities, including those in use by other parties.
   * `considerItemsScope`
-    * String enum, optional, default `normal`.
-    * `normal`: Considers the target character's own equipment and inventory items. Equipment worn by other party members is ignored.
-    * `withinTargets`: Considers the equipment of all characters in `targets`, plus inventory items. Locked equipment is never considered.
-    * `global`: Considers equipment and inventory items across all characters, including other parties. Locked equipment is never considered.
+    * Optional.
+    * Default: `normal`
+    * Options:
+      * `normal`: Candidate items come from the Inventory and the character's own equipment only. Other characters are never touched.
+      * `withinTargets`: Candidate items come from the Inventory and from the equipment of the characters in `targets`. Characters not in `targets` are never touched. Locked items are never taken. Only the initial equipment can be taken: once an item is assigned during the pass, it stays with that character.
+      * `global`: Candidate items come from the Inventory and from every character's equipment, including other parties. Locked items are never taken. Only the initial equipment can be taken: once an item is assigned during the pass, it stays with that character.
   * `objective`
     * String enum, optional, default `success`.
     * Options: `success`, `minDefeat`, `bossDamage`, `experience`.
