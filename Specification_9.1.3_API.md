@@ -885,9 +885,9 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
     | `effort` | `populationSize` | `generations` | `quickRuns` | `confirmRuns` | `timeBudgetSeconds` | `mutationRate` |
     |---|---|---|---|---|---|---|
-    | `low` | 12 | 10 | 30 | 150 | 30 | 0.35 |
-    | `medium` | 16 | 20 | 50 | 300 | 90 | 0.35 |
-    | `high` | 48 | 60 | 300 | 1000 | 240 | 0.5 |
+    | `low` | 12 | 10 | 30 | 150 | 60 | 0.35 |
+    | `medium` | 16 | 20 | 50 | 300 | 180 | 0.35 |
+    | `high` | 48 | 60 | 300 | 1000 | 480 | 0.5 |
 
     | Parameter | Type | Default | Range | Description |
     |---|---|---|---|---|
