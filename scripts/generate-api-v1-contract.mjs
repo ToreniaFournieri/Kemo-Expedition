@@ -298,7 +298,7 @@ const objectiveGuard = Type.Union([strict({ success: Type.Number({ minimum: 0, m
 const directedComponents = strict({
   uniqueCharacter: optional(Type.Boolean(), false), raceGender: optional(Type.Boolean(), true), mainClass: optional(Type.Boolean(), true),
   subClass: optional(Type.Boolean(), true), lineage: optional(Type.Boolean(), false), predisposition: optional(Type.Boolean(), false),
-  autoEquipmentRun: optional(literals('currentSetting', 'FULL', 'SEMI', 'OFF'), 'currentSetting'),
+  autoEquipmentRun: optional(literals('currentSetting', 'FULL', 'SEMI', 'OFF'), 'FULL'),
 });
 const directedIntegers = { populationSize: [8, 64], generations: [1, 200], quickRuns: [10, 300], confirmRuns: [50, 1000], timeBudgetSeconds: [5, 600], verifyRuns: [100, 1000], eliteCount: [0, 16], tournamentSize: [2, 8], confirmTopN: [1, 10] };
 const directedParameters = strict({

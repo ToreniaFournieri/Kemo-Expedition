@@ -23431,7 +23431,7 @@
                           "type": "string"
                         }
                       ],
-                      "default": "currentSetting"
+                      "default": "FULL"
                     }
                   }
                 }

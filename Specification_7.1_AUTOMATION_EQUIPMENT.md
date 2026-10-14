@@ -25,8 +25,8 @@
       * API only. The UI always uses `normal`.
     * Options:
       * `normal`: Candidate items come from the Inventory and the character's own equipment only. Other characters are never touched.
-      * `withinTargets`: Candidate items come from the Inventory and from the equipment of the characters in `targets`. Characters not in `targets` are never touched. Locked items are never taken. Only the initial equipment can be taken: once an item is assigned during the pass, it stays with that character.
-      * `global`: Candidate items come from the Inventory and from every character's equipment, including other parties. Locked items are never taken. Only the initial equipment can be taken: once an item is assigned during the pass, it stays with that character.
+      * `withinTargets`: Candidate items come from the Inventory and from the equipment of the characters in `targets`. Characters not in `targets` are never touched. Locked items are never taken. In `directedBuild`, only the initial equipment can be taken: once an item is assigned during the pass, it stays with that character. `gaSearch` distributes the pooled items among the targets as a whole (see `9.1.3`, 2-3-2).
+      * `global`: Candidate items come from the Inventory and from every character's equipment, including other parties. Locked items are never taken. In `directedBuild`, only the initial equipment can be taken: once an item is assigned during the pass, it stays with that character. `gaSearch` distributes the pooled items among the targets as a whole (see `9.1.3`, 2-3-2).
   * A character that gives up an item keeps an empty slot. `SEMI` and `OFF` never fill empty slots; `FULL` does.
 
 #### 7.1.2 FULL: Equipment logic

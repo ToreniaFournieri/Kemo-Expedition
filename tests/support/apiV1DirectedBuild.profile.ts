@@ -115,7 +115,7 @@ rejects({ direction: 'free', targets: everyone(), tuningParameters: { timeBudget
   assert.equal(effort, 'medium');
   assert.deepEqual({ populationSize, generations, quickRuns, confirmRuns, timeBudgetSeconds, mutationRate }, DIRECTED_EFFORT_PRESETS.medium);
   assert.deepEqual([verifyRuns, eliteCount, confirmTopN, verifySeed], [500, 2, 3, null]);
-  assert.deepEqual(parsed.targets[0], { characterId: ids[1], uniqueCharacter: false, raceGender: true, mainClass: true, subClass: true, lineage: false, predisposition: false, autoEquipmentRun: 'currentSetting' });
+  assert.deepEqual(parsed.targets[0], { characterId: ids[1], uniqueCharacter: false, raceGender: true, mainClass: true, subClass: true, lineage: false, predisposition: false, autoEquipmentRun: 'FULL' });
   assert.deepEqual([parsed.objective, parsed.considerOrderChange, parsed.considerDeityChange, parsed.considerItemsScope], ['success', false, 'none', 'normal']);
   assert.deepEqual([parsed.autoEquipmentScope, parsed.directionStrictness, parsed.directionPenalty, parsed.objectiveGuard], ['changedOnly', 'strict', 2, null]);
   // The 9.1.3 presets: `high` is 48 x 60 with 300 / 1000 runs, 480 s, and a mutation rate of 0.5.
