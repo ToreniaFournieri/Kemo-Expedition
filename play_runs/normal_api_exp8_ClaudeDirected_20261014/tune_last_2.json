@@ -1,0 +1,76 @@
+{
+ "accepted": false,
+ "objective": "bossDamage",
+ "scoredBy": "bossDamage",
+ "before": "Success 94.0% / Draw 0.0% / Retreat 0.0% / Defeat 6.0%",
+ "after": "Success 94.6% / Draw 0.0% / Retreat 0.0% / Defeat 5.4%",
+ "improvement": 0.0698,
+ "gain": 0.0014,
+ "standardError": 0.0053,
+ "bottleneckRoom": "6f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.null-shock",
+   "answers": [
+    "a.shock"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 0,
+  "defenseElement": 20,
+  "ability": 5
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.thunder"
+    ],
+    "improvement": 0.1587,
+    "changes": [
+     "9=0/6408/0/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.ice"
+    ],
+    "improvement": 0.1199,
+    "changes": [
+     "7=0/5401/0/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.thunder"
+    ],
+    "improvement": 0.1179,
+    "changes": [
+     "9=0/7103/3/0"
+    ]
+   }
+  ],
+  "ability": [],
+  "finalTuning": [
+   {
+    "step": "defenseElement",
+    "index": 0,
+    "resistance": [
+     "r.thunder"
+    ],
+    "improvement": 0.3046,
+    "changes": [
+     "9=0/6408/0/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [],
+ "revision": 2339,
+ "simulationRuns": 11800,
+ "elapsedSeconds": 2.4,
+ "seed": 2601213257
+}
