@@ -880,23 +880,23 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Optional. Object.
     * `effort` selects a preset. Values in the preset table are used unless they are specified explicitly.
 
-    | `effort` | `populationSize` | `generations` | `quickRuns` | `confirmRuns` | `timeBudgetSeconds` |
-    |---|---|---|---|---|---|
-    | `low` | 12 | 10 | 30 | 150 | 30 |
-    | `medium` | 16 | 20 | 50 | 300 | 90 |
-    | `high` | 24 | 40 | 100 | 600 | 240 |
+    | `effort` | `populationSize` | `generations` | `quickRuns` | `confirmRuns` | `timeBudgetSeconds` | `mutationRate` |
+    |---|---|---|---|---|---|---|
+    | `low` | 12 | 10 | 30 | 150 | 30 | 0.35 |
+    | `medium` | 16 | 20 | 50 | 300 | 90 | 0.35 |
+    | `high` | 48 | 60 | 300 | 1000 | 240 | 0.5 |
 
     | Parameter | Type | Default | Range | Description |
     |---|---|---|---|---|
-    | `effort` | String | `medium` | `low` / `medium` / `high` | Preset for `populationSize`, `generations`, `quickRuns`, `confirmRuns`, and `timeBudgetSeconds`. Explicit values override the preset. |
+    | `effort` | String | `medium` | `low` / `medium` / `high` | Preset for `populationSize`, `generations`, `quickRuns`, `confirmRuns`, `timeBudgetSeconds`, and `mutationRate`. Explicit values override the preset. |
     | `populationSize` | Integer | From `effort` | 8 ~ 64 | Step 1: number of candidate builds per generation. |
     | `generations` | Integer | From `effort` | 1 ~ 200 | Step 1: number of generations to run. |
     | `quickRuns` | Integer | From `effort` | 10 ~ 300 | Simulation runs used to score every Step 1 and Step 3 candidate. |
     | `confirmRuns` | Integer | From `effort` | 50 ~ 1000 | Simulation runs (different seed) used to re-score the top Step 1 candidates and every Step 2 candidate. |
-    | `timeBudgetSeconds` | Integer | From `effort` | 5 ~ 300 | Hard time limit for Steps 1 to 3. When reached, the current step locks its best result so far and the remaining steps are skipped. |
+    | `timeBudgetSeconds` | Integer | From `effort` | 5 ~ 300 | Hard time limit for Steps 1 to 3. Step 1 may use at most 75% of it; Steps 2 and 3 share the rest, plus any time Step 1 did not use. When a step's limit is reached, it locks its best result so far. When the whole limit is reached, the remaining steps are skipped. |
     | `verifyRuns` | Integer | `500` | 100 ~ 1000 | Simulation runs (new independent seed) used to compare the current build and the result. Used for `verdict` and `forecast`. |
     | `eliteCount` | Integer | `2` | 0 ~ populationSize / 4 | Step 1: best builds copied unchanged to the next generation. |
-    | `mutationRate` | Number | `0.35` | 0 ~ 1 | Step 1: probability that a child build is mutated. |
+    | `mutationRate` | Number | From `effort` | 0 ~ 1 | Step 1: probability that a child build is mutated. |
     | `tournamentSize` | Integer | `3` | 2 ~ 8 | Step 1: number of candidates compared when selecting each parent. |
     | `confirmTopN` | Integer | `3` | 1 ~ 10 | Step 1: number of top candidates re-scored with `confirmRuns` each generation. |
     | `seed` | Integer | Random | Any integer | Fixed seed for a reproducible result. |
