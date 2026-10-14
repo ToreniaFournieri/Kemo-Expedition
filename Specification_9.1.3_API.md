@@ -553,7 +553,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Runs the current expedition simulation `numberOfRun` times and returns the result.
 * this does not advance progression, return rewards, consume live randomness, write Diary entries, change equipment, or consume charge.
-* It does not replace or invalidate a kept build result (`buildResultId`). Use it to measure the current build without a search.
+* Use it to measure the current build without a search.
 
 * Parameters: 
   * `numberOfRun`
@@ -745,16 +745,17 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       6. `commit/build/character/{characterId}/jewelAttach`
     * Example:
       `[{"endpoint":"commit/build/character/101/removeEquipment","parameters":{"targetEquipment":[0,2]}},{"endpoint":"commit/build/character/101/equip","parameters":{"targetEquipment":"0/1101/2/0","targetSlot":0}}]`
+    * To apply the whole list in one atomic request, send it to `party/{p}/applyBuildResult` as `changes`.
     * When applying `changeSummary` step by step, use the latest save revision as `expectedRevision` for each call.
   * `revision`
     * Save revision the search was based on.
   * `evaluations`
     * Number of builds evaluated.
   * `elapsedSeconds`
-  * `buildResultId`
-    * ID of this search result. Used by `party/{p}/applyBuildResult`.
-    * Only the latest result per party is kept. A new `gaSearch` for the same party, or a `stagedEquipmentTuning` for any character in it, invalidates the previous ID.
-    * The result is not save state. It is lost when the application restarts.
+  * `basis`
+    * String. Identifies the build-relevant state of the party that the search was based on (see `party/{p}/applyBuildResult`).
+    * Optionally send it to `party/{p}/applyBuildResult` together with `changeSummary`. The request is then rejected if that state has changed.
+    * The server does not keep the search result. `changeSummary` is the whole result.
 
 **2-3-3. `party/{p}/directedBuild`**
 
@@ -872,7 +873,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Runs `autoEquipmentRun` for each candidate. `considerItemsScope` and `objective` apply.
 
 * Return:
-  * Same as `party/{p}/gaSearch` (2-3-2): `verdict`, `forecast`, `changeSummary`, `revision`, `evaluations`, `elapsedSeconds`, `buildResultId`.
+  * Same as `party/{p}/gaSearch` (2-3-2): `verdict`, `forecast`, `changeSummary`, `revision`, `evaluations`, `elapsedSeconds`, `basis`.
   * `seed`
   * `direction`
   * `composition`
@@ -1125,11 +1126,9 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `elapsedSeconds`
   * `seed`
     * The seed used: the requested one, or the random one chosen. Send it again to reproduce the result.
-  * `buildResultId`
+  * `basis`
     * Returned only when `accepted` is `true`.
-    * Used by `party/{p}/applyBuildResult`, where `{p}` is the character's party.
-    * Only the latest result per party is kept. A new `gaSearch` or `stagedEquipmentTuning` for any character in the same party invalidates the previous ID.
-    * The result is not save state. It is lost when the application restarts.
+    * Same as the `basis` of `party/{p}/gaSearch`, for the character's party.
 
 
 
@@ -1689,16 +1688,30 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 **3-3-2. `party/{p}/applyBuildResult`**
 
-* Applies every change in a `gaSearch` or `stagedEquipmentTuning` result to party `{p}` in one atomic request.
+* Applies a list of Commit API calls to party `{p}` in one atomic request.
+  * The list is normally the `changeSummary` of `gaSearch`, `directedBuild`, or `stagedEquipmentTuning`.
+  * The server does not keep search results. Everything this request needs is in its parameters.
 * Undo and Redo:
-  * Each character with at least one entry in `changeSummary` gets exactly one Undo step: their equipment state before this operation.
+  * Each character with at least one entry in `changes` gets exactly one Undo step: their equipment state before this operation.
   * Only equipment, jewels, and Auto Equipment `mode` are restored by Undo. Changes to race, class, lineage, predisposition, order, and deity are not reverted.
 
 * Parameters:
-  * `buildResultId`
+  * `changes`
     * Required.
+    * Non-empty array of Commit API calls, in the format of `changeSummary`: `{ "endpoint": <Commit API path>, "parameters": <parameters> }`.
+    * Applied in the given order.
+    * Allowed endpoints: the ones listed in `changeSummary` Order (`removeEquipment`, `commit/build/party/{p}`, `changeBuild`, `equip`, `jewelRemove`, `jewelAttach`).
+    * `expectedRevision` is not needed in an entry. The request manages it.
+  * `basis`
+    * Optional.
     * String.
-    * `buildResultId` returned by `read/build/party/{p}/gaSearch` or by `read/build/character/stagedEquipmentTuning` for a character in party `{p}`.
+    * The `basis` returned with `changes` by the search.
+    * If omitted, the build-relevant state is not compared. Each entry is still validated by the Commit API against the current state.
+  * `verdict`
+    * Optional.
+    * String: `veryGood`, `good`, `noisy`, `noChange`, `worse`.
+    * The `verdict` returned with `changes` by `gaSearch` or `directedBuild`. Omit it for `stagedEquipmentTuning`.
+    * If omitted, no verdict check is performed.
   * `autoEquipmentMode`
     * Optional.
     * Default: `SEMI`.
@@ -1707,7 +1720,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `simulation`
     * Required.
     * Boolean.
-    * If `true`, validates the result and returns the changes without committing them.
+    * If `true`, validates the changes and returns them without committing.
     * If `false`, applies and commits the changes.
   * `confirmation`
     * Required only when `confirmationRequired` is `true` and `simulation` is `false`.
@@ -1717,25 +1730,25 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Validation:
   * The request is rejected when:
-    * `buildResultId` is unknown, or was replaced by a newer `gaSearch` or `stagedEquipmentTuning` for any character in the same party.
-    * Build-relevant state changed after the search or tuning (party order, deity, inventory, jewels, or the build or equipment of any character in party `{p}`).
-      * Other revision changes (e.g., progression) do not invalidate the result.
-    * A `gaSearch` result's `verdict` is `noChange`.
+    * `changes` is empty, or an entry uses an endpoint that is not allowed.
+    * `basis` is given and the build-relevant state changed after the search (party order, deity, inventory, jewels, or the build or equipment of any character in party `{p}`).
+      * Other revision changes (e.g., progression) do not make `basis` stale.
+    * `verdict` is `noChange`.
+    * Any entry fails the validation of its Commit API call.
   * `confirmationRequired` is `true` when:
-    * A `gaSearch` result's `verdict` is `worse` or `noisy`.
-  * A `stagedEquipmentTuning` result never requires confirmation, because only a tuning that passed its final check (7.1.5 step 6) returns a `buildResultId`.
+    * `verdict` is `worse` or `noisy`.
 
 * Atomicity:
-  * All changes in `changeSummary` are applied as one commit.
-  * If any change fails validation, no game-state change is committed.
+  * All entries in `changes` are applied as one commit.
+  * If any entry fails validation, no game-state change is committed.
 
 * Return:
   * `applied`
-    * The `changeSummary` that was applied (or would be applied when `simulation` is `true`).
+    * The `changes` that were applied (or would be applied when `simulation` is `true`).
   * `confirmationRequired`
     * Boolean.
   * `warnings`
-    * Returned when confirmation is required. Includes the `verdict` and the `forecast`.
+    * Returned when confirmation is required. Includes the given `verdict`.
   * `calculatedStatus`
     * For each changed character, `CalculatedStatus` as defined in 9.1.4.14.
 
