@@ -109,6 +109,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 2-3. read/build
      party/{p}
      party/{p}/gaSearch
+     party/{p}/directedBuild
      character/status
      character/equipment
      character/equipmentSet
@@ -755,7 +756,123 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Only the latest result per party is kept. A new `gaSearch` for the same party, or a `stagedEquipmentTuning` for any character in it, invalidates the previous ID.
     * The result is not save state. It is lost when the application restarts.
 
-**2-3-3. `character/status`**
+**2-3-3. `party/{p}/directedBuild`**
+
+* Parameters:
+  * `direction`
+    * Required.
+    * String enum: `rapidRanged`, `magicBurst`, `meleeBurst`, `free`, `turtle`, `balance`
+    * See Direction for the class composition of each option.
+  * `targets`
+    * Required.
+    * Array of characters to optimize, in the format `[{characterId, changeableComponents}]`.
+    * All specified characters must belong to the party identified by `{p}`.
+    * `changeableComponents` is optional. If omitted, all defaults below apply.
+      * `raceGender`: Boolean, optional, default `true`.
+      * `mainClass`: Boolean, optional, default `true`.
+      * `subClass`: Boolean, optional, default `true`.
+      * `lineage`: Boolean, optional, default `false`.
+      * `predisposition`: Boolean, optional, default `false`.
+      * `autoEquipmentRun`: Boolean, optional, default `true`.
+        * If `true` and the character's `m.auto_equipment` is `FULL` or `SEMI`, the auto-equipment logic is triggered.
+  * `considerOrderChange`
+    * Boolean, optional, default `false`.
+  * `considerDeityChange`
+    * String enum, optional, default `none`.
+    * `none`: Does not consider changing deities.
+    * `unoccupiedDeities`: Considers any deity not currently in use by another party.
+    * `allDeities`: Considers all deities, including those in use by other parties.
+      * If the chosen deity is in use by another party, that party's deity assignment is removed and the deity is assigned to this party.
+  * `considerItemsScope`
+    * String enum, optional, default `normal`.
+    * `normal`: Considers the target character's own equipment and inventory items. Equipment worn by other party members is ignored.
+    * `withinTargets`: Considers the equipment of all characters in `targets`, plus inventory items. Locked equipment is never taken.
+    * `global`: Considers equipment and inventory items across all characters, including other parties. Locked equipment is never taken.
+  * `objective`
+    * String enum, optional, default `success`.
+    * `success`: Maximizes the success rate. `progress` (7.1.5 Score) breaks ties between builds, mainly while successes are rare. If every build is at `0` successes, the search still has a signal. If both builds are still at `0` in the verification runs, `verdict` is judged on `progress` too (see `verdict`).
+    * `minDefeat`
+    * `bossDamage`: Simulates only the boss battle of the current destination.
+      * Each run starts the boss battle at full party HP.
+      * The rooms before it, the gates, and the depth limit are ignored. HP lost on the way to the boss is not counted; use `success` to include it.
+    * `experience`
+  * `tuningParameters`
+    * Optional. [TBD: object shape]
+    * `effort`: String enum (`low`, `medium`, `high`), optional, default `medium`. Selects a preset. Values in the preset table are used unless specified explicitly.
+
+    | `effort` | <parameterA> | <parameterB> |
+    |---|---|---|
+    | `low` | X | X |
+    | `medium` | X | X |
+    | `high` | X | X |
+
+* Definition:
+  * `Melee class`: `class.duelist`, `class.samurai`, `class.sword-saint`
+  * `Ranged class`: `class.ranger`, `class.striker`, `class.ninja`
+  * `Magic class`: `class.wizard`, `class.sage`, `class.alchemist`
+  * `Support class`: `class.guardian`, `class.pilgrim`, `class.lord`
+
+* Party rules:
+  * The party size is fixed at 6.
+  * Class counts are based on the main class only (sub classes are not counted).
+  * Class counts and the duplicate rule apply to the whole party, including members who are not in `targets` and members with `mainClass: false`. Their main classes are fixed but still counted.
+  * A party cannot have duplicate Support classes. This applies to all directions, including `free`.
+    * Allowed: `class.guardian` + `class.pilgrim`
+    * Not allowed: `class.guardian` + `class.guardian`
+
+* Direction (number of members per main class category):
+  * `rapidRanged`
+    * `Melee class`: `0-1`
+    * `Ranged class`: `2-5`
+    * `Magic class`: `0-1`
+    * `Support class`: `0-2`
+    * High priority race: `Felidian`
+      * When `raceGender` candidates are generated, `Felidian` is weighted 3x relative to other races (for example, 3x as likely to be sampled).
+      * Applies only to characters whose `raceGender` is changeable.
+      * Exception: `Felidian` cannot have `class.ninja` as its main class. Any candidate combining the two is invalid.
+  * `magicBurst`
+    * `Melee class`: `0-1`
+    * `Ranged class`: `0-1`
+    * `Magic class`: `2-5`
+    * `Support class`: `0-2`
+  * `meleeBurst`
+    * `Melee class`: `2-5`
+    * `Ranged class`: `0-1`
+    * `Magic class`: `0-1`
+    * `Support class`: `0-2`
+  * `free`
+    * No class restriction (the Support duplicate rule still applies).
+  * `turtle`
+    * `Melee class`: `1-2`
+    * `Ranged class`: `1-2`
+    * `Magic class`: `1-2`
+    * `Support class`: `2-3`
+  * `balance`
+    * `Melee class`: `1-2`
+    * `Ranged class`: `1-2`
+    * `Magic class`: `1-2`
+    * `Support class`: `1-2`
+
+* Process:
+  * Only components set to `true` in `changeableComponents` may be changed.
+  * Precheck: If the locked main classes make the selected direction impossible to satisfy (including the Support duplicate rule), tuning is skipped and the build is left unchanged.
+  * Step 1: High-impact changes
+    * Searches: `raceGender`, `mainClass`, `subClass`, `lineage`, `considerOrderChange`
+    * Runs `autoEquipmentRun` for each candidate.
+    * Selects the best result and locks these parameters.
+  * Step 2: Deity change
+    * Searches: `considerDeityChange`
+    * Selects the best deity and locks it.
+  * Step 3: Final tuning
+    * Searches: `lineage`, `predisposition`
+    * Runs `autoEquipmentRun` for each candidate.
+  * [TBD: where `considerItemsScope` and `objective` apply]
+
+* Return:
+  * [TBA]
+
+
+**2-3-4. `character/status`**
 
 
 * Parameters:
@@ -809,7 +926,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * Validation:
   * Same as `2.1 CHARACTER_&_PARTY` 
 
-**2-3-4. `character/equipment`**
+**2-3-5. `character/equipment`**
 
 * Parameters:
   * `characterId`
@@ -864,7 +981,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
         * `unavailableReason`: `No redo history.`
 
 
-**2-3-5. `character/equipmentSet`**
+**2-3-6. `character/equipmentSet`**
 
 * Parameters:
   * `characterId`
@@ -899,7 +1016,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
               `unavailable`, or `null` when available. Jewels do not affect saved-set
               availability because saved equipment sets do not store Jewels.
 
-**2-3-6. `character/equipmentEvaluation`**
+**2-3-7. `character/equipmentEvaluation`**
 
 * Parameters:
   * `characterId`
@@ -935,7 +1052,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
           effects. Evaluation never changes equipment, history, RNG, or revision.
 
 
-**2-3-7. `character/stagedEquipmentTuning`**
+**2-3-8. `character/stagedEquipmentTuning`**
 
 * Tunes the equipment of one character with `7.1.5 Staged Equipment Tuning`.
 * This does not advance progression, return rewards, consume live randomness, write Diary entries, change equipment, consume charge, or change the save revision.
@@ -947,11 +1064,11 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `quickRuns` (e.g., `100`, `300`, `1000`; default: `300`)
   * `finalTuningRuns` (e.g., `300`, `500`, `1000`; default: `500`)
   * `offenseElementRequest` (e.g., `e.fire`, `e.thunder`, `e.ice`, `e.none`; default: `noRequest`)
-  * `offenseElementTrialRuns` (e.g., `0`, `3`, `6`; default: `3`)
+  * `offenseElementTrialRuns` (e.g., `0`, `9`, `18`; default: `9`)
   * `offenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
-  * `defenseElementTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
+  * `defenseElementTrialRuns` (e.g., `0`, `15`, `30`; default: `15`)
   * `defenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
-  * `abilityTrialRuns` (e.g., `0`, `20`, `40`; default: `20`)
+  * `abilityTrialRuns` (e.g., `0`, `40`, `80`; default: `40`)
   * `abilityCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
   * `minImprovement` (e.g., `0.03`, `0.07`, `0.10`; default: `0.07`)
   * `minGateImprovement` (e.g., `0.03`, `0.07`, `0.10`; default: `0.07`)
@@ -1004,8 +1121,9 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Only the latest result per party is kept. A new `gaSearch` or `stagedEquipmentTuning` for any character in the same party invalidates the previous ID.
     * The result is not save state. It is lost when the application restarts.
 
-**2-4. `read/base`**
 
+
+**2-4. `read/base`**
 
 
 **2-4-1. `searchItems`**
