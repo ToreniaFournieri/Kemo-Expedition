@@ -830,11 +830,12 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `subClass`: Boolean, optional, default `true`.
       * `lineage`: Boolean, optional, default `false`.
       * `predisposition`: Boolean, optional, default `false`.
-      * `autoEquipmentRun`: String enum, optional, default `currentSetting`.
+      * `autoEquipmentRun`: String enum, optional, default `FULL`.
         * Options: `currentSetting`, `FULL`, `SEMI`, `OFF`
         * The auto-equipment logic (including jewel assignment) is triggered if the value is `FULL` or `SEMI`, or if the value is `currentSetting` and the character's `m.auto_equipment` is `FULL` or `SEMI`.
         * Otherwise (`OFF`, or `currentSetting` with `m.auto_equipment` set to `OFF`), the logic is not triggered.
-        * Note: If a class change leaves equipment that the character can no longer equip, the game rules (`c.equip_melee`,`c.equip_ranged`, `c.equip_magic`) equipment apply. 
+        * Note: Before the run, items the character can no longer equip after a class change (`c.equip_melee`, `c.equip_ranged`, `c.equip_magic`), or that no longer fit its slot count, are returned to the Inventory. This applies to every value, including `OFF`.
+        * Note: With `OFF`, the slots left empty by that step are not refilled.
         * Whether it runs for a member whose build did not change depends on `autoEquipmentScope`.
 
   * `autoEquipmentScope`
