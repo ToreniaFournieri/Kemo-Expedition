@@ -22321,6 +22321,38 @@
             ],
             "default": "success"
           },
+          "objectiveGuard": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "success"
+                ],
+                "properties": {
+                  "success": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "bossDamage"
+                ],
+                "properties": {
+                  "bossDamage": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  }
+                }
+              }
+            ]
+          },
           "gaParameters": {
             "additionalProperties": false,
             "type": "object",
@@ -22364,7 +22396,7 @@
               },
               "timeBudgetSeconds": {
                 "minimum": 5,
-                "maximum": 300,
+                "maximum": 600,
                 "type": "integer"
               },
               "verifyRuns": {
@@ -22398,6 +22430,9 @@
                 "type": "number"
               },
               "seed": {
+                "type": "integer"
+              },
+              "verifySeed": {
                 "type": "integer"
               },
               "seedWithHeuristics": {
@@ -22452,7 +22487,8 @@
               "type": "object",
               "required": [
                 "before",
-                "after"
+                "after",
+                "scope"
               ],
               "properties": {
                 "before": {
@@ -22460,6 +22496,64 @@
                 },
                 "after": {
                   "type": "string"
+                },
+                "scope": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "from",
+                    "to",
+                    "rooms",
+                    "endsAt"
+                  ],
+                  "properties": {
+                    "from": {
+                      "anyOf": [
+                        {
+                          "pattern": "^[1-6]f-[1-4]$",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "to": {
+                      "anyOf": [
+                        {
+                          "pattern": "^[1-6]f-[1-4]$",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "rooms": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "endsAt": {
+                      "anyOf": [
+                        {
+                          "const": "clearGate",
+                          "type": "string"
+                        },
+                        {
+                          "const": "depthLimit",
+                          "type": "string"
+                        },
+                        {
+                          "const": "dungeonEnd",
+                          "type": "string"
+                        },
+                        {
+                          "const": "bossRoom",
+                          "type": "string"
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             },
@@ -22540,7 +22634,10 @@
                 "after",
                 "gain",
                 "standardError",
-                "seed"
+                "seed",
+                "verifySeed",
+                "progress",
+                "crossCheck"
               ],
               "properties": {
                 "objective": {
@@ -22615,6 +22712,101 @@
                 },
                 "seed": {
                   "type": "integer"
+                },
+                "verifySeed": {
+                  "type": "integer"
+                },
+                "progress": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "before",
+                        "after"
+                      ],
+                      "properties": {
+                        "before": {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        "after": {
+                          "minimum": 0,
+                          "type": "number"
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "crossCheck": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "objective",
+                    "before",
+                    "after",
+                    "minimum",
+                    "reached"
+                  ],
+                  "properties": {
+                    "objective": {
+                      "anyOf": [
+                        {
+                          "const": "success",
+                          "type": "string"
+                        },
+                        {
+                          "const": "bossDamage",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "before": {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "after": {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "minimum": {
+                      "anyOf": [
+                        {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "reached": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "before",
+                            "after"
+                          ],
+                          "properties": {
+                            "before": {
+                              "type": "boolean"
+                            },
+                            "after": {
+                              "type": "boolean"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             }
@@ -22695,7 +22887,8 @@
                   "type": "object",
                   "required": [
                     "before",
-                    "after"
+                    "after",
+                    "scope"
                   ],
                   "properties": {
                     "before": {
@@ -22703,6 +22896,64 @@
                     },
                     "after": {
                       "type": "string"
+                    },
+                    "scope": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "from",
+                        "to",
+                        "rooms",
+                        "endsAt"
+                      ],
+                      "properties": {
+                        "from": {
+                          "anyOf": [
+                            {
+                              "pattern": "^[1-6]f-[1-4]$",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "to": {
+                          "anyOf": [
+                            {
+                              "pattern": "^[1-6]f-[1-4]$",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "rooms": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "endsAt": {
+                          "anyOf": [
+                            {
+                              "const": "clearGate",
+                              "type": "string"
+                            },
+                            {
+                              "const": "depthLimit",
+                              "type": "string"
+                            },
+                            {
+                              "const": "dungeonEnd",
+                              "type": "string"
+                            },
+                            {
+                              "const": "bossRoom",
+                              "type": "string"
+                            }
+                          ]
+                        }
+                      }
                     }
                   }
                 },
@@ -22783,7 +23034,10 @@
                     "after",
                     "gain",
                     "standardError",
-                    "seed"
+                    "seed",
+                    "verifySeed",
+                    "progress",
+                    "crossCheck"
                   ],
                   "properties": {
                     "objective": {
@@ -22858,6 +23112,101 @@
                     },
                     "seed": {
                       "type": "integer"
+                    },
+                    "verifySeed": {
+                      "type": "integer"
+                    },
+                    "progress": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "before",
+                            "after"
+                          ],
+                          "properties": {
+                            "before": {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "after": {
+                              "minimum": 0,
+                              "type": "number"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "crossCheck": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "objective",
+                        "before",
+                        "after",
+                        "minimum",
+                        "reached"
+                      ],
+                      "properties": {
+                        "objective": {
+                          "anyOf": [
+                            {
+                              "const": "success",
+                              "type": "string"
+                            },
+                            {
+                              "const": "bossDamage",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "before": {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        "after": {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        "minimum": {
+                          "anyOf": [
+                            {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "reached": {
+                          "anyOf": [
+                            {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "before",
+                                "after"
+                              ],
+                              "properties": {
+                                "before": {
+                                  "type": "boolean"
+                                },
+                                "after": {
+                                  "type": "boolean"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
                     }
                   }
                 }
@@ -22907,7 +23256,13 @@
             "verdict": "veryGood",
             "forecast": {
               "before": "xxxxxxx",
-              "after": "xxxxxxx"
+              "after": "xxxxxxx",
+              "scope": {
+                "from": "1f-1",
+                "to": "1f-1",
+                "rooms": 0,
+                "endsAt": "clearGate"
+              }
             },
             "changeSummary": [
               {
@@ -22927,7 +23282,22 @@
               "after": 0,
               "gain": 1,
               "standardError": 0,
-              "seed": 1
+              "seed": 1,
+              "verifySeed": 1,
+              "progress": {
+                "before": 0,
+                "after": 0
+              },
+              "crossCheck": {
+                "objective": "success",
+                "before": 0,
+                "after": 0,
+                "minimum": 0,
+                "reached": {
+                  "before": true,
+                  "after": true
+                }
+              }
             }
           }
         }
@@ -23068,6 +23438,19 @@
               }
             }
           },
+          "autoEquipmentScope": {
+            "anyOf": [
+              {
+                "const": "changedOnly",
+                "type": "string"
+              },
+              {
+                "const": "allTargets",
+                "type": "string"
+              }
+            ],
+            "default": "changedOnly"
+          },
           "considerOrderChange": {
             "type": "boolean",
             "default": false
@@ -23127,6 +23510,57 @@
             ],
             "default": "success"
           },
+          "objectiveGuard": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "success"
+                ],
+                "properties": {
+                  "success": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "bossDamage"
+                ],
+                "properties": {
+                  "bossDamage": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  }
+                }
+              }
+            ]
+          },
+          "directionStrictness": {
+            "anyOf": [
+              {
+                "const": "strict",
+                "type": "string"
+              },
+              {
+                "const": "soft",
+                "type": "string"
+              }
+            ],
+            "default": "strict"
+          },
+          "directionPenalty": {
+            "minimum": 0,
+            "maximum": 50,
+            "type": "number",
+            "default": 2
+          },
           "tuningParameters": {
             "additionalProperties": false,
             "type": "object",
@@ -23170,7 +23604,7 @@
               },
               "timeBudgetSeconds": {
                 "minimum": 5,
-                "maximum": 300,
+                "maximum": 600,
                 "type": "integer"
               },
               "verifyRuns": {
@@ -23200,6 +23634,9 @@
               },
               "seed": {
                 "type": "integer"
+              },
+              "verifySeed": {
+                "type": "integer"
               }
             }
           }
@@ -23220,6 +23657,7 @@
             "verification",
             "seed",
             "direction",
+            "directionStrictness",
             "composition",
             "steps"
           ],
@@ -23253,7 +23691,8 @@
               "type": "object",
               "required": [
                 "before",
-                "after"
+                "after",
+                "scope"
               ],
               "properties": {
                 "before": {
@@ -23261,6 +23700,64 @@
                 },
                 "after": {
                   "type": "string"
+                },
+                "scope": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "from",
+                    "to",
+                    "rooms",
+                    "endsAt"
+                  ],
+                  "properties": {
+                    "from": {
+                      "anyOf": [
+                        {
+                          "pattern": "^[1-6]f-[1-4]$",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "to": {
+                      "anyOf": [
+                        {
+                          "pattern": "^[1-6]f-[1-4]$",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "rooms": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "endsAt": {
+                      "anyOf": [
+                        {
+                          "const": "clearGate",
+                          "type": "string"
+                        },
+                        {
+                          "const": "depthLimit",
+                          "type": "string"
+                        },
+                        {
+                          "const": "dungeonEnd",
+                          "type": "string"
+                        },
+                        {
+                          "const": "bossRoom",
+                          "type": "string"
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             },
@@ -23341,7 +23838,10 @@
                 "after",
                 "gain",
                 "standardError",
-                "seed"
+                "seed",
+                "verifySeed",
+                "progress",
+                "crossCheck"
               ],
               "properties": {
                 "objective": {
@@ -23416,6 +23916,101 @@
                 },
                 "seed": {
                   "type": "integer"
+                },
+                "verifySeed": {
+                  "type": "integer"
+                },
+                "progress": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "before",
+                        "after"
+                      ],
+                      "properties": {
+                        "before": {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        "after": {
+                          "minimum": 0,
+                          "type": "number"
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "crossCheck": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "objective",
+                    "before",
+                    "after",
+                    "minimum",
+                    "reached"
+                  ],
+                  "properties": {
+                    "objective": {
+                      "anyOf": [
+                        {
+                          "const": "success",
+                          "type": "string"
+                        },
+                        {
+                          "const": "bossDamage",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "before": {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "after": {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "minimum": {
+                      "anyOf": [
+                        {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "reached": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "before",
+                            "after"
+                          ],
+                          "properties": {
+                            "before": {
+                              "type": "boolean"
+                            },
+                            "after": {
+                              "type": "boolean"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             },
@@ -23450,13 +24045,29 @@
                 }
               ]
             },
+            "directionStrictness": {
+              "anyOf": [
+                {
+                  "const": "strict",
+                  "type": "string"
+                },
+                {
+                  "const": "soft",
+                  "type": "string"
+                }
+              ]
+            },
             "composition": {
               "additionalProperties": false,
               "type": "object",
               "required": [
                 "before",
                 "after",
-                "distance"
+                "distanceBefore",
+                "distance",
+                "smallestDistance",
+                "recomposition",
+                "forcedRecomposition"
               ],
               "properties": {
                 "before": {
@@ -23515,9 +24126,24 @@
                     }
                   }
                 },
+                "distanceBefore": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
                 "distance": {
                   "minimum": 0,
                   "type": "integer"
+                },
+                "smallestDistance": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "recomposition": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "forcedRecomposition": {
+                  "type": "boolean"
                 }
               }
             },
@@ -23647,6 +24273,7 @@
                 "verification",
                 "seed",
                 "direction",
+                "directionStrictness",
                 "composition",
                 "steps"
               ],
@@ -23680,7 +24307,8 @@
                   "type": "object",
                   "required": [
                     "before",
-                    "after"
+                    "after",
+                    "scope"
                   ],
                   "properties": {
                     "before": {
@@ -23688,6 +24316,64 @@
                     },
                     "after": {
                       "type": "string"
+                    },
+                    "scope": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "from",
+                        "to",
+                        "rooms",
+                        "endsAt"
+                      ],
+                      "properties": {
+                        "from": {
+                          "anyOf": [
+                            {
+                              "pattern": "^[1-6]f-[1-4]$",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "to": {
+                          "anyOf": [
+                            {
+                              "pattern": "^[1-6]f-[1-4]$",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "rooms": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "endsAt": {
+                          "anyOf": [
+                            {
+                              "const": "clearGate",
+                              "type": "string"
+                            },
+                            {
+                              "const": "depthLimit",
+                              "type": "string"
+                            },
+                            {
+                              "const": "dungeonEnd",
+                              "type": "string"
+                            },
+                            {
+                              "const": "bossRoom",
+                              "type": "string"
+                            }
+                          ]
+                        }
+                      }
                     }
                   }
                 },
@@ -23768,7 +24454,10 @@
                     "after",
                     "gain",
                     "standardError",
-                    "seed"
+                    "seed",
+                    "verifySeed",
+                    "progress",
+                    "crossCheck"
                   ],
                   "properties": {
                     "objective": {
@@ -23843,6 +24532,101 @@
                     },
                     "seed": {
                       "type": "integer"
+                    },
+                    "verifySeed": {
+                      "type": "integer"
+                    },
+                    "progress": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "before",
+                            "after"
+                          ],
+                          "properties": {
+                            "before": {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "after": {
+                              "minimum": 0,
+                              "type": "number"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "crossCheck": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "objective",
+                        "before",
+                        "after",
+                        "minimum",
+                        "reached"
+                      ],
+                      "properties": {
+                        "objective": {
+                          "anyOf": [
+                            {
+                              "const": "success",
+                              "type": "string"
+                            },
+                            {
+                              "const": "bossDamage",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "before": {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        "after": {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        "minimum": {
+                          "anyOf": [
+                            {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "reached": {
+                          "anyOf": [
+                            {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "before",
+                                "after"
+                              ],
+                              "properties": {
+                                "before": {
+                                  "type": "boolean"
+                                },
+                                "after": {
+                                  "type": "boolean"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
                     }
                   }
                 },
@@ -23877,13 +24661,29 @@
                     }
                   ]
                 },
+                "directionStrictness": {
+                  "anyOf": [
+                    {
+                      "const": "strict",
+                      "type": "string"
+                    },
+                    {
+                      "const": "soft",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "composition": {
                   "additionalProperties": false,
                   "type": "object",
                   "required": [
                     "before",
                     "after",
-                    "distance"
+                    "distanceBefore",
+                    "distance",
+                    "smallestDistance",
+                    "recomposition",
+                    "forcedRecomposition"
                   ],
                   "properties": {
                     "before": {
@@ -23942,9 +24742,24 @@
                         }
                       }
                     },
+                    "distanceBefore": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
                     "distance": {
                       "minimum": 0,
                       "type": "integer"
+                    },
+                    "smallestDistance": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "recomposition": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "forcedRecomposition": {
+                      "type": "boolean"
                     }
                   }
                 },
@@ -24073,7 +24888,13 @@
             "verdict": "veryGood",
             "forecast": {
               "before": "xxxxxxx",
-              "after": "xxxxxxx"
+              "after": "xxxxxxx",
+              "scope": {
+                "from": "1f-1",
+                "to": "1f-1",
+                "rooms": 0,
+                "endsAt": "clearGate"
+              }
             },
             "changeSummary": [
               {
@@ -24093,10 +24914,26 @@
               "after": 0,
               "gain": 1,
               "standardError": 0,
-              "seed": 1
+              "seed": 1,
+              "verifySeed": 1,
+              "progress": {
+                "before": 0,
+                "after": 0
+              },
+              "crossCheck": {
+                "objective": "success",
+                "before": 0,
+                "after": 0,
+                "minimum": 0,
+                "reached": {
+                  "before": true,
+                  "after": true
+                }
+              }
             },
             "seed": 1,
             "direction": "rapidRanged",
+            "directionStrictness": "strict",
             "composition": {
               "before": {
                 "melee": 0,
@@ -24110,7 +24947,11 @@
                 "magic": 0,
                 "support": 0
               },
-              "distance": 0
+              "distanceBefore": 0,
+              "distance": 0,
+              "smallestDistance": 0,
+              "recomposition": 0,
+              "forcedRecomposition": true
             },
             "steps": {}
           }

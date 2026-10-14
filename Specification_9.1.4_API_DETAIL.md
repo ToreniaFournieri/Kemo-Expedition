@@ -811,17 +811,27 @@ definitions in 9.1.3.
 * `gaSearch` (9.1.3, 2-3-2) scores every candidate build with the same private
   forecast as `simulationRun`, run on fixed seeds derived from `gaParameters.seed`
   (a fresh seed when omitted): one for the quick runs, one for the confirm runs,
-  one for a final selection, and one for verification. A seeded forecast also
+  one for a final selection, and one for verification (`gaParameters.verifySeed`
+  instead when given). A seeded forecast also
   fixes its battle seeds, so all candidates are compared on the same random
   numbers and a request with the same `seed`, save, and parameters returns the same
-  result unless `timeBudgetSeconds` stops it first.
+  result unless `timeBudgetSeconds` stops it first. The same `verifySeed`,
+  `verifyRuns`, `objective`, and save give the same `verification.before` and
+  `crossCheck.before`, for `gaSearch` and `directedBuild` alike.
 * Validation: `targets` is 1 to 6 unique members of party `{p}` (otherwise
   `invalid_request`, field `targets.characterId`); omitted `changeableComponents`
   members are `false`. `considerItemsScope` is `normal` when omitted; any other value
   than `normal`, `withinTargets`, or `global` is `invalid_request`, field
   `considerItemsScope`. `considerDeityChange` is `none` when omitted; any other
   value than `none`, `unoccupiedDeities`, or `allDeities` (a boolean included) is
-  `invalid_request`, field `considerDeityChange`. `eliteCount` may not exceed `populationSize / 4`. An
+  `invalid_request`, field `considerDeityChange`. `eliteCount` may not exceed `populationSize / 4`.
+  `timeBudgetSeconds` is 5 to 600. `verifySeed` is any safe integer (otherwise
+  `invalid_request`, field `gaParameters.verifySeed`). `objectiveGuard` is an
+  object with exactly one member, `success` or `bossDamage`, whose value is a
+  number from 0 to 1: another shape is `invalid_request`, field `objectiveGuard`;
+  another member name is `objectiveGuard.<name>.unknown_member`; the `objective`
+  itself is `objectiveGuard.<name>.same_as_objective`; a value out of range is
+  `objectiveGuard.<name>`. An
   unknown member anywhere is `invalid_request`. A missing party is `not_found`.
 * Candidates: `equipment` lets the search place any owned item variant that the
   character can equip, up to its slot count, from the items `considerItemsScope`
@@ -863,6 +873,24 @@ definitions in 9.1.3.
   confirmed builds and the fallback are re-scored on the final seed with
   twice `confirmRuns` (at most 1000), and a build replaces the fallback only
   when its rate is ahead by at least one standard error.
+* `objectiveGuard`: every confirmed candidate (and the fallback) is also measured
+  on the guard objective with `confirmRuns` runs on the confirm seed, in that
+  objective's own forecast (`bossDamage` fights the boss alone). The best
+  confirmed candidate and the finalists are chosen by the 9.1.3 ranking: reaching
+  the guard first, then the objective; below the guard, the higher guard rate
+  first. The quick runs rank by the objective alone. In the final selection each
+  finalist and the fallback are measured on the guard too (final seed, same runs):
+  a finalist that reaches the guard replaces a fallback that does not; when both
+  miss it, the finalist must be ahead on the guard rate by more than one standard
+  error; when both reach it, the objective rule above applies.
+* Request time limit: the current build's verification runs (the objective and
+  the `crossCheck` objective, `verifyRuns` each on the verification seed) run
+  first. Their measured wall-clock cost per run sets aside the time of the
+  remaining work: the result's two verification forecasts and the final
+  selection (five forecasts of the final runs, plus the guard forecasts with a
+  guard), times 1.5 plus one second. The search stops at `timeBudgetSeconds`
+  minus that reserve, so the response returns within the budget. The desktop
+  request timeout of `gaSearch` and `directedBuild` is 600 s.
 * Empty slots: a filled slot only adds power, so no candidate of an equipment
   target keeps an empty slot while a usable item is left. Every candidate, the
   current build's included, fills each empty slot (and each slot whose item is
@@ -897,13 +925,28 @@ definitions in 9.1.3.
   (7.1.5 Score) instead, like `success` (percentage points, the same thresholds);
   if either build succeeds, the success rate decides. `noChange` means no different build
   passed the final selection and no empty slot could be filled; `changeSummary` is then `[]` and `forecast.after`
-  equals `forecast.before`. The response also returns `verification`:
-  `{objective, scoredBy, runs, before, after, gain, standardError, seed}`.
+  equals `forecast.before`. With `objectiveGuard`, a changed result whose
+  `crossCheck.reached` is `{before: true, after: false}` is `worse` whatever its
+  gain. The response also returns `verification`:
+  `{objective, scoredBy, runs, before, after, gain, standardError, seed, verifySeed, progress, crossCheck}`.
   `scoredBy` is the score the verdict used: `objective`, or `progress` in the case
   above. `before`, `after`, `gain`, and `standardError` are in that score: the
   measured rates, the gain in percentage points (percent for `experience`; `null`
   when the current EXP is 0), and its standard error. `seed` is the seed used, so
-  the search can be repeated.
+  the search can be repeated; `verifySeed` is the verification seed used.
+  `progress` is `{before, after}`, the 7.1.5 Score of both builds in the same
+  verification runs (rounded to 4 decimals), for every objective but `bossDamage`
+  (`null`). `crossCheck` is `{objective, before, after, minimum, reached}`: the
+  guard objective, or `bossDamage` (for `success`, `minDefeat`, `experience`) or
+  `success` (for `bossDamage`) without a guard, measured on both builds with
+  `verifyRuns` runs on the verification seed in that objective's own forecast
+  (rounded to 4 decimals); `minimum` and `reached` (`{before, after}`) are `null`
+  without a guard. An unchanged result reuses the current build's values.
+* `forecast.scope` is `{from, to, rooms, endsAt}`, walked like the route `progress`
+  is divided by: from `1f-1` up to the room before the first closed Clear-Gate
+  (`clearGate`), up to the depth limit (`depthLimit`), or to the last room
+  (`dungeonEnd`); with `bossDamage`, the boss room alone (`bossRoom`). `from` and
+  `to` are `null` when no room is simulated.
 * `changeSummary` entries are generated by running each call through the Commit
   API handler on a private copy, so each one is accepted as written: an `equip`
   entry names the exact owned variant (lock digit included) with `targetSlot`,
@@ -952,27 +995,28 @@ definitions in 9.1.3.
 **Directed build**
 
 * `directedBuild` (9.1.3, 2-3-3) is a Read operation that uses `POST`, like `gaSearch`. It never commits anything and changes no revision. Its Return is the `gaSearch` Return (see **GA search**) plus the members below.
-* Validation: `direction` is required and must be one of its listed values (otherwise `invalid_request`, field `direction`). `targets` is 1 to 6 unique members of party `{p}` (otherwise `invalid_request`, field `targets.characterId`); omitted `changeableComponents` members take the 9.1.3 defaults, and `autoEquipmentRun` must be `currentSetting`, `FULL`, `SEMI`, or `OFF`. `considerOrderChange`, `considerDeityChange`, `considerItemsScope`, and `objective` are validated as for `gaSearch`. `tuningParameters` ranges are the 9.1.3 table; `eliteCount` may not exceed `populationSize / 4`. An unknown member anywhere is `invalid_request`. A missing party is `not_found`.
-* Seeds: every seed derives from `tuningParameters.seed` (a fresh random one when omitted): one for candidate sampling and mutation, one for the quick runs, one for the confirm runs, and one for verification. All candidates are compared on the same random numbers, so the same `seed`, save, and parameters return the same result unless `timeBudgetSeconds` stops a step first.
+* Validation: `direction` is required and must be one of its listed values (otherwise `invalid_request`, field `direction`). `targets` is 1 to 6 unique members of party `{p}` (otherwise `invalid_request`, field `targets.characterId`); omitted `changeableComponents` members take the 9.1.3 defaults, and `autoEquipmentRun` must be `currentSetting`, `FULL`, `SEMI`, or `OFF`. `considerOrderChange`, `considerDeityChange`, `considerItemsScope`, `objective`, and `objectiveGuard` are validated as for `gaSearch`. `autoEquipmentScope` is `changedOnly` (default) or `allTargets`; `directionStrictness` is `strict` (default) or `soft`; `directionPenalty` is a number from 0 to 50 (default 2); any other value is `invalid_request` naming the member. `tuningParameters` ranges are the 9.1.3 table (`timeBudgetSeconds` 5 to 600, `verifySeed` any safe integer); `mutationRate` defaults to the `effort` preset's; `eliteCount` may not exceed `populationSize / 4`. An unknown member anywhere is `invalid_request`. A missing party is `not_found`.
+* Seeds: every seed derives from `tuningParameters.seed` (a fresh random one when omitted): one for candidate sampling and mutation, one for the quick runs, one for the confirm runs, and one for verification (`tuningParameters.verifySeed` instead when given). All candidates are compared on the same random numbers, so the same `seed`, save, and parameters return the same result unless `timeBudgetSeconds` stops a step first.
 * Build components choose from the same options as `read/build/character/status` and are validated by the `changeBuild` rules in party order (including the unique-character and race/gender rules); a candidate that breaks one is invalid. `uniqueCharacter: true` adds the unique characters `changeBuild` would accept for that member as `uniqueSelection` options.
-* Composition: each member's main class is counted in its 9.1.3 category. The distance of a composition is the sum over the four categories of `max(0, minimum − count) + max(0, count − maximum)` for the direction's ranges (`0` for `free`). Step 1 first finds the smallest distance any valid assignment of the changeable main classes can reach, and only candidates at that distance are valid. A party that can meet the ranges is held to them; one that cannot gets the closest composition, and the search still runs.
+* Composition: each member's main class is counted in its 9.1.3 category. The distance of a composition is the sum over the four categories of `max(0, minimum − count) + max(0, count − maximum)` for the direction's ranges (`0` for `free`). Step 1 first finds the smallest distance any valid assignment of the changeable main classes can reach. With `directionStrictness: strict`, only candidates at that distance are valid: a party that can meet the ranges is held to them, one that cannot gets the closest composition, and the search still runs. With `soft`, every composition is valid, and each candidate's search score is made worse by `directionPenalty` per member of distance: `success` lowers its success rate and its `progress` tie-break by that many percentage points before the fitness is computed; `minDefeat` and `bossDamage` lower the fitness by that many points; `experience` by that percent of the current build's average EXP in the verification runs. Steps 2 and 3 score with the same penalty. `verdict` and `verification` never include it.
 * Class rules for assigned main classes:
   * A Support class is never assigned when another member already has it as main class. A duplicate among the fixed main classes is kept and does not make the party invalid.
   * `Felidian` with main class `class.ninja` is invalid for every direction, not only `rapidRanged` (both grant `a.first-strike`, which does not stack). Only a candidate's changed members are checked, so a fixed `Felidian` ninja stays.
   * `rapidRanged` samples `Felidian` with 3x weight among the race/gender options of members whose `raceGender` is changeable.
-* `autoEquipmentRun`: for each candidate, the targets that resolve to `FULL` or `SEMI` run 7.1.2 or 7.1.3 on the private copy in party order. The 7.1.2.1 dirty check is bypassed, so the run always happens. Items come from `considerItemsScope` as in `gaSearch`: the Inventory and the character's own items (`normal`), plus unlocked items of the other targets (`withinTargets`) or of every character (`global`). An item placed earlier in the same pass is never taken again, locked items are never taken, and a donor keeps an empty slot. Before the run, items the new build cannot equip (`c.equip_melee`, `c.equip_ranged`, `c.equip_magic`) or that no longer fit its slot count go to the Inventory. A target that resolves to `OFF` only loses those items.
+* `autoEquipmentScope`: with `allTargets`, every target runs its `autoEquipmentRun` in each candidate. With `changedOnly`, only the targets whose unique selection, race/gender, main class, sub class, lineage, or predisposition differs from the current build run it, in party order; under `withinTargets` and `global` they may take the unlocked items of the unchanged targets (after the later changed targets in the pass, before the non-targets). An unchanged target whose worn items or Jewels changed that way runs it afterward, in party order. A candidate with no changed target keeps every target's equipment as it is.
+* `autoEquipmentRun`: for each candidate, the targets that run it and resolve to `FULL` or `SEMI` run 7.1.2 or 7.1.3 on the private copy in party order. The 7.1.2.1 dirty check is bypassed, so the run always happens. Items come from `considerItemsScope` as in `gaSearch`: the Inventory and the character's own items (`normal`), plus unlocked items of the other targets (`withinTargets`) or of every character (`global`). An item placed earlier in the same pass is never taken again, locked items are never taken, and a donor keeps an empty slot. Before the run, items the new build cannot equip (`c.equip_melee`, `c.equip_ranged`, `c.equip_magic`) or that no longer fit its slot count go to the Inventory. A target that resolves to `OFF` only loses those items.
 * Search:
-  * Step 1 (genetic search over the build layer): each genome holds, per target, `uniqueSelection`, race/gender, main class, and sub class, plus the party order when `considerOrderChange` is `true`. Only components that are changeable and allowed by the game rules vary. The first generation holds the current build when it is valid, plus direction-weighted random samples. Each generation scores every candidate with `quickRuns`, re-scores the `confirmTopN` best with `confirmRuns`, keeps `eliteCount` unchanged, and fills the rest by tournament selection (size `tournamentSize`), per-character crossover, and mutation (`mutationRate`; 1–2 changes among race/gender, main class, sub class, unique selection, and order swap). A child that breaks the class rules or exceeds the smallest distance is repaired by resampling the changed members' main classes toward the missing categories; if repair fails, it is replaced by a new sample. The best confirmed candidate is locked. With no valid candidate, the current values are kept.
-  * Step 2 (deity): runs only when `considerDeityChange` is not `none`. It scores the current deity and every option (as `gaSearch` chooses them) with `confirmRuns` on the Step 1 result, without re-running `autoEquipmentRun`, and locks the best.
-  * Step 3 (final tuning): one coordinate pass in party order. For each target whose `lineage` is changeable, it scores every valid lineage with `quickRuns`, each after `autoEquipmentRun`, and keeps the best (the current one included). It then does the same for `predisposition`. A unique character's lineage and predisposition are fixed, so it has no candidates. Each candidate re-runs `autoEquipmentRun` for that target alone: under `withinTargets` it takes no other target's items, and under `global` it takes only from non-targets.
+  * Step 1 (genetic search over the build layer): each genome holds, per target, `uniqueSelection`, race/gender, main class, and sub class, plus the party order when `considerOrderChange` is `true`. Only components that are changeable and allowed by the game rules vary. The first generation holds the current build when it is valid (always with `free` and `soft`; with `strict` only at the smallest distance), plus random samples. With `free` and `soft`, 60% of the samples are local: the changeable members' current categories with 0, 1, or 2 members moved to another category (never to Support when no Support class is left), every member that fits kept as it is; the others, and every sample of a `strict` direction other than `free`, draw one of the compositions at the smallest distance. Each generation scores every candidate with `quickRuns`, re-scores the `confirmTopN` best with `confirmRuns`, keeps `eliteCount` unchanged, and fills the rest by tournament selection (size `tournamentSize`), per-character crossover, and mutation (`mutationRate`; 1–2 changes among race/gender, main class, sub class, unique selection, and order swap). A child that breaks the class rules or (`strict`) exceeds the smallest distance is repaired by resampling the changed members' main classes toward the missing categories; if repair fails, it is invalid. A bred or sampled candidate already in the search is replaced by a new sample, up to 4 times, so later generations score new builds; the elites are carried over as they are. The best confirmed candidate (by the `objectiveGuard` ranking with a guard) is locked. With no valid candidate, the current values are kept.
+  * Step 2 (deity): runs only when `considerDeityChange` is not `none`. It scores the current deity and every option (as `gaSearch` chooses them) with `confirmRuns` on the Step 1 result, without re-running `autoEquipmentRun`, and locks the best (by the `objectiveGuard` ranking with a guard).
+  * Step 3 (final tuning): one coordinate pass in party order. For each target whose `lineage` is changeable, it scores every valid lineage with `quickRuns`, each after `autoEquipmentRun`, and keeps the best (the current one included; with a guard, a candidate must rank above the incumbent by the `objectiveGuard` ranking, the guard measured with `quickRuns` on the quick seed). It then does the same for `predisposition`. A unique character's lineage and predisposition are fixed, so it has no candidates. Each candidate re-runs `autoEquipmentRun` for that target alone: under `withinTargets` it takes no other target's items, and under `global` it takes only from non-targets.
   * Each step keeps the best result it scored, with no per-step improvement threshold. The final build is judged once, by `verdict`.
-  * `timeBudgetSeconds` covers Steps 1 to 3. When it runs out, the running step locks its best result so far and later steps do not run (they get no `steps` entry). Verification runs after the budget.
+  * `timeBudgetSeconds` covers the whole request. The current build's verification runs (the objective and the `crossCheck` objective) run first; their cost per run, times 1.5 plus one second, sets aside the result's verification. Step 1 stops at 75% of the time left after that reserve; Steps 2 and 3 run until the reserve. A step that runs out locks its best result so far, and a step that has no time left does not run (it gets no `steps` entry). The verification always runs.
 * `verdict`, `forecast`, `verification`, `changeSummary`, `revision`, `evaluations`, and `elapsedSeconds` are produced as for `gaSearch`: the verdict compares the current build and the final build on one independent verification seed with `verifyRuns` runs each, and each `changeSummary` entry is accepted by the Commit API as written. `changeSummary` follows the 9.1.3 order, so items that a class change makes unequippable are removed by `removeEquipment` before the `changeBuild` entry, and the `autoEquipmentRun` result appears as `equip`, `jewelRemove`, and `jewelAttach` entries. `evaluations` counts every scored candidate of all steps.
   * A deity change is a `commit/build/party/{p}` entry with `deityId`. When another party holds the chosen deity, `changeSummary` lists `commit/build/party/{holder}` with `deityId: "none"` right before it, and `basis` covers which party holds that deity.
 * `basis` is built as for `gaSearch`. Nothing is kept on the server, so a `directedBuild` result stays applicable until the build-relevant state changes.
 * `seed`: the seed used, the requested one or a random one.
-* `direction`: the requested direction.
-* `composition`: `{before, after, distance}`. `before` and `after` are each `{melee, ranged, magic, support}`, the number of members whose main class is in that category, counting every member of the party. `distance` is the distance of `after` (`0` when the ranges are met).
+* `direction`: the requested direction. `directionStrictness`: the requested strictness.
+* `composition`: `{before, after, distanceBefore, distance, smallestDistance, recomposition, forcedRecomposition}`. `before` and `after` are each `{melee, ranged, magic, support}`, the number of members whose main class is in that category, counting every member of the party. `distanceBefore` and `distance` are the distances of `before` and `after` (`0` when the ranges are met); `smallestDistance` is the smallest distance the changeable main classes can reach; `recomposition` is half the summed category differences between `before` and `after`; `forcedRecomposition` is `true` when `directionStrictness` is `strict` and `distanceBefore` is larger than `smallestDistance` (the current build was not a candidate).
 * `steps`: an object with one entry per executed step of the Process, keyed `step1`, `step2`, and `step3`. Each entry is `{candidatesTried, selected}`: the number of candidates scored in that step, and a short text describing the selected option, or `null` when the step kept the current value. A step that did not run has no entry.
 
 **Staged Equipment Tuning**

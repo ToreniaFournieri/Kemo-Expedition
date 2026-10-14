@@ -8,24 +8,32 @@ import { gameReducer } from '../../hooks/useGameState';
 import { getVariantKey, type Character, type ClassId, type ExpeditionSimulationResult, type GameState, type Item } from '../../types';
 import { describeCharacterBuildCurrent, planCharacterBuildChange, validUniqueSelections } from './buildChange';
 import {
-  buildBasis, createRandom, deityHolderIndex, deityOptionsFor, deriveSeed, GA_DEITY_SCOPES, GA_EFFORTS, GA_ITEMS_SCOPES, GA_OBJECTIVES,
-  measure, planGaChangeSummary, rateGaResult,
-  type GaChangeEntry, type GaDeityScope, type GaForecast, type GaItemsScope, type GaObjective, type GaSearchDependencies, type Measured,
+  buildBasis, compareGuarded, createRandom, createRunMeter, crossCheckObjective, deityHolderIndex, deityOptionsFor, deriveSeed, GA_DEITY_SCOPES,
+  GA_EFFORTS, GA_ITEMS_SCOPES, GA_OBJECTIVES, measure, measureSecondObjective, parseObjectiveGuard, planGaChangeSummary, reserveMs, successFitness,
+  summarizeVerification,
+  type GaChangeEntry, type GaDeityScope, type GaItemsScope, type GaObjective, type GaSearchDependencies, type GuardedScore, type Measured,
+  type ObjectiveGuard,
 } from './gaSearch';
-import { objectiveSimulationOptions, prepareObjectiveState, routeRoomCount, type ObjectiveMeasure } from './objectiveMeasure';
+import { forecastScope, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount } from './objectiveMeasure';
 import { validRaceAndGenderOptions } from './readModels';
-import { buildSimulationRunData } from './simulationView';
 
 // SpecRef: 9.1.3 | Read | 2-3-3 party/{p}/directedBuild
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | Directed build
 // A three-step search guided by a class composition: Step 1 searches the build layer (unique selection, race/gender, main
 // and sub class, order) with a genetic search, Step 2 the deity, and Step 3 lineage and predisposition one member at a
-// time. Every candidate runs the requested Auto Equipment and is scored by the same private forecast as `gaSearch`.
+// time. Every candidate runs the requested Auto Equipment (only for the members it changes, by default) and is scored by
+// the same private forecast as `gaSearch`.
 
 export const DIRECTIONS = ['rapidRanged', 'magicBurst', 'meleeBurst', 'free', 'turtle', 'balance'] as const;
 export type Direction = typeof DIRECTIONS[number];
 const AUTO_EQUIPMENT_RUNS = ['currentSetting', 'FULL', 'SEMI', 'OFF'] as const;
 type AutoEquipmentRun = typeof AUTO_EQUIPMENT_RUNS[number];
+// SpecRef: 9.1.3 | 2-3-3 `autoEquipmentScope` | `changedOnly` runs Auto Equipment only for the targets a candidate changes.
+const AUTO_EQUIPMENT_SCOPES = ['changedOnly', 'allTargets'] as const;
+type AutoEquipmentScope = typeof AUTO_EQUIPMENT_SCOPES[number];
+// SpecRef: 9.1.3 | 2-3-3 `directionStrictness` | `strict` filters by distance; `soft` penalizes it.
+const DIRECTION_STRICTNESS = ['strict', 'soft'] as const;
+type DirectionStrictness = typeof DIRECTION_STRICTNESS[number];
 
 // SpecRef: 9.1.3 | 2-3-3 Definition | the main class categories.
 const CATEGORIES = ['melee', 'ranged', 'magic', 'support'] as const;
@@ -51,15 +59,15 @@ const DIRECTION_RANGES: Record<Direction, Record<Category, readonly [number, num
 
 // SpecRef: 9.1.3 | 2-3-3 `tuningParameters` | the `effort` presets.
 export const DIRECTED_EFFORT_PRESETS = {
-  low: { populationSize: 12, generations: 10, quickRuns: 30, confirmRuns: 150, timeBudgetSeconds: 30 },
-  medium: { populationSize: 16, generations: 20, quickRuns: 50, confirmRuns: 300, timeBudgetSeconds: 90 },
-  high: { populationSize: 24, generations: 40, quickRuns: 100, confirmRuns: 600, timeBudgetSeconds: 240 },
+  low: { populationSize: 12, generations: 10, quickRuns: 30, confirmRuns: 150, timeBudgetSeconds: 60, mutationRate: 0.35 },
+  medium: { populationSize: 16, generations: 20, quickRuns: 50, confirmRuns: 300, timeBudgetSeconds: 180, mutationRate: 0.35 },
+  high: { populationSize: 48, generations: 60, quickRuns: 300, confirmRuns: 1000, timeBudgetSeconds: 480, mutationRate: 0.5 },
 } as const;
 type Effort = keyof typeof DIRECTED_EFFORT_PRESETS;
 
 /** `[minimum, maximum]` of each integer parameter (Spec 9.1.3, 2-3-3). */
 const INTEGER_RANGES = {
-  populationSize: [8, 64], generations: [1, 200], quickRuns: [10, 300], confirmRuns: [50, 1000], timeBudgetSeconds: [5, 300],
+  populationSize: [8, 64], generations: [1, 200], quickRuns: [10, 300], confirmRuns: [50, 1000], timeBudgetSeconds: [5, 600],
   verifyRuns: [100, 1000], eliteCount: [0, 16], tournamentSize: [2, 8], confirmTopN: [1, 10],
 } as const;
 
@@ -77,13 +85,19 @@ export interface DirectedTarget {
 export interface DirectedBuildRequest {
   direction: Direction;
   targets: DirectedTarget[];
+  autoEquipmentScope: AutoEquipmentScope;
   considerOrderChange: boolean;
   considerDeityChange: GaDeityScope;
   considerItemsScope: GaItemsScope;
   objective: GaObjective;
+  objectiveGuard: ObjectiveGuard | null;
+  directionStrictness: DirectionStrictness;
+  /** Score penalty per member of distance (`soft` only), in percentage points (percent of the current EXP for `experience`). */
+  directionPenalty: number;
   parameters: {
     effort: Effort; populationSize: number; generations: number; quickRuns: number; confirmRuns: number; timeBudgetSeconds: number;
     verifyRuns: number; eliteCount: number; mutationRate: number; tournamentSize: number; confirmTopN: number; seed: number | null;
+    verifySeed: number | null;
   };
 }
 
@@ -116,7 +130,7 @@ const COMPONENT_DEFAULTS = { uniqueCharacter: false, raceGender: true, mainClass
 
 /** Validates a `directedBuild` request against party `{p}` (Spec 9.1.4.9). Throws `invalid_request:<field>`. */
 export function parseDirectedBuildRequest(state: GameState, partyIndex: number, raw: Record<string, unknown>): DirectedBuildRequest {
-  const allowed = new Set(['direction', 'targets', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'tuningParameters']);
+  const allowed = new Set(['direction', 'targets', 'autoEquipmentScope', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'objectiveGuard', 'directionStrictness', 'directionPenalty', 'tuningParameters']);
   const unknown = Object.keys(raw).find((key) => !allowed.has(key));
   if (unknown !== undefined) invalid(`${unknown}.unknown_member`);
   if (raw.direction === undefined) invalid('direction');
@@ -143,7 +157,7 @@ export function parseDirectedBuildRequest(state: GameState, partyIndex: number, 
   });
   const source = raw.tuningParameters === undefined ? {} : raw.tuningParameters;
   if (!isRecord(source)) invalid('tuningParameters');
-  const knownParameters = new Set(['effort', 'mutationRate', 'seed', ...Object.keys(INTEGER_RANGES)]);
+  const knownParameters = new Set(['effort', 'mutationRate', 'seed', 'verifySeed', ...Object.keys(INTEGER_RANGES)]);
   const unknownParameter = Object.keys(source).find((key) => !knownParameters.has(key));
   if (unknownParameter !== undefined) invalid(`tuningParameters.${unknownParameter}.unknown_member`);
   const effort = readEnum(source, 'effort', 'tuningParameters.effort', GA_EFFORTS, 'medium');
@@ -151,17 +165,26 @@ export function parseDirectedBuildRequest(state: GameState, partyIndex: number, 
   const populationSize = readInteger(source, 'populationSize', preset.populationSize);
   const eliteCount = readInteger(source, 'eliteCount', 2);
   if (eliteCount > Math.floor(populationSize / 4)) invalid('tuningParameters.eliteCount');
-  const mutationRate = source.mutationRate === undefined ? 0.35 : source.mutationRate;
+  const mutationRate = source.mutationRate === undefined ? preset.mutationRate : source.mutationRate;
   if (typeof mutationRate !== 'number' || !Number.isFinite(mutationRate) || mutationRate < 0 || mutationRate > 1) invalid('tuningParameters.mutationRate');
   const seed = source.seed === undefined ? null : source.seed;
   if (seed !== null && (typeof seed !== 'number' || !Number.isSafeInteger(seed))) invalid('tuningParameters.seed');
+  const verifySeed = source.verifySeed === undefined ? null : source.verifySeed;
+  if (verifySeed !== null && (typeof verifySeed !== 'number' || !Number.isSafeInteger(verifySeed))) invalid('tuningParameters.verifySeed');
+  const objective = readEnum(raw, 'objective', 'objective', GA_OBJECTIVES, 'success');
+  const directionPenalty = raw.directionPenalty === undefined ? 2 : raw.directionPenalty;
+  if (typeof directionPenalty !== 'number' || !Number.isFinite(directionPenalty) || directionPenalty < 0 || directionPenalty > 50) invalid('directionPenalty');
   return {
     direction,
     targets,
+    autoEquipmentScope: readEnum(raw, 'autoEquipmentScope', 'autoEquipmentScope', AUTO_EQUIPMENT_SCOPES, 'changedOnly'),
     considerOrderChange: readBoolean(raw, 'considerOrderChange', 'considerOrderChange', false),
     considerDeityChange: readEnum(raw, 'considerDeityChange', 'considerDeityChange', GA_DEITY_SCOPES, 'none'),
     considerItemsScope: readEnum(raw, 'considerItemsScope', 'considerItemsScope', GA_ITEMS_SCOPES, 'normal'),
-    objective: readEnum(raw, 'objective', 'objective', GA_OBJECTIVES, 'success'),
+    objective,
+    objectiveGuard: parseObjectiveGuard(raw.objectiveGuard, objective),
+    directionStrictness: readEnum(raw, 'directionStrictness', 'directionStrictness', DIRECTION_STRICTNESS, 'strict'),
+    directionPenalty,
     parameters: {
       effort,
       populationSize,
@@ -175,6 +198,7 @@ export function parseDirectedBuildRequest(state: GameState, partyIndex: number, 
       tournamentSize: readInteger(source, 'tournamentSize', 3),
       confirmTopN: readInteger(source, 'confirmTopN', 3),
       seed: seed as number | null,
+      verifySeed: verifySeed as number | null,
     },
   };
 }
@@ -243,6 +267,10 @@ interface Model {
   fixedSupports: Set<ClassId>;
   minDistance: number;
   distributions: Counts[];
+  /** `directionStrictness: soft`: the distance is a penalty, not a rule. */
+  soft: boolean;
+  /** `free` and `soft` draw most samples near the current composition (Spec 9.1.3, 2-3-3 Process Step 1). */
+  localSampling: boolean;
 }
 
 const ALL_CLASSES = CLASSES.map((entry) => entry.id as ClassId);
@@ -278,7 +306,11 @@ function buildModel(state: GameState, partyIndex: number, request: DirectedBuild
   const fixedMembers = party.characters.filter((character) => !changeableMain.includes(character.id));
   const fixedSupports = new Set(fixedMembers.map((character) => character.mainClassId).filter((id) => categoryOf(id) === 'support'));
   const { distance, distributions } = bestDistributions(request.direction, compositionOf(fixedMembers), changeableMain.length, CATEGORY_CLASSES.support.length - fixedSupports.size);
-  return { base: state, partyIndex, request, targets, uniqueOptions, raceOptions, current, changeableMain, fixedSupports, minDistance: distance, distributions };
+  const soft = request.directionStrictness === 'soft';
+  return {
+    base: state, partyIndex, request, targets, uniqueOptions, raceOptions, current, changeableMain, fixedSupports, minDistance: distance, distributions,
+    soft, localSampling: soft || request.direction === 'free',
+  };
 }
 
 const isFelidian = (race: string): boolean => race.startsWith('felidian/');
@@ -330,8 +362,9 @@ function repair(model: Model, input: Genome, random: () => number): Genome {
     }
     usedRaces.add(genes.race);
   }
-  // Main classes: move members from surplus to missing categories of the nearest best distribution.
-  if (model.changeableMain.length > 0) {
+  // Main classes: move members from surplus to missing categories of the nearest best distribution (`strict` only; `soft`
+  // penalizes the distance instead).
+  if (model.changeableMain.length > 0 && !model.soft) {
     const counts = emptyCounts();
     for (const id of model.changeableMain) counts[categoryOf(genome.members[id].main)] += 1;
     const gap = (distribution: Counts) => CATEGORIES.reduce((sum, category) => sum + Math.abs(distribution[category] - counts[category]), 0);
@@ -352,6 +385,8 @@ function repair(model: Model, input: Genome, random: () => number): Genome {
         genome.members[id].main = pick(CATEGORY_CLASSES[category], random);
       }
     }
+  }
+  if (model.changeableMain.length > 0) {
     // An assigned Support class is one no other member holds; a member keeping its own main class assigns nothing.
     const supports = new Set(model.fixedSupports);
     const assigned = model.changeableMain.filter((id) => genome.members[id].main !== model.current.members[id].main);
@@ -378,16 +413,45 @@ function repair(model: Model, input: Genome, random: () => number): Genome {
   return genome;
 }
 
-/** A random Step 1 genome: a best distribution's categories, then classes, races, unique selections, and order. */
+// SpecRef: 9.1.3 | 2-3-3 Process Step 1 Sampling | the share of `free` and `soft` samples drawn near the current composition.
+const LOCAL_SAMPLE_SHARE = 0.6;
+
+/**
+ * A composition of the changeable members near the current one: the current categories with 0, 1, or 2 members moved to
+ * another category (a move never needs more Support classes than are left).
+ */
+function localGoal(model: Model, random: () => number): Counts {
+  const goal = emptyCounts();
+  for (const id of model.changeableMain) goal[categoryOf(model.current.members[id].main)] += 1;
+  const supportsLeft = CATEGORY_CLASSES.support.length - model.fixedSupports.size;
+  const moves = Math.floor(random() * 3);
+  for (let move = 0; move < moves; move += 1) {
+    const sources = CATEGORIES.filter((category) => goal[category] > 0);
+    if (sources.length === 0) break;
+    const from = pick(sources, random);
+    const destinations = CATEGORIES.filter((category) => category !== from && (category !== 'support' || goal.support < supportsLeft));
+    if (destinations.length === 0) break;
+    const to = pick(destinations, random);
+    goal[from] -= 1; goal[to] += 1;
+  }
+  return goal;
+}
+
+/**
+ * A random Step 1 genome: a composition, then classes, races, unique selections, and order. With `free` and `soft`, 60% of
+ * the samples are local (`localGoal`) and keep every member that fits it; the others draw a best distribution.
+ */
 function sample(model: Model, random: () => number): Genome {
   const genome = cloneGenome(model.current);
   if (model.request.considerOrderChange && random() < 0.5) genome.order = shuffle(genome.order, random);
-  const goal = { ...pick(model.distributions, random) };
+  const local = model.localSampling && random() < LOCAL_SAMPLE_SHARE;
+  const goal = local ? localGoal(model, random) : { ...pick(model.distributions, random) };
+  const keep = local ? 1 : 0.5;
   const members = shuffle(model.changeableMain, random);
   const assigned = new Set<number>();
   for (const id of members) {
     const category = categoryOf(model.current.members[id].main);
-    if (goal[category] > 0 && random() < 0.5) { goal[category] -= 1; assigned.add(id); }
+    if (goal[category] > 0 && random() < keep) { goal[category] -= 1; assigned.add(id); }
   }
   const slots = shuffle(CATEGORIES.flatMap((category) => new Array<Category>(goal[category]).fill(category)), random);
   for (const id of members) {
@@ -470,13 +534,13 @@ function changeMember(state: GameState, partyIndex: number, characterId: number,
 }
 
 /**
- * Whether the decoded party keeps the class rules (Spec 9.1.4.9): its composition is at the smallest distance, no member
+ * Whether the decoded party keeps the class rules (Spec 9.1.4.9): its composition is at the smallest distance (`strict`), no member
  * whose main class changed took a Support class another member holds, and no member whose race or main class changed is a
  * `Felidian` ninja.
  */
 function keepsClassRules(model: Model, state: GameState): boolean {
   const characters = state.parties[model.partyIndex].characters;
-  if (compositionDistance(model.request.direction, compositionOf(characters)) > model.minDistance) return false;
+  if (!model.soft && compositionDistance(model.request.direction, compositionOf(characters)) > model.minDistance) return false;
   for (const character of characters) {
     const before = characterIn(model.base, model.partyIndex, character.id);
     const mainChanged = before.mainClassId !== character.mainClassId;
@@ -572,11 +636,11 @@ function runWithDonors(state: GameState, donors: readonly DonorSlot[], run: (sta
 
 /**
  * `autoEquipmentRun` for the targets in `ids` (party order), with the 7.1.2.1 dirty check bypassed. Items come from the
- * Inventory and the character's own items, plus (`withinTargets`) the unlocked items of the targets later in the pass, plus
- * (`global`) the unlocked items of every non-target, the party's first and then the other parties in order. An item a
- * target placed earlier in the pass is never taken again, and a locked item never.
+ * Inventory and the character's own items, plus (`withinTargets`) the unlocked items of the targets later in the pass and of
+ * `lenders` (targets outside the pass), plus (`global`) the unlocked items of every non-target, the party's first and then
+ * the other parties in order. An item a target placed earlier in the pass is never taken again, and a locked item never.
  */
-function runAutoEquipment(model: Model, state: GameState, ids: readonly number[], dependencies: GaSearchDependencies): GameState {
+function runAutoEquipment(model: Model, state: GameState, ids: readonly number[], dependencies: GaSearchDependencies, lenders: readonly number[] = []): GameState {
   const scope = model.request.considerItemsScope;
   const targetIds = new Set(model.targets.map((target) => target.characterId));
   const unlocked = (partyIndex: number, character: Character): DonorSlot[] => character.equipment.flatMap((item, slot) => (item && !item.isLocked ? [{ partyIndex, characterId: character.id, slot, item }] : []));
@@ -587,7 +651,7 @@ function runAutoEquipment(model: Model, state: GameState, ids: readonly number[]
     if (mode === 0) return;
     const donors: DonorSlot[] = [];
     if (scope !== 'normal') {
-      for (const later of ids.slice(position + 1)) donors.push(...unlocked(model.partyIndex, characterIn(next, model.partyIndex, later)));
+      for (const later of [...ids.slice(position + 1), ...lenders]) donors.push(...unlocked(model.partyIndex, characterIn(next, model.partyIndex, later)));
     }
     if (scope === 'global') {
       const order = [model.partyIndex, ...next.parties.map((_, index) => index).filter((index) => index !== model.partyIndex)];
@@ -599,6 +663,33 @@ function runAutoEquipment(model: Model, state: GameState, ids: readonly number[]
     next = updateCharacter(next, id, (character) => ({ ...character, autoEquipmentMode: original }));
   });
   return next;
+}
+
+const BUILD_KEYS = ['uniqueSelection', 'racesAndGender', 'mainClassId', 'subClassId', 'lineage', 'predisposition'] as const;
+
+/** Whether member `id` of `target` differs from the current build in a build component (an order or deity change does not count). */
+function buildChanged(model: Model, target: GameState, id: number): boolean {
+  const before = describeCharacterBuildCurrent(characterIn(model.base, model.partyIndex, id));
+  const after = describeCharacterBuildCurrent(characterIn(target, model.partyIndex, id));
+  return BUILD_KEYS.some((key) => before[key] !== after[key]);
+}
+
+const wornSignature = (character: Character): string => JSON.stringify(character.equipment.map((item) => (item ? `${getVariantKey(item)}/${item.jewel ? `${item.jewel.key}:${item.jewel.rank}` : ''}` : null)));
+
+/**
+ * `autoEquipmentRun` for every target of a candidate (party order). `allTargets` runs it for each target; `changedOnly`
+ * (Spec 9.1.3, 2-3-3 `autoEquipmentScope`) runs it for the targets whose build changed, which may borrow the unchanged
+ * targets' unlocked items (`withinTargets`, `global`); an unchanged target that lost an item that way runs afterward.
+ */
+function equipTargets(model: Model, target: GameState, dependencies: GaSearchDependencies): GameState {
+  const ordered = target.parties[model.partyIndex].characters.map((character) => character.id).filter((id) => model.targets.some((entry) => entry.characterId === id));
+  if (model.request.autoEquipmentScope === 'allTargets') return runAutoEquipment(model, target, ordered, dependencies);
+  const changed = ordered.filter((id) => buildChanged(model, target, id));
+  if (changed.length === 0) return target;
+  const unchanged = ordered.filter((id) => !changed.includes(id));
+  const next = runAutoEquipment(model, target, changed, dependencies, unchanged);
+  const lost = unchanged.filter((id) => wornSignature(characterIn(next, model.partyIndex, id)) !== wornSignature(characterIn(target, model.partyIndex, id)));
+  return lost.length > 0 ? runAutoEquipment(model, next, lost, dependencies) : next;
 }
 
 /** Party HP is derived from the characters, so the searched party gets fresh character arrays (its stats cache is keyed by array identity). */
@@ -630,25 +721,33 @@ function describeStep1(model: Model, genome: Genome): string | null {
 
 export interface DirectedBuildOutcome { data: Record<string, unknown> }
 
+// SpecRef: 9.1.3 | 2-3-3 `timeBudgetSeconds` | Step 1 may use at most 75% of the time left after the verification reserve.
+const STEP1_BUDGET_SHARE = 0.75;
+// SpecRef: 9.1.3 | 2-3-3 Process Step 1 | a bred or sampled candidate already in the search is replaced, up to 4 times.
+const REPEAT_ATTEMPTS = 4;
+
 /** Runs `directedBuild` for party `{p}` (Spec 9.1.3, 2-3-3; 9.1.4.9). Never changes `state`. */
 export async function runDirectedBuild(state: GameState, partyIndex: number, request: DirectedBuildRequest, dependencies: GaSearchDependencies): Promise<DirectedBuildOutcome> {
   const startedAt = dependencies.now();
   const deadline = startedAt + request.parameters.timeBudgetSeconds * 1000;
-  const outOfTime = () => dependencies.now() >= deadline;
   const seed = request.parameters.seed ?? dependencies.createSeed();
   const random = createRandom(deriveSeed(seed, 0));
-  const quickSeed = deriveSeed(seed, 1); const confirmSeed = deriveSeed(seed, 2); const verifySeed = deriveSeed(seed, 3);
+  const quickSeed = deriveSeed(seed, 1); const confirmSeed = deriveSeed(seed, 2);
+  const verifySeed = request.parameters.verifySeed ?? deriveSeed(seed, 3);
   const model = buildModel(state, partyIndex, request);
-  const { objective, parameters } = request;
+  const { objective, parameters, objectiveGuard: guard } = request;
+  const crossObjective = crossCheckObjective(objective, guard);
   const routeRooms = routeRoomCount(prepareObjectiveState(state, partyIndex, objective).parties[partyIndex]);
+  const meter = createRunMeter(dependencies.now);
   let evaluations = 0;
   const simulateOnce = async (target: GameState, runs: number, simulationSeed: number): Promise<ExpeditionSimulationResult> => {
     evaluations += 1;
-    return await dependencies.simulate(prepareObjectiveState(target, partyIndex, objective), partyIndex, runs, simulationSeed, objectiveSimulationOptions(objective)) as ExpeditionSimulationResult;
+    return await meter.time(objective, runs, async () => await dependencies.simulate(prepareObjectiveState(target, partyIndex, objective), partyIndex, runs, simulationSeed, objectiveSimulationOptions(objective)) as ExpeditionSimulationResult);
   };
+  const second = (target: GameState, runs: number, simulationSeed: number) => meter.time(crossObjective, runs, () => measureSecondObjective(dependencies, target, partyIndex, crossObjective, runs, simulationSeed));
   // The current build's success rate per (runs, seed), the `minDefeat` baseline (as `gaSearch`).
   const baselines = new Map<string, number>();
-  const evaluate = async (target: GameState, runs: number, simulationSeed: number): Promise<Measured> => {
+  const measureRaw = async (target: GameState, runs: number, simulationSeed: number): Promise<Measured> => {
     let baseline: number | null = null;
     if (objective === 'minDefeat') {
       const key = `${runs}:${simulationSeed}`;
@@ -657,13 +756,39 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
     }
     return measure(objective, await simulateOnce(target, runs, simulationSeed), routeRooms, baseline);
   };
-  const equipAll = (target: GameState) => withFreshParty(runAutoEquipment(model, target, target.parties[partyIndex].characters.map((character) => character.id).filter((id) => model.targets.some((entry) => entry.characterId === id)), dependencies), partyIndex);
+
+  // ---- Time: the current build's verification runs first; their cost per run sets aside the result's verification ----
+  const verifyRuns = parameters.verifyRuns;
+  const verifyBefore = await measureRaw(state, verifyRuns, verifySeed);
+  const crossBefore = await second(state, verifyRuns, verifySeed);
+  const searchDeadline = deadline - reserveMs(meter, { [objective]: verifyRuns, [crossObjective]: verifyRuns });
+  const searchStart = dependencies.now();
+  const step1Deadline = searchStart + STEP1_BUDGET_SHARE * Math.max(0, searchDeadline - searchStart);
+  const step1OutOfTime = () => dependencies.now() >= step1Deadline;
+  const outOfTime = () => dependencies.now() >= searchDeadline;
+
+  // SpecRef: 9.1.3 | 2-3-3 `directionPenalty` | `soft`: each member of distance makes the search score worse; the verdict
+  // and verification are judged without it.
+  const penaltyOf = (target: GameState): number => (model.soft ? request.directionPenalty * compositionDistance(request.direction, compositionOf(target.parties[partyIndex].characters)) / 100 : 0);
+  const penalized = (measured: Measured, penalty: number): number => {
+    if (penalty <= 0) return measured.fitness;
+    if (objective === 'success') return successFitness(Math.max(0, measured.rate - penalty), Math.max(0, (measured.progress?.rate ?? 0) - penalty), Math.max(1, measured.result.total));
+    if (objective === 'experience') return measured.fitness - penalty * verifyBefore.rate;
+    return measured.fitness - penalty;
+  };
+  /** A candidate's search score; with `objectiveGuard`, also the guard objective on the same runs and seed. */
+  const score = async (target: GameState, runs: number, simulationSeed: number, withGuard: boolean): Promise<GuardedScore> => {
+    const fitness = penalized(await measureRaw(target, runs, simulationSeed), penaltyOf(target));
+    return withGuard && guard ? { fitness, guard: (await second(target, runs, simulationSeed)).rate } : { fitness };
+  };
+  const above = (a: GuardedScore | undefined, b: GuardedScore | undefined): boolean => a !== undefined && (b === undefined || compareGuarded(a, b, guard) > 0);
+  const equipAll = (target: GameState) => withFreshParty(equipTargets(model, target, dependencies), partyIndex);
   const steps: Record<string, { candidatesTried: number; selected: string | null }> = {};
 
   // ---- Step 1: the build layer (genetic search) ----
   // A candidate is decoded (its builds applied and its Auto Equipment run) only when it is first scored: Auto Equipment is
   // the costly part, so a child bred after the last generation or past the time budget costs nothing.
-  interface Individual { genome: Genome; key: string; state?: GameState | null; quick?: number; confirm?: number }
+  interface Individual { genome: Genome; key: string; state?: GameState | null; quick?: number; confirm?: GuardedScore }
   const individuals = new Map<string, Individual>();
   const individual = (genome: Genome): Individual => {
     const key = genomeKey(genome);
@@ -672,6 +797,12 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
     const entry: Individual = { genome, key };
     individuals.set(key, entry);
     return entry;
+  };
+  /** A new candidate: a genome already in the search is replaced by a fresh sample, up to `REPEAT_ATTEMPTS` times. */
+  const fresh = (genome: Genome): Individual => {
+    let next = genome;
+    for (let attempt = 0; attempt < REPEAT_ATTEMPTS && individuals.has(genomeKey(next)); attempt += 1) next = sample(model, random);
+    return individual(next);
   };
   const decoded = (entry: Individual): GameState | null => {
     if (entry.state === undefined) {
@@ -686,27 +817,31 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
     const target = decoded(entry);
     if (target === null) { entry.quick = -Infinity; return; }
     step1Tried += 1;
-    entry.quick = (await evaluate(target, parameters.quickRuns, quickSeed)).fitness;
+    entry.quick = (await score(target, parameters.quickRuns, quickSeed, false)).fitness;
   };
+  // SpecRef: 9.1.3 | 2-3-3 `objectiveGuard` | the guard applies to the confirmed Step 1 candidates.
   const scoreConfirm = async (entry: Individual) => {
     const target = decoded(entry);
     if (entry.confirm !== undefined || target === null) return;
-    entry.confirm = (await evaluate(target, parameters.confirmRuns, confirmSeed)).fitness;
+    entry.confirm = await score(target, parameters.confirmRuns, confirmSeed, true);
   };
-  // The current build is a candidate when it already keeps the class rules; the rest are direction-weighted samples.
+  // The current build is a candidate when it keeps the class rules (always with `free` and `soft`); the rest are samples.
   const currentIndividual = individual(model.current);
   const currentValid = applyGenome(model, model.current) !== null;
   let population: Individual[] = currentValid ? [currentIndividual] : [];
-  for (let attempt = 0; population.length < parameters.populationSize && attempt < parameters.populationSize * 4; attempt += 1) population.push(individual(sample(model, random)));
+  for (let attempt = 0; population.length < parameters.populationSize && attempt < parameters.populationSize * 4; attempt += 1) {
+    const entry = fresh(sample(model, random));
+    if (!population.includes(entry)) population.push(entry);
+  }
   let best: Individual | null = null;
-  for (let generation = 0; generation < parameters.generations && !outOfTime() && population.length > 0; generation += 1) {
-    for (const entry of population) { if (outOfTime()) break; await scoreQuick(entry); }
+  for (let generation = 0; generation < parameters.generations && !step1OutOfTime() && population.length > 0; generation += 1) {
+    for (const entry of population) { if (step1OutOfTime()) break; await scoreQuick(entry); }
     population.sort((a, b) => (b.quick ?? -Infinity) - (a.quick ?? -Infinity));
-    for (const entry of population.slice(0, parameters.confirmTopN)) { if (outOfTime()) break; if ((entry.quick ?? -Infinity) > -Infinity) await scoreConfirm(entry); }
-    for (const entry of population) if (entry.confirm !== undefined && entry.confirm > (best?.confirm ?? -Infinity)) best = entry;
-    if (outOfTime() || generation === parameters.generations - 1) break;
+    for (const entry of population.slice(0, parameters.confirmTopN)) { if (step1OutOfTime()) break; if ((entry.quick ?? -Infinity) > -Infinity) await scoreConfirm(entry); }
+    for (const entry of population) if (above(entry.confirm, best?.confirm)) best = entry;
+    if (step1OutOfTime() || generation === parameters.generations - 1) break;
     const scored = population.filter((entry) => entry.quick !== undefined && entry.quick > -Infinity);
-    if (scored.length === 0) { population = population.map(() => individual(sample(model, random))); continue; }
+    if (scored.length === 0) { population = population.map(() => fresh(sample(model, random))); continue; }
     const tournament = () => {
       let chosen: Individual | null = null;
       for (let round = 0; round < parameters.tournamentSize; round += 1) {
@@ -719,7 +854,7 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
     while (next.length < parameters.populationSize) {
       let genome = crossover(model, tournament().genome, tournament().genome, random);
       if (random() < parameters.mutationRate) genome = mutate(model, genome, random);
-      next.push(individual(genome));
+      next.push(fresh(genome));
     }
     population = next;
   }
@@ -732,7 +867,7 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
     const currentDeity = getDeityId(locked.parties[partyIndex].deity.name);
     let bestDeity = currentDeity;
     let bestState = locked;
-    let bestScore = -Infinity;
+    let bestScore: GuardedScore | undefined;
     let tried = 0;
     for (const deity of deityOptionsFor(locked, locked.parties[partyIndex], request.considerDeityChange)) {
       if (outOfTime()) break;
@@ -746,8 +881,8 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
         candidate = gameReducer(candidate, { type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
       }
       tried += 1;
-      const score = (await evaluate(candidate, parameters.confirmRuns, confirmSeed)).fitness;
-      if (score > bestScore) { bestScore = score; bestDeity = deity; bestState = candidate; }
+      const candidateScore = await score(candidate, parameters.confirmRuns, confirmSeed, true);
+      if (above(candidateScore, bestScore)) { bestScore = candidateScore; bestDeity = deity; bestState = candidate; }
     }
     locked = bestState;
     steps.step2 = { candidatesTried: tried, selected: bestDeity !== currentDeity ? `deity ${bestDeity}` : null };
@@ -756,7 +891,7 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
   // ---- Step 3: lineage, then predisposition, one target at a time ----
   const tuned = model.targets.filter((target) => target.lineage || target.predisposition);
   if (tuned.length > 0 && !outOfTime()) {
-    let incumbent = (await evaluate(locked, parameters.quickRuns, quickSeed)).fitness;
+    let incumbent = await score(locked, parameters.quickRuns, quickSeed, true);
     let tried = 0;
     const chosen: string[] = [];
     const fields = [
@@ -783,8 +918,8 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
           // The re-run covers this target alone: `withinTargets` takes nothing, `global` takes only from non-targets.
           candidate = withFreshParty(runAutoEquipment({ ...model, request: { ...model.request, considerItemsScope: model.request.considerItemsScope === 'global' ? 'global' : 'normal' } }, candidate, [id], dependencies), partyIndex);
           tried += 1;
-          const score = (await evaluate(candidate, parameters.quickRuns, quickSeed)).fitness;
-          if (score > incumbent) { incumbent = score; bestValue = value; bestState = candidate; }
+          const candidateScore = await score(candidate, parameters.quickRuns, quickSeed, true);
+          if (above(candidateScore, incumbent)) { incumbent = candidateScore; bestValue = value; bestState = candidate; }
         }
         if (bestValue !== before) { locked = bestState; chosen.push(`${id}: ${field.parameter} ${bestValue}`); }
       }
@@ -801,39 +936,40 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
   } catch {
     changeSummary = [];
   }
-  const verifyRuns = parameters.verifyRuns;
-  const verifyBefore = await evaluate(state, verifyRuns, verifySeed);
-  const verifyAfter = changeSummary.length > 0 ? await evaluate(finalState, verifyRuns, verifySeed) : verifyBefore;
-  const scoredBy: GaObjective | 'progress' = objective === 'success' && verifyBefore.rate === 0 && verifyAfter.rate === 0 ? 'progress' : objective;
-  const scoreOf = (measured: Measured): ObjectiveMeasure => (scoredBy === 'progress' ? measured.progress! : measured);
-  const rating = rateGaResult(scoredBy, scoreOf(verifyBefore), scoreOf(verifyAfter), verifyRuns, changeSummary.length > 0);
-  const forecast: GaForecast = {
-    before: buildSimulationRunData(verifyBefore.result, dependencies.revision, 'directed-verify').overview,
-    after: buildSimulationRunData(verifyAfter.result, dependencies.revision, 'directed-verify').overview,
-  };
+  const changed = changeSummary.length > 0;
+  const verifyAfter = changed ? await measureRaw(finalState, verifyRuns, verifySeed) : verifyBefore;
+  const crossAfter = changed ? await second(finalState, verifyRuns, verifySeed) : crossBefore;
+  const summary = summarizeVerification({
+    objective, guard, crossObjective, verifyRuns, seed, verifySeed, routeRooms, before: verifyBefore, after: verifyAfter, crossBefore, crossAfter,
+    changed, revision: dependencies.revision, scope: forecastScope(state, partyIndex, objective), label: 'directed-verify',
+  });
+  const before = compositionOf(state.parties[partyIndex].characters);
   const after = compositionOf(finalState.parties[partyIndex].characters);
+  const distanceBefore = compositionDistance(request.direction, before);
   return {
     data: {
-      verdict: rating.verdict,
-      forecast,
+      verdict: summary.verdict,
+      forecast: summary.forecast,
       changeSummary,
       revision: dependencies.revision,
       evaluations,
       elapsedSeconds: Math.round((dependencies.now() - startedAt) / 100) / 10,
       basis: buildBasis(state, partyIndex, changeSummary),
-      verification: {
-        objective,
-        scoredBy,
-        runs: verifyRuns,
-        before: scoreOf(verifyBefore).rate,
-        after: scoreOf(verifyAfter).rate,
-        gain: Number.isFinite(rating.gain) ? Math.round(rating.gain * 100) / 100 : null,
-        standardError: Math.round(rating.standardError * 100) / 100,
-        seed,
-      },
+      verification: summary.verification,
       seed,
       direction: request.direction,
-      composition: { before: compositionOf(state.parties[partyIndex].characters), after, distance: compositionDistance(request.direction, after) },
+      directionStrictness: request.directionStrictness,
+      // SpecRef: 9.1.3 | 2-3-3 Return `composition` | the distance before and after, the smallest one, and whether `strict`
+      // excluded the current build.
+      composition: {
+        before,
+        after,
+        distanceBefore,
+        distance: compositionDistance(request.direction, after),
+        smallestDistance: model.minDistance,
+        recomposition: CATEGORIES.reduce((sum, category) => sum + Math.abs(after[category] - before[category]), 0) / 2,
+        forcedRecomposition: !model.soft && distanceBefore > model.minDistance,
+      },
       steps,
     },
   };

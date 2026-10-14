@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { createFreshGameState, gameReducer, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
-import { deriveSeed, GA_EFFORT_PRESETS, parseGaSearchRequest, rateGaResult, runGaSearch, type GaChangeEntry, type GaSearchDependencies, type GaSearchOutcome } from '../../src/api/v1/gaSearch';
-import { measureObjective, prepareObjectiveState, routeRoomCount } from '../../src/api/v1/objectiveMeasure';
+import { compareGuarded, deriveSeed, GA_EFFORT_PRESETS, measure, measureSecondObjective, parseGaSearchRequest, rateGaResult, runGaSearch, summarizeVerification, type GaChangeEntry, type GaSearchDependencies, type GaSearchOutcome } from '../../src/api/v1/gaSearch';
+import { forecastScope, measureObjective, prepareObjectiveState, routeRoomCount } from '../../src/api/v1/objectiveMeasure';
 import { buildApiV1ReadData } from '../../src/api/v1/readModels';
 import { buildSimulationRunData } from '../../src/api/v1/simulationView';
 import type { ExpeditionSimulationResult } from '../../src/types';
@@ -413,6 +413,87 @@ fails({ buildResultId: 'old-result', simulation: true }, 'invalid_request:buildR
   for (const [parameters, marker] of [[{ objective: 'speed' }, 'invalid_request:objective'], [{ seed: 1.5 }, 'invalid_request:seed']] as const) {
     await assert.rejects(read(parameters), new RegExp(marker));
   }
+}
+
+// ---------------- `objectiveGuard`, `verifySeed`, and the 600 s budget: validation (Spec 9.1.3, 2-3-2) ----------------
+rejects({ targets: equipmentTargets, objectiveGuard: { success: 0.1 } }, 'invalid_request:objectiveGuard.success.same_as_objective');
+rejects({ targets: equipmentTargets, objectiveGuard: { experience: 0.1 } }, 'invalid_request:objectiveGuard.experience.unknown_member');
+rejects({ targets: equipmentTargets, objectiveGuard: { bossDamage: 1.5 } }, 'invalid_request:objectiveGuard.bossDamage');
+rejects({ targets: equipmentTargets, objectiveGuard: { bossDamage: 0.1, success: 0.1 } }, 'invalid_request:objectiveGuard');
+rejects({ targets: equipmentTargets, objectiveGuard: 0.1 }, 'invalid_request:objectiveGuard');
+rejects({ targets: equipmentTargets, gaParameters: { verifySeed: 1.5 } }, 'invalid_request:gaParameters.verifySeed');
+rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } }, 'invalid_request:gaParameters.timeBudgetSeconds');
+{
+  const parsed = parseGaSearchRequest(base, 0, { targets: equipmentTargets, objective: 'bossDamage', objectiveGuard: { success: 0.05 }, gaParameters: { timeBudgetSeconds: 600, verifySeed: -3 } });
+  assert.deepEqual(parsed.objectiveGuard, { objective: 'success', minimum: 0.05 });
+  assert.deepEqual([parsed.parameters.timeBudgetSeconds, parsed.parameters.verifySeed], [600, -3]);
+  assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets }).objectiveGuard, null);
+}
+
+// ---------------- `forecast.scope`, `verification.progress`, and `crossCheck` (Spec 9.1.3, 2-3-2) ----------------
+{
+  assert.deepEqual(forecastScope(base, 0, 'success'), { from: '1f-1', to: '1f-3', rooms: 3, endsAt: 'depthLimit' });
+  assert.deepEqual(forecastScope(base, 0, 'bossDamage'), { from: '6f-4', to: '6f-4', rooms: 1, endsAt: 'bossRoom' });
+  const fresh = createFreshGameState('ja', now);
+  const open = forecastScope(fresh, 0, 'success');
+  assert.equal(open.rooms, routeRoomCount(fresh.parties[0]), 'the scope is the route `progress` is divided by');
+  assert.ok(open.endsAt === 'clearGate' || open.endsAt === 'dungeonEnd' || open.endsAt === 'depthLimit');
+
+  const data = outcome.data as { forecast: { scope: unknown }; verification: { seed: number; verifySeed: number; progress: { before: number; after: number } | null; crossCheck: { objective: string; before: number; after: number; minimum: number | null; reached: unknown } } };
+  assert.deepEqual(data.forecast.scope, forecastScope(base, 0, 'success'));
+  assert.equal(data.verification.verifySeed, deriveSeed(small.seed, 3), 'the verification seed derives from `seed` by default');
+  const verifyBefore = await simulateExpeditionRuns(base, 0, 'mode.normal', small.verifyRuns, undefined, 0, deriveSeed(small.seed, 3));
+  assert.equal(data.verification.progress!.before, Math.round(measureObjective('progress', verifyBefore, routeRoomCount(base.parties[0])).rate * 1e4) / 1e4);
+  assert.ok(data.verification.progress!.after >= 0 && data.verification.progress!.after <= 1);
+  // `success` cross-checks `bossDamage`, measured on the same verification seed; no guard, so no minimum.
+  const crossBefore = await measureSecondObjective(dependencies(), base, 0, 'bossDamage', small.verifyRuns, deriveSeed(small.seed, 3));
+  assert.deepEqual([data.verification.crossCheck.objective, data.verification.crossCheck.before, data.verification.crossCheck.minimum, data.verification.crossCheck.reached], ['bossDamage', Math.round(crossBefore.rate * 1e4) / 1e4, null, null]);
+
+  // `verifySeed`: two searches with different search seeds measure the current build on the same verification runs.
+  const a = (await search(base, { targets: equipmentTargets, gaParameters: { ...small, seed: 1, verifySeed: 42 } })).data as typeof data & { verification: { before: number } };
+  const b = (await search(base, { targets: equipmentTargets, gaParameters: { ...small, seed: 2, verifySeed: 42 } })).data as typeof data & { verification: { before: number } };
+  assert.deepEqual([a.verification.verifySeed, b.verification.verifySeed, a.verification.seed, b.verification.seed], [42, 42, 1, 2]);
+  assert.equal(a.verification.before, b.verification.before);
+  assert.deepEqual(a.verification.crossCheck.before, b.verification.crossCheck.before);
+
+  // `bossDamage` reports no `progress` (only the boss room runs) and cross-checks `success`; a guard fills in `minimum` and `reached`.
+  const boss = (await search(base, { targets: equipmentTargets, objective: 'bossDamage', objectiveGuard: { success: 0.5 }, gaParameters: small })).data as typeof data;
+  assert.equal(boss.verification.progress, null);
+  assert.equal(boss.forecast.scope && (boss.forecast.scope as { endsAt: string }).endsAt, 'bossRoom');
+  const guardBefore = await measureSecondObjective(dependencies(), base, 0, 'success', small.verifyRuns, deriveSeed(small.seed, 3));
+  const reached = boss.verification.crossCheck.reached as { before: boolean; after: boolean };
+  assert.deepEqual([boss.verification.crossCheck.objective, boss.verification.crossCheck.minimum, reached.before], ['success', 0.5, guardBefore.rate >= 0.5]);
+  assert.equal(reached.after, boss.verification.crossCheck.after >= 0.5);
+}
+
+// ---------------- The guard ranking and the guard verdict (Spec 9.1.3, 2-3-2 `objectiveGuard`) ----------------
+{
+  const guard = { objective: 'success' as const, minimum: 0.1 };
+  assert.ok(compareGuarded({ fitness: 0.1, guard: 0.2 }, { fitness: 0.9, guard: 0.05 }, guard) > 0, 'reaching the guard beats a better objective');
+  assert.ok(compareGuarded({ fitness: 0.1, guard: 0.08 }, { fitness: 0.9, guard: 0.02 }, guard) > 0, 'below the guard, the closer one ranks first');
+  assert.ok(compareGuarded({ fitness: 0.9, guard: 0.3 }, { fitness: 0.1, guard: 0.6 }, guard) > 0, 'above the guard, the objective decides');
+  assert.ok(compareGuarded({ fitness: 0.9, guard: 0.0 }, { fitness: 0.1, guard: 0.6 }, null) > 0, 'no guard: the objective alone');
+  // A result that loses a guard the current build reaches is `worse`, whatever its gain.
+  const result = await simulateExpeditionRuns(base, 0, 'mode.normal', 100, undefined, 0, 3);
+  const weak = { ...measure('bossDamage', result, 3), rate: 0.2, variance: 0.01 };
+  const strong = { ...weak, rate: 0.9 };
+  const input = {
+    objective: 'bossDamage' as const, guard, crossObjective: 'success' as const, verifyRuns: 500, seed: 1, verifySeed: 2, routeRooms: 3,
+    before: weak, after: strong, crossBefore: { rate: 0.2, variance: 0.16 }, crossAfter: { rate: 0.0, variance: 0 }, changed: true,
+    revision: 1, scope: forecastScope(base, 0, 'bossDamage'), label: 'check',
+  };
+  assert.equal(summarizeVerification({ ...input, guard: null }).verdict, 'veryGood');
+  assert.equal(summarizeVerification(input).verdict, 'worse');
+  assert.equal(summarizeVerification({ ...input, crossAfter: { rate: 0.15, variance: 0.1 } }).verdict, 'veryGood', 'the guard is still reached');
+}
+
+// ---------------- Request time limit: the verification fits in `timeBudgetSeconds` (Spec 9.1.3, 2-3-2) ----------------
+{
+  let clock = now;
+  const ticking: GaSearchDependencies = { ...dependencies(), now: () => { clock += 40; return clock; } };
+  const timed = await runGaSearch(base, 0, parseGaSearchRequest(base, 0, { targets: equipmentTargets, gaParameters: { ...small, generations: 200, timeBudgetSeconds: 5 } }), ticking);
+  assert.ok((timed.data.elapsedSeconds as number) <= 5, `elapsed ${timed.data.elapsedSeconds}`);
+  assert.ok(['veryGood', 'good', 'noisy', 'noChange', 'worse'].includes(String(timed.data.verdict)));
 }
 
 console.log('gaSearch profile ok');

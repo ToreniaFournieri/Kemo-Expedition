@@ -35,11 +35,10 @@ const apiAccountStore = createApiAccountStore({ userDataPath: app.getPath('userD
 function apiV1RendererTimeoutMs(operation) {
   if (operation === 'fundamental/status') return 15_000;
   if (operation === 'fundamental/logIn') return 600_000;
-  // gaSearch may search for its whole 300 s `timeBudgetSeconds` cap (Spec 9.1.3, 2-3-2), then runs the final selection
-  // and verification forecasts past it; those get the ordinary 120 s allowance on top.
-  if (operation === 'read/build/party/{p}/gaSearch') return 420_000;
-  // directedBuild has the same 300 s `timeBudgetSeconds` cap (Spec 9.1.3, 2-3-3) and verifies after it.
-  if (operation === 'read/build/party/{p}/directedBuild') return 420_000;
+  // gaSearch and directedBuild fit their whole request, verification included, in `timeBudgetSeconds`, at most 600 s
+  // (Spec 9.1.3, 2-3-2 and 2-3-3 Request time limit).
+  if (operation === 'read/build/party/{p}/gaSearch') return 600_000;
+  if (operation === 'read/build/party/{p}/directedBuild') return 600_000;
   // stagedEquipmentTuning has no time budget: its largest parameters (Spec 9.1.4.9 ranges) simulate about 270,000 runs.
   if (operation === 'read/build/character/stagedEquipmentTuning') return 600_000;
   return 120_000;

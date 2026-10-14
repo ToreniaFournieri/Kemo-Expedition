@@ -79,3 +79,37 @@ export function measureObjective(objective: MeasuredObjective, result: Expeditio
   if (objective === 'experience') return perRun(result.totals?.experience ?? 0, result.experienceSquareSum ?? 0);
   return perRun(result.progress?.sum ?? 0, result.progress?.squareSum ?? 0, Math.max(1, routeRooms));
 }
+
+export interface ForecastScope {
+  from: string | null;
+  to: string | null;
+  rooms: number;
+  endsAt: 'clearGate' | 'depthLimit' | 'dungeonEnd' | 'bossRoom';
+}
+
+// SpecRef: 9.1.3 | 2-3-2 `forecast.scope` | the rooms a forecast of `objective` simulates, walked as `routeRoomCount` does.
+export function forecastScope(state: GameState, partyIndex: number, objective: string): ForecastScope {
+  const party = prepareObjectiveState(state, partyIndex, objective).parties[partyIndex];
+  const dungeon = getDungeonById(party.selectedDungeonId);
+  if (!dungeon) return { from: null, to: null, rooms: 0, endsAt: objective === 'bossDamage' ? 'bossRoom' : 'dungeonEnd' };
+  const labels: string[] = [];
+  for (const floor of dungeon.floors) {
+    for (let roomIndex = 0; roomIndex < floor.rooms.length; roomIndex += 1) {
+      const roomInFloor = roomIndex + 1;
+      const label = `${floor.floorNumber}f-${roomInFloor}`;
+      if (objective === 'bossDamage') {
+        if (floor.rooms[roomIndex].type === 'battle_Boss') return { from: label, to: label, rooms: 1, endsAt: 'bossRoom' };
+        continue;
+      }
+      if (checkClearGateRequirement({ dungeonId: dungeon.id, floorNumber: floor.floorNumber, roomInFloor, roomType: floor.rooms[roomIndex].type, party }).blocked) {
+        return { from: labels[0] ?? null, to: labels[labels.length - 1] ?? null, rooms: labels.length, endsAt: 'clearGate' };
+      }
+      labels.push(label);
+      if (hasReachedExpeditionDepthLimit(party.expeditionDepthLimit, floor.floorNumber, roomInFloor)) {
+        return { from: labels[0], to: label, rooms: labels.length, endsAt: 'depthLimit' };
+      }
+    }
+  }
+  if (objective === 'bossDamage') return { from: null, to: null, rooms: 0, endsAt: 'bossRoom' };
+  return { from: labels[0] ?? null, to: labels[labels.length - 1] ?? null, rooms: labels.length, endsAt: 'dungeonEnd' };
+}
