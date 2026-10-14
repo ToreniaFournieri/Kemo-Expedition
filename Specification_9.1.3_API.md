@@ -149,7 +149,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 3-3. commit/build
      party/{p}
-     party/{p}/applyBuildResult
+     party/{p}/applyBuildChanges
      character/{characterId}/changeBuild
      character/{characterId}/removeAllEquipment
      character/{characterId}/removeEquipment
@@ -745,7 +745,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       6. `commit/build/character/{characterId}/jewelAttach`
     * Example:
       `[{"endpoint":"commit/build/character/101/removeEquipment","parameters":{"targetEquipment":[0,2]}},{"endpoint":"commit/build/character/101/equip","parameters":{"targetEquipment":"0/1101/2/0","targetSlot":0}}]`
-    * To apply the whole list in one atomic request, send it to `party/{p}/applyBuildResult` as `changes`.
+    * To apply the whole list in one atomic request, send it to `party/{p}/applyBuildChanges` as `changes`.
     * When applying `changeSummary` step by step, use the latest save revision as `expectedRevision` for each call.
   * `revision`
     * Save revision the search was based on.
@@ -753,8 +753,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Number of builds evaluated.
   * `elapsedSeconds`
   * `basis`
-    * String. Identifies the build-relevant state of the party that the search was based on (see `party/{p}/applyBuildResult`).
-    * Optionally send it to `party/{p}/applyBuildResult` together with `changeSummary`. The request is then rejected if that state has changed.
+    * String. Identifies the build-relevant state of the party that the search was based on (see `party/{p}/applyBuildChanges`).
+    * Optionally send it to `party/{p}/applyBuildChanges` together with `changeSummary`. The request is then rejected if that state has changed.
     * The server does not keep the search result. `changeSummary` is the whole result.
 
 **2-3-3. `party/{p}/directedBuild`**
@@ -1686,7 +1686,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Partial updates are allowed.
 
-**3-3-2. `party/{p}/applyBuildResult`**
+**3-3-2. `party/{p}/applyBuildChanges`**
 
 * Applies a list of Commit API calls to party `{p}` in one atomic request.
   * The list is normally the `changeSummary` of `gaSearch`, `directedBuild`, or `stagedEquipmentTuning`.
