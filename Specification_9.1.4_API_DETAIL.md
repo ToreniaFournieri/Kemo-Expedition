@@ -124,12 +124,12 @@ after the response has been prepared. Fundamental responses use
   `revision`. A response must not combine values from different revisions.
 * Read, Help, and Resource operations do not mutate game state, consume live random
   values, advance time, mark Diary entries read, or persist derived state.
-* Reads use `GET`, except `simulationRun`, `gaSearch`, and
+* Reads use `GET`, except `simulationRun`, `gaSearch`, `directedBuild`, and
   `stagedEquipmentTuning`, which use `POST` because they perform substantial
-  non-cacheable computation (and `gaSearch` takes nested parameters). They remain
-  Read operations and must not commit anything. `gaSearch` and an accepted
-  `stagedEquipmentTuning` keep their latest result per party in memory for
-  `applyBuildResult`; that result is not save state and changes no revision.
+  non-cacheable computation (and `gaSearch` and `directedBuild` take nested
+  parameters). They remain Read operations and must not commit anything. The
+  server keeps no search result: the `changeSummary` they return is the whole
+  result, and `applyBuildChanges` takes it back as `changes`.
 * Every `GET` endpoint except the popup event stream also answers `HEAD` with
   the status and headers (including `ETag`) that `GET` would return, and no body.
   A `405` for a `GET` endpoint lists `Allow: GET, HEAD`.
@@ -308,7 +308,7 @@ All JSON Commit requests use this transport envelope:
 
 This generic challenge applies to operations that do not define their own
 confirmation (`backup/import`, `backup/reset`, and partial `loadEquipmentSet`).
-`changeBuild` and `applyBuildResult` are excluded: they confirm through their
+`changeBuild` and `applyBuildChanges` are excluded: they confirm through their
 `simulation` and `confirmation` parameters (9.1.4.9).
 
 `backup/import` and `backup/reset` (9.1.3, 3-6-5-2/3-6-5-3) each accept an
@@ -556,8 +556,7 @@ definitions in 9.1.3.
   and `stagedEquipmentTuning` measure it, and `standardError`
   (`sqrt(variance / numberOfRun)` with the per-run variance of 7.1.5). With
   `bossDamage` the forecast is that objective's boss battle alone (see GA
-  search), so `overview`, `detail`, `rooms`, and `depthLimit` describe it. The
-  read never replaces or invalidates a kept `buildResultId`.
+  search), so `overview`, `detail`, `rooms`, and `depthLimit` describe it.
 * The Expedition and compact projections report each party's real state:
   `state` is `state.<name>` of the live party cycle for the ordinary player's runtime
   (`state.rest`, `state.sell`, `state.free_action`, `state.sound_sleep`,
@@ -835,9 +834,9 @@ definitions in 9.1.3.
   other characters are the ones it needs beyond the Inventory and the targets'
   own released items, taken from the party's non-targets first and then from the
   other parties in order; `changeSummary` lists one `removeEquipment` entry per
-  emptied character, before any other entry, and `applyBuildResult` also reports and
-  records Undo for those characters. A stored result is stale when the equipment
-  of a character it touches outside party `{p}` changed. `jewels` lets it place free Jewels
+  emptied character, before any other entry, and `applyBuildChanges` also reports and
+  records Undo for those characters. `basis` also covers the equipment of every
+  character outside party `{p}` that the result touches. `jewels` lets it place free Jewels
   and those on targets whose Jewels are changeable; with `jewels` but not
   `equipment`, the items stay and only their Jewels change, and with `equipment`
   but not `jewels`, an item that stays in its slot keeps its Jewel and a new item
@@ -849,7 +848,7 @@ definitions in 9.1.3.
   unlocked deity another party holds. A result that takes such a deity frees it
   first: `changeSummary` lists `commit/build/party/{holder}` with `deityId: "none"`
   right before party `{p}`'s own deity entry, so the holder is left with no deity,
-  and the stored result is stale when a different party (or none) holds that deity.
+  and `basis` covers which party holds that deity.
 * Search: the first population holds the current build and, with
   `seedWithHeuristics`, one attack-focused and one HP/defense-focused greedy
   build, plus, when an equipment target has an empty slot, the current build
@@ -911,42 +910,51 @@ definitions in 9.1.3.
   `removeEquipment` and `jewelRemove` list the character's slots in one entry, and
   `changeBuild` carries only the changed members with `simulation: false`.
   `revision` is the revision of the snapshot that was searched.
-* `applyBuildResult` (9.1.3, 3-3-2) applies the party's kept result, from
-  `gaSearch` or from `stagedEquipmentTuning` for any of its members (one result
-  per party: the latest of either replaces the other). It owns its confirmation
-  like `changeBuild`: `simulation` is required; `simulation: true` reports
-  `applied` (the `changeSummary`), `verdict` (the `gaSearch` verdict, `null` for a
-  tuning result), `forecast`, `confirmationRequired`, `warnings`, and the
+* `basis` (returned by `gaSearch`, `directedBuild`, and an accepted
+  `stagedEquipmentTuning`) is an opaque string: a digest of the build-relevant state
+  of party `{p}` that the result depends on, namely party order and deity, each
+  party member's build and equipment (items and Jewels), who holds each deity the
+  result assigns, the equipment of each character outside the party that an entry
+  touches, and the owned count of every item variant and Jewel that an entry equips
+  or attaches. It is computed from the `changeSummary` entries and the save, so
+  `applyBuildChanges` recomputes it from `changes` and the current save without
+  any stored result. Other inventory, Gold, and progression changes do not change it.
+* `applyBuildChanges` (9.1.3, 3-3-2) applies `changes` to party `{p}`. It owns its
+  confirmation like `changeBuild`: `simulation` is required; `simulation: true`
+  reports `applied` (the `changes`), `confirmationRequired`, `warnings`, and the
   resulting `calculatedStatus` (one `{characterId, calculatedStatus}` per
-  character with an entry) without committing. With a `gaSearch` `verdict` of
-  `noisy` or `worse`, `confirmationRequired` is `true`, `warnings` holds
-  `api.warning.applyBuildResult.unconfirmedImprovement`, and a commit needs
-  `confirmation: "yes"` (a missing one is `invalid_request`, field
-  `confirmation`); `confirmation: "no"` cancels with `applied: []` and no
-  revision change. A tuning result never requires confirmation. `confirmation`
-  with `simulation: true` is `invalid_request`.
-* `applyBuildResult` rejections: an unknown or replaced `buildResultId` (or none
-  kept, for example after a restart, `logIn`, or `logOut`) is `illegal_action`
-  (`build_result_unavailable`); a `gaSearch` result with `verdict: noChange` is
-  `build_result_no_change`. Its build-relevant state (9.1.3, 3-3-2) is compared
-  by: party order and deity, each party member's build and equipment (items and
-  Jewels), and the owned count of every item variant and Jewel the result equips
-  or attaches. A difference is `build_result_stale`; other inventory, Gold, and
-  progression changes are not.
-* `applyBuildResult` applies every entry in order in one transaction and is rejected
-  atomically if any entry fails. `autoEquipmentMode` (`SEMI` by default; `FULL` is
-  `invalid_request`) is set on every character with an equipment or Jewel entry.
-  The internal calls record no Undo step; afterwards each character with an entry
-  whose equipment state (items, Jewels, and mode) changed gets exactly one Undo
-  step, its state before the operation, and a character whose equipment state did
-  not change gets none (an identical step would block its earlier history).
+  character with an entry) without committing. With a given `verdict` of `noisy`
+  or `worse`, `confirmationRequired` is `true`, `warnings` holds
+  `api.warning.applyBuildChanges.unconfirmedImprovement` and the given `verdict`,
+  and a commit needs `confirmation: "yes"` (a missing one is `invalid_request`,
+  field `confirmation`); `confirmation: "no"` cancels with `applied: []` and no
+  revision change. Without a `verdict`, or with a `stagedEquipmentTuning` result,
+  confirmation is never required. `confirmation` with `simulation: true` is
+  `invalid_request`.
+* `applyBuildChanges` validation: `changes` must be a non-empty array, and every
+  entry `{endpoint, parameters}` must use one of the endpoints in the 9.1.3
+  `changeSummary` order list (otherwise `invalid_request`, field `changes` with
+  the entry index); `expectedRevision` inside an entry is ignored. `verdict`
+  must be one of its listed values (otherwise `invalid_request`, field
+  `verdict`). Rejections: a given `verdict` of `noChange` is `illegal_action`
+  (`build_no_change`); a given `basis` that differs from the recomputed one is
+  `illegal_action` (`build_basis_stale`). Without a `basis`, only the entry
+  validation below applies.
+* `applyBuildChanges` applies every entry in order in one transaction and is
+  rejected atomically if any entry fails (with the error of that entry's Commit
+  call). `autoEquipmentMode` (`SEMI` by default; `FULL` is `invalid_request`) is
+  set on every character with an equipment or Jewel entry. The internal calls record
+  no Undo step; afterwards each character with an entry whose equipment state
+  (items, Jewels, and mode) changed gets exactly one Undo step, its state before
+  the operation, and a character whose equipment state did not change gets none
+  (an identical step would block its earlier history).
 
 **Directed build**
 
 * `directedBuild` (9.1.3, 2-3-3) is a Read operation that uses `POST`, like `gaSearch`. It never commits anything and changes no revision. Its Return is the `gaSearch` Return (see **GA search**) plus the members below.
 * `verdict`, `forecast`, `verification`, `changeSummary`, `revision`, `evaluations`, and `elapsedSeconds` are produced as for `gaSearch`: the verdict compares the current build and the best build on one independent verification seed, and each `changeSummary` entry is accepted by the Commit API as written.
-  * A deity change is a `commit/build/party/{p}` entry with `deityId`. When another party holds the chosen deity, `changeSummary` lists `commit/build/party/{holder}` with `deityId: "none"` right before it, and the stored result is stale when a different party (or none) holds that deity.
-* `buildResultId` is kept in memory as the party's `applyBuildResult` result. A new `gaSearch`, `directedBuild`, or `stagedEquipmentTuning` for any character of the party replaces it. It is not save state.
+  * A deity change is a `commit/build/party/{p}` entry with `deityId`. When another party holds the chosen deity, `changeSummary` lists `commit/build/party/{holder}` with `deityId: "none"` right before it, and `basis` covers which party holds that deity.
+* `basis` is built as for `gaSearch`. Nothing is kept on the server, so a `directedBuild` result stays applicable until the build-relevant state changes.
 * `seed`: the seed used, the requested one or a random one. Sending it again with the same save and parameters returns the same result unless the time budget stops the search first.
 * `direction`: the requested direction.
 * `composition`: `{before, after}`. Each is `{melee, ranged, magic, support}`, the number of members whose main class is in that category (9.1.3 Definition), counting every member of the party.
@@ -1082,10 +1090,8 @@ definitions in 9.1.3.
   `before`, `improvement` and `gain` are 0), `accepted` is `false`, and
   `changeSummary` is `[]`. Acceptance also needs a non-empty `changeSummary`; it
   is built like the `gaSearch` one, so a one-item swap lists only that slot's
-  `removeEquipment`, `equip`, and `jewelAttach` entries. An accepted result is
-  kept as the party's `applyBuildResult` result and returns `buildResultId`; any
-  tuning of a party member discards the party's previous result, so a rejected
-  tuning leaves none.
+  `removeEquipment`, `equip`, and `jewelAttach` entries. An accepted result
+  returns `basis` (as `gaSearch` does); a rejected tuning returns none.
 
 **Base**
 
@@ -1319,8 +1325,7 @@ operations use shared tokens: `debug_mode_required` (the dev/beta restriction),
 `api_account_display_setting` (a runtime display setting sent by an API account),
 `theme_unavailable`, `nothing_to_undo`, `nothing_to_redo`,
 `equipment_unavailable`, `deity_locked`, `deity_in_use`, and `variant_not_sold`.
-`applyBuildResult` uses `build_result_unavailable`, `build_result_stale`, and
-`build_result_no_change` (9.1.4.9).
+`applyBuildChanges` uses `build_basis_stale` and `build_no_change` (9.1.4.9).
 
 `control_lease_expired` is returned to the session whose lease expired from
 inactivity until that client logs in or out again; after that, or for any other
@@ -1406,7 +1411,7 @@ use the same operation without HTTP authentication headers.
 | POST | `/api/v1/commit/expedition/{p}/godsBattle` | Session | Resolve one Gods Battle. |
 | POST | `/api/v1/commit/expedition/{p}/resetStatistics` | Session | Reset the party's expedition statistics. |
 | POST | `/api/v1/commit/build/party/{p}` | Session | Change party build. |
-| POST | `/api/v1/commit/build/party/{p}/applyBuildResult` | Session | Apply the latest `gaSearch` or `stagedEquipmentTuning` result. |
+| POST | `/api/v1/commit/build/party/{p}/applyBuildChanges` | Session | Apply a list of build changes (a search `changeSummary`) in one transaction. |
 | POST | `/api/v1/commit/build/character/{characterId}/changeBuild` | Session | Change character build. |
 | POST | `/api/v1/commit/build/character/{characterId}/removeAllEquipment` | Session | Remove all equipment. |
 | POST | `/api/v1/commit/build/character/{characterId}/removeEquipment` | Session | Remove selected slots. |
