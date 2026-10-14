@@ -780,7 +780,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
         * Options: `currentSetting`, `FULL`, `SEMI`, `OFF`
         * The auto-equipment logic (including jewel assignment) is triggered if the value is `FULL` or `SEMI`, or if the value is `currentSetting` and the character's `m.auto_equipment` is `FULL` or `SEMI`.
         * Otherwise (`OFF`, or `currentSetting` with `m.auto_equipment` set to `OFF`), the logic is not triggered.
-        * Note: If a class change leaves equipment that the character can no longer equip, the game rules for unequippable equipment apply.
+        * Note: If a class change leaves equipment that the character can no longer equip, the game rules (`c.equip_melee`,`c.equip_ranged`, `c.equip_magic`) equipment apply. 
 
   * `considerOrderChange`
     * Boolean, optional, default `false`.
@@ -862,7 +862,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * A component may be changed only if it is set to `true` in `changeableComponents` and the game rules allow the change.
     * Example: a unique character's gender, lineage, and predisposition cannot be changed, even if the component is `true`.
   * Step 1: High-impact changes
-    * Searches: `raceGender`, `mainClass`, `subClass`, `lineage`, `considerOrderChange`
+    * Searches: `raceGender`, `mainClass`, `subClass`, `considerOrderChange`
     * Runs `autoEquipmentRun` for each candidate. `considerItemsScope` and `objective` apply.
     * Selects the best result and locks these parameters. If there is no valid candidate, the original parameters are kept.
   * Step 2: Deity change
