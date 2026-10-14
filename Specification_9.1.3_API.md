@@ -671,8 +671,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Default: `normal`
     * Options:
       * `normal`: Candidate items come from the Inventory and the character's own equipment only. Other characters are never touched.
-      * `withinTargets`: Candidate items come from the Inventory and from the equipment of the characters in `targets`. Characters not in `targets` are never touched. Locked items are never taken. Only the initial equipment can be taken: once an item is assigned during the pass, it stays with that character.
-      * `global`: Candidate items come from the Inventory and from every character's equipment, including other parties. Locked items are never taken. Only the initial equipment can be taken: once an item is assigned during the pass, it stays with that character.
+      * `withinTargets`: Candidate items come from the Inventory and from the equipment of the `targets` whose `equipment` is changeable. The search distributes these items among those targets as a whole. Characters not in `targets` are never touched. Locked items are never taken.
+      * `global`: Candidate items come from the Inventory and from every character's equipment, including other parties. Characters not in `targets` give up only unlocked items, and a character that gives up an item keeps an empty slot. Locked items are never taken.
   * `objective`
     * Optional.
     * Default: `success`.
@@ -832,10 +832,10 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `predisposition`: Boolean, optional, default `false`.
       * `autoEquipmentRun`: String enum, optional, default `FULL`.
         * Options: `currentSetting`, `FULL`, `SEMI`, `OFF`
-        * The auto-equipment logic (including jewel assignment) is triggered if the value is `FULL` or `SEMI`, or if the value is `currentSetting` and the character's `m.auto_equipment` is `FULL` or `SEMI`.
+        * The auto-equipment logic is triggered if the value is `FULL` or `SEMI`, or if the value is `currentSetting` and the character's `m.auto_equipment` is `FULL` or `SEMI`. `FULL` (7.1.2) also assigns Jewels; `SEMI` (7.1.3) leaves socketed Jewels unchanged.
         * Otherwise (`OFF`, or `currentSetting` with `m.auto_equipment` set to `OFF`), the logic is not triggered.
         * Note: Before the run, items the character can no longer equip after a class change (`c.equip_melee`, `c.equip_ranged`, `c.equip_magic`), or that no longer fit its slot count, are returned to the Inventory. This applies to every value, including `OFF`.
-        * Note: With `OFF`, the slots left empty by that step are not refilled.
+        * Note: Neither `SEMI` nor `OFF` fills an empty slot. `SEMI` (7.1.3) only replaces an equipped item with a higher-enhancement copy of the same item, so slots left empty by that step stay empty. Use `FULL` to fill them.
         * Whether it runs for a member whose build did not change depends on `autoEquipmentScope`.
 
   * `autoEquipmentScope`
