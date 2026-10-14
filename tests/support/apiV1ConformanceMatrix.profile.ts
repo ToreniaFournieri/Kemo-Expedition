@@ -311,6 +311,15 @@ async function gaSearchBody(client: Actor) {
     gaParameters: { seed: 7, populationSize: 8, generations: 2, quickRuns: 10, confirmRuns: 50, verifyRuns: 100, eliteCount: 2 },
   };
 }
+// SpecRef: 9.1.3 | 2-3-3 directedBuild | a small, seeded `balance` search over party 1's sub classes.
+async function directedBuildBody(client: Actor) {
+  const party = await client.read('read/build/party/{p}', { p: 1 }) as { current: { order: number[] } };
+  return {
+    direction: 'balance',
+    targets: party.current.order.map((characterId) => ({ characterId, changeableComponents: { raceGender: false, mainClass: false } })),
+    tuningParameters: { seed: 7, populationSize: 8, generations: 1, quickRuns: 10, confirmRuns: 50, verifyRuns: 100, eliteCount: 2 },
+  };
+}
 /** Party 1 without equipment and with a shallow depth, so the search always finds and verifies a better build. */
 function gaImprovable(state: GameState) {
   let next = state;
@@ -351,11 +360,11 @@ const commitFixtures: Record<string, CommitFixture> = {
       return { path: { p: 1 }, parameters: { order } };
     },
   },
-  'commit/build/party/{p}/applyBuildResult': {
+  'commit/build/party/{p}/applyBuildChanges': {
     save: gaImprovable,
     request: async (client) => {
-      const result = await client.read('read/build/party/{p}/gaSearch', { p: 1 }, await gaSearchBody(client)) as { buildResultId: string };
-      return { path: { p: 1 }, parameters: { buildResultId: result.buildResultId, simulation: false, confirmation: 'yes' } };
+      const result = await client.read('read/build/party/{p}/gaSearch', { p: 1 }, await gaSearchBody(client)) as { changeSummary: unknown[]; basis: string; verdict: string };
+      return { path: { p: 1 }, parameters: { changes: result.changeSummary, basis: result.basis, verdict: result.verdict, simulation: false, confirmation: 'yes' } };
     },
   },
   'commit/build/character/{characterId}/changeBuild': {
@@ -478,6 +487,7 @@ const readFixtures: Record<string, ReadFixture> = {
   'read/expedition/{p}/chargeStock': { path: async () => ({ p: 1 }), missingPath: { p: 6 } },
   'read/build/party/{p}': { path: async () => ({ p: 1 }), missingPath: { p: 6 } },
   'read/build/party/{p}/gaSearch': { path: async () => ({ p: 1 }), dynamicQuery: gaSearchBody, missingPath: { p: 6 } },
+  'read/build/party/{p}/directedBuild': { path: async () => ({ p: 1 }), dynamicQuery: directedBuildBody, missingPath: { p: 6 } },
   'read/build/character/status': { dynamicQuery: characterPath, missingQuery: { characterId: 999999 } },
   'read/build/character/equipment': { dynamicQuery: characterPath, missingQuery: { characterId: 999999 } },
   'read/build/character/equipmentSet': { dynamicQuery: characterPath, missingQuery: { characterId: 999999 } },

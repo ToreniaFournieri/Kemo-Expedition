@@ -22419,7 +22419,7 @@
             "revision",
             "evaluations",
             "elapsedSeconds",
-            "buildResultId",
+            "basis",
             "verification"
           ],
           "properties": {
@@ -22524,7 +22524,7 @@
               "minimum": 0,
               "type": "number"
             },
-            "buildResultId": {
+            "basis": {
               "minLength": 1,
               "maxLength": 200,
               "type": "string"
@@ -22662,7 +22662,7 @@
                 "revision",
                 "evaluations",
                 "elapsedSeconds",
-                "buildResultId",
+                "basis",
                 "verification"
               ],
               "properties": {
@@ -22767,7 +22767,7 @@
                   "minimum": 0,
                   "type": "number"
                 },
-                "buildResultId": {
+                "basis": {
                   "minLength": 1,
                   "maxLength": 200,
                   "type": "string"
@@ -22918,7 +22918,7 @@
             "revision": 0,
             "evaluations": 0,
             "elapsedSeconds": 0,
-            "buildResultId": "xxxxxxx",
+            "basis": "xxxxxxx",
             "verification": {
               "objective": "success",
               "scoredBy": "success",
@@ -22929,6 +22929,1190 @@
               "standardError": 0,
               "seed": 1
             }
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/read/build/party/{p}/directedBuild",
+      "access": "session",
+      "purpose": "Private direction-guided search for a party build.",
+      "operationId": "read/build/party/{p}/directedBuild",
+      "transport": "json",
+      "pathParameters": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p"
+        ],
+        "properties": {
+          "p": {
+            "minimum": 1,
+            "maximum": 6,
+            "type": "integer"
+          }
+        }
+      },
+      "query": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {}
+      },
+      "body": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "direction",
+          "targets"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "direction": {
+            "anyOf": [
+              {
+                "const": "rapidRanged",
+                "type": "string"
+              },
+              {
+                "const": "magicBurst",
+                "type": "string"
+              },
+              {
+                "const": "meleeBurst",
+                "type": "string"
+              },
+              {
+                "const": "free",
+                "type": "string"
+              },
+              {
+                "const": "turtle",
+                "type": "string"
+              },
+              {
+                "const": "balance",
+                "type": "string"
+              }
+            ]
+          },
+          "targets": {
+            "minItems": 1,
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "characterId"
+              ],
+              "properties": {
+                "characterId": {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "changeableComponents": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "properties": {
+                    "uniqueCharacter": {
+                      "type": "boolean",
+                      "default": false
+                    },
+                    "raceGender": {
+                      "type": "boolean",
+                      "default": true
+                    },
+                    "mainClass": {
+                      "type": "boolean",
+                      "default": true
+                    },
+                    "subClass": {
+                      "type": "boolean",
+                      "default": true
+                    },
+                    "lineage": {
+                      "type": "boolean",
+                      "default": false
+                    },
+                    "predisposition": {
+                      "type": "boolean",
+                      "default": false
+                    },
+                    "autoEquipmentRun": {
+                      "anyOf": [
+                        {
+                          "const": "currentSetting",
+                          "type": "string"
+                        },
+                        {
+                          "const": "FULL",
+                          "type": "string"
+                        },
+                        {
+                          "const": "SEMI",
+                          "type": "string"
+                        },
+                        {
+                          "const": "OFF",
+                          "type": "string"
+                        }
+                      ],
+                      "default": "currentSetting"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "considerOrderChange": {
+            "type": "boolean",
+            "default": false
+          },
+          "considerDeityChange": {
+            "anyOf": [
+              {
+                "const": "none",
+                "type": "string"
+              },
+              {
+                "const": "unoccupiedDeities",
+                "type": "string"
+              },
+              {
+                "const": "allDeities",
+                "type": "string"
+              }
+            ],
+            "default": "none"
+          },
+          "considerItemsScope": {
+            "anyOf": [
+              {
+                "const": "normal",
+                "type": "string"
+              },
+              {
+                "const": "withinTargets",
+                "type": "string"
+              },
+              {
+                "const": "global",
+                "type": "string"
+              }
+            ],
+            "default": "normal"
+          },
+          "objective": {
+            "anyOf": [
+              {
+                "const": "success",
+                "type": "string"
+              },
+              {
+                "const": "minDefeat",
+                "type": "string"
+              },
+              {
+                "const": "bossDamage",
+                "type": "string"
+              },
+              {
+                "const": "experience",
+                "type": "string"
+              }
+            ],
+            "default": "success"
+          },
+          "tuningParameters": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+              "effort": {
+                "anyOf": [
+                  {
+                    "const": "low",
+                    "type": "string"
+                  },
+                  {
+                    "const": "medium",
+                    "type": "string"
+                  },
+                  {
+                    "const": "high",
+                    "type": "string"
+                  }
+                ],
+                "default": "medium"
+              },
+              "populationSize": {
+                "minimum": 8,
+                "maximum": 64,
+                "type": "integer"
+              },
+              "generations": {
+                "minimum": 1,
+                "maximum": 200,
+                "type": "integer"
+              },
+              "quickRuns": {
+                "minimum": 10,
+                "maximum": 300,
+                "type": "integer"
+              },
+              "confirmRuns": {
+                "minimum": 50,
+                "maximum": 1000,
+                "type": "integer"
+              },
+              "timeBudgetSeconds": {
+                "minimum": 5,
+                "maximum": 300,
+                "type": "integer"
+              },
+              "verifyRuns": {
+                "minimum": 100,
+                "maximum": 1000,
+                "type": "integer"
+              },
+              "eliteCount": {
+                "minimum": 0,
+                "maximum": 16,
+                "type": "integer"
+              },
+              "tournamentSize": {
+                "minimum": 2,
+                "maximum": 8,
+                "type": "integer"
+              },
+              "confirmTopN": {
+                "minimum": 1,
+                "maximum": 10,
+                "type": "integer"
+              },
+              "mutationRate": {
+                "minimum": 0,
+                "maximum": 1,
+                "type": "number"
+              },
+              "seed": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "data": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "verdict",
+            "forecast",
+            "changeSummary",
+            "revision",
+            "evaluations",
+            "elapsedSeconds",
+            "basis",
+            "verification",
+            "seed",
+            "direction",
+            "composition",
+            "steps"
+          ],
+          "properties": {
+            "verdict": {
+              "anyOf": [
+                {
+                  "const": "veryGood",
+                  "type": "string"
+                },
+                {
+                  "const": "good",
+                  "type": "string"
+                },
+                {
+                  "const": "noisy",
+                  "type": "string"
+                },
+                {
+                  "const": "noChange",
+                  "type": "string"
+                },
+                {
+                  "const": "worse",
+                  "type": "string"
+                }
+              ]
+            },
+            "forecast": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "before",
+                "after"
+              ],
+              "properties": {
+                "before": {
+                  "type": "string"
+                },
+                "after": {
+                  "type": "string"
+                }
+              }
+            },
+            "changeSummary": {
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "endpoint",
+                  "parameters"
+                ],
+                "properties": {
+                  "endpoint": {
+                    "pattern": "^commit/build/",
+                    "type": "string"
+                  },
+                  "parameters": {
+                    "type": "object",
+                    "patternProperties": {
+                      "^(.*)$": {
+                        "anyOf": [
+                          {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "revision": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "evaluations": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "elapsedSeconds": {
+              "minimum": 0,
+              "type": "number"
+            },
+            "basis": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            },
+            "verification": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "objective",
+                "scoredBy",
+                "runs",
+                "before",
+                "after",
+                "gain",
+                "standardError",
+                "seed"
+              ],
+              "properties": {
+                "objective": {
+                  "anyOf": [
+                    {
+                      "const": "success",
+                      "type": "string"
+                    },
+                    {
+                      "const": "minDefeat",
+                      "type": "string"
+                    },
+                    {
+                      "const": "bossDamage",
+                      "type": "string"
+                    },
+                    {
+                      "const": "experience",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "scoredBy": {
+                  "anyOf": [
+                    {
+                      "const": "success",
+                      "type": "string"
+                    },
+                    {
+                      "const": "minDefeat",
+                      "type": "string"
+                    },
+                    {
+                      "const": "bossDamage",
+                      "type": "string"
+                    },
+                    {
+                      "const": "experience",
+                      "type": "string"
+                    },
+                    {
+                      "const": "progress",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "runs": {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "before": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "after": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "gain": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "standardError": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "seed": {
+                  "type": "integer"
+                }
+              }
+            },
+            "seed": {
+              "type": "integer"
+            },
+            "direction": {
+              "anyOf": [
+                {
+                  "const": "rapidRanged",
+                  "type": "string"
+                },
+                {
+                  "const": "magicBurst",
+                  "type": "string"
+                },
+                {
+                  "const": "meleeBurst",
+                  "type": "string"
+                },
+                {
+                  "const": "free",
+                  "type": "string"
+                },
+                {
+                  "const": "turtle",
+                  "type": "string"
+                },
+                {
+                  "const": "balance",
+                  "type": "string"
+                }
+              ]
+            },
+            "composition": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "before",
+                "after",
+                "distance"
+              ],
+              "properties": {
+                "before": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "melee",
+                    "ranged",
+                    "magic",
+                    "support"
+                  ],
+                  "properties": {
+                    "melee": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "ranged": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "magic": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "support": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                },
+                "after": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "melee",
+                    "ranged",
+                    "magic",
+                    "support"
+                  ],
+                  "properties": {
+                    "melee": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "ranged": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "magic": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "support": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                },
+                "distance": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            },
+            "steps": {
+              "additionalProperties": false,
+              "type": "object",
+              "properties": {
+                "step1": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "candidatesTried",
+                    "selected"
+                  ],
+                  "properties": {
+                    "candidatesTried": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "selected": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "step2": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "candidatesTried",
+                    "selected"
+                  ],
+                  "properties": {
+                    "candidatesTried": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "selected": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "step3": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "candidatesTried",
+                    "selected"
+                  ],
+                  "properties": {
+                    "candidatesTried": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "selected": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "envelope": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "apiVersion",
+            "schemaVersion",
+            "requestId",
+            "observedAt",
+            "data"
+          ],
+          "properties": {
+            "apiVersion": {
+              "const": "v1",
+              "type": "string"
+            },
+            "schemaVersion": {
+              "const": 1,
+              "type": "number"
+            },
+            "requestId": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            },
+            "revision": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "observedAt": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "verdict",
+                "forecast",
+                "changeSummary",
+                "revision",
+                "evaluations",
+                "elapsedSeconds",
+                "basis",
+                "verification",
+                "seed",
+                "direction",
+                "composition",
+                "steps"
+              ],
+              "properties": {
+                "verdict": {
+                  "anyOf": [
+                    {
+                      "const": "veryGood",
+                      "type": "string"
+                    },
+                    {
+                      "const": "good",
+                      "type": "string"
+                    },
+                    {
+                      "const": "noisy",
+                      "type": "string"
+                    },
+                    {
+                      "const": "noChange",
+                      "type": "string"
+                    },
+                    {
+                      "const": "worse",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "forecast": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "before",
+                    "after"
+                  ],
+                  "properties": {
+                    "before": {
+                      "type": "string"
+                    },
+                    "after": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "changeSummary": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "endpoint",
+                      "parameters"
+                    ],
+                    "properties": {
+                      "endpoint": {
+                        "pattern": "^commit/build/",
+                        "type": "string"
+                      },
+                      "parameters": {
+                        "type": "object",
+                        "patternProperties": {
+                          "^(.*)$": {
+                            "anyOf": [
+                              {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "boolean"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "revision": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "evaluations": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "elapsedSeconds": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "basis": {
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                "verification": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "objective",
+                    "scoredBy",
+                    "runs",
+                    "before",
+                    "after",
+                    "gain",
+                    "standardError",
+                    "seed"
+                  ],
+                  "properties": {
+                    "objective": {
+                      "anyOf": [
+                        {
+                          "const": "success",
+                          "type": "string"
+                        },
+                        {
+                          "const": "minDefeat",
+                          "type": "string"
+                        },
+                        {
+                          "const": "bossDamage",
+                          "type": "string"
+                        },
+                        {
+                          "const": "experience",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "scoredBy": {
+                      "anyOf": [
+                        {
+                          "const": "success",
+                          "type": "string"
+                        },
+                        {
+                          "const": "minDefeat",
+                          "type": "string"
+                        },
+                        {
+                          "const": "bossDamage",
+                          "type": "string"
+                        },
+                        {
+                          "const": "experience",
+                          "type": "string"
+                        },
+                        {
+                          "const": "progress",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "runs": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "before": {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "after": {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "gain": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "standardError": {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "seed": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "seed": {
+                  "type": "integer"
+                },
+                "direction": {
+                  "anyOf": [
+                    {
+                      "const": "rapidRanged",
+                      "type": "string"
+                    },
+                    {
+                      "const": "magicBurst",
+                      "type": "string"
+                    },
+                    {
+                      "const": "meleeBurst",
+                      "type": "string"
+                    },
+                    {
+                      "const": "free",
+                      "type": "string"
+                    },
+                    {
+                      "const": "turtle",
+                      "type": "string"
+                    },
+                    {
+                      "const": "balance",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "composition": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "before",
+                    "after",
+                    "distance"
+                  ],
+                  "properties": {
+                    "before": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "melee",
+                        "ranged",
+                        "magic",
+                        "support"
+                      ],
+                      "properties": {
+                        "melee": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "ranged": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "magic": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "support": {
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "after": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "melee",
+                        "ranged",
+                        "magic",
+                        "support"
+                      ],
+                      "properties": {
+                        "melee": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "ranged": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "magic": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "support": {
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "distance": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                },
+                "steps": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "properties": {
+                    "step1": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "candidatesTried",
+                        "selected"
+                      ],
+                      "properties": {
+                        "candidatesTried": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "selected": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "step2": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "candidatesTried",
+                        "selected"
+                      ],
+                      "properties": {
+                        "candidatesTried": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "selected": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "step3": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "candidatesTried",
+                        "selected"
+                      ],
+                      "properties": {
+                        "candidatesTried": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "selected": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "errors": [
+        "authentication_failed",
+        "authentication_required",
+        "control_lease_expired",
+        "control_lease_invalid",
+        "internal_error",
+        "invalid_request",
+        "login_required",
+        "not_found",
+        "runtime_unavailable",
+        "stale_revision"
+      ],
+      "restrictions": {
+        "environments": "all",
+        "requiresDebugMode": false,
+        "requiresLogin": true
+      },
+      "examples": {
+        "request": {
+          "pathParameters": {
+            "p": 1
+          },
+          "query": {},
+          "body": {
+            "direction": "rapidRanged",
+            "targets": [
+              {
+                "characterId": 1
+              }
+            ]
+          }
+        },
+        "invalidRequest": {
+          "body": {
+            "unexpectedMember": true
+          }
+        },
+        "response": {
+          "data": {
+            "verdict": "veryGood",
+            "forecast": {
+              "before": "xxxxxxx",
+              "after": "xxxxxxx"
+            },
+            "changeSummary": [
+              {
+                "endpoint": "commit/build/character/101/equip",
+                "parameters": {}
+              }
+            ],
+            "revision": 0,
+            "evaluations": 0,
+            "elapsedSeconds": 0,
+            "basis": "xxxxxxx",
+            "verification": {
+              "objective": "success",
+              "scoredBy": "success",
+              "runs": 1,
+              "before": 0,
+              "after": 0,
+              "gain": 1,
+              "standardError": 0,
+              "seed": 1
+            },
+            "seed": 1,
+            "direction": "rapidRanged",
+            "composition": {
+              "before": {
+                "melee": 0,
+                "ranged": 0,
+                "magic": 0,
+                "support": 0
+              },
+              "after": {
+                "melee": 0,
+                "ranged": 0,
+                "magic": 0,
+                "support": 0
+              },
+              "distance": 0
+            },
+            "steps": {}
           }
         }
       }
@@ -25229,9 +26413,9 @@
           },
           "offenseElementTrialRuns": {
             "minimum": 0,
-            "maximum": 10,
+            "maximum": 20,
             "type": "integer",
-            "default": 3
+            "default": 9
           },
           "offenseElementCandidateCount": {
             "minimum": 1,
@@ -25241,9 +26425,9 @@
           },
           "defenseElementTrialRuns": {
             "minimum": 0,
-            "maximum": 20,
+            "maximum": 40,
             "type": "integer",
-            "default": 5
+            "default": 15
           },
           "defenseElementCandidateCount": {
             "minimum": 1,
@@ -25253,9 +26437,9 @@
           },
           "abilityTrialRuns": {
             "minimum": 0,
-            "maximum": 50,
+            "maximum": 100,
             "type": "integer",
-            "default": 20
+            "default": 40
           },
           "abilityCandidateCount": {
             "minimum": 1,
@@ -25782,7 +26966,7 @@
             "seed": {
               "type": "integer"
             },
-            "buildResultId": {
+            "basis": {
               "minLength": 1,
               "maxLength": 200,
               "type": "string"
@@ -26280,7 +27464,7 @@
                 "seed": {
                   "type": "integer"
                 },
-                "buildResultId": {
+                "basis": {
                   "minLength": 1,
                   "maxLength": 200,
                   "type": "string"
@@ -34658,10 +35842,10 @@
     },
     {
       "method": "POST",
-      "path": "/api/v1/commit/build/party/{p}/applyBuildResult",
+      "path": "/api/v1/commit/build/party/{p}/applyBuildChanges",
       "access": "session",
-      "purpose": "Apply the latest `gaSearch` or `stagedEquipmentTuning` result.",
-      "operationId": "commit/build/party/{p}/applyBuildResult",
+      "purpose": "Apply a list of build changes (a search `changeSummary`) in one transaction.",
+      "operationId": "commit/build/party/{p}/applyBuildChanges",
       "transport": "json",
       "pathParameters": {
         "additionalProperties": false,
@@ -34705,14 +35889,62 @@
             "additionalProperties": false,
             "type": "object",
             "required": [
-              "buildResultId",
+              "changes",
               "simulation"
             ],
             "properties": {
-              "buildResultId": {
+              "changes": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "endpoint",
+                    "parameters"
+                  ],
+                  "properties": {
+                    "endpoint": {
+                      "pattern": "^commit/build/",
+                      "type": "string"
+                    },
+                    "parameters": {
+                      "type": "object",
+                      "patternProperties": {
+                        "^(.*)$": {}
+                      }
+                    }
+                  }
+                }
+              },
+              "basis": {
                 "minLength": 1,
                 "maxLength": 200,
                 "type": "string"
+              },
+              "verdict": {
+                "anyOf": [
+                  {
+                    "const": "veryGood",
+                    "type": "string"
+                  },
+                  {
+                    "const": "good",
+                    "type": "string"
+                  },
+                  {
+                    "const": "noisy",
+                    "type": "string"
+                  },
+                  {
+                    "const": "noChange",
+                    "type": "string"
+                  },
+                  {
+                    "const": "worse",
+                    "type": "string"
+                  }
+                ]
               },
               "autoEquipmentMode": {
                 "anyOf": [
@@ -34759,8 +35991,6 @@
             "applied",
             "confirmationRequired",
             "warnings",
-            "verdict",
-            "forecast",
             "calculatedStatus"
           ],
           "properties": {
@@ -34849,53 +36079,6 @@
                       }
                     }
                   }
-                }
-              }
-            },
-            "verdict": {
-              "anyOf": [
-                {
-                  "anyOf": [
-                    {
-                      "const": "veryGood",
-                      "type": "string"
-                    },
-                    {
-                      "const": "good",
-                      "type": "string"
-                    },
-                    {
-                      "const": "noisy",
-                      "type": "string"
-                    },
-                    {
-                      "const": "noChange",
-                      "type": "string"
-                    },
-                    {
-                      "const": "worse",
-                      "type": "string"
-                    }
-                  ]
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "forecast": {
-              "additionalProperties": false,
-              "type": "object",
-              "required": [
-                "before",
-                "after"
-              ],
-              "properties": {
-                "before": {
-                  "type": "string"
-                },
-                "after": {
-                  "type": "string"
                 }
               }
             },
@@ -35162,8 +36345,6 @@
                 "applied",
                 "confirmationRequired",
                 "warnings",
-                "verdict",
-                "forecast",
                 "calculatedStatus"
               ],
               "properties": {
@@ -35252,53 +36433,6 @@
                           }
                         }
                       }
-                    }
-                  }
-                },
-                "verdict": {
-                  "anyOf": [
-                    {
-                      "anyOf": [
-                        {
-                          "const": "veryGood",
-                          "type": "string"
-                        },
-                        {
-                          "const": "good",
-                          "type": "string"
-                        },
-                        {
-                          "const": "noisy",
-                          "type": "string"
-                        },
-                        {
-                          "const": "noChange",
-                          "type": "string"
-                        },
-                        {
-                          "const": "worse",
-                          "type": "string"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "forecast": {
-                  "additionalProperties": false,
-                  "type": "object",
-                  "required": [
-                    "before",
-                    "after"
-                  ],
-                  "properties": {
-                    "before": {
-                      "type": "string"
-                    },
-                    "after": {
-                      "type": "string"
                     }
                   }
                 },
@@ -35597,7 +36731,12 @@
             "expectedRevision": 0,
             "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
             "parameters": {
-              "buildResultId": "xxxxxxx",
+              "changes": [
+                {
+                  "endpoint": "commit/build/character/101/equip",
+                  "parameters": {}
+                }
+              ],
               "simulation": true
             }
           }
@@ -35622,11 +36761,6 @@
                 "args": {}
               }
             ],
-            "verdict": "veryGood",
-            "forecast": {
-              "before": "xxxxxxx",
-              "after": "xxxxxxx"
-            },
             "calculatedStatus": [
               {
                 "characterId": 1,

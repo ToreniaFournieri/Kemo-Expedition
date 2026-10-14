@@ -200,7 +200,7 @@ export function buildBattleLogData(log: ExpeditionLog | null, partyNumber: numbe
 }
 
 // A 53-bit string hash (cyrb53): enough to tell retained logs apart, not a security measure.
-function hashText(text: string): string {
+export function hashText(text: string): string {
   let h1 = 0xdeadbeef;
   let h2 = 0x41c6ce57;
   for (let index = 0; index < text.length; index += 1) {

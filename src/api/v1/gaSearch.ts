@@ -16,6 +16,7 @@ import { sameEquipmentSnapshot, snapshotCharacterEquipment } from './equipmentHi
 import { validPartyDeityIds, validRaceAndGenderOptions } from './readModels';
 import { measureObjective, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount, type ObjectiveMeasure } from './objectiveMeasure';
 import { buildSimulationRunData } from './simulationView';
+import { hashText } from './battleLogs';
 
 // SpecRef: 9.1.3 | Read | 2-3-2 party/{p}/gaSearch
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | gaSearch
@@ -88,28 +89,12 @@ export interface GaChangeEntry { endpoint: string; parameters: Record<string, un
 
 export interface GaForecast { before: string; after: string }
 
-/** What `applyBuildResult` needs from a search or tuning; kept in memory only (Spec 9.1.3: not save state). */
-export interface StoredBuildResult {
-  buildResultId: string;
-  /** The Read that produced it: only a `gaSearch` result has a `verdict` that can reject or need confirmation (3-3-2). */
-  source: 'gaSearch' | 'stagedEquipmentTuning';
-  partyNumber: number;
-  revision: number;
-  /** The `gaSearch` verdict; `null` for a `stagedEquipmentTuning` result. */
-  verdict: GaVerdict | null;
-  forecast: GaForecast;
-  changeSummary: GaChangeEntry[];
-  /** Build-relevant facts at search time (Spec 9.1.3, 3-3-2 Validation). */
-  fingerprint: string;
-}
-
 export interface GaSearchDependencies {
   /** A private forecast on a fixed seed; `options.bossRoomOnly` fights the boss battle alone (`bossDamage`). */
   simulate: (state: GameState, partyIndex: number, count: number, seed: number, options?: ExpeditionSimulationOptions) => Promise<unknown>;
   /** Wall clock (ms) for the time budget and `elapsedSeconds`. */
   now: () => number;
   createSeed: () => number;
-  createOpaqueId: () => string;
   revision: number;
   /** The commit context `changeSummary` is dry-run against, so every entry is a call the Commit API accepts. */
   commitContext: Pick<ApiV1CommitContext, 'simulatedAt' | 'gameMode' | 'enemyLevelOffset' | 'applyAutoEquipment' | 'now'>;
@@ -206,10 +191,10 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
   };
 }
 
-// SpecRef: 9.1.3 | 3-3-2 applyBuildResult Validation | build-relevant state
+// SpecRef: 9.1.3 | 3-3-2 applyBuildChanges Validation | build-relevant state
 /**
  * The party facts a result depends on: order, deity, and every member's build and equipment, plus the owned count of
- * each item variant and Jewel the result equips or attaches. Other inventory changes (new drops) do not invalidate it.
+ * each item variant and Jewel the result equips or attaches. Other inventory changes (new drops) do not change it.
  */
 export function gaBuildFingerprint(state: GameState, partyIndex: number, usedVariants: readonly string[], usedJewels: readonly string[], outsideCharacterIds: readonly number[] = [], takenDeity: string | null = null): string {
   const party = state.parties[partyIndex];
@@ -233,12 +218,12 @@ export function gaBuildFingerprint(state: GameState, partyIndex: number, usedVar
 }
 
 /** Index of the other party that holds deity `id`, or -1 (no deity is never held). */
-function deityHolderIndex(state: GameState, partyIndex: number, id: string): number {
+export function deityHolderIndex(state: GameState, partyIndex: number, id: string): number {
   return id === 'none' ? -1 : state.parties.findIndex((party, index) => index !== partyIndex && getDeityId(party.deity.name) === id);
 }
 
-/** The fingerprint a stored result must still match: the Items and Jewels its `changeSummary` places and the characters it touches. */
-export function fingerprintOfSummary(state: GameState, partyIndex: number, changeSummary: readonly GaChangeEntry[]): string {
+/** The build-relevant facts behind a `changeSummary`: the Items and Jewels it places and the characters it touches. */
+function fingerprintOfSummary(state: GameState, partyIndex: number, changeSummary: readonly GaChangeEntry[]): string {
   const deityEntry = changeSummary.find((entry) => entry.endpoint === `commit/build/party/${state.parties[partyIndex].id}` && entry.parameters.deityId !== undefined);
   const usedVariants = changeSummary.filter((entry) => entry.endpoint.endsWith('/equip')).map((entry) => {
     const [, id, enhancement, superRare] = String(entry.parameters.targetEquipment).split('/');
@@ -248,6 +233,12 @@ export function fingerprintOfSummary(state: GameState, partyIndex: number, chang
   const inParty = new Set(state.parties[partyIndex].characters.map((character) => character.id));
   const outside = changeSummary.map((entry) => Number(entry.endpoint.match(CHARACTER_ENDPOINT)?.[1])).filter((id) => Number.isInteger(id) && id > 0 && !inParty.has(id));
   return gaBuildFingerprint(state, partyIndex, usedVariants, usedJewels, outside, deityEntry ? String(deityEntry.parameters.deityId) : null);
+}
+
+// SpecRef: 9.1.4.9 | `basis` | an opaque digest of the build-relevant state a `changeSummary` depends on. It is computed from
+// the entries and the save alone, so `applyBuildChanges` recomputes it without any stored result.
+export function buildBasis(state: GameState, partyIndex: number, changeSummary: readonly GaChangeEntry[]): string {
+  return hashText(fingerprintOfSummary(state, partyIndex, changeSummary));
 }
 
 // ---------------- Genome ----------------
@@ -382,7 +373,7 @@ function buildModel(state: GameState, partyIndex: number, request: GaSearchReque
  * `considerDeityChange` choices: `unoccupiedDeities` is `read/build/party/{p}` `validOptions.deityId`; `allDeities` adds
  * every unlocked deity another party holds (that party is left with no deity).
  */
-function deityOptionsFor(state: GameState, party: Party, scope: GaDeityScope): string[] {
+export function deityOptionsFor(state: GameState, party: Party, scope: GaDeityScope): string[] {
   const current = getDeityId(party.deity.name);
   if (scope === 'none') return [current];
   if (scope === 'unoccupiedDeities') return validPartyDeityIds(state, party);
@@ -618,7 +609,7 @@ function countChanges(model: SearchModel, decoded: Decoded): number {
 
 // ---------------- Objective ----------------
 
-interface Measured {
+export interface Measured {
   rate: number; variance: number; fitness: number; result: ExpeditionSimulationResult;
   /** `success` only: the `progress` measure that breaks ties between builds. */
   progress?: ObjectiveMeasure;
@@ -629,7 +620,7 @@ interface Measured {
  * `baselineSuccess` is the current build's success rate on the same seed: `minDefeat` may not trade successes for safety
  * (a build that cannot win draws every battle and never loses). `routeRooms` scales the `success` tie-break.
  */
-function measure(objective: GaObjective, result: ExpeditionSimulationResult, routeRooms: number, baselineSuccess: number | null = null): Measured {
+export function measure(objective: GaObjective, result: ExpeditionSimulationResult, routeRooms: number, baselineSuccess: number | null = null): Measured {
   const runs = Math.max(1, result.total);
   const { rate, variance } = measureObjective(objective, result, routeRooms);
   if (objective === 'minDefeat') {
@@ -822,12 +813,16 @@ export function planGaChangeSummary(base: GameState, partyIndex: number, best: G
   }
   if (target.characters.map((entry) => entry.id).join(',') !== party.characters.map((entry) => entry.id).join(',')) party2.order = target.characters.map((entry) => entry.id);
   if (Object.keys(party2).length > 0) run(`commit/build/party/${party.id}`, party2);
-  // 3. Build changes.
+  // 3. Build changes. A new unique selection fixes the character's race, gender, lineage, and predisposition itself, so
+  // they are sent only with `none` or an unchanged selection.
   for (const character of party.characters) {
     const before = describeCharacterBuildCurrent(character);
     const next = describeCharacterBuildCurrent(after(character.id));
-    const changes = Object.fromEntries((['racesAndGender', 'mainClassId', 'subClassId', 'lineage', 'predisposition'] as const)
-      .filter((field) => before[field] !== next[field]).map((field) => [field, next[field]]));
+    const uniqueChanged = before.uniqueSelection !== next.uniqueSelection;
+    const identityFixed = uniqueChanged && next.uniqueSelection !== 'none';
+    const fields = identityFixed ? (['mainClassId', 'subClassId'] as const) : (['racesAndGender', 'mainClassId', 'subClassId', 'lineage', 'predisposition'] as const);
+    const changes: Record<string, unknown> = Object.fromEntries(fields.filter((field) => before[field] !== next[field]).map((field) => [field, next[field]]));
+    if (uniqueChanged) changes.uniqueSelection = next.uniqueSelection;
     if (Object.keys(changes).length > 0) run(`commit/build/character/${character.id}/changeBuild`, { ...changes, simulation: false });
   }
   // 4. Equip each new item into its slot.
@@ -857,7 +852,7 @@ export function planGaChangeSummary(base: GameState, partyIndex: number, best: G
 
 // ---------------- Search ----------------
 
-export interface GaSearchOutcome { data: Record<string, unknown>; stored: StoredBuildResult }
+export interface GaSearchOutcome { data: Record<string, unknown> }
 
 /** Runs `gaSearch` for party `{p}` (Spec 9.1.3, 2-3-2). Never changes `state`. */
 export async function runGaSearch(state: GameState, partyIndex: number, request: GaSearchRequest, dependencies: GaSearchDependencies): Promise<GaSearchOutcome> {
@@ -998,20 +993,8 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
     before: buildSimulationRunData(verifyBefore.result, dependencies.revision, 'ga-verify').overview,
     after: buildSimulationRunData(verifyAfter.result, dependencies.revision, 'ga-verify').overview,
   };
-  const buildResultId = dependencies.createOpaqueId();
   const elapsedSeconds = Math.round((dependencies.now() - startedAt) / 100) / 10;
-  const stored: StoredBuildResult = {
-    buildResultId,
-    source: 'gaSearch',
-    partyNumber: state.parties[partyIndex].id,
-    revision: dependencies.revision,
-    verdict: rating.verdict,
-    forecast,
-    changeSummary,
-    fingerprint: fingerprintOfSummary(state, partyIndex, changeSummary),
-  };
   return {
-    stored,
     data: {
       verdict: rating.verdict,
       forecast,
@@ -1019,7 +1002,7 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
       revision: dependencies.revision,
       evaluations,
       elapsedSeconds,
-      buildResultId,
+      basis: buildBasis(state, partyIndex, changeSummary),
       // SpecRef: 9.1.4.9 | gaSearch | the measured `<rate>` values, gain, and standard error behind `verdict`.
       verification: {
         objective,
@@ -1035,27 +1018,46 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   };
 }
 
-// ---------------- applyBuildResult ----------------
+// ---------------- applyBuildChanges ----------------
 
-// SpecRef: 9.1.3 | Commit | 3-3-2 party/{p}/applyBuildResult
-export const BUILD_APPLY_WARNING_KEY = 'api.warning.applyBuildResult.unconfirmedImprovement';
+// SpecRef: 9.1.3 | Commit | 3-3-2 party/{p}/applyBuildChanges
+export const BUILD_APPLY_WARNING_KEY = 'api.warning.applyBuildChanges.unconfirmedImprovement';
 
+/** The endpoints `changes` may use: the 9.1.3 `changeSummary` order list. */
+const CHANGE_ENDPOINT = /^commit\/build\/(?:party\/\d+|character\/\d+\/(?:removeEquipment|changeBuild|equip|jewelRemove|jewelAttach))$/;
 const EQUIPMENT_ENDPOINT = /^commit\/build\/character\/(\d+)\/(removeEquipment|equip|jewelRemove|jewelAttach)$/;
 const CHARACTER_ENDPOINT = /^commit\/build\/character\/(\d+)\//;
 
+/** Validates `changes` (Spec 9.1.4.9): a non-empty list of allowed Commit API calls; `expectedRevision` in an entry is dropped. */
+function parseChanges(value: unknown): GaChangeEntry[] {
+  if (!Array.isArray(value) || value.length === 0) invalid('changes');
+  return value.map((entry, index) => {
+    if (!isRecord(entry)) invalid(`changes[${index}]`);
+    const extra = Object.keys(entry).find((key) => key !== 'endpoint' && key !== 'parameters');
+    if (extra !== undefined) invalid(`changes[${index}].${extra}.unknown_member`);
+    if (typeof entry.endpoint !== 'string' || !CHANGE_ENDPOINT.test(entry.endpoint)) invalid(`changes[${index}].endpoint`);
+    const raw = entry.parameters === undefined ? {} : entry.parameters;
+    if (!isRecord(raw)) invalid(`changes[${index}].parameters`);
+    const { expectedRevision: _ignored, ...parameters } = raw;
+    return { endpoint: entry.endpoint, parameters };
+  });
+}
+
 /**
- * Applies a stored `gaSearch` or `stagedEquipmentTuning` result to party `{p}` as one transaction: every `changeSummary`
- * entry runs through the Commit API handler in order, the changed characters get the requested Auto Equipment mode, and
- * each character whose equipment state changed gets exactly one Undo step (its state before this operation). Only a
- * `gaSearch` verdict can reject the result (`noChange`) or require confirmation (`noisy`, `worse`); a tuning result passed
- * its final check and never needs one.
+ * Applies a list of Commit API calls (normally a `gaSearch`, `directedBuild`, or `stagedEquipmentTuning` `changeSummary`)
+ * to party `{p}` as one transaction: every entry runs through the Commit API handler in order, the characters with an
+ * equipment entry get the requested Auto Equipment mode, and each character whose equipment state changed gets exactly one
+ * Undo step (its state before this operation). Nothing is kept on the server: a given `basis` is recomputed from `changes`
+ * and the current save, and a given `verdict` can reject the request (`noChange`) or require confirmation (`noisy`, `worse`).
  */
-export function applyBuildResult(state: GameState, partyNumber: number, parameters: Record<string, unknown>, context: ApiV1CommitContext): { state: GameState; data: Record<string, unknown> } {
-  const allowed = new Set(['buildResultId', 'autoEquipmentMode', 'simulation', 'confirmation']);
+export function applyBuildChanges(state: GameState, partyNumber: number, parameters: Record<string, unknown>, context: ApiV1CommitContext): { state: GameState; data: Record<string, unknown> } {
+  const allowed = new Set(['changes', 'basis', 'verdict', 'autoEquipmentMode', 'simulation', 'confirmation']);
   const unknown = Object.keys(parameters).find((key) => !allowed.has(key));
   if (unknown !== undefined) invalid(`${unknown}.unknown_member`);
-  const { buildResultId, simulation, confirmation } = parameters;
-  if (typeof buildResultId !== 'string' || buildResultId.length === 0) invalid('buildResultId');
+  const { basis, verdict, simulation, confirmation } = parameters;
+  const changes = parseChanges(parameters.changes);
+  if (basis !== undefined && (typeof basis !== 'string' || basis.length === 0)) invalid('basis');
+  if (verdict !== undefined && (typeof verdict !== 'string' || !(GA_VERDICTS as readonly string[]).includes(verdict))) invalid('verdict');
   const mode = parameters.autoEquipmentMode === undefined ? 'SEMI' : parameters.autoEquipmentMode;
   if (mode !== 'SEMI' && mode !== 'OFF') invalid('autoEquipmentMode');
   if (typeof simulation !== 'boolean') invalid('simulation');
@@ -1064,22 +1066,20 @@ export function applyBuildResult(state: GameState, partyNumber: number, paramete
   const partyIndex = state.parties.findIndex((party) => party.id === partyNumber);
   if (partyIndex < 0) throw new Error('not_found');
 
-  const stored = context.buildResult?.(partyNumber);
-  if (!stored || stored.buildResultId !== buildResultId) throw new Error('illegal_action:build_result_unavailable');
-  if (stored.source === 'gaSearch' && stored.verdict === 'noChange') throw new Error('illegal_action:build_result_no_change');
-  if (fingerprintOfSummary(state, partyIndex, stored.changeSummary) !== stored.fingerprint) throw new Error('illegal_action:build_result_stale');
+  if (verdict === 'noChange') throw new Error('illegal_action:build_no_change');
+  if (basis !== undefined && buildBasis(state, partyIndex, changes) !== basis) throw new Error('illegal_action:build_basis_stale');
 
-  const confirmationRequired = stored.source === 'gaSearch' && (stored.verdict === 'worse' || stored.verdict === 'noisy');
-  const warnings = confirmationRequired ? [{ key: BUILD_APPLY_WARNING_KEY, args: {} }] : [];
-  const changedIds = [...new Set(stored.changeSummary.map((entry) => Number(entry.endpoint.match(CHARACTER_ENDPOINT)?.[1])).filter((id) => Number.isInteger(id) && id > 0))];
-  const equipmentIds = new Set(stored.changeSummary.map((entry) => Number(entry.endpoint.match(EQUIPMENT_ENDPOINT)?.[1])).filter((id) => Number.isInteger(id) && id > 0));
+  const confirmationRequired = verdict === 'worse' || verdict === 'noisy';
+  const warnings = confirmationRequired ? [{ key: BUILD_APPLY_WARNING_KEY, args: { verdict: verdict as string } }] : [];
+  const changedIds = [...new Set(changes.map((entry) => Number(entry.endpoint.match(CHARACTER_ENDPOINT)?.[1])).filter((id) => Number.isInteger(id) && id > 0))];
+  const equipmentIds = new Set(changes.map((entry) => Number(entry.endpoint.match(EQUIPMENT_ENDPOINT)?.[1])).filter((id) => Number.isInteger(id) && id > 0));
 
   // `considerItemsScope: global` results also change characters of other parties, so each character is looked up on its own party.
   const partyOf = (source: GameState, characterId: number) => source.parties.findIndex((entry) => entry.characters.some((character) => character.id === characterId));
   // Every entry runs against a private history bag: the internal steps record nothing (Spec 9.1.3, 3-3-2 Undo and Redo).
   const run = (source: GameState): GameState => {
     let next = source;
-    for (const entry of stored.changeSummary) next = applyApiV1Commit(entry.endpoint, next, entry.parameters, { ...context, equipmentHistory: {} }).state;
+    for (const entry of changes) next = applyApiV1Commit(entry.endpoint, next, entry.parameters, { ...context, equipmentHistory: {} }).state;
     for (const id of equipmentIds) {
       next = gameReducer(next, { type: 'UPDATE_CHARACTER', partyIndex: partyOf(next, id), characterId: id, updates: { autoEquipmentMode: mode === 'SEMI' ? 1 : 0 } });
     }
@@ -1090,11 +1090,9 @@ export function applyBuildResult(state: GameState, partyNumber: number, paramete
     const index = party.characters.findIndex((entry) => entry.id === characterId);
     return { characterId, calculatedStatus: buildCalculatedStatus(party.characters[index], computePartyStats(party).characterStats[index], party.level) };
   });
-  const report = (applied: GaChangeEntry[], source: GameState) => ({
-    applied, confirmationRequired, warnings: confirmationRequired ? warnings : [], verdict: stored.verdict, forecast: stored.forecast, calculatedStatus: statusOf(source),
-  });
+  const report = (applied: GaChangeEntry[], source: GameState) => ({ applied, confirmationRequired, warnings, calculatedStatus: statusOf(source) });
 
-  if (simulation) return { state, data: report(stored.changeSummary, run(state)) };
+  if (simulation) return { state, data: report(changes, run(state)) };
   if (confirmation === 'no') return { state, data: report([], state) };
   if (confirmationRequired && confirmation !== 'yes') invalid('confirmation_required');
   const next = run(state);
@@ -1105,5 +1103,5 @@ export function applyBuildResult(state: GameState, partyNumber: number, paramete
     if (sameEquipmentSnapshot(snapshot, snapshotCharacterEquipment(after, context.simulatedAt))) continue;
     context.equipmentHistory[String(characterId)] = recordEquipmentState(context.equipmentHistory[String(characterId)] ?? { undo: [], redo: [] }, snapshot);
   }
-  return { state: next, data: report(stored.changeSummary, next) };
+  return { state: next, data: report(changes, next) };
 }

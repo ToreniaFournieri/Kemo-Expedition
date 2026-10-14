@@ -6,7 +6,7 @@ const path = require('node:path');
 const test = require('node:test');
 const { build } = require('esbuild');
 
-test('stagedEquipmentTuning tunes one character in stages and its accepted result applies through applyBuildResult', async t => {
+test('stagedEquipmentTuning tunes one character in stages and its accepted result applies through applyBuildChanges', async t => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'bokemo-api-v1-tuning-'));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   const output = path.join(directory, 'profile.mjs');

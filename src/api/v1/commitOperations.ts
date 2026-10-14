@@ -35,7 +35,7 @@ import { diarySettingsView } from './diaryView';
 import { countUnreadGlobalDiaryLogs, GLOBAL_DIARY_PARTY_NUMBER } from '../../game/globalDiary';
 import { formatItem } from './itemFormat';
 import { retainedLogIdOf } from './battleLogs';
-import { applyBuildResult, type StoredBuildResult } from './gaSearch';
+import { applyBuildChanges } from './gaSearch';
 
 // SpecRef: 9.1 | Desktop distribution | Application API
 // This is the transport-neutral gameplay-mutation slice of the `/api/v1` commit dispatcher. It owns exactly the
@@ -107,8 +107,6 @@ export interface ApiV1CommitContext {
   readonly debugSettings?: DebugSettings;
   /** The ordinary player's real Enemy Edit pane settings; absent for an API account, whose settings are its own stored values. */
   readonly enemyEditSettings?: ColosseumEnemySettings;
-  /** The latest in-memory `gaSearch` or `stagedEquipmentTuning` result of a party (by party number), for `applyBuildResult`; absent when none is kept. */
-  readonly buildResult?: (partyNumber: number) => StoredBuildResult | undefined;
 }
 
 /** What a sortie needs to know about the live party cycle (Spec 5.1.1). */
@@ -285,9 +283,9 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       };
       data = godsBattle ? { outcome: battleOutcome, ...godsResult, ...after } : { summary: `${sorties.length}/${sortieCount}`, sorties, ...after };
     }
-  } else if (operation.match(/^commit\/build\/party\/(\d+)\/applyBuildResult$/)) {
-    // SpecRef: 9.1.3 | Commit | 3-3-2 party/{p}/applyBuildResult
-    const applied = applyBuildResult(next, Number(operation.split('/')[3]), parameters, context);
+  } else if (operation.match(/^commit\/build\/party\/(\d+)\/applyBuildChanges$/)) {
+    // SpecRef: 9.1.3 | Commit | 3-3-2 party/{p}/applyBuildChanges
+    const applied = applyBuildChanges(next, Number(operation.split('/')[3]), parameters, context);
     next = applied.state;
     data = applied.data;
   } else if (operation.match(/^commit\/build\/party\/(\d+)$/)) {

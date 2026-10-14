@@ -532,8 +532,8 @@ console.log('apiV1ApplicationApi profile ok');
   assert.deepEqual(hidden.headlessEvents, [true, false, false]);
 }
 
-// SpecRef: 9.1.3 | 2-3-8 stagedEquipmentTuning `buildResultId` | A tuning of any party member replaces the party's kept
-// `gaSearch` result, so `applyBuildResult` no longer finds it; a rejected tuning leaves none.
+// SpecRef: 9.1.4.9 | The server keeps no search result: a `gaSearch` result applies through `applyBuildChanges` from its own
+// `changeSummary` and `basis`, a later tuning of a party member does not discard it, and a rejected tuning returns no `basis`.
 {
   const h = harness(false, (state, partyIndex, count, seed) => simulateExpeditionRuns(state, partyIndex, 'mode.normal', count, undefined, 0, seed));
   const local = h.api.createInProcessAdapter();
@@ -541,21 +541,22 @@ console.log('apiV1ApplicationApi profile ok');
   const searched = await local.read('read/build/party/{p}/gaSearch', { pathParameters: { p: 1 }, parameters: {
     p: 1, targets: order.map((characterId) => ({ characterId, changeableComponents: { equipment: true } })),
     gaParameters: { seed: 7, populationSize: 8, generations: 1, quickRuns: 10, confirmRuns: 50, verifyRuns: 100, eliteCount: 2 },
-  } }) as { data: { buildResultId: string }; error?: unknown };
+  } }) as { data: { changeSummary: unknown[]; basis: string }; error?: unknown };
   assert.equal(searched.error, undefined, JSON.stringify(searched.error));
-  const apply = async () => await local.commit('commit/build/party/{p}/applyBuildResult', { pathParameters: { p: 1 }, parameters: { buildResultId: searched.data.buildResultId, simulation: true } }) as { error?: { code: string; details?: { reason?: string } } };
-  assert.notEqual((await apply()).error?.details?.reason, 'illegal_action:build_result_unavailable', 'the search result is kept');
-  const tuned = await local.read('read/build/character/stagedEquipmentTuning', { parameters: { characterId: order[1], offenseElementTrialRuns: 0, defenseElementTrialRuns: 0, abilityTrialRuns: 0 } }) as { data: { accepted: boolean; buildResultId?: string }; error?: unknown };
+  assert.equal(typeof searched.data.basis, 'string');
+  const apply = async () => await local.commit('commit/build/party/{p}/applyBuildChanges', { pathParameters: { p: 1 }, parameters: { changes: searched.data.changeSummary, basis: searched.data.basis, simulation: true } }) as { error?: { code: string; details?: { reason?: string } }; data?: { applied: unknown[] } };
+  if (searched.data.changeSummary.length > 0) assert.equal((await apply()).error, undefined, 'the search result applies as written');
+  const tuned = await local.read('read/build/character/stagedEquipmentTuning', { parameters: { characterId: order[1], offenseElementTrialRuns: 0, defenseElementTrialRuns: 0, abilityTrialRuns: 0 } }) as { data: { accepted: boolean; basis?: string }; error?: unknown };
   assert.equal(tuned.error, undefined, JSON.stringify(tuned.error));
   assert.equal(tuned.data.accepted, false);
-  assert.equal(tuned.data.buildResultId, undefined);
-  const after = await apply();
-  assert.equal(after.error?.code, 'illegal_action');
-  assert.equal(after.error?.details?.reason, 'illegal_action:build_result_unavailable');
+  assert.equal(tuned.data.basis, undefined);
+  if (searched.data.changeSummary.length > 0) assert.equal((await apply()).error, undefined, 'a later tuning does not discard the search result');
   const missing = await local.read('read/build/character/stagedEquipmentTuning', { parameters: { characterId: 999999 } }) as { error?: { code: string } };
   assert.equal(missing.error?.code, 'not_found');
-  // SpecRef: 9.1.3 | 3-3-2 applyBuildResult | the old `applyGaResult` name is not routed (a clean rename, no alias).
-  const renamed = await local.commit('commit/build/party/{p}/applyGaResult', { pathParameters: { p: 1 }, parameters: { gaResultId: searched.data.buildResultId, simulation: true } }) as { error?: { code: string }; data?: unknown };
-  assert.ok(renamed.error, 'applyGaResult is gone');
-  assert.equal(renamed.data, undefined);
+  // SpecRef: 9.1.3 | 3-3-2 applyBuildChanges | the old `applyGaResult` and `applyBuildResult` names are not routed (no alias).
+  for (const name of ['applyGaResult', 'applyBuildResult']) {
+    const renamed = await local.commit(`commit/build/party/{p}/${name}`, { pathParameters: { p: 1 }, parameters: { changes: searched.data.changeSummary, simulation: true } }) as { error?: { code: string }; data?: unknown };
+    assert.ok(renamed.error, `${name} is gone`);
+    assert.equal(renamed.data, undefined);
+  }
 }

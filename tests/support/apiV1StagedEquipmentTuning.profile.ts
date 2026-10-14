@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createFreshGameState, gameReducer, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
-import { deriveSeed, type GaSearchDependencies, type StoredBuildResult } from '../../src/api/v1/gaSearch';
+import { buildBasis, deriveSeed, type GaSearchDependencies } from '../../src/api/v1/gaSearch';
 import { prepareObjectiveState } from '../../src/api/v1/objectiveMeasure';
 import { buildSimulationRunData } from '../../src/api/v1/simulationView';
 import { bottleneckCounterRows, countersBottleneck, parseStagedTuningRequest, runStagedEquipmentTuning, tuningImprovement, tuningLuckCheck } from '../../src/api/v1/stagedEquipmentTuning';
@@ -22,7 +22,7 @@ const seed = 5;
 function dependencies(): GaSearchDependencies {
   return {
     simulate: (target, index, count, simulationSeed, options) => simulateExpeditionRuns(target, index, 'mode.normal', count, undefined, 0, simulationSeed, options),
-    now: () => now, createSeed: () => seed, createOpaqueId: () => 'tuning-result-1', revision: 3,
+    now: () => now, createSeed: () => seed, revision: 3,
     commitContext: { simulatedAt: now, gameMode: 'mode.normal', enemyLevelOffset: 0, applyAutoEquipment: (s) => s, now: () => now },
   };
 }
@@ -32,7 +32,7 @@ interface TuningData {
   bottleneckCounters: { ability: string; answers: string[]; status: string }[];
   candidatesTried: Record<'offenseElement' | 'defenseElement' | 'ability', number>;
   steps: Record<'offenseElement' | 'defenseElement' | 'ability', { improvement: number; changes: string[]; element?: string }[]> & { finalTuning: { step: string; index: number; improvement: number; changes: string[] }[] };
-  changeSummary: { endpoint: string; parameters: Record<string, unknown> }[]; simulationRuns: number; seed: number; buildResultId?: string;
+  changeSummary: { endpoint: string; parameters: Record<string, unknown> }[]; simulationRuns: number; seed: number; basis?: string;
 }
 type Equipment = GameState['parties'][number]['characters'][number]['equipment'];
 const jewelOf = (item: Equipment[number]) => (item?.jewel ? `${item.jewel.key}:${item.jewel.rank}` : null);
@@ -42,10 +42,10 @@ const assertDistinctJewels = (equipment: Equipment, label: string) => {
   assert.equal(new Set(jewels).size, jewels.length, `${label}: a Jewel type and rank appears twice in ${JSON.stringify(jewels)}`);
 };
 const characterIn = (state: GameState, characterId: number) => state.parties.flatMap((party) => party.characters).find((character) => character.id === characterId)!;
-function commitContext(stored: StoredBuildResult | null, history: ApiV1CommitContext['equipmentHistory'] = {}): ApiV1CommitContext {
+function commitContext(history: ApiV1CommitContext['equipmentHistory'] = {}): ApiV1CommitContext {
   return {
     simulatedAt: now, gameMode: 'mode.normal', enemyLevelOffset: 0, settings: {}, equipmentHistory: history, uploadedFiles: {}, canonicalFiles: {},
-    applyAutoEquipment: (s) => s, createDeliveryId: () => 'd', now: () => now, buildResult: () => stored ?? undefined,
+    applyAutoEquipment: (s) => s, createDeliveryId: () => 'd', now: () => now,
   };
 }
 
@@ -148,8 +148,7 @@ assert.equal(tuningImprovement('success', 1, 1), 0, 'equal scores are no change'
   assert.equal(data.accepted, false);
   assert.equal(data.scoredBy, 'success', 'a build with successes is scored by its objective');
   assert.deepEqual(data.changeSummary, []);
-  assert.equal(data.buildResultId, undefined);
-  assert.equal(outcome.stored, null);
+  assert.equal(data.basis, undefined, 'a rejected tuning returns no basis');
   assert.deepEqual([data.steps.offenseElement, data.steps.defenseElement, data.steps.ability, data.steps.finalTuning], [[], [], [], []]);
   assert.deepEqual(data.candidatesTried, { offenseElement: 0, defenseElement: 0, ability: 0 }, 'no step had anything to try');
   assert.ok(data.bottleneckCounters.every((counter) => counter.status !== 'tried'), 'nothing was tried');
@@ -203,9 +202,8 @@ const data = outcome.data as unknown as TuningData;
 {
   assert.equal(data.accepted, true, JSON.stringify({ before: data.before, after: data.after, improvement: data.improvement, gain: data.gain }));
   assert.ok(data.improvement >= 0.07 && data.gain > 2 * data.standardError, 'the final check: the gate improvement and more than luck');
-  assert.equal(data.buildResultId, 'tuning-result-1');
-  assert.equal(outcome.stored?.source, 'stagedEquipmentTuning');
-  assert.equal(outcome.stored?.verdict, null, 'a tuning result has no gaSearch verdict');
+  assert.equal(data.basis, buildBasis(locked, partyIndex, data.changeSummary), 'an accepted tuning returns the basis of its changes');
+  assert.equal('verdict' in data, false, 'a tuning result has no gaSearch verdict');
   // Each step records at most max(2, floor(trials / 5)) qualifying candidates, best first.
   for (const [step, trials] of [['offenseElement', 3], ['defenseElement', 5], ['ability', 20]] as const) {
     const recorded = data.steps[step];
@@ -229,13 +227,13 @@ const data = outcome.data as unknown as TuningData;
   }
 }
 {
-  // `applyBuildResult` applies a tuning result without confirmation, as one Undo step, and the applied build is exactly the
+  // `applyBuildChanges` applies a tuning result without confirmation, as one Undo step, and the applied build is exactly the
   // one the final check measured.
   const history: ApiV1CommitContext['equipmentHistory'] = {};
-  const path = `commit/build/party/${locked.parties[partyIndex].id}/applyBuildResult`;
-  const preview = applyApiV1Commit(path, locked, { buildResultId: data.buildResultId, simulation: true }, commitContext(outcome.stored, history));
-  assert.deepEqual([preview.data.confirmationRequired, preview.data.warnings, preview.data.verdict], [false, [], null]);
-  const result = applyApiV1Commit(path, locked, { buildResultId: data.buildResultId, simulation: false }, commitContext(outcome.stored, history));
+  const path = `commit/build/party/${locked.parties[partyIndex].id}/applyBuildChanges`;
+  const preview = applyApiV1Commit(path, locked, { changes: data.changeSummary, basis: data.basis, simulation: true }, commitContext(history));
+  assert.deepEqual([preview.data.confirmationRequired, preview.data.warnings], [false, []]);
+  const result = applyApiV1Commit(path, locked, { changes: data.changeSummary, basis: data.basis, simulation: false }, commitContext(history));
   assert.equal(result.data.confirmationRequired, false);
   const applied = result.state;
   assert.equal(history[String(ninja.id)].undo.length, 1);
@@ -258,8 +256,10 @@ const data = outcome.data as unknown as TuningData;
   const last = data.steps.finalTuning[data.steps.finalTuning.length - 1];
   assert.equal(last.improvement, Math.round(tuningImprovement('success', await successOn(locked), await successOn(applied)) * 1e4) / 1e4);
   assert.ok(last.improvement > 0);
-  // The old operation name is gone, not an alias.
-  assert.throws(() => applyApiV1Commit(`commit/build/party/${locked.parties[partyIndex].id}/applyGaResult`, locked, { gaResultId: data.buildResultId, simulation: true }, commitContext(outcome.stored)), /invalid_request/);
+  // The old operation names are gone, not aliases.
+  for (const name of ['applyGaResult', 'applyBuildResult']) {
+    assert.throws(() => applyApiV1Commit(`commit/build/party/${locked.parties[partyIndex].id}/${name}`, locked, { changes: data.changeSummary, simulation: true }, commitContext()), /invalid_request/);
+  }
 }
 {
   // `offenseElementRequest` tries only the requested element, and one `seed` repeats the item draws exactly.
@@ -329,7 +329,7 @@ const data = outcome.data as unknown as TuningData;
     else assert.equal(entry.parameters.targetSlot, slot);
   }
   const before = characterIn(sample, samurai.id).equipment;
-  const after = characterIn(applyApiV1Commit(`commit/build/party/${sample.parties[4].id}/applyBuildResult`, sample, { buildResultId: swapped.buildResultId, simulation: false }, commitContext(swap.stored)).state, samurai.id).equipment;
+  const after = characterIn(applyApiV1Commit(`commit/build/party/${sample.parties[4].id}/applyBuildChanges`, sample, { changes: swapped.changeSummary, basis: swapped.basis, simulation: false }, commitContext()).state, samurai.id).equipment;
   before.forEach((item, index) => { if (index !== slot) assert.deepEqual({ ...after[index], isNew: undefined }, { ...item, isNew: undefined }, `slot ${index} keeps its item and Jewel`); });
   assert.notEqual(after[slot]?.id, before[slot]?.id);
   assertDistinctJewels(before, 'the samurai before');

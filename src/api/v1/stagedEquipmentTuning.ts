@@ -12,8 +12,8 @@ import {
   type ExpeditionSimulationResult, type GameState, type Item, type ItemCategory,
 } from '../../types';
 import {
-  createRandom, deriveSeed, fingerprintOfSummary, planGaChangeSummary,
-  type GaChangeEntry, type GaSearchDependencies, type StoredBuildResult,
+  buildBasis, createRandom, deriveSeed, planGaChangeSummary,
+  type GaChangeEntry, type GaSearchDependencies,
 } from './gaSearch';
 import { measureObjective, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount, type ObjectiveMeasure } from './objectiveMeasure';
 import { buildSimulationRunData, floorRoomLabel } from './simulationView';
@@ -638,8 +638,6 @@ function addCandidate(model: TuningModel, loadout: Loadout, changed: ReadonlySet
 export interface StagedTuningOutcome {
   partyNumber: number;
   data: Record<string, unknown>;
-  /** The result `applyBuildResult` can apply; only an accepted tuning has one. */
-  stored: StoredBuildResult | null;
 }
 
 /** Runs `stagedEquipmentTuning` (Spec 7.1.5; 9.1.3, 2-3-8). Never changes `state`. */
@@ -858,15 +856,9 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
     after: buildSimulationRunData(after, dependencies.revision, 'staged-tuning').overview,
   };
   const partyNumber = state.parties[partyIndex].id;
-  let stored: StoredBuildResult | null = null;
-  const buildResultId = accepted ? dependencies.createOpaqueId() : null;
-  if (buildResultId) {
-    // A tuning result has no verdict: it passed its final check, so `applyBuildResult` never asks for confirmation.
-    stored = {
-      buildResultId, source: 'stagedEquipmentTuning', partyNumber, revision: dependencies.revision, verdict: null,
-      forecast, changeSummary, fingerprint: fingerprintOfSummary(state, partyIndex, changeSummary),
-    };
-  }
+  // SpecRef: 9.1.3 | 2-3-8 stagedEquipmentTuning `basis` | only an accepted tuning returns one. A tuning result has no
+  // verdict: it passed its final check, so `applyBuildChanges` never asks for confirmation.
+  const basis = accepted ? buildBasis(state, partyIndex, changeSummary) : null;
   const describeChanges = (changes: readonly { slot: number; key: string }[]) => changes.map((change) => `${change.slot}=${itemFormatOf(model, change.key)}`);
   const describe = (candidate: Candidate) => ({ ...candidate.label, improvement: round4(candidate.improvement), changes: describeChanges(candidate.changes) });
   // The changes each kept candidate made in the tuned build, after any move to another slot.
@@ -878,7 +870,6 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
   });
   return {
     partyNumber,
-    stored,
     data: {
       accepted,
       objective,
@@ -902,7 +893,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
       simulationRuns,
       elapsedSeconds: Math.round((dependencies.now() - startedAt) / 100) / 10,
       seed,
-      ...(buildResultId ? { buildResultId } : {}),
+      ...(basis ? { basis } : {}),
     },
   };
 }
