@@ -4,7 +4,7 @@
 
 - **API Read:**
   - `read/build/party/{p}/gaSearch`
-  - `read/buildparty/{p}/directedBuild`
+  - `read/build/party/{p}/directedBuild`
 
 #### 7.1.1 AUTO equipment logic
 
@@ -400,7 +400,7 @@ at least one party member has an empty equipment slot.
   - `read/build/character/stagedEquipmentTuning`
   - `read/expedition/{p}/simulationRun`
 
-- This is a read API. It never changes the save. If the final check (step 6) passes, the result returns the changes as `changeSummary` (see `9.1.3`, 2-3-7).
+- This is a read API. It never changes the save. If the final check (step 6) passes, the result returns the changes as `changeSummary` (see `9.1.3`, 2-3-8).
 
 - **Parameters:**
   - `baselineRuns` (constant: `1000`)

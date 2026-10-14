@@ -768,6 +768,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Array of characters to optimize, in the format `[{characterId, changeableComponents}]`.
     * All specified characters must belong to the party identified by `{p}`.
     * `changeableComponents` is optional. If omitted, all defaults below apply.
+      * `uniqueCharacter`: Boolean, optional, default `false`.
+        * If `true`, a available unique character may be assigned to this slot. If `false`, unique characters are never assigned.
       * `raceGender`: Boolean, optional, default `true`.
       * `mainClass`: Boolean, optional, default `true`.
       * `subClass`: Boolean, optional, default `true`.
@@ -776,9 +778,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `autoEquipmentRun`: String enum, optional, default `currentSetting`.
         * Options: `currentSetting`, `FULL`, `SEMI`, `OFF`
         * The auto-equipment logic (including jewel assignment) is triggered if the value is `FULL` or `SEMI`, or if the value is `currentSetting` and the character's `m.auto_equipment` is `FULL` or `SEMI`.
-          * After the result is committed through another API, the character's `m.auto_equipment` may change from `FULL` to `SEMI`. 
         * Otherwise (`OFF`, or `currentSetting` with `m.auto_equipment` set to `OFF`), the logic is not triggered.
-          * If a class change leaves equipment that the character can no longer equip.
+        * Note: If a class change leaves equipment that the character can no longer equip, the game rules for unequippable equipment apply.
 
   * `considerOrderChange`
     * Boolean, optional, default `false`.
@@ -815,7 +816,6 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `Support class`: `class.guardian`, `class.pilgrim`, `class.lord`
 
 * Party rules:
-  * The party size is fixed at 6.
   * Class counts are based on the main class only (sub classes are not counted).
   * Class counts and the duplicate rule apply to the whole party, including members who are not in `targets` and members with `mainClass: false`. Their main classes are fixed but still counted.
   * A party cannot have duplicate Support classes. This applies to all directions, including `free`.
@@ -823,7 +823,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Not allowed: `class.guardian` + `class.guardian`
 
 * Direction (number of members per main class category):
-  * The direction guides the main class assignment of characters whose `mainClass` is changeable. It does not guarantee the final party composition, because members with `mainClass: false` (or a main class locked by game rules) keep their current main class, and these are still counted.
+  * The direction guides the main class assignment of characters whose `mainClass` is changeable. If the ranges cannot be fully satisfied, tuning proceeds with the closest achievable composition.
   * `rapidRanged`
     * `Melee class`: `0-1`
     * `Ranged class`: `2-5`
@@ -833,6 +833,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * When `raceGender` candidates are generated, `Felidian` is weighted 3x relative to other races (for example, 3x as likely to be sampled).
       * Applies only to characters whose `raceGender` is changeable.
       * Exception: `Felidian` cannot have `class.ninja` as its main class. Any candidate combining the two is invalid.
+        * Reason: both grant `a.first-strike`, which does not stack.
   * `magicBurst`
     * `Melee class`: `0-1`
     * `Ranged class`: `0-1`
@@ -858,8 +859,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Process:
   * A component may be changed only if it is set to `true` in `changeableComponents` and the game rules allow the change.
-    * Example: a unique character's race, gender, or class cannot be changed, even if the component is `true`.
-  * Precheck: If the locked main classes make the selected direction impossible to satisfy (including the Support duplicate rule), tuning is skipped and the build is left unchanged.
+    * Example: a unique character's gender, lineage, and predisposition cannot be changed, even if the component is `true`.
   * Step 1: High-impact changes
     * Searches: `raceGender`, `mainClass`, `subClass`, `lineage`, `considerOrderChange`
     * Runs `autoEquipmentRun` for each candidate. `considerItemsScope` and `objective` apply.
@@ -877,8 +877,6 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `direction`
   * `composition`
     * Number of members per main class category, before and after.
-  * `skipped`
-    * Why the search did not run (the Process precheck), or `null`.
   * `steps`
     * Number of candidates tried and the selected option, for each step of the Process.
   * Details: `9.1.4`.
