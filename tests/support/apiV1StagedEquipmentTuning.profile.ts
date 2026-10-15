@@ -68,7 +68,11 @@ rejects({ characterId: firstId, offenseElementTrialRuns: 21 }, 'invalid_request:
 rejects({ characterId: firstId, abilityCandidateCount: 0 }, 'invalid_request:abilityCandidateCount');
 rejects({ characterId: firstId, minImprovement: -0.1 }, 'invalid_request:minImprovement');
 rejects({ characterId: firstId, offenseElementRequest: 'e.wind' }, 'invalid_request:offenseElementRequest');
-rejects({ characterId: firstId, objective: 'experience' }, 'invalid_request:objective');
+rejects({ characterId: firstId, objective: 'speed' }, 'invalid_request:objective');
+// SpecRef: 9.1.3 | 2-0 `objectiveGuard` | one member, another objective, a minimum of 0 to 1 (validated as for `gaSearch`).
+rejects({ characterId: firstId, objectiveGuard: { success: 0.5 } }, 'invalid_request:objectiveGuard.success.same_as_objective');
+rejects({ characterId: firstId, objectiveGuard: { minDefeat: 0.5 } }, 'invalid_request:objectiveGuard.minDefeat.unknown_member');
+rejects({ characterId: firstId, objectiveGuard: { progress: 1.5 } }, 'invalid_request:objectiveGuard.progress');
 rejects({ characterId: firstId, seed: 1.5 }, 'invalid_request:seed');
 rejects({ characterId: firstId, seed: '7' }, 'invalid_request:seed');
 {
@@ -76,7 +80,7 @@ rejects({ characterId: firstId, seed: '7' }, 'invalid_request:seed');
   assert.deepEqual(
     { ...parsed },
     {
-      characterId: firstId, partyIndex: 0, objective: 'success', offenseElementRequest: null, seed: null,
+      characterId: firstId, partyIndex: 0, objective: 'success', offenseElementRequest: null, seed: null, objectiveGuard: null,
       quickRuns: 300, finalTuningRuns: 500, offenseElementTrialRuns: 9, offenseElementCandidateCount: 2, defenseElementTrialRuns: 15,
       defenseElementCandidateCount: 2, abilityTrialRuns: 40, abilityCandidateCount: 2, minImprovement: 0.07, minGateImprovement: 0.07,
     },
@@ -84,6 +88,9 @@ rejects({ characterId: firstId, seed: '7' }, 'invalid_request:seed');
   );
   assert.equal(parseStagedTuningRequest(fresh, { characterId: firstId, offenseElementRequest: 'e.none' }).offenseElementRequest, 'none');
   assert.equal(parseStagedTuningRequest(fresh, { characterId: firstId, seed: -42 }).seed, -42);
+  // Every objective of 9.1.3, 2-0 is accepted, and a guard may sit on `progress`.
+  for (const objective of ['success', 'minDefeat', 'bossDamage', 'experience', 'progress']) assert.equal(parseStagedTuningRequest(fresh, { characterId: firstId, objective }).objective, objective);
+  assert.deepEqual(parseStagedTuningRequest(fresh, { characterId: firstId, objective: 'bossDamage', objectiveGuard: { progress: 0.9 } }).objectiveGuard, { objective: 'progress', minimum: 0.9 });
 }
 
 // ---------------- Improvement and the luck check (Spec 7.1.5 General rules) ----------------
@@ -116,6 +123,8 @@ near(tuningImprovement('success', 0.93, 0.95), 0.4, 'near 1 the failure side dec
 assert.ok(tuningImprovement('success', 0.95, 0.97) >= 0.07, 'a 7% threshold can be met above 93.5%');
 near(tuningImprovement('success', 0.5, 0.535), 0.5 / 0.465 - 1, 'the larger of the two ratios');
 near(tuningImprovement('progress', 0.8, 0.84), 0.2 / 0.16 - 1, '`progress` is scored like `success`');
+near(tuningImprovement('experience', 400, 440), 0.1, '`experience` has no rarer side: a plain relative change');
+near(tuningImprovement('experience', 400, 360), -0.1, 'less EXP is a negative improvement');
 near(tuningImprovement('bossDamage', 0.4, 0.3), 0.6 / 0.7 - 1, 'a worse score is a negative improvement');
 assert.ok(tuningImprovement('success', 0.6, 0.5) < 0 && tuningImprovement('minDefeat', 0.1, 0.2) < 0, 'worse on both sides is negative');
 near(tuningImprovement('minDefeat', 0.2, 0.1), 1, 'a lower defeat rate is an improvement');
@@ -156,11 +165,13 @@ assert.equal(tuningImprovement('success', 1, 1), 0, 'equal scores are no change'
   // step 6 is not simulated again (the tuned build is the current build).
   assert.equal(data.after, data.before);
   assert.deepEqual([data.improvement, data.gain], [0, 0]);
-  assert.equal(data.simulationRuns, 1000 + 300, 'the baseline and the quick run of the current build');
+  // The baseline, the quick run of the current build, and the `crossCheck` objective on the baseline seed (9.1.3, 2-0).
+  assert.equal(data.simulationRuns, 1000 + 300 + 1000, 'the baseline, the quick run, and the cross-check');
+  assert.deepEqual((outcome.data as { crossCheck?: unknown }).crossCheck, { objective: 'bossDamage', before: (outcome.data as { crossCheck: { before: number } }).crossCheck.before, after: (outcome.data as { crossCheck: { before: number } }).crossCheck.before, minimum: null, reached: null }, 'no change: the cross-check after equals before');
   assert.match(String(data.bottleneckRoom), /^[1-6]f-[1-4]$/);
   assert.deepEqual(state, before, 'the tuning never changes the state it read');
   const off = (await tune(state, { characterId: firstId, offenseElementTrialRuns: 0, defenseElementTrialRuns: 0, abilityTrialRuns: 0 })).data as unknown as TuningData;
-  assert.equal(off.simulationRuns, 1000, 'a step with 0 trials is skipped');
+  assert.equal(off.simulationRuns, 1000 + 1000, 'a step with 0 trials is skipped');
   // `seed`: the random one is returned, and sending it (or any seed) again repeats the tuning.
   assert.equal(data.seed, seed, 'the random seed chosen is returned');
   assert.deepEqual((await tune(state, { characterId: firstId, seed })).data, outcome.data, 'the returned seed repeats the tuning');
@@ -281,6 +292,28 @@ const data = outcome.data as unknown as TuningData;
   assert.equal(buildSimulationRunData(forecast, 0, 'check').overview, boss.before);
   assert.equal(forecast.boss?.reached, 1000);
   assert.deepEqual(forecast.rooms.filter((room) => room.reached > 0).map((room) => room.room), [24], 'only the boss room is fought');
+}
+
+// ---------------- `experience`, `progress`, and `objectiveGuard` (Spec 9.1.3, 2-0; 7.1.5 Guard) ----------------
+{
+  const quick = { characterId: ninja.id, offenseElementTrialRuns: 3, defenseElementTrialRuns: 0, abilityTrialRuns: 0, quickRuns: 100, finalTuningRuns: 200, seed: 7 };
+  // `experience` scores itself; its gain and standard error are relative to the current build's average EXP.
+  const exp = (await tune(sample, { ...quick, objective: 'experience' })).data as unknown as TuningData & { crossCheck: { objective: string } };
+  assert.equal(exp.scoredBy, 'experience');
+  assert.ok(exp.gain === null || Math.abs(exp.gain) < 10, `a relative EXP gain: ${exp.gain}`);
+  assert.equal(exp.crossCheck.objective, 'bossDamage', 'the 2-0 default cross-check of `experience`');
+  // `progress` scores itself, without the `success` fallback.
+  const progress = (await tune(sample, { ...quick, objective: 'progress' })).data as unknown as TuningData;
+  assert.equal(progress.scoredBy, 'progress');
+  // A guard both builds always reach changes nothing: the same steps are kept and the same result is accepted.
+  const plain = (await tune(sample, quick)).data as unknown as TuningData;
+  const easy = (await tune(sample, { ...quick, objectiveGuard: { bossDamage: 0 } })).data as unknown as TuningData & { crossCheck: { objective: string; minimum: number; reached: unknown } };
+  assert.deepEqual([easy.accepted, easy.changeSummary, easy.steps.finalTuning], [plain.accepted, plain.changeSummary, plain.steps.finalTuning]);
+  assert.deepEqual([easy.crossCheck.objective, easy.crossCheck.minimum, easy.crossCheck.reached], ['bossDamage', 0, { before: true, after: true }]);
+  // A guard no build reaches: a tuned build is accepted only with a guard rate no lower than the current build's.
+  const hard = (await tune(sample, { ...quick, objectiveGuard: { progress: 1 } })).data as unknown as TuningData & { crossCheck: { before: number; after: number; reached: { before: boolean; after: boolean } } };
+  assert.equal(hard.crossCheck.reached.before, false);
+  if (hard.accepted && !hard.crossCheck.reached.after) assert.ok(hard.crossCheck.after >= hard.crossCheck.before, 'an accepted build below the guard keeps at least the current guard rate');
 }
 
 // ---------------- Counters of the bottleneck room (Spec 7.1.5.1; 9.1.4.9 `bottleneckCounters`) ----------------

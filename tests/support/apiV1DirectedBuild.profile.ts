@@ -69,9 +69,9 @@ const search = (state: GameState, raw: Record<string, unknown>, options: Paramet
 interface DirectedData {
   verdict: string; changeSummary: GaChangeEntry[]; basis: string; seed: number; direction: string; directionStrictness: string; evaluations: number; elapsedSeconds: number;
   composition: { before: Record<string, number>; after: Record<string, number>; distanceBefore: number; distance: number; smallestDistance: number; recomposition: number; forcedRecomposition: boolean };
-  steps: Record<string, { candidatesTried: number; selected: string | null }>;
+  steps: Record<string, { candidatesTried: number; selected: string | null; method?: string; members?: number[] }> & { finalSelection?: { runs: number; finalists: { finalist: string; rate: number; guard: number | null }[]; selected: string } };
   forecast: { scope: { endsAt: string } };
-  verification: { before: number; after: number; verifySeed: number; crossCheck: { objective: string; minimum: number | null } };
+  verification: { objective: string; before: number; after: number; verifySeed: number; crossCheck: { objective: string; minimum: number | null } };
 }
 const commitContext = (): ApiV1CommitContext => ({ simulatedAt: now, gameMode: 'mode.normal', enemyLevelOffset: 0, settings: {}, equipmentHistory: {}, uploadedFiles: {}, canonicalFiles: {}, applyAutoEquipment: fakeAutoEquipment, createDeliveryId: () => 'd', now: () => now });
 /** The result applied through `applyBuildChanges`, as a client would send it back. */
@@ -102,6 +102,9 @@ rejects({ direction: 'free', targets: everyone(), tuningParameters: { maxChanges
 rejects({ direction: 'free', targets: everyone(), tuningParameters: { populationSize: 8, eliteCount: 3 } }, 'invalid_request:tuningParameters.eliteCount');
 rejects({ direction: 'free', targets: everyone(), gaParameters: {} }, 'invalid_request:gaParameters.unknown_member');
 rejects({ direction: 'free', targets: everyone(), autoEquipmentScope: 'some' }, 'invalid_request:autoEquipmentScope');
+rejects({ direction: 'free', targets: everyone(), equipmentPolish: 'some' }, 'invalid_request:equipmentPolish');
+rejects({ direction: 'free', targets: everyone(), polishMethod: 'manual' }, 'invalid_request:polishMethod');
+rejects({ direction: 'free', targets: everyone(), objectiveGuard: { minDefeat: 0.1 } }, 'invalid_request:objectiveGuard.minDefeat.unknown_member');
 rejects({ direction: 'free', targets: everyone(), directionStrictness: 'loose' }, 'invalid_request:directionStrictness');
 rejects({ direction: 'free', targets: everyone(), directionPenalty: 51 }, 'invalid_request:directionPenalty');
 rejects({ direction: 'free', targets: everyone(), objectiveGuard: { success: 0.1 } }, 'invalid_request:objectiveGuard.success.same_as_objective');
@@ -118,8 +121,11 @@ rejects({ direction: 'free', targets: everyone(), tuningParameters: { timeBudget
   assert.deepEqual(parsed.targets[0], { characterId: ids[1], uniqueCharacter: false, raceGender: true, mainClass: true, subClass: true, lineage: false, predisposition: false, autoEquipmentRun: 'FULL' });
   assert.deepEqual([parsed.objective, parsed.considerOrderChange, parsed.considerDeityChange, parsed.considerItemsScope], ['success', false, 'none', 'normal']);
   assert.deepEqual([parsed.autoEquipmentScope, parsed.directionStrictness, parsed.directionPenalty, parsed.objectiveGuard], ['changedOnly', 'strict', 2, null]);
-  // The 9.1.3 presets: `high` is 48 x 60 with 300 / 1000 runs, 480 s, and a mutation rate of 0.5.
-  assert.deepEqual(DIRECTED_EFFORT_PRESETS.high, { populationSize: 48, generations: 60, quickRuns: 300, confirmRuns: 1000, timeBudgetSeconds: 480, mutationRate: 0.5 });
+  assert.deepEqual([parsed.equipmentPolish, parsed.polishMethod], ['changedOnly', 'ga'], 'Step 4 polishes the changed members with the genetic search');
+  // The 9.1.3 presets: `medium` is 24 x 30; `high` is 48 x 60 with 100 / 600 runs, 480 s, and a mutation rate of 0.35.
+  assert.deepEqual(DIRECTED_EFFORT_PRESETS.medium, { populationSize: 24, generations: 30, quickRuns: 50, confirmRuns: 300, timeBudgetSeconds: 180, mutationRate: 0.35 });
+  assert.deepEqual(DIRECTED_EFFORT_PRESETS.high, { populationSize: 48, generations: 60, quickRuns: 100, confirmRuns: 600, timeBudgetSeconds: 480, mutationRate: 0.35 });
+  assert.equal(parseDirectedBuildRequest(shallow, 0, { direction: 'free', targets: everyone(), objective: 'progress', objectiveGuard: { bossDamage: 0.5 } }).objective, 'progress');
   assert.deepEqual([DIRECTED_EFFORT_PRESETS.low.timeBudgetSeconds, DIRECTED_EFFORT_PRESETS.medium.timeBudgetSeconds], [60, 180]);
   const high = parseDirectedBuildRequest(shallow, 0, { direction: 'free', targets: everyone(), tuningParameters: { effort: 'high', mutationRate: 0.2 } });
   assert.deepEqual([high.parameters.populationSize, high.parameters.mutationRate], [48, 0.2], 'an explicit value overrides the preset');
@@ -186,28 +192,34 @@ const isFelidianNinja = (character: Character) => character.raceId === 'felidian
   const fixed = ids.map((characterId) => ({ characterId, changeableComponents: { raceGender: false, mainClass: false, subClass: false, autoEquipmentRun: 'OFF' } }));
   const none = (await search(shallow, { direction: 'magicBurst', targets: fixed, tuningParameters: small })).data as unknown as DirectedData;
   assert.deepEqual([none.verdict, none.changeSummary, none.steps.step1.selected], ['noChange', [], null]);
+  // The current build is not a Step 1 candidate (9.1.3, 2-3-3): with no alternative, Step 1 scores nothing.
+  assert.equal(none.steps.step1.candidatesTried, 0);
+  assert.deepEqual([none.steps.finalSelection?.finalists, none.steps.finalSelection?.selected], [[], 'current'], 'no change to select from');
   assert.equal(none.composition.distance, compositionDistance('magicBurst', compositionOf(shallow.parties[0].characters)));
 }
 
 // ---------------- autoEquipmentRun and considerItemsScope ----------------
 {
-  // A stripped party: the build stays, and only the requested Auto Equipment changes anything.
+  // A stripped party whose builds stay: only the order may change, so every Step 1 candidate is an order change, and only
+  // the requested Auto Equipment changes the equipment (no Step 4 polish).
   let stripped = shallow;
   for (const characterId of ids) stripped = gameReducer(stripped, { type: 'REMOVE_ALL_EQUIPMENT', partyIndex: 0, characterId });
   const equipOnly = (run: string) => ids.map((characterId) => ({ characterId, changeableComponents: { raceGender: false, mainClass: false, subClass: false, autoEquipmentRun: run } }));
+  const orderOnly = { direction: 'free', considerOrderChange: true, equipmentPolish: 'none', tuningParameters: small };
+  const equips = (data: DirectedData) => data.changeSummary.filter((entry) => entry.endpoint.endsWith('/equip'));
   // `allTargets` runs Auto Equipment for members whose build does not change; `changedOnly` (the default) never does.
-  const off = (await search(stripped, { direction: 'free', targets: equipOnly('OFF'), autoEquipmentScope: 'allTargets', tuningParameters: small })).data as unknown as DirectedData;
-  assert.deepEqual(off.changeSummary, [], 'OFF runs nothing');
-  const unchangedOnly = (await search(stripped, { direction: 'free', targets: equipOnly('FULL'), tuningParameters: small })).data as unknown as DirectedData;
-  assert.deepEqual([unchangedOnly.verdict, unchangedOnly.changeSummary], ['noChange', []], 'changedOnly: no build change, no Auto Equipment');
-  const full = (await search(stripped, { direction: 'free', targets: equipOnly('FULL'), autoEquipmentScope: 'allTargets', tuningParameters: small })).data as unknown as DirectedData;
-  assert.ok(full.changeSummary.length > 0 && full.changeSummary.every((entry) => entry.endpoint.endsWith('/equip')), 'FULL fills the empty slots from the Inventory');
+  const off = (await search(stripped, { ...orderOnly, targets: equipOnly('OFF'), autoEquipmentScope: 'allTargets' })).data as unknown as DirectedData;
+  assert.deepEqual(equips(off), [], 'OFF runs nothing');
+  const unchangedOnly = (await search(stripped, { ...orderOnly, targets: equipOnly('FULL') })).data as unknown as DirectedData;
+  assert.deepEqual(equips(unchangedOnly), [], 'changedOnly: no build change, no Auto Equipment');
+  const full = (await search(stripped, { ...orderOnly, targets: equipOnly('FULL'), autoEquipmentScope: 'allTargets' })).data as unknown as DirectedData;
+  assert.ok(equips(full).length > 0, 'FULL fills the empty slots from the Inventory');
   assert.notEqual(full.verdict, 'noChange');
   apply(stripped, full);
   // `currentSetting` follows each character's own mode: all OFF here, so nothing runs.
   let manual = stripped;
   for (const characterId of ids) manual = gameReducer(manual, { type: 'UPDATE_CHARACTER', partyIndex: 0, characterId, updates: { autoEquipmentMode: 0 } });
-  assert.deepEqual(((await search(manual, { direction: 'free', targets: equipOnly('currentSetting'), autoEquipmentScope: 'allTargets', tuningParameters: small })).data as unknown as DirectedData).changeSummary, []);
+  assert.deepEqual(equips((await search(manual, { ...orderOnly, targets: equipOnly('currentSetting'), autoEquipmentScope: 'allTargets' })).data as unknown as DirectedData), []);
 
   // Only `global` takes items worn outside the targets: with an empty Inventory the party gets gear only from party 2.
   const geared = apply(stripped, full);
@@ -215,19 +227,18 @@ const isFelidianNinja = (character: Character) => character.raceId === 'felidian
   const donorState: GameState = { ...stripped, parties: [stripped.parties[0], donorParty], global: { ...stripped.global, inventory: {} } };
   const donorIds = donorParty.characters.map((character) => character.id);
   for (const scope of ['normal', 'withinTargets']) {
-    const empty = (await search(donorState, { direction: 'free', targets: equipOnly('FULL'), considerItemsScope: scope, autoEquipmentScope: 'allTargets', tuningParameters: small })).data as unknown as DirectedData;
-    assert.deepEqual(empty.changeSummary, [], `${scope} has nothing to equip`);
+    const empty = (await search(donorState, { ...orderOnly, targets: equipOnly('FULL'), considerItemsScope: scope, autoEquipmentScope: 'allTargets' })).data as unknown as DirectedData;
+    assert.deepEqual(equips(empty), [], `${scope} has nothing to equip`);
   }
-  const global = (await search(donorState, { direction: 'free', targets: equipOnly('FULL'), considerItemsScope: 'global', autoEquipmentScope: 'allTargets', tuningParameters: small })).data as unknown as DirectedData;
+  const global = (await search(donorState, { ...orderOnly, targets: equipOnly('FULL'), considerItemsScope: 'global', autoEquipmentScope: 'allTargets' })).data as unknown as DirectedData;
   const removals = global.changeSummary.filter((entry) => entry.endpoint.endsWith('/removeEquipment'));
-  const equips = global.changeSummary.filter((entry) => entry.endpoint.endsWith('/equip'));
   assert.ok(removals.length > 0 && removals.every((entry) => donorIds.includes(Number(entry.endpoint.split('/')[3]))), 'donors are emptied');
-  assert.ok(equips.length > 0 && equips.every((entry) => ids.includes(Number(entry.endpoint.split('/')[3]))), 'the party is equipped');
-  assert.equal(removals.reduce((sum, entry) => sum + (entry.parameters.targetEquipment as number[]).length, 0), equips.length, 'every taken item is placed and none is created');
+  assert.ok(equips(global).length > 0 && equips(global).every((entry) => ids.includes(Number(entry.endpoint.split('/')[3]))), 'the party is equipped');
+  assert.equal(removals.reduce((sum, entry) => sum + (entry.parameters.targetEquipment as number[]).length, 0), equips(global).length, 'every taken item is placed and none is created');
   const worn = (state: GameState, characterIds: number[]) => state.parties.flatMap((party) => party.characters).filter((character) => characterIds.includes(character.id)).reduce((sum, character) => sum + character.equipment.filter(Boolean).length, 0);
   const applied = apply(donorState, global);
-  assert.equal(worn(applied, ids), equips.length);
-  assert.equal(worn(applied, donorIds), worn(donorState, donorIds) - equips.length);
+  assert.equal(worn(applied, ids), equips(global).length);
+  assert.equal(worn(applied, donorIds), worn(donorState, donorIds) - equips(global).length);
 }
 
 // ---------------- Step 2: the deity ----------------
@@ -252,7 +263,7 @@ const isFelidianNinja = (character: Character) => character.raceId === 'felidian
 {
   const editable = shallow.parties[0].characters.find((character) => !character.isUnique)!;
   const targets = [{ characterId: editable.id, changeableComponents: { raceGender: false, mainClass: false, subClass: false, lineage: true, autoEquipmentRun: 'OFF' } }];
-  const data = (await search(shallow, { direction: 'free', targets, tuningParameters: small })).data as unknown as DirectedData;
+  const data = (await search(shallow, { direction: 'free', targets, equipmentPolish: 'none', tuningParameters: small })).data as unknown as DirectedData;
   const lineages = LINEAGES.filter((entry) => entry.selectable === true).length;
   assert.equal(data.steps.step3.candidatesTried, lineages - 1, 'every other selectable lineage is tried once');
   if (data.steps.step3.selected) {
@@ -267,8 +278,8 @@ const isFelidianNinja = (character: Character) => character.raceId === 'felidian
 
 // ---------------- Time budget (Spec 9.1.3, 2-3-3 `timeBudgetSeconds`) ----------------
 {
-  // A clock that would let Step 1 run long: Step 1 stops at 75% of the time left after the verification reserve, Step 2
-  // still runs in the rest, and the whole request, verification included, fits in the budget.
+  // A clock that would let Step 1 run long: Step 1 stops at its share of the time left after the Final selection and
+  // verification reserve, Step 2 still runs in its share, and the whole request, verification included, fits in the budget.
   const data = (await search(shallow, { direction: 'balance', targets: everyone({ lineage: true }), considerDeityChange: 'unoccupiedDeities', tuningParameters: { ...small, generations: 50, timeBudgetSeconds: 5 } }, { tick: 50 })).data as unknown as DirectedData;
   assert.ok(data.steps.step1);
   assert.ok(data.steps.step2 && data.steps.step2.candidatesTried > 0, `Step 2 gets its share: ${JSON.stringify(data.steps)}`);
@@ -278,25 +289,59 @@ const isFelidianNinja = (character: Character) => character.raceId === 'felidian
 
 // ---------------- autoEquipmentScope `changedOnly` (Spec 9.1.3, 2-3-3) ----------------
 {
-  // Gear that Auto Equipment would pick differently (`repickAutoEquipment` takes the last item, the worn gear is the first).
-  const geared = apply(shallow, (await search(shallow, { direction: 'free', targets: ids.map((characterId) => ({ characterId, changeableComponents: { raceGender: false, mainClass: false, subClass: false, autoEquipmentRun: 'FULL' } })), autoEquipmentScope: 'allTargets', tuningParameters: small })).data as unknown as DirectedData);
+  // Gear that Auto Equipment would pick differently (`repickAutoEquipment` takes the last item, the worn gear the first).
+  let geared = shallow;
+  for (const characterId of ids) geared = fakeAutoEquipment(geared, 0, characterId);
   const equipOnly = ids.map((characterId) => ({ characterId, changeableComponents: { raceGender: false, mainClass: false, subClass: false, autoEquipmentRun: 'FULL' } }));
   const kept = (await search(geared, { direction: 'free', targets: equipOnly, tuningParameters: small }, { autoEquipment: repickAutoEquipment })).data as unknown as DirectedData;
-  assert.deepEqual([kept.verdict, kept.changeSummary], ['noChange', []], 'changedOnly: the current build is exactly the current build, gear included');
-  const repicked = (await search(geared, { direction: 'free', targets: equipOnly, autoEquipmentScope: 'allTargets', tuningParameters: small }, { autoEquipment: repickAutoEquipment })).data as unknown as DirectedData;
-  assert.ok(repicked.changeSummary.some((entry) => entry.endpoint.endsWith('/equip')), 'allTargets re-runs Auto Equipment on unchanged members');
+  assert.deepEqual([kept.verdict, kept.changeSummary], ['noChange', []], 'changedOnly: no alternative, so the current build stays, gear included');
   // Only the member whose class changes is re-equipped: the party has two Ranged classes, `magicBurst` allows one, and only
-  // one ranged member may change, so `strict` must re-class it.
+  // one ranged member may change, so `strict` must re-class it (the current build is then not a finalist).
   const before = compositionOf(geared.parties[0].characters);
   const mover = geared.parties[0].characters.find((character) => ['ranger', 'striker', 'ninja'].includes(character.mainClassId) && !character.isUnique)!;
   assert.ok(before.ranged === 2 && compositionDistance('magicBurst', before) === 1, JSON.stringify(before));
-  {
-    const one = ids.map((characterId) => ({ characterId, changeableComponents: { raceGender: false, subClass: false, mainClass: characterId === mover.id, autoEquipmentRun: 'FULL' } }));
-    const moved = (await search(geared, { direction: 'magicBurst', targets: one, tuningParameters: small }, { autoEquipment: repickAutoEquipment })).data as unknown as DirectedData;
-    assert.deepEqual([moved.composition.forcedRecomposition, moved.composition.distance], [true, 0]);
-    const touched = new Set(moved.changeSummary.filter((entry) => /\/(equip|jewelAttach|jewelRemove)$/.test(entry.endpoint)).map((entry) => Number(entry.endpoint.split('/')[3])));
-    assert.deepEqual([...touched], [mover.id], `only ${mover.id} is re-equipped`);
+  const one = ids.map((characterId) => ({ characterId, changeableComponents: { raceGender: false, subClass: false, mainClass: characterId === mover.id, autoEquipmentRun: 'FULL' } }));
+  const touchedBy = (data: DirectedData) => new Set(data.changeSummary.filter((entry) => /\/(equip|jewelAttach|jewelRemove)$/.test(entry.endpoint)).map((entry) => Number(entry.endpoint.split('/')[3])));
+  const moved = (await search(geared, { direction: 'magicBurst', targets: one, equipmentPolish: 'none', tuningParameters: small }, { autoEquipment: repickAutoEquipment })).data as unknown as DirectedData;
+  assert.deepEqual([moved.composition.forcedRecomposition, moved.composition.distance], [true, 0]);
+  assert.deepEqual([...touchedBy(moved)], [mover.id], `only ${mover.id} is re-equipped`);
+  assert.ok(moved.steps.finalSelection && moved.steps.finalSelection.finalists.every((entry) => entry.finalist !== 'current'), 'a forced recomposition has no current finalist');
+  const all = (await search(geared, { direction: 'magicBurst', targets: one, autoEquipmentScope: 'allTargets', equipmentPolish: 'none', tuningParameters: small }, { autoEquipment: repickAutoEquipment })).data as unknown as DirectedData;
+  assert.ok(touchedBy(all).size > 1, 'allTargets re-runs Auto Equipment on unchanged members');
+}
+
+// ---------------- Step 4 (equipment polish) and the Final selection (Spec 9.1.3, 2-3-3) ----------------
+{
+  // `rapidRanged` re-classes members of the fresh party; Step 4 then polishes exactly the members whose build changed.
+  const targets = everyone({ raceGender: false, subClass: false });
+  for (const method of ['ga', 'stagedTuning', 'stagedTuningThenGa']) {
+    const data = (await search(shallow, { direction: 'rapidRanged', targets, polishMethod: method, tuningParameters: small })).data as unknown as DirectedData;
+    const step4 = data.steps.step4!;
+    assert.equal(step4.method, method);
+    const reclassed = data.changeSummary.filter((entry) => entry.endpoint.endsWith('/changeBuild')).map((entry) => Number(entry.endpoint.split('/')[3]));
+    const selection = data.steps.finalSelection!;
+    assert.ok(selection.finalists.some((entry) => entry.finalist === 'polished'));
+    if (selection.selected === 'polished') assert.deepEqual([...step4.members!].sort(), [...reclassed].sort(), `${method}: the polished members are the re-classed ones`);
+    // Under `normal`, only the polished members' equipment moves; the others keep theirs.
+    const equipped = new Set(data.changeSummary.filter((entry) => entry.endpoint.endsWith('/equip')).map((entry) => Number(entry.endpoint.split('/')[3])));
+    for (const id of equipped) assert.ok(step4.members!.includes(id), `${method}: ${id} was not polished but got new equipment`);
+    apply(shallow, data);
   }
+  // `equipmentPolish: none` runs no Step 4.
+  assert.equal(((await search(shallow, { direction: 'rapidRanged', targets, equipmentPolish: 'none', tuningParameters: small })).data as unknown as DirectedData).steps.step4, undefined);
+  // `free` keeps the current build as a finalist: the result is a change only when it beats it by the Margin rule, and the
+  // current build itself is `noChange` with no `changeSummary`.
+  const free = (await search(shallow, { direction: 'free', targets: everyone(), tuningParameters: small })).data as unknown as DirectedData;
+  const selection = free.steps.finalSelection!;
+  assert.ok(selection.finalists.some((entry) => entry.finalist === 'current'), JSON.stringify(selection));
+  assert.equal(selection.runs, 100, 'twice `confirmRuns`');
+  if (selection.selected === 'current') assert.deepEqual([free.verdict, free.changeSummary], ['noChange', []]);
+  else assert.ok(free.changeSummary.length > 0);
+  // `progress` is an objective of its own (9.1.3, 2-0), and a guard may sit on it.
+  const progress = (await search(shallow, { direction: 'free', targets: everyone(), objective: 'progress', tuningParameters: small })).data as unknown as DirectedData;
+  assert.deepEqual([progress.verification.objective, progress.verification.crossCheck.objective], ['progress', 'bossDamage']);
+  const guardedProgress = (await search(shallow, { direction: 'free', targets: everyone(), objective: 'bossDamage', objectiveGuard: { progress: 0.5 }, tuningParameters: small })).data as unknown as DirectedData;
+  assert.deepEqual([guardedProgress.verification.crossCheck.objective, guardedProgress.verification.crossCheck.minimum], ['progress', 0.5]);
 }
 
 // ---------------- directionStrictness `soft` (Spec 9.1.3, 2-3-3) ----------------

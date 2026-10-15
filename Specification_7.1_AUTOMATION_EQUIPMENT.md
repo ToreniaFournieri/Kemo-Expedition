@@ -419,10 +419,14 @@ at least one party member has an empty equipment slot.
   - `objective`
     - Optional.
     - Default: `success`.
-    - `success`, `minDefeat`, `bossDamage`
+    - `success`, `minDefeat`, `bossDamage`, `experience`, `progress`
+    - The same objectives as every build search of the API (`9.1.3`, 2-0). See **Score** below.
     - `bossDamage` simulates only the boss battle of the current destination.
       - Each run starts the boss battle at full party HP.
-      - The rooms before it, the gates, and the depth limit are ignored. HP lost on the way to the boss is not counted; use `success` to include it.
+      - The rooms before it, the gates, and the depth limit are ignored. HP lost on the way to the boss is not counted; use `success` or `progress` to include it.
+  - `objectiveGuard`
+    - Optional. Default: none.
+    - A minimum on a second objective (`success`, `bossDamage`, or `progress`), so tuning for one objective cannot ruin another. Format, guard ranking, and guard rule: `9.1.3`, 2-0. See **Guard** below.
   - `seed`
     - Optional.
     - Integer.
@@ -450,11 +454,14 @@ at least one party member has an empty equipment slot.
       - If the success rate in step 1 is `0`, every step uses `progress` instead, because every build would tie at `0`. The response reports this as `scoredBy: progress`.
     - `minDefeat`: defeat rate. Lower is better.
     - `bossDamage`: average share of boss HP dealt in the boss battle. A win counts as `1`.
+    - `experience`: average EXP per run.
     - `progress`: average over runs of `(rooms cleared + share) / rooms on the route`.
       - `share`: if the run ended by losing or drawing a battle, the share of enemy HP dealt in that battle. Otherwise `0`.
       - Rooms on the route: the rooms up to the depth limit or the first closed gate.
       - A run that clears every room on the route scores `1`.
+      - `progress` is an `objective` of its own, and also the score `success` falls back to.
   - **Improvement:** the relative change on the rarer side of the score.
+    - `experience`: `ratio = candidateScore / currentScore`, a plain relative change (the score has no upper bound, so there is no rarer side).
     - `success`, `bossDamage`, `progress`: `ratio = max(candidateScore / currentScore, (1 - currentScore) / (1 - candidateScore))`
     - `minDefeat`: `ratio = max(currentScore / candidateScore, (1 - candidateScore) / (1 - currentScore))`
     - In words: the larger of the relative rise of the good outcome and the relative fall of the bad outcome. Near `0` the first ratio decides, and near `1` the second one does, so `minImprovement` and `minGateImprovement` can be met at any score.
@@ -470,7 +477,13 @@ at least one party member has an empty equipment slot.
     - `SE = sqrt(beforeVariance / runs + afterVariance / runs)`
       - `variance`: the variance of the per-run score (the average of the squared per-run scores, minus the square of the average score).
       - For `success` and `minDefeat`, each run scores `0` or `1`, so `variance = score × (1 - score)`.
+      - For `experience`, the per-run score is the run's EXP; `gain` is reported as a relative change (`9.1.3`, 2-0), but the check compares the EXP difference with its `SE`.
     - `SE` is how much the difference usually moves by luck alone. `gain > 2 × SE` means the gain is very unlikely to be luck.
+  - **Guard** (`objectiveGuard`):
+    - Steps 2–4 qualify candidates on `objective` alone, so the quick screening costs no extra simulation.
+    - Step 5: every build is also measured on the guard objective with `finalTuningRuns` on the step 5 seed. An add or a swap is kept only if the new build ranks above the build before it by the guard ranking (`9.1.3`, 2-0). When both reach the guard, this is the same as `improvement > 0`.
+    - Step 6: the current build and the tuned build are also measured on the guard objective with `baselineRuns` on the step 1 seed. See step 6 for the acceptance rule.
+    - Cost: one extra guard simulation per step 5 build, plus two in steps 1 and 6.
 
 1. Run a baseline simulation and find the bottleneck
    - Simulate the current build with `baselineRuns` runs (same as `read/expedition/{p}/simulationRun` with `numberOfRun=baselineRuns`).
@@ -507,12 +520,12 @@ at least one party member has an empty equipment slot.
    - Start from the current build. Every simulation in this step uses `finalTuningRuns`.
    - Add pass:
      - Put all candidates recorded in steps 2–4 into one list, sorted by their improvement (best first).
-     - Go through the list in order. Add each candidate to the build, and keep it only if the score improves compared with the build before adding it (`improvement > 0`).
+     - Go through the list in order. Add each candidate to the build, and keep it only if the score improves compared with the build before adding it (`improvement > 0`; with `objectiveGuard`, if it ranks above that build by the guard ranking, see **Guard**).
      - The build holds at most one step 2 candidate and one step 3 candidate. Skip a step 2 or step 3 candidate if one from the same step is already kept.
      - Step 4 candidates can be combined (several ability items).
      - If a candidate needs a slot that an earlier kept candidate already changed, use another unlocked slot. If no unlocked slot is left, skip the candidate.
    - Swap pass:
-     - For steps 2 and 3, try each other recorded candidate in place of the kept one. Keep the swap only if the score improves.
+     - For steps 2 and 3, try each other recorded candidate in place of the kept one. Keep the swap only if the score improves (with `objectiveGuard`, if the build ranks higher by the guard ranking).
    - The result is the tuned build.
    - If no candidate is kept, there is no change.
    - Report: for each kept candidate, in the order of the kept list, the improvement of the build with this candidate and every candidate before it, compared with the current build (step 5 seed). After a swap, the swapped-in candidate takes the place of the one it replaced. The last value is the improvement of the tuned build.
@@ -522,6 +535,9 @@ at least one party member has an empty equipment slot.
    - Accept the tuned build only if both are true:
      - `improvement >= minGateImprovement`
      - `gain > 2 × SE`
+   - With `objectiveGuard` (measured on the same runs, see **Guard**):
+     - If the current build reaches the guard, the tuned build must reach it too, and both checks above must pass.
+     - If the current build does not reach it, the tuned build is accepted when it reaches the guard (the two checks above are then not required), or when both checks pass and its guard value is not lower than the current build's.
    - Otherwise, discard the changes and keep the original build. `changeSummary` is empty.
 
 ##### 7.1.5.1 Counter ability map

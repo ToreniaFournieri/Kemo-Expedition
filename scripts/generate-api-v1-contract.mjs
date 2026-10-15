@@ -292,8 +292,10 @@ const gaParameters = strict({
   ...Object.fromEntries(Object.entries(gaIntegers).map(([key, [minimum, maximum]]) => [key, optional(Type.Integer({ minimum, maximum }))])),
   mutationRate: optional(Type.Number({ minimum: 0, maximum: 1 })), seed: optional(Type.Integer()), verifySeed: optional(Type.Integer()), seedWithHeuristics: optional(Type.Boolean(), true),
 });
-// SpecRef: 9.1.3 | 2-3-2 `objectiveGuard` | one member: a minimum (0–1) on `success` or `bossDamage`, not the `objective` itself.
-const objectiveGuard = Type.Union([strict({ success: Type.Number({ minimum: 0, maximum: 1 }) }), strict({ bossDamage: Type.Number({ minimum: 0, maximum: 1 }) })]);
+// SpecRef: 9.1.3 | 2-0 `objectiveGuard` | one member: a minimum (0–1) on `success`, `bossDamage`, or `progress`, not the `objective` itself.
+const objectiveGuard = Type.Union(['success', 'bossDamage', 'progress'].map((key) => strict({ [key]: Type.Number({ minimum: 0, maximum: 1 }) })));
+// SpecRef: 9.1.3 | 2-0 Objectives | every build search takes the same objectives.
+const searchObjective = literals('success', 'minDefeat', 'bossDamage', 'experience', 'progress');
 // SpecRef: 9.1.3 | Read | 2-3-3 party/{p}/directedBuild | a POST Read body like `gaSearch`; defaults and ranges in 9.1.3.
 const directedComponents = strict({
   uniqueCharacter: optional(Type.Boolean(), false), raceGender: optional(Type.Boolean(), true), mainClass: optional(Type.Boolean(), true),
@@ -312,7 +314,7 @@ const tuningIntegers = {
   quickRuns: [10, 1000, 300], finalTuningRuns: [50, 1000, 500], offenseElementTrialRuns: [0, 20, 9], offenseElementCandidateCount: [1, 3, 2],
   defenseElementTrialRuns: [0, 40, 15], defenseElementCandidateCount: [1, 3, 2], abilityTrialRuns: [0, 100, 40], abilityCandidateCount: [1, 3, 2],
 };
-const tuningObjective = literals('success', 'minDefeat', 'bossDamage');
+const tuningObjective = searchObjective;
 // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `objective` adds `rate` and `standardError`; `seed` repeats a forecast.
 const simulationObjective = literals('success', 'minDefeat', 'bossDamage', 'experience', 'progress');
 const directBodySchemas = {
@@ -322,16 +324,18 @@ const directBodySchemas = {
     targets: nonEmptyArray(strict({ characterId: integerId, changeableComponents: optional(gaComponents) }), { maxItems: 6 }),
     considerOrderChange: optional(Type.Boolean(), false), considerDeityChange: optional(literals('none', 'unoccupiedDeities', 'allDeities'), 'none'),
     considerItemsScope: optional(literals('normal', 'withinTargets', 'global'), 'normal'),
-    objective: optional(literals('success', 'minDefeat', 'bossDamage', 'experience'), 'success'), objectiveGuard: optional(objectiveGuard), gaParameters: optional(gaParameters),
+    objective: optional(searchObjective, 'success'), objectiveGuard: optional(objectiveGuard), gaParameters: optional(gaParameters),
   }),
   'read/build/party/{p}/directedBuild': strict({
     expectedRevision: optional(Type.Integer({ minimum: 0 })),
     direction: directedDirection,
     targets: nonEmptyArray(strict({ characterId: integerId, changeableComponents: optional(directedComponents) }), { maxItems: 6 }),
     autoEquipmentScope: optional(literals('changedOnly', 'allTargets'), 'changedOnly'),
+    equipmentPolish: optional(literals('none', 'changedOnly', 'allTargets'), 'changedOnly'),
+    polishMethod: optional(literals('ga', 'stagedTuning', 'stagedTuningThenGa'), 'ga'),
     considerOrderChange: optional(Type.Boolean(), false), considerDeityChange: optional(literals('none', 'unoccupiedDeities', 'allDeities'), 'none'),
     considerItemsScope: optional(literals('normal', 'withinTargets', 'global'), 'normal'),
-    objective: optional(literals('success', 'minDefeat', 'bossDamage', 'experience'), 'success'), objectiveGuard: optional(objectiveGuard),
+    objective: optional(searchObjective, 'success'), objectiveGuard: optional(objectiveGuard),
     directionStrictness: optional(literals('strict', 'soft'), 'strict'), directionPenalty: optional(Type.Number({ minimum: 0, maximum: 50 }), 2),
     tuningParameters: optional(directedParameters),
   }),
@@ -342,7 +346,7 @@ const directBodySchemas = {
     ...Object.fromEntries(Object.entries(tuningIntegers).map(([key, [minimum, maximum, value]]) => [key, optional(Type.Integer({ minimum, maximum }), value)])),
     offenseElementRequest: optional(literals('noRequest', 'e.fire', 'e.ice', 'e.thunder', 'e.none'), 'noRequest'),
     minImprovement: optional(Type.Number({ minimum: 0, maximum: 10 }), 0.07), minGateImprovement: optional(Type.Number({ minimum: 0, maximum: 10 }), 0.07),
-    objective: optional(tuningObjective, 'success'), seed: optional(Type.Integer()),
+    objective: optional(tuningObjective, 'success'), objectiveGuard: optional(objectiveGuard), seed: optional(Type.Integer()),
   }),
 };
 
@@ -359,14 +363,14 @@ const purchaseResult = strict({ items: Type.Array(strict({ item: itemFormat, qua
 const semanticText = strict({ key: stableKey, args: Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), Type.Boolean()])) });
 // SpecRef: 9.1.3 | 2-3-2 gaSearch | the result rating, the forecast pair, and one Commit API call of `changeSummary`.
 const gaVerdict = literals('veryGood', 'good', 'noisy', 'noChange', 'worse');
-const gaObjective = literals('success', 'minDefeat', 'bossDamage', 'experience');
+const gaObjective = literals('success', 'minDefeat', 'bossDamage', 'experience', 'progress');
 // SpecRef: 9.1.3 | 2-3-2 `forecast.scope` | the rooms the forecast simulates.
 const forecastScope = strict({ from: Type.Union([floorRoomKey, Type.Null()]), to: Type.Union([floorRoomKey, Type.Null()]), rooms: Type.Integer({ minimum: 0 }), endsAt: literals('clearGate', 'depthLimit', 'dungeonEnd', 'bossRoom') });
 const gaForecast = strict({ before: Type.String(), after: Type.String(), scope: forecastScope });
 const rateValue = Type.Number({ minimum: 0 });
 // SpecRef: 9.1.3 | 2-3-2 `verification.crossCheck` | the second objective of the same two builds, with the guard when one is set.
 const crossCheck = strict({
-  objective: literals('success', 'bossDamage'), before: rateValue, after: rateValue, minimum: Type.Union([rateValue, Type.Null()]),
+  objective: literals('success', 'bossDamage', 'progress'), before: rateValue, after: rateValue, minimum: Type.Union([rateValue, Type.Null()]),
   reached: Type.Union([strict({ before: Type.Boolean(), after: Type.Boolean() }), Type.Null()]),
 });
 const gaChangeEndpoint = Type.String({ pattern: '^commit/build/' });
@@ -384,6 +388,14 @@ const gaSearchResult = {
 };
 const compositionCounts = strict({ melee: Type.Integer({ minimum: 0 }), ranged: Type.Integer({ minimum: 0 }), magic: Type.Integer({ minimum: 0 }), support: Type.Integer({ minimum: 0 }) });
 const directedStep = strict({ candidatesTried: Type.Integer({ minimum: 0 }), selected: Type.Union([Type.String(), Type.Null()]) });
+// SpecRef: 9.1.4.9 | Directed build `steps` | Step 4 also names its method and members; the Final selection lists its finalists.
+const directedPolishStep = strict({ ...directedStep.properties, method: literals('ga', 'stagedTuning', 'stagedTuningThenGa'), members: Type.Array(integerId) });
+const directedFinalist = literals('polished', 'unpolished', 'current');
+const directedFinalSelection = strict({
+  runs: Type.Integer({ minimum: 1 }),
+  finalists: Type.Array(strict({ finalist: directedFinalist, rate: rateValue, guard: Type.Union([rateValue, Type.Null()]) })),
+  selected: directedFinalist,
+});
 // SpecRef: 9.1.4.9 | stagedEquipmentTuning | one changed slot of a candidate: `<slotIndex>=<Item Format>`.
 const tuningChange = Type.String({ pattern: '^[0-9]+=[01]/[1-9][0-9]*/[0-6]/(?:0|[1-9][0-9]*)$' });
 sampleOverrides.set(tuningChange, '0=0/1101/2/0');
@@ -603,12 +615,14 @@ const responseDataSchemas = {
       before: compositionCounts, after: compositionCounts, distanceBefore: Type.Integer({ minimum: 0 }), distance: Type.Integer({ minimum: 0 }),
       smallestDistance: Type.Integer({ minimum: 0 }), recomposition: Type.Integer({ minimum: 0 }), forcedRecomposition: Type.Boolean(),
     }),
-    steps: strict({ step1: optional(directedStep), step2: optional(directedStep), step3: optional(directedStep) }),
+    steps: strict({ step1: optional(directedStep), step2: optional(directedStep), step3: optional(directedStep), step4: optional(directedPolishStep), finalSelection: optional(directedFinalSelection) }),
   }),
   // SpecRef: 9.1.3 | 2-3-7 stagedEquipmentTuning | the final check, what each step recorded, and the Commit API calls of the tuned build.
   'read/build/character/stagedEquipmentTuning': strict({
-    accepted: Type.Boolean(), objective: tuningObjective, scoredBy: literals('success', 'minDefeat', 'bossDamage', 'progress'), before: Type.String(), after: Type.String(),
-    improvement: Type.Number(), gain: Type.Number(), standardError: Type.Number({ minimum: 0 }),
+    accepted: Type.Boolean(), objective: tuningObjective, scoredBy: searchObjective, before: Type.String(), after: Type.String(),
+    // `experience` reports `gain` and `standardError` relative to the current EXP: `null` when it is 0.
+    improvement: Type.Number(), gain: Type.Union([Type.Number(), Type.Null()]), standardError: Type.Union([Type.Number({ minimum: 0 }), Type.Null()]),
+    crossCheck: optional(crossCheck),
     bottleneckRoom: Type.Union([floorRoomKey, Type.Null()]),
     bottleneckCounters: Type.Array(strict({ ability: stableKey, answers: nonEmptyArray(stableKey), status: literals('owned', 'tried', 'notTried', 'noItem') })),
     candidatesTried: strict({ offenseElement: count, defenseElement: count, ability: count }),

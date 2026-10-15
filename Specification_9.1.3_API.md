@@ -323,6 +323,54 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 **2. Read**
 
+**2-0. Objectives and `objectiveGuard` (shared)**
+
+* One definition for every operation that measures or searches a build: `{p}/simulationRun` (2-2-3, `objective` only), `party/{p}/gaSearch` (2-3-2), `party/{p}/directedBuild` (2-3-3), and `character/stagedEquipmentTuning` (2-3-8, with 7.1.5). Each operation states only where and how often it measures them.
+
+* `objective`
+  * Options: `success`, `minDefeat`, `bossDamage`, `experience`, `progress`. Default: `success`.
+  * Each objective has a `<rate>`, measured on a simulation as in 7.1.5 Score, and a per-run variance as in 7.1.5 Luck check.
+
+    | `objective` | `<rate>` | Better | Unit of `<gain>` |
+    |---|---|---|---|
+    | `success` | Success rate (clear + return) | Higher | Percentage points |
+    | `minDefeat` | Defeat rate | Lower | Percentage points |
+    | `bossDamage` | Average share of boss HP dealt in the boss battle; a win counts as `1` | Higher | Percentage points |
+    | `experience` | Average EXP per run | Higher | Relative change (%) |
+    | `progress` | Average over runs of `(rooms cleared + share) / rooms on the route` (7.1.5 Score), `0` ~ `1` | Higher | Percentage points |
+
+  * Route: every objective except `bossDamage` simulates the current destination up to the depth limit or the first closed Clear-Gate (`forecast.scope`).
+  * `bossDamage` simulates only the boss battle of the current destination. Each run starts it at full party HP; the rooms before it, the gates, and the depth limit are ignored. HP lost on the way to the boss is not counted; use `success` or `progress` to include it.
+  * `success`: while successes are rare, `progress` breaks ties between builds, so a search still has a signal when every build is at `0`. When two builds compared with each other both have a success rate of `0`, the comparison is judged on `progress` instead (`scoredBy: progress`).
+  * `progress`: rewards getting further along the route even when no run clears it. Use it at a wall where the success rate is `0` or close to it, or as a guard so a boss build keeps the route.
+
+* `objectiveGuard`
+  * Optional. Object. Default: none. Accepted by `gaSearch`, `directedBuild`, and `stagedEquipmentTuning`.
+  * A minimum value on a second objective, so a search for one objective cannot ruin another.
+  * Format: `{ "<guardObjective>": <minimum> }`, with exactly one member.
+    * `<guardObjective>`: `success`, `bossDamage`, or `progress`. It must differ from `objective`.
+    * `<minimum>`: Number, `0` ~ `1`, measured as the `<rate>` of that objective. For `success`, it is the success rate (not `progress`).
+  * Examples:
+    * `"objective": "bossDamage", "objectiveGuard": { "success": 0.05 }` searches for boss damage but keeps the full-route success rate at 5% or more.
+    * `"objective": "bossDamage", "objectiveGuard": { "progress": 0.9 }` keeps the route open even when the success rate is `0`.
+  * Guard ranking (used wherever builds are ranked with a guard):
+    1. Builds that reach `<minimum>` rank above every build that does not.
+    2. Among builds that reach it, the better `objective` `<rate>` ranks first.
+    3. Among builds that do not reach it, the higher guard value ranks first; ties are broken by `objective`.
+    * So when no build reaches the guard, the build that comes closest to it ranks first.
+  * Guard rule for a result: if the current build reaches the guard and the result does not, the result is worse, whatever its `objective` gain.
+  * The guard is measured only where an operation says so (usually on its confirmed candidates), on the same seed and number of runs as the `objective` score it is ranked with.
+
+* `crossCheck`
+  * A second objective measured on the current build and the result, returned by `gaSearch`, `directedBuild`, and `stagedEquipmentTuning`.
+  * Format: `{ objective, before, after, minimum, reached }`
+    * `objective`: the `objectiveGuard` objective when it is set. Otherwise: `bossDamage` when `objective` is `success`, `minDefeat`, `experience`, or `progress`; `success` when `objective` is `bossDamage`.
+    * `before`, `after`: `<rate>` of that objective for the current build and the result, measured on the operation's final comparison runs. For `success`, the success rate.
+    * `minimum`: the `objectiveGuard` minimum, or `null` without a guard.
+    * `reached`: `{ before, after }`, Booleans, whether each build reaches `minimum`; `null` without a guard.
+  * `crossCheck` does not change the outcome unless `objectiveGuard` is set.
+  * Example: `"objective": "bossDamage"` with `crossCheck` `{ "objective": "success", "before": 0.04, "after": 0.0 }` shows a boss build that leaves the route at 0%.
+
 **2-1. `read/observation`**
 
 **2-1-1. `compact`**
@@ -563,10 +611,10 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Range: 1 ~ 1000.
   * `objective`
     * Optional.
-    * `success`, `minDefeat`, `bossDamage`, `experience`, `progress`
+    * `success`, `minDefeat`, `bossDamage`, `experience`, `progress` (see 2-0).
     * When set, the response also returns `rate` and `standardError` for this objective.
-      * `rate` is measured the same way as the `<rate>` of `party/{p}/gaSearch` (`progress`: 7.1.5 Score).
-    * With `bossDamage`, only the boss battle is simulated (same as `party/{p}/gaSearch`), and `overview` and `detail` describe that battle.
+      * `rate` is the `<rate>` of 2-0.
+    * With `bossDamage`, only the boss battle is simulated (2-0), and `overview` and `detail` describe that battle.
   * `seed`
     * Optional.
     * Integer.
@@ -589,7 +637,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       `["1f-1/Success 90.0% / Draw 4.1% / Retreat 2.0% / Defeat 3.9% / Not reached 0.0%","1f-2/Success 50.0% / Draw 10.0% / Retreat 20.0% / Defeat 14.1% / Not reached 5.9%"]`
   * `rate`
     * Returned only when `objective` is set.
-    * Same unit as the `<rate>` of `party/{p}/gaSearch`. `progress`: a value from `0` to `1`.
+    * Same unit as the `<rate>` of 2-0. `progress`: a value from `0` to `1`.
   * `standardError`
     * Returned only when `objective` is set.
     * `sqrt(variance / numberOfRun)`, with the per-run variance of 7.1.5 (Luck check).
@@ -652,6 +700,12 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
         * `equipment`: Boolean
           * If `false`, the character's equipment remains unchanged and cannot be removed to equip another character.
           * Locked equipment is never changed or taken.
+          * Item jars: the search chooses items, not copies.
+            * All copies of one item without a Super Rare title are one jar.
+            * Each Super Rare title of an item is a jar of its own, because each title has its own bonuses.
+            * A slot takes the highest-enhancement copy of its jar that is still available to that character. Characters take copies in party order.
+            * So a lower-enhancement copy is placed only when every higher copy of the same jar is used or out of reach (for example, worn by another character under `normal`).
+            * The current build is read the same way: a worn copy is replaced by a higher-enhancement copy of the same jar when one is available. With `equipment` but not `jewels`, the new copy has no Jewel.
         * `jewels`: Boolean
         * If a component cannot be changed due to character-specific restrictions (e.g., a unique character), ignore the corresponding setting.
   * `considerOrderChange`
@@ -676,25 +730,12 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `objective`
     * Optional.
     * Default: `success`.
-    * `success`, `minDefeat`, `bossDamage`, `experience`
-    * `success`: `progress` (7.1.5 Score) breaks ties between builds, mainly while successes are rare. The search still has a signal when every build is at `0` (for example, every run reaches the boss and draws). If both builds are still at `0` in the verification runs, `verdict` is judged on `progress` too (see `verdict`).
-    * `bossDamage` simulates only the boss battle of the current destination.
-      * Each run starts the boss battle at full party HP.
-      * The rooms before it, the gates, and the depth limit are ignored. HP lost on the way to the boss is not counted; use `success` to include it.
+    * `success`, `minDefeat`, `bossDamage`, `experience`, `progress` (see 2-0, including the `success` tie-break with `progress` and the boss-battle-only `bossDamage`).
+    * If both builds have a success rate of `0` in the verification runs, `verdict` is judged on `progress` (see `verdict`).
   * `objectiveGuard`
-    * Optional. Object. Default: none.
-    * A minimum value on a second objective, so a search for one objective cannot ruin the other.
-    * Format: `{ "<guardObjective>": <minimum> }`, with exactly one member.
-      * `<guardObjective>`: `success` or `bossDamage`. It must differ from `objective`.
-      * `<minimum>`: Number, `0` ~ `1`, measured as the `<rate>` of that objective (see `verdict`). For `success`, it is the success rate (not `progress`).
-    * Example: `"objective": "bossDamage", "objectiveGuard": { "success": 0.05 }` searches for boss damage but keeps the full-route success rate at 5% or more.
-    * The guard is checked on the top candidates only: every candidate re-scored with `confirmRuns` is also measured on the guard objective with `confirmRuns` runs (the confirm seed). Candidates scored only with `quickRuns` are ranked by `objective` alone.
-    * Ranking of the confirmed candidates:
-      1. Candidates that reach `<minimum>` rank above every candidate that does not.
-      2. Among candidates that reach it, the better `objective` score ranks first.
-      3. Among candidates that do not reach it, the higher guard value ranks first; ties are broken by the `objective` score.
-      * So when no candidate reaches the guard, the search returns the build that comes closest to it.
-    * Cost: one extra guard simulation per confirmed candidate, plus the guard measurement in the verification.
+    * Optional. Format, guard ranking, and guard rule: see 2-0.
+    * The guard is checked on the top candidates only: every candidate re-scored with `confirmRuns` is also measured on the guard objective with `confirmRuns` runs (the confirm seed), and the confirmed candidates are ranked by the guard ranking. Candidates scored only with `quickRuns` are ranked by `objective` alone.
+    * Cost: one extra guard simulation per confirmed candidate, plus the guard measurement in the final selection and the verification.
     * See `verification.crossCheck` and `verdict` for how the result reports the guard.
   * `gaParameters`
     * Optional.
@@ -728,24 +769,17 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `verdict`
     * Rating of the best build compared with the current build.
     * Judged on a separate verification simulation (`verifyRuns`, independent seed), not on the scores used during the search.
-    * `<rate>`: measured value for the selected `objective`.
-      * `success`: success rate (clear + return).
-        * If the current build and the best build both have a success rate of `0` in the verification runs, `<rate>` is `progress` (7.1.5 Score) instead, because both would tie at `0`.
-        * If either build has a success rate above `0`, `<rate>` stays the success rate.
-      * `minDefeat`: defeat rate. A lower value is an improvement.
-      * `bossDamage`: average share of boss HP dealt in the boss battle. A win counts as `1`.
-      * `experience`: average EXP per run.
-    * `<gain>`: improvement of `<rate>` from the current build to the best build.
-      * Percentage points for `success`, `minDefeat`, `bossDamage`, and `progress`.
-      * Relative change (%) for `experience`.
-    * Standard error (SE) is computed from the before and after verification runs, with the per-run variance of `<rate>` (7.1.5 Luck check). For `bossDamage`, this is the variance of the per-run boss share. For `progress`, this is the variance of the per-run `progress`.
+    * `<rate>`: the `<rate>` of the selected `objective` (2-0).
+      * `success`: if the current build and the best build both have a success rate of `0` in the verification runs, `<rate>` is `progress` instead, because both would tie at `0`. If either build has a success rate above `0`, `<rate>` stays the success rate.
+    * `<gain>`: improvement of `<rate>` from the current build to the best build, in the unit of 2-0 (percentage points; relative change for `experience`). For `minDefeat`, a lower rate is an improvement.
+    * Standard error (SE) is computed from the before and after verification runs, with the per-run variance of `<rate>` (7.1.5 Luck check).
     * Values:
       * `veryGood`: `<gain>` is at or above the threshold (10 percentage points; 20% for `experience`), and larger than 2 SE.
       * `good`: `<gain>` is larger than 2 SE, but below the `veryGood` threshold.
       * `noisy`: `<rate>` differs from the current build by no more than 2 SE, in either direction. The difference may come from chance.
       * `noChange`: No different build was found. `changeSummary` is empty.
       * `worse`: `<rate>` is worse than the current build by more than 2 SE. `changeSummary` is still returned but should not be applied.
-    * With `objectiveGuard`: if the current build reaches the guard in the verification runs and the best build does not, `verdict` is `worse`, whatever `<gain>` is.
+    * With `objectiveGuard`: the guard rule of 2-0 applies in the verification runs. If the current build reaches the guard and the best build does not, `verdict` is `worse`, whatever `<gain>` is.
   * `forecast`
     * `before`: `overview` of the current build (same format as `{p}/simulationRun`).
     * `after`: `overview` of the best build (same format as `{p}/simulationRun`).
@@ -776,14 +810,9 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * Always returned, even when `scoredBy` is not `progress`, so a client can see how far into `forecast.scope` the runs get.
       * `null` with `bossDamage` (only the boss room is simulated).
     * `crossCheck`
-      * The second objective, measured on the same two builds for information. It is always returned, with or without `objectiveGuard`.
-      * Format: `{ objective, before, after, minimum, reached }`
-        * `objective`: the `objectiveGuard` objective when it is set. Otherwise: `bossDamage` when `objective` is `success`, `minDefeat`, or `experience`; `success` when `objective` is `bossDamage`.
-        * `before`, `after`: `<rate>` of that objective for the current build and the best build, in `verifyRuns` runs on the verification seed. For `success`, the success rate.
-        * `minimum`: the `objectiveGuard` minimum, or `null` without a guard.
-        * `reached`: `{ before, after }`, Booleans, whether each build reaches `minimum`; `null` without a guard.
+      * See 2-0. It is always returned, with or without `objectiveGuard`.
+      * `before`, `after` are measured in `verifyRuns` runs on the verification seed, for the current build and the best build.
       * `crossCheck` does not change `verdict` unless `objectiveGuard` is set.
-      * Example: `"objective": "bossDamage"` with `crossCheck` `{ "objective": "success", "before": 0.04, "after": 0.0 }` shows a boss build that leaves the route at 0%.
   * `changeSummary`
     * Ordered array of Commit API calls that turns the current build into the best build.
     * Each entry can be sent directly to the Commit API.
@@ -850,11 +879,22 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `equipmentPolish`
     * String enum, optional, default `changedOnly`.
     * Options: `none`, `changedOnly`, `allTargets`
-    * Selects the members Step 4 (see Process) searches. Step 4 is a genetic search over equipment and Jewels that starts from the result of Steps 1 to 3, so the final equipment is chosen by `objective`, not only by the Auto Equipment rules.
+    * Selects the members Step 4 (see Process) searches. Step 4 searches equipment and Jewels with `polishMethod`, starting from the result of Steps 1 to 3, so the final equipment is chosen by `objective`, not only by the Auto Equipment rules.
     * `none`: Step 4 does not run. Equipment comes from `autoEquipmentRun` alone.
     * `changedOnly`: Step 4 searches the targets whose build changed in Steps 1 to 3 (a change as `autoEquipmentScope` defines it). The other targets keep their equipment and Jewels, for example the equipment found by `gaSearch` or `stagedEquipmentTuning`. If no target changed, Step 4 does not run.
     * `allTargets`: Step 4 searches every target, changed or not.
-    * Step 4 places items as `party/{p}/gaSearch` (2-3-2) does for the members it searches with `equipment: true` and `jewels: true`: those members are its `targets`, and `considerItemsScope` applies to them as in 2-3-2. Locked equipment is never changed or taken.
+    * Locked equipment is never changed or taken.
+
+  * `polishMethod`
+    * String enum, optional, default `ga`.
+    * Options: `ga`, `stagedTuning`, `stagedTuningThenGa`
+    * How Step 4 searches. Both use `objective` and `objectiveGuard` of this request (2-0).
+    * `ga`: a genetic search over the equipment and Jewels of the searched members, placing items as `party/{p}/gaSearch` (2-3-2) does with `equipment: true` and `jewels: true`. The searched members are its `targets`, and `considerItemsScope` applies to them as in 2-3-2. Broad: any item in any slot, and items move between the searched members. Suits members whose class changed and need a new loadout.
+    * `stagedTuning`: `character/stagedEquipmentTuning` (2-3-8, 7.1.5) for each searched member, in party order, each starting from the build the previous one left. Targeted: it finds the bottleneck room and tries offense elements, defense elements, and counter abilities. Suits a wall caused by an enemy ability or element.
+      * Items come from the Inventory and the member's own equipment only (7.1.5 General rules); `considerItemsScope` does not apply.
+      * Run counts: its step 1 baseline uses `confirmRuns`, its steps 2–4 `quickRuns`, and its step 5 `confirmRuns`. Its other parameters take their 2-3-8 defaults.
+      * Its final check (7.1.5 step 6) is skipped: the Final selection judges the result instead.
+    * `stagedTuningThenGa`: `stagedTuning` first, then `ga` starting from the tuned equipment (its first generation contains the tuned result unchanged). Tuning finds element and counter changes first; the genetic search then fills in raw power and moves items between members. This is the order of the fastest recorded play runs (tuning before the genetic search). Step 4's time share is split evenly between the two; time tuning does not use passes to `ga`.
 
   * `considerOrderChange`
     * Boolean, optional, default `false`.
@@ -872,12 +912,11 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `global`: Candidate items come from the Inventory and from every character's equipment, including other parties. Locked items are never taken. Only the initial equipment can be taken: once an item is assigned during the pass, it stays with that character.
   * `objective`
     * String enum, optional, default `success`.
-    * Options: `success`, `minDefeat`, `bossDamage`, `experience`.
-    * Each option has the same meaning, the same `<rate>`, and the same tie-breaking as the `objective` of `party/{p}/gaSearch` (2-3-2), including `progress` (7.1.5 Score) for `success` and the boss-battle-only simulation for `bossDamage`.
-    * Every candidate build is compared by this `objective`, and `verdict` is judged on it.
+    * Options: `success`, `minDefeat`, `bossDamage`, `experience`, `progress` (see 2-0).
+    * Every stage of the Process compares builds by this `objective`, and `verdict` is judged on it as for `party/{p}/gaSearch` (2-3-2).
   * `objectiveGuard`
-    * Optional. Same format, ranking, and `verdict` rule as the `objectiveGuard` of `party/{p}/gaSearch` (2-3-2).
-    * Applies to the confirmed Step 1 and Step 4 candidates, every Step 2 candidate, every Step 3 candidate, and the Final selection. In Steps 2 and 3 and in the Final selection, a change is accepted only under the Margin rule (see Process, Final selection), which includes the guard.
+    * Optional. Format, guard ranking, and guard rule: see 2-0. `verdict` applies it as `party/{p}/gaSearch` does.
+    * Applies to every stage of the Process: the confirmed Step 1 candidates, every Step 2 candidate, every Step 3 candidate, Step 4 (every `polishMethod`), and the Final selection. In Steps 2 and 3 and in the Final selection, a change is accepted only under the Margin rule (see Process, Final selection), which includes the guard.
   * `directionStrictness`
     * String enum, optional, default `strict`.
     * Options: `strict`, `soft`
@@ -909,7 +948,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     | `populationSize` | Integer | From `effort` | 8 ~ 64 | Steps 1 and 4: number of candidate builds per generation. |
     | `generations` | Integer | From `effort` | 1 ~ 200 | Steps 1 and 4: maximum number of generations to run. |
     | `quickRuns` | Integer | From `effort` | 10 ~ 300 | Simulation runs used to score every Step 1, Step 3, and Step 4 candidate. |
-    | `confirmRuns` | Integer | From `effort` | 50 ~ 1000 | Simulation runs (different seed) used to re-score the top Step 1 and Step 4 candidates, every Step 2 candidate, and each Step 3 check. The Final selection uses twice this number (at most 1000). |
+    | `confirmRuns` | Integer | From `effort` | 50 ~ 1000 | Simulation runs (different seed) used to re-score the top Step 1 and Step 4 candidates, every Step 2 candidate, and each Step 3 check, and for the baseline and step 5 of a `stagedTuning` polish. The Final selection uses twice this number (at most 1000). |
     | `timeBudgetSeconds` | Integer | From `effort` | 5 ~ 600 | Hard time limit for the whole request, including the Final selection and the verification. Their time is set aside first. When Step 4 runs, Step 1 may use at most 50% of the rest, Steps 2 and 3 together at most 20%, and Step 4 the remainder (at least 30%), plus any time an earlier step did not use. When Step 4 does not run (`equipmentPolish: none`, or no target to search), Step 1 may use at most 75% of the rest, and Steps 2 and 3 share the remainder. When a step's limit is reached, it locks its best result so far. When the search limit is reached, the remaining steps are skipped, and the Final selection and the verification still run. |
     | `verifyRuns` | Integer | `500` | 100 ~ 1000 | Simulation runs (new independent seed) used to compare the current build and the result. Used for `verdict` and `forecast`. |
     | `eliteCount` | Integer | `2` | 0 ~ populationSize / 4 | Steps 1 and 4: best builds copied unchanged to the next generation. |
@@ -1006,10 +1045,10 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Check: the best value and the member's current value are then re-scored with `confirmRuns` on the confirm seed. The best value replaces the current one only if it passes the Margin rule against it. Otherwise the current value is kept.
   * Step 4: Equipment polish
     * Runs when `equipmentPolish` is not `none` and there is a member to search (see `equipmentPolish`).
-    * Searches: the equipment and Jewels of those members, with a genetic search like `gaSearch` (2-3-2) that uses `populationSize`, `eliteCount`, `mutationRate`, `tournamentSize`, `confirmTopN`, `quickRuns`, and `confirmRuns`. It runs until `generations` or its time share ends.
-    * The first generation contains the result of Steps 1 to 3 unchanged, so Step 4 can only return that result or a build that scored better.
-    * Builds, deity, and order stay as Steps 1 to 3 locked them.
-    * Selects the confirmed candidate with the best score (by the `objectiveGuard` ranking with a guard).
+    * Searches: the equipment and Jewels of those members, by `polishMethod`. Builds, deity, and order stay as Steps 1 to 3 locked them.
+    * `ga`: a genetic search like `gaSearch` (2-3-2) that uses `populationSize`, `eliteCount`, `mutationRate`, `tournamentSize`, `confirmTopN`, `quickRuns`, and `confirmRuns`. It runs until `generations` or its time share ends. The first generation contains the result of Steps 1 to 3 unchanged, so it can only return that result or a build that scored better. Selects the confirmed candidate with the best score (by the guard ranking with a guard).
+    * `stagedTuning`: 7.1.5 steps 1 to 5 for each searched member in party order (see `polishMethod`). A member keeps its equipment when its tuning records no candidate. When the time share ends, the members not reached keep their equipment.
+    * `stagedTuningThenGa`: `stagedTuning` as above, then `ga` from the tuned result (see `polishMethod`).
   * Final selection
     * Finalists: the result of Steps 1 to 4, the result of Steps 1 to 3 when Step 4 changed it, and the current build.
     * Each finalist is re-scored on a new seed derived from `seed` with `2 × confirmRuns` runs (at most 1000).
@@ -1242,8 +1281,11 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `objective`
     * Optional.
     * Default: `success`.
-    * `success`, `minDefeat`, `bossDamage`
-    * `bossDamage` simulates only the boss battle of the current destination, from full party HP (same as `party/{p}/gaSearch`).
+    * `success`, `minDefeat`, `bossDamage`, `experience`, `progress` (see 2-0).
+    * How each is scored and how improvement is measured: 7.1.5 Score and Improvement.
+  * `objectiveGuard`
+    * Optional. Format, guard ranking, and guard rule: see 2-0.
+    * Measured in 7.1.5 steps 5 and 6 only; steps 2–4 qualify candidates on `objective` alone (7.1.5 Guard).
   * `seed`
     * Optional.
     * Integer.
@@ -1252,8 +1294,10 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Return:
   * `accepted`
-    * Boolean. `true` if the tuned build passed the final check (7.1.5 step 6).
+    * Boolean. `true` if the tuned build passed the final check (7.1.5 step 6), the guard included.
   * `objective`
+  * `crossCheck`
+    * See 2-0. `before` and `after` are measured on the step 1 and step 6 runs (`baselineRuns`, the same seed).
   * `scoredBy`
     * The score the tuning used: the same as `objective`, or `progress` when `objective` is `success` and the step 1 success rate is `0` (7.1.5 Score).
   * `before`
@@ -1262,7 +1306,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * `overview` of the tuned build from step 6 (same format as `{p}/simulationRun`).
     * With `bossDamage`, `before` and `after` describe the boss battle only.
   * `improvement`, `gain`, `standardError`
-    * Values used in the final check (7.1.5 step 6), in the `scoredBy` score.
+    * Values used in the final check (7.1.5 step 6), in the `scoredBy` score. `gain` is in the unit of 2-0 (relative change for `experience`).
   * `bottleneckRoom`
     * Floor and room found in step 1. Example: `3f-2`
     * With `bossDamage`, always the boss room.

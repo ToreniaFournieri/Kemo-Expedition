@@ -22317,6 +22317,10 @@
               {
                 "const": "experience",
                 "type": "string"
+              },
+              {
+                "const": "progress",
+                "type": "string"
               }
             ],
             "default": "success"
@@ -22345,6 +22349,20 @@
                 ],
                 "properties": {
                   "bossDamage": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "progress"
+                ],
+                "properties": {
+                  "progress": {
                     "minimum": 0,
                     "maximum": 1,
                     "type": "number"
@@ -22657,6 +22675,10 @@
                     {
                       "const": "experience",
                       "type": "string"
+                    },
+                    {
+                      "const": "progress",
+                      "type": "string"
                     }
                   ]
                 },
@@ -22760,6 +22782,10 @@
                         },
                         {
                           "const": "bossDamage",
+                          "type": "string"
+                        },
+                        {
+                          "const": "progress",
                           "type": "string"
                         }
                       ]
@@ -23057,6 +23083,10 @@
                         {
                           "const": "experience",
                           "type": "string"
+                        },
+                        {
+                          "const": "progress",
+                          "type": "string"
                         }
                       ]
                     },
@@ -23160,6 +23190,10 @@
                             },
                             {
                               "const": "bossDamage",
+                              "type": "string"
+                            },
+                            {
+                              "const": "progress",
                               "type": "string"
                             }
                           ]
@@ -23451,6 +23485,40 @@
             ],
             "default": "changedOnly"
           },
+          "equipmentPolish": {
+            "anyOf": [
+              {
+                "const": "none",
+                "type": "string"
+              },
+              {
+                "const": "changedOnly",
+                "type": "string"
+              },
+              {
+                "const": "allTargets",
+                "type": "string"
+              }
+            ],
+            "default": "changedOnly"
+          },
+          "polishMethod": {
+            "anyOf": [
+              {
+                "const": "ga",
+                "type": "string"
+              },
+              {
+                "const": "stagedTuning",
+                "type": "string"
+              },
+              {
+                "const": "stagedTuningThenGa",
+                "type": "string"
+              }
+            ],
+            "default": "ga"
+          },
           "considerOrderChange": {
             "type": "boolean",
             "default": false
@@ -23506,6 +23574,10 @@
               {
                 "const": "experience",
                 "type": "string"
+              },
+              {
+                "const": "progress",
+                "type": "string"
               }
             ],
             "default": "success"
@@ -23534,6 +23606,20 @@
                 ],
                 "properties": {
                   "bossDamage": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "progress"
+                ],
+                "properties": {
+                  "progress": {
                     "minimum": 0,
                     "maximum": 1,
                     "type": "number"
@@ -23861,6 +23947,10 @@
                     {
                       "const": "experience",
                       "type": "string"
+                    },
+                    {
+                      "const": "progress",
+                      "type": "string"
                     }
                   ]
                 },
@@ -23964,6 +24054,10 @@
                         },
                         {
                           "const": "bossDamage",
+                          "type": "string"
+                        },
+                        {
+                          "const": "progress",
                           "type": "string"
                         }
                       ]
@@ -24218,6 +24312,131 @@
                         },
                         {
                           "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "step4": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "candidatesTried",
+                    "selected",
+                    "method",
+                    "members"
+                  ],
+                  "properties": {
+                    "candidatesTried": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "selected": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "method": {
+                      "anyOf": [
+                        {
+                          "const": "ga",
+                          "type": "string"
+                        },
+                        {
+                          "const": "stagedTuning",
+                          "type": "string"
+                        },
+                        {
+                          "const": "stagedTuningThenGa",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "members": {
+                      "type": "array",
+                      "items": {
+                        "minimum": 1,
+                        "type": "integer"
+                      }
+                    }
+                  }
+                },
+                "finalSelection": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "runs",
+                    "finalists",
+                    "selected"
+                  ],
+                  "properties": {
+                    "runs": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "finalists": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "finalist",
+                          "rate",
+                          "guard"
+                        ],
+                        "properties": {
+                          "finalist": {
+                            "anyOf": [
+                              {
+                                "const": "polished",
+                                "type": "string"
+                              },
+                              {
+                                "const": "unpolished",
+                                "type": "string"
+                              },
+                              {
+                                "const": "current",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "rate": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "guard": {
+                            "anyOf": [
+                              {
+                                "minimum": 0,
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "selected": {
+                      "anyOf": [
+                        {
+                          "const": "polished",
+                          "type": "string"
+                        },
+                        {
+                          "const": "unpolished",
+                          "type": "string"
+                        },
+                        {
+                          "const": "current",
+                          "type": "string"
                         }
                       ]
                     }
@@ -24477,6 +24696,10 @@
                         {
                           "const": "experience",
                           "type": "string"
+                        },
+                        {
+                          "const": "progress",
+                          "type": "string"
                         }
                       ]
                     },
@@ -24580,6 +24803,10 @@
                             },
                             {
                               "const": "bossDamage",
+                              "type": "string"
+                            },
+                            {
+                              "const": "progress",
                               "type": "string"
                             }
                           ]
@@ -24834,6 +25061,131 @@
                             },
                             {
                               "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "step4": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "candidatesTried",
+                        "selected",
+                        "method",
+                        "members"
+                      ],
+                      "properties": {
+                        "candidatesTried": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "selected": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "method": {
+                          "anyOf": [
+                            {
+                              "const": "ga",
+                              "type": "string"
+                            },
+                            {
+                              "const": "stagedTuning",
+                              "type": "string"
+                            },
+                            {
+                              "const": "stagedTuningThenGa",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "members": {
+                          "type": "array",
+                          "items": {
+                            "minimum": 1,
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    },
+                    "finalSelection": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "runs",
+                        "finalists",
+                        "selected"
+                      ],
+                      "properties": {
+                        "runs": {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        "finalists": {
+                          "type": "array",
+                          "items": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "finalist",
+                              "rate",
+                              "guard"
+                            ],
+                            "properties": {
+                              "finalist": {
+                                "anyOf": [
+                                  {
+                                    "const": "polished",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "unpolished",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "current",
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              "rate": {
+                                "minimum": 0,
+                                "type": "number"
+                              },
+                              "guard": {
+                                "anyOf": [
+                                  {
+                                    "minimum": 0,
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        },
+                        "selected": {
+                          "anyOf": [
+                            {
+                              "const": "polished",
+                              "type": "string"
+                            },
+                            {
+                              "const": "unpolished",
+                              "type": "string"
+                            },
+                            {
+                              "const": "current",
+                              "type": "string"
                             }
                           ]
                         }
@@ -27338,9 +27690,63 @@
               {
                 "const": "bossDamage",
                 "type": "string"
+              },
+              {
+                "const": "experience",
+                "type": "string"
+              },
+              {
+                "const": "progress",
+                "type": "string"
               }
             ],
             "default": "success"
+          },
+          "objectiveGuard": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "success"
+                ],
+                "properties": {
+                  "success": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "bossDamage"
+                ],
+                "properties": {
+                  "bossDamage": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "progress"
+                ],
+                "properties": {
+                  "progress": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  }
+                }
+              }
+            ]
           },
           "seed": {
             "type": "integer"
@@ -27387,6 +27793,14 @@
                 {
                   "const": "bossDamage",
                   "type": "string"
+                },
+                {
+                  "const": "experience",
+                  "type": "string"
+                },
+                {
+                  "const": "progress",
+                  "type": "string"
                 }
               ]
             },
@@ -27405,6 +27819,10 @@
                   "type": "string"
                 },
                 {
+                  "const": "experience",
+                  "type": "string"
+                },
+                {
                   "const": "progress",
                   "type": "string"
                 }
@@ -27420,11 +27838,96 @@
               "type": "number"
             },
             "gain": {
-              "type": "number"
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "standardError": {
-              "minimum": 0,
-              "type": "number"
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "crossCheck": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "objective",
+                "before",
+                "after",
+                "minimum",
+                "reached"
+              ],
+              "properties": {
+                "objective": {
+                  "anyOf": [
+                    {
+                      "const": "success",
+                      "type": "string"
+                    },
+                    {
+                      "const": "bossDamage",
+                      "type": "string"
+                    },
+                    {
+                      "const": "progress",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "before": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "after": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "minimum": {
+                  "anyOf": [
+                    {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "reached": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "before",
+                        "after"
+                      ],
+                      "properties": {
+                        "before": {
+                          "type": "boolean"
+                        },
+                        "after": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
             },
             "bottleneckRoom": {
               "anyOf": [
@@ -27885,6 +28388,14 @@
                     {
                       "const": "bossDamage",
                       "type": "string"
+                    },
+                    {
+                      "const": "experience",
+                      "type": "string"
+                    },
+                    {
+                      "const": "progress",
+                      "type": "string"
                     }
                   ]
                 },
@@ -27903,6 +28414,10 @@
                       "type": "string"
                     },
                     {
+                      "const": "experience",
+                      "type": "string"
+                    },
+                    {
                       "const": "progress",
                       "type": "string"
                     }
@@ -27918,11 +28433,96 @@
                   "type": "number"
                 },
                 "gain": {
-                  "type": "number"
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
                 "standardError": {
-                  "minimum": 0,
-                  "type": "number"
+                  "anyOf": [
+                    {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "crossCheck": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "objective",
+                    "before",
+                    "after",
+                    "minimum",
+                    "reached"
+                  ],
+                  "properties": {
+                    "objective": {
+                      "anyOf": [
+                        {
+                          "const": "success",
+                          "type": "string"
+                        },
+                        {
+                          "const": "bossDamage",
+                          "type": "string"
+                        },
+                        {
+                          "const": "progress",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "before": {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "after": {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "minimum": {
+                      "anyOf": [
+                        {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "reached": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "before",
+                            "after"
+                          ],
+                          "properties": {
+                            "before": {
+                              "type": "boolean"
+                            },
+                            "after": {
+                              "type": "boolean"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
                 },
                 "bottleneckRoom": {
                   "anyOf": [

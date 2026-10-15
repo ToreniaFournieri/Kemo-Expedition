@@ -9,20 +9,22 @@ import { getVariantKey, type Character, type ClassId, type ExpeditionSimulationR
 import { describeCharacterBuildCurrent, planCharacterBuildChange, validUniqueSelections } from './buildChange';
 import {
   buildBasis, compareGuarded, createRandom, createRunMeter, crossCheckObjective, deityHolderIndex, deityOptionsFor, deriveSeed, GA_DEITY_SCOPES,
-  GA_EFFORTS, GA_ITEMS_SCOPES, GA_OBJECTIVES, measure, measureSecondObjective, parseObjectiveGuard, planGaChangeSummary, reserveMs, successFitness,
-  summarizeVerification,
-  type GaChangeEntry, type GaDeityScope, type GaItemsScope, type GaObjective, type GaSearchDependencies, type GuardedScore, type Measured,
-  type ObjectiveGuard,
+  GA_EFFORTS, GA_ITEMS_SCOPES, GA_OBJECTIVES, measure, measureSecondObjective, parseObjectiveGuard, planGaChangeSummary, rateGaResult, reserveMs,
+  runGaSearch, successFitness, summarizeVerification,
+  type GaChangeEntry, type GaDeityScope, type GaItemsScope, type GaObjective, type GaSearchDependencies, type GaSearchRequest, type GuardedScore,
+  type Measured, type ObjectiveGuard,
 } from './gaSearch';
-import { forecastScope, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount } from './objectiveMeasure';
+import { forecastScope, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount, type ObjectiveMeasure } from './objectiveMeasure';
+import { parseStagedTuningRequest, runStagedEquipmentTuning } from './stagedEquipmentTuning';
 import { validRaceAndGenderOptions } from './readModels';
 
 // SpecRef: 9.1.3 | Read | 2-3-3 party/{p}/directedBuild
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | Directed build
-// A three-step search guided by a class composition: Step 1 searches the build layer (unique selection, race/gender, main
-// and sub class, order) with a genetic search, Step 2 the deity, and Step 3 lineage and predisposition one member at a
-// time. Every candidate runs the requested Auto Equipment (only for the members it changes, by default) and is scored by
-// the same private forecast as `gaSearch`.
+// A four-step search guided by a class composition: Step 1 searches the build layer (unique selection, race/gender, main
+// and sub class, order) with a genetic search among the alternatives to the current build, Step 2 the deity, Step 3 lineage
+// and predisposition one member at a time, and Step 4 polishes the equipment (`polishMethod`). Candidates run the requested
+// Auto Equipment and are scored by the same private forecast as `gaSearch`; the current build meets the result only in the
+// Final selection, where a change wins only by more than one standard error.
 
 export const DIRECTIONS = ['rapidRanged', 'magicBurst', 'meleeBurst', 'free', 'turtle', 'balance'] as const;
 export type Direction = typeof DIRECTIONS[number];
@@ -31,6 +33,12 @@ type AutoEquipmentRun = typeof AUTO_EQUIPMENT_RUNS[number];
 // SpecRef: 9.1.3 | 2-3-3 `autoEquipmentScope` | `changedOnly` runs Auto Equipment only for the targets a candidate changes.
 const AUTO_EQUIPMENT_SCOPES = ['changedOnly', 'allTargets'] as const;
 type AutoEquipmentScope = typeof AUTO_EQUIPMENT_SCOPES[number];
+// SpecRef: 9.1.3 | 2-3-3 `equipmentPolish` | which members Step 4 searches.
+const EQUIPMENT_POLISH = ['none', 'changedOnly', 'allTargets'] as const;
+type EquipmentPolish = typeof EQUIPMENT_POLISH[number];
+// SpecRef: 9.1.3 | 2-3-3 `polishMethod` | how Step 4 searches.
+const POLISH_METHODS = ['ga', 'stagedTuning', 'stagedTuningThenGa'] as const;
+type PolishMethod = typeof POLISH_METHODS[number];
 // SpecRef: 9.1.3 | 2-3-3 `directionStrictness` | `strict` filters by distance; `soft` penalizes it.
 const DIRECTION_STRICTNESS = ['strict', 'soft'] as const;
 type DirectionStrictness = typeof DIRECTION_STRICTNESS[number];
@@ -60,8 +68,8 @@ const DIRECTION_RANGES: Record<Direction, Record<Category, readonly [number, num
 // SpecRef: 9.1.3 | 2-3-3 `tuningParameters` | the `effort` presets.
 export const DIRECTED_EFFORT_PRESETS = {
   low: { populationSize: 12, generations: 10, quickRuns: 30, confirmRuns: 150, timeBudgetSeconds: 60, mutationRate: 0.35 },
-  medium: { populationSize: 16, generations: 20, quickRuns: 50, confirmRuns: 300, timeBudgetSeconds: 180, mutationRate: 0.35 },
-  high: { populationSize: 48, generations: 60, quickRuns: 300, confirmRuns: 1000, timeBudgetSeconds: 480, mutationRate: 0.5 },
+  medium: { populationSize: 24, generations: 30, quickRuns: 50, confirmRuns: 300, timeBudgetSeconds: 180, mutationRate: 0.35 },
+  high: { populationSize: 48, generations: 60, quickRuns: 100, confirmRuns: 600, timeBudgetSeconds: 480, mutationRate: 0.35 },
 } as const;
 type Effort = keyof typeof DIRECTED_EFFORT_PRESETS;
 
@@ -86,6 +94,8 @@ export interface DirectedBuildRequest {
   direction: Direction;
   targets: DirectedTarget[];
   autoEquipmentScope: AutoEquipmentScope;
+  equipmentPolish: EquipmentPolish;
+  polishMethod: PolishMethod;
   considerOrderChange: boolean;
   considerDeityChange: GaDeityScope;
   considerItemsScope: GaItemsScope;
@@ -130,7 +140,7 @@ const COMPONENT_DEFAULTS = { uniqueCharacter: false, raceGender: true, mainClass
 
 /** Validates a `directedBuild` request against party `{p}` (Spec 9.1.4.9). Throws `invalid_request:<field>`. */
 export function parseDirectedBuildRequest(state: GameState, partyIndex: number, raw: Record<string, unknown>): DirectedBuildRequest {
-  const allowed = new Set(['direction', 'targets', 'autoEquipmentScope', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'objectiveGuard', 'directionStrictness', 'directionPenalty', 'tuningParameters']);
+  const allowed = new Set(['direction', 'targets', 'autoEquipmentScope', 'equipmentPolish', 'polishMethod', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'objectiveGuard', 'directionStrictness', 'directionPenalty', 'tuningParameters']);
   const unknown = Object.keys(raw).find((key) => !allowed.has(key));
   if (unknown !== undefined) invalid(`${unknown}.unknown_member`);
   if (raw.direction === undefined) invalid('direction');
@@ -178,6 +188,8 @@ export function parseDirectedBuildRequest(state: GameState, partyIndex: number, 
     direction,
     targets,
     autoEquipmentScope: readEnum(raw, 'autoEquipmentScope', 'autoEquipmentScope', AUTO_EQUIPMENT_SCOPES, 'changedOnly'),
+    equipmentPolish: readEnum(raw, 'equipmentPolish', 'equipmentPolish', EQUIPMENT_POLISH, 'changedOnly'),
+    polishMethod: readEnum(raw, 'polishMethod', 'polishMethod', POLISH_METHODS, 'ga'),
     considerOrderChange: readBoolean(raw, 'considerOrderChange', 'considerOrderChange', false),
     considerDeityChange: readEnum(raw, 'considerDeityChange', 'considerDeityChange', GA_DEITY_SCOPES, 'none'),
     considerItemsScope: readEnum(raw, 'considerItemsScope', 'considerItemsScope', GA_ITEMS_SCOPES, 'normal'),
@@ -721,10 +733,21 @@ function describeStep1(model: Model, genome: Genome): string | null {
 
 export interface DirectedBuildOutcome { data: Record<string, unknown> }
 
-// SpecRef: 9.1.3 | 2-3-3 `timeBudgetSeconds` | Step 1 may use at most 75% of the time left after the verification reserve.
-const STEP1_BUDGET_SHARE = 0.75;
+// SpecRef: 9.1.3 | 2-3-3 `timeBudgetSeconds` | of the time left after the Final selection and verification reserve, Step 1
+// may use 50% and Steps 2 and 3 a further 20% when Step 4 runs (75% and the rest when it does not); unused time passes on.
+const STEP1_SHARE_WITH_POLISH = 0.5;
+const STEP23_SHARE_WITH_POLISH = 0.2;
+const STEP1_SHARE_WITHOUT_POLISH = 0.75;
 // SpecRef: 9.1.3 | 2-3-3 Process Step 1 | a bred or sampled candidate already in the search is replaced, up to 4 times.
 const REPEAT_ATTEMPTS = 4;
+/** The Final selection compares at most three builds: the polished and unpolished results and the current build. */
+const FINALISTS = 3;
+
+/** One build measured on one seed: the objective and, with a guard, the guard objective on the same runs. */
+interface Scored { measured: Measured; guard?: ObjectiveMeasure }
+
+/** Every character's worn items and Jewels, in every party: equal when two states hold the same equipment. */
+const equipmentSignature = (state: GameState): string => JSON.stringify(state.parties.map((party) => party.characters.map(wornSignature)));
 
 /** Runs `directedBuild` for party `{p}` (Spec 9.1.3, 2-3-3; 9.1.4.9). Never changes `state`. */
 export async function runDirectedBuild(state: GameState, partyIndex: number, request: DirectedBuildRequest, dependencies: GaSearchDependencies): Promise<DirectedBuildOutcome> {
@@ -734,6 +757,7 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
   const random = createRandom(deriveSeed(seed, 0));
   const quickSeed = deriveSeed(seed, 1); const confirmSeed = deriveSeed(seed, 2);
   const verifySeed = request.parameters.verifySeed ?? deriveSeed(seed, 3);
+  const finalSeed = deriveSeed(seed, 4); const polishSeed = deriveSeed(seed, 5);
   const model = buildModel(state, partyIndex, request);
   const { objective, parameters, objectiveGuard: guard } = request;
   const crossObjective = crossCheckObjective(objective, guard);
@@ -757,14 +781,21 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
     return measure(objective, await simulateOnce(target, runs, simulationSeed), routeRooms, baseline);
   };
 
-  // ---- Time: the current build's verification runs first; their cost per run sets aside the result's verification ----
+  // ---- Time: the current build's verification runs first; their cost per run sets aside the Final selection and the
+  // result's verification ----
   const verifyRuns = parameters.verifyRuns;
+  const finalRuns = Math.min(1000, parameters.confirmRuns * 2);
   const verifyBefore = await measureRaw(state, verifyRuns, verifySeed);
   const crossBefore = await second(state, verifyRuns, verifySeed);
-  const searchDeadline = deadline - reserveMs(meter, { [objective]: verifyRuns, [crossObjective]: verifyRuns });
+  const finalSelectionRuns = FINALISTS * finalRuns;
+  const searchDeadline = deadline - reserveMs(meter, { [objective]: verifyRuns + finalSelectionRuns, [crossObjective]: verifyRuns + (guard ? finalSelectionRuns : 0) });
   const searchStart = dependencies.now();
-  const step1Deadline = searchStart + STEP1_BUDGET_SHARE * Math.max(0, searchDeadline - searchStart);
+  const available = Math.max(0, searchDeadline - searchStart);
+  const polishing = request.equipmentPolish !== 'none';
+  const step1Deadline = searchStart + (polishing ? STEP1_SHARE_WITH_POLISH : STEP1_SHARE_WITHOUT_POLISH) * available;
+  const step23Deadline = polishing ? searchStart + (STEP1_SHARE_WITH_POLISH + STEP23_SHARE_WITH_POLISH) * available : searchDeadline;
   const step1OutOfTime = () => dependencies.now() >= step1Deadline;
+  const step23OutOfTime = () => dependencies.now() >= step23Deadline;
   const outOfTime = () => dependencies.now() >= searchDeadline;
 
   // SpecRef: 9.1.3 | 2-3-3 `directionPenalty` | `soft`: each member of distance makes the search score worse; the verdict
@@ -782,12 +813,32 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
     return withGuard && guard ? { fitness, guard: (await second(target, runs, simulationSeed)).rate } : { fitness };
   };
   const above = (a: GuardedScore | undefined, b: GuardedScore | undefined): boolean => a !== undefined && (b === undefined || compareGuarded(a, b, guard) > 0);
+  /** A build measured for the Margin rule: its objective `<rate>` and variance, and the guard on the same runs. */
+  const scoreFull = async (target: GameState, runs: number, simulationSeed: number): Promise<Scored> => ({
+    measured: await measureRaw(target, runs, simulationSeed),
+    guard: guard ? await second(target, runs, simulationSeed) : undefined,
+  });
+  const ahead = (before: ObjectiveMeasure | undefined, after: ObjectiveMeasure | undefined, runs: number): boolean => before !== undefined && after !== undefined
+    && after.rate - before.rate > Math.sqrt(before.variance / runs + after.variance / runs);
+  // SpecRef: 9.1.3 | 2-3-3 Final selection Margin rule | ahead by more than one standard error; for `success`, an exact tie is
+  // broken by `progress`; with a guard, reaching it decides first, and between two builds below it the guard rate decides.
+  const passesMargin = (candidate: Scored, incumbent: Scored, runs: number): boolean => {
+    if (guard && candidate.guard && incumbent.guard) {
+      const candidateReaches = candidate.guard.rate >= guard.minimum; const incumbentReaches = incumbent.guard.rate >= guard.minimum;
+      if (candidateReaches !== incumbentReaches) return candidateReaches;
+      if (!candidateReaches) return ahead(incumbent.guard, candidate.guard, runs);
+    }
+    const margin = rateGaResult(objective, incumbent.measured, candidate.measured, runs, true);
+    const tieBroken = objective === 'success' && candidate.measured.rate === incumbent.measured.rate && ahead(incumbent.measured.progress, candidate.measured.progress, runs);
+    return margin.gain > margin.standardError || tieBroken;
+  };
+  const guardedOf = (scored: Scored): GuardedScore => ({ fitness: scored.measured.fitness, guard: scored.guard?.rate });
   const equipAll = (target: GameState) => withFreshParty(equipTargets(model, target, dependencies), partyIndex);
-  const steps: Record<string, { candidatesTried: number; selected: string | null }> = {};
+  const steps: Record<string, Record<string, unknown>> = {};
 
   // ---- Step 1: the build layer (genetic search) ----
-  // A candidate is decoded (its builds applied and its Auto Equipment run) only when it is first scored: Auto Equipment is
-  // the costly part, so a child bred after the last generation or past the time budget costs nothing.
+  // A candidate is decoded (its builds applied and its Auto Equipment run) only when it is first scored, so a child bred after
+  // the last generation or past the time budget costs nothing.
   interface Individual { genome: Genome; key: string; state?: GameState | null; quick?: number; confirm?: GuardedScore }
   const individuals = new Map<string, Individual>();
   const individual = (genome: Genome): Individual => {
@@ -798,11 +849,15 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
     individuals.set(key, entry);
     return entry;
   };
-  /** A new candidate: a genome already in the search is replaced by a fresh sample, up to `REPEAT_ATTEMPTS` times. */
-  const fresh = (genome: Genome): Individual => {
+  // SpecRef: 9.1.3 | 2-3-3 Process Step 1 | the current build is not a candidate: Step 1 selects the best of the alternatives,
+  // and the current build meets the result only in the Final selection. A genome identical to it is replaced like a repeat.
+  const currentKey = genomeKey(model.current);
+  const known = (genome: Genome) => { const key = genomeKey(genome); return key === currentKey || individuals.has(key); };
+  /** A new candidate: a genome already in the search (or the current build) is replaced by a fresh sample, up to 4 times. */
+  const fresh = (genome: Genome): Individual | null => {
     let next = genome;
-    for (let attempt = 0; attempt < REPEAT_ATTEMPTS && individuals.has(genomeKey(next)); attempt += 1) next = sample(model, random);
-    return individual(next);
+    for (let attempt = 0; attempt < REPEAT_ATTEMPTS && known(next); attempt += 1) next = sample(model, random);
+    return genomeKey(next) === currentKey ? null : individual(next);
   };
   const decoded = (entry: Individual): GameState | null => {
     if (entry.state === undefined) {
@@ -825,14 +880,14 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
     if (entry.confirm !== undefined || target === null) return;
     entry.confirm = await score(target, parameters.confirmRuns, confirmSeed, true);
   };
-  // The current build is a candidate when it keeps the class rules (always with `free` and `soft`); the rest are samples.
-  const currentIndividual = individual(model.current);
-  const currentValid = applyGenome(model, model.current) !== null;
-  let population: Individual[] = currentValid ? [currentIndividual] : [];
-  for (let attempt = 0; population.length < parameters.populationSize && attempt < parameters.populationSize * 4; attempt += 1) {
-    const entry = fresh(sample(model, random));
-    if (!population.includes(entry)) population.push(entry);
-  }
+  const fill = (into: Individual[], make: () => Genome) => {
+    for (let attempt = 0; into.length < parameters.populationSize && attempt < parameters.populationSize * REPEAT_ATTEMPTS; attempt += 1) {
+      const entry = fresh(make());
+      if (entry && !into.includes(entry)) into.push(entry);
+    }
+  };
+  let population: Individual[] = [];
+  fill(population, () => sample(model, random));
   let best: Individual | null = null;
   for (let generation = 0; generation < parameters.generations && !step1OutOfTime() && population.length > 0; generation += 1) {
     for (const entry of population) { if (step1OutOfTime()) break; await scoreQuick(entry); }
@@ -841,7 +896,7 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
     for (const entry of population) if (above(entry.confirm, best?.confirm)) best = entry;
     if (step1OutOfTime() || generation === parameters.generations - 1) break;
     const scored = population.filter((entry) => entry.quick !== undefined && entry.quick > -Infinity);
-    if (scored.length === 0) { population = population.map(() => fresh(sample(model, random))); continue; }
+    if (scored.length === 0) { const next: Individual[] = []; fill(next, () => sample(model, random)); population = next; continue; }
     const tournament = () => {
       let chosen: Individual | null = null;
       for (let round = 0; round < parameters.tournamentSize; round += 1) {
@@ -851,47 +906,48 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
       return chosen!;
     };
     const next: Individual[] = population.slice(0, parameters.eliteCount);
-    while (next.length < parameters.populationSize) {
-      let genome = crossover(model, tournament().genome, tournament().genome, random);
-      if (random() < parameters.mutationRate) genome = mutate(model, genome, random);
-      next.push(fresh(genome));
-    }
+    fill(next, () => {
+      const genome = crossover(model, tournament().genome, tournament().genome, random);
+      return random() < parameters.mutationRate ? mutate(model, genome, random) : genome;
+    });
     population = next;
   }
-  // SpecRef: 9.1.3 | 2-3-3 Process Step 1 | with no valid candidate the original parameters are kept (Auto Equipment still runs).
-  let locked: GameState = (best ? decoded(best) : null) ?? (currentValid ? decoded(currentIndividual) : null) ?? equipAll(model.base);
+  // SpecRef: 9.1.3 | 2-3-3 Process Step 1 | with no valid candidate, Steps 2 to 4 start from the current build.
+  let locked: GameState = (best ? decoded(best) : null) ?? model.base;
   steps.step1 = { candidatesTried: step1Tried, selected: best ? describeStep1(model, best.genome) : null };
 
-  // ---- Step 2: the deity ----
-  if (request.considerDeityChange !== 'none' && !outOfTime()) {
+  // ---- Step 2: the deity (the best option replaces the Step 1 result's deity only under the Margin rule) ----
+  if (request.considerDeityChange !== 'none' && !step23OutOfTime()) {
     const currentDeity = getDeityId(locked.parties[partyIndex].deity.name);
+    const incumbent = await scoreFull(locked, parameters.confirmRuns, confirmSeed);
     let bestDeity = currentDeity;
     let bestState = locked;
-    let bestScore: GuardedScore | undefined;
+    let bestScore: Scored | null = null;
     let tried = 0;
     for (const deity of deityOptionsFor(locked, locked.parties[partyIndex], request.considerDeityChange)) {
-      if (outOfTime()) break;
+      if (step23OutOfTime()) break;
+      if (deity === currentDeity) continue;
+      const deityName = getDeityNameFromId(deity);
+      if (!deityName) continue;
+      // A deity another party holds (`allDeities`) is freed first, as `changeSummary` does.
       let candidate = locked;
-      if (deity !== currentDeity) {
-        const deityName = getDeityNameFromId(deity);
-        if (!deityName) continue;
-        // A deity another party holds (`allDeities`) is freed first, as `changeSummary` does.
-        const holder = deityHolderIndex(candidate, partyIndex, deity);
-        if (holder >= 0) candidate = gameReducer(candidate, { type: 'UPDATE_PARTY_DEITY', partyIndex: holder, deityName: 'None' });
-        candidate = gameReducer(candidate, { type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
-      }
+      const holder = deityHolderIndex(candidate, partyIndex, deity);
+      if (holder >= 0) candidate = gameReducer(candidate, { type: 'UPDATE_PARTY_DEITY', partyIndex: holder, deityName: 'None' });
+      candidate = gameReducer(candidate, { type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
       tried += 1;
-      const candidateScore = await score(candidate, parameters.confirmRuns, confirmSeed, true);
-      if (above(candidateScore, bestScore)) { bestScore = candidateScore; bestDeity = deity; bestState = candidate; }
+      const candidateScore = await scoreFull(candidate, parameters.confirmRuns, confirmSeed);
+      if (!bestScore || compareGuarded(guardedOf(candidateScore), guardedOf(bestScore), guard) > 0) { bestScore = candidateScore; bestDeity = deity; bestState = candidate; }
     }
-    locked = bestState;
-    steps.step2 = { candidatesTried: tried, selected: bestDeity !== currentDeity ? `deity ${bestDeity}` : null };
+    const accept = bestScore !== null && passesMargin(bestScore, incumbent, parameters.confirmRuns);
+    if (accept) locked = bestState;
+    steps.step2 = { candidatesTried: tried + 1, selected: accept ? `deity ${bestDeity}` : null };
   }
 
   // ---- Step 3: lineage, then predisposition, one target at a time ----
-  const tuned = model.targets.filter((target) => target.lineage || target.predisposition);
-  if (tuned.length > 0 && !outOfTime()) {
-    let incumbent = await score(locked, parameters.quickRuns, quickSeed, true);
+  // SpecRef: 9.1.3 | 2-3-3 Process Step 3 | every value is scored with `quickRuns`; the best one, when it ranks above the
+  // current value there, is checked against it with `confirmRuns` and replaces it only under the Margin rule.
+  const tunedTargets = model.targets.filter((target) => target.lineage || target.predisposition);
+  if (tunedTargets.length > 0 && !step23OutOfTime()) {
     let tried = 0;
     const chosen: string[] = [];
     const fields = [
@@ -900,7 +956,7 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
     ];
     const order = locked.parties[partyIndex].characters.map((character) => character.id);
     outer: for (const id of order) {
-      const target = tuned.find((entry) => entry.characterId === id);
+      const target = tunedTargets.find((entry) => entry.characterId === id);
       if (!target) continue;
       for (const field of fields) {
         if (!target[field.component]) continue;
@@ -908,34 +964,117 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
         // A unique character's lineage and predisposition are fixed (the game rules).
         if (character.isUnique) continue;
         const before = field.current(character);
+        const incumbentQuick = await score(locked, parameters.quickRuns, quickSeed, true);
         let bestValue = before;
         let bestState = locked;
+        let bestQuick: GuardedScore | undefined;
         for (const value of field.values) {
           if (value === before) continue;
-          if (outOfTime()) break outer;
+          if (step23OutOfTime()) break outer;
           let candidate: GameState;
           try { candidate = changeMember(locked, partyIndex, id, { [field.parameter]: value }); } catch { continue; }
           // The re-run covers this target alone: `withinTargets` takes nothing, `global` takes only from non-targets.
           candidate = withFreshParty(runAutoEquipment({ ...model, request: { ...model.request, considerItemsScope: model.request.considerItemsScope === 'global' ? 'global' : 'normal' } }, candidate, [id], dependencies), partyIndex);
           tried += 1;
           const candidateScore = await score(candidate, parameters.quickRuns, quickSeed, true);
-          if (above(candidateScore, incumbent)) { incumbent = candidateScore; bestValue = value; bestState = candidate; }
+          if (above(candidateScore, bestQuick)) { bestQuick = candidateScore; bestValue = value; bestState = candidate; }
         }
-        if (bestValue !== before) { locked = bestState; chosen.push(`${id}: ${field.parameter} ${bestValue}`); }
+        if (bestValue === before || !above(bestQuick, incumbentQuick) || step23OutOfTime()) continue;
+        const check = await scoreFull(bestState, parameters.confirmRuns, confirmSeed);
+        const incumbent = await scoreFull(locked, parameters.confirmRuns, confirmSeed);
+        if (passesMargin(check, incumbent, parameters.confirmRuns)) { locked = bestState; chosen.push(`${id}: ${field.parameter} ${bestValue}`); }
       }
     }
     steps.step3 = { candidatesTried: tried, selected: chosen.length > 0 ? chosen.join('; ') : null };
   }
 
-  // ---- Verification: the current and the final build on one fresh seed (as `gaSearch`) ----
-  let changeSummary: GaChangeEntry[] = [];
-  let finalState = state;
-  try {
-    changeSummary = planGaChangeSummary(state, partyIndex, locked, dependencies.commitContext);
-    if (changeSummary.length > 0) finalState = locked;
-  } catch {
-    changeSummary = [];
+  // ---- Step 4: equipment polish ----
+  const unpolished = locked;
+  const polishOrder = locked.parties[partyIndex].characters.map((character) => character.id);
+  const polishMembers = !polishing ? [] : polishOrder.filter((id) => model.targets.some((target) => target.characterId === id)
+    && (request.equipmentPolish === 'allTargets' || buildChanged(model, locked, id)));
+  if (polishMembers.length > 0 && !outOfTime()) {
+    const method = request.polishMethod;
+    let polishTried = 0;
+    const tuneMembers = async (until: number) => {
+      for (const [position, id] of polishMembers.entries()) {
+        if (dependencies.now() >= until) break;
+        // SpecRef: 9.1.3 | 2-3-3 `polishMethod` `stagedTuning` | 7.1.5 steps 1 to 5, run counts from `confirmRuns` and
+        // `quickRuns`, the other parameters at their defaults; step 6 is left to the Final selection.
+        const raw: Record<string, unknown> = { characterId: id, objective, quickRuns: parameters.quickRuns, finalTuningRuns: parameters.confirmRuns, seed: deriveSeed(polishSeed, position + 1) };
+        if (guard) raw.objectiveGuard = { [guard.objective]: guard.minimum };
+        const tuning = await runStagedEquipmentTuning(locked, { ...parseStagedTuningRequest(locked, raw), baselineRuns: parameters.confirmRuns, finalCheck: false }, dependencies);
+        const counts = tuning.data.candidatesTried as Record<string, number>;
+        polishTried += Object.values(counts).reduce((sum, count) => sum + count, 0);
+        if (tuning.tuned) locked = withFreshParty(tuning.tuned, partyIndex);
+      }
+    };
+    const searchEquipment = async (until: number) => {
+      // SpecRef: 9.1.3 | 2-3-3 `polishMethod` `ga` | the `gaSearch` search over the searched members' equipment and Jewels,
+      // from the current result; its own final selection and verification are left to the Final selection.
+      const gaRequest: GaSearchRequest = {
+        targets: polishMembers.map((characterId) => ({ characterId, components: { raceGender: false, mainClass: false, subClass: false, lineage: false, predisposition: false, equipment: true, jewels: true } })),
+        considerOrderChange: false, considerDeityChange: 'none', considerItemsScope: request.considerItemsScope, objective, objectiveGuard: guard,
+        parameters: {
+          effort: parameters.effort, populationSize: parameters.populationSize, generations: parameters.generations, quickRuns: parameters.quickRuns,
+          confirmRuns: parameters.confirmRuns, timeBudgetSeconds: parameters.timeBudgetSeconds, verifyRuns: parameters.verifyRuns, eliteCount: parameters.eliteCount,
+          mutationRate: parameters.mutationRate, tournamentSize: parameters.tournamentSize, confirmTopN: parameters.confirmTopN, seed: deriveSeed(polishSeed, 0),
+          verifySeed: null, maxChanges: null, seedWithHeuristics: true,
+        },
+      };
+      const outcome = await runGaSearch(locked, partyIndex, gaRequest, dependencies, { deadline: until });
+      polishTried += Number(outcome.data.evaluations ?? 0);
+      if (outcome.best) locked = withFreshParty(outcome.best, partyIndex);
+    };
+    if (method === 'stagedTuning') await tuneMembers(searchDeadline);
+    else if (method === 'ga') await searchEquipment(searchDeadline);
+    else {
+      // `stagedTuningThenGa`: half of the Step 4 share each; time tuning leaves passes to the genetic search.
+      await tuneMembers(dependencies.now() + Math.max(0, searchDeadline - dependencies.now()) / 2);
+      if (!outOfTime()) await searchEquipment(searchDeadline);
+    }
+    evaluations += polishTried;
+    const changed = equipmentSignature(locked) !== equipmentSignature(unpolished);
+    steps.step4 = { candidatesTried: polishTried, selected: changed ? `equipment of ${polishMembers.join(', ')}` : null, method, members: polishMembers };
   }
+
+  // ---- Final selection: the polished result, the unpolished one, and the current build on a new seed ----
+  // SpecRef: 9.1.3 | 2-3-3 Process Final selection | the current build meets the result here for the first time; a change
+  // becomes the result only under the Margin rule. Without the current build as a finalist (`strict`, forced
+  // recomposition), the best finalist is the result.
+  const currentIsFinalist = model.soft || compositionDistance(request.direction, compositionOf(state.parties[partyIndex].characters)) <= model.minDistance;
+  const planOf = (target: GameState): GaChangeEntry[] => { try { return planGaChangeSummary(state, partyIndex, target, dependencies.commitContext); } catch { return []; } };
+  const candidates: { finalist: 'polished' | 'unpolished'; state: GameState }[] = [{ finalist: 'polished', state: locked }];
+  if (equipmentSignature(locked) !== equipmentSignature(unpolished)) candidates.push({ finalist: 'unpolished', state: unpolished });
+  const finalists: { finalist: string; state: GameState; plan: GaChangeEntry[]; scored: Scored }[] = [];
+  for (const candidate of candidates) {
+    const plan = planOf(candidate.state);
+    // A build with no change is the current build itself.
+    if (plan.length > 0) finalists.push({ ...candidate, plan, scored: await scoreFull(candidate.state, finalRuns, finalSeed) });
+  }
+  let result: { finalist: string; state: GameState; plan: GaChangeEntry[] } = { finalist: 'current', state, plan: [] };
+  let currentScore: Scored | null = null;
+  if (finalists.length > 0) {
+    const leader = finalists.reduce((a, b) => (compareGuarded(guardedOf(b.scored), guardedOf(a.scored), guard) > 0 ? b : a));
+    if (!currentIsFinalist) result = leader;
+    else {
+      currentScore = await scoreFull(state, finalRuns, finalSeed);
+      if (passesMargin(leader.scored, currentScore, finalRuns)) result = leader;
+    }
+  }
+  const round4 = (value: number) => Math.round(value * 10000) / 10000;
+  steps.finalSelection = {
+    runs: finalRuns,
+    finalists: [
+      ...finalists.map((entry) => ({ finalist: entry.finalist, rate: round4(entry.scored.measured.rate), guard: entry.scored.guard ? round4(entry.scored.guard.rate) : null })),
+      ...(currentScore ? [{ finalist: 'current', rate: round4(currentScore.measured.rate), guard: currentScore.guard ? round4(currentScore.guard.rate) : null }] : []),
+    ],
+    selected: result.finalist,
+  };
+
+  // ---- Verification: the current build and the result on one fresh seed (as `gaSearch`) ----
+  const changeSummary = result.plan;
+  const finalState = changeSummary.length > 0 ? result.state : state;
   const changed = changeSummary.length > 0;
   const verifyAfter = changed ? await measureRaw(finalState, verifyRuns, verifySeed) : verifyBefore;
   const crossAfter = changed ? await second(finalState, verifyRuns, verifySeed) : crossBefore;
