@@ -844,8 +844,17 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * `changedOnly`: in each candidate, `autoEquipmentRun` runs only for the targets whose build changed. The other targets keep their current equipment and Jewels, for example the equipment found by `gaSearch` or `stagedEquipmentTuning`.
       * A target's build has changed when its unique character, race/gender, main class, sub class, lineage, or predisposition differs from the current build. An order change or a deity change alone does not count.
       * With `withinTargets` or `global`, a changed target may take an unlocked item from an unchanged member. That member then counts as changed and runs `autoEquipmentRun` afterward (party order), so it does not keep an empty slot.
-      * So the candidate with no build change is exactly the current build, equipment included.
+      * So a candidate that changes only the order keeps every member's current equipment.
     * `allTargets`: `autoEquipmentRun` runs for every target in every candidate, whether or not its build changed (the behavior before `autoEquipmentScope` existed). Use it to let the search also re-run Auto Equipment on members it does not re-class.
+
+  * `equipmentPolish`
+    * String enum, optional, default `changedOnly`.
+    * Options: `none`, `changedOnly`, `allTargets`
+    * Selects the members Step 4 (see Process) searches. Step 4 is a genetic search over equipment and Jewels that starts from the result of Steps 1 to 3, so the final equipment is chosen by `objective`, not only by the Auto Equipment rules.
+    * `none`: Step 4 does not run. Equipment comes from `autoEquipmentRun` alone.
+    * `changedOnly`: Step 4 searches the targets whose build changed in Steps 1 to 3 (a change as `autoEquipmentScope` defines it). The other targets keep their equipment and Jewels, for example the equipment found by `gaSearch` or `stagedEquipmentTuning`. If no target changed, Step 4 does not run.
+    * `allTargets`: Step 4 searches every target, changed or not.
+    * Step 4 places items as `party/{p}/gaSearch` (2-3-2) does for the members it searches with `equipment: true` and `jewels: true`: those members are its `targets`, and `considerItemsScope` applies to them as in 2-3-2. Locked equipment is never changed or taken.
 
   * `considerOrderChange`
     * Boolean, optional, default `false`.
@@ -868,12 +877,12 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Every candidate build is compared by this `objective`, and `verdict` is judged on it.
   * `objectiveGuard`
     * Optional. Same format, ranking, and `verdict` rule as the `objectiveGuard` of `party/{p}/gaSearch` (2-3-2).
-    * Applies to the confirmed Step 1 candidates, every Step 2 candidate, and every Step 3 candidate. In Step 3, a candidate replaces the incumbent only if it ranks above it by the `objectiveGuard` ranking.
+    * Applies to the confirmed Step 1 and Step 4 candidates, every Step 2 candidate, every Step 3 candidate, and the Final selection. In Steps 2 and 3 and in the Final selection, a change is accepted only under the Margin rule (see Process, Final selection), which includes the guard.
   * `directionStrictness`
     * String enum, optional, default `strict`.
     * Options: `strict`, `soft`
-    * `strict`: the direction is a rule. Every candidate must reach the smallest achievable `distance` (see Distance). If the current build is farther, it is not a candidate, and the search must change the composition.
-    * `soft`: the direction is a preference. Every composition is a candidate, including the current build. During the search, each member of `distance` makes a candidate's score worse by `directionPenalty`.
+    * `strict`: the direction is a rule. Every candidate must reach the smallest achievable `distance` (see Distance). If the current build is farther, it is not a finalist either (see Final selection), and the search must change the composition.
+    * `soft`: the direction is a preference. Every composition is a candidate, including the current one. During the search, each member of `distance` makes a candidate's score worse by `directionPenalty`.
       * The penalty is used for the search ranking only. `verdict` and `verification` are judged on the objective without the penalty.
       * With `free`, `distance` is always `0`, so `strict` and `soft` are the same.
   * `directionPenalty`
@@ -889,22 +898,24 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     | `effort` | `populationSize` | `generations` | `quickRuns` | `confirmRuns` | `timeBudgetSeconds` | `mutationRate` |
     |---|---|---|---|---|---|---|
     | `low` | 12 | 10 | 30 | 150 | 60 | 0.35 |
-    | `medium` | 16 | 20 | 50 | 300 | 180 | 0.35 |
-    | `high` | 48 | 60 | 300 | 1000 | 480 | 0.5 |
+    | `medium` | 24 | 30 | 50 | 300 | 180 | 0.35 |
+    | `high` | 48 | 60 | 100 | 600 | 480 | 0.35 |
+
+    * The quick runs only need to rank candidates roughly; the confirm runs and the Final selection decide. So the presets spend runs on more candidates rather than on more runs per candidate.
 
     | Parameter | Type | Default | Range | Description |
     |---|---|---|---|---|
     | `effort` | String | `medium` | `low` / `medium` / `high` | Preset for `populationSize`, `generations`, `quickRuns`, `confirmRuns`, `timeBudgetSeconds`, and `mutationRate`. Explicit values override the preset. |
-    | `populationSize` | Integer | From `effort` | 8 ~ 64 | Step 1: number of candidate builds per generation. |
-    | `generations` | Integer | From `effort` | 1 ~ 200 | Step 1: number of generations to run. |
-    | `quickRuns` | Integer | From `effort` | 10 ~ 300 | Simulation runs used to score every Step 1 and Step 3 candidate. |
-    | `confirmRuns` | Integer | From `effort` | 50 ~ 1000 | Simulation runs (different seed) used to re-score the top Step 1 candidates and every Step 2 candidate. |
-    | `timeBudgetSeconds` | Integer | From `effort` | 5 ~ 600 | Hard time limit for the whole request, including the verification. The verification time is set aside first; Step 1 may use at most 75% of the rest, and Steps 2 and 3 share the remainder, plus any time Step 1 did not use. When a step's limit is reached, it locks its best result so far. When the search limit is reached, the remaining steps are skipped, and the verification still runs. |
+    | `populationSize` | Integer | From `effort` | 8 ~ 64 | Steps 1 and 4: number of candidate builds per generation. |
+    | `generations` | Integer | From `effort` | 1 ~ 200 | Steps 1 and 4: maximum number of generations to run. |
+    | `quickRuns` | Integer | From `effort` | 10 ~ 300 | Simulation runs used to score every Step 1, Step 3, and Step 4 candidate. |
+    | `confirmRuns` | Integer | From `effort` | 50 ~ 1000 | Simulation runs (different seed) used to re-score the top Step 1 and Step 4 candidates, every Step 2 candidate, and each Step 3 check. The Final selection uses twice this number (at most 1000). |
+    | `timeBudgetSeconds` | Integer | From `effort` | 5 ~ 600 | Hard time limit for the whole request, including the Final selection and the verification. Their time is set aside first. When Step 4 runs, Step 1 may use at most 50% of the rest, Steps 2 and 3 together at most 20%, and Step 4 the remainder (at least 30%), plus any time an earlier step did not use. When Step 4 does not run (`equipmentPolish: none`, or no target to search), Step 1 may use at most 75% of the rest, and Steps 2 and 3 share the remainder. When a step's limit is reached, it locks its best result so far. When the search limit is reached, the remaining steps are skipped, and the Final selection and the verification still run. |
     | `verifyRuns` | Integer | `500` | 100 ~ 1000 | Simulation runs (new independent seed) used to compare the current build and the result. Used for `verdict` and `forecast`. |
-    | `eliteCount` | Integer | `2` | 0 ~ populationSize / 4 | Step 1: best builds copied unchanged to the next generation. |
-    | `mutationRate` | Number | From `effort` | 0 ~ 1 | Step 1: probability that a child build is mutated. |
-    | `tournamentSize` | Integer | `3` | 2 ~ 8 | Step 1: number of candidates compared when selecting each parent. |
-    | `confirmTopN` | Integer | `3` | 1 ~ 10 | Step 1: number of top candidates re-scored with `confirmRuns` each generation. |
+    | `eliteCount` | Integer | `2` | 0 ~ populationSize / 4 | Steps 1 and 4: best builds copied unchanged to the next generation. |
+    | `mutationRate` | Number | From `effort` | 0 ~ 1 | Steps 1 and 4: probability that a child build is mutated. |
+    | `tournamentSize` | Integer | `3` | 2 ~ 8 | Steps 1 and 4: number of candidates compared when selecting each parent. |
+    | `confirmTopN` | Integer | `3` | 1 ~ 10 | Steps 1 and 4: number of top candidates re-scored with `confirmRuns` each generation. |
     | `seed` | Integer | Random | Any integer | Fixed seed for a reproducible result. |
     | `verifySeed` | Integer | Derived from `seed` | Any integer | Seed of the verification runs only. Same meaning as the `verifySeed` of `party/{p}/gaSearch` (2-3-2). The same `verifySeed` gives `directedBuild` and `gaSearch` the same `verification.before` on the same save. |
 
@@ -974,20 +985,38 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * Step 1: High-impact changes
     * Searches: `uniqueCharacter`, `raceGender`, `mainClass`, `subClass`, `considerOrderChange`
     * Runs `autoEquipmentRun` for each candidate (see `autoEquipmentScope`). `considerItemsScope` and `objective` apply.
-    * The current build is always a candidate when it is valid: with `free`, with `soft`, or with `strict` when it is already at the smallest achievable distance.
+    * The current build is not a Step 1 candidate: Step 1 selects the best of the alternatives. The current build is compared only in the Final selection, after the result has been polished (Step 4), so a change is judged with its polished equipment, not with Auto Equipment alone.
+      * A sample or child identical to the current build is replaced like a repeated candidate (see below).
+      * A candidate may keep the current composition and differ in classes within a category, sub classes, races, unique characters, or order.
     * Sampling of the first generation (and of any later random candidates):
       * `free` and `soft`: 60% of the samples are local: they keep the current composition or have a recomposition of 1 or 2. The other 40% draw any valid composition.
         * With `soft`, the non-local samples draw from the compositions at the smallest achievable distance.
       * `strict` with any other direction: every sample draws from the compositions at the smallest achievable distance.
       * Within a composition, classes, races, sub classes, and unique characters are drawn as before.
     * A candidate is scored once per search. When breeding or sampling produces a candidate that was already scored, it is replaced by a new random sample (up to 4 attempts per slot), so a generation spends its runs on new builds.
-    * Selects the best result and locks these parameters. If there is no valid candidate, the original parameters are kept.
+    * Selects the confirmed candidate with the best score (by the `objectiveGuard` ranking with a guard) and locks these parameters. If there is no valid candidate, the original parameters are kept, and Steps 2 to 4 start from the current build.
   * Step 2: Deity change
     * Searches: `considerDeityChange`
-    * Selects the best deity and locks it. If there is no valid candidate, the original parameters are kept.
-  * Step 3: Final tuning
+    * Scores the current deity and every option with `confirmRuns` on the Step 1 result.
+    * The best option replaces the current deity only if it passes the Margin rule (see Final selection) against it. Otherwise the current deity is kept.
+  * Step 3: Lineage and predisposition
     * Searches: `lineage`, `predisposition`
     * Runs `autoEquipmentRun` for each candidate (only the member being tuned, see `autoEquipmentScope`). `considerItemsScope` and `objective` apply.
+    * Tunes one target at a time in party order, lineage first, then predisposition. Every value is scored with `quickRuns` on one seed.
+    * Check: the best value and the member's current value are then re-scored with `confirmRuns` on the confirm seed. The best value replaces the current one only if it passes the Margin rule against it. Otherwise the current value is kept.
+  * Step 4: Equipment polish
+    * Runs when `equipmentPolish` is not `none` and there is a member to search (see `equipmentPolish`).
+    * Searches: the equipment and Jewels of those members, with a genetic search like `gaSearch` (2-3-2) that uses `populationSize`, `eliteCount`, `mutationRate`, `tournamentSize`, `confirmTopN`, `quickRuns`, and `confirmRuns`. It runs until `generations` or its time share ends.
+    * The first generation contains the result of Steps 1 to 3 unchanged, so Step 4 can only return that result or a build that scored better.
+    * Builds, deity, and order stay as Steps 1 to 3 locked them.
+    * Selects the confirmed candidate with the best score (by the `objectiveGuard` ranking with a guard).
+  * Final selection
+    * Finalists: the result of Steps 1 to 4, the result of Steps 1 to 3 when Step 4 changed it, and the current build.
+    * Each finalist is re-scored on a new seed derived from `seed` with `2 × confirmRuns` runs (at most 1000).
+    * Margin rule: a build passes against another build when its rate is better by more than one standard error, with SE computed as in the 7.1.5 Luck check (`SE = sqrt(beforeVariance / runs + afterVariance / runs)`). For `success`, when both rates are equal, `progress` (7.1.5 Score) decides by the same rule. With `objectiveGuard`, a build that reaches the guard passes against one that does not; when both miss it, the build must be better on the guard by more than one standard error.
+    * The best finalist other than the current build becomes the result only if it passes the Margin rule against the current build. Otherwise the result is the current build: `verdict` is `noChange`, and `changeSummary` is empty.
+    * When the current build is not a finalist (`directionStrictness: strict` with `forcedRecomposition: true`), the best finalist is the result, without the Margin rule.
+    * Reason: the best of many noisy scores is usually too high, partly by luck. Re-scoring on a new seed removes most of that before the verification, so a search at a wall returns `noChange` instead of a `noisy` or `worse` change.
 
 * Return:
   * Same as `party/{p}/gaSearch` (2-3-2): `verdict`, `forecast` (including `scope`), `verification` (including `progress` and `crossCheck`), `changeSummary`, `revision`, `evaluations`, `elapsedSeconds`, `basis`.
@@ -1002,10 +1031,11 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `distance`: `distance` of the result.
       * `smallestDistance`: the smallest achievable distance (see Distance).
       * `recomposition`: recomposition from the current build to the result.
-      * `forcedRecomposition`: Boolean. `true` when `directionStrictness` is `strict` and `distanceBefore` is larger than `smallestDistance`. The current build was then not a candidate, and the result had to change the composition.
+      * `forcedRecomposition`: Boolean. `true` when `directionStrictness` is `strict` and `distanceBefore` is larger than `smallestDistance`. The current build was then not a finalist, and the result had to change the composition.
         * A `worse` verdict with `forcedRecomposition: true` usually means the direction did not suit the current party, not that the search failed. Use `free` or `soft` to compare.
   * `steps`
-    * Number of candidates tried and the selected option, for each step of the Process.
+    * Number of candidates tried and the selected option, for each step of the Process, including Step 4.
+    * `finalSelection`: the finalists' rates in the Final selection runs and which one became the result (`current` when the result is the current build).
   * Details: `9.1.4`.
 
 
