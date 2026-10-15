@@ -1,0 +1,4 @@
+- D1 boss call 122 (0.49 d; wasted 6 sorties attacking at route 0). D2 boss call 301 (1.0 d, Lv13). A/B so far: bossDamage tie; success: dir +83 vs ga +70.6(first), ga +15.8 vs dir +10.2, dir +30.8/+29, ga +15.6/+7.4, ga +10.4/+9.6, ga +46.6 vs dir +30.6
+- D3 boss call 430 (1.30 d, Lv16, natural AFK kill). ab: boss bossDamage ga +60.6 vs dir +46.5; route ga +4.2 vs dir +2.2
+- D4 boss call 656 (2.21 d, Lv19): ab boss ga +60.4 vs dir +18.5; route stuck 0.7 % (both noChange/noisy at TB 150-300); attacked 11 sorties anyway -> killed (route meter 2.3 %)
+- D5 boss call 1286 (game 10-19T10:03, Lv25): first prep NOTREADY (route 0, boss 6.7 %), second boss3 PASSES=5 G=0.6 TB240: dir +10.4 vs ga +7.8 route 2.3->13.7 %; killed in 6 sorties. Elite gate 5f stalled ~6 re-plans at Lv24.

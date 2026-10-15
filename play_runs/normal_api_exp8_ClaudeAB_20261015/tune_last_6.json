@@ -1,0 +1,36 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "progress",
+ "before": "Success 0.0% / Draw 8.4% / Retreat 39.8% / Defeat 51.8%",
+ "after": "Success 0.0% / Draw 8.4% / Retreat 39.8% / Defeat 51.8%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.01,
+ "bottleneckRoom": "2f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.null-shock",
+   "answers": [
+    "a.shock"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 12,
+  "defenseElement": 3,
+  "ability": 7
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [],
+  "ability": [],
+  "finalTuning": []
+ },
+ "changeSummary": [],
+ "revision": 1268,
+ "simulationRuns": 7900,
+ "elapsedSeconds": 3.7,
+ "seed": 3419101582
+}

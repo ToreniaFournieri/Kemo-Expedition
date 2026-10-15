@@ -5,7 +5,7 @@ import { compareGuarded, deriveSeed, GA_EFFORT_PRESETS, measure, measureSecondOb
 import { forecastScope, measureObjective, prepareObjectiveState, routeRoomCount } from '../../src/api/v1/objectiveMeasure';
 import { buildApiV1ReadData } from '../../src/api/v1/readModels';
 import { buildSimulationRunData } from '../../src/api/v1/simulationView';
-import type { ExpeditionSimulationResult } from '../../src/types';
+import { getVariantKey, type ExpeditionSimulationResult, type Item } from '../../src/types';
 import { getDeityId } from '../../src/game/deity';
 import type { GameState } from '../../src/types';
 
@@ -334,6 +334,66 @@ fails({ buildResultId: 'old-result', simulation: true }, 'invalid_request:buildR
   // A Jewels-only target keeps its items, free slot included.
   const jewelsOnly = await search(emptied, { targets: [{ characterId: guardian.id, changeableComponents: { jewels: true } }], gaParameters: small });
   assert.ok(!fillsGuardian(jewelsOnly.data.changeSummary as never), 'a Jewels-only target is not filled');
+}
+
+// ---------------- Item jars: the highest enhancement first ----------------
+// SpecRef: 9.1.4.9 | GA search Candidates | the copies of an item without a Super Rare title are one jar, and each Super
+// Rare title of an item is a jar of its own; a slot takes its jar's highest-enhancement copy left.
+{
+  const jarOf = (id: number, superRare: number) => `${id}/${superRare}`;
+  /** Adds `count` owned copies of `item` with the given enhancement and Super Rare title. */
+  const stock = (state: GameState, item: Item, enhancement: number, superRare: number, count = 1) => {
+    const copy = { ...item, enhancement, superRare, jewel: null, isLocked: false };
+    const entry = state.global.inventory[getVariantKey(copy)];
+    state.global.inventory[getVariantKey(copy)] = { item: copy, count: (entry?.status === 'owned' ? entry.count : 0) + count, status: 'owned' };
+  };
+  /** Owned Inventory enhancements per jar, highest first. */
+  const inventoryJars = (state: GameState) => {
+    const jars = new Map<string, number[]>();
+    for (const entry of Object.values(state.global.inventory)) {
+      if (entry.status !== 'owned' || entry.count <= 0) continue;
+      const jar = jarOf(entry.item.id, entry.item.superRare);
+      jars.set(jar, [...(jars.get(jar) ?? []), ...new Array(entry.count).fill(entry.item.enhancement)]);
+    }
+    for (const list of jars.values()) list.sort((a, b) => b - a);
+    return jars;
+  };
+
+  // A stripped party: every placed copy comes from the Inventory, so each jar's placed copies are its highest ones.
+  const stripped = structuredClone(base);
+  const owned = Object.values(base.global.inventory).filter((entry) => entry.status === 'owned' && entry.count > 0 && entry.item.superRare === 0);
+  for (const entry of owned) stock(stripped, entry.item, 2, 0);
+  stock(stripped, owned[0].item, 0, 1); stock(stripped, owned[0].item, 1, 1);
+  const available = inventoryJars(stripped);
+  const result = await search(stripped, { targets: equipmentTargets, gaParameters: small });
+  const placed = new Map<string, number[]>();
+  for (const entry of result.data.changeSummary as GaChangeEntry[]) {
+    if (!entry.endpoint.endsWith('/equip')) continue;
+    const [, id, enhancement, superRare] = String(entry.parameters.targetEquipment).split('/').map(Number);
+    placed.set(jarOf(id, superRare), [...(placed.get(jarOf(id, superRare)) ?? []), enhancement]);
+  }
+  assert.ok([...placed.values()].flat().includes(2), 'a +2 copy is placed');
+  for (const [jar, list] of placed) assert.deepEqual([...list].sort((a, b) => b - a), available.get(jar)!.slice(0, list.length), `jar ${jar} places its highest copies`);
+
+  // A geared party with a +2 copy of every worn item in the Inventory: the result never leaves a worn copy below one still
+  // in the Inventory (the current build's own genes upgrade it).
+  const geared = createFreshGameState('ja', now);
+  for (const character of geared.parties[0].characters) for (const item of character.equipment) if (item && !item.isLocked && item.enhancement < 2) stock(geared, item, 2, item.superRare);
+  const targets = geared.parties[0].characters.map((character) => ({ characterId: character.id, changeableComponents: { equipment: true } }));
+  const upgraded = await search(geared, { targets, gaParameters: { ...small, generations: 1, seedWithHeuristics: false } });
+  let after = geared;
+  for (const entry of upgraded.data.changeSummary as GaChangeEntry[]) after = applyApiV1Commit(entry.endpoint, after, entry.parameters, context()).state;
+  const left = inventoryJars(after);
+  let upgrades = 0;
+  for (const character of after.parties[0].characters) {
+    for (const item of character.equipment) {
+      if (!item || item.isLocked) continue;
+      if (item.enhancement === 2) upgrades += 1;
+      const higher = left.get(jarOf(item.id, item.superRare))?.[0] ?? -1;
+      assert.ok(higher <= item.enhancement, `character ${character.id} wears ${item.id}+${item.enhancement} while +${higher} is in the Inventory`);
+    }
+  }
+  assert.ok(upgrades > 0, 'worn copies are upgraded');
 }
 
 // ---------------- Objective measures (Spec 7.1.5 Score and Luck check) ----------------

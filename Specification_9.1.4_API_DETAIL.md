@@ -838,7 +838,15 @@ definitions in 9.1.3.
   makes available: the Inventory and the character's own worn items (`normal`);
   also the items worn by the other targets whose equipment is changeable
   (`withinTargets`); also the unlocked items worn by every other character of any
-  party (`global`). A locked item worn by a target keeps its slot and Jewel and is
+  party (`global`). The search chooses items, not copies: all copies of one item
+  without a Super Rare title are one choice, and the copies of one item with one
+  Super Rare title are another (each title has its own bonuses). A slot that holds
+  such a choice gets its highest-enhancement copy still available to that
+  character, slots taking copies in party order, so a lower copy is placed only
+  when every higher copy of the same choice is used or out of reach. The current
+  build is read the same way, so a worn copy is replaced by a higher-enhancement
+  copy of the same item when one is available (with `equipment` but not `jewels`,
+  the higher copy has no Jewel). A locked item worn by a target keeps its slot and Jewel and is
   never offered to anyone; a target whose `equipment` is `false` keeps its items,
   which are never offered either. Under `global` the items a result takes from
   other characters are the ones it needs beyond the Inventory and the targets'

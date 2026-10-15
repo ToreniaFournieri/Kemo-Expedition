@@ -271,7 +271,9 @@ interface SearchModel {
   sharedBase: Record<string, number>;
   /** Copies only one character may use: its own worn items under `normal`, and the fixed items of an equipment-locked target. */
   own: Record<number, Record<string, number>>;
-  /** Variant keys each target may place (shared or its own). */
+  /** Each jar's copies (variant keys), the highest enhancement first. */
+  jars: Map<string, string[]>;
+  /** Jars each target may place (a copy shared or its own). */
   keysFor: Record<number, string[]>;
   /** Locked worn items of targets: they keep their slot and Jewel and are never taken (Spec 9.1.3, 2-3-2 `equipment`). */
   frozen: Record<number, Map<number, Item>>;
@@ -286,6 +288,13 @@ interface SearchModel {
 
 const jewelKeyOf = (item: Item | null | undefined): string | null => item?.jewel ? `${item.jewel.key}:${item.jewel.rank}` : null;
 const targetOf = (model: SearchModel, characterId: number) => model.request.targets.find((target) => target.characterId === characterId);
+
+// SpecRef: 9.1.4.9 | GA search Candidates | an equipment gene names a jar, not a copy: all copies of an item without a
+// Super Rare title share one jar, and each Super Rare title of an item is a jar of its own (its bonuses differ). A slot
+// takes the jar's highest-enhancement copy still available, so a lower copy is placed only when every higher one is used.
+const jarKeyOf = (item: { id: number; superRare: number }): string => (item.superRare > 0 ? `${item.id}-sr${item.superRare}` : String(item.id));
+/** A target's slot gene: a jar for an equipment target, the worn copy itself for a Jewels-only target (its items stay). */
+const geneKeyOf = (target: GaTarget, item: Item): string => (target.components.equipment ? jarKeyOf(item) : getVariantKey(item));
 
 function buildModel(state: GameState, partyIndex: number, request: GaSearchRequest): SearchModel {
   const party = state.parties[partyIndex];
@@ -347,7 +356,7 @@ function buildModel(state: GameState, partyIndex: number, request: GaSearchReque
       });
       own[character.id] = ownCounts;
       frozen[character.id] = fixed;
-      current.equipment[character.id] = character.equipment.map((item) => item ? { k: getVariantKey(item), j: jewelKeyOf(item) } : null);
+      current.equipment[character.id] = character.equipment.map((item) => item ? { k: geneKeyOf(target, item), j: jewelKeyOf(item) } : null);
     }
     const describe = describeCharacterBuildCurrent(character);
     const options: Partial<Record<BuildField, string[]>> = {};
@@ -366,12 +375,16 @@ function buildModel(state: GameState, partyIndex: number, request: GaSearchReque
     buildOptions[character.id] = options;
     current.builds[character.id] = genes;
   }
+  const jars: SearchModel['jars'] = new Map();
+  for (const [key, entry] of pool) jars.set(jarKeyOf(entry.item), [...(jars.get(jarKeyOf(entry.item)) ?? []), key]);
+  for (const copies of jars.values()) copies.sort((a, b) => pool.get(b)!.item.enhancement - pool.get(a)!.item.enhancement);
   const keysFor: SearchModel['keysFor'] = {};
   for (const target of request.targets) {
-    keysFor[target.characterId] = [...pool.keys()].filter((key) => (pool.get(key)!.total > 0) || (own[target.characterId]?.[key] ?? 0) > 0);
+    const usable = (key: string) => pool.get(key)!.total > 0 || (own[target.characterId]?.[key] ?? 0) > 0;
+    keysFor[target.characterId] = [...jars].filter(([, copies]) => copies.some(usable)).map(([jar]) => jar);
   }
   return {
-    base: state, partyIndex, request, pool, sharedBase, own, keysFor, frozen, donors, jewelTotals, buildOptions,
+    base: state, partyIndex, request, pool, sharedBase, own, jars, keysFor, frozen, donors, jewelTotals, buildOptions,
     deityOptions: deityOptionsFor(state, party, request.considerDeityChange), current,
   };
 }
@@ -394,7 +407,7 @@ const cloneGenome = (genome: Genome): Genome => ({
   equipment: Object.fromEntries(Object.entries(genome.equipment).map(([id, slots]) => [id, slots.map((slot) => slot ? { ...slot } : null)])),
 });
 
-/** Tier of an item ID (the thousands digit block); higher tiers are drawn more often when a slot is refilled. */
+/** Tier of a jar's item ID (the thousands digit block); higher tiers are drawn more often when a slot is refilled. */
 const tierWeight = (key: string): number => Math.max(1, Math.floor(Number(key.split('-')[0]) / 1000) ** 2);
 
 /** xorshift32: a small deterministic stream for the search itself (selection, crossover, mutation, repair). */
@@ -420,7 +433,9 @@ interface Decoded { state: GameState; genome: Genome }
 
 /**
  * Applies a genome to a private copy of the state with repair: an invalid build change keeps the current value, and a
- * slot whose item is unavailable or not equippable is refilled from the remaining pool. An empty slot of an equipment
+ * slot whose jar has no copy left or is not equippable is refilled from the remaining pool. Slots take their jar's
+ * highest-enhancement copy left in party order, so the current build's own genes upgrade a worn copy when a higher
+ * copy of the same item is free. An empty slot of an equipment
  * target is filled too: a filled slot only adds power, so no candidate (the current build's included) keeps a free slot
  * while a usable item is left. Party HP is derived from the characters, so the party gets new character arrays (its
  * stats cache is keyed by array identity).
@@ -481,20 +496,22 @@ function decode(model: SearchModel, input: Genome, random: () => number): Decode
     const fixed = model.frozen[character.id];
     for (let slot = 0; slot < maxSlots; slot += 1) {
       const locked = fixed?.get(slot);
-      if (locked) { equipment[slot] = locked; repaired[slot] = { k: getVariantKey(locked), j: jewelKeyOf(locked) }; continue; }
+      if (locked) { equipment[slot] = locked; repaired[slot] = { k: geneKeyOf(target, locked), j: jewelKeyOf(locked) }; continue; }
       const gene = genes[slot];
       // An empty slot of an equipment target is a hole like an unusable gene (a Jewels-only target keeps its items).
       if (!gene) { if (target.components.equipment) holes.push([character, slot]); continue; }
-      const entry = model.pool.get(gene.k);
-      if (!entry || !canCharacterEquipCategory(character, entry.item.category) || !supply.take(character.id, gene.k)) { holes.push([character, slot]); continue; }
-      const item: Item = { ...entry.item, jewel: null };
+      const sample = model.pool.get(target.components.equipment ? model.jars.get(gene.k)?.[0] ?? '' : gene.k);
+      const key = !sample || !canCharacterEquipCategory(character, sample.item.category) ? null
+        : target.components.equipment ? supply.takeBest(character.id, gene.k) : supply.take(character.id, gene.k) ? gene.k : null;
+      if (key === null) { holes.push([character, slot]); continue; }
+      const item: Item = { ...model.pool.get(key)!.item, jewel: null };
       let jewel: string | null = null;
       if (target.components.jewels) {
         if (gene.j && (jewelsLeft[gene.j] ?? 0) > 0 && isJewelAllowedForCategory(item.category, gene.j.split(':')[0] as JewelKey)) { jewel = gene.j; jewelsLeft[gene.j] -= 1; }
       } else {
         // Jewels are fixed: only the item that stays in its slot keeps its Jewel.
         const before = original[slot];
-        if (before && getVariantKey(before) === gene.k) jewel = jewelKeyOf(before);
+        if (before && getVariantKey(before) === key) jewel = jewelKeyOf(before);
       }
       if (jewel) { const [key, rank] = jewel.split(':'); item.jewel = { key: key as JewelKey, rank: Number(rank) }; }
       equipment[slot] = item;
@@ -506,13 +523,13 @@ function decode(model: SearchModel, input: Genome, random: () => number): Decode
   // A hole takes a usable copy at random, weighted toward higher tiers. A copy that needs no donor (`global`) is
   // preferred, so filling a slot strips another character only when nothing else is left.
   for (const [character, slot] of holes) {
-    const usable = (model.keysFor[character.id] ?? []).filter((key) => supply.available(character.id, key) && canCharacterEquipCategory(character, model.pool.get(key)!.item.category));
-    const withoutDonor = usable.filter((key) => !needsDonor(model, supply, character.id, key));
-    const key = pickByTier(withoutDonor.length > 0 ? withoutDonor : usable, random);
-    if (key === null) continue;
-    supply.take(character.id, key);
+    const usable = (model.keysFor[character.id] ?? []).filter((jar) => { const key = supply.best(character.id, jar); return key !== null && canCharacterEquipCategory(character, model.pool.get(key)!.item.category); });
+    const withoutDonor = usable.filter((jar) => !needsDonor(model, supply, character.id, supply.best(character.id, jar)!));
+    const jar = pickByTier(withoutDonor.length > 0 ? withoutDonor : usable, random);
+    if (jar === null) continue;
+    const key = supply.takeBest(character.id, jar)!;
     character.equipment[slot] = { ...model.pool.get(key)!.item, jewel: null };
-    genome.equipment[character.id][slot] = { k: key, j: null };
+    genome.equipment[character.id][slot] = { k: jar, j: null };
   }
   const parties = [...state.parties];
   parties[partyIndex] = { ...party, characters };
@@ -531,7 +548,13 @@ function pickByTier(keys: readonly string[], random: () => number): string | nul
 const needsDonor = (model: SearchModel, supply: Supply, characterId: number, key: string): boolean =>
   (supply.ownLeft[characterId]?.[key] ?? 0) <= 0 && (supply.sharedLeft[key] ?? 0) <= model.pool.get(key)!.total - (model.sharedBase[key] ?? 0);
 
-interface Supply { sharedLeft: Record<string, number>; ownLeft: Record<number, Record<string, number>>; take: (characterId: number, key: string) => boolean; available: (characterId: number, key: string) => boolean }
+interface Supply {
+  sharedLeft: Record<string, number>; ownLeft: Record<number, Record<string, number>>; take: (characterId: number, key: string) => boolean; available: (characterId: number, key: string) => boolean;
+  /** The copy a jar gives next: its highest-enhancement copy still available to the character; null when none is left. */
+  best: (characterId: number, jar: string) => string | null;
+  /** Takes the `best` copy of a jar and returns its variant key. */
+  takeBest: (characterId: number, jar: string) => string | null;
+}
 
 /** The copies a decode may hand out: a character's own copies first, then the shared ones (Inventory, pooled worn items, donors). */
 function createSupply(model: SearchModel): Supply {
@@ -544,7 +567,9 @@ function createSupply(model: SearchModel): Supply {
     if ((sharedLeft[key] ?? 0) > 0) { sharedLeft[key] -= 1; return true; }
     return false;
   };
-  return { sharedLeft, ownLeft, take, available };
+  const best = (characterId: number, jar: string) => model.jars.get(jar)?.find((key) => available(characterId, key)) ?? null;
+  const takeBest = (characterId: number, jar: string) => { const key = best(characterId, jar); if (key !== null) take(characterId, key); return key; };
+  return { sharedLeft, ownLeft, take, available, best, takeBest };
 }
 
 /**
@@ -828,7 +853,7 @@ function heuristicGenomes(model: SearchModel): Genome[] {
     const genome = cloneGenome(model.current);
     const supply = createSupply(model);
     // A fill keeps every worn item, so their copies are taken before any free slot is filled.
-    if (keepCurrent) for (const target of targets) for (const gene of genome.equipment[target.characterId] ?? []) if (gene) supply.take(target.characterId, gene.k);
+    if (keepCurrent) for (const target of targets) for (const gene of genome.equipment[target.characterId] ?? []) if (gene) supply.takeBest(target.characterId, gene.k);
     let filled = false;
     for (const target of targets) {
       const character = party.characters.find((entry) => entry.id === target.characterId)!;
@@ -836,16 +861,19 @@ function heuristicGenomes(model: SearchModel): Genome[] {
       const slots: (SlotGene | null)[] = [];
       for (let slot = 0; slot < maxSlots; slot += 1) {
         const locked = model.frozen[character.id]?.get(slot);
-        if (locked) { slots.push({ k: getVariantKey(locked), j: jewelKeyOf(locked) }); continue; }
+        if (locked) { slots.push({ k: jarKeyOf(locked), j: jewelKeyOf(locked) }); continue; }
         const kept = keepCurrent ? model.current.equipment[character.id]?.[slot] : null;
         if (kept) { slots.push({ ...kept }); continue; }
+        // Each jar is scored by the copy it would give.
         let best: string | null = null; let bestScore = -Infinity;
-        for (const [key, entry] of model.pool) {
-          if (!supply.available(character.id, key) || !canCharacterEquipCategory(character, entry.item.category)) continue;
-          const value = score(entry.item, character);
-          if (value > bestScore) { bestScore = value; best = key; }
+        for (const jar of model.keysFor[character.id] ?? []) {
+          const key = supply.best(character.id, jar);
+          const item = key === null ? null : model.pool.get(key)!.item;
+          if (!item || !canCharacterEquipCategory(character, item.category)) continue;
+          const value = score(item, character);
+          if (value > bestScore) { bestScore = value; best = jar; }
         }
-        if (best) { supply.take(character.id, best); filled = true; }
+        if (best) { supply.takeBest(character.id, best); filled = true; }
         slots.push(best ? { k: best, j: null } : null);
       }
       genome.equipment[character.id] = slots;
