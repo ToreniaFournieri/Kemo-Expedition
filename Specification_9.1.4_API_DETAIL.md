@@ -1115,12 +1115,18 @@ definitions in 9.1.3.
   unresisted gets one item resisting it. New items carry no other offense element
   than the current build. Infeasible combinations are skipped before
   `defenseElementCandidateCount` is applied.
-* Step 4: one candidate per item ID (its strongest owned variant) that adds an
-  ability the character lacks and brings no other offense element. Before each
+* Step 4: one candidate per jar (an item ID, and its Super Rare title if any; see
+  Item jars) that adds an ability the character lacks and brings no other offense element. Before each
   draw, the items left that add a counter of the bottleneck (above) are the draw
   pool; when none is left, every item left is. `a.null-counter` is party-wide: it
   counts as a counter only while no party member has it. Each trial draws up to
   `abilityCandidateCount` items not drawn before and places each alone.
+* Item jars (7.1.5): the options of steps 2–4 are jars, not copies. Each jar is
+  offered once, as its highest-enhancement copy that the candidate has not used
+  yet (its own worn copy and the Inventory copies alike), and its power is that
+  copy's. A lower copy is placed only when every higher copy of the same jar is
+  already used in the candidate. A worn item that no step changes keeps its copy:
+  the tuning never upgrades it by itself.
 * Draws and slots: trial 0 takes the strongest item (the Party pane's
   category-scaled `target d. bonus`, 7.1.2.2 step 4) and the best slot; later
   trials draw an item at random weighted by that value squared, and an added item

@@ -1261,6 +1261,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 **2-3-8. `character/stagedEquipmentTuning`**
 
 * Tunes the equipment of one character with `7.1.5 Staged Equipment Tuning`.
+* Items are chosen by jar, as in `party/{p}/gaSearch` (2-3-2 Item jars; 7.1.5 Item jars): a placed item is the highest-enhancement copy of its jar still free. Unlike `gaSearch`, worn items that no step changes are never upgraded.
 * This does not advance progression, return rewards, consume live randomness, write Diary entries, change equipment, consume charge, or change the save revision.
 
 * Parameters:

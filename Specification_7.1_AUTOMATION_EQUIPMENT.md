@@ -435,6 +435,11 @@ at least one party member has an empty equipment slot.
 
 - **General rules:**
   - Items come from the Inventory and this character's own equipment. Equipment of other characters is never taken. Locked equipment is never changed.
+  - **Item jars** (the same rule as `gaSearch`, `9.1.3`, 2-3-2):
+    - All copies of one item without a Super Rare title are one jar. Each Super Rare title of an item is a jar of its own, because each title has its own bonuses.
+    - Steps 2–4 choose jars, not copies: each jar is offered once, as the copy it would give.
+    - When a step places an item, it takes the highest-enhancement copy of that jar that the candidate has not used yet. So a lower-enhancement copy is placed only when every higher copy of the same jar is already used.
+    - Items that no step changes stay as they are: the tuning never upgrades a worn copy by itself (that is `SEMI`, 7.1.3). So each step's improvement measures only what that step tried.
   - Do not select multiple items with the same bonus, since duplicate bonuses do not stack (e.g., two items with `r.ice+0.20` give the same effect as one).
   - Setting a step's `...TrialRuns` to `0` skips that step.
   - **Jewels:**
@@ -509,7 +514,7 @@ at least one party member has an empty equipment slot.
 
 4. Evaluate alternative item abilities
    - Check the abilities granted by the current equipment.
-   - Try up to `abilityCandidateCount` items that grant abilities the character doesn't already have, each replacing one or more unlocked items.
+   - Try up to `abilityCandidateCount` items (one per jar, see **Item jars**) that grant abilities the character doesn't already have, each replacing one or more unlocked items.
      - Try first items that grant a counter ability of `7.1.5.1` for the bottleneck room (e.g., `a.illusion-breaker` against an enemy with `a.illusion`; `a.true-sight` on a `terrain.fog` floor).
        - A counter ability applies only if the character does not have it yet, and for a party-wide counter (marked in the table) only if no party member has it.
        - If no item grants a counter ability, draw from all items as usual.
