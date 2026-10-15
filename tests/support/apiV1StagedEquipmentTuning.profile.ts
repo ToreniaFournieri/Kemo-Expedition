@@ -369,4 +369,34 @@ const data = outcome.data as unknown as TuningData;
   assertDistinctJewels(after, 'the tuned samurai');
 }
 
+// ---------------- Item jars: a placed item is the highest copy of its jar still free (Spec 7.1.5 Item jars) ----------------
+{
+  // One extra +6 copy of every owned item without a Super Rare title. A step that places a lower copy of such an item must
+  // have used the +6 copy in the same candidate already; a worn item that no step changes is never upgraded.
+  const stocked: GameState = structuredClone(sample);
+  const jarsWithTop = new Set<string>();
+  for (const entry of Object.values(sample.global.inventory)) {
+    if (entry.status !== 'owned' || entry.count <= 0 || entry.item.superRare !== 0 || entry.item.enhancement >= 6) continue;
+    const item = { ...entry.item, enhancement: 6, jewel: null, isLocked: false };
+    const key = `${item.id}-6-0`;
+    stocked.global.inventory[key] = { item, count: 1, status: 'owned' };
+    jarsWithTop.add(`${item.id}/0`);
+  }
+  const request = { characterId: ninja.id, minImprovement: 0, quickRuns: 50, finalTuningRuns: 100, seed: 13 };
+  const jarred = (await tune(stocked, request)).data as unknown as TuningData;
+  const placed = (changes: string[]) => changes.map((change) => change.split('=')[1].split('/').map(Number)).map(([, id, enhancement, superRare]) => ({ jar: `${id}/${superRare}`, enhancement }));
+  const candidates = [...jarred.steps.offenseElement, ...jarred.steps.defenseElement, ...jarred.steps.ability, ...jarred.steps.finalTuning];
+  assert.ok(candidates.length > 0, 'the tuning records candidates');
+  for (const candidate of candidates) {
+    const items = placed(candidate.changes);
+    for (const item of items) {
+      if (!jarsWithTop.has(item.jar) || item.enhancement === 6) continue;
+      assert.ok(items.some((other) => other.jar === item.jar && other.enhancement === 6), `${item.jar}+${item.enhancement} placed while its +6 copy is free: ${candidate.changes.join(' ')}`);
+    }
+  }
+  // Only the slots the kept candidates change move: every other slot keeps its copy, even with a +6 copy free.
+  const kept = new Set(jarred.steps.finalTuning.flatMap((entry) => entry.changes.map((change) => Number(change.split('=')[0]))));
+  for (const entry of jarred.changeSummary.filter((change) => change.endpoint.endsWith('/equip'))) assert.ok(kept.has(Number(entry.parameters.targetSlot)), `slot ${entry.parameters.targetSlot} changed without a kept candidate`);
+}
+
 console.log('stagedEquipmentTuning profile ok');

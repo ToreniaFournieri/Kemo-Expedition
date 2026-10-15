@@ -293,7 +293,7 @@ const targetOf = (model: SearchModel, characterId: number) => model.request.targ
 // SpecRef: 9.1.4.9 | GA search Candidates | an equipment gene names a jar, not a copy: all copies of an item without a
 // Super Rare title share one jar, and each Super Rare title of an item is a jar of its own (its bonuses differ). A slot
 // takes the jar's highest-enhancement copy still available, so a lower copy is placed only when every higher one is used.
-const jarKeyOf = (item: { id: number; superRare: number }): string => (item.superRare > 0 ? `${item.id}-sr${item.superRare}` : String(item.id));
+export const jarKeyOf = (item: { id: number; superRare: number }): string => (item.superRare > 0 ? `${item.id}-sr${item.superRare}` : String(item.id));
 /** A target's slot gene: a jar for an equipment target, the worn copy itself for a Jewels-only target (its items stay). */
 const geneKeyOf = (target: GaTarget, item: Item): string => (target.components.equipment ? jarKeyOf(item) : getVariantKey(item));
 

@@ -12,7 +12,7 @@ import {
   type ExpeditionSimulationResult, type GameState, type Item, type ItemCategory,
 } from '../../types';
 import {
-  buildBasis, createRandom, crossCheckObjective, deriveSeed, GA_OBJECTIVES, measureSecondObjective, parseObjectiveGuard, planGaChangeSummary,
+  buildBasis, createRandom, crossCheckObjective, deriveSeed, GA_OBJECTIVES, jarKeyOf, measureSecondObjective, parseObjectiveGuard, planGaChangeSummary,
   type GaChangeEntry, type GaSearchDependencies, type ObjectiveGuard,
 } from './gaSearch';
 import { measureObjective, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount, type ObjectiveMeasure } from './objectiveMeasure';
@@ -165,6 +165,8 @@ interface TuningModel {
   facts: Map<string, ItemFacts>;
   /** Pool keys the character can equip, by category. */
   byCategory: Map<ItemCategory, string[]>;
+  /** Each jar's pool keys (copies), the highest enhancement first (Spec 7.1.5 Item jars). */
+  jars: Map<string, string[]>;
   /** The Jewels in the Inventory; with those freed from replaced items they fill the changed slots. */
   freeJewels: Record<string, number>;
   /** The current items: every candidate and the tuned build are compared with this build as it is. */
@@ -221,7 +223,10 @@ function buildModel(state: GameState, partyIndex: number, characterId: number): 
     byCategory.set(category, [...(byCategory.get(category) ?? []), key]);
   }
   for (const keys of byCategory.values()) keys.sort();
-  return { state, partyIndex, character, open, locked, pool, facts, byCategory, freeJewels, current, bestPower };
+  const jars = new Map<string, string[]>();
+  for (const keys of byCategory.values()) for (const key of keys) jars.set(jarKeyOf(facts.get(key)!.item), [...(jars.get(jarKeyOf(facts.get(key)!.item)) ?? []), key]);
+  for (const copies of jars.values()) copies.sort((a, b) => facts.get(b)!.item.enhancement - facts.get(a)!.item.enhancement);
+  return { state, partyIndex, character, open, locked, pool, facts, byCategory, jars, freeJewels, current, bestPower };
 }
 
 const factsAt = (model: TuningModel, loadout: Loadout, slot: number): ItemFacts | null => {
@@ -286,9 +291,34 @@ function draw(model: TuningModel, keys: readonly string[], trial: number, random
   return keys[keys.length - 1];
 }
 
-/** Pool keys of `category` that fit `slot` and satisfy `accept`. */
-const optionsFor = (model: TuningModel, loadout: Loadout, slot: number, category: ItemCategory, accept: (facts: ItemFacts) => boolean): string[] =>
-  (model.byCategory.get(category) ?? []).filter((key) => accept(model.facts.get(key)!) && fits(model, loadout, slot, key));
+const jarOf = (model: TuningModel, key: string): string => jarKeyOf(model.facts.get(key)!.item);
+
+/**
+ * SpecRef: 7.1.5 | General rules | Item jars: the copy of `key`'s jar a step places in `slot`, the highest-enhancement one
+ * that still fits (unused in `loadout`); `null` when none fits, or when the slot already holds a copy of that jar at least
+ * as high (a step never swaps a copy for a lower one of the same item).
+ */
+function jarCopy(model: TuningModel, loadout: Loadout, slot: number, key: string): string | null {
+  const held = loadout[slot];
+  const heldEnhancement = held && jarOf(model, held) === jarOf(model, key) ? model.facts.get(held)!.item.enhancement : -1;
+  for (const copy of model.jars.get(jarOf(model, key)) ?? [key]) {
+    if (model.facts.get(copy)!.item.enhancement <= heldEnhancement) return null;
+    if (fits(model, loadout, slot, copy)) return copy;
+  }
+  return null;
+}
+
+/** Jars of `category` that fit `slot` and satisfy `accept`, each as the copy it would give (Spec 7.1.5 Item jars). */
+function optionsFor(model: TuningModel, loadout: Loadout, slot: number, category: ItemCategory, accept: (facts: ItemFacts) => boolean): string[] {
+  const options = new Map<string, string>();
+  for (const key of model.byCategory.get(category) ?? []) {
+    const jar = jarOf(model, key);
+    if (options.has(jar) || !accept(model.facts.get(key)!)) continue;
+    const copy = jarCopy(model, loadout, slot, key);
+    if (copy) options.set(jar, copy);
+  }
+  return [...options.values()];
+}
 
 /** Pool keys that fit `slot` and satisfy `accept`: of the slot's own category, or of any category for an empty slot. */
 function slotOptions(model: TuningModel, loadout: Loadout, slot: number, accept: (facts: ItemFacts) => boolean): string[] {
@@ -614,9 +644,9 @@ function defenseCandidate(model: TuningModel, combination: ReadonlySet<Element>,
 function abilityCandidate(model: TuningModel, key: string): Loadout | null {
   const loadout = [...model.current];
   const category = model.facts.get(key)!.item.category;
-  const slot = placementSlots(model, loadout, category).find((entry) => fits(model, loadout, entry, key));
+  const slot = placementSlots(model, loadout, category).find((entry) => jarCopy(model, loadout, entry, key) !== null);
   if (slot === undefined) return null;
-  loadout[slot] = key;
+  loadout[slot] = jarCopy(model, loadout, slot, key)!;
   return acceptable(model, loadout, model.current) ? loadout : null;
 }
 
@@ -631,11 +661,12 @@ function addCandidate(model: TuningModel, loadout: Loadout, changed: ReadonlySet
     let slot = change.slot;
     if (used.has(slot)) {
       const category = model.facts.get(change.key)!.item.category;
-      const moved = placementSlots(model, next, category, used).find((entry) => fits(model, next, entry, change.key));
+      const moved = placementSlots(model, next, category, used).find((entry) => jarCopy(model, next, entry, change.key) !== null);
       if (moved === undefined) return null;
       slot = moved;
     }
-    next[slot] = change.key;
+    // Two kept candidates may place the same jar: each takes the highest copy still free (Spec 7.1.5 Item jars).
+    next[slot] = jarCopy(model, next, slot, change.key) ?? change.key;
     used.add(slot);
   }
   // Copies and shared bonuses are checked on the whole result, so the order of the changes does not matter.
@@ -775,16 +806,16 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
   const coveredCounter = (ability: string) => owned.has(ability) || (ability === 'null_counter' && partyOwned.has(ability));
   const enemyAbilities = new Set(enemies.flatMap((enemy) => enemy.abilities.map((ability) => ability.id as string)));
   const offense = offenseElementsOf(model, model.current);
-  // One entry per item ID: its strongest variant left in the pool.
-  const byItem = new Map<number, string>();
+  // SpecRef: 7.1.5 | Item jars | one entry per jar (an item ID and its Super Rare title): its highest copy left in the pool.
+  const byItem = new Map<string, string>();
   for (const keys of model.byCategory.values()) {
     for (const key of keys) {
       const facts = model.facts.get(key)!;
       const adds = facts.abilities.filter((ability) => !owned.has(ability));
       if (adds.length === 0 || ![...facts.offense].every((element) => offense.size === 0 || offense.has(element))) continue;
       if (usageOf(model, model.current, key) >= (model.pool.get(key) ?? 0)) continue;
-      const previous = byItem.get(facts.item.id);
-      if (!previous || facts.power > model.facts.get(previous)!.power) byItem.set(facts.item.id, key);
+      const previous = byItem.get(jarOf(model, key));
+      if (!previous || facts.item.enhancement > model.facts.get(previous)!.item.enhancement) byItem.set(jarOf(model, key), key);
     }
   }
   // The abilities that step 4 simulated a candidate for.
