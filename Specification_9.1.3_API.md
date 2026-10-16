@@ -683,7 +683,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * Optimizes the party build for the current destination and depth limit.
 * This does not advance progression, return rewards, consume live randomness, write Diary entries, change equipment, consume charge, or change the save revision.
-* Request time limit: the response is returned within `timeBudgetSeconds` (at most 600 seconds), including the verification. The API waits at most 600 seconds for this request.
+* Request time limit: the response is returned within `timeBudgetSeconds` (at most 600 seconds), including the verification and the level probe (`levelProbe`). The API waits at most 600 seconds for this request.
 
 * Parameters:
   * `targets`
@@ -737,6 +737,42 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * The guard is checked on the top candidates only: every candidate re-scored with `confirmRuns` is also measured on the guard objective with `confirmRuns` runs (the confirm seed), and the confirmed candidates are ranked by the guard ranking. Candidates scored only with `quickRuns` are ranked by `objective` alone.
     * Cost: one extra guard simulation per confirmed candidate, plus the guard measurement in the final selection and the verification.
     * See `verification.crossCheck` and `verdict` for how the result reports the guard.
+  * `levelProbe`
+    * Optional. Object. Default: `{ "mode": "auto", "purpose": "conquest" }`.
+    * After the verification, measures whether a higher party level would let the result build reach a goal. It answers "farm or keep searching": at a wall where the search returns `noChange` or `noisy`, it reports the level the build needs.
+    * Level growth is mostly flat; the large steps are the base equipment slot unlock levels (2.1.1.1 `f.equipment_slots`: 24, 30, 36, 43, 50, 57, 65, ...). So by default only the next slot unlock level is probed.
+    * The probe does not depend on `objective`: every objective gets the same probe. It never measures `bossDamage`, because the boss-only rate ignores the route to the boss.
+    * Fields:
+
+    | Field | Type | Default | Range | Description |
+    |---|---|---|---|---|
+    | `mode` | String | `auto` | `auto` / `always` / `off` | `auto`: run the probe only when the result build misses the target at the current level. `always`: always run it. `off`: never run it (`levelProbe` is `null` in the response). |
+    | `purpose` | String | `conquest` | `conquest` / `farming` | What the target measures (see below). |
+    | `runBudget` | Number | `10` | 7 ~ 100 | `conquest` only. The largest acceptable expected number of runs to the goal. |
+    | `maxDefeat` | Number | `10` | 0 ~ 100 | `farming` only. The largest acceptable defeat rate, in %. |
+    | `steps` | String | `slot` | `slot` / `level` | `slot`: the probed levels are the next base equipment slot unlock levels. `level`: the probed levels are the current level + 1, + 2, ... |
+    | `count` | Integer | `1` for `slot`, `5` for `level` | 1 ~ 10 | The largest number of levels to probe. Levels above `max_level` (2.1.1.1) are never probed. |
+
+    * Purposes:
+      * `conquest`: open the next goal of the destination: the next closed Clear-Gate (5.1.3.1), or the boss when every Clear-Gate is open and the boss has not been beaten. When there is no such goal, `levelProbe` is `null`.
+        * A Clear-Gate opens after `k` consecutive successful runs through X,3 (`k` = the gate's required count; the current streak is `c`). A Clear or a Return that cleared X,3 counts; a shallower Return neither counts nor breaks the streak; Draw, Retreat, or Defeat resets the streak to `0`. The boss is the same with `k` = 1 and `c` = 0.
+        * `p`: the success rate of the route to the goal: for a Clear-Gate, the route through X,3 (the route ends before the gate room, as `forecast.scope` `endsAt: clearGate`); for the boss, the whole route including the boss room.
+        * Expected runs to the goal, treating runs as independent: `expectedRuns = E(k) - E(c)`, where `E(j) = (1 - p^j) / ((1 - p) × p^j)` and `E(0) = 0`. `expectedRuns` is `null` when `p` is `0`.
+        * Target: `expectedRuns` ≤ `runBudget`. `runBudget` must be at least `k`, because the goal needs at least `k` runs; the smallest accepted value, 7, covers every Clear-Gate.
+        * Required success rate at the default `runBudget` 10: boss 10.0%, Boss unlock (`k` 2) 37.0%, 5th Elite gate (`k` 3) 57.6%, 4th (`k` 4) 71.3%, 3rd (`k` 5) 80.6%, 2nd (`k` 6) 87.1%, 1st (`k` 7) 91.8%.
+        * HP carried between sorties makes runs depend on each other, so the real number of runs can be higher than `expectedRuns`.
+      * `farming`: repeat the route of the search (`forecast.scope`) safely.
+        * Measured rate: the defeat rate (the share of `Defeat` outcomes, as `minDefeat` counts them). Retreat and Return are not defeats.
+        * Target: defeat rate ≤ `maxDefeat`.
+    * Process:
+      1. The probed build is the best build when `verdict` is `veryGood` or `good`, otherwise the current build (a `noChange`, `noisy`, or `worse` result should not be applied).
+      2. The probed build is measured at the current level. With `mode: auto`, the probe stops here when the target is met.
+      3. For each probed level `L`, in ascending order:
+         1. The save is copied with the party level set to `L` (experience unchanged). Nothing is saved.
+         2. The equipment slots that `L` opens are filled from the items the search may use (`considerItemsScope`, item jars) with the search's attack-focused or HP-focused fill, whichever scores better in `quickRuns` runs. Equipment that is already worn is not moved. Only characters whose `equipment` is changeable are filled.
+         3. The build is simulated with `confirmRuns` runs on the verification seed (`verifySeed`), the same seed for every level, so the levels can be compared.
+      4. The probe stops at the first level that meets the target, or after `count` levels.
+      5. The probe's time is reserved inside `timeBudgetSeconds`. If the time runs out, the probe stops and sets `truncated`.
   * `gaParameters`
     * Optional.
     * `effort` selects a preset. Values in the preset table are used unless they are specified explicitly.
@@ -813,6 +849,28 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * See 2-0. It is always returned, with or without `objectiveGuard`.
       * `before`, `after` are measured in `verifyRuns` runs on the verification seed, for the current build and the best build.
       * `crossCheck` does not change `verdict` unless `objectiveGuard` is set.
+  * `levelProbe`
+    * The result of the level probe (see the `levelProbe` parameter), or `null` when it did not run (`mode: off`, `mode: auto` with the target met at the current level, or `conquest` with no goal).
+    * Format: `{ build, purpose, goal, target, fromLevel, steps, points, levelNeeded, truncated }`
+    * `build`: `best` or `current`, the probed build.
+    * `purpose`: `conquest` or `farming`.
+    * `goal`: `conquest` only (`null` for `farming`). `{ kind, dungeonId, floor, required, current }`: `kind` is `eliteGate` (with `floor`), `bossGate`, or `boss`; `required` is `k`, `current` is `c` (`1` and `0` for `boss`).
+    * `target`: `conquest`: `{ runBudget, requiredRate }`, where `requiredRate` is the success rate (%) at which `expectedRuns` equals `runBudget` for this goal. `farming`: `{ maxDefeat }`.
+    * `fromLevel`: the party's current level.
+    * `steps`: `slot` or `level`.
+    * `points`: the current level first, then one entry per probed level, in order.
+      * Format: `{ level, baseSlots, filledSlots, rate, standardError, expectedRuns, experienceToLevel }`
+      * `baseSlots`: base equipment slots at `level` (2.1.1.1 `f.equipment_slots`).
+      * `filledSlots`: newly opened slots the fill equipped, over the whole party (fewer than opened when no usable item is left). `0` for the current level.
+      * `rate`, `standardError`: `conquest`: `p` in %; `farming`: the defeat rate in %.
+      * `expectedRuns`: `conquest` only (`null` for `farming`, and when `p` is `0`).
+      * `experienceToLevel`: EXP the party still needs to reach `level` from its current EXP (2.1.1.1). `0` for the current level.
+    * `levelNeeded`: the first level whose point met the target (the current level is possible with `mode: always`); `null` when none did.
+    * `truncated`: `true` when the time ran out before the probe finished.
+    * Reading it:
+      * `levelNeeded` is a higher level: the build is not enough yet at this level; farm to `levelNeeded`, then search again.
+      * `levelNeeded` is `null` with the default `count` 1: even the next slot unlock level is not enough. Probe further (`count` 2 or more), or change classes, depth, or destination.
+    * Example: `{ "build": "current", "purpose": "conquest", "goal": { "kind": "bossGate", "dungeonId": 6, "floor": null, "required": 2, "current": 0 }, "target": { "runBudget": 10, "requiredRate": 37.0 }, "fromLevel": 26, "steps": "slot", "points": [{ "level": 26, "baseSlots": 7, "filledSlots": 0, "rate": 12.4, "standardError": 1.5, "expectedRuns": 73.1, "experienceToLevel": 0 }, { "level": 30, "baseSlots": 8, "filledSlots": 6, "rate": 44.0, "standardError": 2.2, "expectedRuns": 7.4, "experienceToLevel": 4210 }], "levelNeeded": 30, "truncated": false }` (illustrative values).
   * `changeSummary`
     * Ordered array of Commit API calls that turns the current build into the best build.
     * Each entry can be sent directly to the Commit API.
