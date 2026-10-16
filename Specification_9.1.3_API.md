@@ -798,7 +798,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     | `low` | 12 | 15 | 30 | 150 | 15 |
     | `medium` | 24 | 40 | 50 | 300 | 60 |
     | `high` | 48 | 80 | 100 | 600 | 180 |
-    | `max` | 64 | 200 | 300 | 600 | 600 |
+    | `max` | 64 | 200 | 300 | 600 | 590 |
 
     * `max` is for a wall (a gate whose expected number of runs is far above the target). It stops on `timeBudgetSeconds`, not on `generations`. More `quickRuns` makes each candidate's score less noisy (at a 40% success rate, the standard error is about 4.9 points at 100 runs and 2.8 points at 300), so the search selects real improvements instead of lucky candidates.
 

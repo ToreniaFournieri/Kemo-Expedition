@@ -14,9 +14,11 @@ def raw(method,path,body=None,sess=True,tag='',params=None):
     r=urllib.request.Request(D['endpoint']+path,method=method,headers=h,data=json.dumps(body).encode() if body is not None else None)
     t0=time.time()
     try:
-        with urllib.request.urlopen(r,timeout=400) as f: c,j=f.status,json.loads(f.read())
+        with urllib.request.urlopen(r,timeout=660) as f: c,j=f.status,json.loads(f.read())   # > the 600 s desktop limit of gaSearch
     except urllib.error.HTTPError as e:
         c,j=e.code,json.loads(e.read() or b'{}')
+    except (TimeoutError,urllib.error.URLError) as e:   # no response: report it like an error response instead of crashing the loop
+        c,j=599,{'error':{'code':'client_timeout','message':str(e)}}
     ms=round((time.time()-t0)*1000)
     if isinstance(j,dict) and isinstance(j.get('revision'),int): s['rev']=j['revision']
     sv(s)
@@ -79,7 +81,7 @@ def export_save(path):
     r=urllib.request.Request(D['endpoint']+'/commit/setting/backup/export',method='POST',headers=h,data=json.dumps(body).encode())
     t0=time.time()
     try:
-        with urllib.request.urlopen(r,timeout=400) as f: c,data=f.status,f.read()
+        with urllib.request.urlopen(r,timeout=660) as f: c,data=f.status,f.read()
     except urllib.error.HTTPError as e:
         c,data=e.code,e.read()
     ms=round((time.time()-t0)*1000); sv(s)
