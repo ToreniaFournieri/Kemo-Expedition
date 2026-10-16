@@ -835,7 +835,13 @@ definitions in 9.1.3.
   number from 0 to 1: another shape is `invalid_request`, field `objectiveGuard`;
   another member name is `objectiveGuard.<name>.unknown_member`; the `objective`
   itself is `objectiveGuard.<name>.same_as_objective`; a value out of range is
-  `objectiveGuard.<name>`. An
+  `objectiveGuard.<name>`. `levelProbe` is an object (otherwise `invalid_request`,
+  field `levelProbe`): `mode` `auto` (default), `always`, or `off`; `purpose`
+  `conquest` (default) or `farming`; `runBudget` a number from 7 to 100 (default
+  10); `maxDefeat` a number from 0 to 100 (default 10); `steps` `slot` (default)
+  or `level`; `count` an integer from 1 to 10 (default 1 for `slot`, 5 for
+  `level`). A value out of range is `invalid_request`, field
+  `levelProbe.<member>`; another member is `levelProbe.<name>.unknown_member`. An
   unknown member anywhere is `invalid_request`. A missing party is `not_found`.
 * Candidates: `equipment` lets the search place any owned item variant that the
   character can equip, up to its slot count, from the items `considerItemsScope`
@@ -901,7 +907,11 @@ definitions in 9.1.3.
   first. Their measured wall-clock cost per run sets aside the time of the
   remaining work: the result's two verification forecasts and the final
   selection (five forecasts of the final runs, plus the guard forecasts with a
-  guard), times 1.5 plus one second. The search stops at `timeBudgetSeconds`
+  guard), times 1.5 plus one second. Unless `levelProbe.mode` is `off`, the
+  reserve also covers the level probe: `confirmRuns` for the current level and
+  for each of the `count` probed levels, plus two `quickRuns` fills per probed
+  level, at the cost per run of the objective (of the `crossCheck` objective for
+  `bossDamage`, whose own runs are the boss battle alone). The search stops at `timeBudgetSeconds`
   minus that reserve, so the response returns within the budget. The desktop
   request timeout of `gaSearch` and `directedBuild` is 600 s.
 * Empty slots: a filled slot only adds power, so no candidate of an equipment
@@ -913,6 +923,42 @@ definitions in 9.1.3.
   filled, so a search returns at least that fill; it is the unchanged current
   build only when the fill alone needs more than `maxChanges` entries. A target
   whose `equipment` is `false` (Jewels only) keeps its items and free slots.
+* Level probe (9.1.3, 2-3-2 `levelProbe`): runs after the verification, in the
+  same request. The probed build is the result when `verdict` is `veryGood` or
+  `good`, otherwise the current build.
+  * Goal (`conquest`): the first Clear-Gate goal of the Expedition pane
+    (`eliteGate` or `bossGate`, with its `current` of `required`); when every
+    Clear-Gate is open, the boss of the destination unless the party has beaten
+    it (`required` 1, `current` 0); otherwise none, and `levelProbe` is `null`.
+    The Colosseum has no goal.
+  * Measure: `conquest` runs the probed build with the party's depth limit set
+    to `all`, so the route ends before the goal's gate room (a closed gate stops a
+    run with a Return) or, with every gate open, runs through the boss room; `p`
+    is the success rate (Clear or Return). `farming` runs the party's own route
+    and measures the defeat rate. Neither depends on `objective`; `bossDamage`'s
+    boss-only forecast is never used.
+  * Each point uses `confirmRuns` runs on the verification seed. `rate` and
+    `standardError` (`sqrt(p(1 - p) / confirmRuns)`) are percentages rounded to
+    0.01; `expectedRuns` is `E(required) - E(current)` rounded to 0.01;
+    `requiredRate` solves `expectedRuns = runBudget` by bisection (100 when
+    `required - current` exceeds `runBudget`).
+  * Probed levels: with `steps: slot`, the next `count` base slot unlock levels
+    (2.1.1.1) above the party level; with `steps: level`, the next `count`
+    levels; none above `MAX_LEVEL` (69).
+  * Each probed level copies the save with the party level changed (experience
+    unchanged) and builds the search's item supply at that level. The probed
+    build keeps every slot it fills; the free slots (the new ones, and any slot
+    the build leaves empty) are filled twice, once attack-focused and once
+    HP/defense-focused, by the greedy fill of the first population, using the
+    probed build's own characters for the slot counts and equip checks. The two
+    fills are compared with `quickRuns` on the quick seed (higher success for
+    `conquest`, lower defeat for `farming`; the first wins a tie), and the
+    better one is measured. `filledSlots` counts the filled slots at or above
+    each equipment target's slot count at the party's current level.
+  * The probe checks the time before each forecast: when `timeBudgetSeconds` has
+    run out, it stops with the points so far and `truncated: true`.
+  * With a fixed `seed` (and `verifySeed`), the probe repeats exactly. It never
+    changes the save. Its forecasts count in `evaluations`.
 * Objectives (9.1.3, 2-0): the search maximizes `ln(success)` for `success`, the
   average boss damage share for `bossDamage`, average EXP per run for
   `experience`, and the average `progress` (7.1.5 Score) for `progress`. For
@@ -1010,7 +1056,7 @@ definitions in 9.1.3.
 
 **Directed build**
 
-* `directedBuild` (9.1.3, 2-3-3) is a Read operation that uses `POST`, like `gaSearch`. It never commits anything and changes no revision. Its Return is the `gaSearch` Return (see **GA search**) plus the members below.
+* `directedBuild` (9.1.3, 2-3-3) is a Read operation that uses `POST`, like `gaSearch`. It never commits anything and changes no revision. Its Return is the `gaSearch` Return (see **GA search**) without `levelProbe` (the level probe is `gaSearch` only), plus the members below.
 * Validation: `direction` is required and must be one of its listed values (otherwise `invalid_request`, field `direction`). `targets` is 1 to 6 unique members of party `{p}` (otherwise `invalid_request`, field `targets.characterId`); omitted `changeableComponents` members take the 9.1.3 defaults, and `autoEquipmentRun` must be `currentSetting`, `FULL` (default), `SEMI`, or `OFF`. `considerOrderChange`, `considerDeityChange`, `considerItemsScope`, `objective`, and `objectiveGuard` are validated as for `gaSearch`. `autoEquipmentScope` is `changedOnly` (default) or `allTargets`; `equipmentPolish` is `none`, `changedOnly` (default), or `allTargets`; `polishMethod` is `ga` (default), `stagedTuning`, or `stagedTuningThenGa`; `directionStrictness` is `strict` (default) or `soft`; `directionPenalty` is a number from 0 to 50 (default 2); any other value is `invalid_request` naming the member. `tuningParameters` ranges and `effort` presets are the 9.1.3 tables (`timeBudgetSeconds` 5 to 600, `verifySeed` any safe integer); `mutationRate` defaults to the `effort` preset's; `eliteCount` may not exceed `populationSize / 4`. An unknown member anywhere is `invalid_request`. A missing party is `not_found`.
 * Seeds: every seed derives from `tuningParameters.seed` (a fresh random one when omitted): one for candidate sampling and mutation, one for the quick runs, one for the confirm runs, one for the Step 4 search and its draws, one for the Final selection, and one for verification (`tuningParameters.verifySeed` instead when given). Steps 1 to 4 score on the same quick and confirm seeds, so all candidates are compared on the same random numbers, and the same `seed`, save, and parameters return the same result unless `timeBudgetSeconds` stops a step first.
 * Build components choose from the same options as `read/build/character/status` and are validated by the `changeBuild` rules in party order (including the unique-character and race/gender rules); a candidate that breaks one is invalid. `uniqueCharacter: true` adds the unique characters `changeBuild` would accept for that member as `uniqueSelection` options.
@@ -1619,7 +1665,7 @@ use the same operation without HTTP authentication headers.
   Commit envelope or idempotency key. Omission uses the admission revision; a
   supplied mismatch returns `stale_revision` before private computation.
   `gaSearch` POST accepts its 9.1.3 members (`targets`, `considerOrderChange`,
-  `considerDeityChange`, `considerItemsScope`, `objective`, `objectiveGuard`, `gaParameters`) and an optional
+  `considerDeityChange`, `considerItemsScope`, `objective`, `objectiveGuard`, `levelProbe`, `gaParameters`) and an optional
   `expectedRevision` the same way; so do `directedBuild` and `stagedEquipmentTuning`
   with their 9.1.3 members (for tuning, `characterId`, the tuning parameters,
   `objective`, and `objectiveGuard`).

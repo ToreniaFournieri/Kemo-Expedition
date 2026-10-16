@@ -22371,6 +22371,72 @@
               }
             ]
           },
+          "levelProbe": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+              "mode": {
+                "anyOf": [
+                  {
+                    "const": "auto",
+                    "type": "string"
+                  },
+                  {
+                    "const": "always",
+                    "type": "string"
+                  },
+                  {
+                    "const": "off",
+                    "type": "string"
+                  }
+                ],
+                "default": "auto"
+              },
+              "purpose": {
+                "anyOf": [
+                  {
+                    "const": "conquest",
+                    "type": "string"
+                  },
+                  {
+                    "const": "farming",
+                    "type": "string"
+                  }
+                ],
+                "default": "conquest"
+              },
+              "runBudget": {
+                "minimum": 7,
+                "maximum": 100,
+                "type": "number",
+                "default": 10
+              },
+              "maxDefeat": {
+                "minimum": 0,
+                "maximum": 100,
+                "type": "number",
+                "default": 10
+              },
+              "steps": {
+                "anyOf": [
+                  {
+                    "const": "slot",
+                    "type": "string"
+                  },
+                  {
+                    "const": "level",
+                    "type": "string"
+                  }
+                ],
+                "default": "slot"
+              },
+              "count": {
+                "minimum": 1,
+                "maximum": 10,
+                "type": "integer"
+              }
+            }
+          },
           "gaParameters": {
             "additionalProperties": false,
             "type": "object",
@@ -22473,7 +22539,8 @@
             "evaluations",
             "elapsedSeconds",
             "basis",
-            "verification"
+            "verification",
+            "levelProbe"
           ],
           "properties": {
             "verdict": {
@@ -22835,6 +22902,231 @@
                   }
                 }
               }
+            },
+            "levelProbe": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "build",
+                    "purpose",
+                    "goal",
+                    "target",
+                    "fromLevel",
+                    "steps",
+                    "points",
+                    "levelNeeded",
+                    "truncated"
+                  ],
+                  "properties": {
+                    "build": {
+                      "anyOf": [
+                        {
+                          "const": "best",
+                          "type": "string"
+                        },
+                        {
+                          "const": "current",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "purpose": {
+                      "anyOf": [
+                        {
+                          "const": "conquest",
+                          "type": "string"
+                        },
+                        {
+                          "const": "farming",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "goal": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "kind",
+                            "dungeonId",
+                            "floor",
+                            "required",
+                            "current"
+                          ],
+                          "properties": {
+                            "kind": {
+                              "anyOf": [
+                                {
+                                  "const": "eliteGate",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "bossGate",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "boss",
+                                  "type": "string"
+                                }
+                              ]
+                            },
+                            "dungeonId": {
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "floor": {
+                              "anyOf": [
+                                {
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "required": {
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "current": {
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "target": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "runBudget",
+                            "requiredRate"
+                          ],
+                          "properties": {
+                            "runBudget": {
+                              "minimum": 7,
+                              "type": "number"
+                            },
+                            "requiredRate": {
+                              "minimum": 0,
+                              "type": "number"
+                            }
+                          }
+                        },
+                        {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "maxDefeat"
+                          ],
+                          "properties": {
+                            "maxDefeat": {
+                              "minimum": 0,
+                              "type": "number"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "fromLevel": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "steps": {
+                      "anyOf": [
+                        {
+                          "const": "slot",
+                          "type": "string"
+                        },
+                        {
+                          "const": "level",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "points": {
+                      "type": "array",
+                      "items": {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "level",
+                          "baseSlots",
+                          "filledSlots",
+                          "rate",
+                          "standardError",
+                          "expectedRuns",
+                          "experienceToLevel"
+                        ],
+                        "properties": {
+                          "level": {
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "baseSlots": {
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "filledSlots": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "rate": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "standardError": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "expectedRuns": {
+                            "anyOf": [
+                              {
+                                "minimum": 0,
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "experienceToLevel": {
+                            "minimum": 0,
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    },
+                    "levelNeeded": {
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "truncated": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           }
         },
@@ -22881,7 +23173,8 @@
                 "evaluations",
                 "elapsedSeconds",
                 "basis",
-                "verification"
+                "verification",
+                "levelProbe"
               ],
               "properties": {
                 "verdict": {
@@ -23243,6 +23536,231 @@
                       }
                     }
                   }
+                },
+                "levelProbe": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "build",
+                        "purpose",
+                        "goal",
+                        "target",
+                        "fromLevel",
+                        "steps",
+                        "points",
+                        "levelNeeded",
+                        "truncated"
+                      ],
+                      "properties": {
+                        "build": {
+                          "anyOf": [
+                            {
+                              "const": "best",
+                              "type": "string"
+                            },
+                            {
+                              "const": "current",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "purpose": {
+                          "anyOf": [
+                            {
+                              "const": "conquest",
+                              "type": "string"
+                            },
+                            {
+                              "const": "farming",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "goal": {
+                          "anyOf": [
+                            {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "kind",
+                                "dungeonId",
+                                "floor",
+                                "required",
+                                "current"
+                              ],
+                              "properties": {
+                                "kind": {
+                                  "anyOf": [
+                                    {
+                                      "const": "eliteGate",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "bossGate",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "boss",
+                                      "type": "string"
+                                    }
+                                  ]
+                                },
+                                "dungeonId": {
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "floor": {
+                                  "anyOf": [
+                                    {
+                                      "minimum": 1,
+                                      "type": "integer"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "required": {
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "current": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "target": {
+                          "anyOf": [
+                            {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "runBudget",
+                                "requiredRate"
+                              ],
+                              "properties": {
+                                "runBudget": {
+                                  "minimum": 7,
+                                  "type": "number"
+                                },
+                                "requiredRate": {
+                                  "minimum": 0,
+                                  "type": "number"
+                                }
+                              }
+                            },
+                            {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "maxDefeat"
+                              ],
+                              "properties": {
+                                "maxDefeat": {
+                                  "minimum": 0,
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "fromLevel": {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        "steps": {
+                          "anyOf": [
+                            {
+                              "const": "slot",
+                              "type": "string"
+                            },
+                            {
+                              "const": "level",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "points": {
+                          "type": "array",
+                          "items": {
+                            "additionalProperties": false,
+                            "type": "object",
+                            "required": [
+                              "level",
+                              "baseSlots",
+                              "filledSlots",
+                              "rate",
+                              "standardError",
+                              "expectedRuns",
+                              "experienceToLevel"
+                            ],
+                            "properties": {
+                              "level": {
+                                "minimum": 1,
+                                "type": "integer"
+                              },
+                              "baseSlots": {
+                                "minimum": 1,
+                                "type": "integer"
+                              },
+                              "filledSlots": {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "rate": {
+                                "minimum": 0,
+                                "type": "number"
+                              },
+                              "standardError": {
+                                "minimum": 0,
+                                "type": "number"
+                              },
+                              "expectedRuns": {
+                                "anyOf": [
+                                  {
+                                    "minimum": 0,
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "experienceToLevel": {
+                                "minimum": 0,
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "levelNeeded": {
+                          "anyOf": [
+                            {
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "truncated": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               }
             }
@@ -23332,6 +23850,36 @@
                   "after": true
                 }
               }
+            },
+            "levelProbe": {
+              "build": "best",
+              "purpose": "conquest",
+              "goal": {
+                "kind": "eliteGate",
+                "dungeonId": 1,
+                "floor": 1,
+                "required": 1,
+                "current": 0
+              },
+              "target": {
+                "runBudget": 7,
+                "requiredRate": 0
+              },
+              "fromLevel": 1,
+              "steps": "slot",
+              "points": [
+                {
+                  "level": 1,
+                  "baseSlots": 1,
+                  "filledSlots": 0,
+                  "rate": 0,
+                  "standardError": 0,
+                  "expectedRuns": 0,
+                  "experienceToLevel": 0
+                }
+              ],
+              "levelNeeded": 1,
+              "truncated": true
             }
           }
         }

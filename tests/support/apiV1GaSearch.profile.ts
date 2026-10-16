@@ -8,6 +8,8 @@ import { buildSimulationRunData } from '../../src/api/v1/simulationView';
 import { getVariantKey, type ExpeditionSimulationResult, type Item } from '../../src/types';
 import { getDeityId } from '../../src/game/deity';
 import type { GameState } from '../../src/types';
+import { baseSlotsAt, conquestGoal, expectedRunsToGoal, experienceToLevel, parseLevelProbe, probedLevels, requiredRateForBudget } from '../../src/api/v1/levelProbe';
+import { getXpToNextLevel } from '../../src/game/partyLevel';
 
 // SpecRef: 9.1.3 | Read | 2-3-2 party/{p}/gaSearch
 // SpecRef: 9.1.3 | Commit | 3-3-2 party/{p}/applyBuildChanges
@@ -106,6 +108,73 @@ assert.equal(rateGaResult('progress', { rate: 0.5, variance: 0.01 }, { rate: 0.6
 assert.equal(rateGaResult('progress', { rate: 0.5, variance: 0.01 }, { rate: 0.55, variance: 0.01 }, 500, true).verdict, 'good');
 assert.equal(rateGaResult('progress', { rate: 0.5, variance: 0.01 }, { rate: 0.4, variance: 0.01 }, 500, true).verdict, 'worse');
 assert.equal(rateGaResult('success', { rate: 0, variance: 0 }, { rate: 0, variance: 0 }, 500, true).verdict, 'noisy', 'two zero success rates tell nothing');
+
+// ---------------- levelProbe (Spec 9.1.3, 2-3-2) ----------------
+
+{
+  // Request defaults and validation.
+  assert.deepEqual(parseLevelProbe(undefined), { mode: 'auto', purpose: 'conquest', runBudget: 10, maxDefeat: 10, steps: 'slot', count: 1 });
+  assert.equal(parseLevelProbe({ steps: 'level' }).count, 5);
+  rejects({ targets: equipmentTargets, levelProbe: { runBudget: 6 } }, 'invalid_request:levelProbe.runBudget');
+  rejects({ targets: equipmentTargets, levelProbe: { count: 11 } }, 'invalid_request:levelProbe.count');
+  rejects({ targets: equipmentTargets, levelProbe: { mode: 'never' } }, 'invalid_request:levelProbe.mode');
+  rejects({ targets: equipmentTargets, levelProbe: { depth: 1 } }, 'invalid_request:levelProbe.depth.unknown_member');
+
+  // Expected runs to a streak: `E(k) - E(c)` with `E(j) = (1 - p^j) / ((1 - p) p^j)`.
+  const close = (actual: number | null, expected: number, digits = 6) => assert.ok(actual !== null && Math.abs(actual - expected) < 10 ** -digits, `${actual} vs ${expected}`);
+  close(expectedRunsToGoal(0.25, 1, 0), 4);
+  close(expectedRunsToGoal(1, 6, 2), 4);
+  close(expectedRunsToGoal(0.5, 3, 2), 8, 9);
+  close(expectedRunsToGoal(0.5, 2, 0), 6);
+  assert.equal(expectedRunsToGoal(0, 2, 0), null);
+  assert.equal(expectedRunsToGoal(0.3, 2, 2), 0);
+  // The required rates at the default run budget 10 (boss, Boss unlock, 5th to 1st Elite gate).
+  assert.deepEqual([1, 2, 3, 4, 5, 6, 7].map((k) => Math.round(requiredRateForBudget(k, 0, 10) * 1000) / 10), [10, 37, 57.6, 71.3, 80.6, 87.1, 91.8]);
+  assert.equal(requiredRateForBudget(7, 0, 6), 1);
+
+  // Probed levels: the next base slot unlock levels, or every level, never above the level cap.
+  assert.deepEqual(probedLevels(26, 'slot', 1), [30]);
+  assert.deepEqual(probedLevels(26, 'slot', 2), [30, 36]);
+  assert.deepEqual(probedLevels(66, 'slot', 3), []);
+  assert.deepEqual(probedLevels(67, 'level', 5), [68, 69]);
+  assert.deepEqual([baseSlotsAt(29), baseSlotsAt(30), baseSlotsAt(1)], [7, 8, 1]);
+  assert.equal(experienceToLevel({ level: 5, experience: 100 }, 7), getXpToNextLevel(5) + getXpToNextLevel(6) - 100);
+  assert.equal(experienceToLevel({ level: 5, experience: 100 }, 5), 0);
+
+  // The goal is the next closed Clear-Gate of the destination.
+  assert.deepEqual(conquestGoal(base.parties[0]), { kind: 'eliteGate', dungeonId: base.parties[0].selectedDungeonId, floor: 1, required: 7, current: 0 });
+
+  type Probe = { build: string; purpose: string; goal: unknown; target: Record<string, number>; fromLevel: number; steps: string; points: { level: number; baseSlots: number; filledSlots: number; rate: number; expectedRuns: number | null }[]; levelNeeded: number | null; truncated: boolean };
+  // `always`: the current level first, then the next slot unlock level with its new slots filled from the free items.
+  const always = (await search(base, { targets: equipmentTargets, gaParameters: small, levelProbe: { mode: 'always' } })).data.levelProbe as Probe;
+  assert.equal(always.purpose, 'conquest');
+  assert.equal(always.fromLevel, 1);
+  assert.equal(always.target.runBudget, 10);
+  assert.equal(always.target.requiredRate, 91.8);
+  assert.equal(always.points[0].level, 1);
+  assert.equal(always.points[0].filledSlots, 0);
+  // This party misses the 7-run streak at Lv1 and meets it at Lv3, where each member's second slot is filled.
+  assert.deepEqual(always.points.map((entry) => [entry.level, entry.baseSlots, entry.filledSlots]), [[1, 1, 0], [3, 2, 6]]);
+  assert.ok(always.points[0].expectedRuns! > 10 && always.points[1].expectedRuns! <= 10);
+  assert.equal(always.levelNeeded, 3);
+  assert.deepEqual((await search(base, { targets: equipmentTargets, gaParameters: small, levelProbe: { mode: 'always' } })).data.levelProbe, always, 'a fixed seed repeats the probe');
+  assert.deepEqual(base, baseBefore, 'the probe changes no state');
+  // `off` returns null; `auto` returns null only when the target is met at the current level.
+  assert.equal((await search(base, { targets: equipmentTargets, gaParameters: small, levelProbe: { mode: 'off' } })).data.levelProbe, null);
+  const auto = (await search(base, { targets: equipmentTargets, gaParameters: small })).data.levelProbe as Probe | null;
+  assert.deepEqual(auto, always, '`auto` runs the probe when the current level misses the target');
+  // `farming` measures the defeat rate of the searched route, with no goal.
+  const farming = (await search(base, { targets: equipmentTargets, gaParameters: small, levelProbe: { mode: 'always', purpose: 'farming', steps: 'level', count: 2 } })).data.levelProbe as Probe;
+  assert.equal(farming.goal, null);
+  assert.deepEqual(farming.target, { maxDefeat: 10 });
+  assert.ok(farming.points.every((entry) => entry.expectedRuns === null));
+  assert.ok(farming.points.length >= 1 && farming.points.length <= 3);
+  assert.equal((await search(base, { targets: equipmentTargets, gaParameters: small, levelProbe: { purpose: 'farming' } })).data.levelProbe, null, '`auto` skips a build that already meets the target');
+  // A `bossDamage` search gets the same probe: the route to the goal, not the boss-only share.
+  const boss = (await search(base, { targets: equipmentTargets, objective: 'bossDamage', gaParameters: small, levelProbe: { mode: 'always' } })).data.levelProbe as Probe;
+  assert.equal(boss.points[0].level, 1);
+  assert.deepEqual(boss.goal, always.goal);
+}
 
 // ---------------- applyBuildChanges ----------------
 

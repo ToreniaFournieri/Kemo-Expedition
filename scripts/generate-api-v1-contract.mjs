@@ -294,6 +294,12 @@ const gaParameters = strict({
 });
 // SpecRef: 9.1.3 | 2-0 `objectiveGuard` | one member: a minimum (0–1) on `success`, `bossDamage`, or `progress`, not the `objective` itself.
 const objectiveGuard = Type.Union(['success', 'bossDamage', 'progress'].map((key) => strict({ [key]: Type.Number({ minimum: 0, maximum: 1 }) })));
+// SpecRef: 9.1.3 | 2-3-2 `levelProbe` | whether a higher party level lets the result build reach a goal.
+const levelProbeRequest = strict({
+  mode: optional(literals('auto', 'always', 'off'), 'auto'), purpose: optional(literals('conquest', 'farming'), 'conquest'),
+  runBudget: optional(Type.Number({ minimum: 7, maximum: 100 }), 10), maxDefeat: optional(Type.Number({ minimum: 0, maximum: 100 }), 10),
+  steps: optional(literals('slot', 'level'), 'slot'), count: optional(Type.Integer({ minimum: 1, maximum: 10 })),
+});
 // SpecRef: 9.1.3 | 2-0 Objectives | every build search takes the same objectives.
 const searchObjective = literals('success', 'minDefeat', 'bossDamage', 'experience', 'progress');
 // SpecRef: 9.1.3 | Read | 2-3-3 party/{p}/directedBuild | a POST Read body like `gaSearch`; defaults and ranges in 9.1.3.
@@ -324,7 +330,7 @@ const directBodySchemas = {
     targets: nonEmptyArray(strict({ characterId: integerId, changeableComponents: optional(gaComponents) }), { maxItems: 6 }),
     considerOrderChange: optional(Type.Boolean(), false), considerDeityChange: optional(literals('none', 'unoccupiedDeities', 'allDeities'), 'none'),
     considerItemsScope: optional(literals('normal', 'withinTargets', 'global'), 'normal'),
-    objective: optional(searchObjective, 'success'), objectiveGuard: optional(objectiveGuard), gaParameters: optional(gaParameters),
+    objective: optional(searchObjective, 'success'), objectiveGuard: optional(objectiveGuard), levelProbe: optional(levelProbeRequest), gaParameters: optional(gaParameters),
   }),
   'read/build/party/{p}/directedBuild': strict({
     expectedRevision: optional(Type.Integer({ minimum: 0 })),
@@ -386,6 +392,18 @@ const gaSearchResult = {
     progress: Type.Union([strict({ before: rateValue, after: rateValue }), Type.Null()]), crossCheck,
   }),
 };
+// SpecRef: 9.1.3 | 2-3-2 `levelProbe` Return | the probed points and the first level that met the target.
+const levelProbePoint = strict({
+  level: Type.Integer({ minimum: 1 }), baseSlots: Type.Integer({ minimum: 1 }), filledSlots: Type.Integer({ minimum: 0 }), rate: rateValue, standardError: rateValue,
+  expectedRuns: Type.Union([rateValue, Type.Null()]), experienceToLevel: Type.Integer({ minimum: 0 }),
+});
+const levelProbeResult = Type.Union([strict({
+  build: literals('best', 'current'), purpose: literals('conquest', 'farming'),
+  goal: Type.Union([strict({ kind: literals('eliteGate', 'bossGate', 'boss'), dungeonId: integerId, floor: Type.Union([Type.Integer({ minimum: 1 }), Type.Null()]), required: Type.Integer({ minimum: 1 }), current: Type.Integer({ minimum: 0 }) }), Type.Null()]),
+  target: Type.Union([strict({ runBudget: Type.Number({ minimum: 7 }), requiredRate: rateValue }), strict({ maxDefeat: rateValue })]),
+  fromLevel: Type.Integer({ minimum: 1 }), steps: literals('slot', 'level'), points: Type.Array(levelProbePoint),
+  levelNeeded: Type.Union([Type.Integer({ minimum: 1 }), Type.Null()]), truncated: Type.Boolean(),
+}), Type.Null()]);
 const compositionCounts = strict({ melee: Type.Integer({ minimum: 0 }), ranged: Type.Integer({ minimum: 0 }), magic: Type.Integer({ minimum: 0 }), support: Type.Integer({ minimum: 0 }) });
 const directedStep = strict({ candidatesTried: Type.Integer({ minimum: 0 }), selected: Type.Union([Type.String(), Type.Null()]) });
 // SpecRef: 9.1.4.9 | Directed build `steps` | Step 4 also names its method and members; the Final selection lists its finalists.
@@ -607,7 +625,7 @@ const responseDataSchemas = {
   }),
   'read/expedition/{p}/chargeStock': strict({ chargeStock: Type.Integer({ minimum: 0, maximum: 6 }), chargeDuration: Type.Integer({ minimum: 0 }) }),
   'read/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }), validOptions: strict({ deityId: Type.Array(stableKey), order: Type.Array(integerId) }) }),
-  'read/build/party/{p}/gaSearch': strict({ ...gaSearchResult }),
+  'read/build/party/{p}/gaSearch': strict({ ...gaSearchResult, levelProbe: levelProbeResult }),
   // SpecRef: 9.1.4.9 | Directed build | the `gaSearch` Return plus `seed`, `direction`, `composition`, and `steps`.
   'read/build/party/{p}/directedBuild': strict({
     ...gaSearchResult, seed: Type.Integer(), direction: directedDirection, directionStrictness: literals('strict', 'soft'),

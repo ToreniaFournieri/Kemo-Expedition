@@ -17,6 +17,7 @@ import { validPartyDeityIds, validRaceAndGenderOptions } from './readModels';
 import { forecastScope, measureObjective, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount, type ForecastScope, type ObjectiveMeasure } from './objectiveMeasure';
 import { buildSimulationRunData } from './simulationView';
 import { hashText } from './battleLogs';
+import { baseSlotsAt, conquestGoal, expectedRunsToGoal, experienceToLevel, parseLevelProbe, probedLevels, requiredRateForBudget, type LevelProbeGoal, type LevelProbeRequest } from './levelProbe';
 
 // SpecRef: 9.1.3 | Read | 2-3-2 party/{p}/gaSearch
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | gaSearch
@@ -86,6 +87,8 @@ export interface GaSearchRequest {
   objective: GaObjective;
   objectiveGuard: ObjectiveGuard | null;
   parameters: GaParameters;
+  /** The level probe; absent (as in `directedBuild`'s polish) means `off`. */
+  levelProbe?: LevelProbeRequest;
 }
 
 /** One Commit API call of `changeSummary`. */
@@ -124,7 +127,7 @@ function readInteger(source: Record<string, unknown>, key: keyof typeof INTEGER_
 
 /** Validates a `gaSearch` request against party `{p}` (Spec 9.1.3, 2-3-2). Throws `invalid_request:<field>` or `not_found`. */
 export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: Record<string, unknown>): GaSearchRequest {
-  const allowed = new Set(['targets', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'objectiveGuard', 'gaParameters']);
+  const allowed = new Set(['targets', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'objectiveGuard', 'levelProbe', 'gaParameters']);
   const unknown = Object.keys(raw).find((key) => !allowed.has(key));
   if (unknown !== undefined) invalid(`${unknown}.unknown_member`);
   const party = state.parties[partyIndex];
@@ -196,6 +199,7 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
       maxChanges: readInteger(source, 'maxChanges', null),
       seedWithHeuristics: readBoolean(source, 'seedWithHeuristics', 'gaParameters.seedWithHeuristics', true),
     },
+    levelProbe: parseLevelProbe(raw.levelProbe),
   };
 }
 
@@ -852,41 +856,49 @@ const durabilityScore = (item: Item): number => ((item.partyHP ?? 0) + 0.5 * ((i
  */
 function heuristicGenomes(model: SearchModel): Genome[] {
   const party = model.base.parties[model.partyIndex];
-  const targets = model.request.targets.filter((target) => target.components.equipment);
-  const make = (score: (item: Item, character: Character) => number, keepCurrent: boolean): Genome | null => {
-    const genome = cloneGenome(model.current);
-    const supply = createSupply(model);
-    // A fill keeps every worn item, so their copies are taken before any free slot is filled.
-    if (keepCurrent) for (const target of targets) for (const gene of genome.equipment[target.characterId] ?? []) if (gene) supply.takeBest(target.characterId, gene.k);
-    let filled = false;
-    for (const target of targets) {
-      const character = party.characters.find((entry) => entry.id === target.characterId)!;
-      const maxSlots = computeCharacterStats(character, party.level).maxEquipSlots;
-      const slots: (SlotGene | null)[] = [];
-      for (let slot = 0; slot < maxSlots; slot += 1) {
-        const locked = model.frozen[character.id]?.get(slot);
-        if (locked) { slots.push({ k: jarKeyOf(locked), j: jewelKeyOf(locked) }); continue; }
-        const kept = keepCurrent ? model.current.equipment[character.id]?.[slot] : null;
-        if (kept) { slots.push({ ...kept }); continue; }
-        // Each jar is scored by the copy it would give.
-        let best: string | null = null; let bestScore = -Infinity;
-        for (const jar of model.keysFor[character.id] ?? []) {
-          const key = supply.best(character.id, jar);
-          const item = key === null ? null : model.pool.get(key)!.item;
-          if (!item || !canCharacterEquipCategory(character, item.category)) continue;
-          const value = score(item, character);
-          if (value > bestScore) { bestScore = value; best = jar; }
-        }
-        if (best) { supply.takeBest(character.id, best); filled = true; }
-        slots.push(best ? { k: best, j: null } : null);
-      }
-      genome.equipment[character.id] = slots;
-    }
-    return keepCurrent && !filled ? null : genome;
-  };
   const statsById = new Map(party.characters.map((character, index) => [character.id, computeCharacterStats(character, party.level, index + 1)]));
   const attack = (item: Item, character: Character) => attackScore(item, statsById.get(character.id)!);
+  const make = (score: (item: Item, character: Character) => number, keepCurrent: boolean) => greedyGenome(model, model.current, score, keepCurrent, party.characters);
   return [make(attack, false), make(durabilityScore, false), make(attack, true), make(durabilityScore, true)].filter((genome): genome is Genome => genome !== null);
+}
+
+/**
+ * A greedy loadout of the equipment targets from `start`: each free slot takes the jar whose copy scores best. With
+ * `keepCurrent`, every slot `start` fills keeps its gene and only the free slots are filled (null when none could be);
+ * otherwise every slot is chosen anew. `characters` gives the slot counts and equip checks (a build change can alter them).
+ */
+function greedyGenome(model: SearchModel, start: Genome, score: (item: Item, character: Character) => number, keepCurrent: boolean, characters: readonly Character[]): Genome | null {
+  const party = model.base.parties[model.partyIndex];
+  const targets = model.request.targets.filter((target) => target.components.equipment);
+  const genome = cloneGenome(start);
+  const supply = createSupply(model);
+  // A fill keeps every worn item, so their copies are taken before any free slot is filled.
+  if (keepCurrent) for (const target of targets) for (const gene of genome.equipment[target.characterId] ?? []) if (gene) supply.takeBest(target.characterId, gene.k);
+  let filled = false;
+  for (const target of targets) {
+    const character = characters.find((entry) => entry.id === target.characterId)!;
+    const maxSlots = computeCharacterStats(character, party.level).maxEquipSlots;
+    const slots: (SlotGene | null)[] = [];
+    for (let slot = 0; slot < maxSlots; slot += 1) {
+      const locked = model.frozen[character.id]?.get(slot);
+      if (locked) { slots.push({ k: jarKeyOf(locked), j: jewelKeyOf(locked) }); continue; }
+      const kept = keepCurrent ? start.equipment[character.id]?.[slot] : null;
+      if (kept) { slots.push({ ...kept }); continue; }
+      // Each jar is scored by the copy it would give.
+      let best: string | null = null; let bestScore = -Infinity;
+      for (const jar of model.keysFor[character.id] ?? []) {
+        const key = supply.best(character.id, jar);
+        const item = key === null ? null : model.pool.get(key)!.item;
+        if (!item || !canCharacterEquipCategory(character, item.category)) continue;
+        const value = score(item, character);
+        if (value > bestScore) { bestScore = value; best = jar; }
+      }
+      if (best) { supply.takeBest(character.id, best); filled = true; }
+      slots.push(best ? { k: best, j: null } : null);
+    }
+    genome.equipment[character.id] = slots;
+  }
+  return keepCurrent && !filled ? null : genome;
 }
 
 // ---------------- Mutation and crossover ----------------
@@ -1086,7 +1098,15 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   const verifyBefore = polish ? null : await evaluate({ state, genome: model.current }, verifyRuns, verifySeed);
   const crossBefore = polish ? null : await second(state, verifyRuns, verifySeed);
   const finalSelectionRuns = 5 * finalRuns;
-  const searchDeadline = polish ? polish.deadline : deadline - reserveMs(meter, { [objective]: verifyRuns + finalSelectionRuns, [crossObjective]: verifyRuns + (guard ? finalSelectionRuns : 0) });
+  // SpecRef: 9.1.3 | 2-3-2 `levelProbe` Process 5 | the probe's runs are reserved too: the current level and each probed level
+  // with `confirmRuns`, and two fills per level with `quickRuns`. A whole-route objective's cost per run stands in for them.
+  const probe = polish || !request.levelProbe || request.levelProbe.mode === 'off' ? null : request.levelProbe;
+  const probeCostKey = objective === 'bossDamage' ? crossObjective : objective;
+  const probeRuns = probe ? (probe.count + 1) * request.parameters.confirmRuns + probe.count * 2 * request.parameters.quickRuns : 0;
+  const reserved: Record<string, number> = { [objective]: verifyRuns + finalSelectionRuns };
+  reserved[crossObjective] = (reserved[crossObjective] ?? 0) + verifyRuns + (guard ? finalSelectionRuns : 0);
+  reserved[probeCostKey] = (reserved[probeCostKey] ?? 0) + probeRuns;
+  const searchDeadline = polish ? polish.deadline : deadline - reserveMs(meter, reserved);
   const outOfTime = () => dependencies.now() >= searchDeadline;
 
   interface Individual extends Partial<GuardedScore> { genome: Genome; decoded: Decoded; key: string; changes: number; quick?: number; confirm?: number }
@@ -1215,6 +1235,21 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
     objective, guard, crossObjective, verifyRuns, seed, verifySeed, routeRooms, before: verifyBefore!, after: verifyAfter, crossBefore: crossBefore!, crossAfter,
     changed: changeSummary.length > 0, revision: dependencies.revision, scope: forecastScope(state, partyIndex, objective), label: 'ga-verify',
   });
+
+  // SpecRef: 9.1.3 | 2-3-2 `levelProbe` | the probed build is the result only when it should be applied.
+  let levelProbe: Record<string, unknown> | null = null;
+  if (probe) {
+    const applied = summary.verdict === 'veryGood' || summary.verdict === 'good';
+    const outcome = await runLevelProbe({
+      model, state, partyIndex, probe, applied, genome: applied ? best.genome : model.current, build: applied ? bestState : state,
+      confirmRuns: request.parameters.confirmRuns, quickRuns: request.parameters.quickRuns, quickSeed, verifySeed, seed, deadline, now: dependencies.now,
+      simulate: (target, runs, simulationSeed) => meter.time(probeCostKey, runs, async () => {
+        evaluations += 1;
+        return await dependencies.simulate(target, partyIndex, runs, simulationSeed) as ExpeditionSimulationResult;
+      }),
+    });
+    levelProbe = outcome;
+  }
   const elapsedSeconds = Math.round((dependencies.now() - startedAt) / 100) / 10;
   return {
     data: {
@@ -1227,7 +1262,124 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
       basis: buildBasis(state, partyIndex, changeSummary),
       // SpecRef: 9.1.4.9 | gaSearch | the measured `<rate>` values, gain, and standard error behind `verdict`.
       verification: summary.verification,
+      levelProbe,
     },
+  };
+}
+
+// ---------------- Level probe ----------------
+
+interface LevelProbeInput {
+  model: SearchModel;
+  state: GameState;
+  partyIndex: number;
+  probe: LevelProbeRequest;
+  /** Whether the probed build is the search result (`veryGood` or `good`) rather than the current build. */
+  applied: boolean;
+  genome: Genome;
+  build: GameState;
+  confirmRuns: number;
+  quickRuns: number;
+  quickSeed: number;
+  verifySeed: number;
+  seed: number;
+  deadline: number;
+  now: () => number;
+  simulate: (target: GameState, runs: number, seed: number) => Promise<ExpeditionSimulationResult>;
+}
+
+const round2 = (value: number): number => Math.round(value * 100) / 100;
+
+/** A copy of the state with one party changed. */
+function withParty(state: GameState, partyIndex: number, change: Partial<Party>): GameState {
+  const parties = [...state.parties];
+  parties[partyIndex] = { ...parties[partyIndex], ...change };
+  return { ...state, parties };
+}
+
+// SpecRef: 9.1.3 | 2-3-2 `levelProbe` Process | the probed build at the current level, then at each probed level with its
+// newly opened slots filled, until a level meets the target. Returns the `levelProbe` response member, or null.
+async function runLevelProbe(input: LevelProbeInput): Promise<Record<string, unknown> | null> {
+  const { model, state, partyIndex, probe } = input;
+  const party = state.parties[partyIndex];
+  const conquest = probe.purpose === 'conquest';
+  const goal: LevelProbeGoal | null = conquest ? conquestGoal(party) : null;
+  if (conquest && !goal) return null;
+  // `conquest` runs the whole route to the goal (the depth limit opened); `farming` runs the searched route as it is.
+  const measureAt = async (target: GameState, runs: number, simulationSeed: number): Promise<ObjectiveMeasure> => {
+    const prepared = conquest ? withParty(target, partyIndex, { expeditionDepthLimit: 'all' }) : target;
+    return measureObjective(conquest ? 'success' : 'minDefeat', await input.simulate(prepared, runs, simulationSeed), 0);
+  };
+  const expectedRuns = (measured: ObjectiveMeasure) => (goal ? expectedRunsToGoal(measured.rate, goal.required, goal.current) : null);
+  const meets = (measured: ObjectiveMeasure): boolean => {
+    if (!conquest) return measured.rate * 100 <= probe.maxDefeat;
+    const runs = expectedRuns(measured);
+    return runs !== null && runs <= probe.runBudget;
+  };
+  const point = (level: number, filledSlots: number, measured: ObjectiveMeasure) => {
+    const runs = expectedRuns(measured);
+    return {
+      level, baseSlots: baseSlotsAt(level), filledSlots, rate: round2(measured.rate * 100),
+      standardError: round2(Math.sqrt(measured.variance / input.confirmRuns) * 100),
+      expectedRuns: runs === null ? null : round2(runs), experienceToLevel: experienceToLevel(party, level),
+    };
+  };
+  const outOfTime = () => input.now() >= input.deadline;
+  const points: ReturnType<typeof point>[] = [];
+  let truncated = false;
+  let levelNeeded: number | null = null;
+  if (outOfTime()) truncated = true;
+  else {
+    const current = await measureAt(input.build, input.confirmRuns, input.verifySeed);
+    if (probe.mode === 'auto' && meets(current)) return null;
+    points.push(point(party.level, 0, current));
+    if (meets(current)) levelNeeded = party.level;
+  }
+  const random = createRandom(deriveSeed(input.seed, 5));
+  for (const level of levelNeeded === null && !truncated ? probedLevels(party.level, probe.steps, probe.count) : []) {
+    if (outOfTime()) { truncated = true; break; }
+    // The search model at the probed level: the same items, more base slots.
+    const levelModel = buildModel(withParty(state, partyIndex, { level }), partyIndex, model.request);
+    // The build's own characters (a class change can add slots) decide the slot counts and the equip checks of the fill.
+    const shaped = decode(levelModel, input.genome, random).state.parties[partyIndex].characters;
+    const levelParty = levelModel.base.parties[partyIndex];
+    const statsById = new Map(shaped.map((character, index) => [character.id, computeCharacterStats(character, levelParty.level, index + 1)]));
+    const attack = (item: Item, character: Character) => attackScore(item, statsById.get(character.id)!);
+    const fills = [greedyGenome(levelModel, input.genome, attack, true, shaped), greedyGenome(levelModel, input.genome, durabilityScore, true, shaped)]
+      .filter((genome): genome is Genome => genome !== null);
+    const unique = [...new Map(fills.map((genome) => [genomeKey(genome), genome])).values()];
+    const candidates = (unique.length > 0 ? unique : [input.genome]).map((genome) => decode(levelModel, genome, random).state);
+    let chosen = candidates[0];
+    if (candidates.length > 1) {
+      // The fill that scores better on the quick runs: more successes for `conquest`, fewer defeats for `farming`.
+      let bestScore = -Infinity;
+      for (const candidate of candidates) {
+        if (outOfTime()) break;
+        const measured = await measureAt(candidate, input.quickRuns, input.quickSeed);
+        const score = conquest ? measured.rate : -measured.rate;
+        if (score > bestScore) { bestScore = score; chosen = candidate; }
+      }
+    }
+    if (outOfTime()) { truncated = true; break; }
+    const measured = await measureAt(chosen, input.confirmRuns, input.verifySeed);
+    const filledSlots = chosen.parties[partyIndex].characters.reduce((sum, character) => {
+      if (!targetOf(model, character.id)?.components.equipment) return sum;
+      const before = computeCharacterStats(character, party.level).maxEquipSlots;
+      return sum + character.equipment.slice(before).filter((item) => item !== null).length;
+    }, 0);
+    points.push(point(level, filledSlots, measured));
+    if (meets(measured)) { levelNeeded = level; break; }
+  }
+  return {
+    build: input.applied ? 'best' : 'current',
+    purpose: probe.purpose,
+    goal,
+    target: goal ? { runBudget: probe.runBudget, requiredRate: round2(requiredRateForBudget(goal.required, goal.current, probe.runBudget) * 100) } : { maxDefeat: probe.maxDefeat },
+    fromLevel: party.level,
+    steps: probe.steps,
+    points,
+    levelNeeded,
+    truncated,
   };
 }
 
