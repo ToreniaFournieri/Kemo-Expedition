@@ -1,0 +1,43 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 32.5% / Draw 9.8% / Retreat 46.2% / Defeat 11.5%",
+ "after": "Success 32.5% / Draw 9.8% / Retreat 46.2% / Defeat 11.5%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.0209,
+ "crossCheck": {
+  "objective": "bossDamage",
+  "before": 0.9467,
+  "after": 0.9467,
+  "minimum": null,
+  "reached": null
+ },
+ "bottleneckRoom": "5f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.defiance",
+   "answers": [
+    "terrain.suppression"
+   ],
+   "status": "owned"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 4,
+  "defenseElement": 6,
+  "ability": 8
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [],
+  "ability": [],
+  "finalTuning": []
+ },
+ "changeSummary": [],
+ "revision": 1756,
+ "simulationRuns": 7700,
+ "elapsedSeconds": 4.6,
+ "seed": 1540579516
+}

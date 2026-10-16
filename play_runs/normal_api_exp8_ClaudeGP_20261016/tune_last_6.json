@@ -1,0 +1,133 @@
+{
+ "accepted": true,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 20.4% / Draw 6.5% / Retreat 42.3% / Defeat 30.8%",
+ "after": "Success 25.6% / Draw 6.6% / Retreat 37.3% / Defeat 30.5%",
+ "improvement": 0.2549,
+ "gain": 0.052,
+ "standardError": 0.0188,
+ "crossCheck": {
+  "objective": "bossDamage",
+  "before": 0.9321,
+  "after": 0.9337,
+  "minimum": null,
+  "reached": null
+ },
+ "bottleneckRoom": "3f-4",
+ "bottleneckCounters": [],
+ "candidatesTried": {
+  "offenseElement": 4,
+  "defenseElement": 23,
+  "ability": 9
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.none"
+    ],
+    "improvement": 0.1622,
+    "changes": [
+     "2=0/8101/3/0",
+     "5=0/8102/3/0",
+     "7=0/8305/0/0",
+     "9=0/7101/3/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.ice",
+     "r.fire"
+    ],
+    "improvement": 0.1622,
+    "changes": [
+     "2=0/2220/1/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.none"
+    ],
+    "improvement": 0.1216,
+    "changes": [
+     "2=0/6101/3/0",
+     "5=0/6102/4/0",
+     "7=0/8102/3/0",
+     "9=0/8301/0/0"
+    ]
+   }
+  ],
+  "ability": [],
+  "finalTuning": [
+   {
+    "step": "defenseElement",
+    "index": 0,
+    "resistance": [
+     "r.none"
+    ],
+    "improvement": 0.1802,
+    "changes": [
+     "2=0/8101/3/0",
+     "5=0/8102/3/0",
+     "7=0/8305/0/0",
+     "9=0/7101/3/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [
+  {
+   "endpoint": "commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2,
+     5,
+     7,
+     9
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/8101/3/0",
+    "targetSlot": 2
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/8102/3/0",
+    "targetSlot": 5
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/8305/0/0",
+    "targetSlot": 7
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/7101/3/0",
+    "targetSlot": 9
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/jewelAttach",
+   "parameters": {
+    "targetEquipment": 2,
+    "jewelToSet": "fort:1"
+   }
+  }
+ ],
+ "revision": 1740,
+ "simulationRuns": 17100,
+ "elapsedSeconds": 8.3,
+ "seed": 1152698042,
+ "basis": "27hi7dktqkq"
+}

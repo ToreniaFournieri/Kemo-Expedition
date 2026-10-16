@@ -1,0 +1,86 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 31.5% / Draw 9.7% / Retreat 45.1% / Defeat 13.7%",
+ "after": "Success 32.4% / Draw 10.2% / Retreat 45.1% / Defeat 12.3%",
+ "improvement": 0.0286,
+ "gain": 0.009,
+ "standardError": 0.0209,
+ "crossCheck": {
+  "objective": "bossDamage",
+  "before": 0.9482,
+  "after": 0.9482,
+  "minimum": null,
+  "reached": null
+ },
+ "bottleneckRoom": "5f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.defiance",
+   "answers": [
+    "terrain.suppression"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 2,
+  "defenseElement": 12,
+  "ability": 8
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.ice"
+    ],
+    "improvement": 0.1277,
+    "changes": [
+     "10=0/6307/1/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.wind-rider"
+    ],
+    "improvement": 0.0745,
+    "changes": [
+     "0=0/1312/0/0"
+    ]
+   }
+  ],
+  "finalTuning": [
+   {
+    "step": "defenseElement",
+    "index": 0,
+    "resistance": [
+     "r.ice"
+    ],
+    "improvement": 0.0263,
+    "changes": [
+     "10=0/6307/1/0"
+    ]
+   },
+   {
+    "step": "ability",
+    "index": 0,
+    "abilities": [
+     "a.wind-rider"
+    ],
+    "improvement": 0.125,
+    "changes": [
+     "0=0/1312/0/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [],
+ "revision": 1756,
+ "simulationRuns": 12100,
+ "elapsedSeconds": 7.7,
+ "seed": 1062000649
+}

@@ -1,0 +1,177 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 22.4% / Draw 7.1% / Retreat 43.1% / Defeat 27.4%",
+ "after": "Success 20.3% / Draw 5.8% / Retreat 45.1% / Defeat 28.8%",
+ "improvement": -0.0263,
+ "gain": -0.021,
+ "standardError": 0.0183,
+ "crossCheck": {
+  "objective": "bossDamage",
+  "before": 0.9208,
+  "after": 0.9208,
+  "minimum": null,
+  "reached": null
+ },
+ "bottleneckRoom": "3f-4",
+ "bottleneckCounters": [],
+ "candidatesTried": {
+  "offenseElement": 5,
+  "defenseElement": 21,
+  "ability": 12
+ },
+ "steps": {
+  "offenseElement": [
+   {
+    "element": "e.ice",
+    "improvement": 0.2258,
+    "changes": [
+     "12=0/7314/0/0"
+    ]
+   },
+   {
+    "element": "e.thunder",
+    "improvement": 0.1452,
+    "changes": [
+     "12=0/6311/2/0"
+    ]
+   }
+  ],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.ice"
+    ],
+    "improvement": 0.2742,
+    "changes": [
+     "4=0/5101/4/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.ice"
+    ],
+    "improvement": 0.2581,
+    "changes": [
+     "4=0/3101/2/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.fire"
+    ],
+    "improvement": 0.2258,
+    "changes": [
+     "2=0/4305/0/0",
+     "3=0/1313/3/0",
+     "5=0/8205/1/0",
+     "10=0/5103/4/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.wind-rider"
+    ],
+    "improvement": 0.371,
+    "changes": [
+     "12=0/1312/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.null-life-drain"
+    ],
+    "improvement": 0.3387,
+    "changes": [
+     "12=0/2307/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.true-sight"
+    ],
+    "improvement": 0.3065,
+    "changes": [
+     "12=0/1406/1/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.dryproof"
+    ],
+    "improvement": 0.2581,
+    "changes": [
+     "12=0/4203/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.anti-overwatch"
+    ],
+    "improvement": 0.2581,
+    "changes": [
+     "12=0/4303/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.bulwark-breaker"
+    ],
+    "improvement": 0.2258,
+    "changes": [
+     "12=0/5403/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.soul-reap"
+    ],
+    "improvement": 0.2097,
+    "changes": [
+     "12=0/7308/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.requiem"
+    ],
+    "improvement": 0.2097,
+    "changes": [
+     "12=0/7408/0/0"
+    ]
+   }
+  ],
+  "finalTuning": [
+   {
+    "step": "ability",
+    "index": 0,
+    "abilities": [
+     "a.wind-rider"
+    ],
+    "improvement": 0.0442,
+    "changes": [
+     "12=0/1312/0/0"
+    ]
+   },
+   {
+    "step": "defenseElement",
+    "index": 0,
+    "resistance": [
+     "r.ice"
+    ],
+    "improvement": 0.1062,
+    "changes": [
+     "4=0/5101/4/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [],
+ "revision": 1740,
+ "simulationRuns": 22700,
+ "elapsedSeconds": 11.3,
+ "seed": 2408717531
+}
