@@ -1,0 +1,81 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 9.2% / Draw 6.2% / Retreat 58.3% / Defeat 26.3%",
+ "after": "Success 9.5% / Draw 5.8% / Retreat 60.0% / Defeat 24.7%",
+ "improvement": 0.0326,
+ "gain": 0.003,
+ "standardError": 0.013,
+ "crossCheck": {
+  "objective": "bossDamage",
+  "before": 0.9341,
+  "after": 0.9337,
+  "minimum": null,
+  "reached": null
+ },
+ "bottleneckRoom": "6f-1",
+ "bottleneckCounters": [
+  {
+   "ability": "a.null-counter",
+   "answers": [
+    "a.counter"
+   ],
+   "status": "noItem"
+  },
+  {
+   "ability": "a.unforgettable",
+   "answers": [
+    "a.oblivion"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 3,
+  "defenseElement": 17,
+  "ability": 8
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [],
+  "ability": [
+   {
+    "abilities": [
+     "a.anti-overwatch"
+    ],
+    "improvement": 0.2903,
+    "changes": [
+     "1=0/4303/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.dryproof"
+    ],
+    "improvement": 0.2258,
+    "changes": [
+     "1=0/4203/0/0"
+    ]
+   }
+  ],
+  "finalTuning": [
+   {
+    "step": "ability",
+    "index": 0,
+    "abilities": [
+     "a.anti-overwatch"
+    ],
+    "improvement": 0.0233,
+    "changes": [
+     "1=0/4303/0/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [],
+ "revision": 2546,
+ "simulationRuns": 14200,
+ "elapsedSeconds": 8.8,
+ "seed": 1743383423
+}

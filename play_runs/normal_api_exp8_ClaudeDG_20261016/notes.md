@@ -1,0 +1,12 @@
+Fri Oct 16 07:45:24 JST 2026
+- D1 boss call 87 (0.30 d, Lv5) real-start ~07:42 JST. boss A/B tie +56.1 (ga 27s, dir 54s)
+- D2 boss call 220 (0.62 d, Lv11). A/B: arrival dir +34 vs ga +33; gates ga>dir on equipment (24/7, 23.6/17.2), boss success dir +23.4 vs ga +15.2
+- D3 boss call 455 (1.28 d, Lv17); first prep MARGINAL route 1% 30 sorties failed; PASSES=5 ABTB=200 G=0.6 -> route 14%, killed in 6
+- D4 boss call 751 (Lv21)
+- D5 boss call 978 (3.2 d, Lv22, real 2h33). arrival A/B dir +49 vs ga +17; gates ga mostly
+- D6 stage to call 1517 (5.6 d, Lv26): bossGate wall, bossDamage 17%, success route 29%; switching to farm Lv30 at 5f-3 (call 1527)
+- D6 Lv30 farm done call 2017 (~9.2 d game). 5f-3 K=2 farm ~230 loops/480 calls
+- D6 boss call 2129 (9.7 d, Lv30, real 4h04): Lv30 farm then boss prep PASSES=5: kill in 2 attempts (gate streak 2). prep A/B tie dir/ga +27
+- D7 boss call 2316 (real 4h45), route 5% prep, killed 24 sorties
+- D8 chain bug: stage loop (200) ended at eliteGate 4/5 and boss.sh ran 3x30 pointless sorties (call 3040, 14.9 d, real 5h30)
+- D8 boss call 3445 (17.5 d, Lv33, real 6h02). A/B 94 pairs: GA 50 wins +14.5 vs dir 26 +11.8, dir noChange 39. Report written.
