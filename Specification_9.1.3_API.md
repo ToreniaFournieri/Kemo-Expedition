@@ -774,6 +774,21 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       4. The probe stops at the first level that meets the target, or after `count` levels.
       5. The probe's time is reserved inside `timeBudgetSeconds`. If the time runs out, the probe stops and sets `truncated`.
     * The probe does not search again at a probed level: each point is the probed build plus the fill of the newly opened slots, before any further preparation (tuning, a boss-focused search, `objectiveGuard`). A later search or boss preparation at that level can reach a higher rate. So `levelNeeded` is the level at which the target is met without that preparation, and the first point whose `rate` is above `0` is the level at which the goal becomes possible at all.
+  * `seedBuilds`
+    * Optional. Array of 1 ~ 16 build templates. Default: none.
+    * Adds known builds (for example, builds that cleared the same gate in an earlier run) to the first generation as extra candidates. A seed is only a starting point: it competes with every other candidate, it is never forced into the result, and it does not change how `verdict` is judged. A seed that does not suit this save is simply not selected.
+    * A seed holds build values only, not equipment, because items differ between saves.
+    * Format: `{ label, characters, order, deityId }`
+      * `label`: String. Optional. Up to 64 characters. Returned in `seeds` so the client can tell which template did well.
+      * `characters`: Array. Optional. `[{ characterId, racesAndGender, mainClassId, subClassId, lineage, predisposition }]`, with the values and formats of `commit/build/character/{characterId}/changeBuild`. Every member except `characterId` is optional; an omitted member keeps the current value.
+      * `order`: Array of the party's character IDs. Optional. Used only when `considerOrderChange` is `true`.
+      * `deityId`: String. Optional. Used only when `considerDeityChange` is not `none`, and only when the deity is one of the options it allows.
+    * Rules:
+      * A value is used only when the search may change it: the character is in `targets` and the matching `changeableComponents` member is `true` (`racesAndGender`: `raceGender`; `mainClassId`: `mainClass`; `subClassId`: `subClass`; `lineage`; `predisposition`). Other values are ignored and reported in `seeds`.
+      * Values are validated like the search's own build values (`changeBuild` rules in party order). A value that is unknown, locked, or not allowed for that character (for example, a unique character's lineage) is ignored and reported; the rest of the seed is still used.
+      * Equipment of a seed: each target whose `equipment` is changeable gets the attack-focused fill and the HP-focused fill of `seedWithHeuristics` on the seed's build values, and the better of the two in `quickRuns` runs enters the first generation. A target whose `equipment` is not changeable keeps its equipment.
+      * Seeds take first-generation places of random mutants, in array order, up to `populationSize / 2` seeds. Later seeds are reported as `ignored` (`populationFull`). A seed whose used values equal the current build, or an earlier seed, is reported as `ignored` (`duplicate`). A seed with no usable value is `ignored`, with each of its values listed in `ignored`.
+    * See `seeds` in the Return.
   * `gaParameters`
     * Optional.
     * `effort` selects a preset. Values in the preset table are used unless they are specified explicitly.
@@ -783,13 +798,16 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     | `low` | 12 | 15 | 30 | 150 | 15 |
     | `medium` | 24 | 40 | 50 | 300 | 60 |
     | `high` | 48 | 80 | 100 | 600 | 180 |
+    | `max` | 64 | 200 | 300 | 600 | 600 |
+
+    * `max` is for a wall (a gate whose expected number of runs is far above the target). It stops on `timeBudgetSeconds`, not on `generations`. More `quickRuns` makes each candidate's score less noisy (at a 40% success rate, the standard error is about 4.9 points at 100 runs and 2.8 points at 300), so the search selects real improvements instead of lucky candidates.
 
     | Parameter | Type | Default | Range | Description |
     |---|---|---|---|---|
-    | `effort` | String | `low` | `low` / `medium` / `high` | Preset for `populationSize`, `generations`, `quickRuns`, `confirmRuns`, and `timeBudgetSeconds`. Explicit values override the preset. |
+    | `effort` | String | `low` | `low` / `medium` / `high` / `max` | Preset for `populationSize`, `generations`, `quickRuns`, `confirmRuns`, and `timeBudgetSeconds`. Explicit values override the preset. |
     | `populationSize` | Integer | From `effort` | 8 ~ 64 | Number of candidate builds per generation. |
     | `generations` | Integer | From `effort` | 1 ~ 200 | Number of generations to run. |
-    | `quickRuns` | Integer | From `effort` | 10 ~ 300 | Simulation runs used to score every candidate. |
+    | `quickRuns` | Integer | From `effort` | 10 ~ 1000 | Simulation runs used to score every candidate. |
     | `confirmRuns` | Integer | From `effort` | 50 ~ 1000 | Simulation runs (different seed) used to re-score the top candidates. |
     | `timeBudgetSeconds` | Integer | From `effort` | 5 ~ 600 | Hard time limit for the whole request, including the final selection and the verification. The search stops early enough to finish them inside the limit, and then returns the best build so far. |
     | `verifyRuns` | Integer | `500` | 100 ~ 1000 | Simulation runs (new independent seed) used to compare the current build and the best build after the search. Used for `verdict` and `forecast`. |
@@ -891,7 +909,20 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Save revision the search was based on.
   * `evaluations`
     * Number of builds evaluated.
+  * `generationsRun`
+    * Number of generations completed.
+  * `stopReason`
+    * Why the search stopped: `generations` (all `generations` ran) or `timeBudget` (the time left after the reserve for the final selection, the verification, and the level probe ran out).
+    * `timeBudget` means more time, or fewer `quickRuns`, would buy more generations. `generations` means a larger `timeBudgetSeconds` alone changes nothing.
   * `elapsedSeconds`
+  * `seeds`
+    * Returned only when `seedBuilds` is sent. One entry per seed, in request order.
+    * Format: `{ label, status, ignored, quickRate, inBest }`
+      * `label`: the seed's `label`, or `null`.
+      * `status`: `used` (in the first generation) or `ignored` (not in the search).
+      * `ignored`: Array of `{ field, reason }` for the values that were not used. `field` is a path such as `characters[2].mainClassId`, `order`, `deityId`, or `seed` (the whole seed). `reason`: `notChangeable`, `invalidValue`, `notAllowed`, `populationFull`, or `duplicate`.
+      * `quickRate`: the seed's `<rate>` in its first-generation `quickRuns` score (`null` when `ignored`).
+      * `inBest`: `true` when the best build has every value the seed used.
   * `basis`
     * String. Identifies the build-relevant state of the party that the search was based on (see `party/{p}/applyBuildChanges`).
     * Optionally send it to `party/{p}/applyBuildChanges` together with `changeSummary`. The request is then rejected if that state has changed.

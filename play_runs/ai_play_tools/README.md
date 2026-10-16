@@ -117,3 +117,19 @@ Built during the 2026/10/03 D8-boss run (`AI_play_report/v0.9.8(11)_Claude_Norma
   (read-only paired tuning variants on one seed; `APPLY=1` applies the last one), `hl2.py` now skips AUTOGA when the boss gate is open.
 * Lessons: re-plan every 6 observations (`NST=6`) during a grind; a `success` GA scored by `progress` (route 0 %) reverts the boss build, so first lift the route
   above 0 % (tuning, then `success` GAs keep it); `quickRuns` 1000 shrinks tuning candidates read as +36-45 % at 300 to +3-15 %.
+
+## gp2/ (2026/10/17, from the ClaudeGP record run review, `AI_play_report/v0.10.1(54)_ClaudeGP_Normal_API_Exp8Boss_GAlevelProbe_20261016.md`)
+Self-contained client (GP client + new re-plan policy). Setup: copy `gp2/env.example.sh` to `<run folder>/env.sh`, edit it,
+`export GP2_ENV=<run folder>/env.sh`, sign up / log in (`cd gp2; source $GP2_ENV; python3 -c "import t;t.signup();t.login()"`), run `gp2/open.py` (hand opening), then `gp2/run.sh 1 2 3 4 5 6 7 8`. Logs go to `$BOKEMO_PLAY_DIR/logs/`.
+* `gate.py`: streak math `expectedRuns = E(k) - E(c)` (9.1.3 levelProbe conquest), one-call `simulationRun` meter, slot unlock levels.
+* `replan.py k c reason`: meter -> E. E <= `ESKIP` (8) keeps the build (except on a slot unlock); else GA `high`, then GA `big`
+  (pop 64 x gen 200 x quickRuns 300, 300 s) while E > `EMAX` (15), at most `BIGMAX` (2); E > `EBIG` (45) goes straight to `big`. No tuning (`AUTOTUNE=1` to re-enable).
+  After `DEADLINE` (epoch s) only `high`. Log: `replan.jsonl`.
+* `hl4.py`: hl3 cycle loop; re-plans on a new gate, on a slot-unlock level-up (24, 30, 36...), or after a stall budget
+  `clamp(STALLX*E/2, SMIN 12, SMAX 36)` cycles (SMAX when the last re-plan changed nothing). State `gp2plan` survives restarts (`FRESH=1` resets).
+* `boss4.py`: meters route / bossDamage / progress; route >= 5 % attacks at once; else a bossDamage GA guarded by `progress` (keeps the route),
+  then success GAs guarded by `bossDamage` 0.6 (`big` while the route < 2 %), no tuning.
+* `ga2.py obj TB high|big`: one full-component gaSearch + levelProbe, applies good/veryGood, logs `ab_log.jsonl` / `lp_log.jsonl`.
+* Why (GP data): gate time grows like 1/p^k, so success-rate gains at low-p walls dominate. The `high` preset stops at ~1,500 evaluations.
+  GP's NST=6 x obs 6 left a wall ~36 cycles (~12 game h) between re-plans. GP D4/D7 boss phases: 470 calls, 32.6 game h, mostly blind success GAs.
+* Tested offline against a mock API only (trigger order, stall budget, restart state, deadline, guards); not yet run on a live account.
