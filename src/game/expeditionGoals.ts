@@ -142,7 +142,7 @@ export function formatCompactClearGate(goals: readonly ExpeditionGoal[]): string
   const parts = goals.map((goal) => {
     switch (goal.kind) {
       case 'eliteGate': return `${ordinal(goal.floor)} Elite gate: ${goal.current}/${goal.required}`;
-      case 'bossGate': return `Boss gate: ${goal.current}/${goal.required}`;
+      case 'bossGate': return `Boss unlock: ${goal.current}/${goal.required}`;
       case 'godGate': return `Gods gate: ${goal.collected}/${goal.required}`;
       case 'entryGate': return `Entry gate: 0/1`;
       case 'godEntry': return `Gods entry: 0/1`;

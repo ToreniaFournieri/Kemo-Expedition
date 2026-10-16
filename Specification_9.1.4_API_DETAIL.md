@@ -597,7 +597,9 @@ definitions in 9.1.3.
     must not be used to render the running rooms.
   * `clearGates`: the goals of the selected destination (`eliteGate`, `bossGate`,
     `entryGate`, `godGate`, `godEntry`) with `dungeonId`, `floor` where it applies, and
-    `current` of `required`. `sideQuest` is the active side quest (`type`, `target`,
+    `current` of `required`. `bossGate` (compact `Boss unlock: c/r`) counts consecutive
+    successful runs through 6,3 that unlock the boss battle (5.1.3.1), not boss kills;
+    the boss's first defeat is the diary's `bossFirstClear`. `sideQuest` is the active side quest (`type`, `target`,
     `progress`, `percent`, `hasDeadline`, and `remainingMs` at the current Speed of
     Time) or `null`.
   * `controls.sortie` and `controls.godsBattle` are `{available, unavailableReason}`.
@@ -1335,7 +1337,7 @@ definitions in 9.1.3.
   cancelled by a player action (such as starting a sortie or a God Battle), and `failedCount` when it expires. Only side quests accepted after the counters
   were introduced are counted. `resetStatistics` clears it.
 * `read/observation/compact`'s `clearGate` is the party's active Clear-Gate goals
-  in the Expedition pane's order (`4th Elite gate: 3/4`, `Boss gate: c/r`,
+  in the Expedition pane's order (`4th Elite gate: 3/4`, `Boss unlock: c/r`,
   `Gods gate: c/r`, `Entry gate: 0/1`, `Gods entry: 0/1`), joined by `, `, or
   `null` when none. `sideQuest` is `<sideQuest>-<lv>: <progress>/<target>-<timeRemaining>h/<timeLimit>h-<startTimestamp>`
   (`lv` from 5.1.2; time-based quests count minutes; `timeRemaining` is rounded up
