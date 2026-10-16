@@ -2508,3 +2508,7 @@
 {"n": 2505, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 1}, "status": 200, "ms": 65, "tag": "sortie", "igt": null, "err": null}
 {"n": 2506, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 29, "tag": "obs-exp", "igt": null, "err": null}
 {"n": 2507, "method": "GET", "path": "/read/observation/diary", "parameters": null, "status": 200, "ms": 39, "tag": "", "igt": null, "err": null}
+{"n": 2508, "method": "POST", "path": "/fundamental/logIn", "parameters": {"userId": "ClaudeGP", "environment": "prod", "gameMode": "normal"}, "status": 200, "ms": 356, "tag": "login", "igt": null, "err": null}
+{"n": 2509, "method": "GET", "path": "/read/build/character/status?characterId=1", "parameters": null, "status": 200, "ms": 17, "tag": "", "igt": null, "err": null}
+{"n": 2510, "method": "GET", "path": "/read/observation/party", "parameters": null, "status": 200, "ms": 15, "tag": "", "igt": null, "err": null}
+{"n": 2511, "method": "GET", "path": "/read/observation/party", "parameters": null, "status": 200, "ms": 25, "tag": "", "igt": null, "err": null}
