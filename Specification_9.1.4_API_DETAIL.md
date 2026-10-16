@@ -955,6 +955,8 @@ definitions in 9.1.3.
     `conquest`, lower defeat for `farming`; the first wins a tie), and the
     better one is measured. `filledSlots` counts the filled slots at or above
     each equipment target's slot count at the party's current level.
+  * No search runs at a probed level: only the fill above changes the build, as
+    9.1.3 states.
   * The probe checks the time before each forecast: when `timeBudgetSeconds` has
     run out, it stops with the points so far and `truncated: true`.
   * With a fixed `seed` (and `verifySeed`), the probe repeats exactly. It never

@@ -773,6 +773,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
          3. The build is simulated with `confirmRuns` runs on the verification seed (`verifySeed`), the same seed for every level, so the levels can be compared.
       4. The probe stops at the first level that meets the target, or after `count` levels.
       5. The probe's time is reserved inside `timeBudgetSeconds`. If the time runs out, the probe stops and sets `truncated`.
+    * The probe does not search again at a probed level: each point is the probed build plus the fill of the newly opened slots, before any further preparation (tuning, a boss-focused search, `objectiveGuard`). A later search or boss preparation at that level can reach a higher rate. So `levelNeeded` is the level at which the target is met without that preparation, and the first point whose `rate` is above `0` is the level at which the goal becomes possible at all.
   * `gaParameters`
     * Optional.
     * `effort` selects a preset. Values in the preset table are used unless they are specified explicitly.
