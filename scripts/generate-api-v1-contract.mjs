@@ -339,7 +339,8 @@ const directBodySchemas = {
     targets: nonEmptyArray(strict({ characterId: integerId, changeableComponents: optional(gaComponents) }), { maxItems: 6 }),
     considerOrderChange: optional(Type.Boolean(), false), considerDeityChange: optional(literals('none', 'unoccupiedDeities', 'allDeities'), 'none'),
     considerItemsScope: optional(literals('normal', 'withinTargets', 'global'), 'normal'),
-    objective: optional(searchObjective, 'success'), objectiveGuard: optional(objectiveGuard), levelProbe: optional(levelProbeRequest),
+    objective: optional(searchObjective, 'success'), successSignal: optional(literals('auto', 'success', 'progress')),
+    objectiveGuard: optional(objectiveGuard), levelProbe: optional(levelProbeRequest),
     seedBuilds: optional(nonEmptyArray(seedBuild, { maxItems: 16 })), gaParameters: optional(gaParameters),
   }),
   'read/build/party/{p}/directedBuild': strict({
@@ -643,6 +644,9 @@ const responseDataSchemas = {
   'read/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }), validOptions: strict({ deityId: Type.Array(stableKey), order: Type.Array(integerId) }) }),
   'read/build/party/{p}/gaSearch': strict({
     ...gaSearchResult, levelProbe: levelProbeResult, generationsRun: Type.Integer({ minimum: 0 }), stopReason: literals('generations', 'timeBudget'),
+    // SpecRef: 9.1.3 | 2-3-2 `quickSignal` and `guardStats` Return
+    quickSignal: Type.Union([strict({ start: literals('success', 'progress'), switchedAt: Type.Union([Type.Integer({ minimum: 1 }), Type.Null()]) }), Type.Null()]),
+    guardStats: Type.Union([strict({ confirmed: Type.Integer({ minimum: 0 }), reached: Type.Integer({ minimum: 0 }) }), Type.Null()]),
     seeds: optional(Type.Array(gaSeedReport)),
   }),
   // SpecRef: 9.1.4.9 | Directed build | the `gaSearch` Return plus `seed`, `direction`, `composition`, and `steps`.

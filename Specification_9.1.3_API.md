@@ -740,7 +740,17 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `success`: the quick runs are ranked by the `success` score (2-0).
       * `progress`: the quick runs are ranked by `progress` (7.1.5 Score) for the whole search.
       * `auto`: the quick runs start on `progress` when successes are rare, and switch to `success` once they are not:
-        * Rare: the expected number of successes in `quickRuns` runs is below 20, that is `p × quickRuns < 20`.
+        * Rare: the quick success rate is too noisy to rank by, that is `p × quickRuns < 20 × (1 − p)`, or `p < 20 / (quickRuns + 20)`.
+          * The relative standard error of a success rate over `quickRuns` runs is about `sqrt((1 − p) / (p × quickRuns))`. Rare means it is above `1 / sqrt(20)`, about 22%. The threshold is a noise level, so every `quickRuns` switches at the same noise, not at the same number of successes.
+
+            | `quickRuns` | Rare below |
+            |---|---|
+            | 30 (`low`) | 40% |
+            | 50 (`medium`) | 28.6% |
+            | 100 (`high`) | 16.7% |
+            | 300 (`max`) | 6.25% |
+            | 1000 | 1.96% |
+
         * At the start, `p` is the current build's success rate in its `confirmRuns` score (the confirm seed), measured before the first generation. When it is rare, the search starts on `progress`; otherwise on `success`.
         * After each generation's confirm runs, `p` is the best confirmed candidate's success rate. When it is no longer rare, the quick runs are ranked by `success` from the next generation on. The search never switches back.
         * `quickRuns` measure `success` and `progress` on the same runs, so a switch needs no new forecast.

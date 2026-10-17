@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createFreshGameState, gameReducer, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
-import { compareGuarded, deriveSeed, GA_EFFORT_PRESETS, measure, measureSecondObjective, parseGaSearchRequest, rateGaResult, runGaSearch, summarizeVerification, type GaChangeEntry, type GaSearchDependencies, type GaSearchOutcome } from '../../src/api/v1/gaSearch';
+import { compareGuarded, deriveSeed, GA_EFFORT_PRESETS, isRareSuccess, measure, measureSecondObjective, parseGaSearchRequest, rateGaResult, runGaSearch, summarizeVerification, type GaChangeEntry, type GaSearchDependencies, type GaSearchOutcome } from '../../src/api/v1/gaSearch';
 import { forecastScope, measureObjective, prepareObjectiveState, routeRoomCount } from '../../src/api/v1/objectiveMeasure';
 import { buildApiV1ReadData } from '../../src/api/v1/readModels';
 import { buildSimulationRunData } from '../../src/api/v1/simulationView';
@@ -751,6 +751,57 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   // `order` is used only with `considerOrderChange`.
   const ordered = await search(base, { targets, considerOrderChange: true, seedBuilds: [{ order: [...ids].reverse() }], gaParameters: { ...small, seedWithHeuristics: false } });
   assert.deepEqual((ordered.data.seeds as Report[])[0].status, 'used');
+}
+
+// ---------------- `successSignal` and `quickSignal` (Spec 9.1.3, 2-3-2; 9.1.4.9 GA search Quick signal) ----------------
+{
+  assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets }).successSignal, 'auto', '`auto` by default for `success`');
+  assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets, objective: 'progress' }).successSignal, null);
+  assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets, successSignal: 'progress' }).successSignal, 'progress');
+  rejects({ targets: equipmentTargets, successSignal: 'luck' }, 'invalid_request:successSignal');
+  rejects({ targets: equipmentTargets, objective: 'bossDamage', successSignal: 'success' }, 'invalid_request:successSignal');
+
+  // Rare is a noise level, `p < 20 / (quickRuns + 20)`: the same relative standard error at every `quickRuns`.
+  for (const [quickRuns, limit] of [[10, 2 / 3], [30, 0.4], [50, 20 / 70], [100, 1 / 6], [300, 0.0625], [1000, 20 / 1020]]) {
+    assert.equal(isRareSuccess(limit - 1e-9, quickRuns), true, `rare below ${limit} at ${quickRuns}`);
+    assert.equal(isRareSuccess(limit + 1e-9, quickRuns), false, `not rare above ${limit} at ${quickRuns}`);
+  }
+  assert.equal(isRareSuccess(0, 1000), true);
+  // The stripped party has no success before the search, so `auto` starts on `progress`.
+  assert.equal((outcome.data.quickSignal as { start: string }).start, 'progress');
+  assert.equal((await search(base, { targets: equipmentTargets, objective: 'progress', gaParameters: small })).data.quickSignal, null);
+  // `auto` on a stripped party: rare successes at the start, then a switch once the best confirmed build is no longer rare.
+  const wider = { ...small, generations: 6, quickRuns: 40, confirmRuns: 100 };
+  const auto = await search(base, { targets: equipmentTargets, gaParameters: wider });
+  const signal = auto.data.quickSignal as { start: string; switchedAt: number | null };
+  assert.equal(signal.start, 'progress');
+  assert.ok(signal.switchedAt !== null && signal.switchedAt >= 2 && signal.switchedAt <= (auto.data.generationsRun as number), `switchedAt ${signal.switchedAt}`);
+  assert.deepEqual((await search(base, { targets: equipmentTargets, gaParameters: wider })).data, auto.data, 'a fixed seed repeats the switch');
+  // Fixed signals never switch; the verdict is judged on `success` whatever the quick signal.
+  const forced = await search(base, { targets: equipmentTargets, successSignal: 'progress', gaParameters: wider });
+  assert.deepEqual(forced.data.quickSignal, { start: 'progress', switchedAt: null });
+  const plain = await search(base, { targets: equipmentTargets, successSignal: 'success', gaParameters: wider });
+  assert.deepEqual(plain.data.quickSignal, { start: 'success', switchedAt: null });
+  for (const result of [auto, forced, plain]) assert.equal((result.data.verification as { objective: string }).objective, 'success');
+}
+
+// ---------------- Guard on the quick runs, shared runs, and `guardStats` (Spec 9.1.3, 2-0 and 2-3-2 `objectiveGuard`) ----------------
+{
+  assert.equal(outcome.data.guardStats, null, 'no guard, no `guardStats`');
+  // `success` guarded by `progress`: one route forecast serves both, so `crossCheck` is the `progress` of the verification runs.
+  const guarded = await search(base, { targets: equipmentTargets, objectiveGuard: { progress: 0.9 }, gaParameters: small });
+  const verification = guarded.data.verification as { progress: { before: number; after: number }; crossCheck: { objective: string; before: number; after: number } };
+  const progressBefore = await measureSecondObjective(dependencies(), base, 0, 'progress', small.verifyRuns, deriveSeed(small.seed, 3));
+  assert.equal(verification.crossCheck.objective, 'progress');
+  assert.equal(verification.crossCheck.before, Math.round(progressBefore.rate * 1e4) / 1e4, 'shared runs give the separate forecast\'s value');
+  assert.deepEqual([verification.crossCheck.before, verification.crossCheck.after], [verification.progress.before, verification.progress.after]);
+  const stats = guarded.data.guardStats as { confirmed: number; reached: number };
+  assert.ok(stats.confirmed > 0 && stats.reached >= 0 && stats.reached <= stats.confirmed, JSON.stringify(stats));
+  // A guard on a separate forecast (`bossDamage` fights the boss alone; the guard runs the route).
+  const unreachable = await search(base, { targets: equipmentTargets, objective: 'bossDamage', objectiveGuard: { success: 1 }, gaParameters: small });
+  const missed = unreachable.data.guardStats as { confirmed: number; reached: number };
+  assert.ok(missed.confirmed > 0 && missed.reached <= missed.confirmed, JSON.stringify(missed));
+  assert.deepEqual((await search(base, { targets: equipmentTargets, objective: 'bossDamage', objectiveGuard: { success: 1 }, gaParameters: small })).data, unreachable.data, 'a fixed seed repeats a guarded search');
 }
 
 console.log('gaSearch profile ok');

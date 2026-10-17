@@ -929,10 +929,10 @@ definitions in 9.1.3.
 * Quick signal (`successSignal`, `objective: success` only): each quick score
   keeps both the `success` fitness and `progress` (7.1.5 Score) of the same
   runs, and the cache keeps both, so a switch re-scores nothing. With `auto`,
-  the start signal is `progress` when the fallback's confirmed success rate
-  times `quickRuns` is below 20 (the fallback is confirmed before the first
-  generation); after each generation's confirm runs, once the best confirmed
-  candidate's success rate times `quickRuns` reaches 20, the quick ranking of
+  the start signal is `progress` when the fallback's confirmed success rate `p`
+  is rare, `p × quickRuns < 20 × (1 − p)` (the fallback is confirmed before the
+  first generation); after each generation's confirm runs, once the best
+  confirmed candidate's success rate is no longer rare, the quick ranking of
   every later generation (population sort, elites, tournaments) uses the
   `success` fitness, and `quickSignal.switchedAt` records that generation
   (counted from 1). `progress` keeps `progress` for the whole search; `success`

@@ -22325,6 +22325,22 @@
             ],
             "default": "success"
           },
+          "successSignal": {
+            "anyOf": [
+              {
+                "const": "auto",
+                "type": "string"
+              },
+              {
+                "const": "success",
+                "type": "string"
+              },
+              {
+                "const": "progress",
+                "type": "string"
+              }
+            ]
+          },
           "objectiveGuard": {
             "anyOf": [
               {
@@ -22603,7 +22619,9 @@
             "verification",
             "levelProbe",
             "generationsRun",
-            "stopReason"
+            "stopReason",
+            "quickSignal",
+            "guardStats"
           ],
           "properties": {
             "verdict": {
@@ -23207,6 +23225,71 @@
                 }
               ]
             },
+            "quickSignal": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "start",
+                    "switchedAt"
+                  ],
+                  "properties": {
+                    "start": {
+                      "anyOf": [
+                        {
+                          "const": "success",
+                          "type": "string"
+                        },
+                        {
+                          "const": "progress",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "switchedAt": {
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "guardStats": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "confirmed",
+                    "reached"
+                  ],
+                  "properties": {
+                    "confirmed": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "reached": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "seeds": {
               "type": "array",
               "items": {
@@ -23347,7 +23430,9 @@
                 "verification",
                 "levelProbe",
                 "generationsRun",
-                "stopReason"
+                "stopReason",
+                "quickSignal",
+                "guardStats"
               ],
               "properties": {
                 "verdict": {
@@ -23951,6 +24036,71 @@
                     }
                   ]
                 },
+                "quickSignal": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "start",
+                        "switchedAt"
+                      ],
+                      "properties": {
+                        "start": {
+                          "anyOf": [
+                            {
+                              "const": "success",
+                              "type": "string"
+                            },
+                            {
+                              "const": "progress",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "switchedAt": {
+                          "anyOf": [
+                            {
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "guardStats": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "confirmed",
+                        "reached"
+                      ],
+                      "properties": {
+                        "confirmed": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "reached": {
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "seeds": {
                   "type": "array",
                   "items": {
@@ -24163,7 +24313,15 @@
               "truncated": true
             },
             "generationsRun": 0,
-            "stopReason": "generations"
+            "stopReason": "generations",
+            "quickSignal": {
+              "start": "success",
+              "switchedAt": 1
+            },
+            "guardStats": {
+              "confirmed": 0,
+              "reached": 0
+            }
           }
         }
       }

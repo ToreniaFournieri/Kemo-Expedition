@@ -32,6 +32,16 @@ export const GA_EFFORTS = ['low', 'medium', 'high'] as const;
 export const GA_SEARCH_EFFORTS = [...GA_EFFORTS, 'max'] as const;
 type GaEffort = typeof GA_SEARCH_EFFORTS[number];
 export const GA_VERDICTS = ['veryGood', 'good', 'noisy', 'noChange', 'worse'] as const;
+// SpecRef: 9.1.3 | 2-3-2 gaSearch `successSignal` | the score that ranks the quick runs of a `success` search.
+export const GA_SUCCESS_SIGNALS = ['auto', 'success', 'progress'] as const;
+export type GaSuccessSignal = typeof GA_SUCCESS_SIGNALS[number];
+/**
+ * `successSignal: auto`: successes are rare while `p × quickRuns < RARE_SUCCESS_COUNT × (1 − p)`, that is while the quick
+ * success rate's relative standard error, `sqrt((1 − p) / (p × quickRuns))`, is above `1 / sqrt(RARE_SUCCESS_COUNT)`.
+ */
+export const RARE_SUCCESS_COUNT = 20;
+/** Whether a success rate `p` is rare for `quickRuns` quick runs (Spec 9.1.3, 2-3-2 `successSignal`). */
+export const isRareSuccess = (p: number, quickRuns: number): boolean => p * quickRuns < RARE_SUCCESS_COUNT * (1 - p);
 export type GaVerdict = typeof GA_VERDICTS[number];
 const COMPONENTS = ['raceGender', 'mainClass', 'subClass', 'lineage', 'predisposition', 'equipment', 'jewels'] as const;
 type Component = typeof COMPONENTS[number];
@@ -89,6 +99,8 @@ export interface GaSearchRequest {
   considerDeityChange: GaDeityScope;
   considerItemsScope: GaItemsScope;
   objective: GaObjective;
+  /** `objective: success` only; absent (as in `directedBuild`'s polish) or `null` means `success`. */
+  successSignal?: GaSuccessSignal | null;
   objectiveGuard: ObjectiveGuard | null;
   parameters: GaParameters;
   /** The level probe; absent (as in `directedBuild`'s polish) means `off`. */
@@ -144,7 +156,7 @@ function readInteger(source: Record<string, unknown>, key: keyof typeof INTEGER_
 
 /** Validates a `gaSearch` request against party `{p}` (Spec 9.1.3, 2-3-2). Throws `invalid_request:<field>` or `not_found`. */
 export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: Record<string, unknown>): GaSearchRequest {
-  const allowed = new Set(['targets', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'objectiveGuard', 'levelProbe', 'seedBuilds', 'gaParameters']);
+  const allowed = new Set(['targets', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'successSignal', 'objectiveGuard', 'levelProbe', 'seedBuilds', 'gaParameters']);
   const unknown = Object.keys(raw).find((key) => !allowed.has(key));
   if (unknown !== undefined) invalid(`${unknown}.unknown_member`);
   const party = state.parties[partyIndex];
@@ -175,6 +187,9 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
   if (typeof considerDeityChange !== 'string' || !(GA_DEITY_SCOPES as readonly string[]).includes(considerDeityChange)) invalid('considerDeityChange');
   const objective = raw.objective === undefined ? 'success' : raw.objective;
   if (typeof objective !== 'string' || !(GA_OBJECTIVES as readonly string[]).includes(objective)) invalid('objective');
+  // SpecRef: 9.1.4.9 | GA search Validation | `successSignal` is accepted only with `objective: success`.
+  const successSignal = raw.successSignal === undefined ? (objective === 'success' ? 'auto' : null) : raw.successSignal;
+  if (successSignal !== null && (objective !== 'success' || typeof successSignal !== 'string' || !(GA_SUCCESS_SIGNALS as readonly string[]).includes(successSignal))) invalid('successSignal');
   const source = raw.gaParameters === undefined ? {} : raw.gaParameters;
   if (!isRecord(source)) invalid('gaParameters');
   const knownParameters = new Set(['effort', 'mutationRate', 'seed', 'verifySeed', 'seedWithHeuristics', ...Object.keys(INTEGER_RANGES)]);
@@ -198,6 +213,7 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
     considerDeityChange: considerDeityChange as GaDeityScope,
     considerItemsScope: considerItemsScope as GaItemsScope,
     objective: objective as GaObjective,
+    successSignal: successSignal as GaSuccessSignal | null,
     objectiveGuard: parseObjectiveGuard(raw.objectiveGuard, objective as GaObjective),
     parameters: {
       effort: effort as GaEffort,
@@ -1197,6 +1213,11 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
     return await meter.time(objective, runs, async () => await dependencies.simulate(prepareObjectiveState(target, partyIndex, objective), partyIndex, runs, simulationSeed, objectiveSimulationOptions(objective)) as ExpeditionSimulationResult);
   };
   const second = (target: GameState, runs: number, simulationSeed: number) => meter.time(crossObjective, runs, () => measureSecondObjective(dependencies, target, partyIndex, crossObjective, runs, simulationSeed));
+  // SpecRef: 9.1.3 | 2-0 `objectiveGuard` Shared runs | when neither objective is `bossDamage`, both run the same route
+  // forecast, so the second objective is read from the objective's own runs: the values a second forecast would give.
+  const sharedRuns = objective !== 'bossDamage' && crossObjective !== 'bossDamage';
+  const secondOf = async (target: GameState, measured: Measured, runs: number, simulationSeed: number): Promise<ObjectiveMeasure> =>
+    (sharedRuns ? measureObjective(crossObjective, measured.result, routeRooms) : await second(target, runs, simulationSeed));
   // The current build's success rate per (runs, seed), the `minDefeat` baseline.
   const baselines = new Map<string, number>();
   const baselineOf = async (runs: number, simulationSeed: number): Promise<number | null> => {
@@ -1216,7 +1237,7 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   const finalRuns = Math.min(1000, request.parameters.confirmRuns * 2);
   // A polish pass has no verification of its own: its caller re-scores the result.
   const verifyBefore = polish ? null : await evaluate({ state, genome: model.current }, verifyRuns, verifySeed);
-  const crossBefore = polish ? null : await second(state, verifyRuns, verifySeed);
+  const crossBefore = polish ? null : await secondOf(state, verifyBefore!, verifyRuns, verifySeed);
   const finalSelectionRuns = 5 * finalRuns;
   // SpecRef: 9.1.3 | 2-3-2 `levelProbe` Process 5 | the probe's runs are reserved too: the current level and each probed level
   // with `confirmRuns`, and two fills per level with `quickRuns`. A whole-route objective's cost per run stands in for them.
@@ -1229,31 +1250,47 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   const searchDeadline = polish ? polish.deadline : deadline - reserveMs(meter, reserved);
   const outOfTime = () => dependencies.now() >= searchDeadline;
 
-  interface Individual extends Partial<GuardedScore> { genome: Genome; decoded: Decoded; key: string; changes: number; quick?: number; confirm?: number }
-  const quickCache = new Map<string, number>();
-  const confirmCache = new Map<string, { confirm: number; guard?: number }>();
+  /**
+   * A quick score: the objective fitness and `<rate>`, `progress` for a `success` search's quick signal, and with a guard the
+   * guard rate, all from the same quick runs.
+   */
+  interface QuickScore extends GuardedScore { rate: number; progress?: number }
+  interface Individual extends Partial<GuardedScore> { genome: Genome; decoded: Decoded; key: string; changes: number; quick?: QuickScore; confirm?: number; confirmRate?: number }
+  const quickCache = new Map<string, QuickScore>();
+  const confirmCache = new Map<string, { confirm: number; rate: number; guard?: number }>();
   const individual = (genome: Genome, stream: () => number = random): Individual => {
     const decoded = decode(model, genome, stream);
     return { genome: decoded.genome, decoded, key: genomeKey(decoded.genome), changes: countChanges(model, decoded) };
   };
   const allowed = (entry: Individual) => request.parameters.maxChanges === null || entry.changes <= request.parameters.maxChanges;
+  // SpecRef: 9.1.3 | 2-3-2 `objectiveGuard` | every candidate is measured on the guard with the runs and seed of its score:
+  // `quickRuns` on the quick seed, and `confirmRuns` on the confirm seed when confirmed.
+  const quickScoreOf = async (decoded: Decoded, eligible: boolean): Promise<QuickScore> => {
+    const measured = await evaluate(decoded, request.parameters.quickRuns, quickSeed);
+    return {
+      fitness: eligible ? measured.fitness : -Infinity,
+      rate: measured.rate,
+      ...(measured.progress ? { progress: eligible ? measured.progress.rate : -Infinity } : {}),
+      ...(guard ? { guard: (await secondOf(decoded.state, measured, request.parameters.quickRuns, quickSeed)).rate } : {}),
+    };
+  };
   const scoreQuick = async (entry: Individual) => {
     if (entry.quick !== undefined) return;
-    if (!allowed(entry)) { entry.quick = -Infinity; return; }
-    const cached = quickCache.get(entry.key);
-    entry.quick = cached ?? (await evaluate(entry.decoded, request.parameters.quickRuns, quickSeed)).fitness;
+    if (!allowed(entry)) { entry.quick = { fitness: -Infinity, rate: 0 }; return; }
+    entry.quick = quickCache.get(entry.key) ?? await quickScoreOf(entry.decoded, true);
     quickCache.set(entry.key, entry.quick);
   };
-  // SpecRef: 9.1.3 | 2-3-2 `objectiveGuard` | the guard is measured on the confirmed candidates only, with `confirmRuns`.
   const scoreConfirm = async (entry: Individual) => {
     if (entry.confirm !== undefined || !allowed(entry)) return;
     let cached = confirmCache.get(entry.key);
     if (!cached) {
-      const confirm = (await evaluate(entry.decoded, request.parameters.confirmRuns, confirmSeed)).fitness;
-      cached = guard ? { confirm, guard: (await second(entry.decoded.state, request.parameters.confirmRuns, confirmSeed)).rate } : { confirm };
+      const measured = await evaluate(entry.decoded, request.parameters.confirmRuns, confirmSeed);
+      cached = { confirm: measured.fitness, rate: measured.rate };
+      if (guard) cached.guard = (await secondOf(entry.decoded.state, measured, request.parameters.confirmRuns, confirmSeed)).rate;
       confirmCache.set(entry.key, cached);
     }
     entry.confirm = cached.confirm;
+    entry.confirmRate = cached.rate;
     entry.guard = cached.guard;
   };
   const confirmedScore = (entry: Individual): GuardedScore => ({ fitness: entry.confirm ?? -Infinity, guard: entry.guard });
@@ -1291,19 +1328,15 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
         .map((genome) => individual(genome, seedRandom));
       const candidates = [...new Map(fills.map((entry) => [entry.key, entry])).values()];
       let chosen: Individual | null = null;
-      let chosenScore: GuardedScore = { fitness: -Infinity };
-      let chosenRate = 0;
+      let chosenScore: QuickScore = { fitness: -Infinity, rate: 0 };
       for (const candidate of candidates) {
         if (outOfTime()) break;
-        const measured = await evaluate(candidate.decoded, request.parameters.quickRuns, quickSeed);
-        const score: GuardedScore = {
-          fitness: allowed(candidate) ? measured.fitness : -Infinity,
-          guard: guard ? (await second(candidate.decoded.state, request.parameters.quickRuns, quickSeed)).rate : undefined,
-        };
-        if (chosen === null || compareGuarded(score, chosenScore, guard) > 0) { chosen = candidate; chosenScore = score; chosenRate = measured.rate; }
+        // The fill is chosen on the objective fitness (by the guard ranking with a guard), whatever the quick signal.
+        const score = await quickScoreOf(candidate.decoded, allowed(candidate));
+        if (chosen === null || compareGuarded(score, chosenScore, guard) > 0) { chosen = candidate; chosenScore = score; }
       }
       const entry = chosen ?? candidates[0];
-      if (chosen) { entry.quick = chosenScore.fitness; quickCache.set(entry.key, entry.quick); report.quickRate = round4(chosenRate); }
+      if (chosen) { entry.quick = chosenScore; quickCache.set(entry.key, entry.quick); report.quickRate = round4(chosenScore.rate); }
       report.status = 'used';
       results[results.length - 1].used = plan.used;
       usedCount += 1;
@@ -1324,17 +1357,38 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   let best: Individual = fallback;
   await scoreConfirm(fallback);
 
+  // SpecRef: 9.1.3 | 2-3-2 `successSignal` | the quick runs of a `success` search are ranked by `progress` while successes
+  // are rare (`isRareSuccess`); `auto` starts on the current build's confirmed rate and switches to `success`, for
+  // good, from the generation after the best confirmed candidate's rate is no longer rare.
+  const signalMode: GaSuccessSignal | null = objective === 'success' ? request.successSignal ?? 'success' : null;
+  const rare = (rate: number | undefined) => isRareSuccess(rate ?? 0, request.parameters.quickRuns);
+  let signal: 'success' | 'progress' | null = signalMode === 'auto' ? (rare(fallback.confirmRate) ? 'progress' : 'success') : signalMode;
+  const startSignal = signal;
+  let switchedAt: number | null = null;
+  let switchNext = false;
+  // The quick ranking: the population order, the elites, and the tournaments (by the guard ranking with a guard).
+  const quickRank = (entry: Individual): GuardedScore => {
+    if (!entry.quick) return { fitness: -Infinity };
+    return { fitness: signal === 'progress' ? entry.quick.progress ?? -Infinity : entry.quick.fitness, guard: entry.quick.guard };
+  };
+  const compareQuick = (a: Individual, b: Individual): number => {
+    const order = compareGuarded(quickRank(a), quickRank(b), guard);
+    return Number.isNaN(order) ? 0 : order;
+  };
+
   // SpecRef: 9.1.4.9 | GA search Stop | `generationsRun` counts the generations whose quick scoring finished; `stopReason` is
   // `timeBudget` when the time check stopped the loop before it ran `generations` times.
   let generationsRun = 0;
   let stopReason: 'generations' | 'timeBudget' = 'generations';
   for (let generation = 0; generation < request.parameters.generations; generation += 1) {
     if (outOfTime()) { stopReason = 'timeBudget'; break; }
+    if (switchNext) { signal = 'success'; switchedAt = generation + 1; switchNext = false; }
     for (const entry of population) { if (outOfTime()) break; await scoreQuick(entry); }
     if (population.every((entry) => entry.quick !== undefined)) generationsRun += 1;
-    population.sort((a, b) => (b.quick ?? -Infinity) - (a.quick ?? -Infinity));
+    population.sort((a, b) => compareQuick(b, a));
     for (const entry of population.slice(0, request.parameters.confirmTopN)) { if (outOfTime()) break; await scoreConfirm(entry); }
     for (const entry of population) if (ranksAbove(entry, best)) best = entry;
+    if (signalMode === 'auto' && signal === 'progress' && !rare(best.confirmRate)) switchNext = true;
     // A last generation whose quick scoring finished has run all `generations`, even if its confirm runs were cut short.
     if (outOfTime()) { if (generation + 1 < request.parameters.generations || generationsRun <= generation) stopReason = 'timeBudget'; break; }
     const scored = population.filter((entry) => entry.quick !== undefined);
@@ -1342,7 +1396,7 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
       let chosen: Individual | null = null;
       for (let round = 0; round < request.parameters.tournamentSize; round += 1) {
         const candidate = scored[Math.floor(random() * scored.length)];
-        if (!chosen || (candidate.quick ?? -Infinity) > (chosen.quick ?? -Infinity)) chosen = candidate;
+        if (!chosen || compareQuick(candidate, chosen) > 0) chosen = candidate;
       }
       return chosen!;
     };
@@ -1366,7 +1420,7 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   if (finalists.length > 0 && ranksAbove(finalists[0], fallback)) {
     const finalScore = async (entry: Individual) => {
       const measured = await evaluate(entry.decoded, finalRuns, finalSeed);
-      return { measured, guardMeasure: guard ? await second(entry.decoded.state, finalRuns, finalSeed) : null };
+      return { measured, guardMeasure: guard ? await secondOf(entry.decoded.state, measured, finalRuns, finalSeed) : null };
     };
     const scoreOf = (final: Awaited<ReturnType<typeof finalScore>>): GuardedScore => ({ fitness: final.measured.fitness, guard: final.guardMeasure?.rate });
     const currentFinal = await finalScore(fallback);
@@ -1411,7 +1465,7 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
     }
   }
   const verifyAfter = changeSummary.length > 0 ? await evaluate({ state: bestState, genome: best.genome }, verifyRuns, verifySeed) : verifyBefore!;
-  const crossAfter = changeSummary.length > 0 ? await second(bestState, verifyRuns, verifySeed) : crossBefore!;
+  const crossAfter = changeSummary.length > 0 ? await secondOf(bestState, verifyAfter, verifyRuns, verifySeed) : crossBefore!;
   const summary = summarizeVerification({
     objective, guard, crossObjective, verifyRuns, seed, verifySeed, routeRooms, before: verifyBefore!, after: verifyAfter, crossBefore: crossBefore!, crossAfter,
     changed: changeSummary.length > 0, revision: dependencies.revision, scope: forecastScope(state, partyIndex, objective), label: 'ga-verify',
@@ -1434,6 +1488,10 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   // SpecRef: 9.1.3 | 2-3-2 `seeds` | `inBest`: the result build has every value the seed used.
   const resultGenome = changeSummary.length > 0 ? best.genome : model.current;
   const seeds = seedResults?.map(({ report, used }) => ({ ...report, inBest: report.status === 'used' && hasSeedValues(resultGenome, used) }));
+  // SpecRef: 9.1.3 | 2-3-2 `guardStats` | the distinct confirmed candidates other than the current build, and how many reached
+  // the guard in their confirm runs.
+  const confirmedOthers = [...confirmCache].filter(([key]) => key !== fallback.key).map(([, entry]) => entry);
+  const guardStats = guard ? { confirmed: confirmedOthers.length, reached: confirmedOthers.filter((entry) => entry.guard! >= guard.minimum).length } : null;
   const elapsedSeconds = Math.round((dependencies.now() - startedAt) / 100) / 10;
   return {
     data: {
@@ -1444,6 +1502,8 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
       evaluations,
       generationsRun,
       stopReason,
+      quickSignal: startSignal === null ? null : { start: startSignal, switchedAt },
+      guardStats,
       elapsedSeconds,
       ...(seeds ? { seeds } : {}),
       basis: buildBasis(state, partyIndex, changeSummary),
