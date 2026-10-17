@@ -10,6 +10,8 @@ import { getDeityId } from '../../src/game/deity';
 import type { GameState } from '../../src/types';
 import { baseSlotsAt, conquestGoal, expectedRunsToGoal, experienceToLevel, parseLevelProbe, probedLevels, requiredRateForBudget } from '../../src/api/v1/levelProbe';
 import { getXpToNextLevel } from '../../src/game/partyLevel';
+import { CLASSES } from '../../src/data/classes';
+import { parseDirectedBuildRequest } from '../../src/api/v1/directedBuild';
 
 // SpecRef: 9.1.3 | Read | 2-3-2 party/{p}/gaSearch
 // SpecRef: 9.1.3 | Commit | 3-3-2 party/{p}/applyBuildChanges
@@ -57,7 +59,7 @@ rejects({ targets: [] }, 'invalid_request:targets');
 rejects({ targets: [{ characterId: 999999 }] }, 'invalid_request:targets.characterId.not_in_party');
 rejects({ targets: [{ characterId: ids[0] }, { characterId: ids[0] }] }, 'invalid_request:targets.characterId.duplicate');
 rejects({ targets: equipmentTargets, objective: 'speed' }, 'invalid_request:objective');
-rejects({ targets: equipmentTargets, gaParameters: { effort: 'max' } }, 'invalid_request:gaParameters.effort');
+rejects({ targets: equipmentTargets, gaParameters: { effort: 'maximum' } }, 'invalid_request:gaParameters.effort');
 rejects({ targets: equipmentTargets, gaParameters: { populationSize: 8, eliteCount: 3 } }, 'invalid_request:gaParameters.eliteCount');
 rejects({ targets: equipmentTargets, gaParameters: { quickRuns: 5 } }, 'invalid_request:gaParameters.quickRuns');
 rejects({ targets: equipmentTargets, unknownMember: true }, 'invalid_request:unknownMember.unknown_member');
@@ -636,6 +638,119 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   assert.deepEqual([crossCheck.objective, crossCheck.minimum], ['progress', 0.5]);
   // The guard's `progress` is divided by the route's rooms, so it is a share like the objective's.
   assert.ok(crossCheck.before >= 0 && crossCheck.before <= 1, `progress guard ${crossCheck.before}`);
+}
+
+// ---------------- `effort: max`, the `quickRuns` range, and the stop report (Spec 9.1.3, 2-3-2) ----------------
+{
+  assert.deepEqual(GA_EFFORT_PRESETS.max, { populationSize: 64, generations: 200, quickRuns: 300, confirmRuns: 600, timeBudgetSeconds: 590 });
+  const parsed = parseGaSearchRequest(base, 0, { targets: equipmentTargets, gaParameters: { effort: 'max' } });
+  assert.deepEqual({ populationSize: parsed.parameters.populationSize, generations: parsed.parameters.generations, quickRuns: parsed.parameters.quickRuns, confirmRuns: parsed.parameters.confirmRuns, timeBudgetSeconds: parsed.parameters.timeBudgetSeconds }, GA_EFFORT_PRESETS.max);
+  assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets, gaParameters: { effort: 'max', quickRuns: 1000 } }).parameters.quickRuns, 1000);
+  rejects({ targets: equipmentTargets, gaParameters: { quickRuns: 1001 } }, 'invalid_request:gaParameters.quickRuns');
+  // `max` is `gaSearch` only: `directedBuild` keeps its own presets.
+  let message = '';
+  try { parseDirectedBuildRequest(base, 0, { direction: 'free', targets: [{ characterId: ids[0] }], tuningParameters: { effort: 'max' } }); } catch (error) { message = String(error); }
+  assert.ok(message.includes('invalid_request:tuningParameters.effort'), message);
+  // Every generation ran: `generations`. A search the clock stops: `timeBudget`, with fewer generations.
+  assert.deepEqual([outcome.data.generationsRun, outcome.data.stopReason], [small.generations, 'generations']);
+  assert.equal(outcome.data.seeds, undefined, '`seeds` only when `seedBuilds` is sent');
+  let clock = now;
+  const ticking: GaSearchDependencies = { ...dependencies(), now: () => { clock += 40; return clock; } };
+  const timed = await runGaSearch(base, 0, parseGaSearchRequest(base, 0, { targets: equipmentTargets, gaParameters: { ...small, generations: 200, timeBudgetSeconds: 5 } }), ticking);
+  assert.equal(timed.data.stopReason, 'timeBudget');
+  assert.ok((timed.data.generationsRun as number) < 200, `generationsRun ${timed.data.generationsRun}`);
+}
+
+// ---------------- `seedBuilds` (Spec 9.1.3, 2-3-2; 9.1.4.9 GA search Validation and Seeds) ----------------
+{
+  const seedRequest = (seedBuilds: unknown) => ({ targets: equipmentTargets, seedBuilds });
+  rejects(seedRequest([]), 'invalid_request:seedBuilds');
+  rejects(seedRequest(new Array(17).fill({})), 'invalid_request:seedBuilds');
+  rejects(seedRequest({}), 'invalid_request:seedBuilds');
+  rejects(seedRequest([5]), 'invalid_request:seedBuilds[0]');
+  rejects(seedRequest([{}, { equipment: [] }]), 'invalid_request:seedBuilds[1].equipment.unknown_member');
+  rejects(seedRequest([{ label: 'x'.repeat(65) }]), 'invalid_request:seedBuilds[0].label');
+  rejects(seedRequest([{ characters: {} }]), 'invalid_request:seedBuilds[0].characters');
+  rejects(seedRequest([{ characters: [{ characterId: 999999 }] }]), 'invalid_request:seedBuilds[0].characters[0].characterId');
+  rejects(seedRequest([{ characters: [{ characterId: ids[0] }, { characterId: ids[0] }] }]), 'invalid_request:seedBuilds[0].characters[1].characterId');
+  rejects(seedRequest([{ characters: [{ characterId: ids[0], mainClassId: 3 }] }]), 'invalid_request:seedBuilds[0].characters[0].mainClassId');
+  rejects(seedRequest([{ characters: [{ characterId: ids[0], name: 'x' }] }]), 'invalid_request:seedBuilds[0].characters[0].name.unknown_member');
+  rejects(seedRequest([{ order: [ids[0]] }]), 'invalid_request:seedBuilds[0].order');
+  rejects(seedRequest([{ order: ids.map(() => ids[0]) }]), 'invalid_request:seedBuilds[0].order');
+  rejects(seedRequest([{ deityId: 1 }]), 'invalid_request:seedBuilds[0].deityId');
+  // A well-formed value the rules refuse is no error.
+  assert.equal(parseGaSearchRequest(base, 0, seedRequest([{ characters: [{ characterId: ids[0], lineage: 'nonexistent' }] }])).seedBuilds!.length, 1);
+
+  const party = base.parties[0];
+  const plain = party.characters.filter((character) => !character.isUnique);
+  const unique = party.characters.find((character) => character.isUnique)!;
+  const [first, second] = plain;
+  const otherClasses = CLASSES.map((entry) => entry.id).filter((id) => id !== first.mainClassId);
+  const otherLineage = ['sandstorm', 'ashen_capital'].find((id) => id !== unique.lineageId)!;
+  // `first` may change its main class and equipment; `second` only its equipment; the unique character its lineage (ignored).
+  const targets = [
+    { characterId: first.id, changeableComponents: { mainClass: true, equipment: true } },
+    { characterId: second.id, changeableComponents: { equipment: true } },
+    { characterId: unique.id, changeableComponents: { lineage: true, equipment: true } },
+  ];
+  const seedBuilds = [
+    { label: 'A', characters: [{ characterId: first.id, mainClassId: otherClasses[0], lineage: 'nonexistent' }, { characterId: second.id, mainClassId: otherClasses[0] }], order: [...ids].reverse(), deityId: 'nonexistent' },
+    { label: 'A again', characters: [{ characterId: first.id, mainClassId: otherClasses[0] }] },
+    { label: 'unique lineage', characters: [{ characterId: unique.id, lineage: otherLineage }] },
+    { label: 'current', characters: [{ characterId: first.id, mainClassId: first.mainClassId }] },
+    { characters: [{ characterId: first.id, mainClassId: otherClasses[1] }] },
+    { characters: [{ characterId: first.id, mainClassId: otherClasses[2] }] },
+    { characters: [{ characterId: first.id, mainClassId: otherClasses[3] }] },
+    { label: 'late', characters: [{ characterId: first.id, mainClassId: otherClasses[4] }] },
+  ];
+  const raw = { targets, seedBuilds, gaParameters: { ...small, seedWithHeuristics: false } };
+  const seeded = await search(base, raw);
+  type Report = { label: string | null; status: string; ignored: { field: string; reason: string }[]; quickRate: number | null; inBest: boolean };
+  const seeds = seeded.data.seeds as Report[];
+  assert.equal(seeds.length, seedBuilds.length, 'one report per seed, in request order');
+  assert.deepEqual(seeds.map((entry) => entry.label), ['A', 'A again', 'unique lineage', 'current', null, null, null, 'late']);
+  assert.deepEqual(seeds.map((entry) => entry.status), ['used', 'ignored', 'ignored', 'ignored', 'used', 'used', 'used', 'ignored']);
+  // Ignored values of a used seed: an unknown lineage, a component the request does not open, order and deity changes the request forbids.
+  assert.deepEqual(seeds[0].ignored, [
+    { field: 'characters[0].lineage', reason: 'invalidValue' },
+    { field: 'characters[1].mainClassId', reason: 'notChangeable' },
+    { field: 'order', reason: 'notChangeable' },
+    { field: 'deityId', reason: 'invalidValue' },
+  ]);
+  assert.deepEqual(seeds[1].ignored, [{ field: 'seed', reason: 'duplicate' }], 'the same used values as an earlier seed');
+  assert.deepEqual(seeds[2].ignored, [{ field: 'characters[0].lineage', reason: 'notAllowed' }], "a unique character's lineage");
+  assert.deepEqual(seeds[3].ignored, [{ field: 'seed', reason: 'duplicate' }], 'the current build');
+  assert.deepEqual(seeds[7].ignored, [{ field: 'seed', reason: 'populationFull' }], 'at most populationSize / 2 seeds');
+  for (const entry of seeds) {
+    if (entry.status === 'used') assert.ok(entry.quickRate !== null && entry.quickRate >= 0 && entry.quickRate <= 1, `quickRate ${entry.quickRate}`);
+    else assert.deepEqual([entry.quickRate, entry.inBest], [null, false]);
+    assert.equal(typeof entry.inBest, 'boolean');
+  }
+  // `inBest`: the best build has the seed's class exactly when its `changeSummary` changes `first` to it.
+  const classChange = (seeded.data.changeSummary as GaChangeEntry[]).find((entry) => entry.endpoint === `commit/build/character/${first.id}/changeBuild`);
+  const resultClass = (classChange?.parameters.mainClassId as string | undefined) ?? first.mainClassId;
+  for (const [index, entry] of seeds.entries()) {
+    if (entry.status === 'used') assert.equal(entry.inBest, seedBuilds[index].characters[0].mainClassId === resultClass, `seed ${index} inBest`);
+  }
+  assert.deepEqual([seeded.data.generationsRun, seeded.data.stopReason], [small.generations, 'generations']);
+  // A fixed seed repeats the seeded search; without `seedBuilds` the search draws exactly as before.
+  assert.deepEqual((await search(base, raw)).data, seeded.data, 'a fixed seed repeats the seeded search');
+  const unseeded = { targets, gaParameters: { ...small, seedWithHeuristics: false } };
+  assert.deepEqual((await search(base, unseeded)).data, (await search(base, unseeded)).data);
+  // The seed fills count in `evaluations`: with no generation at all, only the verification and the fills are left.
+  const none = await search(base, { targets, gaParameters: { ...small, seedWithHeuristics: false, generations: 1 } });
+  const filled = await search(base, { ...raw, gaParameters: { ...small, seedWithHeuristics: false, generations: 1 } });
+  assert.ok((filled.data.evaluations as number) >= (none.data.evaluations as number), `${filled.data.evaluations} vs ${none.data.evaluations}`);
+  // A deity seed: used when `considerDeityChange` allows it, `notAllowed` when the deity is known but not an option.
+  const deitySearch = await search(base, { targets, considerDeityChange: 'unoccupiedDeities', seedBuilds: [{ deityId: 'none' }, { deityId: 'nonexistent' }], gaParameters: { ...small, seedWithHeuristics: false } });
+  const deitySeeds = deitySearch.data.seeds as Report[];
+  const currentDeity = getDeityId(party.deity.name);
+  if (currentDeity === 'none') assert.deepEqual(deitySeeds[0].ignored, [{ field: 'seed', reason: 'duplicate' }], 'no faith is the current deity');
+  else assert.equal(deitySeeds[0].status, 'used');
+  assert.deepEqual(deitySeeds[1].ignored, [{ field: 'deityId', reason: 'invalidValue' }]);
+  // `order` is used only with `considerOrderChange`.
+  const ordered = await search(base, { targets, considerOrderChange: true, seedBuilds: [{ order: [...ids].reverse() }], gaParameters: { ...small, seedWithHeuristics: false } });
+  assert.deepEqual((ordered.data.seeds as Report[])[0].status, 'used');
 }
 
 console.log('gaSearch profile ok');

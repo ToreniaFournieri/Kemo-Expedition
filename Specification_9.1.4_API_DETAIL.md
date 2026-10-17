@@ -841,8 +841,20 @@ definitions in 9.1.3.
   10); `maxDefeat` a number from 0 to 100 (default 10); `steps` `slot` (default)
   or `level`; `count` an integer from 1 to 10 (default 1 for `slot`, 5 for
   `level`). A value out of range is `invalid_request`, field
-  `levelProbe.<member>`; another member is `levelProbe.<name>.unknown_member`. An
-  unknown member anywhere is `invalid_request`. A missing party is `not_found`.
+  `levelProbe.<member>`; another member is `levelProbe.<name>.unknown_member`.
+  `gaParameters.effort` is `low` (default), `medium`, `high`, or `max`, and
+  `quickRuns` is 10 to 1000. `seedBuilds` is an array of 1 to 16 objects (otherwise
+  `invalid_request`, field `seedBuilds`) with only the members `label` (a string of
+  at most 64 characters), `characters`, `order`, and `deityId`; another member is
+  `seedBuilds[i].<name>.unknown_member`. `characters` is an array of objects with
+  an integer `characterId` of party `{p}`, each at most once, and only the string
+  members `racesAndGender`, `mainClassId`, `subClassId`, `lineage`, and
+  `predisposition`; `order` is a permutation of the party's character IDs;
+  `deityId` is a string. A wrong shape is `invalid_request`, field
+  `seedBuilds[i].<path>`. Only the shape is validated here: a well-formed value
+  that the game rules do not allow is not an error; it is ignored and reported in
+  `seeds` (9.1.3, 2-3-2). An unknown member anywhere is `invalid_request`. A
+  missing party is `not_found`.
 * Candidates: `equipment` lets the search place any owned item variant that the
   character can equip, up to its slot count, from the items `considerItemsScope`
   makes available: the Inventory and the character's own worn items (`normal`);
@@ -881,7 +893,7 @@ definitions in 9.1.3.
   `seedWithHeuristics`, one attack-focused and one HP/defense-focused greedy
   build, plus, when an equipment target has an empty slot, the current build
   with only its empty slots filled the same two greedy ways (every worn item
-  stays); the rest are mutants. Each generation scores every candidate with
+  stays); then the `seedBuilds` seeds; the rest are mutants. Each generation scores every candidate with
   `quickRuns`, re-scores the `confirmTopN` best with `confirmRuns`, keeps
   `eliteCount` unchanged, and fills the rest by tournament selection (size
   `tournamentSize`), per-character crossover, and mutation (`mutationRate`;
@@ -891,6 +903,27 @@ definitions in 9.1.3.
   confirmed builds and the fallback are re-scored on the final seed with
   twice `confirmRuns` (at most 1000), and a build replaces the fallback only
   when its rate is ahead by at least one standard error.
+* Seeds (`seedBuilds`): in array order, each seed starts from the current build
+  and sets the values it may use (9.1.3, 2-3-2 Rules), checked one by one by the
+  `changeBuild` rules in party order; a value that fails keeps the current value
+  and is reported (`invalidValue` for an unknown option, `notAllowed` for a known
+  option the rules refuse for that character, `notChangeable` for a value the
+  request does not let the search change). For the targets whose `equipment` is
+  changeable, the attack-focused and the HP/defense-focused greedy fill of
+  `seedWithHeuristics` (applied whatever `seedWithHeuristics` is) are each scored
+  with `quickRuns` on the quick seed, and the better one (by the guard ranking,
+  with a guard) is the seed's candidate; its quick score is kept, so the first
+  generation does not score it again. That score is `seeds[].quickRate`. A seed
+  whose used values equal the current build or an earlier seed is `duplicate`;
+  a seed after `populationSize / 2` used seeds is `populationFull`; a seed with
+  no usable value is `ignored`. Each used seed replaces one mutant, so the first
+  population still has `populationSize` candidates. Seeds are not elites: they
+  stay only by selection. `seeds[].inBest` compares the final best build with
+  each value the seed used. The two fill scores per seed count in `evaluations`
+  and in the time budget.
+* Stop: `generationsRun` counts the generations whose quick scoring finished.
+  `stopReason` is `generations` when the loop ran `generations` times, and
+  `timeBudget` when the time-budget check (below) stopped it first.
 * `objectiveGuard`: every confirmed candidate (and the fallback) is also measured
   on the guard objective with `confirmRuns` runs on the confirm seed, in that
   objective's own forecast (`bossDamage` fights the boss alone; `success` and
@@ -1058,7 +1091,7 @@ definitions in 9.1.3.
 
 **Directed build**
 
-* `directedBuild` (9.1.3, 2-3-3) is a Read operation that uses `POST`, like `gaSearch`. It never commits anything and changes no revision. Its Return is the `gaSearch` Return (see **GA search**) without `levelProbe` (the level probe is `gaSearch` only), plus the members below.
+* `directedBuild` (9.1.3, 2-3-3) is a Read operation that uses `POST`, like `gaSearch`. It never commits anything and changes no revision. Its Return is the `gaSearch` Return (see **GA search**) without `levelProbe`, `seeds`, `generationsRun`, and `stopReason` (these are `gaSearch` only), plus the members below.
 * Validation: `direction` is required and must be one of its listed values (otherwise `invalid_request`, field `direction`). `targets` is 1 to 6 unique members of party `{p}` (otherwise `invalid_request`, field `targets.characterId`); omitted `changeableComponents` members take the 9.1.3 defaults, and `autoEquipmentRun` must be `currentSetting`, `FULL` (default), `SEMI`, or `OFF`. `considerOrderChange`, `considerDeityChange`, `considerItemsScope`, `objective`, and `objectiveGuard` are validated as for `gaSearch`. `autoEquipmentScope` is `changedOnly` (default) or `allTargets`; `equipmentPolish` is `none`, `changedOnly` (default), or `allTargets`; `polishMethod` is `ga` (default), `stagedTuning`, or `stagedTuningThenGa`; `directionStrictness` is `strict` (default) or `soft`; `directionPenalty` is a number from 0 to 50 (default 2); any other value is `invalid_request` naming the member. `tuningParameters` ranges and `effort` presets are the 9.1.3 tables (`timeBudgetSeconds` 5 to 600, `verifySeed` any safe integer); `mutationRate` defaults to the `effort` preset's; `eliteCount` may not exceed `populationSize / 4`. An unknown member anywhere is `invalid_request`. A missing party is `not_found`.
 * Seeds: every seed derives from `tuningParameters.seed` (a fresh random one when omitted): one for candidate sampling and mutation, one for the quick runs, one for the confirm runs, one for the Step 4 search and its draws, one for the Final selection, and one for verification (`tuningParameters.verifySeed` instead when given). Steps 1 to 4 score on the same quick and confirm seeds, so all candidates are compared on the same random numbers, and the same `seed`, save, and parameters return the same result unless `timeBudgetSeconds` stops a step first.
 * Build components choose from the same options as `read/build/character/status` and are validated by the `changeBuild` rules in party order (including the unique-character and race/gender rules); a candidate that breaks one is invalid. `uniqueCharacter: true` adds the unique characters `changeBuild` would accept for that member as `uniqueSelection` options.
@@ -1667,7 +1700,7 @@ use the same operation without HTTP authentication headers.
   Commit envelope or idempotency key. Omission uses the admission revision; a
   supplied mismatch returns `stale_revision` before private computation.
   `gaSearch` POST accepts its 9.1.3 members (`targets`, `considerOrderChange`,
-  `considerDeityChange`, `considerItemsScope`, `objective`, `objectiveGuard`, `levelProbe`, `gaParameters`) and an optional
+  `considerDeityChange`, `considerItemsScope`, `objective`, `objectiveGuard`, `levelProbe`, `seedBuilds`, `gaParameters`) and an optional
   `expectedRevision` the same way; so do `directedBuild` and `stagedEquipmentTuning`
   with their 9.1.3 members (for tuning, `characterId`, the tuning parameters,
   `objective`, and `objectiveGuard`).
