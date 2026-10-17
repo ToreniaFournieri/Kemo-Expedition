@@ -1,0 +1,50 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "progress",
+ "before": "Success 0.0% / Draw 0.8% / Retreat 23.0% / Defeat 76.2%",
+ "after": "Success 0.0% / Draw 0.8% / Retreat 23.0% / Defeat 76.2%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.0062,
+ "crossCheck": {
+  "objective": "bossDamage",
+  "before": 0.5084,
+  "after": 0.5084,
+  "minimum": null,
+  "reached": null
+ },
+ "bottleneckRoom": "4f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.fire-protect-breaker",
+   "answers": [
+    "a.fire-reflect"
+   ],
+   "status": "noItem"
+  },
+  {
+   "ability": "a.null-burn",
+   "answers": [
+    "a.burn"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 6,
+  "defenseElement": 6,
+  "ability": 6
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [],
+  "ability": [],
+  "finalTuning": []
+ },
+ "changeSummary": [],
+ "revision": 675,
+ "simulationRuns": 7700,
+ "elapsedSeconds": 3.1,
+ "seed": 2091670970
+}
