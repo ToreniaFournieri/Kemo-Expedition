@@ -22437,6 +22437,63 @@
               }
             }
           },
+          "seedBuilds": {
+            "minItems": 1,
+            "maxItems": 16,
+            "type": "array",
+            "items": {
+              "additionalProperties": false,
+              "type": "object",
+              "properties": {
+                "label": {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                "characters": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "characterId"
+                    ],
+                    "properties": {
+                      "characterId": {
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "racesAndGender": {
+                        "type": "string"
+                      },
+                      "mainClassId": {
+                        "type": "string"
+                      },
+                      "subClassId": {
+                        "type": "string"
+                      },
+                      "lineage": {
+                        "type": "string"
+                      },
+                      "predisposition": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "order": {
+                  "uniqueItems": true,
+                  "type": "array",
+                  "items": {
+                    "minimum": 1,
+                    "type": "integer"
+                  }
+                },
+                "deityId": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "gaParameters": {
             "additionalProperties": false,
             "type": "object",
@@ -22454,6 +22511,10 @@
                   {
                     "const": "high",
                     "type": "string"
+                  },
+                  {
+                    "const": "max",
+                    "type": "string"
                   }
                 ],
                 "default": "low"
@@ -22470,7 +22531,7 @@
               },
               "quickRuns": {
                 "minimum": 10,
-                "maximum": 300,
+                "maximum": 1000,
                 "type": "integer"
               },
               "confirmRuns": {
@@ -22540,7 +22601,9 @@
             "elapsedSeconds",
             "basis",
             "verification",
-            "levelProbe"
+            "levelProbe",
+            "generationsRun",
+            "stopReason"
           ],
           "properties": {
             "verdict": {
@@ -23127,6 +23190,114 @@
                   "type": "null"
                 }
               ]
+            },
+            "generationsRun": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "stopReason": {
+              "anyOf": [
+                {
+                  "const": "generations",
+                  "type": "string"
+                },
+                {
+                  "const": "timeBudget",
+                  "type": "string"
+                }
+              ]
+            },
+            "seeds": {
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "label",
+                  "status",
+                  "ignored",
+                  "quickRate",
+                  "inBest"
+                ],
+                "properties": {
+                  "label": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "status": {
+                    "anyOf": [
+                      {
+                        "const": "used",
+                        "type": "string"
+                      },
+                      {
+                        "const": "ignored",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "ignored": {
+                    "type": "array",
+                    "items": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "field",
+                        "reason"
+                      ],
+                      "properties": {
+                        "field": {
+                          "type": "string"
+                        },
+                        "reason": {
+                          "anyOf": [
+                            {
+                              "const": "notChangeable",
+                              "type": "string"
+                            },
+                            {
+                              "const": "invalidValue",
+                              "type": "string"
+                            },
+                            {
+                              "const": "notAllowed",
+                              "type": "string"
+                            },
+                            {
+                              "const": "populationFull",
+                              "type": "string"
+                            },
+                            {
+                              "const": "duplicate",
+                              "type": "string"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "quickRate": {
+                    "anyOf": [
+                      {
+                        "minimum": 0,
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "inBest": {
+                    "type": "boolean"
+                  }
+                }
+              }
             }
           }
         },
@@ -23174,7 +23345,9 @@
                 "elapsedSeconds",
                 "basis",
                 "verification",
-                "levelProbe"
+                "levelProbe",
+                "generationsRun",
+                "stopReason"
               ],
               "properties": {
                 "verdict": {
@@ -23761,6 +23934,114 @@
                       "type": "null"
                     }
                   ]
+                },
+                "generationsRun": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "stopReason": {
+                  "anyOf": [
+                    {
+                      "const": "generations",
+                      "type": "string"
+                    },
+                    {
+                      "const": "timeBudget",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "seeds": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "label",
+                      "status",
+                      "ignored",
+                      "quickRate",
+                      "inBest"
+                    ],
+                    "properties": {
+                      "label": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "status": {
+                        "anyOf": [
+                          {
+                            "const": "used",
+                            "type": "string"
+                          },
+                          {
+                            "const": "ignored",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "ignored": {
+                        "type": "array",
+                        "items": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "field",
+                            "reason"
+                          ],
+                          "properties": {
+                            "field": {
+                              "type": "string"
+                            },
+                            "reason": {
+                              "anyOf": [
+                                {
+                                  "const": "notChangeable",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "invalidValue",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "notAllowed",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "populationFull",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "duplicate",
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "quickRate": {
+                        "anyOf": [
+                          {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "inBest": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -23880,7 +24161,9 @@
               ],
               "levelNeeded": 1,
               "truncated": true
-            }
+            },
+            "generationsRun": 0,
+            "stopReason": "generations"
           }
         }
       }

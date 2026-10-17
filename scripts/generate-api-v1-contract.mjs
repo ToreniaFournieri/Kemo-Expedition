@@ -286,9 +286,9 @@ const commitParameters = {
 
 // SpecRef: 9.1.3 | Read | 2-3-2 party/{p}/gaSearch | a POST Read body like `simulationRun` (no Commit envelope).
 const gaComponents = strict(Object.fromEntries(['raceGender', 'mainClass', 'subClass', 'lineage', 'predisposition', 'equipment', 'jewels'].map((key) => [key, optional(Type.Boolean(), false)])));
-const gaIntegers = { populationSize: [8, 64], generations: [1, 200], quickRuns: [10, 300], confirmRuns: [50, 1000], timeBudgetSeconds: [5, 600], verifyRuns: [100, 1000], eliteCount: [0, 16], tournamentSize: [2, 8], confirmTopN: [1, 10], maxChanges: [1, 100] };
+const gaIntegers = { populationSize: [8, 64], generations: [1, 200], quickRuns: [10, 1000], confirmRuns: [50, 1000], timeBudgetSeconds: [5, 600], verifyRuns: [100, 1000], eliteCount: [0, 16], tournamentSize: [2, 8], confirmTopN: [1, 10], maxChanges: [1, 100] };
 const gaParameters = strict({
-  effort: optional(literals('low', 'medium', 'high'), 'low'),
+  effort: optional(literals('low', 'medium', 'high', 'max'), 'low'),
   ...Object.fromEntries(Object.entries(gaIntegers).map(([key, [minimum, maximum]]) => [key, optional(Type.Integer({ minimum, maximum }))])),
   mutationRate: optional(Type.Number({ minimum: 0, maximum: 1 })), seed: optional(Type.Integer()), verifySeed: optional(Type.Integer()), seedWithHeuristics: optional(Type.Boolean(), true),
 });
@@ -299,6 +299,15 @@ const levelProbeRequest = strict({
   mode: optional(literals('auto', 'always', 'off'), 'auto'), purpose: optional(literals('conquest', 'farming'), 'conquest'),
   runBudget: optional(Type.Number({ minimum: 7, maximum: 100 }), 10), maxDefeat: optional(Type.Number({ minimum: 0, maximum: 100 }), 10),
   steps: optional(literals('slot', 'level'), 'slot'), count: optional(Type.Integer({ minimum: 1, maximum: 10 })),
+});
+// SpecRef: 9.1.3 | 2-3-2 `seedBuilds` | build templates (build values only) added to the first generation.
+const seedBuild = strict({
+  label: optional(Type.String({ maxLength: 64 })),
+  characters: optional(Type.Array(strict({
+    characterId: integerId, racesAndGender: optional(Type.String()), mainClassId: optional(Type.String()), subClassId: optional(Type.String()),
+    lineage: optional(Type.String()), predisposition: optional(Type.String()),
+  }))),
+  order: optional(Type.Array(integerId, { uniqueItems: true })), deityId: optional(Type.String()),
 });
 // SpecRef: 9.1.3 | 2-0 Objectives | every build search takes the same objectives.
 const searchObjective = literals('success', 'minDefeat', 'bossDamage', 'experience', 'progress');
@@ -330,7 +339,8 @@ const directBodySchemas = {
     targets: nonEmptyArray(strict({ characterId: integerId, changeableComponents: optional(gaComponents) }), { maxItems: 6 }),
     considerOrderChange: optional(Type.Boolean(), false), considerDeityChange: optional(literals('none', 'unoccupiedDeities', 'allDeities'), 'none'),
     considerItemsScope: optional(literals('normal', 'withinTargets', 'global'), 'normal'),
-    objective: optional(searchObjective, 'success'), objectiveGuard: optional(objectiveGuard), levelProbe: optional(levelProbeRequest), gaParameters: optional(gaParameters),
+    objective: optional(searchObjective, 'success'), objectiveGuard: optional(objectiveGuard), levelProbe: optional(levelProbeRequest),
+    seedBuilds: optional(nonEmptyArray(seedBuild, { maxItems: 16 })), gaParameters: optional(gaParameters),
   }),
   'read/build/party/{p}/directedBuild': strict({
     expectedRevision: optional(Type.Integer({ minimum: 0 })),
@@ -404,6 +414,12 @@ const levelProbeResult = Type.Union([strict({
   fromLevel: Type.Integer({ minimum: 1 }), steps: literals('slot', 'level'), points: Type.Array(levelProbePoint),
   levelNeeded: Type.Union([Type.Integer({ minimum: 1 }), Type.Null()]), truncated: Type.Boolean(),
 }), Type.Null()]);
+// SpecRef: 9.1.3 | 2-3-2 `seeds` Return | one report per `seedBuilds` entry, in request order.
+const gaSeedReport = strict({
+  label: Type.Union([Type.String(), Type.Null()]), status: literals('used', 'ignored'),
+  ignored: Type.Array(strict({ field: Type.String(), reason: literals('notChangeable', 'invalidValue', 'notAllowed', 'populationFull', 'duplicate') })),
+  quickRate: Type.Union([rateValue, Type.Null()]), inBest: Type.Boolean(),
+});
 const compositionCounts = strict({ melee: Type.Integer({ minimum: 0 }), ranged: Type.Integer({ minimum: 0 }), magic: Type.Integer({ minimum: 0 }), support: Type.Integer({ minimum: 0 }) });
 const directedStep = strict({ candidatesTried: Type.Integer({ minimum: 0 }), selected: Type.Union([Type.String(), Type.Null()]) });
 // SpecRef: 9.1.4.9 | Directed build `steps` | Step 4 also names its method and members; the Final selection lists its finalists.
@@ -625,7 +641,10 @@ const responseDataSchemas = {
   }),
   'read/expedition/{p}/chargeStock': strict({ chargeStock: Type.Integer({ minimum: 0, maximum: 6 }), chargeDuration: Type.Integer({ minimum: 0 }) }),
   'read/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }), validOptions: strict({ deityId: Type.Array(stableKey), order: Type.Array(integerId) }) }),
-  'read/build/party/{p}/gaSearch': strict({ ...gaSearchResult, levelProbe: levelProbeResult }),
+  'read/build/party/{p}/gaSearch': strict({
+    ...gaSearchResult, levelProbe: levelProbeResult, generationsRun: Type.Integer({ minimum: 0 }), stopReason: literals('generations', 'timeBudget'),
+    seeds: optional(Type.Array(gaSeedReport)),
+  }),
   // SpecRef: 9.1.4.9 | Directed build | the `gaSearch` Return plus `seed`, `direction`, `composition`, and `steps`.
   'read/build/party/{p}/directedBuild': strict({
     ...gaSearchResult, seed: Type.Integer(), direction: directedDirection, directionStrictness: literals('strict', 'soft'),

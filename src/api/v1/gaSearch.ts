@@ -28,7 +28,9 @@ import { baseSlotsAt, conquestGoal, expectedRunsToGoal, experienceToLevel, parse
 export const GA_OBJECTIVES = ['success', 'minDefeat', 'bossDamage', 'experience', 'progress'] as const;
 export type GaObjective = typeof GA_OBJECTIVES[number];
 export const GA_EFFORTS = ['low', 'medium', 'high'] as const;
-type GaEffort = typeof GA_EFFORTS[number];
+// SpecRef: 9.1.3 | 2-3-2 gaSearch `gaParameters.effort` | `max` is `gaSearch` only; `directedBuild` keeps `GA_EFFORTS`.
+export const GA_SEARCH_EFFORTS = [...GA_EFFORTS, 'max'] as const;
+type GaEffort = typeof GA_SEARCH_EFFORTS[number];
 export const GA_VERDICTS = ['veryGood', 'good', 'noisy', 'noChange', 'worse'] as const;
 export type GaVerdict = typeof GA_VERDICTS[number];
 const COMPONENTS = ['raceGender', 'mainClass', 'subClass', 'lineage', 'predisposition', 'equipment', 'jewels'] as const;
@@ -42,11 +44,13 @@ export const GA_EFFORT_PRESETS: Record<GaEffort, { populationSize: number; gener
   low: { populationSize: 12, generations: 15, quickRuns: 30, confirmRuns: 150, timeBudgetSeconds: 15 },
   medium: { populationSize: 24, generations: 40, quickRuns: 50, confirmRuns: 300, timeBudgetSeconds: 60 },
   high: { populationSize: 48, generations: 80, quickRuns: 100, confirmRuns: 600, timeBudgetSeconds: 180 },
+  // A wall search: bound by `timeBudgetSeconds`, never by `generations`; 300 quick runs keep each score's noise low.
+  max: { populationSize: 64, generations: 200, quickRuns: 300, confirmRuns: 600, timeBudgetSeconds: 590 },
 };
 
 /** `[minimum, maximum]` of each integer parameter (Spec 9.1.3, 2-3-2). */
 const INTEGER_RANGES = {
-  populationSize: [8, 64], generations: [1, 200], quickRuns: [10, 300], confirmRuns: [50, 1000], timeBudgetSeconds: [5, 600],
+  populationSize: [8, 64], generations: [1, 200], quickRuns: [10, 1000], confirmRuns: [50, 1000], timeBudgetSeconds: [5, 600],
   verifyRuns: [100, 1000], eliteCount: [0, 16], tournamentSize: [2, 8], confirmTopN: [1, 10], maxChanges: [1, 100],
 } as const;
 
@@ -89,7 +93,20 @@ export interface GaSearchRequest {
   parameters: GaParameters;
   /** The level probe; absent (as in `directedBuild`'s polish) means `off`. */
   levelProbe?: LevelProbeRequest;
+  /** `seedBuilds`; absent (as in `directedBuild`'s polish) means none, and the Return has no `seeds`. */
+  seedBuilds?: SeedBuild[];
 }
+
+// SpecRef: 9.1.3 | 2-3-2 gaSearch `seedBuilds` | a build template: build values only, no equipment.
+export interface SeedBuild {
+  label: string | null;
+  /** Each entry keeps its request index for the `characters[i]` field paths of `seeds[].ignored`. */
+  characters: { index: number; characterId: number; values: Partial<Record<BuildField, string>> }[];
+  order: number[] | null;
+  deityId: string | null;
+}
+export const SEED_IGNORE_REASONS = ['notChangeable', 'invalidValue', 'notAllowed', 'populationFull', 'duplicate'] as const;
+type SeedIgnoreReason = typeof SEED_IGNORE_REASONS[number];
 
 /** One Commit API call of `changeSummary`. */
 export interface GaChangeEntry { endpoint: string; parameters: Record<string, unknown> }
@@ -127,7 +144,7 @@ function readInteger(source: Record<string, unknown>, key: keyof typeof INTEGER_
 
 /** Validates a `gaSearch` request against party `{p}` (Spec 9.1.3, 2-3-2). Throws `invalid_request:<field>` or `not_found`. */
 export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: Record<string, unknown>): GaSearchRequest {
-  const allowed = new Set(['targets', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'objectiveGuard', 'levelProbe', 'gaParameters']);
+  const allowed = new Set(['targets', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'objectiveGuard', 'levelProbe', 'seedBuilds', 'gaParameters']);
   const unknown = Object.keys(raw).find((key) => !allowed.has(key));
   if (unknown !== undefined) invalid(`${unknown}.unknown_member`);
   const party = state.parties[partyIndex];
@@ -164,7 +181,7 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
   const unknownParameter = Object.keys(source).find((key) => !knownParameters.has(key));
   if (unknownParameter !== undefined) invalid(`gaParameters.${unknownParameter}.unknown_member`);
   const effort = source.effort === undefined ? 'low' : source.effort;
-  if (typeof effort !== 'string' || !(GA_EFFORTS as readonly string[]).includes(effort)) invalid('gaParameters.effort');
+  if (typeof effort !== 'string' || !(GA_SEARCH_EFFORTS as readonly string[]).includes(effort)) invalid('gaParameters.effort');
   const preset = GA_EFFORT_PRESETS[effort as GaEffort];
   const populationSize = readInteger(source, 'populationSize', preset.populationSize)!;
   const eliteCount = readInteger(source, 'eliteCount', 3)!;
@@ -200,7 +217,48 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
       seedWithHeuristics: readBoolean(source, 'seedWithHeuristics', 'gaParameters.seedWithHeuristics', true),
     },
     levelProbe: parseLevelProbe(raw.levelProbe),
+    ...(raw.seedBuilds === undefined ? {} : { seedBuilds: parseSeedBuilds(party, raw.seedBuilds) }),
   };
+}
+
+const SEED_MEMBERS = new Set(['label', 'characters', 'order', 'deityId']);
+const SEED_CHARACTER_FIELDS = Object.values(BUILD_FIELDS) as BuildField[];
+
+// SpecRef: 9.1.4.9 | GA search Validation | `seedBuilds`: only the shape is validated here. A well-formed value the game
+// rules do not allow is not an error: the search ignores it and reports it in `seeds`.
+function parseSeedBuilds(party: Party, raw: unknown): SeedBuild[] {
+  if (!Array.isArray(raw) || raw.length === 0 || raw.length > 16) invalid('seedBuilds');
+  const partyIds = party.characters.map((character) => character.id);
+  return raw.map((entry, index): SeedBuild => {
+    const at = `seedBuilds[${index}]`;
+    if (!isRecord(entry)) invalid(at);
+    const extra = Object.keys(entry).find((key) => !SEED_MEMBERS.has(key));
+    if (extra !== undefined) invalid(`${at}.${extra}.unknown_member`);
+    if (entry.label !== undefined && (typeof entry.label !== 'string' || entry.label.length > 64)) invalid(`${at}.label`);
+    if (entry.characters !== undefined && !Array.isArray(entry.characters)) invalid(`${at}.characters`);
+    const seen = new Set<number>();
+    const characters = ((entry.characters ?? []) as unknown[]).map((member, memberIndex) => {
+      const path = `${at}.characters[${memberIndex}]`;
+      if (!isRecord(member)) invalid(path);
+      const extraField = Object.keys(member).find((key) => key !== 'characterId' && !(SEED_CHARACTER_FIELDS as string[]).includes(key));
+      if (extraField !== undefined) invalid(`${path}.${extraField}.unknown_member`);
+      const characterId = member.characterId;
+      if (typeof characterId !== 'number' || !Number.isSafeInteger(characterId) || !partyIds.includes(characterId) || seen.has(characterId)) invalid(`${path}.characterId`);
+      seen.add(characterId);
+      const values: Partial<Record<BuildField, string>> = {};
+      for (const field of SEED_CHARACTER_FIELDS) {
+        if (member[field] === undefined) continue;
+        if (typeof member[field] !== 'string') invalid(`${path}.${field}`);
+        values[field] = member[field] as string;
+      }
+      return { index: memberIndex, characterId, values };
+    });
+    const order = entry.order;
+    if (order !== undefined && (!Array.isArray(order) || order.length !== partyIds.length || new Set(order).size !== order.length
+      || !order.every((id) => partyIds.includes(id as number)))) invalid(`${at}.order`);
+    if (entry.deityId !== undefined && typeof entry.deityId !== 'string') invalid(`${at}.deityId`);
+    return { label: (entry.label as string | undefined) ?? null, characters, order: (order as number[] | undefined) ?? null, deityId: (entry.deityId as string | undefined) ?? null };
+  });
 }
 
 // SpecRef: 9.1.3 | 3-3-2 applyBuildChanges Validation | build-relevant state
@@ -901,6 +959,68 @@ function greedyGenome(model: SearchModel, start: Genome, score: (item: Item, cha
   return keepCurrent && !filled ? null : genome;
 }
 
+// ---------------- Seed builds ----------------
+
+/** One `seedBuilds` value the seed's genome carries: the request path, and what `inBest` compares. */
+type SeedValue = { field: string } & ({ kind: 'build'; characterId: number; buildField: BuildField; value: string } | { kind: 'order'; value: number[] } | { kind: 'deity'; value: string });
+interface SeedPlan { genome: Genome; used: SeedValue[]; ignored: { field: string; reason: SeedIgnoreReason }[] }
+
+/** The genes `inBest` and `duplicate` compare: everything a seed can set (equipment is filled afterwards). */
+const buildSignature = (genome: Genome): string => JSON.stringify({ order: genome.order, deity: genome.deity, builds: genome.builds });
+
+// SpecRef: 9.1.4.9 | GA search Seeds | a seed starts from the current build and sets each value it may use, checked one by
+// one by the `changeBuild` rules in party order; a value that fails keeps the current value and is reported.
+function planSeed(model: SearchModel, seed: SeedBuild): SeedPlan {
+  const { partyIndex } = model;
+  const genome = cloneGenome(model.current);
+  const used: SeedValue[] = [];
+  const ignored: SeedPlan['ignored'] = [];
+  const position = (id: number) => model.base.parties[partyIndex].characters.findIndex((character) => character.id === id);
+  let state = model.base;
+  for (const member of [...seed.characters].sort((a, b) => position(a.characterId) - position(b.characterId))) {
+    const target = targetOf(model, member.characterId);
+    for (const component of Object.keys(BUILD_FIELDS) as BuildComponent[]) {
+      const field = BUILD_FIELDS[component];
+      const value = member.values[field];
+      if (value === undefined) continue;
+      const path = `characters[${member.index}].${field}`;
+      // The rules come first, so a value no character may take (a unique character's lineage) is `notAllowed`.
+      let plan: ReturnType<typeof planCharacterBuildChange>;
+      try { plan = planCharacterBuildChange(state, member.characterId, { [field]: value }); } catch (error) {
+        ignored.push({ field: path, reason: String((error as Error).message).startsWith('invalid_request') ? 'invalidValue' : 'notAllowed' });
+        continue;
+      }
+      if (!target?.components[component]) { ignored.push({ field: path, reason: 'notChangeable' }); continue; }
+      if (Object.keys(plan.updates).length > 0) {
+        state = gameReducer(state, { type: 'UPDATE_CHARACTER', partyIndex, characterId: member.characterId, updates: plan.updates, validatedMimorianAssignments: true, allowUniqueIdentityChange: true });
+      }
+      // The gene takes the build's own spelling of the value (a class ID with or without its prefix is one class).
+      const gene = String(describeCharacterBuildCurrent(state.parties[partyIndex].characters.find((character) => character.id === member.characterId)!)[field]);
+      genome.builds[member.characterId][field] = gene;
+      used.push({ field: path, kind: 'build', characterId: member.characterId, buildField: field, value: gene });
+    }
+  }
+  if (seed.order !== null) {
+    if (!model.request.considerOrderChange) ignored.push({ field: 'order', reason: 'notChangeable' });
+    else { genome.order = [...seed.order]; used.push({ field: 'order', kind: 'order', value: [...seed.order] }); }
+  }
+  if (seed.deityId !== null) {
+    const known = getDeityNameFromId(seed.deityId) !== null;
+    if (!known) ignored.push({ field: 'deityId', reason: 'invalidValue' });
+    else if (model.request.considerDeityChange === 'none') ignored.push({ field: 'deityId', reason: 'notChangeable' });
+    else if (!model.deityOptions.includes(seed.deityId)) ignored.push({ field: 'deityId', reason: 'notAllowed' });
+    else { genome.deity = seed.deityId; used.push({ field: 'deityId', kind: 'deity', value: seed.deityId }); }
+  }
+  return { genome, used, ignored };
+}
+
+/** Whether `genome` has every value a seed used (`seeds[].inBest`). */
+const hasSeedValues = (genome: Genome, used: readonly SeedValue[]): boolean => used.every((entry) => {
+  if (entry.kind === 'build') return genome.builds[entry.characterId]?.[entry.buildField] === entry.value;
+  if (entry.kind === 'order') return genome.order.join(',') === entry.value.join(',');
+  return genome.deity === entry.value;
+});
+
 // ---------------- Mutation and crossover ----------------
 
 function mutate(model: SearchModel, input: Genome, random: () => number): Genome {
@@ -1112,8 +1232,8 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   interface Individual extends Partial<GuardedScore> { genome: Genome; decoded: Decoded; key: string; changes: number; quick?: number; confirm?: number }
   const quickCache = new Map<string, number>();
   const confirmCache = new Map<string, { confirm: number; guard?: number }>();
-  const individual = (genome: Genome): Individual => {
-    const decoded = decode(model, genome, random);
+  const individual = (genome: Genome, stream: () => number = random): Individual => {
+    const decoded = decode(model, genome, stream);
     return { genome: decoded.genome, decoded, key: genomeKey(decoded.genome), changes: countChanges(model, decoded) };
   };
   const allowed = (entry: Individual) => request.parameters.maxChanges === null || entry.changes <= request.parameters.maxChanges;
@@ -1139,6 +1259,59 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   const confirmedScore = (entry: Individual): GuardedScore => ({ fitness: entry.confirm ?? -Infinity, guard: entry.guard });
   const ranksAbove = (a: Individual, b: Individual) => a.confirm !== undefined && (b.confirm === undefined || compareGuarded(confirmedScore(a), confirmedScore(b), guard) > 0);
 
+  // SpecRef: 9.1.4.9 | GA search Seeds | each used seed takes a first-generation place of a mutant, with the better of its
+  // attack-focused and HP-focused fills by their quick score (kept, so the first generation does not score it again).
+  // Seeds have their own random stream, so a search without them draws exactly as before.
+  interface SeedReport { label: string | null; status: 'used' | 'ignored'; ignored: SeedPlan['ignored']; quickRate: number | null; inBest: boolean }
+  const placeSeeds = async (seeds: readonly SeedBuild[]) => {
+    const seedRandom = createRandom(deriveSeed(seed, 6));
+    const party = state.parties[partyIndex];
+    // At most `populationSize / 2` seeds, and never more than the places left after the current build and the heuristics.
+    const cap = Math.min(Math.floor(request.parameters.populationSize / 2), request.parameters.populationSize - population.length);
+    const signatures = new Set([buildSignature(model.current)]);
+    const results: { report: SeedReport; used: SeedValue[] }[] = [];
+    let usedCount = 0;
+    for (const seedBuild of seeds) {
+      const report: SeedReport = { label: seedBuild.label, status: 'ignored', ignored: [], quickRate: null, inBest: false };
+      results.push({ report, used: [] });
+      if (usedCount >= cap) { report.ignored.push({ field: 'seed', reason: 'populationFull' }); continue; }
+      const plan = planSeed(model, seedBuild);
+      report.ignored.push(...plan.ignored);
+      // A seed with no value at all is the current build.
+      if (plan.used.length === 0) { if (plan.ignored.length === 0) report.ignored.push({ field: 'seed', reason: 'duplicate' }); continue; }
+      const signature = buildSignature(plan.genome);
+      if (signatures.has(signature)) { report.ignored.push({ field: 'seed', reason: 'duplicate' }); continue; }
+      signatures.add(signature);
+      // The seed's own characters (a class change can add slots or equip rights) decide the fills' slots and equip checks.
+      const shaped = decode(model, plan.genome, seedRandom).state.parties[partyIndex].characters;
+      const statsById = new Map(shaped.map((character, index) => [character.id, computeCharacterStats(character, party.level, index + 1)]));
+      const attack = (item: Item, character: Character) => attackScore(item, statsById.get(character.id)!);
+      const fills = [greedyGenome(model, plan.genome, attack, false, shaped), greedyGenome(model, plan.genome, durabilityScore, false, shaped)]
+        .filter((genome): genome is Genome => genome !== null)
+        .map((genome) => individual(genome, seedRandom));
+      const candidates = [...new Map(fills.map((entry) => [entry.key, entry])).values()];
+      let chosen: Individual | null = null;
+      let chosenScore: GuardedScore = { fitness: -Infinity };
+      let chosenRate = 0;
+      for (const candidate of candidates) {
+        if (outOfTime()) break;
+        const measured = await evaluate(candidate.decoded, request.parameters.quickRuns, quickSeed);
+        const score: GuardedScore = {
+          fitness: allowed(candidate) ? measured.fitness : -Infinity,
+          guard: guard ? (await second(candidate.decoded.state, request.parameters.quickRuns, quickSeed)).rate : undefined,
+        };
+        if (chosen === null || compareGuarded(score, chosenScore, guard) > 0) { chosen = candidate; chosenScore = score; chosenRate = measured.rate; }
+      }
+      const entry = chosen ?? candidates[0];
+      if (chosen) { entry.quick = chosenScore.fitness; quickCache.set(entry.key, entry.quick); report.quickRate = round4(chosenRate); }
+      report.status = 'used';
+      results[results.length - 1].used = plan.used;
+      usedCount += 1;
+      population.push(entry);
+    }
+    return results;
+  };
+
   // The current build with its empty slots filled (a filled slot only adds power) is the search's start and its fallback
   // result; the live build itself is the fallback only when that fill alone needs more than `maxChanges` entries.
   const currentIndividual = individual(model.current);
@@ -1146,16 +1319,24 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   const fallback = allowed(currentIndividual) ? currentIndividual : live;
   let population: Individual[] = [currentIndividual];
   if (request.parameters.seedWithHeuristics) for (const genome of heuristicGenomes(model)) population.push(individual(genome));
+  const seedResults = request.seedBuilds && !polish ? await placeSeeds(request.seedBuilds) : null;
   while (population.length < request.parameters.populationSize) population.push(individual(mutate(model, population[Math.floor(random() * population.length)].genome, random)));
   let best: Individual = fallback;
   await scoreConfirm(fallback);
 
-  for (let generation = 0; generation < request.parameters.generations && !outOfTime(); generation += 1) {
+  // SpecRef: 9.1.4.9 | GA search Stop | `generationsRun` counts the generations whose quick scoring finished; `stopReason` is
+  // `timeBudget` when the time check stopped the loop before it ran `generations` times.
+  let generationsRun = 0;
+  let stopReason: 'generations' | 'timeBudget' = 'generations';
+  for (let generation = 0; generation < request.parameters.generations; generation += 1) {
+    if (outOfTime()) { stopReason = 'timeBudget'; break; }
     for (const entry of population) { if (outOfTime()) break; await scoreQuick(entry); }
+    if (population.every((entry) => entry.quick !== undefined)) generationsRun += 1;
     population.sort((a, b) => (b.quick ?? -Infinity) - (a.quick ?? -Infinity));
     for (const entry of population.slice(0, request.parameters.confirmTopN)) { if (outOfTime()) break; await scoreConfirm(entry); }
     for (const entry of population) if (ranksAbove(entry, best)) best = entry;
-    if (outOfTime()) break;
+    // A last generation whose quick scoring finished has run all `generations`, even if its confirm runs were cut short.
+    if (outOfTime()) { if (generation + 1 < request.parameters.generations || generationsRun <= generation) stopReason = 'timeBudget'; break; }
     const scored = population.filter((entry) => entry.quick !== undefined);
     const pick = () => {
       let chosen: Individual | null = null;
@@ -1250,6 +1431,9 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
     });
     levelProbe = outcome;
   }
+  // SpecRef: 9.1.3 | 2-3-2 `seeds` | `inBest`: the result build has every value the seed used.
+  const resultGenome = changeSummary.length > 0 ? best.genome : model.current;
+  const seeds = seedResults?.map(({ report, used }) => ({ ...report, inBest: report.status === 'used' && hasSeedValues(resultGenome, used) }));
   const elapsedSeconds = Math.round((dependencies.now() - startedAt) / 100) / 10;
   return {
     data: {
@@ -1258,7 +1442,10 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
       changeSummary,
       revision: dependencies.revision,
       evaluations,
+      generationsRun,
+      stopReason,
       elapsedSeconds,
+      ...(seeds ? { seeds } : {}),
       basis: buildBasis(state, partyIndex, changeSummary),
       // SpecRef: 9.1.4.9 | gaSearch | the measured `<rate>` values, gain, and standard error behind `verdict`.
       verification: summary.verification,
