@@ -359,7 +359,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     3. Among builds that do not reach it, the higher guard value ranks first; ties are broken by `objective`.
     * So when no build reaches the guard, the build that comes closest to it ranks first.
   * Guard rule for a result: if the current build reaches the guard and the result does not, the result is worse, whatever its `objective` gain.
-  * The guard is measured only where an operation says so (usually on its confirmed candidates), on the same seed and number of runs as the `objective` score it is ranked with.
+  * The guard is measured only where an operation says so, on the same seed and number of runs as the `objective` score it is ranked with.
+  * Shared runs: when neither `objective` nor the guard objective is `bossDamage`, both run the same route forecast, so the guard value is read from the objective's own runs instead of a second forecast. The values are the same as a separate measurement on that seed; only the cost differs.
 
 * `crossCheck`
   * A second objective measured on the current build and the result, returned by `gaSearch`, `directedBuild`, and `stagedEquipmentTuning`.
@@ -732,11 +733,29 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Default: `success`.
     * `success`, `minDefeat`, `bossDamage`, `experience`, `progress` (see 2-0, including the `success` tie-break with `progress` and the boss-battle-only `bossDamage`).
     * If both builds have a success rate of `0` in the verification runs, `verdict` is judged on `progress` (see `verdict`).
+  * `successSignal`
+    * Optional. String enum. Default: `auto`. Accepted only with `objective: success`.
+    * Options: `auto`, `success`, `progress`
+    * The score that ranks candidates in the quick runs (`quickRuns`): the population order, the elites, and the parent tournaments. The confirm runs, the final selection, and `verdict` always use `success` (with its `progress` tie-break, 2-0).
+      * `success`: the quick runs are ranked by the `success` score (2-0).
+      * `progress`: the quick runs are ranked by `progress` (7.1.5 Score) for the whole search.
+      * `auto`: the quick runs start on `progress` when successes are rare, and switch to `success` once they are not:
+        * Rare: the expected number of successes in `quickRuns` runs is below 20, that is `p × quickRuns < 20`.
+        * At the start, `p` is the current build's success rate in its `confirmRuns` score (the confirm seed), measured before the first generation. When it is rare, the search starts on `progress`; otherwise on `success`.
+        * After each generation's confirm runs, `p` is the best confirmed candidate's success rate. When it is no longer rare, the quick runs are ranked by `success` from the next generation on. The search never switches back.
+        * `quickRuns` measure `success` and `progress` on the same runs, so a switch needs no new forecast.
+    * Reason: while successes are rare, the quick success count is mostly chance. With 5 expected successes, anything from 3 to 7 is ordinary, so the `success` score of equal builds differs by up to 0.85, while the `progress` tie-break adds at most 0.1. The quick ranking then follows luck, and the search returns `noisy` or `noChange`. `progress` changes smoothly with a build's real strength, and at a wall a build that gets further also succeeds more often.
+    * With `success` and `auto`, a build is still selected and rated on `success`: a build that gets further but does not succeed more often is not the result. To search for getting further alone, use `objective: progress`.
+    * See `quickSignal` in the Return.
   * `objectiveGuard`
     * Optional. Format, guard ranking, and guard rule: see 2-0.
-    * The guard is checked on the top candidates only: every candidate re-scored with `confirmRuns` is also measured on the guard objective with `confirmRuns` runs (the confirm seed), and the confirmed candidates are ranked by the guard ranking. Candidates scored only with `quickRuns` are ranked by `objective` alone.
-    * Cost: one extra guard simulation per confirmed candidate, plus the guard measurement in the final selection and the verification.
-    * See `verification.crossCheck` and `verdict` for how the result reports the guard.
+    * The guard is checked on every candidate: each candidate scored with `quickRuns` is also measured on the guard objective with `quickRuns` runs (the quick seed), and each candidate re-scored with `confirmRuns` with `confirmRuns` runs (the confirm seed). The population order, the elites, and the parent tournaments use the guard ranking on the quick values. The best confirmed candidate and the final selection use it on the confirm and final values.
+    * Reason: when the quick runs ignore the guard, the population moves toward builds that miss it, and the final selection then discards them (`noChange`), although builds that reach the guard and improve `objective` exist.
+    * Cost:
+      * When neither `objective` nor the guard objective is `bossDamage`, the guard is read from the objective's own runs (2-0 Shared runs), at no extra cost.
+      * A `bossDamage` guard adds one boss-battle forecast per scored candidate (the boss battle alone, so it is short).
+      * A `success` or `progress` guard with `objective: bossDamage` adds one route forecast per scored candidate. The route forecast is much longer than the boss battle, so it sets most of the search time, and the search runs fewer generations within `timeBudgetSeconds`.
+    * See `guardStats`, `verification.crossCheck`, and `verdict` for how the result reports the guard.
   * `levelProbe`
     * Optional. Object. Default: `{ "mode": "auto", "purpose": "conquest" }`.
     * After the verification, measures whether a higher party level would let the result build reach a goal. It answers "farm or keep searching": at a wall where the search returns `noChange` or `noisy`, it reports the level the build needs.
@@ -914,6 +933,20 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `stopReason`
     * Why the search stopped: `generations` (all `generations` ran) or `timeBudget` (the time left after the reserve for the final selection, the verification, and the level probe ran out).
     * `timeBudget` means more time, or fewer `quickRuns`, would buy more generations. `generations` means a larger `timeBudgetSeconds` alone changes nothing.
+  * `quickSignal`
+    * The score that ranked the quick runs (see `successSignal`). `null` when `objective` is not `success`.
+    * Format: `{ start, switchedAt }`
+      * `start`: `success` or `progress`, the quick score of the first generation.
+      * `switchedAt`: the first generation (counted from 1) whose quick runs were ranked by `success` after a `progress` start; `null` when there was no switch.
+    * Reading it: `start: progress` with `switchedAt: null` means successes stayed rare during the whole search; a `noChange` or `noisy` result then says the gate is a wall for this build, not that the search could not see a difference.
+    * Example: `{ "start": "progress", "switchedAt": 23 }`.
+  * `guardStats`
+    * How the confirmed candidates did on the guard. `null` without `objectiveGuard`.
+    * Format: `{ confirmed, reached }`
+      * `confirmed`: number of different candidates re-scored with `confirmRuns` during the search, the current build not included.
+      * `reached`: how many of them reached the guard in their confirm runs.
+    * Reading it with `verdict` `noChange`: `reached: 0` means no build that the search found keeps the guard (lower the minimum, or search without the guard first); `reached` above `0` means builds that keep the guard were found, but none was better than the current build on `objective`.
+    * Example: `{ "confirmed": 412, "reached": 37 }`.
   * `elapsedSeconds`
   * `seeds`
     * Returned only when `seedBuilds` is sent. One entry per seed, in request order.
@@ -1136,7 +1169,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * Step 4: Equipment polish
     * Runs when `equipmentPolish` is not `none` and there is a member to search (see `equipmentPolish`).
     * Searches: the equipment and Jewels of those members, by `polishMethod`. Builds, deity, and order stay as Steps 1 to 3 locked them.
-    * `ga`: a genetic search like `gaSearch` (2-3-2) that uses `populationSize`, `eliteCount`, `mutationRate`, `tournamentSize`, `confirmTopN`, `quickRuns`, and `confirmRuns`. It runs until `generations` or its time share ends. The first generation contains the result of Steps 1 to 3 unchanged, so it can only return that result or a build that scored better. Selects the confirmed candidate with the best score (by the guard ranking with a guard).
+    * `ga`: a genetic search like `gaSearch` (2-3-2) that uses `populationSize`, `eliteCount`, `mutationRate`, `tournamentSize`, `confirmTopN`, `quickRuns`, and `confirmRuns`. It runs until `generations` or its time share ends. The first generation contains the result of Steps 1 to 3 unchanged, so it can only return that result or a build that scored better. Its quick runs are ranked as in `gaSearch` with `successSignal: success`, and with a guard by the guard ranking on quick values (2-3-2 `objectiveGuard`). Selects the confirmed candidate with the best score (by the guard ranking with a guard).
     * `stagedTuning`: 7.1.5 steps 1 to 5 for each searched member in party order (see `polishMethod`). A member keeps its equipment when its tuning records no candidate. When the time share ends, the members not reached keep their equipment.
     * `stagedTuningThenGa`: `stagedTuning` as above, then `ga` from the tuned result (see `polishMethod`).
   * Final selection

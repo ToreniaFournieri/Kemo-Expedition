@@ -835,7 +835,9 @@ definitions in 9.1.3.
   number from 0 to 1: another shape is `invalid_request`, field `objectiveGuard`;
   another member name is `objectiveGuard.<name>.unknown_member`; the `objective`
   itself is `objectiveGuard.<name>.same_as_objective`; a value out of range is
-  `objectiveGuard.<name>`. `levelProbe` is an object (otherwise `invalid_request`,
+  `objectiveGuard.<name>`. `successSignal` is `auto` (default), `success`, or
+  `progress`; another value, or any `successSignal` with an `objective` other
+  than `success`, is `invalid_request`, field `successSignal`. `levelProbe` is an object (otherwise `invalid_request`,
   field `levelProbe`): `mode` `auto` (default), `always`, or `off`; `purpose`
   `conquest` (default) or `farming`; `runBudget` a number from 7 to 100 (default
   10); `maxDefeat` a number from 0 to 100 (default 10); `steps` `slot` (default)
@@ -924,17 +926,41 @@ definitions in 9.1.3.
 * Stop: `generationsRun` counts the generations whose quick scoring finished.
   `stopReason` is `generations` when the loop ran `generations` times, and
   `timeBudget` when the time-budget check (below) stopped it first.
-* `objectiveGuard`: every confirmed candidate (and the fallback) is also measured
-  on the guard objective with `confirmRuns` runs on the confirm seed, in that
+* Quick signal (`successSignal`, `objective: success` only): each quick score
+  keeps both the `success` fitness and `progress` (7.1.5 Score) of the same
+  runs, and the cache keeps both, so a switch re-scores nothing. With `auto`,
+  the start signal is `progress` when the fallback's confirmed success rate
+  times `quickRuns` is below 20 (the fallback is confirmed before the first
+  generation); after each generation's confirm runs, once the best confirmed
+  candidate's success rate times `quickRuns` reaches 20, the quick ranking of
+  every later generation (population sort, elites, tournaments) uses the
+  `success` fitness, and `quickSignal.switchedAt` records that generation
+  (counted from 1). `progress` keeps `progress` for the whole search; `success`
+  is the search as without the parameter. The confirm runs, the best confirmed
+  candidate, the final selection, and the verification always use the `success`
+  fitness. `directedBuild` Step 4 `ga` runs with `success`.
+* `objectiveGuard`: every candidate is also measured on the guard objective with
+  the same runs and seed as its objective score: `quickRuns` on the quick seed
+  for its quick score, `confirmRuns` on the confirm seed when confirmed, in that
   objective's own forecast (`bossDamage` fights the boss alone; `success` and
-  `progress` run the route). The best
-  confirmed candidate and the finalists are chosen by the 9.1.3 ranking: reaching
-  the guard first, then the objective; below the guard, the higher guard rate
-  first. The quick runs rank by the objective alone. In the final selection each
-  finalist and the fallback are measured on the guard too (final seed, same runs):
-  a finalist that reaches the guard replaces a fallback that does not; when both
-  miss it, the finalist must be ahead on the guard rate by more than one standard
-  error; when both reach it, the objective rule above applies.
+  `progress` run the route). When neither the objective nor the guard is
+  `bossDamage`, the guard value is read from the objective's own forecast result
+  (the two forecasts would be identical), so it adds no forecast and no
+  `evaluations`; the same holds for the guard forecasts of the final selection
+  and the `crossCheck` of the verification. The population sort, the elites, and
+  each tournament compare quick scores by the 9.1.3 ranking: reaching the guard
+  first, then the objective (the quick signal for `success`); below the guard,
+  the higher guard rate first, ties broken by the objective. The best confirmed
+  candidate and the finalists are chosen by the same ranking on their confirm
+  values. A seed's fill choice uses it on its quick values, as before. In the
+  final selection each finalist and the fallback are measured on the guard too
+  (final seed, same runs): a finalist that reaches the guard replaces a fallback
+  that does not; when both miss it, the finalist must be ahead on the guard rate
+  by more than one standard error; when both reach it, the objective rule above
+  applies. `guardStats.confirmed` counts the distinct confirmed candidates other
+  than the fallback (a cached confirm score counts once), and `guardStats.reached`
+  those whose confirm guard rate is at least the minimum. The same quick-run
+  guard ranking applies in `directedBuild` Step 4 `ga`.
 * Request time limit: the current build's verification runs (the objective and
   the `crossCheck` objective, `verifyRuns` each on the verification seed) run
   first. Their measured wall-clock cost per run sets aside the time of the
@@ -1091,7 +1117,7 @@ definitions in 9.1.3.
 
 **Directed build**
 
-* `directedBuild` (9.1.3, 2-3-3) is a Read operation that uses `POST`, like `gaSearch`. It never commits anything and changes no revision. Its Return is the `gaSearch` Return (see **GA search**) without `levelProbe`, `seeds`, `generationsRun`, and `stopReason` (these are `gaSearch` only), plus the members below.
+* `directedBuild` (9.1.3, 2-3-3) is a Read operation that uses `POST`, like `gaSearch`. It never commits anything and changes no revision. Its Return is the `gaSearch` Return (see **GA search**) without `levelProbe`, `seeds`, `generationsRun`, `stopReason`, `quickSignal`, and `guardStats` (these are `gaSearch` only), plus the members below.
 * Validation: `direction` is required and must be one of its listed values (otherwise `invalid_request`, field `direction`). `targets` is 1 to 6 unique members of party `{p}` (otherwise `invalid_request`, field `targets.characterId`); omitted `changeableComponents` members take the 9.1.3 defaults, and `autoEquipmentRun` must be `currentSetting`, `FULL` (default), `SEMI`, or `OFF`. `considerOrderChange`, `considerDeityChange`, `considerItemsScope`, `objective`, and `objectiveGuard` are validated as for `gaSearch`. `autoEquipmentScope` is `changedOnly` (default) or `allTargets`; `equipmentPolish` is `none`, `changedOnly` (default), or `allTargets`; `polishMethod` is `ga` (default), `stagedTuning`, or `stagedTuningThenGa`; `directionStrictness` is `strict` (default) or `soft`; `directionPenalty` is a number from 0 to 50 (default 2); any other value is `invalid_request` naming the member. `tuningParameters` ranges and `effort` presets are the 9.1.3 tables (`timeBudgetSeconds` 5 to 600, `verifySeed` any safe integer); `mutationRate` defaults to the `effort` preset's; `eliteCount` may not exceed `populationSize / 4`. An unknown member anywhere is `invalid_request`. A missing party is `not_found`.
 * Seeds: every seed derives from `tuningParameters.seed` (a fresh random one when omitted): one for candidate sampling and mutation, one for the quick runs, one for the confirm runs, one for the Step 4 search and its draws, one for the Final selection, and one for verification (`tuningParameters.verifySeed` instead when given). Steps 1 to 4 score on the same quick and confirm seeds, so all candidates are compared on the same random numbers, and the same `seed`, save, and parameters return the same result unless `timeBudgetSeconds` stops a step first.
 * Build components choose from the same options as `read/build/character/status` and are validated by the `changeBuild` rules in party order (including the unique-character and race/gender rules); a candidate that breaks one is invalid. `uniqueCharacter: true` adds the unique characters `changeBuild` would accept for that member as `uniqueSelection` options.
@@ -1700,7 +1726,7 @@ use the same operation without HTTP authentication headers.
   Commit envelope or idempotency key. Omission uses the admission revision; a
   supplied mismatch returns `stale_revision` before private computation.
   `gaSearch` POST accepts its 9.1.3 members (`targets`, `considerOrderChange`,
-  `considerDeityChange`, `considerItemsScope`, `objective`, `objectiveGuard`, `levelProbe`, `seedBuilds`, `gaParameters`) and an optional
+  `considerDeityChange`, `considerItemsScope`, `objective`, `successSignal`, `objectiveGuard`, `levelProbe`, `seedBuilds`, `gaParameters`) and an optional
   `expectedRevision` the same way; so do `directedBuild` and `stagedEquipmentTuning`
   with their 9.1.3 members (for tuning, `characterId`, the tuning parameters,
   `objective`, and `objectiveGuard`).
