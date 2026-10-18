@@ -81,6 +81,7 @@ rejects({ characterId: firstId, seed: '7' }, 'invalid_request:seed');
     { ...parsed },
     {
       characterId: firstId, partyIndex: 0, objective: 'success', offenseElementRequest: null, seed: null, objectiveGuard: null,
+      forecast: { gateRoom: null, startHp: null },
       quickRuns: 300, finalTuningRuns: 500, offenseElementTrialRuns: 9, offenseElementCandidateCount: 2, defenseElementTrialRuns: 15,
       defenseElementCandidateCount: 2, abilityTrialRuns: 40, abilityCandidateCount: 2, minImprovement: 0.07, minGateImprovement: 0.07,
     },
@@ -89,7 +90,7 @@ rejects({ characterId: firstId, seed: '7' }, 'invalid_request:seed');
   assert.equal(parseStagedTuningRequest(fresh, { characterId: firstId, offenseElementRequest: 'e.none' }).offenseElementRequest, 'none');
   assert.equal(parseStagedTuningRequest(fresh, { characterId: firstId, seed: -42 }).seed, -42);
   // Every objective of 9.1.3, 2-0 is accepted, and a guard may sit on `progress`.
-  for (const objective of ['success', 'minDefeat', 'bossDamage', 'experience', 'progress']) assert.equal(parseStagedTuningRequest(fresh, { characterId: firstId, objective }).objective, objective);
+  for (const objective of ['success', 'minDefeat', 'bossDamage', 'gateDamage', 'experience', 'progress']) assert.equal(parseStagedTuningRequest(fresh, { characterId: firstId, objective }).objective, objective);
   assert.deepEqual(parseStagedTuningRequest(fresh, { characterId: firstId, objective: 'bossDamage', objectiveGuard: { progress: 0.9 } }).objectiveGuard, { objective: 'progress', minimum: 0.9 });
 }
 
@@ -280,6 +281,15 @@ const data = outcome.data as unknown as TuningData;
   assert.deepEqual([fire.steps.defenseElement, fire.steps.ability], [[], []]);
   assert.equal(fire.seed, 11);
   assert.deepEqual((await tune(sample, request)).data, fire, 'the same seed on the same save repeats the result');
+}
+
+// ---------------- `gateDamage`: one gate room's battle alone (Spec 9.1.3, 2-0) ----------------
+{
+  const parsed = parseStagedTuningRequest(sample, { characterId: ninja.id, objective: 'gateDamage', gateRoom: '2f-4', startHp: 0.5 });
+  assert.deepEqual(parsed.forecast, { gateRoom: { floorNumber: 2, roomInFloor: 4 }, startHp: 0.5 });
+  rejects({ characterId: firstId, gateRoom: '2f-4' }, 'invalid_request:gateRoom.not_used');
+  const gate = (await tune(sample, { characterId: ninja.id, objective: 'gateDamage', gateRoom: '2f-4', startHp: 0.5, offenseElementTrialRuns: 1, defenseElementTrialRuns: 0, abilityTrialRuns: 0, seed: 3 })).data as unknown as TuningData & { gateRoom: string; startHp: number };
+  assert.deepEqual([gate.scoredBy, gate.bottleneckRoom, gate.gateRoom, gate.startHp], ['gateDamage', '2f-4', '2f-4', 0.5], 'the bottleneck is always the gate room');
 }
 
 // ---------------- `bossDamage`: the boss battle alone (Spec 7.1.5 objective) ----------------

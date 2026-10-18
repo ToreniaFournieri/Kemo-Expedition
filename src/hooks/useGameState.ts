@@ -4681,12 +4681,14 @@ const yieldToExpeditionSimulationUi = () => new Promise<void>((resolve) => {
  * read-only. Persistent-only collections are replaced with scratch collections
  * because forecast results are discarded and cannot reveal or commit them.
  */
-export function createSimulationSandbox(state: GameState, partyIndex: number): SimulationSandbox {
+export function createSimulationSandbox(state: GameState, partyIndex: number, startHpShare = 1): SimulationSandbox {
   const sourceParty = state.parties[partyIndex];
   if (!sourceParty) throw new Error('party_not_found');
   const party = structuredClone(sourceParty);
   const authoritativePartyStatus = computePartyStats(party);
-  party.currentHp = authoritativePartyStatus.partyStats.hp;
+  // SpecRef: 9.1.3 | 2-0 `startHp` | every run starts at full HP, or at the requested share of it (at least 1 HP).
+  const maximumHp = authoritativePartyStatus.partyStats.hp;
+  party.currentHp = startHpShare >= 1 ? maximumHp : Math.max(1, Math.floor(maximumHp * startHpShare));
   party.lastExpeditionLog = null;
   party.pendingDiaryLog = null;
   party.diaryLogs = [];
@@ -4784,7 +4786,7 @@ function bossRoomIndexOf(dungeonId: number): number {
  * SpecRef: 8.3 | UI_EXPEDITION | Simulation Run
  *
  * Resolve forecast expeditions only against private clones. Each run starts from
- * the same current configuration and full HP, matching a normal post-rest
+ * the same current configuration and full HP (or `options.startHpShare` of it), matching a normal post-rest
  * expedition without committing rewards, progression, Diary entries, or state.
  */
 export async function simulateExpeditionRuns(
@@ -4800,10 +4802,12 @@ export async function simulateExpeditionRuns(
 ): Promise<ExpeditionSimulationResult> {
   void memoryMonitor.recordEvent('simulation_start');
   const total = Math.max(1, Math.floor(count));
-  const sandbox = createSimulationSandbox(state, partyIndex);
-  // A boss-only forecast starts at the boss room, so its battle is that room's bar and every earlier bar is not reached.
+  const sandbox = createSimulationSandbox(state, partyIndex, options.startHpShare ?? 1);
+  // A boss-only or room-only forecast starts at its room, so its battle is that room's bar and every earlier bar is not reached.
   const bossRoomOnly = options.bossRoomOnly === true;
-  const firstRoomIndex = bossRoomOnly ? bossRoomIndexOf(state.parties[partyIndex].selectedDungeonId) : 0;
+  const onlyRoom = options.onlyRoom;
+  const firstRoomIndex = onlyRoom ? (onlyRoom.floorNumber - 1) * 4 + onlyRoom.roomInFloor - 1
+    : bossRoomOnly ? bossRoomIndexOf(state.parties[partyIndex].selectedDungeonId) : 0;
   // All forecasts share the sandbox party status, so they also share enemies and prepared battle inputs.
   const forecastEncounterCache = new Map<string, EnemyDef>();
   const seed = new Uint32Array(1);
@@ -4823,6 +4827,8 @@ export async function simulateExpeditionRuns(
     rooms: createExpeditionSimulationRoomResults(total),
     totals: { experience: 0, itemDrops: 0, dropSaleValue: 0 },
     boss: { reached: 0, kills: 0, damageShare: 0, damageShareSquareSum: 0 },
+    ...(onlyRoom ? { gateRoom: { reached: 0, kills: 0, damageShare: 0, damageShareSquareSum: 0 } } : {}),
+    maximumPartyHp: sandbox.authoritativePartyStatus.partyStats.hp,
     experienceSquareSum: 0,
     progress: { sum: 0, squareSum: 0 },
   };
@@ -4845,6 +4851,7 @@ export async function simulateExpeditionRuns(
       },
       forecastEncounterCache,
       ...(bossRoomOnly ? { bossRoomOnly: true } : {}),
+      ...(onlyRoom ? { onlyRoom } : {}),
     }));
     const resolvedState = battleRandom ? withForecastBattleSeedSource(nextBattleSeed, resolveRun) : resolveRun();
     const resolution = forecastResolutionByState.get(resolvedState);
@@ -4866,6 +4873,15 @@ export async function simulateExpeditionRuns(
     }
     // SpecRef: 7.1.5 | General rules | Score `progress`: the rooms cleared, plus the enemy-HP share of a lost or drawn last battle.
     const battles = resolution.battleDiagnostics.filter((battle) => battle.enemyId !== undefined);
+    // SpecRef: 9.1.3 | 2-0 `gateDamage` | a room-only run fights one battle: the gate room's.
+    const gateBattle = onlyRoom ? battles[0] : undefined;
+    if (gateBattle) {
+      result.gateRoom!.reached += 1;
+      if (gateBattle.outcome === 'victory') result.gateRoom!.kills += 1;
+      const share = shareOf(gateBattle);
+      result.gateRoom!.damageShare += share;
+      result.gateRoom!.damageShareSquareSum += share * share;
+    }
     const lastBattle = battles[battles.length - 1];
     const runProgress = battles.filter((battle) => battle.outcome === 'victory').length
       + (lastBattle && lastBattle.outcome !== 'victory' ? shareOf(lastBattle) : 0);

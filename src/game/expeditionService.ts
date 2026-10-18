@@ -88,6 +88,8 @@ export interface RunExpeditionServiceInput<TPresentation> {
   readonly battleOptions?: BattleExecutionOptions;
   /** Skip every room before the boss room, so the run is the boss battle alone (a forecast of `bossDamage`). */
   readonly bossRoomOnly?: boolean;
+  /** Skip every room but this one, so the run is that room's battle alone (a forecast of `gateDamage`). */
+  readonly onlyRoom?: { readonly floorNumber: number; readonly roomInFloor: number };
 }
 
 export interface ExpeditionServiceResult<TPresentation> {
@@ -116,6 +118,7 @@ export function runExpeditionService<TPresentation>(
       if (transaction.ended) break;
       const room = floor.rooms[roomIndex];
       if (input.bossRoomOnly && room.type !== 'battle_Boss') continue;
+      if (input.onlyRoom && (floor.floorNumber !== input.onlyRoom.floorNumber || roomIndex + 1 !== input.onlyRoom.roomInFloor)) continue;
       const roomCounter = transaction.beginRoom();
       const roomInFloor = roomIndex + 1;
       const gate = checkClearGateRequirement({

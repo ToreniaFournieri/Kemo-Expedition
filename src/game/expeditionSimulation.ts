@@ -88,6 +88,8 @@ export function createExpeditionSimulationRoomResults(
       From10: 0,
       Below10: 0,
     },
+    hpAtEntrySum: 0,
+    hpAfterWinSum: 0,
   }));
 }
 
@@ -99,7 +101,7 @@ export function aggregateExpeditionSimulationRooms(
   rooms: ExpeditionSimulationRoomResult[],
   completedRooms: number,
   terminalStatus: ExpeditionSimulationTerminalStatus,
-  battlesByRoom: readonly { remainingPartyHP: number }[],
+  battlesByRoom: readonly { remainingPartyHP: number; startPartyHP?: number }[],
   maxPartyHp: number,
   endedAtGate = false,
   firstRoomIndex = 0,
@@ -113,11 +115,13 @@ export function aggregateExpeditionSimulationRooms(
       return;
     }
     room.reached += 1;
+    room.hpAtEntrySum += battlesByRoom[position]?.startPartyHP ?? 0;
     const status = position === reachedRooms - 1 ? terminalStatus : 'Victory';
     room[status] += 1;
     if (status === 'Victory' || status === 'Clear' || status === 'Return') {
       const bucket = getExpeditionSimulationSuccessfulHpBucket(battlesByRoom[position]?.remainingPartyHP ?? 0, maxPartyHp);
       room.successfulHp[bucket] += 1;
+      room.hpAfterWinSum += battlesByRoom[position]?.remainingPartyHP ?? 0;
     } else if (status === 'Retreat') {
       const bucket = getExpeditionSimulationRetreatHpBucket(battlesByRoom[position]?.remainingPartyHP ?? 0, maxPartyHp);
       room.retreatHp[bucket] += 1;

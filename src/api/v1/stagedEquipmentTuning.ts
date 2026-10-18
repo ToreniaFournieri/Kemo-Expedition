@@ -9,13 +9,13 @@ import { AUTO_JEWEL_ASSIGNMENT_CATEGORY_ORDER, AUTO_JEWEL_KEY_BY_ITEM_CATEGORY }
 import { getCharacterMultiplier } from '../../game/partyComputation';
 import {
   getVariantKey, type AbilityId, type Bonus, type Character, type ElementalOffense, type ElementalResistance, type EnemyDef,
-  type ExpeditionSimulationResult, type GameState, type Item, type ItemCategory,
+  type ExpeditionSimulationOptions, type ExpeditionSimulationResult, type GameState, type Item, type ItemCategory,
 } from '../../types';
 import {
-  buildBasis, createRandom, crossCheckObjective, deriveSeed, GA_OBJECTIVES, jarKeyOf, measureSecondObjective, parseObjectiveGuard, planGaChangeSummary,
+  buildBasis, createRandom, crossCheckObjective, deriveSeed, GA_OBJECTIVES, jarKeyOf, measuredObjectives, measureSecondObjective, parseObjectiveGuard, planGaChangeSummary,
   type GaChangeEntry, type GaSearchDependencies, type ObjectiveGuard,
 } from './gaSearch';
-import { measureObjective, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount, type ObjectiveMeasure } from './objectiveMeasure';
+import { describeForecastSettings, measureObjective, objectiveSimulationOptions, parseForecastSettings, prepareObjectiveState, routeRoomCount, type ForecastSettings, type ObjectiveMeasure } from './objectiveMeasure';
 import { buildSimulationRunData, floorRoomLabel } from './simulationView';
 
 // SpecRef: 7.1.5 | Staged Equipment Tuning
@@ -54,6 +54,8 @@ export interface StagedTuningRequest extends Record<IntegerParameter, number>, R
   /** The requested seed, or `null` for a random one. */
   seed: number | null;
   objectiveGuard: ObjectiveGuard | null;
+  /** `gateRoom` and `startHp` (Spec 9.1.3, 2-0). */
+  forecast: ForecastSettings;
   /** Internal (`directedBuild` Step 4): the step 1 baseline runs instead of `STAGED_TUNING_BASELINE_RUNS`. */
   baselineRuns?: number;
   /** Internal (`directedBuild` Step 4): `false` skips step 6 and `crossCheck`; the tuned build is returned unchecked. */
@@ -64,7 +66,7 @@ function invalid(field: string): never { throw new Error(`invalid_request:${fiel
 
 /** Validates a `stagedEquipmentTuning` request (Spec 9.1.3, 2-3-8). Throws `invalid_request:<field>` or `not_found`. */
 export function parseStagedTuningRequest(state: GameState, raw: Record<string, unknown>): StagedTuningRequest {
-  const allowed = new Set(['characterId', 'baselineRuns', 'offenseElementRequest', 'objective', 'objectiveGuard', 'seed', ...Object.keys(INTEGER_PARAMETERS), ...Object.keys(RATIO_PARAMETERS)]);
+  const allowed = new Set(['characterId', 'baselineRuns', 'offenseElementRequest', 'objective', 'objectiveGuard', 'gateRoom', 'startHp', 'seed', ...Object.keys(INTEGER_PARAMETERS), ...Object.keys(RATIO_PARAMETERS)]);
   const unknown = Object.keys(raw).find((key) => !allowed.has(key));
   if (unknown !== undefined) invalid(`${unknown}.unknown_member`);
   const characterId = raw.characterId;
@@ -90,11 +92,13 @@ export function parseStagedTuningRequest(state: GameState, raw: Record<string, u
   if (typeof objective !== 'string' || !(TUNING_OBJECTIVES as readonly string[]).includes(objective)) invalid('objective');
   const seed = raw.seed === undefined ? null : raw.seed;
   if (seed !== null && (typeof seed !== 'number' || !Number.isSafeInteger(seed))) invalid('seed');
+  const objectiveGuard = parseObjectiveGuard(raw.objectiveGuard, objective);
   return {
     characterId, partyIndex, objective: objective as TuningObjective,
     offenseElementRequest: request === 'noRequest' ? null : request.slice(2) as ElementalOffense,
     seed: seed as number | null,
-    objectiveGuard: parseObjectiveGuard(raw.objectiveGuard, objective),
+    objectiveGuard,
+    forecast: parseForecastSettings(raw, state.parties[partyIndex], measuredObjectives(objective, objectiveGuard)),
     ...integers, ...ratios,
   };
 }
@@ -424,9 +428,9 @@ interface Bottleneck { room: number | null; enemies: EnemyDef[]; terrain: string
 
 /**
  * Step 1: the room with the most Draw + Retreat + Defeat ends. When no run ends early, the boss room if a run reached it,
- * otherwise the latest elite room a run reached. A `bossDamage` forecast is the boss battle alone: always the boss room.
+ * otherwise the latest elite room a run reached. A `bossDamage` or `gateDamage` forecast is one battle alone: always that room.
  */
-function findBottleneck(state: GameState, partyIndex: number, result: ExpeditionSimulationResult, bossOnly: boolean): Bottleneck {
+function findBottleneck(state: GameState, partyIndex: number, result: ExpeditionSimulationResult, options: ExpeditionSimulationOptions): Bottleneck {
   const dungeon = getDungeonById(state.parties[partyIndex].selectedDungeonId);
   if (!dungeon) return { room: null, enemies: [], terrain: null };
   const roomDef = (room: number) => {
@@ -435,7 +439,8 @@ function findBottleneck(state: GameState, partyIndex: number, result: Expedition
   };
   let room: number | null = null;
   let worst = 0;
-  if (bossOnly) room = result.rooms.find((entry) => roomDef(entry.room).def?.type === 'battle_Boss')?.room ?? null;
+  if (options.onlyRoom) room = (options.onlyRoom.floorNumber - 1) * 4 + options.onlyRoom.roomInFloor;
+  else if (options.bossRoomOnly) room = result.rooms.find((entry) => roomDef(entry.room).def?.type === 'battle_Boss')?.room ?? null;
   else {
     for (const entry of result.rooms) {
       const ends = entry.Draw + entry.Retreat + entry.Defeat;
@@ -695,13 +700,14 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
   const quickSeed = deriveSeed(seed, 1); const finalSeed = deriveSeed(seed, 2); const baselineSeed = deriveSeed(seed, 3);
   const model = buildModel(state, partyIndex, request.characterId);
   let simulationRuns = 0;
-  const options = objectiveSimulationOptions(objective);
+  const settings = request.forecast;
+  const options = objectiveSimulationOptions(objective, settings);
   const simulate = async (target: GameState, runs: number, simulationSeed: number): Promise<ExpeditionSimulationResult> => {
     simulationRuns += runs;
-    return await dependencies.simulate(prepareObjectiveState(target, partyIndex, objective), partyIndex, runs, simulationSeed, options) as ExpeditionSimulationResult;
+    return await dependencies.simulate(prepareObjectiveState(target, partyIndex, objective, settings), partyIndex, runs, simulationSeed, options) as ExpeditionSimulationResult;
   };
   // Equipment does not change the route (its gates and depth limit), so `progress` divides by one room count throughout.
-  const routeRooms = routeRoomCount(prepareObjectiveState(state, partyIndex, objective).parties[partyIndex]);
+  const routeRooms = routeRoomCount(prepareObjectiveState(state, partyIndex, objective, settings).parties[partyIndex]);
 
   // 1. Baseline and bottleneck (the current build as it is, Jewels included).
   const baseline = await simulate(state, baselineRuns, baselineSeed);
@@ -711,7 +717,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
   const measureOf = (result: ExpeditionSimulationResult) => measureObjective(scoredBy, result, routeRooms);
   const before = measureOf(baseline);
   const beforeScore = before.rate;
-  const bottleneck = findBottleneck(state, partyIndex, baseline, options.bossRoomOnly === true);
+  const bottleneck = findBottleneck(state, partyIndex, baseline, options);
   const enemies = bottleneck.enemies;
 
   const cache = new Map<string, number>();
@@ -730,7 +736,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
     const key = `${runs}:${simulationSeed}:${loadoutKey(loadout)}`;
     if (!secondCache.has(key)) {
       simulationRuns += runs;
-      secondCache.set(key, await measureSecondObjective(dependencies, targetOf(loadout), partyIndex, crossObjective, runs, simulationSeed));
+      secondCache.set(key, await measureSecondObjective(dependencies, targetOf(loadout), partyIndex, crossObjective, runs, simulationSeed, settings));
     }
     return secondCache.get(key)!;
   };
@@ -970,6 +976,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
           reached: guard ? { before: crossBefore.rate >= guard.minimum, after: crossAfter.rate >= guard.minimum } : null,
         },
       } : {}),
+      ...describeForecastSettings(settings),
       bottleneckRoom: bottleneck.room === null ? null : floorRoomLabel(bottleneck.room),
       bottleneckCounters,
       candidatesTried,

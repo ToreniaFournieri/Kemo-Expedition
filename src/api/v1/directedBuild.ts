@@ -9,12 +9,12 @@ import { getVariantKey, type Character, type ClassId, type ExpeditionSimulationR
 import { describeCharacterBuildCurrent, planCharacterBuildChange, validUniqueSelections } from './buildChange';
 import {
   buildBasis, compareGuarded, createRandom, createRunMeter, crossCheckObjective, deityHolderIndex, deityOptionsFor, deriveSeed, GA_DEITY_SCOPES,
-  GA_EFFORTS, GA_ITEMS_SCOPES, GA_OBJECTIVES, measure, measureSecondObjective, parseObjectiveGuard, planGaChangeSummary, rateGaResult, reserveMs,
+  GA_EFFORTS, GA_ITEMS_SCOPES, GA_OBJECTIVES, isRareSuccess, measure, measureSecondObjective, measuredObjectives, parseObjectiveGuard, planGaChangeSummary, rateGaResult, reserveMs,
   runGaSearch, successFitness, summarizeVerification,
   type GaChangeEntry, type GaDeityScope, type GaItemsScope, type GaObjective, type GaSearchDependencies, type GaSearchRequest, type GuardedScore,
   type Measured, type ObjectiveGuard,
 } from './gaSearch';
-import { forecastScope, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount, type ObjectiveMeasure } from './objectiveMeasure';
+import { DEFAULT_FORECAST_SETTINGS, describeForecastSettings, forecastScope, gateRoomLabel, isRoomObjective, objectiveSimulationOptions, parseForecastSettings, prepareObjectiveState, routeRoomCount, type ForecastSettings, type ObjectiveMeasure } from './objectiveMeasure';
 import { parseStagedTuningRequest, runStagedEquipmentTuning } from './stagedEquipmentTuning';
 import { validRaceAndGenderOptions } from './readModels';
 
@@ -101,6 +101,8 @@ export interface DirectedBuildRequest {
   considerItemsScope: GaItemsScope;
   objective: GaObjective;
   objectiveGuard: ObjectiveGuard | null;
+  /** `gateRoom` and `startHp` (Spec 9.1.3, 2-0). */
+  forecast: ForecastSettings;
   directionStrictness: DirectionStrictness;
   /** Score penalty per member of distance (`soft` only), in percentage points (percent of the current EXP for `experience`). */
   directionPenalty: number;
@@ -140,7 +142,7 @@ const COMPONENT_DEFAULTS = { uniqueCharacter: false, raceGender: true, mainClass
 
 /** Validates a `directedBuild` request against party `{p}` (Spec 9.1.4.9). Throws `invalid_request:<field>`. */
 export function parseDirectedBuildRequest(state: GameState, partyIndex: number, raw: Record<string, unknown>): DirectedBuildRequest {
-  const allowed = new Set(['direction', 'targets', 'autoEquipmentScope', 'equipmentPolish', 'polishMethod', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'objectiveGuard', 'directionStrictness', 'directionPenalty', 'tuningParameters']);
+  const allowed = new Set(['direction', 'targets', 'autoEquipmentScope', 'equipmentPolish', 'polishMethod', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'objectiveGuard', 'gateRoom', 'startHp', 'directionStrictness', 'directionPenalty', 'tuningParameters']);
   const unknown = Object.keys(raw).find((key) => !allowed.has(key));
   if (unknown !== undefined) invalid(`${unknown}.unknown_member`);
   if (raw.direction === undefined) invalid('direction');
@@ -182,6 +184,7 @@ export function parseDirectedBuildRequest(state: GameState, partyIndex: number, 
   const verifySeed = source.verifySeed === undefined ? null : source.verifySeed;
   if (verifySeed !== null && (typeof verifySeed !== 'number' || !Number.isSafeInteger(verifySeed))) invalid('tuningParameters.verifySeed');
   const objective = readEnum(raw, 'objective', 'objective', GA_OBJECTIVES, 'success');
+  const objectiveGuard = parseObjectiveGuard(raw.objectiveGuard, objective);
   const directionPenalty = raw.directionPenalty === undefined ? 2 : raw.directionPenalty;
   if (typeof directionPenalty !== 'number' || !Number.isFinite(directionPenalty) || directionPenalty < 0 || directionPenalty > 50) invalid('directionPenalty');
   return {
@@ -194,7 +197,8 @@ export function parseDirectedBuildRequest(state: GameState, partyIndex: number, 
     considerDeityChange: readEnum(raw, 'considerDeityChange', 'considerDeityChange', GA_DEITY_SCOPES, 'none'),
     considerItemsScope: readEnum(raw, 'considerItemsScope', 'considerItemsScope', GA_ITEMS_SCOPES, 'normal'),
     objective,
-    objectiveGuard: parseObjectiveGuard(raw.objectiveGuard, objective),
+    objectiveGuard,
+    forecast: parseForecastSettings(raw, party, measuredObjectives(objective, objectiveGuard)),
     directionStrictness: readEnum(raw, 'directionStrictness', 'directionStrictness', DIRECTION_STRICTNESS, 'strict'),
     directionPenalty,
     parameters: {
@@ -761,14 +765,15 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
   const model = buildModel(state, partyIndex, request);
   const { objective, parameters, objectiveGuard: guard } = request;
   const crossObjective = crossCheckObjective(objective, guard);
-  const routeRooms = routeRoomCount(prepareObjectiveState(state, partyIndex, objective).parties[partyIndex]);
+  const settings = request.forecast ?? DEFAULT_FORECAST_SETTINGS;
+  const routeRooms = routeRoomCount(prepareObjectiveState(state, partyIndex, objective, settings).parties[partyIndex]);
   const meter = createRunMeter(dependencies.now);
   let evaluations = 0;
   const simulateOnce = async (target: GameState, runs: number, simulationSeed: number): Promise<ExpeditionSimulationResult> => {
     evaluations += 1;
-    return await meter.time(objective, runs, async () => await dependencies.simulate(prepareObjectiveState(target, partyIndex, objective), partyIndex, runs, simulationSeed, objectiveSimulationOptions(objective)) as ExpeditionSimulationResult);
+    return await meter.time(objective, runs, async () => await dependencies.simulate(prepareObjectiveState(target, partyIndex, objective, settings), partyIndex, runs, simulationSeed, objectiveSimulationOptions(objective, settings)) as ExpeditionSimulationResult);
   };
-  const second = (target: GameState, runs: number, simulationSeed: number) => meter.time(crossObjective, runs, () => measureSecondObjective(dependencies, target, partyIndex, crossObjective, runs, simulationSeed));
+  const second = (target: GameState, runs: number, simulationSeed: number) => meter.time(crossObjective, runs, () => measureSecondObjective(dependencies, target, partyIndex, crossObjective, runs, simulationSeed, settings));
   // The current build's success rate per (runs, seed), the `minDefeat` baseline (as `gaSearch`).
   const baselines = new Map<string, number>();
   const measureRaw = async (target: GameState, runs: number, simulationSeed: number): Promise<Measured> => {
@@ -827,6 +832,12 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
       const candidateReaches = candidate.guard.rate >= guard.minimum; const incumbentReaches = incumbent.guard.rate >= guard.minimum;
       if (candidateReaches !== incumbentReaches) return candidateReaches;
       if (!candidateReaches) return ahead(incumbent.guard, candidate.guard, runs);
+    }
+    // SpecRef: 9.1.3 | 2-3-2 `verdict` | while successes are rare for both, `progress` decides (as `gaSearch`), and a build that
+    // loses successes by more than 2 standard errors does not pass.
+    if (objective === 'success' && isRareSuccess(Math.max(incumbent.measured.rate, candidate.measured.rate), runs)) {
+      const lostSuccess = rateGaResult('success', incumbent.measured, candidate.measured, runs, true).verdict === 'worse';
+      return !lostSuccess && ahead(incumbent.measured.progress, candidate.measured.progress, runs);
     }
     const margin = rateGaResult(objective, incumbent.measured, candidate.measured, runs, true);
     const tieBroken = objective === 'success' && candidate.measured.rate === incumbent.measured.rate && ahead(incumbent.measured.progress, candidate.measured.progress, runs);
@@ -1003,6 +1014,8 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
         // `quickRuns`, the other parameters at their defaults; step 6 is left to the Final selection.
         const raw: Record<string, unknown> = { characterId: id, objective, quickRuns: parameters.quickRuns, finalTuningRuns: parameters.confirmRuns, seed: deriveSeed(polishSeed, position + 1) };
         if (guard) raw.objectiveGuard = { [guard.objective]: guard.minimum };
+        if (settings.gateRoom) raw.gateRoom = gateRoomLabel(settings.gateRoom);
+        if (settings.startHp !== null && [objective, crossObjective].some(isRoomObjective)) raw.startHp = settings.startHp;
         const tuning = await runStagedEquipmentTuning(locked, { ...parseStagedTuningRequest(locked, raw), baselineRuns: parameters.confirmRuns, finalCheck: false }, dependencies);
         const counts = tuning.data.candidatesTried as Record<string, number>;
         polishTried += Object.values(counts).reduce((sum, count) => sum + count, 0);
@@ -1014,12 +1027,12 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
       // from the current result; its own final selection and verification are left to the Final selection.
       const gaRequest: GaSearchRequest = {
         targets: polishMembers.map((characterId) => ({ characterId, components: { raceGender: false, mainClass: false, subClass: false, lineage: false, predisposition: false, equipment: true, jewels: true } })),
-        considerOrderChange: false, considerDeityChange: 'none', considerItemsScope: request.considerItemsScope, objective, objectiveGuard: guard,
+        considerOrderChange: false, considerDeityChange: 'none', considerItemsScope: request.considerItemsScope, objective, objectiveGuard: guard, forecast: settings,
         parameters: {
           effort: parameters.effort, populationSize: parameters.populationSize, generations: parameters.generations, quickRuns: parameters.quickRuns,
           confirmRuns: parameters.confirmRuns, timeBudgetSeconds: parameters.timeBudgetSeconds, verifyRuns: parameters.verifyRuns, eliteCount: parameters.eliteCount,
           mutationRate: parameters.mutationRate, tournamentSize: parameters.tournamentSize, confirmTopN: parameters.confirmTopN, seed: deriveSeed(polishSeed, 0),
-          verifySeed: null, maxChanges: null, seedWithHeuristics: true,
+          verifySeed: null, maxChanges: null, seedWithHeuristics: true, stallGenerations: null,
         },
       };
       const outcome = await runGaSearch(locked, partyIndex, gaRequest, dependencies, { deadline: until });
@@ -1080,7 +1093,7 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
   const crossAfter = changed ? await second(finalState, verifyRuns, verifySeed) : crossBefore;
   const summary = summarizeVerification({
     objective, guard, crossObjective, verifyRuns, seed, verifySeed, routeRooms, before: verifyBefore, after: verifyAfter, crossBefore, crossAfter,
-    changed, revision: dependencies.revision, scope: forecastScope(state, partyIndex, objective), label: 'directed-verify',
+    changed, revision: dependencies.revision, scope: forecastScope(state, partyIndex, objective, settings), label: 'directed-verify',
   });
   const before = compositionOf(state.parties[partyIndex].characters);
   const after = compositionOf(finalState.parties[partyIndex].characters);
@@ -1095,6 +1108,7 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
       elapsedSeconds: Math.round((dependencies.now() - startedAt) / 100) / 10,
       basis: buildBasis(state, partyIndex, changeSummary),
       verification: summary.verification,
+      ...describeForecastSettings(settings),
       seed,
       direction: request.direction,
       directionStrictness: request.directionStrictness,

@@ -14,7 +14,7 @@ import { buildCalculatedStatus } from './calculatedStatus';
 import { applyApiV1Commit, type ApiV1CommitContext } from './commitOperations';
 import { sameEquipmentSnapshot, snapshotCharacterEquipment } from './equipmentHistoryFacts';
 import { validPartyDeityIds, validRaceAndGenderOptions } from './readModels';
-import { forecastScope, measureObjective, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount, type ForecastScope, type ObjectiveMeasure } from './objectiveMeasure';
+import { DEFAULT_FORECAST_SETTINGS, describeForecastSettings, forecastScope, isRoomObjective, measureObjective, objectiveSimulationOptions, parseForecastSettings, prepareObjectiveState, routeRoomCount, type ForecastScope, type ForecastSettings, type ObjectiveMeasure } from './objectiveMeasure';
 import { buildSimulationRunData } from './simulationView';
 import { hashText } from './battleLogs';
 import { baseSlotsAt, conquestGoal, expectedRunsToGoal, experienceToLevel, parseLevelProbe, probedLevels, requiredRateForBudget, type LevelProbeGoal, type LevelProbeRequest } from './levelProbe';
@@ -25,7 +25,7 @@ import { baseSlotsAt, conquestGoal, expectedRunsToGoal, experienceToLevel, parse
 // (`simulateExpeditionRuns`) on fixed seeds, so two builds are always compared on the same random numbers.
 
 // SpecRef: 9.1.3 | 2-0 Objectives | the objectives every build search shares.
-export const GA_OBJECTIVES = ['success', 'minDefeat', 'bossDamage', 'experience', 'progress'] as const;
+export const GA_OBJECTIVES = ['success', 'minDefeat', 'bossDamage', 'gateDamage', 'experience', 'progress'] as const;
 export type GaObjective = typeof GA_OBJECTIVES[number];
 export const GA_EFFORTS = ['low', 'medium', 'high'] as const;
 // SpecRef: 9.1.3 | 2-3-2 gaSearch `gaParameters.effort` | `max` is `gaSearch` only; `directedBuild` keeps `GA_EFFORTS`.
@@ -62,6 +62,7 @@ export const GA_EFFORT_PRESETS: Record<GaEffort, { populationSize: number; gener
 const INTEGER_RANGES = {
   populationSize: [8, 64], generations: [1, 200], quickRuns: [10, 1000], confirmRuns: [50, 1000], timeBudgetSeconds: [5, 600],
   verifyRuns: [100, 1000], eliteCount: [0, 16], tournamentSize: [2, 8], confirmTopN: [1, 10], maxChanges: [1, 100],
+  stallGenerations: [1, 200],
 } as const;
 
 export interface GaParameters {
@@ -81,6 +82,8 @@ export interface GaParameters {
   verifySeed: number | null;
   maxChanges: number | null;
   seedWithHeuristics: boolean;
+  /** Stop when the best confirmed build has not changed for this many generations; `null` never stops early. */
+  stallGenerations: number | null;
 }
 
 export interface GaTarget { characterId: number; components: Record<Component, boolean> }
@@ -107,6 +110,8 @@ export interface GaSearchRequest {
   levelProbe?: LevelProbeRequest;
   /** `seedBuilds`; absent (as in `directedBuild`'s polish) means none, and the Return has no `seeds`. */
   seedBuilds?: SeedBuild[];
+  /** `gateRoom` and `startHp`; absent means no gate room and full HP. */
+  forecast?: ForecastSettings;
 }
 
 // SpecRef: 9.1.3 | 2-3-2 gaSearch `seedBuilds` | a build template: build values only, no equipment.
@@ -126,7 +131,7 @@ export interface GaChangeEntry { endpoint: string; parameters: Record<string, un
 export interface GaForecast { before: string; after: string }
 
 export interface GaSearchDependencies {
-  /** A private forecast on a fixed seed; `options.bossRoomOnly` fights the boss battle alone (`bossDamage`). */
+  /** A private forecast on a fixed seed; `options.bossRoomOnly` / `options.onlyRoom` fight one battle alone (`bossDamage`, `gateDamage`). */
   simulate: (state: GameState, partyIndex: number, count: number, seed: number, options?: ExpeditionSimulationOptions) => Promise<unknown>;
   /** Wall clock (ms) for the time budget and `elapsedSeconds`. */
   now: () => number;
@@ -156,7 +161,7 @@ function readInteger(source: Record<string, unknown>, key: keyof typeof INTEGER_
 
 /** Validates a `gaSearch` request against party `{p}` (Spec 9.1.3, 2-3-2). Throws `invalid_request:<field>` or `not_found`. */
 export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: Record<string, unknown>): GaSearchRequest {
-  const allowed = new Set(['targets', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'successSignal', 'objectiveGuard', 'levelProbe', 'seedBuilds', 'gaParameters']);
+  const allowed = new Set(['targets', 'considerOrderChange', 'considerDeityChange', 'considerItemsScope', 'objective', 'successSignal', 'objectiveGuard', 'gateRoom', 'startHp', 'levelProbe', 'seedBuilds', 'gaParameters']);
   const unknown = Object.keys(raw).find((key) => !allowed.has(key));
   if (unknown !== undefined) invalid(`${unknown}.unknown_member`);
   const party = state.parties[partyIndex];
@@ -207,6 +212,7 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
   if (seed !== null && (typeof seed !== 'number' || !Number.isSafeInteger(seed))) invalid('gaParameters.seed');
   const verifySeed = source.verifySeed === undefined ? null : source.verifySeed;
   if (verifySeed !== null && (typeof verifySeed !== 'number' || !Number.isSafeInteger(verifySeed))) invalid('gaParameters.verifySeed');
+  const objectiveGuard = parseObjectiveGuard(raw.objectiveGuard, objective as GaObjective);
   return {
     targets,
     considerOrderChange: readBoolean(raw, 'considerOrderChange', 'considerOrderChange', false),
@@ -214,7 +220,8 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
     considerItemsScope: considerItemsScope as GaItemsScope,
     objective: objective as GaObjective,
     successSignal: successSignal as GaSuccessSignal | null,
-    objectiveGuard: parseObjectiveGuard(raw.objectiveGuard, objective as GaObjective),
+    objectiveGuard,
+    forecast: parseForecastSettings(raw, party, measuredObjectives(objective, objectiveGuard)),
     parameters: {
       effort: effort as GaEffort,
       populationSize,
@@ -231,6 +238,7 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
       verifySeed: verifySeed as number | null,
       maxChanges: readInteger(source, 'maxChanges', null),
       seedWithHeuristics: readBoolean(source, 'seedWithHeuristics', 'gaParameters.seedWithHeuristics', true),
+      stallGenerations: readInteger(source, 'stallGenerations', null),
     },
     levelProbe: parseLevelProbe(raw.levelProbe),
     ...(raw.seedBuilds === undefined ? {} : { seedBuilds: parseSeedBuilds(party, raw.seedBuilds) }),
@@ -739,8 +747,8 @@ export function measure(objective: GaObjective, result: ExpeditionSimulationResu
     const successLoss = baselineSuccess === null ? 0 : Math.max(0, baselineSuccess - success);
     return { rate, variance, fitness: -rate - 5 * successLoss + 0.01 * success, result };
   }
-  // A `bossDamage` run is the boss battle alone, so its share is the whole signal; `progress` is its own score.
-  if (objective === 'bossDamage' || objective === 'experience' || objective === 'progress') return { rate, variance, fitness: rate, result };
+  // A `bossDamage` or `gateDamage` run is one battle alone, so its share is the whole signal; `progress` is its own score.
+  if (isRoomObjective(objective) || objective === 'experience' || objective === 'progress') return { rate, variance, fitness: rate, result };
   // SpecRef: 9.1.3 | 2-3-2 `objective` `success` | `progress` (7.1.5) breaks ties while successes are rare, weighted by the
   // failure share: a build that clears more rooms, or deals more of a lost battle's enemy HP, is closer to a success.
   const progress = measureObjective('progress', result, routeRooms);
@@ -772,7 +780,7 @@ export function rateGaResult(objective: GaObjective | 'progress', before: { rate
 // ---------------- Objective guard and cross-check ----------------
 
 // SpecRef: 9.1.3 | 2-0 `objectiveGuard` | a minimum on a second objective, `success`, `bossDamage`, or `progress`.
-export const GUARD_OBJECTIVES = ['success', 'bossDamage', 'progress'] as const;
+export const GUARD_OBJECTIVES = ['success', 'bossDamage', 'gateDamage', 'progress'] as const;
 export type GuardObjective = typeof GUARD_OBJECTIVES[number];
 export interface ObjectiveGuard { objective: GuardObjective; minimum: number }
 
@@ -788,9 +796,15 @@ export function parseObjectiveGuard(raw: unknown, objective: string): ObjectiveG
   return { objective: key as GuardObjective, minimum };
 }
 
-/** The `crossCheck` objective (Spec 9.1.3, 2-0): the guard's, otherwise `success` for `bossDamage` and `bossDamage` for the rest. */
+/**
+ * The `crossCheck` objective (Spec 9.1.3, 2-0): the guard's, otherwise `success` for a room-only objective (`bossDamage`,
+ * `gateDamage`) and `bossDamage` for the rest.
+ */
 export const crossCheckObjective = (objective: string, guard: ObjectiveGuard | null): GuardObjective =>
-  guard?.objective ?? (objective === 'bossDamage' ? 'success' : 'bossDamage');
+  guard?.objective ?? (isRoomObjective(objective) ? 'success' : 'bossDamage');
+
+/** Every objective a request measures: the objective, the guard, and the `crossCheck` (Spec 9.1.3, 2-0 `startHp`, `gateRoom`). */
+export const measuredObjectives = (objective: string, guard: ObjectiveGuard | null): string[] => [objective, crossCheckObjective(objective, guard)];
 
 /** A scored candidate: the objective fitness and, with a guard, the guard objective's rate on the same runs. */
 export interface GuardedScore { fitness: number; guard?: number }
@@ -809,10 +823,10 @@ export function compareGuarded(a: GuardedScore, b: GuardedScore, guard: Objectiv
   return a.fitness - b.fitness;
 }
 
-/** The guard or cross-check objective's measure of one build: its own simulation (`bossDamage` fights the boss alone). */
-export async function measureSecondObjective(dependencies: GaSearchDependencies, target: GameState, partyIndex: number, objective: GuardObjective, runs: number, seed: number): Promise<ObjectiveMeasure> {
-  const prepared = prepareObjectiveState(target, partyIndex, objective);
-  const result = await dependencies.simulate(prepared, partyIndex, runs, seed, objectiveSimulationOptions(objective)) as ExpeditionSimulationResult;
+/** The guard or cross-check objective's measure of one build: its own simulation (`bossDamage`, `gateDamage` fight one room alone). */
+export async function measureSecondObjective(dependencies: GaSearchDependencies, target: GameState, partyIndex: number, objective: GuardObjective, runs: number, seed: number, settings: ForecastSettings = DEFAULT_FORECAST_SETTINGS): Promise<ObjectiveMeasure> {
+  const prepared = prepareObjectiveState(target, partyIndex, objective, settings);
+  const result = await dependencies.simulate(prepared, partyIndex, runs, seed, objectiveSimulationOptions(objective, settings)) as ExpeditionSimulationResult;
   // `progress` is counted in rooms, so it needs the route's room count.
   return measureObjective(objective, result, objective === 'progress' ? routeRoomCount(prepared.parties[partyIndex]) : 0);
 }
@@ -870,20 +884,24 @@ const round4 = (value: number): number => Math.round(value * 10000) / 10000;
 
 /**
  * `verdict`, `forecast`, and `verification` from the verification runs of the current and the final build (Spec 9.1.3,
- * 2-3-2): the verdict is judged on the objective (or `progress` when both builds have no success), `progress` is reported
- * for every objective but `bossDamage`, `crossCheck` holds the second objective, and with a guard a result that loses the
+ * 2-3-2): the verdict is judged on the objective (or `progress` when successes are rare for both builds), `progress` is
+ * reported for every route objective, `crossCheck` holds the second objective, and with a guard a result that loses the
  * guard the current build reaches is `worse`.
  */
 export function summarizeVerification(input: VerificationInput): { verdict: GaVerdict; forecast: Record<string, unknown>; verification: Record<string, unknown> } {
   const { objective, before, after, verifyRuns, guard } = input;
-  // SpecRef: 9.1.3 | 2-3-2 `verdict` `<rate>` | `success`: when both builds have no success in the verification runs, the
-  // success rates tie at 0, so the verdict is judged on `progress` (the score the search broke the tie with).
-  const scoredBy: GaObjective | 'progress' = objective === 'success' && before.rate === 0 && after.rate === 0 ? 'progress' : objective;
+  // SpecRef: 9.1.3 | 2-3-2 `verdict` `<rate>` | `success`: while successes are rare for both builds in the verification runs
+  // (`isRareSuccess`, as `successSignal` decides it), their difference is mostly noise, so the verdict is judged on
+  // `progress` (the score the search broke the tie with). A result that loses successes by more than 2 standard errors is
+  // still `worse`.
+  const rare = objective === 'success' && isRareSuccess(Math.max(before.rate, after.rate), verifyRuns);
+  const scoredBy: GaObjective | 'progress' = rare ? 'progress' : objective;
   // `success` keeps its `progress` tie-break beside its rate; the `progress` objective is its own measure.
   const scoreOf = (measured: Measured): ObjectiveMeasure => (scoredBy === 'progress' && objective === 'success' ? measured.progress! : measured);
   const rating = rateGaResult(scoredBy, scoreOf(before), scoreOf(after), verifyRuns, input.changed);
+  const lostSuccess = rare && rateGaResult('success', before, after, verifyRuns, input.changed).verdict === 'worse';
   const reached = guard ? { before: input.crossBefore.rate >= guard.minimum, after: input.crossAfter.rate >= guard.minimum } : null;
-  const verdict: GaVerdict = input.changed && reached && reached.before && !reached.after ? 'worse' : rating.verdict;
+  const verdict: GaVerdict = (input.changed && reached && reached.before && !reached.after) || lostSuccess ? 'worse' : rating.verdict;
   const progressOf = (measured: Measured): number => round4((measured.progress ?? measureObjective('progress', measured.result, input.routeRooms)).rate);
   return {
     verdict,
@@ -902,7 +920,7 @@ export function summarizeVerification(input: VerificationInput): { verdict: GaVe
       standardError: Math.round(rating.standardError * 100) / 100,
       seed: input.seed,
       verifySeed: input.verifySeed,
-      progress: objective === 'bossDamage' ? null : { before: progressOf(before), after: progressOf(after) },
+      progress: isRoomObjective(objective) ? null : { before: progressOf(before), after: progressOf(after) },
       crossCheck: {
         objective: input.crossObjective,
         before: round4(input.crossBefore.rate),
@@ -1030,12 +1048,16 @@ function planSeed(model: SearchModel, seed: SeedBuild): SeedPlan {
   return { genome, used, ignored };
 }
 
-/** Whether `genome` has every value a seed used (`seeds[].inBest`). */
-const hasSeedValues = (genome: Genome, used: readonly SeedValue[]): boolean => used.every((entry) => {
+/** Whether `genome` has one value a seed used. */
+const hasSeedValue = (genome: Genome, entry: SeedValue): boolean => {
   if (entry.kind === 'build') return genome.builds[entry.characterId]?.[entry.buildField] === entry.value;
   if (entry.kind === 'order') return genome.order.join(',') === entry.value.join(',');
   return genome.deity === entry.value;
-});
+};
+/** Whether `genome` has every value a seed used (`seeds[].inBest`). */
+const hasSeedValues = (genome: Genome, used: readonly SeedValue[]): boolean => used.every((entry) => hasSeedValue(genome, entry));
+/** How many of the values a seed used `genome` has (`seeds[].keptValues`). */
+const countSeedValues = (genome: Genome, used: readonly SeedValue[]): number => used.filter((entry) => hasSeedValue(genome, entry)).length;
 
 // ---------------- Mutation and crossover ----------------
 
@@ -1203,19 +1225,20 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   const verifySeed = request.parameters.verifySeed ?? deriveSeed(seed, 3);
   const model = buildModel(state, partyIndex, request);
   const { objective, objectiveGuard: guard } = request;
+  const settings = request.forecast ?? DEFAULT_FORECAST_SETTINGS;
   const crossObjective = crossCheckObjective(objective, guard);
   // Builds do not change the route (its gates and depth limit), so its room count is the same for every candidate.
-  const routeRooms = routeRoomCount(prepareObjectiveState(state, partyIndex, objective).parties[partyIndex]);
+  const routeRooms = routeRoomCount(prepareObjectiveState(state, partyIndex, objective, settings).parties[partyIndex]);
   const meter = createRunMeter(dependencies.now);
   let evaluations = 0;
   const simulateOnce = async (target: GameState, runs: number, simulationSeed: number): Promise<ExpeditionSimulationResult> => {
     evaluations += 1;
-    return await meter.time(objective, runs, async () => await dependencies.simulate(prepareObjectiveState(target, partyIndex, objective), partyIndex, runs, simulationSeed, objectiveSimulationOptions(objective)) as ExpeditionSimulationResult);
+    return await meter.time(objective, runs, async () => await dependencies.simulate(prepareObjectiveState(target, partyIndex, objective, settings), partyIndex, runs, simulationSeed, objectiveSimulationOptions(objective, settings)) as ExpeditionSimulationResult);
   };
-  const second = (target: GameState, runs: number, simulationSeed: number) => meter.time(crossObjective, runs, () => measureSecondObjective(dependencies, target, partyIndex, crossObjective, runs, simulationSeed));
-  // SpecRef: 9.1.3 | 2-0 `objectiveGuard` Shared runs | when neither objective is `bossDamage`, both run the same route
+  const second = (target: GameState, runs: number, simulationSeed: number) => meter.time(crossObjective, runs, () => measureSecondObjective(dependencies, target, partyIndex, crossObjective, runs, simulationSeed, settings));
+  // SpecRef: 9.1.3 | 2-0 `objectiveGuard` Shared runs | when neither objective fights one room alone, both run the same route
   // forecast, so the second objective is read from the objective's own runs: the values a second forecast would give.
-  const sharedRuns = objective !== 'bossDamage' && crossObjective !== 'bossDamage';
+  const sharedRuns = !isRoomObjective(objective) && !isRoomObjective(crossObjective);
   const secondOf = async (target: GameState, measured: Measured, runs: number, simulationSeed: number): Promise<ObjectiveMeasure> =>
     (sharedRuns ? measureObjective(crossObjective, measured.result, routeRooms) : await second(target, runs, simulationSeed));
   // The current build's success rate per (runs, seed), the `minDefeat` baseline.
@@ -1242,12 +1265,14 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   // SpecRef: 9.1.3 | 2-3-2 `levelProbe` Process 5 | the probe's runs are reserved too: the current level and each probed level
   // with `confirmRuns`, and two fills per level with `quickRuns`. A whole-route objective's cost per run stands in for them.
   const probe = polish || !request.levelProbe || request.levelProbe.mode === 'off' ? null : request.levelProbe;
-  const probeCostKey = objective === 'bossDamage' ? crossObjective : objective;
+  const probeCostKey = !isRoomObjective(objective) ? objective : !isRoomObjective(crossObjective) ? crossObjective : objective;
   const probeRuns = probe ? (probe.count + 1) * request.parameters.confirmRuns + probe.count * 2 * request.parameters.quickRuns : 0;
   const reserved: Record<string, number> = { [objective]: verifyRuns + finalSelectionRuns };
   reserved[crossObjective] = (reserved[crossObjective] ?? 0) + verifyRuns + (guard ? finalSelectionRuns : 0);
   reserved[probeCostKey] = (reserved[probeCostKey] ?? 0) + probeRuns;
-  const searchDeadline = polish ? polish.deadline : deadline - reserveMs(meter, reserved);
+  // SpecRef: 9.1.3 | 2-3-2 `levelProbe.fill` `search` | the probe's searches get a fixed share of `timeBudgetSeconds`.
+  const probeSearchMs = probe?.fill === 'search' ? LEVEL_PROBE_SEARCH_SHARE * request.parameters.timeBudgetSeconds * 1000 : 0;
+  const searchDeadline = polish ? polish.deadline : deadline - reserveMs(meter, reserved) - probeSearchMs;
   const outOfTime = () => dependencies.now() >= searchDeadline;
 
   /**
@@ -1300,6 +1325,8 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   // attack-focused and HP-focused fills by their quick score (kept, so the first generation does not score it again).
   // Seeds have their own random stream, so a search without them draws exactly as before.
   interface SeedReport { label: string | null; status: 'used' | 'ignored'; ignored: SeedPlan['ignored']; quickRate: number | null; inBest: boolean }
+  /** A seed's quick measure (its chosen fill), for `quickScore` once the start signal is known. */
+  const seedQuick = new Map<SeedReport, QuickScore>();
   const placeSeeds = async (seeds: readonly SeedBuild[]) => {
     const seedRandom = createRandom(deriveSeed(seed, 6));
     const party = state.parties[partyIndex];
@@ -1323,7 +1350,9 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
       const shaped = decode(model, plan.genome, seedRandom).state.parties[partyIndex].characters;
       const statsById = new Map(shaped.map((character, index) => [character.id, computeCharacterStats(character, party.level, index + 1)]));
       const attack = (item: Item, character: Character) => attackScore(item, statsById.get(character.id)!);
-      const fills = [greedyGenome(model, plan.genome, attack, false, shaped), greedyGenome(model, plan.genome, durabilityScore, false, shaped)]
+      // SpecRef: 9.1.4.9 | GA search Seeds | three fills: the current equipment and Jewels kept (a slot the seed's character
+      // cannot use, or a new slot, is filled as a mutant's is), and the attack-focused and HP-focused greedy fills.
+      const fills = [plan.genome, greedyGenome(model, plan.genome, attack, false, shaped), greedyGenome(model, plan.genome, durabilityScore, false, shaped)]
         .filter((genome): genome is Genome => genome !== null)
         .map((genome) => individual(genome, seedRandom));
       const candidates = [...new Map(fills.map((entry) => [entry.key, entry])).values()];
@@ -1336,7 +1365,7 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
         if (chosen === null || compareGuarded(score, chosenScore, guard) > 0) { chosen = candidate; chosenScore = score; }
       }
       const entry = chosen ?? candidates[0];
-      if (chosen) { entry.quick = chosenScore; quickCache.set(entry.key, entry.quick); report.quickRate = round4(chosenScore.rate); }
+      if (chosen) { entry.quick = chosenScore; quickCache.set(entry.key, entry.quick); report.quickRate = round4(chosenScore.rate); seedQuick.set(report, chosenScore); }
       report.status = 'used';
       results[results.length - 1].used = plan.used;
       usedCount += 1;
@@ -1379,7 +1408,10 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   // SpecRef: 9.1.4.9 | GA search Stop | `generationsRun` counts the generations whose quick scoring finished; `stopReason` is
   // `timeBudget` when the time check stopped the loop before it ran `generations` times.
   let generationsRun = 0;
-  let stopReason: 'generations' | 'timeBudget' = 'generations';
+  let stopReason: 'generations' | 'timeBudget' | 'stalled' = 'generations';
+  // SpecRef: 9.1.3 | 2-3-2 `lastImprovementGeneration`, `stallGenerations` | the generation (1-based) whose confirmations last
+  // changed the best build; 0 while the current build is still the best.
+  let lastImprovementGeneration = 0;
   for (let generation = 0; generation < request.parameters.generations; generation += 1) {
     if (outOfTime()) { stopReason = 'timeBudget'; break; }
     if (switchNext) { signal = 'success'; switchedAt = generation + 1; switchNext = false; }
@@ -1387,10 +1419,12 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
     if (population.every((entry) => entry.quick !== undefined)) generationsRun += 1;
     population.sort((a, b) => compareQuick(b, a));
     for (const entry of population.slice(0, request.parameters.confirmTopN)) { if (outOfTime()) break; await scoreConfirm(entry); }
-    for (const entry of population) if (ranksAbove(entry, best)) best = entry;
+    for (const entry of population) if (ranksAbove(entry, best)) { best = entry; lastImprovementGeneration = generation + 1; }
     if (signalMode === 'auto' && signal === 'progress' && !rare(best.confirmRate)) switchNext = true;
     // A last generation whose quick scoring finished has run all `generations`, even if its confirm runs were cut short.
     if (outOfTime()) { if (generation + 1 < request.parameters.generations || generationsRun <= generation) stopReason = 'timeBudget'; break; }
+    const stall = request.parameters.stallGenerations;
+    if (stall !== null && generation + 1 < request.parameters.generations && generation + 1 - lastImprovementGeneration >= stall) { stopReason = 'stalled'; break; }
     const scored = population.filter((entry) => entry.quick !== undefined);
     const pick = () => {
       let chosen: Individual | null = null;
@@ -1442,6 +1476,11 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
         // kept: the finalist reaches the guard and the fallback does not.
       } else if (guard && !bestReaches) {
         if (!ahead(currentFinal.guardMeasure!, bestFinal.guardMeasure!)) best = fallback;
+      } else if (objective === 'success' && isRareSuccess(Math.max(currentFinal.measured.rate, bestFinal.measured.rate), finalRuns)) {
+        // SpecRef: 9.1.3 | 2-3-2 `verdict` | while successes are rare for both, `progress` decides, as in the verdict; a
+        // finalist that loses successes by more than 2 standard errors is not kept.
+        const lostSuccess = rateGaResult('success', currentFinal.measured, bestFinal.measured, finalRuns, true).verdict === 'worse';
+        if (lostSuccess || !ahead(currentFinal.measured.progress, bestFinal.measured.progress)) best = fallback;
       } else {
         const margin = rateGaResult(objective, currentFinal.measured, bestFinal.measured, finalRuns, true);
         const tieBroken = bestFinal.measured.rate === currentFinal.measured.rate && ahead(currentFinal.measured.progress, bestFinal.measured.progress);
@@ -1468,7 +1507,7 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   const crossAfter = changeSummary.length > 0 ? await secondOf(bestState, verifyAfter, verifyRuns, verifySeed) : crossBefore!;
   const summary = summarizeVerification({
     objective, guard, crossObjective, verifyRuns, seed, verifySeed, routeRooms, before: verifyBefore!, after: verifyAfter, crossBefore: crossBefore!, crossAfter,
-    changed: changeSummary.length > 0, revision: dependencies.revision, scope: forecastScope(state, partyIndex, objective), label: 'ga-verify',
+    changed: changeSummary.length > 0, revision: dependencies.revision, scope: forecastScope(state, partyIndex, objective, settings), label: 'ga-verify',
   });
 
   // SpecRef: 9.1.3 | 2-3-2 `levelProbe` | the probed build is the result only when it should be applied.
@@ -1482,12 +1521,50 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
         evaluations += 1;
         return await dependencies.simulate(target, partyIndex, runs, simulationSeed) as ExpeditionSimulationResult;
       }),
+      searchMs: probeSearchMs,
+      search: async (levelState, until, level) => {
+        // SpecRef: 9.1.3 | 2-3-2 `levelProbe.fill` `search` | a short search of the probed build at the probed level, on the
+        // probe's own measure (`success` on the route to the goal, or `minDefeat` for `farming`), with the request's targets.
+        const conquest = probe.purpose === 'conquest';
+        const parameters = request.parameters;
+        const populationSize = Math.min(LEVEL_PROBE_SEARCH_POPULATION, parameters.populationSize);
+        const fillRequest: GaSearchRequest = {
+          ...request,
+          objective: conquest ? 'success' : 'minDefeat', successSignal: conquest ? 'auto' : null, objectiveGuard: null,
+          forecast: DEFAULT_FORECAST_SETTINGS, levelProbe: undefined, seedBuilds: undefined,
+          parameters: {
+            ...parameters, populationSize, eliteCount: Math.min(parameters.eliteCount, Math.floor(populationSize / 4)),
+            quickRuns: Math.min(parameters.quickRuns, LEVEL_PROBE_SEARCH_QUICK_RUNS), confirmRuns: Math.min(parameters.confirmRuns, LEVEL_PROBE_SEARCH_CONFIRM_RUNS),
+            confirmTopN: Math.min(parameters.confirmTopN, 3), seed: deriveSeed(seed, 7 + level), maxChanges: null, stallGenerations: null,
+          },
+        };
+        const target = conquest ? withParty(levelState, partyIndex, { expeditionDepthLimit: 'all' }) : levelState;
+        const outcome = await runGaSearch(target, partyIndex, fillRequest, dependencies, { deadline: until });
+        evaluations += Number(outcome.data.evaluations ?? 0);
+        const found = outcome.best ?? target;
+        return conquest ? withParty(found, partyIndex, { expeditionDepthLimit: levelState.parties[partyIndex].expeditionDepthLimit }) : found;
+      },
     });
     levelProbe = outcome;
   }
-  // SpecRef: 9.1.3 | 2-3-2 `seeds` | `inBest`: the result build has every value the seed used.
+  // SpecRef: 9.1.3 | 2-3-2 `seeds` | `inBest`: the result build has every value the seed used; `keptValues` of `usedValues`
+  // counts them. `quickScore` is the seed's quick value on the score the quick ranking started on (`progress` when
+  // `quickSignal.start` is `progress`, otherwise the objective's `<rate>`); `seedBaseline` is the current build's.
   const resultGenome = changeSummary.length > 0 ? best.genome : model.current;
-  const seeds = seedResults?.map(({ report, used }) => ({ ...report, inBest: report.status === 'used' && hasSeedValues(resultGenome, used) }));
+  const seedScoreOf = (quick: QuickScore | undefined): number | null => {
+    if (!quick) return null;
+    const value = startSignal === 'progress' ? quick.progress : quick.rate;
+    return value === undefined || !Number.isFinite(value) ? null : round4(value);
+  };
+  const seeds = seedResults?.map(({ report, used }) => ({
+    ...report,
+    quickScore: seedScoreOf(seedQuick.get(report)),
+    usedValues: used.length,
+    keptValues: countSeedValues(resultGenome, used),
+    inBest: report.status === 'used' && hasSeedValues(resultGenome, used),
+  }));
+  const baselineQuick = quickCache.get(currentIndividual.key);
+  const seedBaseline = seeds ? { quickRate: baselineQuick ? round4(baselineQuick.rate) : null, quickScore: seedScoreOf(baselineQuick) } : null;
   // SpecRef: 9.1.3 | 2-3-2 `guardStats` | the distinct confirmed candidates other than the current build, and how many reached
   // the guard in their confirm runs.
   const confirmedOthers = [...confirmCache].filter(([key]) => key !== fallback.key).map(([, entry]) => entry);
@@ -1502,10 +1579,12 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
       evaluations,
       generationsRun,
       stopReason,
+      lastImprovementGeneration,
       quickSignal: startSignal === null ? null : { start: startSignal, switchedAt },
       guardStats,
       elapsedSeconds,
-      ...(seeds ? { seeds } : {}),
+      ...describeForecastSettings(settings),
+      ...(seeds ? { seeds, seedBaseline } : {}),
       basis: buildBasis(state, partyIndex, changeSummary),
       // SpecRef: 9.1.4.9 | gaSearch | the measured `<rate>` values, gain, and standard error behind `verdict`.
       verification: summary.verification,
@@ -1533,7 +1612,16 @@ interface LevelProbeInput {
   deadline: number;
   now: () => number;
   simulate: (target: GameState, runs: number, seed: number) => Promise<ExpeditionSimulationResult>;
+  /** `fill: search`: the time all probed levels share, and the search of one probed level's build until `until`. */
+  searchMs: number;
+  search: (levelState: GameState, until: number, level: number) => Promise<GameState>;
 }
+
+/** `levelProbe.fill: search`: the share of `timeBudgetSeconds` set aside for the probe's searches, and their size. */
+export const LEVEL_PROBE_SEARCH_SHARE = 0.25;
+const LEVEL_PROBE_SEARCH_POPULATION = 24;
+const LEVEL_PROBE_SEARCH_QUICK_RUNS = 100;
+const LEVEL_PROBE_SEARCH_CONFIRM_RUNS = 300;
 
 const round2 = (value: number): number => Math.round(value * 100) / 100;
 
@@ -1572,6 +1660,12 @@ async function runLevelProbe(input: LevelProbeInput): Promise<Record<string, unk
     };
   };
   const outOfTime = () => input.now() >= input.deadline;
+  /** The newly opened slots (above the current level's) a probed build fills. */
+  const filledSlotsOf = (chosen: GameState) => chosen.parties[partyIndex].characters.reduce((sum, character) => {
+    if (!targetOf(model, character.id)?.components.equipment) return sum;
+    const before = computeCharacterStats(character, party.level).maxEquipSlots;
+    return sum + character.equipment.slice(before).filter((item) => item !== null).length;
+  }, 0);
   const points: ReturnType<typeof point>[] = [];
   let truncated = false;
   let levelNeeded: number | null = null;
@@ -1583,8 +1677,19 @@ async function runLevelProbe(input: LevelProbeInput): Promise<Record<string, unk
     if (meets(current)) levelNeeded = party.level;
   }
   const random = createRandom(deriveSeed(input.seed, 5));
-  for (const level of levelNeeded === null && !truncated ? probedLevels(party.level, probe.steps, probe.count) : []) {
+  const levels = levelNeeded === null && !truncated ? probedLevels(party.level, probe.steps, probe.count) : [];
+  for (const level of levels) {
     if (outOfTime()) { truncated = true; break; }
+    if (probe.fill === 'search') {
+      // Each probed level searches for an equal share of the probe's search time.
+      const until = Math.min(input.deadline, input.now() + input.searchMs / levels.length);
+      const chosen = await input.search(withParty(input.build, partyIndex, { level }), until, level);
+      if (outOfTime()) { truncated = true; break; }
+      const measured = await measureAt(chosen, input.confirmRuns, input.verifySeed);
+      points.push(point(level, filledSlotsOf(chosen), measured));
+      if (meets(measured)) { levelNeeded = level; break; }
+      continue;
+    }
     // The search model at the probed level: the same items, more base slots.
     const levelModel = buildModel(withParty(state, partyIndex, { level }), partyIndex, model.request);
     // The build's own characters (a class change can add slots) decide the slot counts and the equip checks of the fill.
@@ -1609,12 +1714,7 @@ async function runLevelProbe(input: LevelProbeInput): Promise<Record<string, unk
     }
     if (outOfTime()) { truncated = true; break; }
     const measured = await measureAt(chosen, input.confirmRuns, input.verifySeed);
-    const filledSlots = chosen.parties[partyIndex].characters.reduce((sum, character) => {
-      if (!targetOf(model, character.id)?.components.equipment) return sum;
-      const before = computeCharacterStats(character, party.level).maxEquipSlots;
-      return sum + character.equipment.slice(before).filter((item) => item !== null).length;
-    }, 0);
-    points.push(point(level, filledSlots, measured));
+    points.push(point(level, filledSlotsOf(chosen), measured));
     if (meets(measured)) { levelNeeded = level; break; }
   }
   return {
@@ -1624,6 +1724,7 @@ async function runLevelProbe(input: LevelProbeInput): Promise<Record<string, unk
     target: goal ? { runBudget: probe.runBudget, requiredRate: round2(requiredRateForBudget(goal.required, goal.current, probe.runBudget) * 100) } : { maxDefeat: probe.maxDefeat },
     fromLevel: party.level,
     steps: probe.steps,
+    fill: probe.fill,
     points,
     levelNeeded,
     truncated,

@@ -10,6 +10,10 @@ import { LEVEL_EQUIP_SLOTS, MAX_LEVEL, type Party } from '../../types/index.ts';
 export const LEVEL_PROBE_MODES = ['auto', 'always', 'off'] as const;
 export const LEVEL_PROBE_PURPOSES = ['conquest', 'farming'] as const;
 export const LEVEL_PROBE_STEPS = ['slot', 'level'] as const;
+// SpecRef: 9.1.3 | 2-3-2 `levelProbe.fill` | how a probed level's build gets its newly opened slots: two greedy fills, or a
+// short search of the probed build at that level.
+export const LEVEL_PROBE_FILLS = ['greedy', 'search'] as const;
+export type LevelProbeFill = typeof LEVEL_PROBE_FILLS[number];
 export type LevelProbeMode = typeof LEVEL_PROBE_MODES[number];
 export type LevelProbePurpose = typeof LEVEL_PROBE_PURPOSES[number];
 export type LevelProbeSteps = typeof LEVEL_PROBE_STEPS[number];
@@ -23,9 +27,10 @@ export interface LevelProbeRequest {
   maxDefeat: number;
   steps: LevelProbeSteps;
   count: number;
+  fill: LevelProbeFill;
 }
 
-const FIELDS = ['mode', 'purpose', 'runBudget', 'maxDefeat', 'steps', 'count'] as const;
+const FIELDS = ['mode', 'purpose', 'runBudget', 'maxDefeat', 'steps', 'count', 'fill'] as const;
 
 function invalid(field: string): never { throw new Error(`invalid_request:${field}`); }
 
@@ -54,6 +59,7 @@ export function parseLevelProbe(raw: unknown): LevelProbeRequest {
     maxDefeat: number('maxDefeat', 0, 100, 10),
     steps,
     count: number('count', 1, 10, steps === 'slot' ? 1 : 5, true),
+    fill: pick('fill', LEVEL_PROBE_FILLS, 'greedy'),
   };
 }
 
