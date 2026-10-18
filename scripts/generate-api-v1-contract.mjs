@@ -292,8 +292,8 @@ const gaParameters = strict({
   ...Object.fromEntries(Object.entries(gaIntegers).map(([key, [minimum, maximum]]) => [key, optional(Type.Integer({ minimum, maximum }))])),
   mutationRate: optional(Type.Number({ minimum: 0, maximum: 1 })), seed: optional(Type.Integer()), verifySeed: optional(Type.Integer()), seedWithHeuristics: optional(Type.Boolean(), true),
 });
-// SpecRef: 9.1.3 | 2-0 `objectiveGuard` | one member: a minimum (0–1) on `success`, `bossDamage`, `gateDamage`, or `progress`, not the `objective` itself.
-const objectiveGuard = Type.Union(['success', 'bossDamage', 'gateDamage', 'progress'].map((key) => strict({ [key]: Type.Number({ minimum: 0, maximum: 1 }) })));
+// SpecRef: 9.1.3 | 2-0 `objectiveGuard` | one member: a minimum (0–1) on `success`, `gateDamage`, or `progress`, not the `objective` itself.
+const objectiveGuard = Type.Union(['success', 'gateDamage', 'progress'].map((key) => strict({ [key]: Type.Number({ minimum: 0, maximum: 1 }) })));
 // SpecRef: 9.1.3 | 2-0 `gateRoom` and `startHp` | the room `gateDamage` fights, and the HP share a room-only forecast starts with.
 const gateRoomRequest = literals('next', 'boss', '1f-4', '2f-4', '3f-4', '4f-4', '5f-4', '6f-4');
 const startHpRequest = Type.Union([Type.Literal('full'), Type.Number({ exclusiveMinimum: 0, maximum: 1 })]);
@@ -317,7 +317,7 @@ const seedBuild = strict({
   order: optional(Type.Array(integerId, { uniqueItems: true })), deityId: optional(Type.String()),
 });
 // SpecRef: 9.1.3 | 2-0 Objectives | every build search takes the same objectives.
-const searchObjective = literals('success', 'minDefeat', 'bossDamage', 'gateDamage', 'experience', 'progress');
+const searchObjective = literals('success', 'minDefeat', 'gateDamage', 'experience', 'progress');
 // SpecRef: 9.1.3 | Read | 2-3-3 party/{p}/directedBuild | a POST Read body like `gaSearch`; defaults and ranges in 9.1.3.
 const directedComponents = strict({
   uniqueCharacter: optional(Type.Boolean(), false), raceGender: optional(Type.Boolean(), true), mainClass: optional(Type.Boolean(), true),
@@ -338,7 +338,7 @@ const tuningIntegers = {
 };
 const tuningObjective = searchObjective;
 // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `objective` adds `rate` and `standardError`; `seed` repeats a forecast.
-const simulationObjective = literals('success', 'minDefeat', 'bossDamage', 'gateDamage', 'experience', 'progress');
+const simulationObjective = literals('success', 'minDefeat', 'gateDamage', 'experience', 'progress');
 const directBodySchemas = {
   'fundamental/signUp': strict({ ...identity, language: optional(language, 'ja') }), 'fundamental/logIn': strict({ ...identity, headless: optional(Type.Boolean(), false) }), 'fundamental/logOut': empty,
   'read/build/party/{p}/gaSearch': strict({
@@ -387,14 +387,14 @@ const purchaseResult = strict({ items: Type.Array(strict({ item: itemFormat, qua
 const semanticText = strict({ key: stableKey, args: Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), Type.Boolean()])) });
 // SpecRef: 9.1.3 | 2-3-2 gaSearch | the result rating, the forecast pair, and one Commit API call of `changeSummary`.
 const gaVerdict = literals('veryGood', 'good', 'noisy', 'noChange', 'worse');
-const gaObjective = literals('success', 'minDefeat', 'bossDamage', 'gateDamage', 'experience', 'progress');
+const gaObjective = literals('success', 'minDefeat', 'gateDamage', 'experience', 'progress');
 // SpecRef: 9.1.3 | 2-3-2 `forecast.scope` | the rooms the forecast simulates.
-const forecastScope = strict({ from: Type.Union([floorRoomKey, Type.Null()]), to: Type.Union([floorRoomKey, Type.Null()]), rooms: Type.Integer({ minimum: 0 }), endsAt: literals('clearGate', 'depthLimit', 'dungeonEnd', 'bossRoom', 'gateRoom') });
+const forecastScope = strict({ from: Type.Union([floorRoomKey, Type.Null()]), to: Type.Union([floorRoomKey, Type.Null()]), rooms: Type.Integer({ minimum: 0 }), endsAt: literals('clearGate', 'depthLimit', 'dungeonEnd', 'gateRoom') });
 const gaForecast = strict({ before: Type.String(), after: Type.String(), scope: forecastScope });
 const rateValue = Type.Number({ minimum: 0 });
 // SpecRef: 9.1.3 | 2-3-2 `verification.crossCheck` | the second objective of the same two builds, with the guard when one is set.
 const crossCheck = strict({
-  objective: literals('success', 'bossDamage', 'gateDamage', 'progress'), before: rateValue, after: rateValue, minimum: Type.Union([rateValue, Type.Null()]),
+  objective: literals('success', 'gateDamage', 'progress'), before: rateValue, after: rateValue, minimum: Type.Union([rateValue, Type.Null()]),
   reached: Type.Union([strict({ before: Type.Boolean(), after: Type.Boolean() }), Type.Null()]),
 });
 const gaChangeEndpoint = Type.String({ pattern: '^commit/build/' });
@@ -405,7 +405,7 @@ const gaSearchResult = {
   verdict: gaVerdict, forecast: gaForecast, changeSummary: Type.Array(gaChangeEntry), revision: Type.Integer({ minimum: 0 }),
   evaluations: Type.Integer({ minimum: 0 }), elapsedSeconds: Type.Number({ minimum: 0 }), basis: stableKey, ...forecastSettingsResult,
   verification: strict({
-    objective: gaObjective, scoredBy: literals('success', 'minDefeat', 'bossDamage', 'gateDamage', 'experience', 'progress'), runs: Type.Integer({ minimum: 1 }),
+    objective: gaObjective, scoredBy: literals('success', 'minDefeat', 'gateDamage', 'experience', 'progress'), runs: Type.Integer({ minimum: 1 }),
     before: rateValue, after: rateValue, gain: Type.Union([Type.Number(), Type.Null()]), standardError: Type.Number({ minimum: 0 }), seed: Type.Integer(), verifySeed: Type.Integer(),
     progress: Type.Union([strict({ before: rateValue, after: rateValue }), Type.Null()]), crossCheck,
   }),

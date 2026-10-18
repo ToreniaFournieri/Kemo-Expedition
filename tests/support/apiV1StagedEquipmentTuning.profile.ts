@@ -81,7 +81,8 @@ rejects({ characterId: firstId, seed: '7' }, 'invalid_request:seed');
     { ...parsed },
     {
       characterId: firstId, partyIndex: 0, objective: 'success', offenseElementRequest: null, seed: null, objectiveGuard: null,
-      forecast: { gateRoom: null, startHp: null },
+      // The default cross-check is `gateDamage` on the next gate room: a fresh party's 1st Elite gate.
+      forecast: { gateRoom: { floorNumber: 1, roomInFloor: 4 }, startHp: null },
       quickRuns: 300, finalTuningRuns: 500, offenseElementTrialRuns: 9, offenseElementCandidateCount: 2, defenseElementTrialRuns: 15,
       defenseElementCandidateCount: 2, abilityTrialRuns: 40, abilityCandidateCount: 2, minImprovement: 0.07, minGateImprovement: 0.07,
     },
@@ -90,8 +91,8 @@ rejects({ characterId: firstId, seed: '7' }, 'invalid_request:seed');
   assert.equal(parseStagedTuningRequest(fresh, { characterId: firstId, offenseElementRequest: 'e.none' }).offenseElementRequest, 'none');
   assert.equal(parseStagedTuningRequest(fresh, { characterId: firstId, seed: -42 }).seed, -42);
   // Every objective of 9.1.3, 2-0 is accepted, and a guard may sit on `progress`.
-  for (const objective of ['success', 'minDefeat', 'bossDamage', 'gateDamage', 'experience', 'progress']) assert.equal(parseStagedTuningRequest(fresh, { characterId: firstId, objective }).objective, objective);
-  assert.deepEqual(parseStagedTuningRequest(fresh, { characterId: firstId, objective: 'bossDamage', objectiveGuard: { progress: 0.9 } }).objectiveGuard, { objective: 'progress', minimum: 0.9 });
+  for (const objective of ['success', 'minDefeat', 'gateDamage', 'experience', 'progress']) assert.equal(parseStagedTuningRequest(fresh, { characterId: firstId, objective }).objective, objective);
+  assert.deepEqual(parseStagedTuningRequest(fresh, { characterId: firstId, objective: 'gateDamage', objectiveGuard: { progress: 0.9 } }).objectiveGuard, { objective: 'progress', minimum: 0.9 });
 }
 
 // ---------------- Improvement and the luck check (Spec 7.1.5 General rules) ----------------
@@ -126,7 +127,7 @@ near(tuningImprovement('success', 0.5, 0.535), 0.5 / 0.465 - 1, 'the larger of t
 near(tuningImprovement('progress', 0.8, 0.84), 0.2 / 0.16 - 1, '`progress` is scored like `success`');
 near(tuningImprovement('experience', 400, 440), 0.1, '`experience` has no rarer side: a plain relative change');
 near(tuningImprovement('experience', 400, 360), -0.1, 'less EXP is a negative improvement');
-near(tuningImprovement('bossDamage', 0.4, 0.3), 0.6 / 0.7 - 1, 'a worse score is a negative improvement');
+near(tuningImprovement('gateDamage', 0.4, 0.3), 0.6 / 0.7 - 1, 'a worse score is a negative improvement');
 assert.ok(tuningImprovement('success', 0.6, 0.5) < 0 && tuningImprovement('minDefeat', 0.1, 0.2) < 0, 'worse on both sides is negative');
 near(tuningImprovement('minDefeat', 0.2, 0.1), 1, 'a lower defeat rate is an improvement');
 near(tuningImprovement('minDefeat', 0.9, 0.85), 0.15 / 0.1 - 1, 'near 1 the non-defeat side decides for `minDefeat`');
@@ -142,9 +143,9 @@ assert.equal(tuningImprovement('success', 1, 1), 0, 'equal scores are no change'
   assert.equal(tuningLuckCheck('success', binary(0.4), binary(0.43), 1000).passed, false, 'three points on 1000 runs may be luck');
   assert.ok(Math.abs(tuningLuckCheck('minDefeat', binary(0.3), binary(0.2), 1000).gain - 0.1) < 1e-12, 'minDefeat gains when defeats fall');
   // A share's per-run variance is below the Bernoulli bound p(1 - p), so a real share gain is not mistaken for luck.
-  const share = tuningLuckCheck('bossDamage', { rate: 0.42, variance: 0.04 }, { rate: 0.463, variance: 0.04 }, 1000);
+  const share = tuningLuckCheck('gateDamage', { rate: 0.42, variance: 0.04 }, { rate: 0.463, variance: 0.04 }, 1000);
   assert.ok(Math.abs(share.standardError - Math.sqrt(0.08 / 1000)) < 1e-12);
-  assert.ok(share.passed && !tuningLuckCheck('bossDamage', binary(0.42), binary(0.463), 1000).passed);
+  assert.ok(share.passed && !tuningLuckCheck('gateDamage', binary(0.42), binary(0.463), 1000).passed);
 }
 
 // ---------------- Nothing to try ----------------
@@ -168,7 +169,7 @@ assert.equal(tuningImprovement('success', 1, 1), 0, 'equal scores are no change'
   assert.deepEqual([data.improvement, data.gain], [0, 0]);
   // The baseline, the quick run of the current build, and the `crossCheck` objective on the baseline seed (9.1.3, 2-0).
   assert.equal(data.simulationRuns, 1000 + 300 + 1000, 'the baseline, the quick run, and the cross-check');
-  assert.deepEqual((outcome.data as { crossCheck?: unknown }).crossCheck, { objective: 'bossDamage', before: (outcome.data as { crossCheck: { before: number } }).crossCheck.before, after: (outcome.data as { crossCheck: { before: number } }).crossCheck.before, minimum: null, reached: null }, 'no change: the cross-check after equals before');
+  assert.deepEqual((outcome.data as { crossCheck?: unknown }).crossCheck, { objective: 'gateDamage', before: (outcome.data as { crossCheck: { before: number } }).crossCheck.before, after: (outcome.data as { crossCheck: { before: number } }).crossCheck.before, minimum: null, reached: null }, 'no change: the cross-check after equals before');
   assert.match(String(data.bottleneckRoom), /^[1-6]f-[1-4]$/);
   assert.deepEqual(state, before, 'the tuning never changes the state it read');
   const off = (await tune(state, { characterId: firstId, offenseElementTrialRuns: 0, defenseElementTrialRuns: 0, abilityTrialRuns: 0 })).data as unknown as TuningData;
@@ -187,7 +188,7 @@ assert.equal(tuningImprovement('success', 1, 1), 0, 'equal scores are no change'
   assert.ok(getDungeonById(8), 'Expedition 8 exists in the test environment');
   let state = gameReducer(fresh, { type: 'REMOVE_ALL_EQUIPMENT', partyIndex: 0, characterId: firstId });
   state = { ...state, parties: [{ ...state.parties[0], selectedDungeonId: 8, defeatedBossExpeditions: { 7: true } }, ...state.parties.slice(1)] };
-  state = prepareObjectiveState(state, 0, 'bossDamage');
+  state = prepareObjectiveState(state, 0, 'gateDamage', { gateRoom: { floorNumber: 6, roomInFloor: 4 }, startHp: null });
   const hopeless = (await tune(state, { characterId: firstId, seed: 21 })).data as unknown as TuningData;
   assert.match(hopeless.before, /^Success 0\.0% /);
   assert.equal(hopeless.scoredBy, 'progress');
@@ -287,20 +288,21 @@ const data = outcome.data as unknown as TuningData;
 {
   const parsed = parseStagedTuningRequest(sample, { characterId: ninja.id, objective: 'gateDamage', gateRoom: '2f-4', startHp: 0.5 });
   assert.deepEqual(parsed.forecast, { gateRoom: { floorNumber: 2, roomInFloor: 4 }, startHp: 0.5 });
-  rejects({ characterId: firstId, gateRoom: '2f-4' }, 'invalid_request:gateRoom.not_used');
+  rejects({ characterId: firstId, objectiveGuard: { progress: 0.5 }, gateRoom: '2f-4' }, 'invalid_request:gateRoom.not_used');
+  rejects({ characterId: firstId, objective: 'bossDamage' }, 'invalid_request:objective');
   const gate = (await tune(sample, { characterId: ninja.id, objective: 'gateDamage', gateRoom: '2f-4', startHp: 0.5, offenseElementTrialRuns: 1, defenseElementTrialRuns: 0, abilityTrialRuns: 0, seed: 3 })).data as unknown as TuningData & { gateRoom: string; startHp: number };
   assert.deepEqual([gate.scoredBy, gate.bottleneckRoom, gate.gateRoom, gate.startHp], ['gateDamage', '2f-4', '2f-4', 0.5], 'the bottleneck is always the gate room');
 }
 
-// ---------------- `bossDamage`: the boss battle alone (Spec 7.1.5 objective) ----------------
+// ---------------- `gateDamage` on the boss (the last gate): the boss battle alone (Spec 7.1.5 objective) ----------------
 {
-  const boss = (await tune(sample, { characterId: ninja.id, objective: 'bossDamage', offenseElementTrialRuns: 1, defenseElementTrialRuns: 0, abilityTrialRuns: 0, seed: 3 })).data as unknown as TuningData;
-  assert.equal(boss.scoredBy, 'bossDamage');
+  const boss = (await tune(sample, { characterId: ninja.id, objective: 'gateDamage', gateRoom: 'boss', offenseElementTrialRuns: 1, defenseElementTrialRuns: 0, abilityTrialRuns: 0, seed: 3 })).data as unknown as TuningData;
+  assert.equal(boss.scoredBy, 'gateDamage');
   assert.equal(boss.bottleneckRoom, '6f-4', 'the bottleneck is always the boss room');
   // The forecast is the boss battle from full HP: every run reaches it, so nothing is left unreached or retreated from.
-  const forecast = await simulateExpeditionRuns(sample, partyIndex, 'mode.normal', 1000, undefined, 0, deriveSeed(3, 3), { bossRoomOnly: true });
+  const forecast = await simulateExpeditionRuns(sample, partyIndex, 'mode.normal', 1000, undefined, 0, deriveSeed(3, 3), { onlyRoom: { floorNumber: 6, roomInFloor: 4 } });
   assert.equal(buildSimulationRunData(forecast, 0, 'check').overview, boss.before);
-  assert.equal(forecast.boss?.reached, 1000);
+  assert.equal(forecast.gateRoom?.reached, 1000);
   assert.deepEqual(forecast.rooms.filter((room) => room.reached > 0).map((room) => room.room), [24], 'only the boss room is fought');
 }
 
@@ -311,15 +313,15 @@ const data = outcome.data as unknown as TuningData;
   const exp = (await tune(sample, { ...quick, objective: 'experience' })).data as unknown as TuningData & { crossCheck: { objective: string } };
   assert.equal(exp.scoredBy, 'experience');
   assert.ok(exp.gain === null || Math.abs(exp.gain) < 10, `a relative EXP gain: ${exp.gain}`);
-  assert.equal(exp.crossCheck.objective, 'bossDamage', 'the 2-0 default cross-check of `experience`');
+  assert.equal(exp.crossCheck.objective, 'gateDamage', 'the 2-0 default cross-check of `experience`');
   // `progress` scores itself, without the `success` fallback.
   const progress = (await tune(sample, { ...quick, objective: 'progress' })).data as unknown as TuningData;
   assert.equal(progress.scoredBy, 'progress');
   // A guard both builds always reach changes nothing: the same steps are kept and the same result is accepted.
   const plain = (await tune(sample, quick)).data as unknown as TuningData;
-  const easy = (await tune(sample, { ...quick, objectiveGuard: { bossDamage: 0 } })).data as unknown as TuningData & { crossCheck: { objective: string; minimum: number; reached: unknown } };
+  const easy = (await tune(sample, { ...quick, objectiveGuard: { gateDamage: 0 } })).data as unknown as TuningData & { crossCheck: { objective: string; minimum: number; reached: unknown } };
   assert.deepEqual([easy.accepted, easy.changeSummary, easy.steps.finalTuning], [plain.accepted, plain.changeSummary, plain.steps.finalTuning]);
-  assert.deepEqual([easy.crossCheck.objective, easy.crossCheck.minimum, easy.crossCheck.reached], ['bossDamage', 0, { before: true, after: true }]);
+  assert.deepEqual([easy.crossCheck.objective, easy.crossCheck.minimum, easy.crossCheck.reached], ['gateDamage', 0, { before: true, after: true }]);
   // A guard no build reaches: a tuned build is accepted only with a guard rate no lower than the current build's.
   const hard = (await tune(sample, { ...quick, objectiveGuard: { progress: 1 } })).data as unknown as TuningData & { crossCheck: { before: number; after: number; reached: { before: boolean; after: boolean } } };
   assert.equal(hard.crossCheck.reached.before, false);
@@ -331,7 +333,7 @@ const data = outcome.data as unknown as TuningData;
 // `a.illusion-breaker` item but no `a.domain-breaker` one.
 {
   const guardian = sample.parties[partyIndex].characters.find((character) => character.mainClassId === 'guardian')!;
-  const request = { characterId: guardian.id, objective: 'bossDamage', offenseElementTrialRuns: 0, defenseElementTrialRuns: 0, quickRuns: 50, finalTuningRuns: 50, seed: 3 };
+  const request = { characterId: guardian.id, objective: 'gateDamage', gateRoom: 'boss', offenseElementTrialRuns: 0, defenseElementTrialRuns: 0, quickRuns: 50, finalTuningRuns: 50, seed: 3 };
   const counters = (data: TuningData) => Object.fromEntries(data.bottleneckCounters.map((counter) => [counter.ability, `${counter.status} ${counter.answers.join(',')}`]));
   const tuned = (await tune(sample, request)).data as unknown as TuningData;
   assert.equal(tuned.bottleneckRoom, '6f-4');

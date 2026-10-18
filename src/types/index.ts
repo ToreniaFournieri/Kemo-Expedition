@@ -815,14 +815,9 @@ export interface ExpeditionSimulationResult {
   /** Sums over all runs; divide by `total` for the expected value per run. */
   totals?: { experience: number; itemDrops: number; dropSaleValue: number };
   /**
-   * Boss room facts over all runs: `reached` runs that fought the boss, `kills` won, and `damageShare` the sum of each
-   * run's dealt damage over the boss's maximum HP (capped at 1; 0 for a run that never reached it), and
-   * `damageShareSquareSum` the sum of each run's share squared (the per-run variance of `bossDamage`).
-   */
-  boss?: { reached: number; kills: number; damageShare: number; damageShareSquareSum?: number };
-  /**
-   * The fought room of a room-only forecast (`onlyRoom`, Spec 9.1.3 `gateDamage`), counted like `boss`: `reached` runs that
-   * fought it, `kills` won, `damageShare` the sum of each run's dealt damage over the room enemy's maximum HP (1 for a win).
+   * The fought room of a room-only forecast (`onlyRoom`, Spec 9.1.3 `gateDamage`): `reached` runs that fought it, `kills`
+   * won, `damageShare` the sum of each run's dealt damage over the room enemy's maximum HP (capped at 1; 1 for a win), and
+   * `damageShareSquareSum` the sum of each run's share squared (the per-run variance of `gateDamage`).
    */
   gateRoom?: { reached: number; kills: number; damageShare: number; damageShareSquareSum: number };
   /** The party's maximum HP in this forecast: the unit of the rooms' `hpAtEntrySum` and `hpAfterWinSum`. */
@@ -838,8 +833,6 @@ export interface ExpeditionSimulationResult {
 
 /** Options of a private expedition forecast. */
 export interface ExpeditionSimulationOptions {
-  /** Fight only the destination's boss battle, from the start HP (Spec 7.1.5 / 9.1.3 `bossDamage`). */
-  bossRoomOnly?: boolean;
   /** Fight only this room, from the start HP (Spec 9.1.3 `gateDamage`); the forecast state must let the run reach it and end there. */
   onlyRoom?: { floorNumber: number; roomInFloor: number };
   /** The party HP each run starts with, as a share of the maximum (0 < share ≤ 1, Spec 9.1.3 `startHp`); full HP when absent. */

@@ -25,7 +25,7 @@ import { baseSlotsAt, conquestGoal, expectedRunsToGoal, experienceToLevel, parse
 // (`simulateExpeditionRuns`) on fixed seeds, so two builds are always compared on the same random numbers.
 
 // SpecRef: 9.1.3 | 2-0 Objectives | the objectives every build search shares.
-export const GA_OBJECTIVES = ['success', 'minDefeat', 'bossDamage', 'gateDamage', 'experience', 'progress'] as const;
+export const GA_OBJECTIVES = ['success', 'minDefeat', 'gateDamage', 'experience', 'progress'] as const;
 export type GaObjective = typeof GA_OBJECTIVES[number];
 export const GA_EFFORTS = ['low', 'medium', 'high'] as const;
 // SpecRef: 9.1.3 | 2-3-2 gaSearch `gaParameters.effort` | `max` is `gaSearch` only; `directedBuild` keeps `GA_EFFORTS`.
@@ -131,7 +131,7 @@ export interface GaChangeEntry { endpoint: string; parameters: Record<string, un
 export interface GaForecast { before: string; after: string }
 
 export interface GaSearchDependencies {
-  /** A private forecast on a fixed seed; `options.bossRoomOnly` / `options.onlyRoom` fight one battle alone (`bossDamage`, `gateDamage`). */
+  /** A private forecast on a fixed seed; `options.onlyRoom` fights one room's battle alone (`gateDamage`). */
   simulate: (state: GameState, partyIndex: number, count: number, seed: number, options?: ExpeditionSimulationOptions) => Promise<unknown>;
   /** Wall clock (ms) for the time budget and `elapsedSeconds`. */
   now: () => number;
@@ -747,7 +747,7 @@ export function measure(objective: GaObjective, result: ExpeditionSimulationResu
     const successLoss = baselineSuccess === null ? 0 : Math.max(0, baselineSuccess - success);
     return { rate, variance, fitness: -rate - 5 * successLoss + 0.01 * success, result };
   }
-  // A `bossDamage` or `gateDamage` run is one battle alone, so its share is the whole signal; `progress` is its own score.
+  // A `gateDamage` run is one battle alone, so its share is the whole signal; `progress` is its own score.
   if (isRoomObjective(objective) || objective === 'experience' || objective === 'progress') return { rate, variance, fitness: rate, result };
   // SpecRef: 9.1.3 | 2-3-2 `objective` `success` | `progress` (7.1.5) breaks ties while successes are rare, weighted by the
   // failure share: a build that clears more rooms, or deals more of a lost battle's enemy HP, is closer to a success.
@@ -779,8 +779,8 @@ export function rateGaResult(objective: GaObjective | 'progress', before: { rate
 
 // ---------------- Objective guard and cross-check ----------------
 
-// SpecRef: 9.1.3 | 2-0 `objectiveGuard` | a minimum on a second objective, `success`, `bossDamage`, or `progress`.
-export const GUARD_OBJECTIVES = ['success', 'bossDamage', 'gateDamage', 'progress'] as const;
+// SpecRef: 9.1.3 | 2-0 `objectiveGuard` | a minimum on a second objective, `success`, `gateDamage`, or `progress`.
+export const GUARD_OBJECTIVES = ['success', 'gateDamage', 'progress'] as const;
 export type GuardObjective = typeof GUARD_OBJECTIVES[number];
 export interface ObjectiveGuard { objective: GuardObjective; minimum: number }
 
@@ -797,11 +797,11 @@ export function parseObjectiveGuard(raw: unknown, objective: string): ObjectiveG
 }
 
 /**
- * The `crossCheck` objective (Spec 9.1.3, 2-0): the guard's, otherwise `success` for a room-only objective (`bossDamage`,
- * `gateDamage`) and `bossDamage` for the rest.
+ * The `crossCheck` objective (Spec 9.1.3, 2-0): the guard's, otherwise `success` for `gateDamage` and `gateDamage` (on
+ * `gateRoom`) for the rest.
  */
 export const crossCheckObjective = (objective: string, guard: ObjectiveGuard | null): GuardObjective =>
-  guard?.objective ?? (isRoomObjective(objective) ? 'success' : 'bossDamage');
+  guard?.objective ?? (isRoomObjective(objective) ? 'success' : 'gateDamage');
 
 /** Every objective a request measures: the objective, the guard, and the `crossCheck` (Spec 9.1.3, 2-0 `startHp`, `gateRoom`). */
 export const measuredObjectives = (objective: string, guard: ObjectiveGuard | null): string[] => [objective, crossCheckObjective(objective, guard)];
@@ -823,7 +823,7 @@ export function compareGuarded(a: GuardedScore, b: GuardedScore, guard: Objectiv
   return a.fitness - b.fitness;
 }
 
-/** The guard or cross-check objective's measure of one build: its own simulation (`bossDamage`, `gateDamage` fight one room alone). */
+/** The guard or cross-check objective's measure of one build: its own simulation (`gateDamage` fights one room alone). */
 export async function measureSecondObjective(dependencies: GaSearchDependencies, target: GameState, partyIndex: number, objective: GuardObjective, runs: number, seed: number, settings: ForecastSettings = DEFAULT_FORECAST_SETTINGS): Promise<ObjectiveMeasure> {
   const prepared = prepareObjectiveState(target, partyIndex, objective, settings);
   const result = await dependencies.simulate(prepared, partyIndex, runs, seed, objectiveSimulationOptions(objective, settings)) as ExpeditionSimulationResult;

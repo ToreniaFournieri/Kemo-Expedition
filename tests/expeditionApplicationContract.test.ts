@@ -58,7 +58,6 @@ test('forecast resolution is a detached projection of the completed log', () => 
       replayMetadata: { seedHex: '1', rngVersion: 2, randomDrawCount: 7 },
       damageDealt: 50,
       enemyHp: 100,
-      isBoss: false,
     }],
     experience: 10,
     rewards: [],

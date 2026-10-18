@@ -9,12 +9,12 @@ import type { ExpeditionSimulationOptions, ExpeditionSimulationResult, GameState
 // The measured value of each objective over one forecast and its per-run variance. `simulationRun`, `gaSearch`, and
 // `stagedEquipmentTuning` share it, so the three report the same number for the same build, runs, and seed.
 
-export const MEASURED_OBJECTIVES = ['success', 'minDefeat', 'bossDamage', 'gateDamage', 'experience', 'progress'] as const;
+export const MEASURED_OBJECTIVES = ['success', 'minDefeat', 'gateDamage', 'experience', 'progress'] as const;
 export type MeasuredObjective = typeof MEASURED_OBJECTIVES[number];
 
-// SpecRef: 9.1.3 | 2-0 `gateDamage` | a battle-alone objective: `bossDamage` fights the boss room, `gateDamage` the `gateRoom`.
+// SpecRef: 9.1.3 | 2-0 `gateDamage` | the battle-alone objective: the `gateRoom` battle, an elite gate room or the boss (the last gate).
 /** Whether `objective` fights one room alone (from `startHp`) instead of running the route. */
-export const isRoomObjective = (objective: string): boolean => objective === 'bossDamage' || objective === 'gateDamage';
+export const isRoomObjective = (objective: string): boolean => objective === 'gateDamage';
 
 /** A gate room: an elite room `X,4` (floors 1 to 5) or the boss room `6,4`. */
 export interface GateRoom { floorNumber: number; roomInFloor: number }
@@ -24,7 +24,7 @@ export const GATE_ROOM_VALUES = ['next', 'boss', '1f-4', '2f-4', '3f-4', '4f-4',
 
 /**
  * The settings every forecast of one request shares (Spec 9.1.3, 2-0): the room `gateDamage` fights, and the HP share a
- * room-only forecast (`bossDamage`, `gateDamage`) starts with. A route forecast of a search always starts at full HP.
+ * room-only forecast (`gateDamage`) starts with. A route forecast of a search always starts at full HP.
  */
 export interface ForecastSettings { gateRoom: GateRoom | null; startHp: number | null }
 export const DEFAULT_FORECAST_SETTINGS: ForecastSettings = { gateRoom: null, startHp: null };
@@ -83,9 +83,9 @@ export interface ObjectiveMeasure {
   variance: number;
 }
 
-/** The room a room-only objective fights: the boss room for `bossDamage`, `gateRoom` for `gateDamage`. */
-function foughtRoom(objective: string, settings: ForecastSettings): GateRoom {
-  return objective === 'gateDamage' && settings.gateRoom ? settings.gateRoom : { floorNumber: 6, roomInFloor: 4 };
+/** The room `gateDamage` fights: `gateRoom`, or the boss room (the last gate) when none was resolved. */
+function foughtRoom(settings: ForecastSettings): GateRoom {
+  return settings.gateRoom ?? { floorNumber: 6, roomInFloor: 4 };
 }
 
 /**
@@ -100,21 +100,17 @@ export function prepareObjectiveState(state: GameState, partyIndex: number, obje
   const clearGateStatus = { ...party.clearGateStatus };
   for (let floor = 1; floor <= 5; floor += 1) clearGateStatus[getEliteGateKey(dungeonId, floor)] = true;
   clearGateStatus[getBossGateKey(dungeonId)] = true;
-  const room = foughtRoom(objective, settings);
+  const room = foughtRoom(settings);
   const expeditionDepthLimit = room.floorNumber >= 6 ? 'all' : gateRoomLabel(room) as Party['expeditionDepthLimit'];
   const parties = [...state.parties];
   parties[partyIndex] = { ...party, clearGateStatus, expeditionDepthLimit };
   return { ...state, parties };
 }
 
-/**
- * `bossDamage` fights only the boss battle and `gateDamage` only its gate room, from `startHp` (full HP by default); every
- * other objective runs the whole route from full HP.
- */
+/** `gateDamage` fights only its gate room's battle, from `startHp` (full HP by default); every other objective runs the route from full HP. */
 export function objectiveSimulationOptions(objective: string, settings: ForecastSettings = DEFAULT_FORECAST_SETTINGS): ExpeditionSimulationOptions {
   if (!isRoomObjective(objective)) return {};
-  const startHp = settings.startHp === null ? {} : { startHpShare: settings.startHp };
-  return objective === 'bossDamage' ? { bossRoomOnly: true, ...startHp } : { onlyRoom: foughtRoom(objective, settings), ...startHp };
+  return { onlyRoom: foughtRoom(settings), ...(settings.startHp === null ? {} : { startHpShare: settings.startHp }) };
 }
 
 /** The rooms on the route: up to the depth limit, or up to the first closed Clear-Gate (that room excluded). */
@@ -135,7 +131,7 @@ export function routeRoomCount(party: Party): number {
 
 /**
  * The objective's value over a forecast and its per-run variance. `success` and `minDefeat` score each run 0 or 1, so their
- * variance is `p(1 - p)`; `bossDamage`, `experience`, and `progress` use the per-run sums of squares. `routeRooms` divides
+ * variance is `p(1 - p)`; `gateDamage`, `experience`, and `progress` use the per-run sums of squares. `routeRooms` divides
  * `progress` (its runs are counted in rooms) into a value from 0 to 1.
  */
 export function measureObjective(objective: MeasuredObjective, result: ExpeditionSimulationResult, routeRooms: number): ObjectiveMeasure {
@@ -147,12 +143,6 @@ export function measureObjective(objective: MeasuredObjective, result: Expeditio
   };
   if (objective === 'success') return binary((result.Clear + result.Return) / runs);
   if (objective === 'minDefeat') return binary(result.Defeat / runs);
-  if (objective === 'bossDamage') {
-    const share = result.boss?.damageShare ?? 0;
-    // A forecast without per-run squares falls back to the Bernoulli bound, the largest variance a [0, 1] value can have.
-    if (result.boss?.damageShareSquareSum === undefined) return binary(share / runs);
-    return perRun(share, result.boss.damageShareSquareSum);
-  }
   if (objective === 'gateDamage') return perRun(result.gateRoom?.damageShare ?? 0, result.gateRoom?.damageShareSquareSum ?? 0);
   if (objective === 'experience') return perRun(result.totals?.experience ?? 0, result.experienceSquareSum ?? 0);
   return perRun(result.progress?.sum ?? 0, result.progress?.squareSum ?? 0, Math.max(1, routeRooms));
@@ -162,27 +152,23 @@ export interface ForecastScope {
   from: string | null;
   to: string | null;
   rooms: number;
-  endsAt: 'clearGate' | 'depthLimit' | 'dungeonEnd' | 'bossRoom' | 'gateRoom';
+  endsAt: 'clearGate' | 'depthLimit' | 'dungeonEnd' | 'gateRoom';
 }
 
 // SpecRef: 9.1.3 | 2-3-2 `forecast.scope` | the rooms a forecast of `objective` simulates, walked as `routeRoomCount` does.
 export function forecastScope(state: GameState, partyIndex: number, objective: string, settings: ForecastSettings = DEFAULT_FORECAST_SETTINGS): ForecastScope {
   if (objective === 'gateDamage') {
-    const label = gateRoomLabel(foughtRoom(objective, settings));
+    const label = gateRoomLabel(foughtRoom(settings));
     return { from: label, to: label, rooms: 1, endsAt: 'gateRoom' };
   }
   const party = prepareObjectiveState(state, partyIndex, objective, settings).parties[partyIndex];
   const dungeon = getDungeonById(party.selectedDungeonId);
-  if (!dungeon) return { from: null, to: null, rooms: 0, endsAt: objective === 'bossDamage' ? 'bossRoom' : 'dungeonEnd' };
+  if (!dungeon) return { from: null, to: null, rooms: 0, endsAt: 'dungeonEnd' };
   const labels: string[] = [];
   for (const floor of dungeon.floors) {
     for (let roomIndex = 0; roomIndex < floor.rooms.length; roomIndex += 1) {
       const roomInFloor = roomIndex + 1;
       const label = `${floor.floorNumber}f-${roomInFloor}`;
-      if (objective === 'bossDamage') {
-        if (floor.rooms[roomIndex].type === 'battle_Boss') return { from: label, to: label, rooms: 1, endsAt: 'bossRoom' };
-        continue;
-      }
       if (checkClearGateRequirement({ dungeonId: dungeon.id, floorNumber: floor.floorNumber, roomInFloor, roomType: floor.rooms[roomIndex].type, party }).blocked) {
         return { from: labels[0] ?? null, to: labels[labels.length - 1] ?? null, rooms: labels.length, endsAt: 'clearGate' };
       }
@@ -192,6 +178,5 @@ export function forecastScope(state: GameState, partyIndex: number, objective: s
       }
     }
   }
-  if (objective === 'bossDamage') return { from: null, to: null, rooms: 0, endsAt: 'bossRoom' };
   return { from: labels[0] ?? null, to: labels[labels.length - 1] ?? null, rooms: labels.length, endsAt: 'dungeonEnd' };
 }

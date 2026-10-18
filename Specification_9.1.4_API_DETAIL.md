@@ -551,11 +551,11 @@ definitions in 9.1.3.
 * `simulationRun` always runs on a fixed seed: the requested `seed`, or a fresh
   random one, returned as `seed` either way, so the same `seed`, `numberOfRun`,
   and `objective` on the same revision repeat the forecast (battles included).
-  With `objective` (`success`, `minDefeat`, `bossDamage`, `gateDamage`,
+  With `objective` (`success`, `minDefeat`, `gateDamage`,
   `experience`, or `progress`; 9.1.3, 2-0), the response also returns `rate`, measured exactly as
   `gaSearch`, `directedBuild`, and `stagedEquipmentTuning` measure it, and `standardError`
   (`sqrt(variance / numberOfRun)` with the per-run variance of 7.1.5). With
-  `bossDamage` or `gateDamage` the forecast is that objective's battle alone (see GA
+  `gateDamage` the forecast is that objective's battle alone (see GA
   search), so `overview`, `detail`, `rooms`, and `depthLimit` describe it.
   `gateRoom` and `startHp` are validated as in GA search (`gateRoom` only with
   `objective: gateDamage`); `startHp` sets the start HP of every run, route
@@ -840,9 +840,9 @@ definitions in 9.1.3.
   `invalid_request`, field `considerDeityChange`. `eliteCount` may not exceed `populationSize / 4`.
   `timeBudgetSeconds` is 5 to 600. `verifySeed` is any safe integer (otherwise
   `invalid_request`, field `gaParameters.verifySeed`). `objective` is `success`
-  (default), `minDefeat`, `bossDamage`, `gateDamage`, `experience`, or `progress` (9.1.3, 2-0);
+  (default), `minDefeat`, `gateDamage`, `experience`, or `progress` (9.1.3, 2-0);
   another value is `invalid_request`, field `objective`. `objectiveGuard` is an
-  object with exactly one member, `success`, `bossDamage`, `gateDamage`, or `progress`, whose value is a
+  object with exactly one member, `success`, `gateDamage`, or `progress`, whose value is a
   number from 0 to 1: another shape is `invalid_request`, field `objectiveGuard`;
   another member name is `objectiveGuard.<name>.unknown_member`; the `objective`
   itself is `objectiveGuard.<name>.same_as_objective`; a value out of range is
@@ -852,7 +852,7 @@ definitions in 9.1.3.
   `gateRoom.not_used`); `next` resolves when the request is parsed. `startHp` is
   `full` (default) or a number above 0 and at most 1 (otherwise field
   `startHp`); a share below 1 is accepted only when the objective or the `crossCheck`
-  objective (the guard's, or the default one) is `bossDamage` or `gateDamage`
+  objective (the guard's, or the default one) is `gateDamage`
   (otherwise field `startHp.not_used`). `directedBuild` and
   `stagedEquipmentTuning` validate both the same way. `successSignal` is `auto` (default), `success`, or
   `progress`; another value, or any `successSignal` with an `objective` other
@@ -976,9 +976,9 @@ definitions in 9.1.3.
 * `objectiveGuard`: every candidate is also measured on the guard objective with
   the same runs and seed as its objective score: `quickRuns` on the quick seed
   for its quick score, `confirmRuns` on the confirm seed when confirmed, in that
-  objective's own forecast (`bossDamage` and `gateDamage` fight one room alone;
+  objective's own forecast (`gateDamage` fights one room alone;
   `success` and `progress` run the route). When neither the objective nor the
-  guard is `bossDamage` or `gateDamage`, the guard value is read from the objective's own forecast result
+  guard is `gateDamage`, the guard value is read from the objective's own forecast result
   (the two forecasts would be identical), so it adds no forecast and no
   `evaluations`; the same holds for the guard forecasts of the final selection
   and the `crossCheck` of the verification. The population sort, the elites, and
@@ -1004,7 +1004,7 @@ definitions in 9.1.3.
   reserve also covers the level probe: `confirmRuns` for the current level and
   for each of the `count` probed levels, plus two `quickRuns` fills per probed
   level, at the cost per run of the objective (of the `crossCheck` objective for
-  `bossDamage` and `gateDamage`, whose own runs are one battle alone). With
+  `gateDamage`, whose own runs are one battle alone). With
   `levelProbe.fill: search`, a further 25% of `timeBudgetSeconds` is reserved
   for the probe's searches. The search stops at `timeBudgetSeconds`
   minus that reserve, so the response returns within the budget. The desktop
@@ -1030,8 +1030,8 @@ definitions in 9.1.3.
     to `all`, so the route ends before the goal's gate room (a closed gate stops a
     run with a Return) or, with every gate open, runs through the boss room; `p`
     is the success rate (Clear or Return). `farming` runs the party's own route
-    and measures the defeat rate. Neither depends on `objective`; `bossDamage`'s
-    boss-only forecast is never used.
+    and measures the defeat rate. Neither depends on `objective`; the
+    battle-only `gateDamage` forecast is never used.
   * Each point uses `confirmRuns` runs on the verification seed. `rate` and
     `standardError` (`sqrt(p(1 - p) / confirmRuns)`) are percentages rounded to
     0.01; `expectedRuns` is `E(required) - E(current)` rounded to 0.01;
@@ -1068,8 +1068,7 @@ definitions in 9.1.3.
   * With a fixed `seed` (and `verifySeed`), the probe repeats exactly. It never
     changes the save. Its forecasts count in `evaluations`.
 * Objectives (9.1.3, 2-0): the search maximizes `ln(success)` for `success`, the
-  average boss damage share for `bossDamage`, the average gate-room damage
-  share for `gateDamage`, average EXP per run for
+  average gate-room damage share for `gateDamage`, average EXP per run for
   `experience`, and the average `progress` (7.1.5 Score) for `progress`. For
   `success`, a `progress` term (7.1.5 Score: rooms cleared plus the enemy-HP share
   of a lost or drawn last battle, over the rooms on the route; weighted by the
@@ -1084,29 +1083,24 @@ definitions in 9.1.3.
   the defeat rate without lowering the success rate: a candidate whose success
   rate on the same seed is below the current build's is penalized, so a build
   that cannot win (and only draws) is never chosen.
-* `bossDamage` measures the boss battle of the current destination alone: every
-  Clear-Gate of that destination counts as open and the depth limit is `all`,
-  and each run skips every room before the boss room and starts the boss battle
-  at `startHp` (full party HP by default), for every run of that search,
-  including the verification, so its `forecast` describes that battle. A boss
-  kill counts as a share of 1.
-* `gateDamage` measures the battle of `gateRoom` alone the same way: every
-  Clear-Gate of the destination counts as open, the depth limit is that room
-  (`all` for the boss room), and each run skips every other room and starts the
-  battle at `startHp`. A won battle ends the run (a Return; a Clear at the boss
-  room), so a win counts as a share of 1. With `gateRoom` the boss room, the
-  runs are those of `bossDamage` on the same seed. The response echoes
+* `gateDamage` measures the battle of `gateRoom` (an elite gate room, or the boss
+  room as the last gate) alone: every Clear-Gate of the destination counts as
+  open, the depth limit is that room (`all` for the boss room), and each run
+  skips every other room and starts the battle at `startHp` (full party HP by
+  default), for every run of that search, including the verification, so its
+  `forecast` describes that battle. A won battle ends the run (a Return; a Clear
+  at the boss room), so a win counts as a share of 1. The response echoes
   `gateRoom` (the room label) whenever `gateDamage` is measured, and `startHp`
   (`full` or the share) always.
 * `startHp`: the forecast sandbox sets the party's current HP to
   `max(1, floor(maximumHp × startHp))` before every run instead of the maximum. In
   `gaSearch`, `directedBuild`, and `stagedEquipmentTuning` it is passed only to
-  the `bossDamage` and `gateDamage` forecasts (objective, guard, and
+  the `gateDamage` forecasts (objective, guard, and
   `crossCheck`); route forecasts start at full HP.
 * `verdict` compares the current build and the result on the verification seed with
   `verifyRuns` runs each. The standard error uses the per-run variance of each
   rate: binomial for `success` and `minDefeat`, the per-run share variance
-  for `bossDamage` and `gateDamage`, the per-run EXP variance for `experience`, and the per-run
+  for `gateDamage`, the per-run EXP variance for `experience`, and the per-run
   `progress` variance for `progress`. With `success`, when successes are rare for
   both builds on the verification seed (`isRareSuccess` of the higher success
   rate with `verifyRuns`; two rates of 0 included), the verdict is judged on
@@ -1125,10 +1119,10 @@ definitions in 9.1.3.
   when the current EXP is 0), and its standard error. `seed` is the seed used, so
   the search can be repeated; `verifySeed` is the verification seed used.
   `progress` is `{before, after}`, the 7.1.5 Score of both builds in the same
-  verification runs (rounded to 4 decimals), for every objective but `bossDamage`
-  and `gateDamage` (`null`). `crossCheck` is `{objective, before, after, minimum, reached}`: the
-  guard objective, or `bossDamage` (for `success`, `minDefeat`, `experience`,
-  `progress`) or `success` (for `bossDamage` and `gateDamage`) without a guard (9.1.3, 2-0),
+  verification runs (rounded to 4 decimals), for every objective but `gateDamage`
+  (`null`). `crossCheck` is `{objective, before, after, minimum, reached}`: the
+  guard objective, or `gateDamage` on `gateRoom` (for `success`, `minDefeat`,
+  `experience`, `progress`) or `success` (for `gateDamage`) without a guard (9.1.3, 2-0),
   measured on both builds with
   `verifyRuns` runs on the verification seed in that objective's own forecast
   (rounded to 4 decimals); `minimum` and `reached` (`{before, after}`) are `null`
@@ -1136,8 +1130,7 @@ definitions in 9.1.3.
 * `forecast.scope` is `{from, to, rooms, endsAt}`, walked like the route `progress`
   is divided by: from `1f-1` up to the room before the first closed Clear-Gate
   (`clearGate`), up to the depth limit (`depthLimit`), or to the last room
-  (`dungeonEnd`); with `bossDamage`, the boss room alone (`bossRoom`); with
-  `gateDamage`, the gate room alone (`gateRoom`). `from` and
+  (`dungeonEnd`); with `gateDamage`, the gate room alone (`gateRoom`). `from` and
   `to` are `null` when no room is simulated.
 * `changeSummary` entries are generated by running each call through the Commit
   API handler on a private copy, so each one is accepted as written: an `equip`
@@ -1190,7 +1183,7 @@ definitions in 9.1.3.
 * Validation: `direction` is required and must be one of its listed values (otherwise `invalid_request`, field `direction`). `targets` is 1 to 6 unique members of party `{p}` (otherwise `invalid_request`, field `targets.characterId`); omitted `changeableComponents` members take the 9.1.3 defaults, and `autoEquipmentRun` must be `currentSetting`, `FULL` (default), `SEMI`, or `OFF`. `considerOrderChange`, `considerDeityChange`, `considerItemsScope`, `objective`, and `objectiveGuard` are validated as for `gaSearch`. `autoEquipmentScope` is `changedOnly` (default) or `allTargets`; `equipmentPolish` is `none`, `changedOnly` (default), or `allTargets`; `polishMethod` is `ga` (default), `stagedTuning`, or `stagedTuningThenGa`; `directionStrictness` is `strict` (default) or `soft`; `directionPenalty` is a number from 0 to 50 (default 2); any other value is `invalid_request` naming the member. `tuningParameters` ranges and `effort` presets are the 9.1.3 tables (`timeBudgetSeconds` 5 to 600, `verifySeed` any safe integer); `mutationRate` defaults to the `effort` preset's; `eliteCount` may not exceed `populationSize / 4`. An unknown member anywhere is `invalid_request`. A missing party is `not_found`.
 * Seeds: every seed derives from `tuningParameters.seed` (a fresh random one when omitted): one for candidate sampling and mutation, one for the quick runs, one for the confirm runs, one for the Step 4 search and its draws, one for the Final selection, and one for verification (`tuningParameters.verifySeed` instead when given). Steps 1 to 4 score on the same quick and confirm seeds, so all candidates are compared on the same random numbers, and the same `seed`, save, and parameters return the same result unless `timeBudgetSeconds` stops a step first.
 * Build components choose from the same options as `read/build/character/status` and are validated by the `changeBuild` rules in party order (including the unique-character and race/gender rules); a candidate that breaks one is invalid. `uniqueCharacter: true` adds the unique characters `changeBuild` would accept for that member as `uniqueSelection` options.
-* Composition: each member's main class is counted in its 9.1.3 category. The distance of a composition is the sum over the four categories of `max(0, minimum − count) + max(0, count − maximum)` for the direction's ranges (`0` for `free`). Step 1 first finds the smallest distance any valid assignment of the changeable main classes can reach. With `directionStrictness: strict`, only candidates at that distance are valid: a party that can meet the ranges is held to them, one that cannot gets the closest composition, and the search still runs. With `soft`, every composition is valid, and each candidate's search score is made worse by `directionPenalty` per member of distance: `success` lowers its success rate and its `progress` tie-break by that many percentage points before the fitness is computed; `minDefeat`, `bossDamage`, `gateDamage`, and `progress` lower the fitness by that many points; `experience` by that percent of the current build's average EXP in the verification runs. Steps 2 and 3 score with the same penalty. `verdict` and `verification` never include it.
+* Composition: each member's main class is counted in its 9.1.3 category. The distance of a composition is the sum over the four categories of `max(0, minimum − count) + max(0, count − maximum)` for the direction's ranges (`0` for `free`). Step 1 first finds the smallest distance any valid assignment of the changeable main classes can reach. With `directionStrictness: strict`, only candidates at that distance are valid: a party that can meet the ranges is held to them, one that cannot gets the closest composition, and the search still runs. With `soft`, every composition is valid, and each candidate's search score is made worse by `directionPenalty` per member of distance: `success` lowers its success rate and its `progress` tie-break by that many percentage points before the fitness is computed; `minDefeat`, `gateDamage`, and `progress` lower the fitness by that many points; `experience` by that percent of the current build's average EXP in the verification runs. Steps 2 and 3 score with the same penalty. `verdict` and `verification` never include it.
 * Class rules for assigned main classes:
   * A Support class is never assigned when another member already has it as main class. A duplicate among the fixed main classes is kept and does not make the party invalid.
   * `Felidian` with main class `class.ninja` is invalid for every direction, not only `rapidRanged` (both grant `a.first-strike`, which does not stack). Only a candidate's changed members are checked, so a fixed `Felidian` ninja stays.
@@ -1223,11 +1216,11 @@ definitions in 9.1.3.
   for the item draws, one shared by every quick run of steps 2–4, one shared by
   every run of step 5, and one shared by the baseline (step 1) and the final check
   (step 6), so the same `seed` on the same revision repeats the whole tuning.
-  `bossDamage` and `gateDamage` simulate one battle alone from `startHp` (full
+  `gateDamage` simulates one battle alone from `startHp` (full
   party HP by default), with every Clear-Gate of the destination open, as `gaSearch`
   does. Objectives are those of 9.1.3, 2-0. With `success`, a step 1 success rate
   of 0 makes every step score `progress` instead (`scoredBy: progress`);
-  `minDefeat`, `bossDamage`, `gateDamage`, `experience`, and `progress` always score
+  `minDefeat`, `gateDamage`, `experience`, and `progress` always score
   themselves. Improvements use the rarer-side ratio of 7.1.5 for every score but
   `experience`, which uses the plain ratio `candidate / current`; the step 6 luck
   check uses each score's per-run variance (the per-run EXP for `experience`).
@@ -1237,7 +1230,7 @@ definitions in 9.1.3.
   `defenseElementTrialRuns` 0–40, `abilityTrialRuns` 0–100, and each
   `...CandidateCount` 1–3. `minImprovement` and `minGateImprovement` are numbers
   from 0 to 10. `offenseElementRequest` is `noRequest`, `e.fire`, `e.ice`,
-  `e.thunder`, or `e.none`; `objective` is `success`, `minDefeat`, `bossDamage`,
+  `e.thunder`, or `e.none`; `objective` is `success`, `minDefeat`,
   `gateDamage`, `experience`, or `progress`; `objectiveGuard`, `gateRoom`, and
   `startHp` are validated as for `gaSearch` (fields `objectiveGuard...`,
   `gateRoom...`, `startHp...`); `seed` is any safe integer. Any other value or an
@@ -1265,7 +1258,7 @@ definitions in 9.1.3.
   own seed.
 * Bottleneck: the room with the most Draw + Retreat + Defeat ends (the earliest
   on a tie); with none, the boss room if a run reached it, else the latest
-  reached elite room, else `null`. With `bossDamage` it is always the boss room, and with `gateDamage` always the gate room. Its enemies are every enemy the room can
+  reached elite room, else `null`. With `gateDamage` it is always the gate room. Its enemies are every enemy the room can
   draw, and its terrain is the terrain effect of the room's floor. An element is
   resisted least when the enemies' average resistance
   multiplier for it is highest (an enemy with that element's null, absorb, or
@@ -1324,8 +1317,8 @@ definitions in 9.1.3.
   is the tuned build's step 5 improvement.
 * `objectiveGuard` (7.1.5 Guard): steps 2–4 rank on `objective` alone. In step
   5 every build is also measured on the guard objective with `finalTuningRuns`
-  on the step 5 seed, in that objective's own forecast (`bossDamage` and
-  `gateDamage` fight one room alone), and an add or swap is kept only when the new build ranks above
+  on the step 5 seed, in that objective's own forecast (`gateDamage`
+  fights one room alone), and an add or swap is kept only when the new build ranks above
   the build before it by the guard ranking (9.1.3, 2-0). In steps 1 and 6 both
   builds are measured on it with `baselineRuns` on the baseline seed. Step 6
   accepts by the 7.1.5 step 6 guard rule: when the current build reaches the
@@ -1801,7 +1794,7 @@ use the same operation without HTTP authentication headers.
   with their 9.1.3 members (for tuning, `characterId`, the tuning parameters,
   `objective`, and `objectiveGuard`).
   `numberOfRun` is an integer 1 ~ 1000 and defaults to 100; `objective` is one
-  of `success`, `minDefeat`, `bossDamage`, `gateDamage`, `experience`,
+  of `success`, `minDefeat`, `gateDamage`, `experience`,
   `progress`; `gateRoom` and `startHp` are validated as in GA search; `seed` is any
   safe integer. Any other value is `invalid_request`.
 * A parameter is required unless marked optional, given a default, or contained
