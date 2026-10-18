@@ -285,7 +285,7 @@ const commitParameters = {
 };
 
 // SpecRef: 9.1.3 | Read | 2-3-2 party/{p}/gaSearch | a POST Read body like `simulationRun` (no Commit envelope).
-const gaComponents = strict(Object.fromEntries(['raceGender', 'mainClass', 'subClass', 'lineage', 'predisposition', 'equipment', 'jewels'].map((key) => [key, optional(Type.Boolean(), false)])));
+const gaComponents = strict(Object.fromEntries(['uniqueCharacter', 'raceGender', 'mainClass', 'subClass', 'lineage', 'predisposition', 'equipment', 'jewels'].map((key) => [key, optional(Type.Boolean(), false)])));
 const gaIntegers = { populationSize: [8, 64], generations: [1, 200], quickRuns: [10, 1000], confirmRuns: [50, 1000], timeBudgetSeconds: [5, 600], verifyRuns: [100, 1000], eliteCount: [0, 16], tournamentSize: [2, 8], confirmTopN: [1, 10], maxChanges: [1, 100], stallGenerations: [1, 200] };
 const gaParameters = strict({
   effort: optional(literals('low', 'medium', 'high', 'max'), 'low'),
@@ -311,7 +311,7 @@ const levelProbeRequest = strict({
 const seedBuild = strict({
   label: optional(Type.String({ maxLength: 64 })),
   characters: optional(Type.Array(strict({
-    characterId: integerId, racesAndGender: optional(Type.String()), mainClassId: optional(Type.String()), subClassId: optional(Type.String()),
+    characterId: integerId, uniqueSelection: optional(Type.String()), racesAndGender: optional(Type.String()), mainClassId: optional(Type.String()), subClassId: optional(Type.String()),
     lineage: optional(Type.String()), predisposition: optional(Type.String()),
   }))),
   order: optional(Type.Array(integerId, { uniqueItems: true })), deityId: optional(Type.String()),

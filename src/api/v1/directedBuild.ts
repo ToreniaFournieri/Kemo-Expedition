@@ -1026,7 +1026,7 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
       // SpecRef: 9.1.3 | 2-3-3 `polishMethod` `ga` | the `gaSearch` search over the searched members' equipment and Jewels,
       // from the current result; its own final selection and verification are left to the Final selection.
       const gaRequest: GaSearchRequest = {
-        targets: polishMembers.map((characterId) => ({ characterId, components: { raceGender: false, mainClass: false, subClass: false, lineage: false, predisposition: false, equipment: true, jewels: true } })),
+        targets: polishMembers.map((characterId) => ({ characterId, components: { uniqueCharacter: false, raceGender: false, mainClass: false, subClass: false, lineage: false, predisposition: false, equipment: true, jewels: true } })),
         considerOrderChange: false, considerDeityChange: 'none', considerItemsScope: request.considerItemsScope, objective, objectiveGuard: guard, forecast: settings,
         parameters: {
           effort: parameters.effort, populationSize: parameters.populationSize, generations: parameters.generations, quickRuns: parameters.quickRuns,

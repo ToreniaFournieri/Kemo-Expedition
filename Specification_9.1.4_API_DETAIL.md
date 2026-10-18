@@ -870,8 +870,8 @@ definitions in 9.1.3.
   at most 64 characters), `characters`, `order`, and `deityId`; another member is
   `seedBuilds[i].<name>.unknown_member`. `characters` is an array of objects with
   an integer `characterId` of party `{p}`, each at most once, and only the string
-  members `racesAndGender`, `mainClassId`, `subClassId`, `lineage`, and
-  `predisposition`; `order` is a permutation of the party's character IDs;
+  members `uniqueSelection`, `racesAndGender`, `mainClassId`, `subClassId`,
+  `lineage`, and `predisposition`; `order` is a permutation of the party's character IDs;
   `deityId` is a string. A wrong shape is `invalid_request`, field
   `seedBuilds[i].<path>`. Only the shape is validated here: a well-formed value
   that the game rules do not allow is not an error; it is ignored and reported in
@@ -903,8 +903,15 @@ definitions in 9.1.3.
   `equipment`, the items stay and only their Jewels change, and with `equipment`
   but not `jewels`, an item that stays in its slot keeps its Jewel and a new item
   gets none. Build components choose from the same options as
-  `read/build/character/status`, are validated by the `changeBuild` rules in party
-  order, and an invalid choice keeps the current value. `considerOrderChange`
+  `read/build/character/status` (`uniqueCharacter`: `validOptions.uniqueSelection`,
+  that is `none` and the available unique characters no other character holds),
+  are validated by the `changeBuild` rules in party order, and an invalid choice
+  keeps the current value. While a candidate's unique selection is not `none`,
+  its race/gender, lineage, and predisposition genes are not applied (the unique
+  character fixes them); after each build change every build gene is re-read
+  from the character, so the genome holds the values the character really has.
+  Without `uniqueCharacter`, a unique character's `raceGender`, `lineage`, and
+  `predisposition` components are ignored. `considerOrderChange`
   permutes the whole party. `considerDeityChange: unoccupiedDeities` chooses from
   `read/build/party/{p}` `validOptions.deityId`; `allDeities` also offers every
   unlocked deity another party holds. A result that takes such a deity frees it

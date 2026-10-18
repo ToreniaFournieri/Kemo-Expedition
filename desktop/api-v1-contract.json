@@ -22445,6 +22445,10 @@
                   "additionalProperties": false,
                   "type": "object",
                   "properties": {
+                    "uniqueCharacter": {
+                      "type": "boolean",
+                      "default": false
+                    },
                     "raceGender": {
                       "type": "boolean",
                       "default": false
@@ -22756,6 +22760,9 @@
                       "characterId": {
                         "minimum": 1,
                         "type": "integer"
+                      },
+                      "uniqueSelection": {
+                        "type": "string"
                       },
                       "racesAndGender": {
                         "type": "string"
