@@ -6,6 +6,7 @@ import { computeCharacterStats, MAX_CHARACTER_NAME_LENGTH } from '../../game/cha
 import { canCharacterEquipCategory, getEquipmentAptitudeForCategory, type EquipmentAptitude } from '../../game/equipmentSets';
 import { getUniqueCharacterDef, isUniqueCharacterAvailable, UNIQUE_CHARACTERS, type UniqueCharacterId } from '../../data/uniqueCharacters';
 import { resolveReleasedUniqueBuild } from '../../game/uniqueRelease';
+import { buildDefaultNamePools, pickDefaultName, stableUnitRandom } from '../../game/defaultNames';
 import { translate } from '../../i18n';
 import type { Character, GameState, RaceId } from '../../types';
 
@@ -174,6 +175,27 @@ export function planCharacterBuildChange(state: GameState, characterId: number, 
     const predisposition = typeof parameters.predisposition === 'string' ? PREDISPOSITIONS.find((entry) => entry.id === parameters.predisposition) : undefined;
     if (!predisposition || predisposition.selectable !== true) invalid('predisposition');
     requested.predispositionId = predisposition.id;
+  }
+
+  // SpecRef: 8.2.3 | Default Name Assignment | Trigger: when `Race` is changed, as the Party editor does; a released
+  // unique is renamed too, so it never keeps the unique's name. An explicit `name` wins. A Mimorian takes its form's name.
+  if (!identityFixed && parameters.name === undefined) {
+    const raceId = requested.raceId ?? character.raceId;
+    const raceChanged = raceId !== character.raceId;
+    const releasing = changingSelection && selection === 'none';
+    if (raceId === 'mimorian') {
+      const enemyId = requested.mimorianEnemyId ?? character.mimorianEnemyId;
+      const enemy = (raceChanged || enemyId !== character.mimorianEnemyId) ? ENEMIES.find((entry) => entry.id === enemyId) : undefined;
+      if (enemy) requested.name = enemy.name;
+    } else if (raceChanged || releasing) {
+      const gender = requested.gender ?? character.gender;
+      const usedNames = new Set(state.parties.flatMap((entry) => entry.characters)
+        .filter((candidate) => candidate.id !== character.id).map((candidate) => candidate.name));
+      // A fixed choice per character, race, and gender: planning (GA candidates, simulations) must not consume gameplay randomness.
+      const name = pickDefaultName(buildDefaultNamePools((key) => translate(state.global.language, key)), party.id, raceId, gender,
+        usedNames, stableUnitRandom(`${character.id}:${raceId}:${gender}`));
+      if (name !== undefined) requested.name = name;
+    }
   }
 
   if (character.isUnique && !changingSelection) {

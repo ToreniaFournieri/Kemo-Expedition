@@ -69,8 +69,9 @@ REST_HEAL_MAX_HP_RATIO,
 REST_HEAL_MIN_HP,
 } from '../../game/restHealing';
 import { Language,t } from '../../i18n';
+import { buildDefaultNamePools,type DefaultNamePools } from '../../game/defaultNames';
 import type { AfkPartyTransactionAttribution,AfkPartyTransactionPlanner } from '../../hooks/useGameState';
-import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type BattleLogEntry } from '../../types';
+import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,type BattleLogEntry } from '../../types';
 
 export function resolvePublicAssetPath(path?: string): string | null {
   if (!path) return null;
@@ -1333,93 +1334,9 @@ export function getExpeditionDepthOptions(dungeonId: number): Array<{ value: Exp
   ];
 }
 
-export type GenderedNamePool = { male: string[]; female: string[] };
-export function getPotentialDefaultNamesByPt(): Record<number, Partial<Record<RaceId, GenderedNamePool>>> {
+export function getPotentialDefaultNamesByPt(): DefaultNamePools {
   // Build the pools on demand so their i18n values follow the currently active language.
-  const pools: Record<number, Partial<Record<RaceId, GenderedNamePool | string[]>>> = {
-  1: {
-    caninian: t('home.defaultNames.pt1.caninian').split('|').map((name) => name.trim()).filter(Boolean),
-    lupinian: t('home.defaultNames.pt1.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
-    vulpinian: t('home.defaultNames.pt1.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
-    ursan: t('home.defaultNames.pt1.ursan').split('|').map((name) => name.trim()).filter(Boolean),
-    felidian: t('home.defaultNames.pt1.felidian').split('|').map((name) => name.trim()).filter(Boolean),
-    leporian: t('home.defaultNames.pt1.leporian').split('|').map((name) => name.trim()).filter(Boolean),
-    cervin: t('home.defaultNames.pt1.cervin').split('|').map((name) => name.trim()).filter(Boolean),
-    murid: t('home.defaultNames.pt1.murid').split('|').map((name) => name.trim()).filter(Boolean),
-  },
-  2: {
-    lupinian: t('home.defaultNames.pt2.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
-    vulpinian: t('home.defaultNames.pt2.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
-    felidian: t('home.defaultNames.pt2.felidian').split('|').map((name) => name.trim()).filter(Boolean),
-    caninian: t('home.defaultNames.pt2.caninian').split('|').map((name) => name.trim()).filter(Boolean),
-    ursan: t('home.defaultNames.pt2.ursan').split('|').map((name) => name.trim()).filter(Boolean),
-    procyonian: t('home.defaultNames.pt2.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
-    leporian: t('home.defaultNames.pt2.leporian').split('|').map((name) => name.trim()).filter(Boolean),
-    cervin: t('home.defaultNames.pt2.cervin').split('|').map((name) => name.trim()).filter(Boolean),
-    murid: t('home.defaultNames.pt2.murid').split('|').map((name) => name.trim()).filter(Boolean),
-  },
-  3: {
-    lupinian: t('home.defaultNames.pt3.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
-    vulpinian: t('home.defaultNames.pt3.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
-    felidian: t('home.defaultNames.pt3.felidian').split('|').map((name) => name.trim()).filter(Boolean),
-    caninian: t('home.defaultNames.pt3.caninian').split('|').map((name) => name.trim()).filter(Boolean),
-    ursan: t('home.defaultNames.pt3.ursan').split('|').map((name) => name.trim()).filter(Boolean),
-    procyonian: t('home.defaultNames.pt3.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
-    leporian: t('home.defaultNames.pt3.leporian').split('|').map((name) => name.trim()).filter(Boolean),
-    cervin: t('home.defaultNames.pt3.cervin').split('|').map((name) => name.trim()).filter(Boolean),
-    murid: t('home.defaultNames.pt3.murid').split('|').map((name) => name.trim()).filter(Boolean),
-  },
-  4: {
-    lupinian: t('home.defaultNames.pt4.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
-    vulpinian: t('home.defaultNames.pt4.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
-    felidian: t('home.defaultNames.pt4.felidian').split('|').map((name) => name.trim()).filter(Boolean),
-    caninian: t('home.defaultNames.pt4.caninian').split('|').map((name) => name.trim()).filter(Boolean),
-    ursan: t('home.defaultNames.pt4.ursan').split('|').map((name) => name.trim()).filter(Boolean),
-    procyonian: t('home.defaultNames.pt4.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
-    leporian: t('home.defaultNames.pt4.leporian').split('|').map((name) => name.trim()).filter(Boolean),
-    cervin: t('home.defaultNames.pt4.cervin').split('|').map((name) => name.trim()).filter(Boolean),
-    murid: t('home.defaultNames.pt4.murid').split('|').map((name) => name.trim()).filter(Boolean),
-  },
-  5: {
-    lupinian: t('home.defaultNames.pt5.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
-    vulpinian: t('home.defaultNames.pt5.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
-    felidian: t('home.defaultNames.pt5.felidian').split('|').map((name) => name.trim()).filter(Boolean),
-    caninian: t('home.defaultNames.pt5.caninian').split('|').map((name) => name.trim()).filter(Boolean),
-    ursan: t('home.defaultNames.pt5.ursan').split('|').map((name) => name.trim()).filter(Boolean),
-    procyonian: t('home.defaultNames.pt5.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
-    leporian: t('home.defaultNames.pt5.leporian').split('|').map((name) => name.trim()).filter(Boolean),
-    cervin: t('home.defaultNames.pt5.cervin').split('|').map((name) => name.trim()).filter(Boolean),
-    murid: t('home.defaultNames.pt5.murid').split('|').map((name) => name.trim()).filter(Boolean),
-  },
-  6: {
-    lupinian: t('home.defaultNames.pt6.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
-    vulpinian: t('home.defaultNames.pt6.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
-    felidian: t('home.defaultNames.pt6.felidian').split('|').map((name) => name.trim()).filter(Boolean),
-    caninian: t('home.defaultNames.pt6.caninian').split('|').map((name) => name.trim()).filter(Boolean),
-    ursan: t('home.defaultNames.pt6.ursan').split('|').map((name) => name.trim()).filter(Boolean),
-    procyonian: t('home.defaultNames.pt6.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
-    leporian: t('home.defaultNames.pt6.leporian').split('|').map((name) => name.trim()).filter(Boolean),
-    cervin: t('home.defaultNames.pt6.cervin').split('|').map((name) => name.trim()).filter(Boolean),
-    murid: t('home.defaultNames.pt6.murid').split('|').map((name) => name.trim()).filter(Boolean),
-  },
-  };
-
-
-const getGenderedNamePool = (names: string[]): GenderedNamePool => {
-  const pivot = Math.ceil(names.length / 2);
-  return { male: names.slice(0, pivot), female: names.slice(pivot) };
-};
-
-  Object.values(pools).forEach((races) => {
-    Object.keys(races).forEach((raceKey) => {
-      const value = (races as Record<string, unknown>)[raceKey];
-      if (Array.isArray(value)) {
-        (races as Record<string, GenderedNamePool>)[raceKey] = getGenderedNamePool(value as string[]);
-      }
-    });
-  });
-
-  return pools as Record<number, Partial<Record<RaceId, GenderedNamePool>>>;
+  return buildDefaultNamePools((key) => t(key));
 }
 
 export function parseDiaryThreshold(value: string): DiaryRarityThreshold {
