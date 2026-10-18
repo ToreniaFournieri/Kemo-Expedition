@@ -15,7 +15,7 @@ import {
   buildBasis, createRandom, crossCheckObjective, deriveSeed, GA_OBJECTIVES, jarKeyOf, measuredObjectives, measureSecondObjective, parseObjectiveGuard, planGaChangeSummary,
   type GaChangeEntry, type GaSearchDependencies, type ObjectiveGuard,
 } from './gaSearch';
-import { describeForecastSettings, measureObjective, objectiveSimulationOptions, parseForecastSettings, prepareObjectiveState, routeRoomCount, type ForecastSettings, type ObjectiveMeasure } from './objectiveMeasure';
+import { describeForecastSettings, describeWinRate, measureObjective, objectiveSimulationOptions, parseForecastSettings, prepareObjectiveState, routeRoomCount, type ForecastSettings, type ObjectiveMeasure } from './objectiveMeasure';
 import { buildSimulationRunData, floorRoomLabel } from './simulationView';
 
 // SpecRef: 7.1.5 | Staged Equipment Tuning
@@ -973,6 +973,7 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
           after: round4(crossAfter.rate),
           minimum: guard ? guard.minimum : null,
           reached: guard ? { before: crossBefore.rate >= guard.minimum, after: crossAfter.rate >= guard.minimum } : null,
+          winRate: describeWinRate(crossBefore, crossAfter),
         },
       } : {}),
       ...describeForecastSettings(settings),

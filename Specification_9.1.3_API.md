@@ -381,11 +381,12 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 
 * `crossCheck`
   * A second objective measured on the current build and the result, returned by `gaSearch`, `directedBuild`, and `stagedEquipmentTuning`.
-  * Format: `{ objective, before, after, minimum, reached }`
+  * Format: `{ objective, before, after, minimum, reached, winRate }`
     * `objective`: the `objectiveGuard` objective when it is set. Otherwise: `gateDamage` (on `gateRoom`, by default the next gate room) when `objective` is `success`, `minDefeat`, `experience`, or `progress`; `success` when `objective` is `gateDamage`.
     * `before`, `after`: `<rate>` of that objective for the current build and the result, measured on the operation's final comparison runs. For `success`, the success rate.
     * `minimum`: the `objectiveGuard` minimum, or `null` without a guard.
     * `reached`: `{ before, after }`, Booleans, whether each build reaches `minimum`; `null` without a guard.
+    * `winRate`: `{ before, after }` when `objective` is `gateDamage`: the share of those runs that won the gate room's battle (a won battle followed by a retreat counts as a win). `null` for every other objective. A `gateDamage` share counts a win as `1` and a loss as the damage dealt, so a share near `1` can still lose often; read `winRate` before treating a gate as solved.
   * `crossCheck` does not change the outcome unless `objectiveGuard` is set.
   * Example: `"objective": "gateDamage", "gateRoom": "boss"` with `crossCheck` `{ "objective": "success", "before": 0.04, "after": 0.0 }` shows a boss build that leaves the route at 0%.
 

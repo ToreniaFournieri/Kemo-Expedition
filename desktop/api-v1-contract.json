@@ -23229,7 +23229,8 @@
                     "before",
                     "after",
                     "minimum",
-                    "reached"
+                    "reached",
+                    "winRate"
                   ],
                   "properties": {
                     "objective": {
@@ -23282,6 +23283,33 @@
                             },
                             "after": {
                               "type": "boolean"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "winRate": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "before",
+                            "after"
+                          ],
+                          "properties": {
+                            "before": {
+                              "minimum": 0,
+                              "maximum": 1,
+                              "type": "number"
+                            },
+                            "after": {
+                              "minimum": 0,
+                              "maximum": 1,
+                              "type": "number"
                             }
                           }
                         },
@@ -24134,7 +24162,8 @@
                         "before",
                         "after",
                         "minimum",
-                        "reached"
+                        "reached",
+                        "winRate"
                       ],
                       "properties": {
                         "objective": {
@@ -24187,6 +24216,33 @@
                                 },
                                 "after": {
                                   "type": "boolean"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "winRate": {
+                          "anyOf": [
+                            {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "before",
+                                "after"
+                              ],
+                              "properties": {
+                                "before": {
+                                  "minimum": 0,
+                                  "maximum": 1,
+                                  "type": "number"
+                                },
+                                "after": {
+                                  "minimum": 0,
+                                  "maximum": 1,
+                                  "type": "number"
                                 }
                               }
                             },
@@ -24759,6 +24815,10 @@
                 "reached": {
                   "before": true,
                   "after": true
+                },
+                "winRate": {
+                  "before": 0,
+                  "after": 0
                 }
               }
             },
@@ -25582,7 +25642,8 @@
                     "before",
                     "after",
                     "minimum",
-                    "reached"
+                    "reached",
+                    "winRate"
                   ],
                   "properties": {
                     "objective": {
@@ -25635,6 +25696,33 @@
                             },
                             "after": {
                               "type": "boolean"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "winRate": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "before",
+                            "after"
+                          ],
+                          "properties": {
+                            "before": {
+                              "minimum": 0,
+                              "maximum": 1,
+                              "type": "number"
+                            },
+                            "after": {
+                              "minimum": 0,
+                              "maximum": 1,
+                              "type": "number"
                             }
                           }
                         },
@@ -26349,7 +26437,8 @@
                         "before",
                         "after",
                         "minimum",
-                        "reached"
+                        "reached",
+                        "winRate"
                       ],
                       "properties": {
                         "objective": {
@@ -26402,6 +26491,33 @@
                                 },
                                 "after": {
                                   "type": "boolean"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "winRate": {
+                          "anyOf": [
+                            {
+                              "additionalProperties": false,
+                              "type": "object",
+                              "required": [
+                                "before",
+                                "after"
+                              ],
+                              "properties": {
+                                "before": {
+                                  "minimum": 0,
+                                  "maximum": 1,
+                                  "type": "number"
+                                },
+                                "after": {
+                                  "minimum": 0,
+                                  "maximum": 1,
+                                  "type": "number"
                                 }
                               }
                             },
@@ -26838,6 +26954,10 @@
                 "reached": {
                   "before": true,
                   "after": true
+                },
+                "winRate": {
+                  "before": 0,
+                  "after": 0
                 }
               }
             },
@@ -29475,7 +29595,8 @@
                 "before",
                 "after",
                 "minimum",
-                "reached"
+                "reached",
+                "winRate"
               ],
               "properties": {
                 "objective": {
@@ -29528,6 +29649,33 @@
                         },
                         "after": {
                           "type": "boolean"
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "winRate": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "before",
+                        "after"
+                      ],
+                      "properties": {
+                        "before": {
+                          "minimum": 0,
+                          "maximum": 1,
+                          "type": "number"
+                        },
+                        "after": {
+                          "minimum": 0,
+                          "maximum": 1,
+                          "type": "number"
                         }
                       }
                     },
@@ -30088,7 +30236,8 @@
                     "before",
                     "after",
                     "minimum",
-                    "reached"
+                    "reached",
+                    "winRate"
                   ],
                   "properties": {
                     "objective": {
@@ -30141,6 +30290,33 @@
                             },
                             "after": {
                               "type": "boolean"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "winRate": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "before",
+                            "after"
+                          ],
+                          "properties": {
+                            "before": {
+                              "minimum": 0,
+                              "maximum": 1,
+                              "type": "number"
+                            },
+                            "after": {
+                              "minimum": 0,
+                              "maximum": 1,
+                              "type": "number"
                             }
                           }
                         },

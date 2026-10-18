@@ -81,6 +81,16 @@ export interface ObjectiveMeasure {
   rate: number;
   /** The variance of one run's value. */
   variance: number;
+  /** `gateDamage` only: the share of runs that won the gate room's battle (a share near 1 can still lose often). */
+  winRate?: number;
+}
+
+// SpecRef: 9.1.4 | `crossCheck.winRate` | the gate room's win rate beside a `gateDamage` share; `null` for other objectives.
+/** `crossCheck.winRate`: both builds' gate-room win rates, rounded to 4 places, or `null` when the objective is not `gateDamage`. */
+export function describeWinRate(before: ObjectiveMeasure, after: ObjectiveMeasure): { before: number; after: number } | null {
+  if (before.winRate === undefined || after.winRate === undefined) return null;
+  const round4 = (value: number): number => Math.round(value * 10000) / 10000;
+  return { before: round4(before.winRate), after: round4(after.winRate) };
 }
 
 /** The room `gateDamage` fights: `gateRoom`, or the boss room (the last gate) when none was resolved. */
@@ -143,7 +153,7 @@ export function measureObjective(objective: MeasuredObjective, result: Expeditio
   };
   if (objective === 'success') return binary((result.Clear + result.Return) / runs);
   if (objective === 'minDefeat') return binary(result.Defeat / runs);
-  if (objective === 'gateDamage') return perRun(result.gateRoom?.damageShare ?? 0, result.gateRoom?.damageShareSquareSum ?? 0);
+  if (objective === 'gateDamage') return { ...perRun(result.gateRoom?.damageShare ?? 0, result.gateRoom?.damageShareSquareSum ?? 0), winRate: (result.gateRoom?.kills ?? 0) / runs };
   if (objective === 'experience') return perRun(result.totals?.experience ?? 0, result.experienceSquareSum ?? 0);
   return perRun(result.progress?.sum ?? 0, result.progress?.squareSum ?? 0, Math.max(1, routeRooms));
 }
