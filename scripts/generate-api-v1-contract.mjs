@@ -396,6 +396,8 @@ const rateValue = Type.Number({ minimum: 0 });
 const crossCheck = strict({
   objective: literals('success', 'gateDamage', 'progress'), before: rateValue, after: rateValue, minimum: Type.Union([rateValue, Type.Null()]),
   reached: Type.Union([strict({ before: Type.Boolean(), after: Type.Boolean() }), Type.Null()]),
+  // SpecRef: 9.1.4 | `crossCheck.winRate` | the gate room's win rate when the cross-check is `gateDamage`, else `null`.
+  winRate: Type.Union([strict({ before: Type.Number({ minimum: 0, maximum: 1 }), after: Type.Number({ minimum: 0, maximum: 1 }) }), Type.Null()]),
 });
 const gaChangeEndpoint = Type.String({ pattern: '^commit/build/' });
 sampleOverrides.set(gaChangeEndpoint, 'commit/build/character/101/equip');

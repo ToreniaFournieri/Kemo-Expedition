@@ -584,6 +584,11 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   const crossBefore = await measureSecondObjective(dependencies(), base, 0, 'gateDamage', small.verifyRuns, deriveSeed(small.seed, 3), { gateRoom: { floorNumber: 1, roomInFloor: 4 }, startHp: null });
   assert.deepEqual([data.verification.crossCheck.objective, data.verification.crossCheck.before, data.verification.crossCheck.minimum, data.verification.crossCheck.reached], ['gateDamage', Math.round(crossBefore.rate * 1e4) / 1e4, null, null]);
   assert.equal((outcome.data as { gateRoom: string }).gateRoom, '1f-4');
+  // `crossCheck.winRate`: beside the `gateDamage` share, the share of runs that won the gate room (a win counts 1 in the share,
+  // so the win rate never exceeds it).
+  const winRate = (data.verification.crossCheck as unknown as { winRate: { before: number; after: number } | null }).winRate!;
+  assert.equal(winRate.before, Math.round(crossBefore.winRate! * 1e4) / 1e4);
+  assert.ok(winRate.before <= data.verification.crossCheck.before && winRate.after <= data.verification.crossCheck.after);
 
   // `verifySeed`: two searches with different search seeds measure the current build on the same verification runs.
   const a = (await search(base, { targets: equipmentTargets, gaParameters: { ...small, seed: 1, verifySeed: 42 } })).data as typeof data & { verification: { before: number } };
@@ -600,6 +605,8 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   const reached = boss.verification.crossCheck.reached as { before: boolean; after: boolean };
   assert.deepEqual([boss.verification.crossCheck.objective, boss.verification.crossCheck.minimum, reached.before], ['success', 0.5, guardBefore.rate >= 0.5]);
   assert.equal(reached.after, boss.verification.crossCheck.after >= 0.5);
+  assert.equal((boss.verification.crossCheck as unknown as { winRate: unknown }).winRate, null, 'no win rate unless the cross-check is gateDamage');
+  assert.equal(guardBefore.winRate, undefined);
 }
 
 // ---------------- The guard ranking and the guard verdict (Spec 9.1.3, 2-3-2 `objectiveGuard`) ----------------

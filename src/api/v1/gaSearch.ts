@@ -14,7 +14,7 @@ import { buildCalculatedStatus } from './calculatedStatus';
 import { applyApiV1Commit, type ApiV1CommitContext } from './commitOperations';
 import { sameEquipmentSnapshot, snapshotCharacterEquipment } from './equipmentHistoryFacts';
 import { validPartyDeityIds, validRaceAndGenderOptions } from './readModels';
-import { DEFAULT_FORECAST_SETTINGS, describeForecastSettings, forecastScope, isRoomObjective, measureObjective, objectiveSimulationOptions, parseForecastSettings, prepareObjectiveState, routeRoomCount, type ForecastScope, type ForecastSettings, type ObjectiveMeasure } from './objectiveMeasure';
+import { DEFAULT_FORECAST_SETTINGS, describeForecastSettings, describeWinRate, forecastScope, isRoomObjective, measureObjective, objectiveSimulationOptions, parseForecastSettings, prepareObjectiveState, routeRoomCount, type ForecastScope, type ForecastSettings, type ObjectiveMeasure } from './objectiveMeasure';
 import { buildSimulationRunData } from './simulationView';
 import { hashText } from './battleLogs';
 import { baseSlotsAt, conquestGoal, expectedRunsToGoal, experienceToLevel, parseLevelProbe, probedLevels, requiredRateForBudget, type LevelProbeGoal, type LevelProbeRequest } from './levelProbe';
@@ -942,6 +942,7 @@ export function summarizeVerification(input: VerificationInput): { verdict: GaVe
         after: round4(input.crossAfter.rate),
         minimum: guard ? guard.minimum : null,
         reached,
+        winRate: describeWinRate(input.crossBefore, input.crossAfter),
       },
     },
   };

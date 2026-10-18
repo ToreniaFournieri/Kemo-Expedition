@@ -169,7 +169,9 @@ assert.equal(tuningImprovement('success', 1, 1), 0, 'equal scores are no change'
   assert.deepEqual([data.improvement, data.gain], [0, 0]);
   // The baseline, the quick run of the current build, and the `crossCheck` objective on the baseline seed (9.1.3, 2-0).
   assert.equal(data.simulationRuns, 1000 + 300 + 1000, 'the baseline, the quick run, and the cross-check');
-  assert.deepEqual((outcome.data as { crossCheck?: unknown }).crossCheck, { objective: 'gateDamage', before: (outcome.data as { crossCheck: { before: number } }).crossCheck.before, after: (outcome.data as { crossCheck: { before: number } }).crossCheck.before, minimum: null, reached: null }, 'no change: the cross-check after equals before');
+  const unchangedCross = (outcome.data as { crossCheck: { before: number; winRate: { before: number; after: number } } }).crossCheck;
+  assert.deepEqual((outcome.data as { crossCheck?: unknown }).crossCheck, { objective: 'gateDamage', before: unchangedCross.before, after: unchangedCross.before, minimum: null, reached: null, winRate: { before: unchangedCross.winRate.before, after: unchangedCross.winRate.before } }, 'no change: the cross-check after equals before');
+  assert.ok(unchangedCross.winRate.before >= 0 && unchangedCross.winRate.before <= unchangedCross.before, 'a gate win counts 1 in the share, so the win rate never exceeds it');
   assert.match(String(data.bottleneckRoom), /^[1-6]f-[1-4]$/);
   assert.deepEqual(state, before, 'the tuning never changes the state it read');
   const off = (await tune(state, { characterId: firstId, offenseElementTrialRuns: 0, defenseElementTrialRuns: 0, abilityTrialRuns: 0 })).data as unknown as TuningData;

@@ -1127,13 +1127,18 @@ definitions in 9.1.3.
   the search can be repeated; `verifySeed` is the verification seed used.
   `progress` is `{before, after}`, the 7.1.5 Score of both builds in the same
   verification runs (rounded to 4 decimals), for every objective but `gateDamage`
-  (`null`). `crossCheck` is `{objective, before, after, minimum, reached}`: the
+  (`null`). `crossCheck` is `{objective, before, after, minimum, reached, winRate}`: the
   guard objective, or `gateDamage` on `gateRoom` (for `success`, `minDefeat`,
   `experience`, `progress`) or `success` (for `gateDamage`) without a guard (9.1.3, 2-0),
   measured on both builds with
   `verifyRuns` runs on the verification seed in that objective's own forecast
   (rounded to 4 decimals); `minimum` and `reached` (`{before, after}`) are `null`
-  without a guard. An unchanged result reuses the current build's values.
+  without a guard. `winRate` is `{before, after}` when the `crossCheck` objective is
+  `gateDamage`: the share of those runs that won the gate room's battle (a win
+  counts `1` in the `gateDamage` share, so a share near `1` can still lose often),
+  rounded to 4 decimals; it is `null` for every other `crossCheck` objective.
+  `stagedEquipmentTuning` reports its `crossCheck` the same way. An unchanged result
+  reuses the current build's values.
 * `forecast.scope` is `{from, to, rooms, endsAt}`, walked like the route `progress`
   is divided by: from `1f-1` up to the room before the first closed Clear-Gate
   (`clearGate`), up to the depth limit (`depthLimit`), or to the last room
