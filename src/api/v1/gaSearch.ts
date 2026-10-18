@@ -7,7 +7,7 @@ import { canCharacterEquipCategory } from '../../game/equipmentSets';
 import { isJewelAllowedForCategory } from '../../game/jewel';
 import { gameReducer } from '../../hooks/useGameState';
 import { getVariantKey, type Character, type ExpeditionSimulationOptions, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party } from '../../types';
-import { describeCharacterBuildCurrent, planCharacterBuildChange } from './buildChange';
+import { describeCharacterBuildCurrent, planCharacterBuildChange, validUniqueSelections } from './buildChange';
 import { recordEquipmentState } from '../../game/equipmentHistory';
 import { computePartyStats } from '../../game/partyComputation';
 import { buildCalculatedStatus } from './calculatedStatus';
@@ -43,9 +43,12 @@ export const RARE_SUCCESS_COUNT = 20;
 /** Whether a success rate `p` is rare for `quickRuns` quick runs (Spec 9.1.3, 2-3-2 `successSignal`). */
 export const isRareSuccess = (p: number, quickRuns: number): boolean => p * quickRuns < RARE_SUCCESS_COUNT * (1 - p);
 export type GaVerdict = typeof GA_VERDICTS[number];
-const COMPONENTS = ['raceGender', 'mainClass', 'subClass', 'lineage', 'predisposition', 'equipment', 'jewels'] as const;
+const COMPONENTS = ['uniqueCharacter', 'raceGender', 'mainClass', 'subClass', 'lineage', 'predisposition', 'equipment', 'jewels'] as const;
 type Component = typeof COMPONENTS[number];
-const BUILD_FIELDS = { raceGender: 'racesAndGender', mainClass: 'mainClassId', subClass: 'subClassId', lineage: 'lineage', predisposition: 'predisposition' } as const;
+// The unique selection comes first: it fixes race/gender, lineage, and predisposition, so it is applied before them.
+const BUILD_FIELDS = { uniqueCharacter: 'uniqueSelection', raceGender: 'racesAndGender', mainClass: 'mainClassId', subClass: 'subClassId', lineage: 'lineage', predisposition: 'predisposition' } as const;
+/** The build fields a unique character fixes (8.2.3): they apply only while the selection is `none`. */
+const IDENTITY_FIELDS: readonly BuildField[] = ['racesAndGender', 'lineage', 'predisposition'];
 type BuildComponent = keyof typeof BUILD_FIELDS;
 type BuildField = typeof BUILD_FIELDS[BuildComponent];
 
@@ -181,9 +184,10 @@ export function parseGaSearchRequest(state: GameState, partyIndex: number, raw: 
     const extraComponent = Object.keys(source).find((key) => !(COMPONENTS as readonly string[]).includes(key));
     if (extraComponent !== undefined) invalid(`targets.changeableComponents.${extraComponent}.unknown_member`);
     const components = Object.fromEntries(COMPONENTS.map((key) => [key, readBoolean(source, key, `targets.changeableComponents.${key}`, false)])) as Record<Component, boolean>;
-    // SpecRef: 9.1.3 | 2-3-2 | A component a character cannot change (a unique character's identity) is ignored.
+    // SpecRef: 9.1.3 | 2-3-2 | A component a character cannot change (a unique character's identity) is ignored, unless
+    // `uniqueCharacter` lets the search release the unique selection.
     const character = party.characters.find((candidate) => candidate.id === characterId)!;
-    if (character.isUnique) { components.raceGender = false; components.lineage = false; components.predisposition = false; }
+    if (character.isUnique && !components.uniqueCharacter) { components.raceGender = false; components.lineage = false; components.predisposition = false; }
     return { characterId, components };
   });
   const considerItemsScope = raw.considerItemsScope === undefined ? 'normal' : raw.considerItemsScope;
@@ -451,7 +455,9 @@ function buildModel(state: GameState, partyIndex: number, request: GaSearchReque
     for (const component of Object.keys(BUILD_FIELDS) as BuildComponent[]) {
       if (!target.components[component]) continue;
       const field = BUILD_FIELDS[component];
-      const values = field === 'racesAndGender' ? validRaceAndGenderOptions(state, party, character)
+      // SpecRef: 9.1.3 | 2-3-2 `uniqueCharacter` | `none` or a unique character no other character holds and that is available.
+      const values = field === 'uniqueSelection' ? validUniqueSelections(state, character)
+        : field === 'racesAndGender' ? validRaceAndGenderOptions(state, party, character)
         : field === 'mainClassId' || field === 'subClassId' ? CLASSES.map((entry) => entry.id)
           : field === 'lineage' ? LINEAGES.filter((entry) => entry.selectable === true).map((entry) => entry.id)
             : PREDISPOSITIONS.filter((entry) => entry.selectable === true).map((entry) => entry.id);
@@ -552,13 +558,22 @@ function decode(model: SearchModel, input: Genome, random: () => number): Decode
     const genes = genome.builds[target.characterId];
     const current = model.current.builds[target.characterId];
     if (!genes) continue;
-    const changes = Object.fromEntries(Object.entries(genes).filter(([field, value]) => value !== current[field as BuildField]));
+    const changes: Record<string, string> = Object.fromEntries(Object.entries(genes).filter(([field, value]) => value !== current[field as BuildField]));
     if (Object.keys(changes).length === 0) continue;
+    // SpecRef: 9.1.3 | 2-3-2 `uniqueCharacter` | while a unique character is selected it fixes its own identity, so the
+    // identity genes are not applied; afterwards every gene is re-read from the character, so the genome says what it is.
+    const characterOf = (source: GameState) => source.parties[partyIndex].characters.find((entry) => entry.id === target.characterId)!;
+    const selection = genes.uniqueSelection ?? describeCharacterBuildCurrent(characterOf(state)).uniqueSelection;
+    if (selection !== 'none') for (const field of IDENTITY_FIELDS) delete changes[field];
     try {
-      const plan = planCharacterBuildChange(state, target.characterId, changes);
-      if (Object.keys(plan.updates).length > 0) {
-        state = gameReducer(state, { type: 'UPDATE_CHARACTER', partyIndex, characterId: target.characterId, updates: plan.updates, validatedMimorianAssignments: true, allowUniqueIdentityChange: true });
+      if (Object.keys(changes).length > 0) {
+        const plan = planCharacterBuildChange(state, target.characterId, changes);
+        if (Object.keys(plan.updates).length > 0) {
+          state = gameReducer(state, { type: 'UPDATE_CHARACTER', partyIndex, characterId: target.characterId, updates: plan.updates, validatedMimorianAssignments: true, allowUniqueIdentityChange: true });
+        }
       }
+      const actual = describeCharacterBuildCurrent(characterOf(state));
+      genome.builds[target.characterId] = Object.fromEntries(Object.keys(genes).map((field) => [field, String(actual[field as BuildField])]));
     } catch {
       genome.builds[target.characterId] = { ...current };
     }

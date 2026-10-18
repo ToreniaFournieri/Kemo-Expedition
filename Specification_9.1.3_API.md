@@ -726,6 +726,11 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Format: `[{characterId, changeableComponents}]`
     * For each target character:
       * `changeableComponents`
+        * `uniqueCharacter`: Boolean (default `false`)
+          * If `true`, the search may change the character's unique selection (`uniqueSelection` of `changeBuild`): `none`, or a unique character that is available (its party is unlocked, 2.1.4.2) and that no other character holds. If `false`, the selection never changes.
+          * A unique character fixes its own race/gender, lineage, and predisposition. While a candidate has a unique character selected, its `raceGender`, `lineage`, and `predisposition` values are not applied; they apply when the selection is `none`.
+          * With `uniqueCharacter: true` on a character that is a unique character now, its `raceGender`, `lineage`, and `predisposition` components are kept as requested (they take effect if the search releases it); with `false`, they are ignored as below.
+          * `changeSummary` sends a new unique selection as `changeBuild` `uniqueSelection` without the identity values it fixes.
         * `raceGender`: Boolean
         * `mainClass`: Boolean
         * `subClass`: Boolean
@@ -846,12 +851,12 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * A seed holds build values only, not equipment, because items differ between saves.
     * Format: `{ label, characters, order, deityId }`
       * `label`: String. Optional. Up to 64 characters. Returned in `seeds` so the client can tell which template did well.
-      * `characters`: Array. Optional. `[{ characterId, racesAndGender, mainClassId, subClassId, lineage, predisposition }]`, with the values and formats of `commit/build/character/{characterId}/changeBuild`. Every member except `characterId` is optional; an omitted member keeps the current value.
+      * `characters`: Array. Optional. `[{ characterId, uniqueSelection, racesAndGender, mainClassId, subClassId, lineage, predisposition }]`, with the values and formats of `commit/build/character/{characterId}/changeBuild`. Every member except `characterId` is optional; an omitted member keeps the current value.
       * `order`: Array of the party's character IDs. Optional. Used only when `considerOrderChange` is `true`.
       * `deityId`: String. Optional. Used only when `considerDeityChange` is not `none`, and only when the deity is one of the options it allows.
     * Rules:
-      * A value is used only when the search may change it: the character is in `targets` and the matching `changeableComponents` member is `true` (`racesAndGender`: `raceGender`; `mainClassId`: `mainClass`; `subClassId`: `subClass`; `lineage`; `predisposition`). Other values are ignored and reported in `seeds`.
-      * Values are validated like the search's own build values (`changeBuild` rules in party order). A value that is unknown, locked, or not allowed for that character (for example, a unique character's lineage) is ignored and reported; the rest of the seed is still used.
+      * A value is used only when the search may change it: the character is in `targets` and the matching `changeableComponents` member is `true` (`uniqueSelection`: `uniqueCharacter`; `racesAndGender`: `raceGender`; `mainClassId`: `mainClass`; `subClassId`: `subClass`; `lineage`; `predisposition`). Other values are ignored and reported in `seeds`.
+      * Values are validated like the search's own build values (`changeBuild` rules in party order). A value that is unknown, locked, or not allowed for that character (for example, a unique character's lineage, or a unique character another character holds) is ignored and reported; the rest of the seed is still used. `uniqueSelection` is applied first, so a seed's race/gender, lineage, or predisposition that its unique character fixes otherwise is ignored (`notAllowed`).
       * Equipment of a seed: each target whose `equipment` is changeable gets three fills on the seed's build values, and the best of them in `quickRuns` runs enters the first generation:
         1. The current equipment and Jewels kept: a slot keeps its item when the seed's class can use it; a slot it cannot use, or a newly opened slot, is filled at random as a mutant's is.
         2. The attack-focused fill of `seedWithHeuristics`.

@@ -12,6 +12,7 @@ import { baseSlotsAt, conquestGoal, expectedRunsToGoal, experienceToLevel, parse
 import { getXpToNextLevel } from '../../src/game/partyLevel';
 import { CLASSES } from '../../src/data/classes';
 import { parseDirectedBuildRequest } from '../../src/api/v1/directedBuild';
+import { validUniqueSelections } from '../../src/api/v1/buildChange';
 
 // SpecRef: 9.1.3 | Read | 2-3-2 party/{p}/gaSearch
 // SpecRef: 9.1.3 | Commit | 3-3-2 party/{p}/applyBuildChanges
@@ -955,6 +956,51 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   assert.ok(probed.points.slice(1).every((entry) => entry.level > probed.points[0].level && entry.rate >= 0 && entry.rate <= 100));
   assert.deepEqual((await search(base, raw)).data.levelProbe, probed, 'a fixed seed repeats the searched probe');
   assert.equal(((await search(base, { ...raw, levelProbe: { mode: 'always' } })).data.levelProbe as Probe).fill, 'greedy');
+}
+
+// ---------------- `uniqueCharacter`: gaSearch may pick unique characters (Spec 9.1.3, 2-3-2) ----------------
+{
+  // A fresh first party holds both party-1 unique characters; release the second one so it is free to pick.
+  const holders = base.parties[0].characters.filter((character) => character.isUnique);
+  const freed = applyApiV1Commit(`commit/build/character/${holders[1].id}/changeBuild`, base, { uniqueSelection: 'none', simulation: false }, context()).state;
+  const party = freed.parties[0];
+  const unique = party.characters.find((character) => character.isUnique)!;
+  const [first] = party.characters.filter((character) => !character.isUnique);
+  const free = validUniqueSelections(freed, first).filter((value) => value !== 'none');
+  assert.deepEqual(free, [holders[1].uniqueCharacterId], 'only the released unique character is free');
+  rejects({ targets: [{ characterId: first.id, changeableComponents: { uniqueCharacter: 'yes' } }] }, 'invalid_request:targets.changeableComponents.uniqueCharacter');
+  // Off by default; with it, a unique character's identity components are kept as requested (they apply once it is released).
+  assert.equal(parseGaSearchRequest(freed, 0, { targets: [{ characterId: first.id }] }).targets[0].components.uniqueCharacter, false);
+  const released = parseGaSearchRequest(freed, 0, { targets: [{ characterId: unique.id, changeableComponents: { uniqueCharacter: true, raceGender: true } }] }).targets[0].components;
+  assert.deepEqual([released.uniqueCharacter, released.raceGender], [true, true]);
+
+  // Seeds: a unique selection is used, the identity values it fixes are not; a unique another character holds is refused.
+  const targets = [{ characterId: first.id, changeableComponents: { uniqueCharacter: true, raceGender: true, mainClass: true, equipment: true } }];
+  const seedBuilds = [
+    { label: 'free', characters: [{ characterId: first.id, uniqueSelection: free[0], racesAndGender: `${first.raceId}/${first.gender}` }] },
+    { label: 'taken', characters: [{ characterId: first.id, uniqueSelection: unique.uniqueCharacterId! }] },
+  ];
+  const seeded = (await search(freed, { targets, seedBuilds, gaParameters: { ...small, seedWithHeuristics: false } })).data;
+  const seeds = seeded.seeds as { status: string; ignored: { field: string; reason: string }[]; quickRate: number | null }[];
+  assert.deepEqual([seeds[0].status, seeds[0].ignored], ['used', [{ field: 'characters[0].racesAndGender', reason: 'notAllowed' }]]);
+  assert.ok(seeds[0].quickRate !== null);
+  assert.deepEqual([seeds[1].status, seeds[1].ignored], ['ignored', [{ field: 'characters[0].uniqueSelection', reason: 'notAllowed' }]]);
+
+  // A search that picks a unique character: its `changeSummary` is accepted by `applyBuildChanges`, and the character
+  // becomes that unique character with the identity it fixes.
+  let picked: GaSearchOutcome | null = null;
+  for (let seed = 1; seed <= 12 && !picked; seed += 1) {
+    const result = await search(freed, { targets, gaParameters: { ...small, seed, generations: 4 } });
+    const entries = result.data.changeSummary as GaChangeEntry[];
+    if (entries.some((entry) => entry.parameters.uniqueSelection !== undefined && entry.parameters.uniqueSelection !== 'none')) picked = result;
+  }
+  assert.ok(picked, 'some seed picks a unique character');
+  const entry = (picked!.data.changeSummary as GaChangeEntry[]).find((change) => change.parameters.uniqueSelection !== undefined)!;
+  assert.equal(entry.endpoint, `commit/build/character/${first.id}/changeBuild`);
+  assert.equal(entry.parameters.racesAndGender, undefined, 'a new unique selection sends no identity value');
+  const applied = applyApiV1Commit(path, freed, { changes: picked!.data.changeSummary, basis: picked!.data.basis, verdict: picked!.data.verdict, simulation: false, confirmation: 'yes', autoEquipmentMode: 'OFF' }, context());
+  const after = applied.state.parties[0].characters.find((character) => character.id === first.id)!;
+  assert.deepEqual([after.isUnique, after.uniqueCharacterId], [true, entry.parameters.uniqueSelection]);
 }
 
 console.log('gaSearch profile ok');
