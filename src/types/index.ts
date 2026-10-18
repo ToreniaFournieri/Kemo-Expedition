@@ -820,6 +820,13 @@ export interface ExpeditionSimulationResult {
    * `damageShareSquareSum` the sum of each run's share squared (the per-run variance of `bossDamage`).
    */
   boss?: { reached: number; kills: number; damageShare: number; damageShareSquareSum?: number };
+  /**
+   * The fought room of a room-only forecast (`onlyRoom`, Spec 9.1.3 `gateDamage`), counted like `boss`: `reached` runs that
+   * fought it, `kills` won, `damageShare` the sum of each run's dealt damage over the room enemy's maximum HP (1 for a win).
+   */
+  gateRoom?: { reached: number; kills: number; damageShare: number; damageShareSquareSum: number };
+  /** The party's maximum HP in this forecast: the unit of the rooms' `hpAtEntrySum` and `hpAfterWinSum`. */
+  maximumPartyHp?: number;
   /** Sum of each run's EXP squared, for the variance of the GA search's `experience` objective. */
   experienceSquareSum?: number;
   /**
@@ -831,8 +838,12 @@ export interface ExpeditionSimulationResult {
 
 /** Options of a private expedition forecast. */
 export interface ExpeditionSimulationOptions {
-  /** Fight only the destination's boss battle, from full party HP (Spec 7.1.5 / 9.1.3 `bossDamage`). */
+  /** Fight only the destination's boss battle, from the start HP (Spec 7.1.5 / 9.1.3 `bossDamage`). */
   bossRoomOnly?: boolean;
+  /** Fight only this room, from the start HP (Spec 9.1.3 `gateDamage`); the forecast state must let the run reach it and end there. */
+  onlyRoom?: { floorNumber: number; roomInFloor: number };
+  /** The party HP each run starts with, as a share of the maximum (0 < share ≤ 1, Spec 9.1.3 `startHp`); full HP when absent. */
+  startHpShare?: number;
 }
 
 export interface ExpeditionSimulationRoomResult {
@@ -848,6 +859,10 @@ export interface ExpeditionSimulationRoomResult {
   total: number;
   successfulHp: ExpeditionSimulationSuccessfulHpBuckets;
   retreatHp: ExpeditionSimulationRetreatHpBuckets;
+  /** Sum of the party HP at the start of this room over the runs that reached it. */
+  hpAtEntrySum: number;
+  /** Sum of the party HP left after this room's battle over the runs that won it. */
+  hpAfterWinSum: number;
 }
 
 export interface ExpeditionSimulationSuccessfulHpBuckets {

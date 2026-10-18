@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createFreshGameState, gameReducer, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
 import { compareGuarded, deriveSeed, GA_EFFORT_PRESETS, isRareSuccess, measure, measureSecondObjective, parseGaSearchRequest, rateGaResult, runGaSearch, summarizeVerification, type GaChangeEntry, type GaSearchDependencies, type GaSearchOutcome } from '../../src/api/v1/gaSearch';
-import { forecastScope, measureObjective, prepareObjectiveState, routeRoomCount } from '../../src/api/v1/objectiveMeasure';
+import { forecastScope, measureObjective, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount } from '../../src/api/v1/objectiveMeasure';
 import { buildApiV1ReadData } from '../../src/api/v1/readModels';
 import { buildSimulationRunData } from '../../src/api/v1/simulationView';
 import { getVariantKey, type ExpeditionSimulationResult, type Item } from '../../src/types';
@@ -115,7 +115,7 @@ assert.equal(rateGaResult('success', { rate: 0, variance: 0 }, { rate: 0, varian
 
 {
   // Request defaults and validation.
-  assert.deepEqual(parseLevelProbe(undefined), { mode: 'auto', purpose: 'conquest', runBudget: 10, maxDefeat: 10, steps: 'slot', count: 1 });
+  assert.deepEqual(parseLevelProbe(undefined), { mode: 'auto', purpose: 'conquest', runBudget: 10, maxDefeat: 10, steps: 'slot', count: 1, fill: 'greedy' });
   assert.equal(parseLevelProbe({ steps: 'level' }).count, 5);
   rejects({ targets: equipmentTargets, levelProbe: { runBudget: 6 } }, 'invalid_request:levelProbe.runBudget');
   rejects({ targets: equipmentTargets, levelProbe: { count: 11 } }, 'invalid_request:levelProbe.count');
@@ -705,7 +705,7 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   ];
   const raw = { targets, seedBuilds, gaParameters: { ...small, seedWithHeuristics: false } };
   const seeded = await search(base, raw);
-  type Report = { label: string | null; status: string; ignored: { field: string; reason: string }[]; quickRate: number | null; inBest: boolean };
+  type Report = { label: string | null; status: string; ignored: { field: string; reason: string }[]; quickRate: number | null; quickScore: number | null; usedValues: number; keptValues: number; inBest: boolean };
   const seeds = seeded.data.seeds as Report[];
   assert.equal(seeds.length, seedBuilds.length, 'one report per seed, in request order');
   assert.deepEqual(seeds.map((entry) => entry.label), ['A', 'A again', 'unique lineage', 'current', null, null, null, 'late']);
@@ -725,7 +725,16 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
     if (entry.status === 'used') assert.ok(entry.quickRate !== null && entry.quickRate >= 0 && entry.quickRate <= 1, `quickRate ${entry.quickRate}`);
     else assert.deepEqual([entry.quickRate, entry.inBest], [null, false]);
     assert.equal(typeof entry.inBest, 'boolean');
+    // `quickScore` is on the score the quick ranking started on; `keptValues` of `usedValues` are in the result build.
+    if (entry.status === 'used') assert.ok(entry.quickScore !== null && entry.usedValues > 0, JSON.stringify(entry));
+    else assert.deepEqual([entry.quickScore, entry.usedValues, entry.keptValues], [null, 0, 0]);
+    assert.ok(entry.keptValues <= entry.usedValues);
+    assert.equal(entry.inBest, entry.status === 'used' && entry.keptValues === entry.usedValues);
   }
+  // The stripped party starts on the `progress` signal, so `quickScore` is the quick `progress`, beside the current build's.
+  assert.equal((seeded.data.quickSignal as { start: string }).start, 'progress');
+  const baseline = seeded.data.seedBaseline as { quickRate: number | null; quickScore: number | null };
+  assert.ok(baseline.quickRate !== null && baseline.quickScore !== null && baseline.quickScore >= 0 && baseline.quickScore <= 1, JSON.stringify(baseline));
   // `inBest`: the best build has the seed's class exactly when its `changeSummary` changes `first` to it.
   const classChange = (seeded.data.changeSummary as GaChangeEntry[]).find((entry) => entry.endpoint === `commit/build/character/${first.id}/changeBuild`);
   const resultClass = (classChange?.parameters.mainClassId as string | undefined) ?? first.mainClassId;
@@ -802,6 +811,146 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   const missed = unreachable.data.guardStats as { confirmed: number; reached: number };
   assert.ok(missed.confirmed > 0 && missed.reached <= missed.confirmed, JSON.stringify(missed));
   assert.deepEqual((await search(base, { targets: equipmentTargets, objective: 'bossDamage', objectiveGuard: { success: 1 }, gaParameters: small })).data, unreachable.data, 'a fixed seed repeats a guarded search');
+}
+
+// ---------------- `gateDamage` and `gateRoom`: one gate room's battle alone (Spec 9.1.3, 2-0) ----------------
+{
+  const fresh = createFreshGameState('ja', now);
+  const targets = fresh.parties[0].characters.map((character) => ({ characterId: character.id, changeableComponents: { equipment: true } }));
+  // `next` (the default) is the first closed Clear-Gate: a fresh party has not opened the 1st Elite gate.
+  assert.deepEqual(parseGaSearchRequest(fresh, 0, { targets, objective: 'gateDamage' }).forecast, { gateRoom: { floorNumber: 1, roomInFloor: 4 }, startHp: null });
+  assert.deepEqual(parseGaSearchRequest(fresh, 0, { targets, objective: 'gateDamage', gateRoom: 'boss' }).forecast!.gateRoom, { floorNumber: 6, roomInFloor: 4 });
+  assert.deepEqual(parseGaSearchRequest(fresh, 0, { targets, objective: 'progress', objectiveGuard: { gateDamage: 0.5 }, gateRoom: '3f-4' }).forecast!.gateRoom, { floorNumber: 3, roomInFloor: 4 });
+  rejects({ targets: equipmentTargets, gateRoom: '1f-4' }, 'invalid_request:gateRoom.not_used');
+  rejects({ targets: equipmentTargets, objective: 'gateDamage', gateRoom: '1f-3' }, 'invalid_request:gateRoom');
+  rejects({ targets: equipmentTargets, objective: 'gateDamage', objectiveGuard: { gateDamage: 0.5 } }, 'invalid_request:objectiveGuard.gateDamage.same_as_objective');
+
+  // An elite gate room: every gate open, the depth limit at that room, and only that room fought.
+  const settings = { gateRoom: { floorNumber: 2, roomInFloor: 4 }, startHp: null };
+  const prepared = prepareObjectiveState(fresh, 0, 'gateDamage', settings);
+  assert.equal(prepared.parties[0].expeditionDepthLimit, '2f-4');
+  const elite = await simulateExpeditionRuns(prepared, 0, 'mode.normal', 40, undefined, 0, 9, objectiveSimulationOptions('gateDamage', settings));
+  assert.equal(elite.gateRoom?.reached, 40, 'every run fights the gate room');
+  assert.deepEqual(elite.rooms.filter((room) => room.reached > 0).map((room) => room.room), [8], 'and nothing else');
+  assert.equal(elite.Clear + elite.Return, elite.gateRoom!.kills, 'a won gate room ends the run as a success');
+  const share = measureObjective('gateDamage', elite, 0);
+  assert.ok(share.rate >= 0 && share.rate <= 1 && share.variance >= 0);
+  assert.deepEqual(forecastScope(fresh, 0, 'gateDamage', settings), { from: '2f-4', to: '2f-4', rooms: 1, endsAt: 'gateRoom' });
+  // The boss as a gate room is `bossDamage`: the same battle on the same seed.
+  const boss = { gateRoom: { floorNumber: 6, roomInFloor: 4 }, startHp: null };
+  const viaGate = await simulateExpeditionRuns(prepareObjectiveState(fresh, 0, 'gateDamage', boss), 0, 'mode.normal', 40, undefined, 0, 9, objectiveSimulationOptions('gateDamage', boss));
+  const viaBoss = await simulateExpeditionRuns(prepareObjectiveState(fresh, 0, 'bossDamage'), 0, 'mode.normal', 40, undefined, 0, 9, { bossRoomOnly: true });
+  assert.deepEqual(measureObjective('gateDamage', viaGate, 0), measureObjective('bossDamage', viaBoss, 0));
+
+  // A search on a gate room reports it, has no route `progress`, and cross-checks `success`; a guard on it is measured alone.
+  const searched = (await search(fresh, { targets, objective: 'gateDamage', gateRoom: '2f-4', gaParameters: small })).data as { gateRoom: string; startHp: string; forecast: { scope: unknown }; verification: { before: number; runs: number; progress: unknown; crossCheck: { objective: string } } };
+  assert.deepEqual([searched.gateRoom, searched.startHp, searched.verification.progress, searched.verification.crossCheck.objective], ['2f-4', 'full', null, 'success']);
+  assert.deepEqual(searched.forecast.scope, { from: '2f-4', to: '2f-4', rooms: 1, endsAt: 'gateRoom' });
+  const verifyBefore = await simulateExpeditionRuns(prepared, 0, 'mode.normal', searched.verification.runs, undefined, 0, deriveSeed(small.seed, 3), objectiveSimulationOptions('gateDamage', settings));
+  assert.equal(searched.verification.before, measureObjective('gateDamage', verifyBefore, 0).rate);
+  const guarded = (await search(fresh, { targets, objective: 'progress', objectiveGuard: { gateDamage: 0.5 }, gateRoom: '2f-4', gaParameters: small })).data as { gateRoom: string; verification: { crossCheck: { objective: string; minimum: number; before: number } } };
+  const guardBefore = await measureSecondObjective(dependencies(), fresh, 0, 'gateDamage', small.verifyRuns, deriveSeed(small.seed, 3), settings);
+  assert.deepEqual([guarded.gateRoom, guarded.verification.crossCheck.objective, guarded.verification.crossCheck.minimum], ['2f-4', 'gateDamage', 0.5]);
+  assert.equal(guarded.verification.crossCheck.before, Math.round(guardBefore.rate * 1e4) / 1e4);
+  // `directedBuild` takes the same members.
+  assert.deepEqual(parseDirectedBuildRequest(fresh, 0, { direction: 'free', targets: [{ characterId: ids[0] }], objective: 'gateDamage', gateRoom: '4f-4', startHp: 0.4 }).forecast, { gateRoom: { floorNumber: 4, roomInFloor: 4 }, startHp: 0.4 });
+}
+
+// ---------------- `startHp`: a room-only forecast from part of the party's HP (Spec 9.1.3, 2-0) ----------------
+{
+  const fresh = createFreshGameState('ja', now);
+  const targets = fresh.parties[0].characters.map((character) => ({ characterId: character.id, changeableComponents: { equipment: true } }));
+  rejects({ targets: equipmentTargets, objective: 'bossDamage', startHp: 0 }, 'invalid_request:startHp');
+  rejects({ targets: equipmentTargets, objective: 'bossDamage', startHp: 1.2 }, 'invalid_request:startHp');
+  rejects({ targets: equipmentTargets, objective: 'bossDamage', startHp: 'half' }, 'invalid_request:startHp');
+  // Route objectives start from full HP; only a room-only objective (or the `bossDamage` cross-check) uses it.
+  rejects({ targets: equipmentTargets, objectiveGuard: { progress: 0.5 }, startHp: 0.5 }, 'invalid_request:startHp.not_used');
+  assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets, objectiveGuard: { progress: 0.5 }, startHp: 'full' }).forecast!.startHp, null, '`full` is never an error');
+  assert.equal(parseGaSearchRequest(fresh, 0, { targets, objective: 'bossDamage', startHp: 'full' }).forecast!.startHp, null);
+  assert.equal(parseGaSearchRequest(fresh, 0, { targets, objective: 'bossDamage', startHp: 1 }).forecast!.startHp, null);
+  const prepared = prepareObjectiveState(fresh, 0, 'bossDamage');
+  const low = await simulateExpeditionRuns(prepared, 0, 'mode.normal', 30, undefined, 0, 9, { bossRoomOnly: true, startHpShare: 0.3 });
+  const full = await simulateExpeditionRuns(prepared, 0, 'mode.normal', 30, undefined, 0, 9, { bossRoomOnly: true });
+  const maximumHp = full.maximumPartyHp!;
+  assert.equal(low.maximumPartyHp, maximumHp);
+  assert.equal(full.rooms[23].hpAtEntrySum, 30 * maximumHp, 'the boss room starts at full HP by default');
+  assert.equal(low.rooms[23].hpAtEntrySum, 30 * Math.floor(maximumHp * 0.3), 'and at 30% of it with startHp 0.3');
+  // A search measures the room-only objective (and reports) from that HP.
+  const searched = (await search(fresh, { targets, objective: 'bossDamage', startHp: 0.3, gaParameters: small })).data as { startHp: number; verification: { before: number; runs: number } };
+  assert.equal(searched.startHp, 0.3);
+  const verifyBefore = await simulateExpeditionRuns(prepared, 0, 'mode.normal', searched.verification.runs, undefined, 0, deriveSeed(small.seed, 3), { bossRoomOnly: true, startHpShare: 0.3 });
+  assert.equal(searched.verification.before, measureObjective('bossDamage', verifyBefore, 0).rate);
+
+  // `simulationRun`: `startHp` sets the start of every run (route or room); the rooms report the party HP at their start
+  // and after a won battle, in % of `maximumPartyHp`, with the exact sums behind them.
+  const read = (parameters: Record<string, unknown>) => buildApiV1ReadData('read/expedition/1/simulationRun', fresh, parameters, {
+    revision: 1, environment: 'desktop', gameMode: 'mode.normal', enemyLevelOffset: 0, inGameTime: now, createSeed: () => 77,
+    simulation: (partyIndex, count, forecast) => simulateExpeditionRuns(forecast?.state ?? fresh, partyIndex, 'mode.normal', count, undefined, 0, forecast?.seed, forecast?.options),
+  }) as Promise<Record<string, unknown>>;
+  type Rooms = { columns: string[]; rows: (string | number | null)[][] };
+  const column = (rooms: Rooms, name: string) => rooms.columns.indexOf(name);
+  const half = await read({ numberOfRun: 20, startHp: 0.5, seed: 4 });
+  const halfRooms = half.rooms as Rooms;
+  assert.deepEqual([half.startHp, half.maximumPartyHp], [0.5, maximumHp]);
+  const first = halfRooms.rows[0];
+  assert.equal(first[column(halfRooms, 'hpAtEntrySum')], 20 * Math.floor(maximumHp * 0.5));
+  assert.equal(first[column(halfRooms, 'hpAtEntry')], Math.round(Math.floor(maximumHp * 0.5) / maximumHp * 1000) / 10);
+  // `detail` ends with the same two averages.
+  assert.match(String((half.detail as string[])[0]), new RegExp(`^1f-1/Success .* / Not reached 0\\.0% / HP at entry ${first[column(halfRooms, 'hpAtEntry')]!.toFixed(1)}% / HP after win ([0-9.]+%|-)$`));
+  const rested = await read({ numberOfRun: 20, seed: 4 });
+  assert.equal((rested.rooms as Rooms).rows[0][column(rested.rooms as Rooms, 'hpAtEntry')], 100, 'a run starts at full HP by default');
+  assert.equal(rested.startHp, 'full');
+  const gate = await read({ numberOfRun: 20, objective: 'gateDamage', gateRoom: '1f-4', seed: 4 });
+  assert.equal(gate.gateRoom, '1f-4');
+  assert.ok(typeof gate.rate === 'number' && gate.rate >= 0 && gate.rate <= 1);
+  assert.deepEqual((gate.rooms as Rooms).rows.map((row) => row[0]), ['1f-4']);
+  await assert.rejects(read({ gateRoom: '1f-4' }), /invalid_request:gateRoom\.not_used/);
+  await assert.rejects(read({ startHp: 0 }), /invalid_request:startHp/);
+}
+
+// ---------------- Rare successes: the verdict is judged on `progress` (Spec 9.1.3, 2-3-2 `verdict`) ----------------
+{
+  const result = await simulateExpeditionRuns(base, 0, 'mode.normal', 100, undefined, 0, 3);
+  const at = (rate: number, progress: number) => ({ ...measure('success', result, 3), rate, variance: rate * (1 - rate), progress: { rate: progress, variance: 0.01 } });
+  const input = {
+    objective: 'success' as const, guard: null, crossObjective: 'bossDamage' as const, verifyRuns: 500, seed: 1, verifySeed: 2, routeRooms: 3,
+    before: at(0.004, 0.4), after: at(0.002, 0.6), crossBefore: { rate: 0.5, variance: 0.1 }, crossAfter: { rate: 0.5, variance: 0.1 }, changed: true,
+    revision: 1, scope: forecastScope(base, 0, 'success'), label: 'check',
+  };
+  // 0.4% vs 0.2% of 500 runs is noise; 20 points of `progress` is not.
+  const rare = summarizeVerification(input);
+  assert.deepEqual([rare.verdict, (rare.verification as { scoredBy: string }).scoredBy], ['veryGood', 'progress']);
+  // Not rare: judged on `success`, which barely moved.
+  const common = summarizeVerification({ ...input, before: at(0.3, 0.4), after: at(0.31, 0.6) });
+  assert.deepEqual([common.verdict, (common.verification as { scoredBy: string }).scoredBy], ['noisy', 'success']);
+  // Rare, but a result that loses successes by more than 2 standard errors is `worse`, whatever its progress.
+  assert.equal(summarizeVerification({ ...input, before: at(0.035, 0.4), after: at(0, 0.6) }).verdict, 'worse');
+}
+
+// ---------------- `stallGenerations` and `lastImprovementGeneration` (Spec 9.1.3, 2-3-2) ----------------
+{
+  rejects({ targets: equipmentTargets, gaParameters: { stallGenerations: 0 } }, 'invalid_request:gaParameters.stallGenerations');
+  rejects({ targets: equipmentTargets, gaParameters: { stallGenerations: 201 } }, 'invalid_request:gaParameters.stallGenerations');
+  assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets }).parameters.stallGenerations, null, 'off by default');
+  const improved = outcome.data.lastImprovementGeneration as number;
+  assert.ok(improved >= 1 && improved <= (outcome.data.generationsRun as number), `lastImprovementGeneration ${improved}`);
+  const stalled = (await search(base, { targets: equipmentTargets, gaParameters: { ...small, generations: 40, stallGenerations: 2 } })).data;
+  assert.equal(stalled.stopReason, 'stalled');
+  assert.equal((stalled.generationsRun as number) - (stalled.lastImprovementGeneration as number), 2, 'stopped two generations after the last change');
+  assert.ok((stalled.generationsRun as number) < 40);
+}
+
+// ---------------- `levelProbe.fill: search` (Spec 9.1.3, 2-3-2) ----------------
+{
+  rejects({ targets: equipmentTargets, levelProbe: { fill: 'smart' } }, 'invalid_request:levelProbe.fill');
+  type Probe = { fill: string; points: { level: number; filledSlots: number; rate: number }[] };
+  const raw = { targets: equipmentTargets, gaParameters: small, levelProbe: { mode: 'always', fill: 'search' } };
+  const probed = (await search(base, raw)).data.levelProbe as Probe;
+  assert.equal(probed.fill, 'search');
+  assert.ok(probed.points.length >= 2, 'the current level and at least one probed level');
+  assert.ok(probed.points.slice(1).every((entry) => entry.level > probed.points[0].level && entry.rate >= 0 && entry.rate <= 100));
+  assert.deepEqual((await search(base, raw)).data.levelProbe, probed, 'a fixed seed repeats the searched probe');
+  assert.equal(((await search(base, { ...raw, levelProbe: { mode: 'always' } })).data.levelProbe as Probe).fill, 'greedy');
 }
 
 console.log('gaSearch profile ok');

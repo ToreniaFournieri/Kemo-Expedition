@@ -152,6 +152,8 @@ test('room aggregation assigns one status per run to every room and buckets term
     NotReached: 0, reached: 5, total: 5,
     successfulHp: { Full: 1, From90: 1, From80: 1, From70: 0, From60: 0, From50: 0, From40: 1, Below40: 0 },
     retreatHp: { From30: 0, From20: 0, From10: 0, Below10: 0 },
+    // No start HP was recorded here; the four wins left 100 + 95 + 85 + 45 HP.
+    hpAtEntrySum: 0, hpAfterWinSum: 325,
   });
   assert.equal(rooms[2].Retreat, 1);
   assert.deepEqual(rooms[2].retreatHp, { From30: 0, From20: 1, From10: 0, Below10: 0 });
@@ -168,4 +170,18 @@ test('room aggregation assigns one status per run to every room and buckets term
     const retreatHpTotal = Object.values(room.retreatHp).reduce((sum, value) => sum + value, 0);
     assert.equal(retreatHpTotal, room.Retreat, `room ${room.room} retreat HP total`);
   }
+});
+
+test('room aggregation sums the party HP at each room start and after each won battle', () => {
+  const rooms = createExpeditionSimulationRoomResults(2);
+  // Run 1 wins rooms 1 and 2 and loses room 3; run 2 wins room 1 and draws room 2.
+  aggregateExpeditionSimulationRooms(rooms, 3, 'Defeat', [
+    { startPartyHP: 100, remainingPartyHP: 80 }, { startPartyHP: 84, remainingPartyHP: 50 }, { startPartyHP: 50, remainingPartyHP: 0 },
+  ], 100);
+  aggregateExpeditionSimulationRooms(rooms, 2, 'Draw', [{ startPartyHP: 100, remainingPartyHP: 60 }, { startPartyHP: 60, remainingPartyHP: 20 }], 100);
+  assert.deepEqual([rooms[0].hpAtEntrySum, rooms[0].hpAfterWinSum], [200, 140]);
+  // Room 2 counts both entries but only run 1's win; room 3 counts run 1's entry and no win.
+  assert.deepEqual([rooms[1].hpAtEntrySum, rooms[1].hpAfterWinSum], [144, 50]);
+  assert.deepEqual([rooms[2].hpAtEntrySum, rooms[2].hpAfterWinSum], [50, 0]);
+  assert.deepEqual([rooms[3].hpAtEntrySum, rooms[3].hpAfterWinSum], [0, 0]);
 });

@@ -28,7 +28,7 @@ import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentH
 import { apiExpeditionOutcome, apiExpeditionOutcomeOrNull } from './expeditionOutcome.ts';
 import { buildBattleLogData, buildBattleRoomData, buildRoomResources, retainedLogIdOf } from './battleLogs.ts';
 import { buildSimulationRunData, describeSimulationDepthReach } from './simulationView.ts';
-import { MEASURED_OBJECTIVES, measureObjective, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount, type MeasuredObjective } from './objectiveMeasure.ts';
+import { describeForecastSettings, MEASURED_OBJECTIVES, measureObjective, objectiveSimulationOptions, parseForecastSettings, prepareObjectiveState, routeRoomCount, type MeasuredObjective } from './objectiveMeasure.ts';
 import { describeCharacterBuildCurrent, validUniqueSelections } from './buildChange.ts';
 import { EQUIPMENT_EVALUATION_LIMIT } from './requestLimits.ts';
 import { paginate } from './pagination.ts';
@@ -974,9 +974,13 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       if (requestedSeed !== undefined && (typeof requestedSeed !== 'number' || !Number.isSafeInteger(requestedSeed))) throw new Error('invalid_request:seed');
       const seed = (requestedSeed as number | undefined) ?? context.createSeed?.() ?? crypto.getRandomValues(new Uint32Array(1))[0];
       const measured = objective as MeasuredObjective | undefined;
-      const forecastState = measured ? prepareObjectiveState(state, index, measured) : state;
-      const result = await context.simulation(index, numberOfRun, { state: forecastState, seed, options: objectiveSimulationOptions(measured ?? 'success') }) as ExpeditionSimulationResult;
-      const data = buildSimulationRunData(result, context.revision, crypto.randomUUID(), describeSimulationDepthReach(forecastState.parties[index]));
+      // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `gateRoom` (with `objective: gateDamage`) and `startHp` (every run
+      // starts with that share of the maximum HP, whatever is simulated).
+      const settings = parseForecastSettings(parameters, party, measured ? [measured] : [], true);
+      const forecastState = measured ? prepareObjectiveState(state, index, measured, settings) : state;
+      const options = { ...objectiveSimulationOptions(measured ?? 'success', settings), ...(settings.startHp === null ? {} : { startHpShare: settings.startHp }) };
+      const result = await context.simulation(index, numberOfRun, { state: forecastState, seed, options }) as ExpeditionSimulationResult;
+      const data = { ...buildSimulationRunData(result, context.revision, crypto.randomUUID(), describeSimulationDepthReach(forecastState.parties[index])), ...describeForecastSettings(settings) };
       if (!measured) return { ...data, seed };
       const { rate, variance } = measureObjective(measured, result, routeRoomCount(forecastState.parties[index]));
       return { ...data, rate, standardError: Math.sqrt(variance / Math.max(1, result.total)), seed };

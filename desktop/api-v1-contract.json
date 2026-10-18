@@ -20764,6 +20764,10 @@
                 "type": "string"
               },
               {
+                "const": "gateDamage",
+                "type": "string"
+              },
+              {
                 "const": "experience",
                 "type": "string"
               },
@@ -20772,6 +20776,56 @@
                 "type": "string"
               }
             ]
+          },
+          "gateRoom": {
+            "anyOf": [
+              {
+                "const": "next",
+                "type": "string"
+              },
+              {
+                "const": "boss",
+                "type": "string"
+              },
+              {
+                "const": "1f-4",
+                "type": "string"
+              },
+              {
+                "const": "2f-4",
+                "type": "string"
+              },
+              {
+                "const": "3f-4",
+                "type": "string"
+              },
+              {
+                "const": "4f-4",
+                "type": "string"
+              },
+              {
+                "const": "5f-4",
+                "type": "string"
+              },
+              {
+                "const": "6f-4",
+                "type": "string"
+              }
+            ]
+          },
+          "startHp": {
+            "anyOf": [
+              {
+                "const": "full",
+                "type": "string"
+              },
+              {
+                "exclusiveMinimum": 0,
+                "maximum": 1,
+                "type": "number"
+              }
+            ],
+            "default": "full"
           },
           "seed": {
             "type": "integer"
@@ -20792,9 +20846,11 @@
             "depthLimit",
             "expectedPerRun",
             "totals",
+            "maximumPartyHp",
             "omittedRooms",
             "detail",
             "rooms",
+            "startHp",
             "seed"
           ],
           "properties": {
@@ -20998,6 +21054,17 @@
                 }
               }
             },
+            "maximumPartyHp": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "omittedRooms": {
               "minimum": 0,
               "type": "integer"
@@ -21098,11 +21165,27 @@
                     {
                       "const": "retreatHp.below10",
                       "type": "string"
+                    },
+                    {
+                      "const": "hpAtEntry",
+                      "type": "string"
+                    },
+                    {
+                      "const": "hpAfterWin",
+                      "type": "string"
+                    },
+                    {
+                      "const": "hpAtEntrySum",
+                      "type": "string"
+                    },
+                    {
+                      "const": "hpAfterWinSum",
+                      "type": "string"
                     }
                   ],
                   "additionalItems": false,
-                  "minItems": 20,
-                  "maxItems": 20
+                  "minItems": 24,
+                  "maxItems": 24
                 },
                 "rows": {
                   "type": "array",
@@ -21188,14 +21271,63 @@
                       {
                         "minimum": 0,
                         "type": "integer"
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "minimum": 0,
+                            "maximum": 100,
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "minimum": 0,
+                            "maximum": 100,
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "minimum": 0,
+                        "type": "integer"
                       }
                     ],
                     "additionalItems": false,
-                    "minItems": 20,
-                    "maxItems": 20
+                    "minItems": 24,
+                    "maxItems": 24
                   }
                 }
               }
+            },
+            "gateRoom": {
+              "pattern": "^[1-6]f-4$",
+              "type": "string"
+            },
+            "startHp": {
+              "anyOf": [
+                {
+                  "const": "full",
+                  "type": "string"
+                },
+                {
+                  "exclusiveMinimum": 0,
+                  "maximum": 1,
+                  "type": "number"
+                }
+              ]
             },
             "rate": {
               "minimum": 0,
@@ -21255,9 +21387,11 @@
                 "depthLimit",
                 "expectedPerRun",
                 "totals",
+                "maximumPartyHp",
                 "omittedRooms",
                 "detail",
                 "rooms",
+                "startHp",
                 "seed"
               ],
               "properties": {
@@ -21461,6 +21595,17 @@
                     }
                   }
                 },
+                "maximumPartyHp": {
+                  "anyOf": [
+                    {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "omittedRooms": {
                   "minimum": 0,
                   "type": "integer"
@@ -21561,11 +21706,27 @@
                         {
                           "const": "retreatHp.below10",
                           "type": "string"
+                        },
+                        {
+                          "const": "hpAtEntry",
+                          "type": "string"
+                        },
+                        {
+                          "const": "hpAfterWin",
+                          "type": "string"
+                        },
+                        {
+                          "const": "hpAtEntrySum",
+                          "type": "string"
+                        },
+                        {
+                          "const": "hpAfterWinSum",
+                          "type": "string"
                         }
                       ],
                       "additionalItems": false,
-                      "minItems": 20,
-                      "maxItems": 20
+                      "minItems": 24,
+                      "maxItems": 24
                     },
                     "rows": {
                       "type": "array",
@@ -21651,14 +21812,63 @@
                           {
                             "minimum": 0,
                             "type": "integer"
+                          },
+                          {
+                            "anyOf": [
+                              {
+                                "minimum": 0,
+                                "maximum": 100,
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          {
+                            "anyOf": [
+                              {
+                                "minimum": 0,
+                                "maximum": 100,
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "minimum": 0,
+                            "type": "integer"
                           }
                         ],
                         "additionalItems": false,
-                        "minItems": 20,
-                        "maxItems": 20
+                        "minItems": 24,
+                        "maxItems": 24
                       }
                     }
                   }
+                },
+                "gateRoom": {
+                  "pattern": "^[1-6]f-4$",
+                  "type": "string"
+                },
+                "startHp": {
+                  "anyOf": [
+                    {
+                      "const": "full",
+                      "type": "string"
+                    },
+                    {
+                      "exclusiveMinimum": 0,
+                      "maximum": 1,
+                      "type": "number"
+                    }
+                  ]
                 },
                 "rate": {
                   "minimum": 0,
@@ -21746,6 +21956,7 @@
               "itemDrops": 0,
               "dropSaleValue": 0
             },
+            "maximumPartyHp": 1,
             "omittedRooms": 0,
             "detail": [
               "xxxxxxx"
@@ -21771,7 +21982,11 @@
                 "retreatHp.from30",
                 "retreatHp.from20",
                 "retreatHp.from10",
-                "retreatHp.below10"
+                "retreatHp.below10",
+                "hpAtEntry",
+                "hpAfterWin",
+                "hpAtEntrySum",
+                "hpAfterWinSum"
               ],
               "rows": [
                 [
@@ -21794,10 +22009,15 @@
                   0,
                   0,
                   0,
+                  0,
+                  0,
+                  0,
+                  0,
                   0
                 ]
               ]
             },
+            "startHp": "full",
             "seed": 1
           }
         }
@@ -22315,6 +22535,10 @@
                 "type": "string"
               },
               {
+                "const": "gateDamage",
+                "type": "string"
+              },
+              {
                 "const": "experience",
                 "type": "string"
               },
@@ -22375,6 +22599,20 @@
                 "additionalProperties": false,
                 "type": "object",
                 "required": [
+                  "gateDamage"
+                ],
+                "properties": {
+                  "gateDamage": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
                   "progress"
                 ],
                 "properties": {
@@ -22386,6 +22624,56 @@
                 }
               }
             ]
+          },
+          "gateRoom": {
+            "anyOf": [
+              {
+                "const": "next",
+                "type": "string"
+              },
+              {
+                "const": "boss",
+                "type": "string"
+              },
+              {
+                "const": "1f-4",
+                "type": "string"
+              },
+              {
+                "const": "2f-4",
+                "type": "string"
+              },
+              {
+                "const": "3f-4",
+                "type": "string"
+              },
+              {
+                "const": "4f-4",
+                "type": "string"
+              },
+              {
+                "const": "5f-4",
+                "type": "string"
+              },
+              {
+                "const": "6f-4",
+                "type": "string"
+              }
+            ]
+          },
+          "startHp": {
+            "anyOf": [
+              {
+                "const": "full",
+                "type": "string"
+              },
+              {
+                "exclusiveMinimum": 0,
+                "maximum": 1,
+                "type": "number"
+              }
+            ],
+            "default": "full"
           },
           "levelProbe": {
             "additionalProperties": false,
@@ -22450,6 +22738,19 @@
                 "minimum": 1,
                 "maximum": 10,
                 "type": "integer"
+              },
+              "fill": {
+                "anyOf": [
+                  {
+                    "const": "greedy",
+                    "type": "string"
+                  },
+                  {
+                    "const": "search",
+                    "type": "string"
+                  }
+                ],
+                "default": "greedy"
               }
             }
           },
@@ -22585,6 +22886,11 @@
                 "maximum": 100,
                 "type": "integer"
               },
+              "stallGenerations": {
+                "minimum": 1,
+                "maximum": 200,
+                "type": "integer"
+              },
               "mutationRate": {
                 "minimum": 0,
                 "maximum": 1,
@@ -22616,10 +22922,12 @@
             "evaluations",
             "elapsedSeconds",
             "basis",
+            "startHp",
             "verification",
             "levelProbe",
             "generationsRun",
             "stopReason",
+            "lastImprovementGeneration",
             "quickSignal",
             "guardStats"
           ],
@@ -22716,6 +23024,10 @@
                         {
                           "const": "bossRoom",
                           "type": "string"
+                        },
+                        {
+                          "const": "gateRoom",
+                          "type": "string"
                         }
                       ]
                     }
@@ -22789,6 +23101,23 @@
               "maxLength": 200,
               "type": "string"
             },
+            "gateRoom": {
+              "pattern": "^[1-6]f-4$",
+              "type": "string"
+            },
+            "startHp": {
+              "anyOf": [
+                {
+                  "const": "full",
+                  "type": "string"
+                },
+                {
+                  "exclusiveMinimum": 0,
+                  "maximum": 1,
+                  "type": "number"
+                }
+              ]
+            },
             "verification": {
               "additionalProperties": false,
               "type": "object",
@@ -22821,6 +23150,10 @@
                       "type": "string"
                     },
                     {
+                      "const": "gateDamage",
+                      "type": "string"
+                    },
+                    {
                       "const": "experience",
                       "type": "string"
                     },
@@ -22842,6 +23175,10 @@
                     },
                     {
                       "const": "bossDamage",
+                      "type": "string"
+                    },
+                    {
+                      "const": "gateDamage",
                       "type": "string"
                     },
                     {
@@ -22933,6 +23270,10 @@
                           "type": "string"
                         },
                         {
+                          "const": "gateDamage",
+                          "type": "string"
+                        },
+                        {
                           "const": "progress",
                           "type": "string"
                         }
@@ -22996,6 +23337,7 @@
                     "target",
                     "fromLevel",
                     "steps",
+                    "fill",
                     "points",
                     "levelNeeded",
                     "truncated"
@@ -23135,6 +23477,18 @@
                         }
                       ]
                     },
+                    "fill": {
+                      "anyOf": [
+                        {
+                          "const": "greedy",
+                          "type": "string"
+                        },
+                        {
+                          "const": "search",
+                          "type": "string"
+                        }
+                      ]
+                    },
                     "points": {
                       "type": "array",
                       "items": {
@@ -23222,8 +23576,16 @@
                 {
                   "const": "timeBudget",
                   "type": "string"
+                },
+                {
+                  "const": "stalled",
+                  "type": "string"
                 }
               ]
+            },
+            "lastImprovementGeneration": {
+              "minimum": 0,
+              "type": "integer"
             },
             "quickSignal": {
               "anyOf": [
@@ -23300,6 +23662,9 @@
                   "status",
                   "ignored",
                   "quickRate",
+                  "quickScore",
+                  "usedValues",
+                  "keptValues",
                   "inBest"
                 ],
                 "properties": {
@@ -23376,9 +23741,60 @@
                       }
                     ]
                   },
+                  "quickScore": {
+                    "anyOf": [
+                      {
+                        "minimum": 0,
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "usedValues": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "keptValues": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
                   "inBest": {
                     "type": "boolean"
                   }
+                }
+              }
+            },
+            "seedBaseline": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "quickRate",
+                "quickScore"
+              ],
+              "properties": {
+                "quickRate": {
+                  "anyOf": [
+                    {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "quickScore": {
+                  "anyOf": [
+                    {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               }
             }
@@ -23427,10 +23843,12 @@
                 "evaluations",
                 "elapsedSeconds",
                 "basis",
+                "startHp",
                 "verification",
                 "levelProbe",
                 "generationsRun",
                 "stopReason",
+                "lastImprovementGeneration",
                 "quickSignal",
                 "guardStats"
               ],
@@ -23527,6 +23945,10 @@
                             {
                               "const": "bossRoom",
                               "type": "string"
+                            },
+                            {
+                              "const": "gateRoom",
+                              "type": "string"
                             }
                           ]
                         }
@@ -23600,6 +24022,23 @@
                   "maxLength": 200,
                   "type": "string"
                 },
+                "gateRoom": {
+                  "pattern": "^[1-6]f-4$",
+                  "type": "string"
+                },
+                "startHp": {
+                  "anyOf": [
+                    {
+                      "const": "full",
+                      "type": "string"
+                    },
+                    {
+                      "exclusiveMinimum": 0,
+                      "maximum": 1,
+                      "type": "number"
+                    }
+                  ]
+                },
                 "verification": {
                   "additionalProperties": false,
                   "type": "object",
@@ -23632,6 +24071,10 @@
                           "type": "string"
                         },
                         {
+                          "const": "gateDamage",
+                          "type": "string"
+                        },
+                        {
                           "const": "experience",
                           "type": "string"
                         },
@@ -23653,6 +24096,10 @@
                         },
                         {
                           "const": "bossDamage",
+                          "type": "string"
+                        },
+                        {
+                          "const": "gateDamage",
                           "type": "string"
                         },
                         {
@@ -23744,6 +24191,10 @@
                               "type": "string"
                             },
                             {
+                              "const": "gateDamage",
+                              "type": "string"
+                            },
+                            {
                               "const": "progress",
                               "type": "string"
                             }
@@ -23807,6 +24258,7 @@
                         "target",
                         "fromLevel",
                         "steps",
+                        "fill",
                         "points",
                         "levelNeeded",
                         "truncated"
@@ -23946,6 +24398,18 @@
                             }
                           ]
                         },
+                        "fill": {
+                          "anyOf": [
+                            {
+                              "const": "greedy",
+                              "type": "string"
+                            },
+                            {
+                              "const": "search",
+                              "type": "string"
+                            }
+                          ]
+                        },
                         "points": {
                           "type": "array",
                           "items": {
@@ -24033,8 +24497,16 @@
                     {
                       "const": "timeBudget",
                       "type": "string"
+                    },
+                    {
+                      "const": "stalled",
+                      "type": "string"
                     }
                   ]
+                },
+                "lastImprovementGeneration": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
                 "quickSignal": {
                   "anyOf": [
@@ -24111,6 +24583,9 @@
                       "status",
                       "ignored",
                       "quickRate",
+                      "quickScore",
+                      "usedValues",
+                      "keptValues",
                       "inBest"
                     ],
                     "properties": {
@@ -24187,9 +24662,60 @@
                           }
                         ]
                       },
+                      "quickScore": {
+                        "anyOf": [
+                          {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "usedValues": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "keptValues": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
                       "inBest": {
                         "type": "boolean"
                       }
+                    }
+                  }
+                },
+                "seedBaseline": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "quickRate",
+                    "quickScore"
+                  ],
+                  "properties": {
+                    "quickRate": {
+                      "anyOf": [
+                        {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "quickScore": {
+                      "anyOf": [
+                        {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   }
                 }
@@ -24257,6 +24783,7 @@
             "evaluations": 0,
             "elapsedSeconds": 0,
             "basis": "xxxxxxx",
+            "startHp": "full",
             "verification": {
               "objective": "success",
               "scoredBy": "success",
@@ -24298,6 +24825,7 @@
               },
               "fromLevel": 1,
               "steps": "slot",
+              "fill": "greedy",
               "points": [
                 {
                   "level": 1,
@@ -24314,6 +24842,7 @@
             },
             "generationsRun": 0,
             "stopReason": "generations",
+            "lastImprovementGeneration": 0,
             "quickSignal": {
               "start": "success",
               "switchedAt": 1
@@ -24561,6 +25090,10 @@
                 "type": "string"
               },
               {
+                "const": "gateDamage",
+                "type": "string"
+              },
+              {
                 "const": "experience",
                 "type": "string"
               },
@@ -24605,6 +25138,20 @@
                 "additionalProperties": false,
                 "type": "object",
                 "required": [
+                  "gateDamage"
+                ],
+                "properties": {
+                  "gateDamage": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
                   "progress"
                 ],
                 "properties": {
@@ -24616,6 +25163,56 @@
                 }
               }
             ]
+          },
+          "gateRoom": {
+            "anyOf": [
+              {
+                "const": "next",
+                "type": "string"
+              },
+              {
+                "const": "boss",
+                "type": "string"
+              },
+              {
+                "const": "1f-4",
+                "type": "string"
+              },
+              {
+                "const": "2f-4",
+                "type": "string"
+              },
+              {
+                "const": "3f-4",
+                "type": "string"
+              },
+              {
+                "const": "4f-4",
+                "type": "string"
+              },
+              {
+                "const": "5f-4",
+                "type": "string"
+              },
+              {
+                "const": "6f-4",
+                "type": "string"
+              }
+            ]
+          },
+          "startHp": {
+            "anyOf": [
+              {
+                "const": "full",
+                "type": "string"
+              },
+              {
+                "exclusiveMinimum": 0,
+                "maximum": 1,
+                "type": "number"
+              }
+            ],
+            "default": "full"
           },
           "directionStrictness": {
             "anyOf": [
@@ -24729,6 +25326,7 @@
             "evaluations",
             "elapsedSeconds",
             "basis",
+            "startHp",
             "verification",
             "seed",
             "direction",
@@ -24829,6 +25427,10 @@
                         {
                           "const": "bossRoom",
                           "type": "string"
+                        },
+                        {
+                          "const": "gateRoom",
+                          "type": "string"
                         }
                       ]
                     }
@@ -24902,6 +25504,23 @@
               "maxLength": 200,
               "type": "string"
             },
+            "gateRoom": {
+              "pattern": "^[1-6]f-4$",
+              "type": "string"
+            },
+            "startHp": {
+              "anyOf": [
+                {
+                  "const": "full",
+                  "type": "string"
+                },
+                {
+                  "exclusiveMinimum": 0,
+                  "maximum": 1,
+                  "type": "number"
+                }
+              ]
+            },
             "verification": {
               "additionalProperties": false,
               "type": "object",
@@ -24934,6 +25553,10 @@
                       "type": "string"
                     },
                     {
+                      "const": "gateDamage",
+                      "type": "string"
+                    },
+                    {
                       "const": "experience",
                       "type": "string"
                     },
@@ -24955,6 +25578,10 @@
                     },
                     {
                       "const": "bossDamage",
+                      "type": "string"
+                    },
+                    {
+                      "const": "gateDamage",
                       "type": "string"
                     },
                     {
@@ -25043,6 +25670,10 @@
                         },
                         {
                           "const": "bossDamage",
+                          "type": "string"
+                        },
+                        {
+                          "const": "gateDamage",
                           "type": "string"
                         },
                         {
@@ -25478,6 +26109,7 @@
                 "evaluations",
                 "elapsedSeconds",
                 "basis",
+                "startHp",
                 "verification",
                 "seed",
                 "direction",
@@ -25578,6 +26210,10 @@
                             {
                               "const": "bossRoom",
                               "type": "string"
+                            },
+                            {
+                              "const": "gateRoom",
+                              "type": "string"
                             }
                           ]
                         }
@@ -25651,6 +26287,23 @@
                   "maxLength": 200,
                   "type": "string"
                 },
+                "gateRoom": {
+                  "pattern": "^[1-6]f-4$",
+                  "type": "string"
+                },
+                "startHp": {
+                  "anyOf": [
+                    {
+                      "const": "full",
+                      "type": "string"
+                    },
+                    {
+                      "exclusiveMinimum": 0,
+                      "maximum": 1,
+                      "type": "number"
+                    }
+                  ]
+                },
                 "verification": {
                   "additionalProperties": false,
                   "type": "object",
@@ -25683,6 +26336,10 @@
                           "type": "string"
                         },
                         {
+                          "const": "gateDamage",
+                          "type": "string"
+                        },
+                        {
                           "const": "experience",
                           "type": "string"
                         },
@@ -25704,6 +26361,10 @@
                         },
                         {
                           "const": "bossDamage",
+                          "type": "string"
+                        },
+                        {
+                          "const": "gateDamage",
                           "type": "string"
                         },
                         {
@@ -25792,6 +26453,10 @@
                             },
                             {
                               "const": "bossDamage",
+                              "type": "string"
+                            },
+                            {
+                              "const": "gateDamage",
                               "type": "string"
                             },
                             {
@@ -26247,6 +26912,7 @@
             "evaluations": 0,
             "elapsedSeconds": 0,
             "basis": "xxxxxxx",
+            "startHp": "full",
             "verification": {
               "objective": "success",
               "scoredBy": "success",
@@ -28681,6 +29347,10 @@
                 "type": "string"
               },
               {
+                "const": "gateDamage",
+                "type": "string"
+              },
+              {
                 "const": "experience",
                 "type": "string"
               },
@@ -28725,6 +29395,20 @@
                 "additionalProperties": false,
                 "type": "object",
                 "required": [
+                  "gateDamage"
+                ],
+                "properties": {
+                  "gateDamage": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
                   "progress"
                 ],
                 "properties": {
@@ -28736,6 +29420,56 @@
                 }
               }
             ]
+          },
+          "gateRoom": {
+            "anyOf": [
+              {
+                "const": "next",
+                "type": "string"
+              },
+              {
+                "const": "boss",
+                "type": "string"
+              },
+              {
+                "const": "1f-4",
+                "type": "string"
+              },
+              {
+                "const": "2f-4",
+                "type": "string"
+              },
+              {
+                "const": "3f-4",
+                "type": "string"
+              },
+              {
+                "const": "4f-4",
+                "type": "string"
+              },
+              {
+                "const": "5f-4",
+                "type": "string"
+              },
+              {
+                "const": "6f-4",
+                "type": "string"
+              }
+            ]
+          },
+          "startHp": {
+            "anyOf": [
+              {
+                "const": "full",
+                "type": "string"
+              },
+              {
+                "exclusiveMinimum": 0,
+                "maximum": 1,
+                "type": "number"
+              }
+            ],
+            "default": "full"
           },
           "seed": {
             "type": "integer"
@@ -28755,6 +29489,7 @@
             "improvement",
             "gain",
             "standardError",
+            "startHp",
             "bottleneckRoom",
             "bottleneckCounters",
             "candidatesTried",
@@ -28784,6 +29519,10 @@
                   "type": "string"
                 },
                 {
+                  "const": "gateDamage",
+                  "type": "string"
+                },
+                {
                   "const": "experience",
                   "type": "string"
                 },
@@ -28805,6 +29544,10 @@
                 },
                 {
                   "const": "bossDamage",
+                  "type": "string"
+                },
+                {
+                  "const": "gateDamage",
                   "type": "string"
                 },
                 {
@@ -28869,6 +29612,10 @@
                       "type": "string"
                     },
                     {
+                      "const": "gateDamage",
+                      "type": "string"
+                    },
+                    {
                       "const": "progress",
                       "type": "string"
                     }
@@ -28917,6 +29664,23 @@
                   ]
                 }
               }
+            },
+            "gateRoom": {
+              "pattern": "^[1-6]f-4$",
+              "type": "string"
+            },
+            "startHp": {
+              "anyOf": [
+                {
+                  "const": "full",
+                  "type": "string"
+                },
+                {
+                  "exclusiveMinimum": 0,
+                  "maximum": 1,
+                  "type": "number"
+                }
+              ]
             },
             "bottleneckRoom": {
               "anyOf": [
@@ -29350,6 +30114,7 @@
                 "improvement",
                 "gain",
                 "standardError",
+                "startHp",
                 "bottleneckRoom",
                 "bottleneckCounters",
                 "candidatesTried",
@@ -29379,6 +30144,10 @@
                       "type": "string"
                     },
                     {
+                      "const": "gateDamage",
+                      "type": "string"
+                    },
+                    {
                       "const": "experience",
                       "type": "string"
                     },
@@ -29400,6 +30169,10 @@
                     },
                     {
                       "const": "bossDamage",
+                      "type": "string"
+                    },
+                    {
+                      "const": "gateDamage",
                       "type": "string"
                     },
                     {
@@ -29464,6 +30237,10 @@
                           "type": "string"
                         },
                         {
+                          "const": "gateDamage",
+                          "type": "string"
+                        },
+                        {
                           "const": "progress",
                           "type": "string"
                         }
@@ -29512,6 +30289,23 @@
                       ]
                     }
                   }
+                },
+                "gateRoom": {
+                  "pattern": "^[1-6]f-4$",
+                  "type": "string"
+                },
+                "startHp": {
+                  "anyOf": [
+                    {
+                      "const": "full",
+                      "type": "string"
+                    },
+                    {
+                      "exclusiveMinimum": 0,
+                      "maximum": 1,
+                      "type": "number"
+                    }
+                  ]
                 },
                 "bottleneckRoom": {
                   "anyOf": [
@@ -29944,6 +30738,7 @@
             "improvement": 1,
             "gain": 1,
             "standardError": 0,
+            "startHp": "full",
             "bottleneckRoom": "1f-1",
             "bottleneckCounters": [
               {

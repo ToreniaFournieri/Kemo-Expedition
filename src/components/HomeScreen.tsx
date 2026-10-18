@@ -648,7 +648,11 @@ export function GameRuntimeHost({
           const onProgress = simulationProgressListenerRef.current ?? undefined;
           // A search's seeded runs never report into that pane; a Simulation Run read does, seeded or not.
           const reports = options?.reportProgress ?? seed === undefined;
-          return simulateExpeditionRuns(snapshot, partyIndex, gameModeRef.current, count, reports ? onProgress : undefined, apiRuntimeRef.current.enemyLevelOffset, seed, { bossRoomOnly: options?.bossRoomOnly === true });
+          return simulateExpeditionRuns(snapshot, partyIndex, gameModeRef.current, count, reports ? onProgress : undefined, apiRuntimeRef.current.enemyLevelOffset, seed, {
+            bossRoomOnly: options?.bossRoomOnly === true,
+            ...(options?.onlyRoom ? { onlyRoom: options.onlyRoom } : {}),
+            ...(options?.startHpShare !== undefined ? { startHpShare: options.startHpShare } : {}),
+          });
         },
         persistPlayer: async (snapshot) => { await apiActionsRef.current.persistApiState(snapshot); },
         persistPlayerReplacement: async (snapshot) => { await apiActionsRef.current.persistApiStateReplacement(snapshot); },
