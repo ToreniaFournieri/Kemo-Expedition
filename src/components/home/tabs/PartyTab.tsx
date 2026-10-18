@@ -10,6 +10,7 @@ import { LINEAGES } from '../../../data/lineages';
 import { PREDISPOSITIONS } from '../../../data/predispositions';
 import { RACES } from '../../../data/races';
 import { resolveReleasedUniqueBuild } from '../../../game/uniqueRelease';
+import { pickDefaultName } from '../../../game/defaultNames';
 import { isUniqueCharacterAvailable, UNIQUE_CHARACTERS,type UniqueCharacterId } from '../../../data/uniqueCharacters';
 import { buildCombatTotals, buildPartyStatsView } from '../../../api/v1/statusView';
 import { readStatusFacts } from '../../../api/v1/calculatedStatus';
@@ -523,21 +524,14 @@ export default function PartyTab({
   };
 
   // SpecRef: 2.2.1 | Potential default name for player side characters | Trigger: when race is changed.
-  const getDefaultNameForRace = (raceId: RaceId): string => {
-    const genderedPool = getPotentialDefaultNamesByPt()[party.id]?.[raceId];
-    const ptCandidates = genderedPool?.[(pendingEdits?.gender ?? char.gender)] ?? [];
-    if (ptCandidates.length === 0) return char.name;
-
+  const getDefaultNameForRace = (raceId: RaceId, gender: Character['gender'] = pendingEdits?.gender ?? char.gender): string => {
     const usedNames = new Set(
       parties
         .flatMap((currentParty) => currentParty.characters)
         .filter((character) => character.id !== char.id)
         .map((character) => character.name)
     );
-
-    const availableCandidates = ptCandidates.filter((candidate: string) => !usedNames.has(candidate));
-    const candidatePool = availableCandidates.length > 0 ? availableCandidates : ptCandidates;
-    return candidatePool[Math.floor(gameplayRandom() * candidatePool.length)];
+    return pickDefaultName(getPotentialDefaultNamesByPt(), party.id, raceId, gender, usedNames, gameplayRandom) ?? char.name;
   };
 
   const handleRaceChange = (raceId: Character['raceId']) => {
@@ -1309,10 +1303,13 @@ export default function PartyTab({
                     // Identity fields come from the unique table (Spec 2.1.4.2); drop pending identity edits first.
                     const { name: _name, gender: _gender, raceId: _raceId, mimorianEnemyId: _enemy, lineageId: _lineage, predispositionId: _predisposition, isUnique: _isUnique, uniqueCharacterId: _uniqueId, ...kept } = pendingEdits ?? {};
                     if (value === 'false') {
-                      setPendingEdits(char.isUnique ? {
-                        ...kept, isUnique: false,
-                        ...resolveReleasedUniqueBuild(char, party.characters.filter((_member, memberIndex) => memberIndex !== selectedCharacter)),
-                      } : kept);
+                      if (!char.isUnique) {
+                        setPendingEdits(kept);
+                        return;
+                      }
+                      // A released unique takes a default name too, so it never keeps (and duplicates) the unique's name.
+                      const released = resolveReleasedUniqueBuild(char, party.characters.filter((_member, memberIndex) => memberIndex !== selectedCharacter));
+                      setPendingEdits({ ...kept, isUnique: false, ...released, name: getDefaultNameForRace(released.raceId, char.gender) });
                       return;
                     }
                     const def = UNIQUE_CHARACTERS.find((entry) => entry.id === value)!;

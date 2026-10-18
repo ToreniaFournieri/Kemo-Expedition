@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { ENEMIES } from '../../src/data/enemies';
 import { executeApiV1CommitTransaction, type ApiV1CommitAuthorityDependencies, type ApiV1CommitAuthorityInput, type ApiV1ControlMetadata } from '../../src/api/v1/authority';
 import { planCharacterBuildChange } from '../../src/api/v1/buildChange';
+import { buildDefaultNamePools, pickDefaultName, stableUnitRandom } from '../../src/game/defaultNames';
+import { translate } from '../../src/i18n';
 import { characterEditToChangeBuildParameters } from '../../src/api/v1/characterBuildParameters';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
 import { readCharacterBuild } from './apiV1CharacterRead.ts';
@@ -55,6 +57,28 @@ fails(base, characterId, { racesAndGender: 'mimorian/female/999999' }, 'illegal_
   assert.equal(character(mimorian.state).raceId, 'mimorian');
   assert.equal(character(mimorian.state).gender, 'female');
   assert.equal(character(mimorian.state).mimorianEnemyId, enemyId);
+}
+
+// SpecRef: 8.2.3 | Default Name Assignment | Trigger: when `Race` is changed — the API names the character as the Party editor does.
+{
+  const pools = buildDefaultNamePools((key) => translate('ja', key));
+  const otherNames = new Set(base.parties.flatMap((party) => party.characters).filter((entry) => entry.id !== characterId).map((entry) => entry.name));
+  const renamed = character(change(base, characterId, { racesAndGender: 'murid/male' }).state);
+  assert.ok(pools[1].murid!.male.includes(renamed.name), `${renamed.name} is a PT1 Murid male default name`);
+  assert.equal(otherNames.has(renamed.name), false, 'an unused candidate is preferred');
+  assert.equal(planCharacterBuildChange(base, characterId, { racesAndGender: 'murid/male' }).updates.name, renamed.name, 'planning is deterministic');
+  assert.equal(character(change(base, characterId, { racesAndGender: 'murid/male', name: 'Kept' }).state).name, 'Kept', 'an explicit name wins');
+  const sameRace = character(base);
+  const genderOnly = `${sameRace.raceId}/${sameRace.gender === 'male' ? 'female' : 'male'}`;
+  const genderPlan = planCharacterBuildChange(base, characterId, { racesAndGender: genderOnly });
+  assert.equal(genderPlan.updates.name, undefined, 'a gender-only change keeps the name');
+  const enemyId = ENEMIES[0].id;
+  const unlocked: GameState = { ...base, global: { ...base.global, unlockedMimorianEnemyIds: [enemyId] } };
+  assert.equal(character(change(unlocked, characterId, { racesAndGender: `mimorian/female/${enemyId}` }).state).name, ENEMIES[0].name, 'a Mimorian takes its form name');
+  assert.equal(stableUnitRandom('a')(), stableUnitRandom('a')());
+  // PT1 lists no Procyonian names, so the other PTs' Procyonian names are used.
+  assert.ok(pools[2].procyonian!.male.includes(pickDefaultName(pools, 1, 'procyonian', 'male', new Set(), () => 0)!));
+  assert.equal(pickDefaultName(pools, 1, 'kemoria', 'male', new Set(), () => 0), undefined);
 }
 
 // Switching this melee character to support-only classes invalidates equipped melee gear and needs confirmation.
@@ -258,6 +282,17 @@ console.log('apiV1BuildChange profile ok');
     const expectedRace = ['lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian', 'leporian', 'cervin', 'murid'].find((race) => !blockers.includes(race as never));
     assert.deepEqual([after.raceId, after.lineageId, after.predispositionId], [expectedRace, 'sandstorm', 'aggressive']);
     assert.deepEqual([after.gender, after.mainClassId, after.subClassId], [before.gender, before.mainClassId, before.subClassId]);
+    // A released unique takes a default name for its new race (ClaudeUQ: released uniques kept, and duplicated, their names).
+    const pools = buildDefaultNamePools((key) => translate('ja', key));
+    assert.notEqual(after.name, before.name);
+    assert.ok(pools[1][expectedRace as 'lupinian']![after.gender].includes(after.name), `${after.name} is a default name`);
+  }
+  // A unique whose race stays valid is renamed on release as well; an explicit name wins.
+  {
+    const orcaRelease = planCharacterBuildChange(picked, normalId, { uniqueSelection: 'none' });
+    assert.notEqual(orcaRelease.updates.name, undefined);
+    assert.notEqual(orcaRelease.updates.name, orca.name);
+    assert.equal(planCharacterBuildChange(picked, normalId, { uniqueSelection: 'none', name: 'Named' }).updates.name, 'Named');
   }
   assert.equal(character(change(released, normalId, { uniqueSelection: 'kemo' }).state, normalId).uniqueCharacterId, 'kemo');
 }
