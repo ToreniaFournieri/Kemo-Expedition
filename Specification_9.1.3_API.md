@@ -328,27 +328,26 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * One definition for every operation that measures or searches a build: `{p}/simulationRun` (2-2-3, `objective` only), `party/{p}/gaSearch` (2-3-2), `party/{p}/directedBuild` (2-3-3), and `character/stagedEquipmentTuning` (2-3-8, with 7.1.5). Each operation states only where and how often it measures them.
 
 * `objective`
-  * Options: `success`, `minDefeat`, `bossDamage`, `gateDamage`, `experience`, `progress`. Default: `success`.
+  * Options: `success`, `minDefeat`, `gateDamage`, `experience`, `progress`. Default: `success`.
   * Each objective has a `<rate>`, measured on a simulation as in 7.1.5 Score, and a per-run variance as in 7.1.5 Luck check.
 
     | `objective` | `<rate>` | Better | Unit of `<gain>` |
     |---|---|---|---|
     | `success` | Success rate (clear + return) | Higher | Percentage points |
     | `minDefeat` | Defeat rate | Lower | Percentage points |
-    | `bossDamage` | Average share of boss HP dealt in the boss battle; a win counts as `1` | Higher | Percentage points |
-    | `gateDamage` | Average share of the enemy HP dealt in the battle of the gate room `gateRoom`; a win counts as `1` | Higher | Percentage points |
+    | `gateDamage` | Average share of the enemy HP dealt in the battle of the gate room `gateRoom` (an elite gate room or the boss); a win counts as `1` | Higher | Percentage points |
     | `experience` | Average EXP per run | Higher | Relative change (%) |
     | `progress` | Average over runs of `(rooms cleared + share) / rooms on the route` (7.1.5 Score), `0` ~ `1` | Higher | Percentage points |
 
-  * Route: every objective except `bossDamage` and `gateDamage` simulates the current destination up to the depth limit or the first closed Clear-Gate (`forecast.scope`). A route run always starts at full party HP.
-  * `bossDamage` simulates only the boss battle of the current destination. Each run starts it at `startHp` (default: full party HP); the rooms before it, the gates, and the depth limit are ignored. HP lost on the way to the boss is not counted; use `success` or `progress` to include it, or set `startHp` to the HP a run usually has when it reaches the boss.
-  * `gateDamage` simulates only the battle of one gate room (`gateRoom`): an elite room `X-4` that a Clear-Gate guards, or the boss room. Like `bossDamage`, each run starts it at `startHp`, and the rooms before it, the gates, and the depth limit are ignored; a won battle ends the run as a success. `gateDamage` with `gateRoom: boss` is the same battle as `bossDamage`.
-    * Use it for the elite the next gate needs. A gate's route ends before its gate room (`forecast.scope` `endsAt: clearGate`), so a build searched for the 4th Elite gate (route through 4f-3) is never tested on the 4f-4 elite, although every run of the 5th Elite gate must beat that elite. Search `gateDamage` on `4f-4`, then the route guarded by it (`"objectiveGuard": { "gateDamage": <minimum> }`), as for a boss.
+  * Route: every objective except `gateDamage` simulates the current destination up to the depth limit or the first closed Clear-Gate (`forecast.scope`). A route run always starts at full party HP.
+  * `gateDamage` simulates only the battle of one gate room (`gateRoom`) of the current destination: an elite room `X-4` that a Clear-Gate guards, or the boss room, the last gate (`gateRoom: boss`). Each run starts it at `startHp` (default: full party HP); the rooms before it, the gates, and the depth limit are ignored, and a won battle ends the run as a success. HP lost on the way to the room is not counted; use `success` or `progress` to include it, or set `startHp` to the HP a run usually has when it reaches the room.
+    * For a boss: `"objective": "gateDamage", "gateRoom": "boss"`. When every Clear-Gate is open, `next` (the default) is the boss too.
+    * For an elite: use it for the elite the next gate needs. A gate's route ends before its gate room (`forecast.scope` `endsAt: clearGate`), so a build searched for the 4th Elite gate (route through 4f-3) is never tested on the 4f-4 elite, although every run of the 5th Elite gate must beat that elite. Search `gateDamage` on `4f-4`, then the route guarded by it (`"objectiveGuard": { "gateDamage": <minimum> }`), as for a boss.
   * `success`: while successes are rare, `progress` breaks ties between builds, so a search still has a signal when every build is at `0`. In `gaSearch` and `directedBuild`, when successes are rare for both builds compared with each other (the `successSignal` rule of 2-3-2 on the runs of that comparison: `p × runs < 20 × (1 − p)` for the higher of the two rates), the comparison is judged on `progress` instead (`scoredBy: progress`); a build that loses successes by more than 2 standard errors is still the worse one. Two rates of `0` are always rare.
   * `progress`: rewards getting further along the route even when no run clears it. Use it at a wall where the success rate is `0` or close to it, or as a guard so a boss build keeps the route.
 
 * `gateRoom`
-  * Optional. String. Default: `next`. Accepted by `{p}/simulationRun` (with `objective: gateDamage`), `gaSearch`, `directedBuild`, and `stagedEquipmentTuning`, only when `objective` or the `objectiveGuard` objective is `gateDamage`; otherwise the request is rejected (`invalid_request`, field `gateRoom.not_used`).
+  * Optional. String. Default: `next`. Accepted by `{p}/simulationRun` (with `objective: gateDamage`), `gaSearch`, `directedBuild`, and `stagedEquipmentTuning`, only when `gateDamage` is measured: as `objective`, as the `objectiveGuard` objective, or as the default `crossCheck` (every search without a guard on another objective); otherwise the request is rejected (`invalid_request`, field `gateRoom.not_used`).
   * The room `gateDamage` fights:
     * `next`: the gate room of the destination's next closed Clear-Gate (the first one on the route), or the boss room when every Clear-Gate is open.
     * `1f-4` ~ `5f-4`: that floor's elite gate room. `boss` or `6f-4`: the boss room.
@@ -357,8 +356,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * `startHp`
   * Optional. `full` or a Number, `0` < value ≤ `1`. Default: `full`.
   * The party HP a simulated run starts with, as a share of the party's maximum HP (rounded down, at least 1 HP). `1` is `full`.
-  * `gaSearch`, `directedBuild`, `stagedEquipmentTuning`: applies to the forecasts of `bossDamage` and `gateDamage`, whether they are the `objective`, the `objectiveGuard`, or the `crossCheck`. Route forecasts always start at full HP, so `"objective": "progress", "objectiveGuard": { "bossDamage": 0.85 }, "startHp": 0.35` searches the route from full HP and keeps the boss damage measured from 35% HP. A share below `1` in a request that measures neither `bossDamage` nor `gateDamage` is rejected (`invalid_request`, field `startHp.not_used`).
-  * `{p}/simulationRun`: every run starts with it, whatever is simulated (the route, or the battle alone with `bossDamage` or `gateDamage`).
+  * `gaSearch`, `directedBuild`, `stagedEquipmentTuning`: applies to the `gateDamage` forecasts, whether `gateDamage` is the `objective`, the `objectiveGuard`, or the `crossCheck`. Route forecasts always start at full HP, so `"objective": "progress", "objectiveGuard": { "gateDamage": 0.85 }, "gateRoom": "boss", "startHp": 0.35` searches the route from full HP and keeps the boss damage measured from 35% HP. A share below `1` in a request that does not measure `gateDamage` is rejected (`invalid_request`, field `startHp.not_used`).
+  * `{p}/simulationRun`: every run starts with it, whatever is simulated (the route, or the battle alone with `gateDamage`).
   * Use it to emulate the HP a run really has when it reaches the boss or an elite: a route `simulationRun` reports the average HP at the start of each room (`rooms`, `hpAtEntry`).
   * Returned as `startHp` (`full` or the share) by every operation that accepts it.
 
@@ -366,11 +365,11 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * Optional. Object. Default: none. Accepted by `gaSearch`, `directedBuild`, and `stagedEquipmentTuning`.
   * A minimum value on a second objective, so a search for one objective cannot ruin another.
   * Format: `{ "<guardObjective>": <minimum> }`, with exactly one member.
-    * `<guardObjective>`: `success`, `bossDamage`, `gateDamage`, or `progress`. It must differ from `objective`.
+    * `<guardObjective>`: `success`, `gateDamage`, or `progress`. It must differ from `objective`.
     * `<minimum>`: Number, `0` ~ `1`, measured as the `<rate>` of that objective. For `success`, it is the success rate (not `progress`).
   * Examples:
-    * `"objective": "bossDamage", "objectiveGuard": { "success": 0.05 }` searches for boss damage but keeps the full-route success rate at 5% or more.
-    * `"objective": "bossDamage", "objectiveGuard": { "progress": 0.9 }` keeps the route open even when the success rate is `0`.
+    * `"objective": "gateDamage", "gateRoom": "boss", "objectiveGuard": { "success": 0.05 }` searches for boss damage but keeps the full-route success rate at 5% or more.
+    * `"objective": "gateDamage", "gateRoom": "boss", "objectiveGuard": { "progress": 0.9 }` keeps the route open even when the success rate is `0`.
   * Guard ranking (used wherever builds are ranked with a guard):
     1. Builds that reach `<minimum>` rank above every build that does not.
     2. Among builds that reach it, the better `objective` `<rate>` ranks first.
@@ -378,17 +377,17 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * So when no build reaches the guard, the build that comes closest to it ranks first.
   * Guard rule for a result: if the current build reaches the guard and the result does not, the result is worse, whatever its `objective` gain.
   * The guard is measured only where an operation says so, on the same seed and number of runs as the `objective` score it is ranked with.
-  * Shared runs: when neither `objective` nor the guard objective is `bossDamage` or `gateDamage`, both run the same route forecast, so the guard value is read from the objective's own runs instead of a second forecast. The values are the same as a separate measurement on that seed; only the cost differs.
+  * Shared runs: when neither `objective` nor the guard objective is `gateDamage`, both run the same route forecast, so the guard value is read from the objective's own runs instead of a second forecast. The values are the same as a separate measurement on that seed; only the cost differs.
 
 * `crossCheck`
   * A second objective measured on the current build and the result, returned by `gaSearch`, `directedBuild`, and `stagedEquipmentTuning`.
   * Format: `{ objective, before, after, minimum, reached }`
-    * `objective`: the `objectiveGuard` objective when it is set. Otherwise: `bossDamage` when `objective` is `success`, `minDefeat`, `experience`, or `progress`; `success` when `objective` is `bossDamage` or `gateDamage`.
+    * `objective`: the `objectiveGuard` objective when it is set. Otherwise: `gateDamage` (on `gateRoom`, by default the next gate room) when `objective` is `success`, `minDefeat`, `experience`, or `progress`; `success` when `objective` is `gateDamage`.
     * `before`, `after`: `<rate>` of that objective for the current build and the result, measured on the operation's final comparison runs. For `success`, the success rate.
     * `minimum`: the `objectiveGuard` minimum, or `null` without a guard.
     * `reached`: `{ before, after }`, Booleans, whether each build reaches `minimum`; `null` without a guard.
   * `crossCheck` does not change the outcome unless `objectiveGuard` is set.
-  * Example: `"objective": "bossDamage"` with `crossCheck` `{ "objective": "success", "before": 0.04, "after": 0.0 }` shows a boss build that leaves the route at 0%.
+  * Example: `"objective": "gateDamage", "gateRoom": "boss"` with `crossCheck` `{ "objective": "success", "before": 0.04, "after": 0.0 }` shows a boss build that leaves the route at 0%.
 
 **2-1. `read/observation`**
 
@@ -630,10 +629,10 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Range: 1 ~ 1000.
   * `objective`
     * Optional.
-    * `success`, `minDefeat`, `bossDamage`, `gateDamage`, `experience`, `progress` (see 2-0).
+    * `success`, `minDefeat`, `gateDamage`, `experience`, `progress` (see 2-0).
     * When set, the response also returns `rate` and `standardError` for this objective.
       * `rate` is the `<rate>` of 2-0.
-    * With `bossDamage` or `gateDamage`, only that battle is simulated (2-0), and `overview` and `detail` describe that battle.
+    * With `gateDamage`, only that battle is simulated (2-0), and `overview` and `detail` describe that battle.
   * `gateRoom`
     * Optional. With `objective: gateDamage` only (see 2-0).
   * `startHp`
@@ -665,7 +664,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `hpAtEntry`: average party HP at the start of the room, in % of `maximumPartyHp`, over the runs that reached it (`null` when none did).
       * `hpAfterWin`: average party HP left after the room's battle, in % of `maximumPartyHp`, over the runs that won it (`null` when none did).
       * `hpAtEntrySum`, `hpAfterWinSum`: the exact HP sums behind them.
-    * Reading it: `hpAtEntry` of the boss room (or of an elite gate room) is the HP a run really brings into that battle. Send it as `startHp` (for example `0.35` for 35%) with `bossDamage` or `gateDamage` to measure that battle as the route leaves it.
+    * Reading it: `hpAtEntry` of the boss room (or of an elite gate room) is the HP a run really brings into that battle. Send it as `startHp` (for example `0.35` for 35%) with `gateDamage` to measure that battle as the route leaves it.
   * `maximumPartyHp`
     * The party's maximum HP in this forecast.
   * `gateRoom`, `startHp`
@@ -765,7 +764,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `objective`
     * Optional.
     * Default: `success`.
-    * `success`, `minDefeat`, `bossDamage`, `gateDamage`, `experience`, `progress` (see 2-0, including the `success` tie-break with `progress` and the battle-only `bossDamage` and `gateDamage`).
+    * `success`, `minDefeat`, `gateDamage`, `experience`, `progress` (see 2-0, including the `success` tie-break with `progress` and the battle-only `gateDamage`).
     * If successes are rare for both builds in the verification runs, `verdict` is judged on `progress` (see `verdict`).
   * `gateRoom`, `startHp`
     * Optional. See 2-0.
@@ -798,15 +797,15 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * The guard is checked on every candidate: each candidate scored with `quickRuns` is also measured on the guard objective with `quickRuns` runs (the quick seed), and each candidate re-scored with `confirmRuns` with `confirmRuns` runs (the confirm seed). The population order, the elites, and the parent tournaments use the guard ranking on the quick values. The best confirmed candidate and the final selection use it on the confirm and final values.
     * Reason: when the quick runs ignore the guard, the population moves toward builds that miss it, and the final selection then discards them (`noChange`), although builds that reach the guard and improve `objective` exist.
     * Cost:
-      * When neither `objective` nor the guard objective is `bossDamage` or `gateDamage`, the guard is read from the objective's own runs (2-0 Shared runs), at no extra cost.
-      * A `bossDamage` or `gateDamage` guard adds one battle-alone forecast per scored candidate (one battle, so it is short).
-      * A `success` or `progress` guard with `objective: bossDamage` or `gateDamage` adds one route forecast per scored candidate. The route forecast is much longer than the boss battle, so it sets most of the search time, and the search runs fewer generations within `timeBudgetSeconds`.
+      * When neither `objective` nor the guard objective is `gateDamage`, the guard is read from the objective's own runs (2-0 Shared runs), at no extra cost.
+      * A `gateDamage` guard adds one battle-alone forecast per scored candidate (one battle, so it is short).
+      * A `success` or `progress` guard with `objective: gateDamage` adds one route forecast per scored candidate. The route forecast is much longer than the gate room battle, so it sets most of the search time, and the search runs fewer generations within `timeBudgetSeconds`.
     * See `guardStats`, `verification.crossCheck`, and `verdict` for how the result reports the guard.
   * `levelProbe`
     * Optional. Object. Default: `{ "mode": "auto", "purpose": "conquest" }`.
     * After the verification, measures whether a higher party level would let the result build reach a goal. It answers "farm or keep searching": at a wall where the search returns `noChange` or `noisy`, it reports the level the build needs.
     * Level growth is mostly flat; the large steps are the base equipment slot unlock levels (2.1.1.1 `f.equipment_slots`: 24, 30, 36, 43, 50, 57, 65, ...). So by default only the next slot unlock level is probed.
-    * The probe does not depend on `objective`: every objective gets the same probe. It never measures `bossDamage`, because the boss-only rate ignores the route to the boss.
+    * The probe does not depend on `objective`: every objective gets the same probe. It never measures `gateDamage`, because the battle-only rate ignores the route to the room.
     * Fields:
 
     | Field | Type | Default | Range | Description |
@@ -900,7 +899,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * `<rate>`: the `<rate>` of the selected `objective` (2-0).
       * `success`: if successes are rare for both builds in the verification runs (`p × verifyRuns < 20 × (1 − p)` for the higher of the two success rates, the `successSignal` rule; below 3.85% at the default `verifyRuns` 500), `<rate>` is `progress` instead, because the difference between two rare success rates is mostly chance. Otherwise `<rate>` stays the success rate.
       * In that case a best build whose success rate is lower than the current build's by more than 2 SE is `worse`, whatever its `progress` gain.
-      * Reason: at a route success rate of 0.2% to 0.4%, every success-judged result is `noisy`, so a guarded boss search (`objective: success` with a `bossDamage` guard) could never be applied.
+      * Reason: at a route success rate of 0.2% to 0.4%, every success-judged result is `noisy`, so a guarded boss search (`objective: success` with a `gateDamage` guard on the boss) could never be applied.
     * `<gain>`: improvement of `<rate>` from the current build to the best build, in the unit of 2-0 (percentage points; relative change for `experience`). For `minDefeat`, a lower rate is an improvement.
     * Standard error (SE) is computed from the before and after verification runs, with the per-run variance of `<rate>` (7.1.5 Luck check).
     * Values:
@@ -913,7 +912,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `forecast`
     * `before`: `overview` of the current build (same format as `{p}/simulationRun`).
     * `after`: `overview` of the best build (same format as `{p}/simulationRun`).
-    * With `bossDamage` or `gateDamage`, both describe that battle only.
+    * With `gateDamage`, both describe that battle only.
     * `scope`
       * The part of the dungeon the forecast simulates. A forecast says nothing about rooms outside it.
       * Format: `{ "from": <floorRoom>, "to": <floorRoom>, "rooms": <number>, "endsAt": <reason> }`
@@ -923,7 +922,6 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
           * `clearGate`: the route stops before the first closed Clear-Gate (that room is not simulated).
           * `depthLimit`: the route stops at the party's depth limit.
           * `dungeonEnd`: the route reaches the last room of the destination.
-          * `bossRoom`: `bossDamage`; only the boss room is simulated (`from` and `to` are that room).
           * `gateRoom`: `gateDamage`; only the gate room is simulated (`from` and `to` are that room).
       * Example: `{ "from": "1f-1", "to": "1f-3", "rooms": 3, "endsAt": "clearGate" }`. A success rate of 99% then covers rooms 1f-1 to 1f-3 only, not the elite rooms behind the gate.
   * `verification`
@@ -939,7 +937,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * `progress`
       * `{ before, after }`: `progress` (7.1.5 Score, `0` ~ `1`) of the current build and the best build in the same verification runs.
       * Always returned, even when `scoredBy` is not `progress`, so a client can see how far into `forecast.scope` the runs get.
-      * `null` with `bossDamage` and `gateDamage` (only one room is simulated).
+      * `null` with `gateDamage` (only one room is simulated).
     * `crossCheck`
       * See 2-0. It is always returned, with or without `objectiveGuard`.
       * `before`, `after` are measured in `verifyRuns` runs on the verification seed, for the current build and the best build.
@@ -1101,7 +1099,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `global`: Candidate items come from the Inventory and from every character's equipment, including other parties. Locked items are never taken. Only the initial equipment can be taken: once an item is assigned during the pass, it stays with that character.
   * `objective`
     * String enum, optional, default `success`.
-    * Options: `success`, `minDefeat`, `bossDamage`, `gateDamage`, `experience`, `progress` (see 2-0).
+    * Options: `success`, `minDefeat`, `gateDamage`, `experience`, `progress` (see 2-0).
     * Every stage of the Process compares builds by this `objective`, and `verdict` is judged on it as for `party/{p}/gaSearch` (2-3-2).
   * `gateRoom`, `startHp`
     * Optional. See 2-0.
@@ -1118,7 +1116,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `directionPenalty`
     * Number, optional, default `2`. Range `0` ~ `50`.
     * Used only with `directionStrictness: soft`.
-    * Score penalty per member of `distance`: percentage points for `success`, `minDefeat`, `bossDamage`, and `progress` (a `minDefeat` defeat rate is raised); percent of the current build's average EXP for `experience`.
+    * Score penalty per member of `distance`: percentage points for `success`, `minDefeat`, `gateDamage`, and `progress` (a `minDefeat` defeat rate is raised); percent of the current build's average EXP for `experience`.
     * Example: with `2`, a candidate at `distance` `2` must be 4 points better than a candidate at `distance` `0` to rank above it.
 
   * `tuningParameters`
@@ -1473,8 +1471,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
   * `objective`
     * Optional.
     * Default: `success`.
-    * `success`, `minDefeat`, `bossDamage`, `gateDamage`, `experience`, `progress` (see 2-0).
-    * How each is scored and how improvement is measured: 7.1.5 Score and Improvement. `gateDamage` is scored like `bossDamage`, and its bottleneck room is always the gate room.
+    * `success`, `minDefeat`, `gateDamage`, `experience`, `progress` (see 2-0).
+    * How each is scored and how improvement is measured: 7.1.5 Score and Improvement. With `gateDamage`, the bottleneck room is always the gate room.
   * `gateRoom`, `startHp`
     * Optional. See 2-0.
   * `objectiveGuard`
@@ -1498,12 +1496,12 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * `overview` of the current build from step 1 (same format as `{p}/simulationRun`).
   * `after`
     * `overview` of the tuned build from step 6 (same format as `{p}/simulationRun`).
-    * With `bossDamage`, `before` and `after` describe the boss battle only.
+    * With `gateDamage`, `before` and `after` describe the gate room battle only.
   * `improvement`, `gain`, `standardError`
     * Values used in the final check (7.1.5 step 6), in the `scoredBy` score. `gain` is in the unit of 2-0 (relative change for `experience`).
   * `bottleneckRoom`
     * Floor and room found in step 1. Example: `3f-2`
-    * With `bossDamage`, always the boss room.
+    * With `gateDamage`, always the gate room.
   * `steps`
     * What each step recorded and what step 5 kept.
     * `offenseElement`, `defenseElement`, `ability`: recorded candidates with their improvement over the current build (steps 2–4 seed).

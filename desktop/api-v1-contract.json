@@ -20760,10 +20760,6 @@
                 "type": "string"
               },
               {
-                "const": "bossDamage",
-                "type": "string"
-              },
-              {
                 "const": "gateDamage",
                 "type": "string"
               },
@@ -22531,10 +22527,6 @@
                 "type": "string"
               },
               {
-                "const": "bossDamage",
-                "type": "string"
-              },
-              {
                 "const": "gateDamage",
                 "type": "string"
               },
@@ -22575,20 +22567,6 @@
                 ],
                 "properties": {
                   "success": {
-                    "minimum": 0,
-                    "maximum": 1,
-                    "type": "number"
-                  }
-                }
-              },
-              {
-                "additionalProperties": false,
-                "type": "object",
-                "required": [
-                  "bossDamage"
-                ],
-                "properties": {
-                  "bossDamage": {
                     "minimum": 0,
                     "maximum": 1,
                     "type": "number"
@@ -23022,10 +23000,6 @@
                           "type": "string"
                         },
                         {
-                          "const": "bossRoom",
-                          "type": "string"
-                        },
-                        {
                           "const": "gateRoom",
                           "type": "string"
                         }
@@ -23146,10 +23120,6 @@
                       "type": "string"
                     },
                     {
-                      "const": "bossDamage",
-                      "type": "string"
-                    },
-                    {
                       "const": "gateDamage",
                       "type": "string"
                     },
@@ -23171,10 +23141,6 @@
                     },
                     {
                       "const": "minDefeat",
-                      "type": "string"
-                    },
-                    {
-                      "const": "bossDamage",
                       "type": "string"
                     },
                     {
@@ -23263,10 +23229,6 @@
                       "anyOf": [
                         {
                           "const": "success",
-                          "type": "string"
-                        },
-                        {
-                          "const": "bossDamage",
                           "type": "string"
                         },
                         {
@@ -23943,10 +23905,6 @@
                               "type": "string"
                             },
                             {
-                              "const": "bossRoom",
-                              "type": "string"
-                            },
-                            {
                               "const": "gateRoom",
                               "type": "string"
                             }
@@ -24067,10 +24025,6 @@
                           "type": "string"
                         },
                         {
-                          "const": "bossDamage",
-                          "type": "string"
-                        },
-                        {
                           "const": "gateDamage",
                           "type": "string"
                         },
@@ -24092,10 +24046,6 @@
                         },
                         {
                           "const": "minDefeat",
-                          "type": "string"
-                        },
-                        {
-                          "const": "bossDamage",
                           "type": "string"
                         },
                         {
@@ -24184,10 +24134,6 @@
                           "anyOf": [
                             {
                               "const": "success",
-                              "type": "string"
-                            },
-                            {
-                              "const": "bossDamage",
                               "type": "string"
                             },
                             {
@@ -25086,10 +25032,6 @@
                 "type": "string"
               },
               {
-                "const": "bossDamage",
-                "type": "string"
-              },
-              {
                 "const": "gateDamage",
                 "type": "string"
               },
@@ -25114,20 +25056,6 @@
                 ],
                 "properties": {
                   "success": {
-                    "minimum": 0,
-                    "maximum": 1,
-                    "type": "number"
-                  }
-                }
-              },
-              {
-                "additionalProperties": false,
-                "type": "object",
-                "required": [
-                  "bossDamage"
-                ],
-                "properties": {
-                  "bossDamage": {
                     "minimum": 0,
                     "maximum": 1,
                     "type": "number"
@@ -25425,10 +25353,6 @@
                           "type": "string"
                         },
                         {
-                          "const": "bossRoom",
-                          "type": "string"
-                        },
-                        {
                           "const": "gateRoom",
                           "type": "string"
                         }
@@ -25549,10 +25473,6 @@
                       "type": "string"
                     },
                     {
-                      "const": "bossDamage",
-                      "type": "string"
-                    },
-                    {
                       "const": "gateDamage",
                       "type": "string"
                     },
@@ -25574,10 +25494,6 @@
                     },
                     {
                       "const": "minDefeat",
-                      "type": "string"
-                    },
-                    {
-                      "const": "bossDamage",
                       "type": "string"
                     },
                     {
@@ -25666,10 +25582,6 @@
                       "anyOf": [
                         {
                           "const": "success",
-                          "type": "string"
-                        },
-                        {
-                          "const": "bossDamage",
                           "type": "string"
                         },
                         {
@@ -26208,10 +26120,6 @@
                               "type": "string"
                             },
                             {
-                              "const": "bossRoom",
-                              "type": "string"
-                            },
-                            {
                               "const": "gateRoom",
                               "type": "string"
                             }
@@ -26332,10 +26240,6 @@
                           "type": "string"
                         },
                         {
-                          "const": "bossDamage",
-                          "type": "string"
-                        },
-                        {
                           "const": "gateDamage",
                           "type": "string"
                         },
@@ -26357,10 +26261,6 @@
                         },
                         {
                           "const": "minDefeat",
-                          "type": "string"
-                        },
-                        {
-                          "const": "bossDamage",
                           "type": "string"
                         },
                         {
@@ -26449,10 +26349,6 @@
                           "anyOf": [
                             {
                               "const": "success",
-                              "type": "string"
-                            },
-                            {
-                              "const": "bossDamage",
                               "type": "string"
                             },
                             {
@@ -29343,10 +29239,6 @@
                 "type": "string"
               },
               {
-                "const": "bossDamage",
-                "type": "string"
-              },
-              {
                 "const": "gateDamage",
                 "type": "string"
               },
@@ -29371,20 +29263,6 @@
                 ],
                 "properties": {
                   "success": {
-                    "minimum": 0,
-                    "maximum": 1,
-                    "type": "number"
-                  }
-                }
-              },
-              {
-                "additionalProperties": false,
-                "type": "object",
-                "required": [
-                  "bossDamage"
-                ],
-                "properties": {
-                  "bossDamage": {
                     "minimum": 0,
                     "maximum": 1,
                     "type": "number"
@@ -29515,10 +29393,6 @@
                   "type": "string"
                 },
                 {
-                  "const": "bossDamage",
-                  "type": "string"
-                },
-                {
                   "const": "gateDamage",
                   "type": "string"
                 },
@@ -29540,10 +29414,6 @@
                 },
                 {
                   "const": "minDefeat",
-                  "type": "string"
-                },
-                {
-                  "const": "bossDamage",
                   "type": "string"
                 },
                 {
@@ -29605,10 +29475,6 @@
                   "anyOf": [
                     {
                       "const": "success",
-                      "type": "string"
-                    },
-                    {
-                      "const": "bossDamage",
                       "type": "string"
                     },
                     {
@@ -30140,10 +30006,6 @@
                       "type": "string"
                     },
                     {
-                      "const": "bossDamage",
-                      "type": "string"
-                    },
-                    {
                       "const": "gateDamage",
                       "type": "string"
                     },
@@ -30165,10 +30027,6 @@
                     },
                     {
                       "const": "minDefeat",
-                      "type": "string"
-                    },
-                    {
-                      "const": "bossDamage",
                       "type": "string"
                     },
                     {
@@ -30230,10 +30088,6 @@
                       "anyOf": [
                         {
                           "const": "success",
-                          "type": "string"
-                        },
-                        {
-                          "const": "bossDamage",
                           "type": "string"
                         },
                         {

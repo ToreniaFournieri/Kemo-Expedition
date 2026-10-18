@@ -38,7 +38,7 @@ export interface ApplicationApiPorts {
     applyAutoEquipment: ApiV1CommitAuthorityDependencies['applyAutoEquipment'];
     /**
      * Private, non-persisted forecast simulation; must not touch the live game state or RNG. `seed` fixes its random numbers.
-     * `options.bossRoomOnly` fights the boss battle alone; `options.reportProgress` marks a Simulation Run read, which reports
+     * `options.onlyRoom` fights one room's battle alone (`gateDamage`); `options.reportProgress` marks a Simulation Run read, which reports
      * into the Expedition pane like an unseeded forecast (a search's seeded runs never do).
      */
     simulate: (state: GameState, partyIndex: number, count: number, seed?: number, options?: ExpeditionSimulationOptions & { reportProgress?: boolean }) => Promise<unknown>;

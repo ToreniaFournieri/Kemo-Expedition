@@ -419,14 +419,16 @@ at least one party member has an empty equipment slot.
   - `objective`
     - Optional.
     - Default: `success`.
-    - `success`, `minDefeat`, `bossDamage`, `experience`, `progress`
+    - `success`, `minDefeat`, `gateDamage`, `experience`, `progress`
     - The same objectives as every build search of the API (`9.1.3`, 2-0). See **Score** below.
-    - `bossDamage` simulates only the boss battle of the current destination.
-      - Each run starts the boss battle at full party HP.
-      - The rooms before it, the gates, and the depth limit are ignored. HP lost on the way to the boss is not counted; use `success` or `progress` to include it.
+    - `gateDamage` simulates only the battle of one gate room (`gateRoom`) of the current destination: an elite gate room, or the boss room (the last gate).
+      - Each run starts that battle at `startHp` (default: full party HP).
+      - The rooms before it, the gates, and the depth limit are ignored. HP lost on the way to the room is not counted; use `success` or `progress` to include it.
+  - `gateRoom`, `startHp`
+    - Optional. See `9.1.3`, 2-0.
   - `objectiveGuard`
     - Optional. Default: none.
-    - A minimum on a second objective (`success`, `bossDamage`, or `progress`), so tuning for one objective cannot ruin another. Format, guard ranking, and guard rule: `9.1.3`, 2-0. See **Guard** below.
+    - A minimum on a second objective (`success`, `gateDamage`, or `progress`), so tuning for one objective cannot ruin another. Format, guard ranking, and guard rule: `9.1.3`, 2-0. See **Guard** below.
   - `seed`
     - Optional.
     - Integer.
@@ -458,7 +460,7 @@ at least one party member has an empty equipment slot.
     - `success`: success rate (clear + return).
       - If the success rate in step 1 is `0`, every step uses `progress` instead, because every build would tie at `0`. The response reports this as `scoredBy: progress`.
     - `minDefeat`: defeat rate. Lower is better.
-    - `bossDamage`: average share of boss HP dealt in the boss battle. A win counts as `1`.
+    - `gateDamage`: average share of the enemy HP dealt in the gate room battle. A win counts as `1`.
     - `experience`: average EXP per run.
     - `progress`: average over runs of `(rooms cleared + share) / rooms on the route`.
       - `share`: if the run ended by losing or drawing a battle, the share of enemy HP dealt in that battle. Otherwise `0`.
@@ -467,7 +469,7 @@ at least one party member has an empty equipment slot.
       - `progress` is an `objective` of its own, and also the score `success` falls back to.
   - **Improvement:** the relative change on the rarer side of the score.
     - `experience`: `ratio = candidateScore / currentScore`, a plain relative change (the score has no upper bound, so there is no rarer side).
-    - `success`, `bossDamage`, `progress`: `ratio = max(candidateScore / currentScore, (1 - currentScore) / (1 - candidateScore))`
+    - `success`, `gateDamage`, `progress`: `ratio = max(candidateScore / currentScore, (1 - currentScore) / (1 - candidateScore))`
     - `minDefeat`: `ratio = max(currentScore / candidateScore, (1 - candidateScore) / (1 - currentScore))`
     - In words: the larger of the relative rise of the good outcome and the relative fall of the bad outcome. Near `0` the first ratio decides, and near `1` the second one does, so `minImprovement` and `minGateImprovement` can be met at any score.
     - Examples (`success`):
@@ -494,7 +496,7 @@ at least one party member has an empty equipment slot.
    - Simulate the current build with `baselineRuns` runs (same as `read/expedition/{p}/simulationRun` with `numberOfRun=baselineRuns`).
    - Bottleneck room: the room in `detail` with the highest `Draw + Retreat + Defeat`.
      - If no run ends before the end of the route, use the boss room. If the boss room is out of reach, use the latest elite room.
-     - With `bossDamage`, the bottleneck room is always the boss room.
+     - With `gateDamage`, the bottleneck room is always the gate room.
    - Bottleneck enemies: the enemies of the bottleneck room. Steps 2–4 use them to decide what to try first.
 
 2. Evaluate alternative offense elements

@@ -125,7 +125,7 @@ rejects({ direction: 'free', targets: everyone(), tuningParameters: { timeBudget
   // The 9.1.3 presets: `medium` is 24 x 30; `high` is 48 x 60 with 100 / 600 runs, 480 s, and a mutation rate of 0.35.
   assert.deepEqual(DIRECTED_EFFORT_PRESETS.medium, { populationSize: 24, generations: 30, quickRuns: 50, confirmRuns: 300, timeBudgetSeconds: 180, mutationRate: 0.35 });
   assert.deepEqual(DIRECTED_EFFORT_PRESETS.high, { populationSize: 48, generations: 60, quickRuns: 100, confirmRuns: 600, timeBudgetSeconds: 480, mutationRate: 0.35 });
-  assert.equal(parseDirectedBuildRequest(shallow, 0, { direction: 'free', targets: everyone(), objective: 'progress', objectiveGuard: { bossDamage: 0.5 } }).objective, 'progress');
+  assert.equal(parseDirectedBuildRequest(shallow, 0, { direction: 'free', targets: everyone(), objective: 'progress', objectiveGuard: { gateDamage: 0.5 } }).objective, 'progress');
   assert.deepEqual([DIRECTED_EFFORT_PRESETS.low.timeBudgetSeconds, DIRECTED_EFFORT_PRESETS.medium.timeBudgetSeconds], [60, 180]);
   const high = parseDirectedBuildRequest(shallow, 0, { direction: 'free', targets: everyone(), tuningParameters: { effort: 'high', mutationRate: 0.2 } });
   assert.deepEqual([high.parameters.populationSize, high.parameters.mutationRate], [48, 0.2], 'an explicit value overrides the preset');
@@ -154,7 +154,7 @@ const isFelidianNinja = (character: Character) => character.raceId === 'felidian
   assert.equal(data.composition.recomposition, ['melee', 'ranged', 'magic', 'support'].reduce((sum, key) => sum + Math.abs(data.composition.after[key] - data.composition.before[key]), 0) / 2);
   assert.equal(data.directionStrictness, 'strict');
   assert.deepEqual(data.forecast.scope, { from: '1f-1', to: '1f-3', rooms: 3, endsAt: 'depthLimit' });
-  assert.equal(data.verification.crossCheck.objective, 'bossDamage');
+  assert.equal(data.verification.crossCheck.objective, 'gateDamage');
   assert.ok(data.composition.after.ranged >= 2 && data.composition.after.melee <= 1 && data.composition.after.magic <= 1);
   assert.ok(data.steps.step1.candidatesTried > 0);
   assert.equal(data.steps.step2, undefined, 'no deity step without considerDeityChange');
@@ -339,8 +339,8 @@ const isFelidianNinja = (character: Character) => character.raceId === 'felidian
   else assert.ok(free.changeSummary.length > 0);
   // `progress` is an objective of its own (9.1.3, 2-0), and a guard may sit on it.
   const progress = (await search(shallow, { direction: 'free', targets: everyone(), objective: 'progress', tuningParameters: small })).data as unknown as DirectedData;
-  assert.deepEqual([progress.verification.objective, progress.verification.crossCheck.objective], ['progress', 'bossDamage']);
-  const guardedProgress = (await search(shallow, { direction: 'free', targets: everyone(), objective: 'bossDamage', objectiveGuard: { progress: 0.5 }, tuningParameters: small })).data as unknown as DirectedData;
+  assert.deepEqual([progress.verification.objective, progress.verification.crossCheck.objective], ['progress', 'gateDamage']);
+  const guardedProgress = (await search(shallow, { direction: 'free', targets: everyone(), objective: 'gateDamage', gateRoom: 'boss', objectiveGuard: { progress: 0.5 }, tuningParameters: small })).data as unknown as DirectedData;
   assert.deepEqual([guardedProgress.verification.crossCheck.objective, guardedProgress.verification.crossCheck.minimum], ['progress', 0.5]);
 }
 
@@ -364,9 +364,9 @@ const isFelidianNinja = (character: Character) => character.raceId === 'felidian
 
 // ---------------- objectiveGuard and verifySeed ----------------
 {
-  const guarded = (await search(shallow, { direction: 'free', targets: everyone(), objective: 'bossDamage', objectiveGuard: { success: 0.05 }, tuningParameters: { ...small, verifySeed: 7 } })).data as unknown as DirectedData;
+  const guarded = (await search(shallow, { direction: 'free', targets: everyone(), objective: 'gateDamage', gateRoom: 'boss', objectiveGuard: { success: 0.05 }, tuningParameters: { ...small, verifySeed: 7 } })).data as unknown as DirectedData;
   assert.deepEqual([guarded.verification.crossCheck.objective, guarded.verification.crossCheck.minimum, guarded.verification.verifySeed], ['success', 0.05, 7]);
-  assert.equal(guarded.forecast.scope.endsAt, 'bossRoom');
+  assert.equal(guarded.forecast.scope.endsAt, 'gateRoom');
 }
 
 console.log('directedBuild profile ok');

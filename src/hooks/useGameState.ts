@@ -52,7 +52,7 @@ import {
   createDefaultExpeditionApplicationAdapterFactory,
   DEFAULT_UNLOCKED_DEITIES,
 } from '../game/expeditionApplicationAdapters';
-import { aggregateExpeditionSimulationRooms, createExpeditionSimulationRoomResults, EXPEDITION_SIMULATION_ROOM_COUNT, EXPEDITION_SIMULATION_RUN_COUNT } from '../game/expeditionSimulation';
+import { aggregateExpeditionSimulationRooms, createExpeditionSimulationRoomResults, EXPEDITION_SIMULATION_RUN_COUNT } from '../game/expeditionSimulation';
 import { getDiarySettingsWithDefaults } from '../game/diarySettings';
 import { normalizeImportedBags } from '../game/bagMigration';
 import { migrateLegacyInventory } from '../game/inventoryMigration';
@@ -4772,16 +4772,6 @@ export function resolveSimulationRunForTesting(
   return { state: resolvedState, resolution: createExpeditionForecastResolution(log) };
 }
 
-/** The graph bar (0-based, four rooms per floor) of a destination's boss room; the last bar when it has none. */
-function bossRoomIndexOf(dungeonId: number): number {
-  const dungeon = getDungeonById(dungeonId);
-  for (const floor of dungeon?.floors ?? []) {
-    const roomIndex = floor.rooms.findIndex((room) => room.type === 'battle_Boss');
-    if (roomIndex >= 0) return (floor.floorNumber - 1) * 4 + roomIndex;
-  }
-  return EXPEDITION_SIMULATION_ROOM_COUNT - 1;
-}
-
 /**
  * SpecRef: 8.3 | UI_EXPEDITION | Simulation Run
  *
@@ -4803,11 +4793,9 @@ export async function simulateExpeditionRuns(
   void memoryMonitor.recordEvent('simulation_start');
   const total = Math.max(1, Math.floor(count));
   const sandbox = createSimulationSandbox(state, partyIndex, options.startHpShare ?? 1);
-  // A boss-only or room-only forecast starts at its room, so its battle is that room's bar and every earlier bar is not reached.
-  const bossRoomOnly = options.bossRoomOnly === true;
+  // A room-only forecast starts at its room, so its battle is that room's bar and every earlier bar is not reached.
   const onlyRoom = options.onlyRoom;
-  const firstRoomIndex = onlyRoom ? (onlyRoom.floorNumber - 1) * 4 + onlyRoom.roomInFloor - 1
-    : bossRoomOnly ? bossRoomIndexOf(state.parties[partyIndex].selectedDungeonId) : 0;
+  const firstRoomIndex = onlyRoom ? (onlyRoom.floorNumber - 1) * 4 + onlyRoom.roomInFloor - 1 : 0;
   // All forecasts share the sandbox party status, so they also share enemies and prepared battle inputs.
   const forecastEncounterCache = new Map<string, EnemyDef>();
   const seed = new Uint32Array(1);
@@ -4826,7 +4814,6 @@ export async function simulateExpeditionRuns(
     total,
     rooms: createExpeditionSimulationRoomResults(total),
     totals: { experience: 0, itemDrops: 0, dropSaleValue: 0 },
-    boss: { reached: 0, kills: 0, damageShare: 0, damageShareSquareSum: 0 },
     ...(onlyRoom ? { gateRoom: { reached: 0, kills: 0, damageShare: 0, damageShareSquareSum: 0 } } : {}),
     maximumPartyHp: sandbox.authoritativePartyStatus.partyStats.hp,
     experienceSquareSum: 0,
@@ -4850,7 +4837,6 @@ export async function simulateExpeditionRuns(
         computed: sandbox.authoritativePartyStatus,
       },
       forecastEncounterCache,
-      ...(bossRoomOnly ? { bossRoomOnly: true } : {}),
       ...(onlyRoom ? { onlyRoom } : {}),
     }));
     const resolvedState = battleRandom ? withForecastBattleSeedSource(nextBattleSeed, resolveRun) : resolveRun();
@@ -4863,14 +4849,6 @@ export async function simulateExpeditionRuns(
     result.totals!.dropSaleValue += resolution.autoSellProfit
       + resolution.rewards.reduce((sum, item) => sum + calculateSellPrice(item, resolution.autoSellMultiplier), 0);
     const shareOf = (battle: { outcome: string; damageDealt: number; enemyHp: number }) => (battle.outcome === 'victory' ? 1 : Math.min(1, battle.damageDealt / Math.max(1, battle.enemyHp)));
-    const bossBattle = resolution.battleDiagnostics.find((battle) => battle.isBoss && battle.enemyId !== undefined);
-    if (bossBattle) {
-      result.boss!.reached += 1;
-      if (bossBattle.outcome === 'victory') result.boss!.kills += 1;
-      const share = shareOf(bossBattle);
-      result.boss!.damageShare += share;
-      result.boss!.damageShareSquareSum! += share * share;
-    }
     // SpecRef: 7.1.5 | General rules | Score `progress`: the rooms cleared, plus the enemy-HP share of a lost or drawn last battle.
     const battles = resolution.battleDiagnostics.filter((battle) => battle.enemyId !== undefined);
     // SpecRef: 9.1.3 | 2-0 `gateDamage` | a room-only run fights one battle: the gate room's.

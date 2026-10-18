@@ -428,7 +428,7 @@ interface Bottleneck { room: number | null; enemies: EnemyDef[]; terrain: string
 
 /**
  * Step 1: the room with the most Draw + Retreat + Defeat ends. When no run ends early, the boss room if a run reached it,
- * otherwise the latest elite room a run reached. A `bossDamage` or `gateDamage` forecast is one battle alone: always that room.
+ * otherwise the latest elite room a run reached. A `gateDamage` forecast is one battle alone: always that room.
  */
 function findBottleneck(state: GameState, partyIndex: number, result: ExpeditionSimulationResult, options: ExpeditionSimulationOptions): Bottleneck {
   const dungeon = getDungeonById(state.parties[partyIndex].selectedDungeonId);
@@ -440,7 +440,6 @@ function findBottleneck(state: GameState, partyIndex: number, result: Expedition
   let room: number | null = null;
   let worst = 0;
   if (options.onlyRoom) room = (options.onlyRoom.floorNumber - 1) * 4 + options.onlyRoom.roomInFloor;
-  else if (options.bossRoomOnly) room = result.rooms.find((entry) => roomDef(entry.room).def?.type === 'battle_Boss')?.room ?? null;
   else {
     for (const entry of result.rooms) {
       const ends = entry.Draw + entry.Retreat + entry.Defeat;
@@ -728,8 +727,8 @@ export async function runStagedEquipmentTuning(state: GameState, request: Staged
     if (!cache.has(key)) cache.set(key, measureOf(await simulate(targetOf(loadout), runs, simulationSeed)).rate);
     return cache.get(key)!;
   };
-  // SpecRef: 9.1.3 | 2-0 `objectiveGuard` and `crossCheck` | the second objective, in its own forecast (`bossDamage` fights
-  // the boss alone). With a guard it is the guard objective.
+  // SpecRef: 9.1.3 | 2-0 `objectiveGuard` and `crossCheck` | the second objective, in its own forecast (`gateDamage` fights
+  // one room alone). With a guard it is the guard objective.
   const crossObjective = crossCheckObjective(objective, guard);
   const secondCache = new Map<string, ObjectiveMeasure>();
   const measureSecond = async (loadout: Loadout, runs: number, simulationSeed: number): Promise<ObjectiveMeasure> => {

@@ -18,6 +18,9 @@ import { parseDirectedBuildRequest } from '../../src/api/v1/directedBuild';
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | gaSearch and applyBuildChanges
 
 const now = Date.parse('2026-01-01T00:00:00.000Z');
+/** `gateDamage` on the boss room (the last gate), and its forecast options. */
+const BOSS = { gateRoom: { floorNumber: 6, roomInFloor: 4 }, startHp: null };
+const bossOptions = (startHpShare?: number) => ({ onlyRoom: BOSS.gateRoom, ...(startHpShare === undefined ? {} : { startHpShare }) });
 
 /** A fresh party with every item back in the inventory and a shallow depth, so better gear is easy to find and verify. */
 function strippedSave(): GameState {
@@ -172,8 +175,8 @@ assert.equal(rateGaResult('success', { rate: 0, variance: 0 }, { rate: 0, varian
   assert.ok(farming.points.every((entry) => entry.expectedRuns === null));
   assert.ok(farming.points.length >= 1 && farming.points.length <= 3);
   assert.equal((await search(base, { targets: equipmentTargets, gaParameters: small, levelProbe: { purpose: 'farming' } })).data.levelProbe, null, '`auto` skips a build that already meets the target');
-  // A `bossDamage` search gets the same probe: the route to the goal, not the boss-only share.
-  const boss = (await search(base, { targets: equipmentTargets, objective: 'bossDamage', gaParameters: small, levelProbe: { mode: 'always' } })).data.levelProbe as Probe;
+  // A `gateDamage` search gets the same probe: the route to the goal, not the battle-only share.
+  const boss = (await search(base, { targets: equipmentTargets, objective: 'gateDamage', gateRoom: 'boss', gaParameters: small, levelProbe: { mode: 'always' } })).data.levelProbe as Probe;
   assert.equal(boss.points[0].level, 1);
   assert.deepEqual(boss.goal, always.goal);
 }
@@ -471,7 +474,7 @@ fails({ buildResultId: 'old-result', simulation: true }, 'invalid_request:buildR
 {
   const result = {
     Clear: 3, Return: 1, Draw: 2, Retreat: 1, Defeat: 3, total: 10, rooms: [],
-    boss: { reached: 4, kills: 1, damageShare: 2, damageShareSquareSum: 1.5 }, experienceSquareSum: 1000, totals: { experience: 80, itemDrops: 0, dropSaleValue: 0 },
+    gateRoom: { reached: 4, kills: 1, damageShare: 2, damageShareSquareSum: 1.5 }, experienceSquareSum: 1000, totals: { experience: 80, itemDrops: 0, dropSaleValue: 0 },
     progress: { sum: 30, squareSum: 120 },
   } as ExpeditionSimulationResult;
   const close = (actual: { rate: number; variance: number }, expected: { rate: number; variance: number }, label: string) => {
@@ -479,28 +482,27 @@ fails({ buildResultId: 'old-result', simulation: true }, 'invalid_request:buildR
   };
   close(measureObjective('success', result, 6), { rate: 0.4, variance: 0.24 }, 'success is Bernoulli');
   close(measureObjective('minDefeat', result, 6), { rate: 0.3, variance: 0.21 }, 'minDefeat is Bernoulli');
-  close(measureObjective('bossDamage', result, 6), { rate: 0.2, variance: 0.15 - 0.04 }, 'the per-run share variance, below the 0.16 bound');
-  close(measureObjective('bossDamage', { ...result, boss: { reached: 4, kills: 1, damageShare: 2 } }, 6), { rate: 0.2, variance: 0.16 }, 'without squares: the Bernoulli bound');
+  close(measureObjective('gateDamage', result, 6), { rate: 0.2, variance: 0.15 - 0.04 }, 'the per-run share variance, below the 0.16 bound');
   close(measureObjective('experience', result, 6), { rate: 8, variance: 100 - 64 }, 'the per-run EXP variance');
   close(measureObjective('progress', result, 6), { rate: 0.5, variance: (12 - 9) / 36 }, 'progress in rooms over the route rooms');
 }
 
-// ---------------- `bossDamage`: the boss battle alone, from full HP ----------------
+// ---------------- `gateDamage` on the boss: the boss battle alone, from full HP ----------------
 {
   const fresh = createFreshGameState('ja', now);
-  const prepared = prepareObjectiveState(fresh, 0, 'bossDamage');
-  const bossOnly = await simulateExpeditionRuns(prepared, 0, 'mode.normal', 40, undefined, 0, 9, { bossRoomOnly: true });
-  assert.equal(bossOnly.boss?.reached, 40, 'every run fights the boss');
+  const prepared = prepareObjectiveState(fresh, 0, 'gateDamage', BOSS);
+  const bossOnly = await simulateExpeditionRuns(prepared, 0, 'mode.normal', 40, undefined, 0, 9, bossOptions());
+  assert.equal(bossOnly.gateRoom?.reached, 40, 'every run fights the boss');
   assert.deepEqual(bossOnly.rooms.filter((room) => room.reached > 0).map((room) => room.room), [24], 'and nothing else');
-  assert.ok(bossOnly.boss!.damageShareSquareSum! <= bossOnly.boss!.damageShare + 1e-9, 'a share squared is at most the share');
+  assert.ok(bossOnly.gateRoom!.damageShareSquareSum <= bossOnly.gateRoom!.damageShare + 1e-9, 'a share squared is at most the share');
   const route = await simulateExpeditionRuns(prepared, 0, 'mode.normal', 40, undefined, 0, 9);
   assert.ok(route.progress!.sum >= 0 && route.progress!.sum <= 40 * routeRoomCount(prepared.parties[0]), 'progress counts rooms');
   // The search scores and verifies the same boss-only forecast.
   const targets = fresh.parties[0].characters.map((character) => ({ characterId: character.id, changeableComponents: { equipment: true } }));
-  const searched = await runGaSearch(fresh, 0, parseGaSearchRequest(fresh, 0, { targets, objective: 'bossDamage', gaParameters: small }), dependencies());
+  const searched = await runGaSearch(fresh, 0, parseGaSearchRequest(fresh, 0, { targets, objective: 'gateDamage', gateRoom: 'boss', gaParameters: small }), dependencies());
   const verification = searched.data.verification as { before: number; runs: number };
-  const verifyBefore = await simulateExpeditionRuns(prepared, 0, 'mode.normal', verification.runs, undefined, 0, deriveSeed(small.seed, 3), { bossRoomOnly: true });
-  assert.equal(verification.before, measureObjective('bossDamage', verifyBefore, 0).rate);
+  const verifyBefore = await simulateExpeditionRuns(prepared, 0, 'mode.normal', verification.runs, undefined, 0, deriveSeed(small.seed, 3), bossOptions());
+  assert.equal(verification.before, measureObjective('gateDamage', verifyBefore, 0).rate);
   assert.equal((searched.data.forecast as { before: string }).before, buildSimulationRunData(verifyBefore, 0, 'check').overview);
 }
 
@@ -509,7 +511,7 @@ fails({ buildResultId: 'old-result', simulation: true }, 'invalid_request:buildR
   // A fresh party on the whole of Expedition 1, every gate open, never beats the boss: both builds stay at 0 successes, so
   // only `progress` can tell them apart (it used to be `noisy` 0 → 0).
   const fresh = createFreshGameState('ja', now);
-  const hopeless = prepareObjectiveState(fresh, 0, 'bossDamage');
+  const hopeless = prepareObjectiveState(fresh, 0, 'gateDamage', BOSS);
   const targets = hopeless.parties[0].characters.map((character) => ({ characterId: character.id, changeableComponents: { equipment: true } }));
   const searched = await search(hopeless, { targets, gaParameters: small });
   const verification = searched.data.verification as { objective: string; scoredBy: string; runs: number; before: number; after: number; gain: number; standardError: number };
@@ -534,9 +536,9 @@ fails({ buildResultId: 'old-result', simulation: true }, 'invalid_request:buildR
   assert.equal(plain.seed, 77, 'the random seed chosen is returned');
   assert.equal('rate' in plain, false, 'no `rate` without an objective');
   assert.deepEqual(strip(await read({ numberOfRun: 30, seed: 77 })), strip(plain), 'the returned seed repeats the forecast');
-  const boss = await read({ numberOfRun: 30, objective: 'bossDamage', seed: 5 });
-  const direct = await simulateExpeditionRuns(prepareObjectiveState(fresh, 0, 'bossDamage'), 0, 'mode.normal', 30, undefined, 0, 5, { bossRoomOnly: true });
-  const measured = measureObjective('bossDamage', direct, 0);
+  const boss = await read({ numberOfRun: 30, objective: 'gateDamage', gateRoom: 'boss', seed: 5 });
+  const direct = await simulateExpeditionRuns(prepareObjectiveState(fresh, 0, 'gateDamage', BOSS), 0, 'mode.normal', 30, undefined, 0, 5, bossOptions());
+  const measured = measureObjective('gateDamage', direct, 0);
   assert.deepEqual([boss.rate, boss.standardError, boss.seed], [measured.rate, Math.sqrt(measured.variance / 30), 5]);
   assert.equal(boss.overview, buildSimulationRunData(direct, 0, 'check').overview, '`overview` describes the boss battle');
   const progress = await read({ numberOfRun: 30, objective: 'progress', seed: 5 });
@@ -549,13 +551,13 @@ fails({ buildResultId: 'old-result', simulation: true }, 'invalid_request:buildR
 // ---------------- `objectiveGuard`, `verifySeed`, and the 600 s budget: validation (Spec 9.1.3, 2-3-2) ----------------
 rejects({ targets: equipmentTargets, objectiveGuard: { success: 0.1 } }, 'invalid_request:objectiveGuard.success.same_as_objective');
 rejects({ targets: equipmentTargets, objectiveGuard: { experience: 0.1 } }, 'invalid_request:objectiveGuard.experience.unknown_member');
-rejects({ targets: equipmentTargets, objectiveGuard: { bossDamage: 1.5 } }, 'invalid_request:objectiveGuard.bossDamage');
-rejects({ targets: equipmentTargets, objectiveGuard: { bossDamage: 0.1, success: 0.1 } }, 'invalid_request:objectiveGuard');
+rejects({ targets: equipmentTargets, objectiveGuard: { gateDamage: 1.5 } }, 'invalid_request:objectiveGuard.gateDamage');
+rejects({ targets: equipmentTargets, objectiveGuard: { gateDamage: 0.1, success: 0.1 } }, 'invalid_request:objectiveGuard');
 rejects({ targets: equipmentTargets, objectiveGuard: 0.1 }, 'invalid_request:objectiveGuard');
 rejects({ targets: equipmentTargets, gaParameters: { verifySeed: 1.5 } }, 'invalid_request:gaParameters.verifySeed');
 rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } }, 'invalid_request:gaParameters.timeBudgetSeconds');
 {
-  const parsed = parseGaSearchRequest(base, 0, { targets: equipmentTargets, objective: 'bossDamage', objectiveGuard: { success: 0.05 }, gaParameters: { timeBudgetSeconds: 600, verifySeed: -3 } });
+  const parsed = parseGaSearchRequest(base, 0, { targets: equipmentTargets, objective: 'gateDamage', gateRoom: 'boss', objectiveGuard: { success: 0.05 }, gaParameters: { timeBudgetSeconds: 600, verifySeed: -3 } });
   assert.deepEqual(parsed.objectiveGuard, { objective: 'success', minimum: 0.05 });
   assert.deepEqual([parsed.parameters.timeBudgetSeconds, parsed.parameters.verifySeed], [600, -3]);
   assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets }).objectiveGuard, null);
@@ -564,7 +566,7 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
 // ---------------- `forecast.scope`, `verification.progress`, and `crossCheck` (Spec 9.1.3, 2-3-2) ----------------
 {
   assert.deepEqual(forecastScope(base, 0, 'success'), { from: '1f-1', to: '1f-3', rooms: 3, endsAt: 'depthLimit' });
-  assert.deepEqual(forecastScope(base, 0, 'bossDamage'), { from: '6f-4', to: '6f-4', rooms: 1, endsAt: 'bossRoom' });
+  assert.deepEqual(forecastScope(base, 0, 'gateDamage', BOSS), { from: '6f-4', to: '6f-4', rooms: 1, endsAt: 'gateRoom' });
   const fresh = createFreshGameState('ja', now);
   const open = forecastScope(fresh, 0, 'success');
   assert.equal(open.rooms, routeRoomCount(fresh.parties[0]), 'the scope is the route `progress` is divided by');
@@ -576,9 +578,11 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   const verifyBefore = await simulateExpeditionRuns(base, 0, 'mode.normal', small.verifyRuns, undefined, 0, deriveSeed(small.seed, 3));
   assert.equal(data.verification.progress!.before, Math.round(measureObjective('progress', verifyBefore, routeRoomCount(base.parties[0])).rate * 1e4) / 1e4);
   assert.ok(data.verification.progress!.after >= 0 && data.verification.progress!.after <= 1);
-  // `success` cross-checks `bossDamage`, measured on the same verification seed; no guard, so no minimum.
-  const crossBefore = await measureSecondObjective(dependencies(), base, 0, 'bossDamage', small.verifyRuns, deriveSeed(small.seed, 3));
-  assert.deepEqual([data.verification.crossCheck.objective, data.verification.crossCheck.before, data.verification.crossCheck.minimum, data.verification.crossCheck.reached], ['bossDamage', Math.round(crossBefore.rate * 1e4) / 1e4, null, null]);
+  // `success` cross-checks `gateDamage` on the next gate room (`gateRoom: next`, here the closed 1st Elite gate's 1f-4),
+  // measured on the same verification seed; no guard, so no minimum.
+  const crossBefore = await measureSecondObjective(dependencies(), base, 0, 'gateDamage', small.verifyRuns, deriveSeed(small.seed, 3), { gateRoom: { floorNumber: 1, roomInFloor: 4 }, startHp: null });
+  assert.deepEqual([data.verification.crossCheck.objective, data.verification.crossCheck.before, data.verification.crossCheck.minimum, data.verification.crossCheck.reached], ['gateDamage', Math.round(crossBefore.rate * 1e4) / 1e4, null, null]);
+  assert.equal((outcome.data as { gateRoom: string }).gateRoom, '1f-4');
 
   // `verifySeed`: two searches with different search seeds measure the current build on the same verification runs.
   const a = (await search(base, { targets: equipmentTargets, gaParameters: { ...small, seed: 1, verifySeed: 42 } })).data as typeof data & { verification: { before: number } };
@@ -587,10 +591,10 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   assert.equal(a.verification.before, b.verification.before);
   assert.deepEqual(a.verification.crossCheck.before, b.verification.crossCheck.before);
 
-  // `bossDamage` reports no `progress` (only the boss room runs) and cross-checks `success`; a guard fills in `minimum` and `reached`.
-  const boss = (await search(base, { targets: equipmentTargets, objective: 'bossDamage', objectiveGuard: { success: 0.5 }, gaParameters: small })).data as typeof data;
+  // `gateDamage` reports no `progress` (only the gate room runs) and cross-checks `success`; a guard fills in `minimum` and `reached`.
+  const boss = (await search(base, { targets: equipmentTargets, objective: 'gateDamage', gateRoom: 'boss', objectiveGuard: { success: 0.5 }, gaParameters: small })).data as typeof data;
   assert.equal(boss.verification.progress, null);
-  assert.equal(boss.forecast.scope && (boss.forecast.scope as { endsAt: string }).endsAt, 'bossRoom');
+  assert.equal(boss.forecast.scope && (boss.forecast.scope as { endsAt: string }).endsAt, 'gateRoom');
   const guardBefore = await measureSecondObjective(dependencies(), base, 0, 'success', small.verifyRuns, deriveSeed(small.seed, 3));
   const reached = boss.verification.crossCheck.reached as { before: boolean; after: boolean };
   assert.deepEqual([boss.verification.crossCheck.objective, boss.verification.crossCheck.minimum, reached.before], ['success', 0.5, guardBefore.rate >= 0.5]);
@@ -606,12 +610,12 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   assert.ok(compareGuarded({ fitness: 0.9, guard: 0.0 }, { fitness: 0.1, guard: 0.6 }, null) > 0, 'no guard: the objective alone');
   // A result that loses a guard the current build reaches is `worse`, whatever its gain.
   const result = await simulateExpeditionRuns(base, 0, 'mode.normal', 100, undefined, 0, 3);
-  const weak = { ...measure('bossDamage', result, 3), rate: 0.2, variance: 0.01 };
+  const weak = { ...measure('gateDamage', result, 3), rate: 0.2, variance: 0.01 };
   const strong = { ...weak, rate: 0.9 };
   const input = {
-    objective: 'bossDamage' as const, guard, crossObjective: 'success' as const, verifyRuns: 500, seed: 1, verifySeed: 2, routeRooms: 3,
+    objective: 'gateDamage' as const, guard, crossObjective: 'success' as const, verifyRuns: 500, seed: 1, verifySeed: 2, routeRooms: 3,
     before: weak, after: strong, crossBefore: { rate: 0.2, variance: 0.16 }, crossAfter: { rate: 0.0, variance: 0 }, changed: true,
-    revision: 1, scope: forecastScope(base, 0, 'bossDamage'), label: 'check',
+    revision: 1, scope: forecastScope(base, 0, 'gateDamage', BOSS), label: 'check',
   };
   assert.equal(summarizeVerification({ ...input, guard: null }).verdict, 'veryGood');
   assert.equal(summarizeVerification(input).verdict, 'worse');
@@ -631,9 +635,9 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
 {
   const progress = await search(base, { targets: equipmentTargets, objective: 'progress', gaParameters: small });
   const verification = progress.data.verification as { objective: string; scoredBy: string; before: number; after: number; crossCheck: { objective: string } };
-  assert.deepEqual([verification.objective, verification.scoredBy, verification.crossCheck.objective], ['progress', 'progress', 'bossDamage']);
+  assert.deepEqual([verification.objective, verification.scoredBy, verification.crossCheck.objective], ['progress', 'progress', 'gateDamage']);
   assert.ok(verification.before >= 0 && verification.after <= 1, 'progress is a share of the route');
-  const guarded = await search(base, { targets: equipmentTargets, objective: 'bossDamage', objectiveGuard: { progress: 0.5 }, gaParameters: small });
+  const guarded = await search(base, { targets: equipmentTargets, objective: 'gateDamage', gateRoom: 'boss', objectiveGuard: { progress: 0.5 }, gaParameters: small });
   const crossCheck = (guarded.data.verification as { crossCheck: { objective: string; minimum: number; before: number } }).crossCheck;
   assert.deepEqual([crossCheck.objective, crossCheck.minimum], ['progress', 0.5]);
   // The guard's `progress` is divided by the route's rooms, so it is a share like the objective's.
@@ -768,7 +772,7 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets, objective: 'progress' }).successSignal, null);
   assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets, successSignal: 'progress' }).successSignal, 'progress');
   rejects({ targets: equipmentTargets, successSignal: 'luck' }, 'invalid_request:successSignal');
-  rejects({ targets: equipmentTargets, objective: 'bossDamage', successSignal: 'success' }, 'invalid_request:successSignal');
+  rejects({ targets: equipmentTargets, objective: 'gateDamage', gateRoom: 'boss', successSignal: 'success' }, 'invalid_request:successSignal');
 
   // Rare is a noise level, `p < 20 / (quickRuns + 20)`: the same relative standard error at every `quickRuns`.
   for (const [quickRuns, limit] of [[10, 2 / 3], [30, 0.4], [50, 20 / 70], [100, 1 / 6], [300, 0.0625], [1000, 20 / 1020]]) {
@@ -806,11 +810,11 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   assert.deepEqual([verification.crossCheck.before, verification.crossCheck.after], [verification.progress.before, verification.progress.after]);
   const stats = guarded.data.guardStats as { confirmed: number; reached: number };
   assert.ok(stats.confirmed > 0 && stats.reached >= 0 && stats.reached <= stats.confirmed, JSON.stringify(stats));
-  // A guard on a separate forecast (`bossDamage` fights the boss alone; the guard runs the route).
-  const unreachable = await search(base, { targets: equipmentTargets, objective: 'bossDamage', objectiveGuard: { success: 1 }, gaParameters: small });
+  // A guard on a separate forecast (`gateDamage` fights the boss alone; the guard runs the route).
+  const unreachable = await search(base, { targets: equipmentTargets, objective: 'gateDamage', gateRoom: 'boss', objectiveGuard: { success: 1 }, gaParameters: small });
   const missed = unreachable.data.guardStats as { confirmed: number; reached: number };
   assert.ok(missed.confirmed > 0 && missed.reached <= missed.confirmed, JSON.stringify(missed));
-  assert.deepEqual((await search(base, { targets: equipmentTargets, objective: 'bossDamage', objectiveGuard: { success: 1 }, gaParameters: small })).data, unreachable.data, 'a fixed seed repeats a guarded search');
+  assert.deepEqual((await search(base, { targets: equipmentTargets, objective: 'gateDamage', gateRoom: 'boss', objectiveGuard: { success: 1 }, gaParameters: small })).data, unreachable.data, 'a fixed seed repeats a guarded search');
 }
 
 // ---------------- `gateDamage` and `gateRoom`: one gate room's battle alone (Spec 9.1.3, 2-0) ----------------
@@ -821,7 +825,7 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   assert.deepEqual(parseGaSearchRequest(fresh, 0, { targets, objective: 'gateDamage' }).forecast, { gateRoom: { floorNumber: 1, roomInFloor: 4 }, startHp: null });
   assert.deepEqual(parseGaSearchRequest(fresh, 0, { targets, objective: 'gateDamage', gateRoom: 'boss' }).forecast!.gateRoom, { floorNumber: 6, roomInFloor: 4 });
   assert.deepEqual(parseGaSearchRequest(fresh, 0, { targets, objective: 'progress', objectiveGuard: { gateDamage: 0.5 }, gateRoom: '3f-4' }).forecast!.gateRoom, { floorNumber: 3, roomInFloor: 4 });
-  rejects({ targets: equipmentTargets, gateRoom: '1f-4' }, 'invalid_request:gateRoom.not_used');
+  rejects({ targets: equipmentTargets, objectiveGuard: { progress: 0.5 }, gateRoom: '1f-4' }, 'invalid_request:gateRoom.not_used');
   rejects({ targets: equipmentTargets, objective: 'gateDamage', gateRoom: '1f-3' }, 'invalid_request:gateRoom');
   rejects({ targets: equipmentTargets, objective: 'gateDamage', objectiveGuard: { gateDamage: 0.5 } }, 'invalid_request:objectiveGuard.gateDamage.same_as_objective');
 
@@ -836,11 +840,11 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   const share = measureObjective('gateDamage', elite, 0);
   assert.ok(share.rate >= 0 && share.rate <= 1 && share.variance >= 0);
   assert.deepEqual(forecastScope(fresh, 0, 'gateDamage', settings), { from: '2f-4', to: '2f-4', rooms: 1, endsAt: 'gateRoom' });
-  // The boss as a gate room is `bossDamage`: the same battle on the same seed.
-  const boss = { gateRoom: { floorNumber: 6, roomInFloor: 4 }, startHp: null };
-  const viaGate = await simulateExpeditionRuns(prepareObjectiveState(fresh, 0, 'gateDamage', boss), 0, 'mode.normal', 40, undefined, 0, 9, objectiveSimulationOptions('gateDamage', boss));
-  const viaBoss = await simulateExpeditionRuns(prepareObjectiveState(fresh, 0, 'bossDamage'), 0, 'mode.normal', 40, undefined, 0, 9, { bossRoomOnly: true });
-  assert.deepEqual(measureObjective('gateDamage', viaGate, 0), measureObjective('bossDamage', viaBoss, 0));
+  // The boss is the last gate: `boss` and `6f-4` name the same room, and `bossDamage` is no objective any more.
+  assert.deepEqual(parseGaSearchRequest(fresh, 0, { targets, objective: 'gateDamage', gateRoom: '6f-4' }).forecast, parseGaSearchRequest(fresh, 0, { targets, objective: 'gateDamage', gateRoom: 'boss' }).forecast);
+  rejects({ targets: equipmentTargets, objective: 'bossDamage' }, 'invalid_request:objective');
+  rejects({ targets: equipmentTargets, objectiveGuard: { bossDamage: 0.5 } }, 'invalid_request:objectiveGuard.bossDamage.unknown_member');
+  assert.equal(prepareObjectiveState(fresh, 0, 'gateDamage', BOSS).parties[0].expeditionDepthLimit, 'all');
 
   // A search on a gate room reports it, has no route `progress`, and cross-checks `success`; a guard on it is measured alone.
   const searched = (await search(fresh, { targets, objective: 'gateDamage', gateRoom: '2f-4', gaParameters: small })).data as { gateRoom: string; startHp: string; forecast: { scope: unknown }; verification: { before: number; runs: number; progress: unknown; crossCheck: { objective: string } } };
@@ -860,26 +864,26 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
 {
   const fresh = createFreshGameState('ja', now);
   const targets = fresh.parties[0].characters.map((character) => ({ characterId: character.id, changeableComponents: { equipment: true } }));
-  rejects({ targets: equipmentTargets, objective: 'bossDamage', startHp: 0 }, 'invalid_request:startHp');
-  rejects({ targets: equipmentTargets, objective: 'bossDamage', startHp: 1.2 }, 'invalid_request:startHp');
-  rejects({ targets: equipmentTargets, objective: 'bossDamage', startHp: 'half' }, 'invalid_request:startHp');
-  // Route objectives start from full HP; only a room-only objective (or the `bossDamage` cross-check) uses it.
+  rejects({ targets: equipmentTargets, objective: 'gateDamage', gateRoom: 'boss', startHp: 0 }, 'invalid_request:startHp');
+  rejects({ targets: equipmentTargets, objective: 'gateDamage', gateRoom: 'boss', startHp: 1.2 }, 'invalid_request:startHp');
+  rejects({ targets: equipmentTargets, objective: 'gateDamage', gateRoom: 'boss', startHp: 'half' }, 'invalid_request:startHp');
+  // Route objectives start from full HP; only `gateDamage` (as objective, guard, or the default cross-check) uses it.
   rejects({ targets: equipmentTargets, objectiveGuard: { progress: 0.5 }, startHp: 0.5 }, 'invalid_request:startHp.not_used');
   assert.equal(parseGaSearchRequest(base, 0, { targets: equipmentTargets, objectiveGuard: { progress: 0.5 }, startHp: 'full' }).forecast!.startHp, null, '`full` is never an error');
-  assert.equal(parseGaSearchRequest(fresh, 0, { targets, objective: 'bossDamage', startHp: 'full' }).forecast!.startHp, null);
-  assert.equal(parseGaSearchRequest(fresh, 0, { targets, objective: 'bossDamage', startHp: 1 }).forecast!.startHp, null);
-  const prepared = prepareObjectiveState(fresh, 0, 'bossDamage');
-  const low = await simulateExpeditionRuns(prepared, 0, 'mode.normal', 30, undefined, 0, 9, { bossRoomOnly: true, startHpShare: 0.3 });
-  const full = await simulateExpeditionRuns(prepared, 0, 'mode.normal', 30, undefined, 0, 9, { bossRoomOnly: true });
+  assert.equal(parseGaSearchRequest(fresh, 0, { targets, objective: 'gateDamage', gateRoom: 'boss', startHp: 'full' }).forecast!.startHp, null);
+  assert.equal(parseGaSearchRequest(fresh, 0, { targets, objective: 'gateDamage', gateRoom: 'boss', startHp: 1 }).forecast!.startHp, null);
+  const prepared = prepareObjectiveState(fresh, 0, 'gateDamage', BOSS);
+  const low = await simulateExpeditionRuns(prepared, 0, 'mode.normal', 30, undefined, 0, 9, bossOptions(0.3));
+  const full = await simulateExpeditionRuns(prepared, 0, 'mode.normal', 30, undefined, 0, 9, bossOptions());
   const maximumHp = full.maximumPartyHp!;
   assert.equal(low.maximumPartyHp, maximumHp);
   assert.equal(full.rooms[23].hpAtEntrySum, 30 * maximumHp, 'the boss room starts at full HP by default');
   assert.equal(low.rooms[23].hpAtEntrySum, 30 * Math.floor(maximumHp * 0.3), 'and at 30% of it with startHp 0.3');
   // A search measures the room-only objective (and reports) from that HP.
-  const searched = (await search(fresh, { targets, objective: 'bossDamage', startHp: 0.3, gaParameters: small })).data as { startHp: number; verification: { before: number; runs: number } };
+  const searched = (await search(fresh, { targets, objective: 'gateDamage', gateRoom: 'boss', startHp: 0.3, gaParameters: small })).data as { startHp: number; verification: { before: number; runs: number } };
   assert.equal(searched.startHp, 0.3);
-  const verifyBefore = await simulateExpeditionRuns(prepared, 0, 'mode.normal', searched.verification.runs, undefined, 0, deriveSeed(small.seed, 3), { bossRoomOnly: true, startHpShare: 0.3 });
-  assert.equal(searched.verification.before, measureObjective('bossDamage', verifyBefore, 0).rate);
+  const verifyBefore = await simulateExpeditionRuns(prepared, 0, 'mode.normal', searched.verification.runs, undefined, 0, deriveSeed(small.seed, 3), bossOptions(0.3));
+  assert.equal(searched.verification.before, measureObjective('gateDamage', verifyBefore, 0).rate);
 
   // `simulationRun`: `startHp` sets the start of every run (route or room); the rooms report the party HP at their start
   // and after a won battle, in % of `maximumPartyHp`, with the exact sums behind them.
@@ -913,7 +917,7 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   const result = await simulateExpeditionRuns(base, 0, 'mode.normal', 100, undefined, 0, 3);
   const at = (rate: number, progress: number) => ({ ...measure('success', result, 3), rate, variance: rate * (1 - rate), progress: { rate: progress, variance: 0.01 } });
   const input = {
-    objective: 'success' as const, guard: null, crossObjective: 'bossDamage' as const, verifyRuns: 500, seed: 1, verifySeed: 2, routeRooms: 3,
+    objective: 'success' as const, guard: null, crossObjective: 'gateDamage' as const, verifyRuns: 500, seed: 1, verifySeed: 2, routeRooms: 3,
     before: at(0.004, 0.4), after: at(0.002, 0.6), crossBefore: { rate: 0.5, variance: 0.1 }, crossAfter: { rate: 0.5, variance: 0.1 }, changed: true,
     revision: 1, scope: forecastScope(base, 0, 'success'), label: 'check',
   };

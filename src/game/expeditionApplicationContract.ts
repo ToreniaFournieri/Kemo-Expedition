@@ -35,11 +35,6 @@ export interface RunExpeditionApplicationCommand {
    * so their battles reuse enemy objects and prepared battle inputs.
    */
   readonly forecastEncounterCache?: Map<string, EnemyDef>;
-  /**
-   * Forecast only: fight the destination's boss battle alone, from the run's starting (full) HP, and skip every room
-   * before it (Spec 7.1.5 / 9.1.3 `bossDamage`).
-   */
-  readonly bossRoomOnly?: boolean;
   /** Forecast only: fight this room alone, from the run's starting HP, and skip every other room (Spec 9.1.3 `gateDamage`). */
   readonly onlyRoom?: { readonly floorNumber: number; readonly roomInFloor: number };
 }
@@ -57,10 +52,9 @@ export interface ExpeditionForecastBattleDiagnostic {
   /** The party HP at the start of the room (Simulation Run `hpAtEntry`). */
   readonly startPartyHP?: number;
   readonly replayMetadata: ExpeditionLogEntry['replayMetadata'];
-  /** Damage the party dealt and the enemy's maximum HP, for the boss-damage share of the GA search (Spec 9.1.3, 2-3-2). */
+  /** Damage the party dealt and the enemy's maximum HP, for the `gateDamage` and `progress` shares (Spec 9.1.3, 2-0). */
   readonly damageDealt: number;
   readonly enemyHp: number;
-  readonly isBoss: boolean;
 }
 
 export interface ExpeditionForecastResolution {
@@ -125,7 +119,6 @@ export function createExpeditionForecastResolution(
       replayMetadata: entry.replayMetadata,
       damageDealt: entry.damageDealt,
       enemyHp: entry.enemyHP,
-      isBoss: entry.roomType === 'battle_Boss',
     })),
     experience: log.totalExperience,
     rewards: [...log.rewards],
