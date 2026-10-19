@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { buildApiV1ReadData } from '../../src/api/v1/readModels.ts';
 import { readCharacterBuild } from './apiV1CharacterRead.ts';
 import { buildDiaryTabView, type DiaryProjection } from '../../src/api/v1/diaryTabView.ts';
-import { createFreshGameState } from '../../src/hooks/useGameState.ts';
+import { createFreshGameState, gameReducer } from '../../src/hooks/useGameState.ts';
+import { addPartyDrops, normalizePartyDropStats } from '../../src/game/dropStatistics.ts';
 
 import { createExpeditionSimulationRoomResults } from '../../src/game/expeditionSimulation.ts';
 import { computePartyStats as computePartyStatsForPadding } from '../../src/game/partyComputation.ts';
@@ -1240,4 +1241,64 @@ assert.deepEqual(state, before);
   await assert.rejects(() => buildApiV1ReadData('read/build/character/status', fresh, {}, ctx), /invalid_request:characterId/);
   await assert.rejects(() => buildApiV1ReadData('read/build/character/status', fresh, { characterId: [ids[0], ids[0]] }, ctx), /invalid_request:characterId/);
   await assert.rejects(() => buildApiV1ReadData('read/build/character/status', fresh, { characterId: 999999 }, ctx), /not_found/);
+}
+
+// SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `destination`, `depthLimit`, and `difficultyOffset` forecast another
+// expedition setting without committing it, validated like `changeExpedition`.
+{
+  const fresh = createFreshGameState('en', Date.UTC(2026, 8, 20));
+  const forecasts: { destination: number; depthLimit: string; difficultyOffset: number }[] = [];
+  const recording = {
+    ...context,
+    simulation: async (partyIndex: number, count: number, forecast?: { state: typeof fresh }) => {
+      const party = (forecast?.state ?? fresh).parties[partyIndex];
+      forecasts.push({ destination: party.selectedDungeonId, depthLimit: party.expeditionDepthLimit, difficultyOffset: party.expeditionDifficultyOffset });
+      return { ...fakeSimulation(count) };
+    },
+  };
+  const run = (source: typeof fresh, parameters: Record<string, unknown>) => buildApiV1ReadData('read/expedition/1/simulationRun', source, { numberOfRun: 10, ...parameters }, recording) as Promise<{ expedition: Record<string, unknown> }>;
+  const own = fresh.parties[0];
+  assert.deepEqual((await run(fresh, {})).expedition, { destination: own.selectedDungeonId, depthLimit: own.expeditionDepthLimit, difficultyOffset: own.expeditionDifficultyOffset, overridden: false });
+  const shallow = await run(fresh, { depthLimit: '2f-3' });
+  assert.deepEqual(shallow.expedition, { destination: own.selectedDungeonId, depthLimit: '2f-3', difficultyOffset: own.expeditionDifficultyOffset, overridden: true });
+  assert.equal(forecasts.at(-1)!.depthLimit, '2f-3', 'the forecast runs the overridden setting');
+  assert.equal(fresh.parties[0].expeditionDepthLimit, own.expeditionDepthLimit, 'nothing is committed');
+  // A locked destination, an unknown depth limit, or an offset the destination does not allow yet is rejected.
+  await assert.rejects(() => run(fresh, { destination: 2 }), /invalid_request:destination\.destination_locked/);
+  await assert.rejects(() => run(fresh, { depthLimit: 'deep' }), /invalid_request:depthLimit\.invalid_depth_limit/);
+  await assert.rejects(() => run(fresh, { difficultyOffset: 2 }), /invalid_request:difficultyOffset\.difficulty_offset_unavailable/);
+  await assert.rejects(() => run(fresh, { destination: '2' }), /invalid_request:destination/);
+  // After the boss of destination 1: destination 2 opens (with its own saved offset), and destination 1 takes an offset.
+  const veteran = { ...fresh, parties: fresh.parties.map((party, index) => (index === 0 ? { ...party, defeatedBossExpeditions: { 1: true }, expeditionDifficultyOffsetByDungeon: { 2: 0 } } : party)) };
+  assert.deepEqual((await run(veteran, { destination: 2 })).expedition, { destination: 2, depthLimit: own.expeditionDepthLimit, difficultyOffset: 0, overridden: true });
+  const harder = await run(veteran, { destination: 1, difficultyOffset: 2 });
+  assert.deepEqual([harder.expedition.destination, harder.expedition.difficultyOffset], [1, 2]);
+  const Ajv = (await import('ajv')).default;
+  const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
+  const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'read/expedition/{p}/simulationRun')!.response.data);
+  assert.equal(validate(harder), true, JSON.stringify(validate.errors?.slice(0, 2)));
+}
+
+// SpecRef: 9.1.3 | Read | 2-1-4 party `dropStatistics` | the party's own drops since the last Statistics reset.
+{
+  assert.deepEqual(normalizePartyDropStats(undefined), { items: 0, superRare: 0, autoSold: 0, byEnhancement: [0, 0, 0, 0, 0, 0, 0] });
+  assert.deepEqual(normalizePartyDropStats({ items: -3, superRare: 1.7, byEnhancement: [2, 'x'] }), { items: 0, superRare: 1, autoSold: 0, byEnhancement: [2, 0, 0, 0, 0, 0, 0] });
+  const counted = addPartyDrops({ items: 1, superRare: 0, autoSold: 2, byEnhancement: [1, 0, 0, 0, 0, 0, 0] }, [{ enhancement: 0, superRare: 0 }, { enhancement: 4, superRare: 3 }, { enhancement: 6, superRare: 0 }], 5);
+  assert.deepEqual(counted, { items: 4, superRare: 1, autoSold: 7, byEnhancement: [2, 0, 0, 0, 1, 0, 1] });
+  // A finished expedition adds the rewards it kept; the Statistics reset clears the counters with the other statistics.
+  let played = createFreshGameState('en', Date.UTC(2026, 8, 20));
+  const partyRead = async (source: typeof played) => (await buildApiV1ReadData('read/observation/party', source, { partyNumber: 1 }, context) as { partyInfo: { party: { dropStatistics: ReturnType<typeof normalizePartyDropStats> } } }).partyInfo.party.dropStatistics;
+  assert.deepEqual(await partyRead(played), normalizePartyDropStats(undefined));
+  let kept = 0; let sold = 0;
+  for (let run = 0; run < 3; run += 1) {
+    played = gameReducer(played, { type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex: 0, simulatedAt: Date.UTC(2026, 8, 20) + run * 60_000 });
+    kept += played.parties[0].lastExpeditionLog?.rewards.length ?? 0;
+    sold += played.parties[0].lastExpeditionLog?.autoSellItems.length ?? 0;
+  }
+  const afterRuns = await partyRead(played);
+  assert.deepEqual([afterRuns.items, afterRuns.autoSold], [kept, sold]);
+  assert.equal(afterRuns.byEnhancement.reduce((sum, value) => sum + value, 0), kept);
+  played = gameReducer(played, { type: 'RESET_EXPEDITION_STATS', partyIndex: 0 });
+  assert.equal(played.parties[0].dropStats, undefined);
+  assert.deepEqual(await partyRead(played), normalizePartyDropStats(undefined));
 }

@@ -250,6 +250,8 @@ const commitParameters = {
     changes: nonEmptyArray(strict({ endpoint: buildChangeEndpoint, parameters: Type.Record(Type.String(), Type.Unknown()) })),
     basis: optional(stableKey), verdict: optional(literals('veryGood', 'good', 'noisy', 'noChange', 'worse')),
     autoEquipmentMode: optional(literals('SEMI', 'OFF'), 'SEMI'), simulation: Type.Boolean(), confirmation: Type.Optional(Type.Union([Type.Literal('yes'), Type.Literal('no')])),
+    // SpecRef: 9.1.3 | 3-3-2 `onStale` | `repair` repairs or skips an entry the save no longer allows instead of rejecting.
+    onStale: optional(literals('reject', 'repair'), 'reject'),
   }),
   'commit/build/character/{characterId}/changeBuild': strict({ name: optional(Type.String({ minLength: 1, maxLength: 100 })), uniqueSelection: optional(uniqueSelectionValue), racesAndGender: optional(stableKey), mainClassId: optional(stableKey), subClassId: optional(stableKey), lineage: optional(stableKey), predisposition: optional(stableKey), simulation: Type.Boolean(), confirmation: Type.Optional(Type.Union([Type.Literal('yes'), Type.Literal('no')])) }),
   'commit/build/character/{characterId}/removeAllEquipment': empty,
@@ -406,6 +408,8 @@ const gaChangeEntry = strict({ endpoint: gaChangeEndpoint, parameters: Type.Reco
 const gaSearchResult = {
   verdict: gaVerdict, forecast: gaForecast, changeSummary: Type.Array(gaChangeEntry), revision: Type.Integer({ minimum: 0 }),
   evaluations: Type.Integer({ minimum: 0 }), elapsedSeconds: Type.Number({ minimum: 0 }), basis: stableKey, ...forecastSettingsResult,
+  // SpecRef: 9.1.3 | 2-3-2 `deityTaken` | the other party whose deity the result swaps (`allDeities`), else `null`.
+  deityTaken: Type.Union([strict({ partyId: partyNumber, deityId: stableKey, newDeityId: stableKey }), Type.Null()]),
   verification: strict({
     objective: gaObjective, scoredBy: literals('success', 'minDefeat', 'gateDamage', 'experience', 'progress'), runs: Type.Integer({ minimum: 1 }),
     before: rateValue, after: rateValue, gain: Type.Union([Type.Number(), Type.Null()]), standardError: Type.Number({ minimum: 0 }), seed: Type.Integer(), verifySeed: Type.Integer(),
@@ -416,6 +420,8 @@ const gaSearchResult = {
 const levelProbePoint = strict({
   level: Type.Integer({ minimum: 1 }), baseSlots: Type.Integer({ minimum: 1 }), filledSlots: Type.Integer({ minimum: 0 }), rate: rateValue, standardError: rateValue,
   expectedRuns: Type.Union([rateValue, Type.Null()]), experienceToLevel: Type.Integer({ minimum: 0 }),
+  // SpecRef: 9.1.3 | 2-3-2 `levelProbe` `gateRoom` | `conquest`: the goal's gate room fought alone at full HP; `null` for `farming`.
+  gateRoom: Type.Union([strict({ room: floorRoomKey, share: Type.Number({ minimum: 0, maximum: 1 }), winRate: Type.Number({ minimum: 0, maximum: 1 }) }), Type.Null()]),
 });
 const levelProbeResult = Type.Union([strict({
   build: literals('best', 'current'), purpose: literals('conquest', 'farming'),
@@ -557,7 +563,7 @@ const expeditionStatistics = strict({ clear: Type.Integer({ minimum: 0 }), retur
 const sideQuestStatisticString = Type.String({ pattern: '^[1-9][0-9]*-[0-9]+/[0-9]+/[0-9]+/[0-9]+$' });
 sampleOverrides.set(sideQuestStatisticString, '13-1/0/0/2');
 // Spec 9.1.3 2-1-4: `<sideQuestId>-<successfulCount>/<cancelledCount>/<failedCount>/<totalCount>` for each side quest accepted so far.
-const partyProjectionSchema = strict({ effectiveSelection: strict({ partyNumber, characterId: Type.Union([integerId, Type.Null()]) }), party: strict({ partyNumber, name: Type.String({ minLength: 1 }), level: Type.Integer({ minimum: 1, maximum: 69 }), experience: Type.Integer({ minimum: 0 }), experienceToNext: Type.Integer({ minimum: 0 }), experienceRatio: Type.Integer({ minimum: 0, maximum: 100 }), currentHp: Type.Integer({ minimum: 0 }), maxHp: Type.Integer({ minimum: 0 }), deityId: stableKey, deityRank: Type.Integer({ minimum: 0 }), deityTotalDonation: Type.Integer({ minimum: 0 }), deityNextRankThreshold: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]), condition: Type.Integer({ minimum: -400, maximum: 400 }), order: Type.Array(integerId), characters: Type.Array(characterSummary), statistics: expeditionStatistics, sideQuestStatistics: Type.Array(sideQuestStatisticString) }) });
+const partyProjectionSchema = strict({ effectiveSelection: strict({ partyNumber, characterId: Type.Union([integerId, Type.Null()]) }), party: strict({ partyNumber, name: Type.String({ minLength: 1 }), level: Type.Integer({ minimum: 1, maximum: 69 }), experience: Type.Integer({ minimum: 0 }), experienceToNext: Type.Integer({ minimum: 0 }), experienceRatio: Type.Integer({ minimum: 0, maximum: 100 }), currentHp: Type.Integer({ minimum: 0 }), maxHp: Type.Integer({ minimum: 0 }), deityId: stableKey, deityRank: Type.Integer({ minimum: 0 }), deityTotalDonation: Type.Integer({ minimum: 0 }), deityNextRankThreshold: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]), condition: Type.Integer({ minimum: -400, maximum: 400 }), order: Type.Array(integerId), characters: Type.Array(characterSummary), statistics: expeditionStatistics, sideQuestStatistics: Type.Array(sideQuestStatisticString), dropStatistics: strict({ items: count, superRare: count, autoSold: count, byEnhancement: Type.Array(count, { maxItems: 7 }) }) }) });
 // Spec 8.4.1: the shop at the request's clock. A slot's `shopItemId` is its 1-based lineup position.
 // `<shopItemId>/<Item Format>/<price>/<availability>` (Spec 9.1.3, 2-4-4); an unidentified entry's enhancement and Super Rare are `?`.
 const shopItemString = Type.String({ pattern: '^[1-7]/0/[1-9][0-9]*/(?:[0-6]|\\?)/(?:0|[1-9][0-9]*|\\?)/[0-9]+/(true|false)$' });
@@ -653,6 +659,8 @@ const responseDataSchemas = {
       rows: Type.Array(Type.Tuple([floorRoomKey, ...Array.from({ length: 19 }, () => count), ...Array.from({ length: 2 }, () => Type.Union([Type.Number({ minimum: 0, maximum: 100 }), Type.Null()])), count, count])),
     }),
     ...forecastSettingsResult,
+    // SpecRef: 9.1.3 | 2-2-3 `expedition` | the expedition setting the forecast ran (`overridden`: set by the request).
+    expedition: strict({ destination: integerId, depthLimit: Type.String(), difficultyOffset: Type.Integer({ minimum: 0, multipleOf: 2 }), overridden: Type.Boolean() }),
     rate: optional(Type.Number({ minimum: 0 })), standardError: optional(Type.Number({ minimum: 0 })), seed: Type.Integer(),
   }),
   'read/expedition/{p}/chargeStock': strict({ chargeStock: Type.Integer({ minimum: 0, maximum: 6 }), chargeDuration: Type.Integer({ minimum: 0 }) }),
@@ -663,6 +671,8 @@ const responseDataSchemas = {
     // SpecRef: 9.1.3 | 2-3-2 `quickSignal` and `guardStats` Return
     quickSignal: Type.Union([strict({ start: literals('success', 'progress'), switchedAt: Type.Union([Type.Integer({ minimum: 1 }), Type.Null()]) }), Type.Null()]),
     guardStats: Type.Union([strict({ confirmed: Type.Integer({ minimum: 0 }), reached: Type.Integer({ minimum: 0 }) }), Type.Null()]),
+    // SpecRef: 9.1.3 | 2-3-2 `guardReconfirm` | the finalists' guard rates on the re-confirmation seed and the one chosen.
+    guardReconfirm: Type.Union([strict({ runs: Type.Integer({ minimum: 1 }), rates: Type.Array(rateValue), chosen: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]) }), Type.Null()]),
     seeds: optional(Type.Array(gaSeedReport)), seedBaseline: optional(gaSeedBaseline),
   }),
   // SpecRef: 9.1.4.9 | Directed build | the `gaSearch` Return plus `seed`, `direction`, `composition`, and `steps`.
@@ -732,7 +742,12 @@ const responseDataSchemas = {
   'commit/expedition/{p}/godsBattle': strict({ outcome: Type.Union([expeditionOutcome, Type.Null()]), rewards: Type.Array(Type.String()), diaryEntryId: Type.Union([stableKey, Type.Null()]), logId: Type.Union([stableKey, Type.Null()]), ...sortieControlFacts, ...cycleTimingFacts }),
   'commit/expedition/{p}/resetStatistics': empty,
   'commit/build/party/{p}': strict({ current: strict({ deityId: stableKey, order: Type.Array(integerId) }) }),
-  'commit/build/party/{p}/applyBuildChanges': strict({ applied: Type.Array(gaChangeEntry), confirmationRequired: Type.Boolean(), warnings: Type.Array(semanticText), calculatedStatus: Type.Array(strict({ characterId: integerId, calculatedStatus })) }),
+  'commit/build/party/{p}/applyBuildChanges': strict({
+    applied: Type.Array(gaChangeEntry), confirmationRequired: Type.Boolean(), warnings: Type.Array(semanticText), calculatedStatus: Type.Array(strict({ characterId: integerId, calculatedStatus })),
+    // SpecRef: 9.1.3 | 3-3-2 `onStale: repair` Return | only with `repair`.
+    basisStale: optional(Type.Union([Type.Boolean(), Type.Null()])),
+    repairs: optional(Type.Array(strict({ index: Type.Integer({ minimum: 0 }), endpoint: gaChangeEndpoint, outcome: literals('substituted', 'trimmed', 'skipped'), reason: stableKey, parameters: Type.Union([Type.Record(Type.String(), Type.Union([scalar, Type.Array(Type.Integer({ minimum: 0 }))])), Type.Null()]) }))),
+  }),
   'commit/build/character/{characterId}/changeBuild': strict({ calculatedStatus, current: characterBuildCurrent, confirmationRequired: Type.Boolean(), warnings: Type.Array(semanticText), applied: Type.Boolean() }),
   'commit/build/character/{characterId}/removeAllEquipment': strict({ current: equipmentCommitCurrent }),
   'commit/build/character/{characterId}/removeEquipment': strict({ current: equipmentCommitCurrent }),
@@ -912,7 +927,7 @@ const commitEnvelope = (parameters) => strict({ expectedRevision: Type.Integer({
 function pathSchemaFor(operation) { const name = operation.path.match(/\{([^}]+)\}/)?.[1]; return name ? pathSchemas[name] : empty; }
 function bodySchemaFor(operation) {
   if (directBodySchemas[operation.operationId]) return directBodySchemas[operation.operationId];
-  if (operation.operationId.endsWith('/simulationRun')) return strict({ expectedRevision: optional(Type.Integer({ minimum: 0 })), numberOfRun: optional(Type.Integer({ minimum: 1, maximum: 1000 }), 100), objective: optional(simulationObjective), gateRoom: optional(gateRoomRequest), startHp: optional(startHpRequest, 'full'), seed: optional(Type.Integer()) });
+  if (operation.operationId.endsWith('/simulationRun')) return strict({ expectedRevision: optional(Type.Integer({ minimum: 0 })), numberOfRun: optional(Type.Integer({ minimum: 1, maximum: 1000 }), 100), objective: optional(simulationObjective), gateRoom: optional(gateRoomRequest), startHp: optional(startHpRequest, 'full'), seed: optional(Type.Integer()), destination: optional(integerId), depthLimit: optional(Type.String({ pattern: '^(?:[1-9][0-9]*f-[1-9][0-9]*|beforeBoss|all)$' })), difficultyOffset: optional(Type.Integer({ minimum: 0, multipleOf: 2 })) });
   if (operation.operationId.startsWith('commit/')) return commitEnvelope(commitParameters[operation.operationId]);
   return empty;
 }

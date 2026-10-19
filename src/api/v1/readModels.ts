@@ -37,7 +37,7 @@ import { getLocalizedItemName, getLocalizedSuperRareTitle } from '../../game/gam
 import { describeUiPreferenceCatalog, listUiPreferences } from './uiPreferenceCatalog.ts';
 import { formatCompactClearGate, formatCompactSideQuest, getExpeditionGoals, getSideQuestFacts } from '../../game/expeditionGoals.ts';
 import { getEstimatedStartHp, getPartyStateProgress } from '../../game/partyStateProgress.ts';
-import { DIFFICULTY_OFFSET_STEP, EXPEDITION_DEPTH_LIMITS, getSelectableDestinationIds, getSelectableDifficultyOffsetMax } from '../../game/expeditionSettings.ts';
+import { DIFFICULTY_OFFSET_STEP, EXPEDITION_DEPTH_LIMITS, getExpeditionChangeRejection, getSelectableDestinationIds, getSelectableDifficultyOffsetMax } from '../../game/expeditionSettings.ts';
 import { getSortieUnavailableReason } from './sortieAvailability.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { getPublicShopLineupId, getShopFacts, shopLineupInputOf } from '../../game/shopFacts.ts';
@@ -61,6 +61,7 @@ import { getPartyClairvoyanceAccess } from '../../game/clairvoyanceAccess.ts';
 import type { DebugSettings } from '../../game/debugSettings.ts';
 import type { ColosseumEnemySettings } from '../../game/colosseum.ts';
 import { accountEnemyEditSettingsOf, describeEnemyEditPane, enemyEditPaneValidOptions } from './enemyEditPane.ts';
+import { normalizePartyDropStats } from '../../game/dropStatistics.ts';
 import { MAX_LEVEL, type DiaryLog, type EnemyDef, type ExpeditionLog, type Character, type ExpeditionSimulationOptions, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party, type RandomBag } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
@@ -461,6 +462,8 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>, 
       sideQuestStatistics: Object.entries(party.sideQuestStats ?? {})
         .sort(([a], [b]) => Number(a) - Number(b))
         .map(([id, { success, cancelled, failed, total }]) => `${id}-${success}/${cancelled}/${failed ?? 0}/${total}`), // saves from before `failed` existed have no value
+      // SpecRef: 9.1.3 | 2-1-4 party | `dropStatistics`: the party's own drops since the last Statistics reset.
+      dropStatistics: normalizePartyDropStats(party.dropStats),
     },
   };
 }
@@ -889,6 +892,33 @@ function baseProjection(state: GameState, context: ApiV1ReadContext) {
 
 // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `numberOfRun` defaults to 100 and ranges 1 ~ 1000.
 const SIMULATION_RUN_DEFAULT = 100;
+
+/**
+ * The party with the `simulationRun` expedition overrides applied (Spec 9.1.3, 2-2-3), or null when none is sent. They are
+ * validated like `changeExpedition` (a locked destination or an offset above the destination's range is rejected), and a
+ * destination takes its own saved difficulty offset unless `difficultyOffset` is sent too, as a destination change does.
+ */
+function expeditionOverride(party: Party, parameters: Record<string, unknown>, context: ApiV1ReadContext): Party | null {
+  const { destination, depthLimit, difficultyOffset } = parameters;
+  if (destination === undefined && depthLimit === undefined && difficultyOffset === undefined) return null;
+  if (destination !== undefined && (typeof destination !== 'number' || !Number.isSafeInteger(destination))) throw new Error('invalid_request:destination');
+  if (depthLimit !== undefined && typeof depthLimit !== 'string') throw new Error('invalid_request:depthLimit');
+  if (difficultyOffset !== undefined && (typeof difficultyOffset !== 'number' || !Number.isSafeInteger(difficultyOffset))) throw new Error('invalid_request:difficultyOffset');
+  const colosseumEnabled = context.colosseumEnabled ?? (context.control?.settings?.debug as { colosseumMode?: unknown } | undefined)?.colosseumMode === true;
+  const rejection = getExpeditionChangeRejection(party, { destination: destination as number | undefined, depthLimit: depthLimit as string | undefined, difficultyOffset: difficultyOffset as number | undefined }, colosseumEnabled);
+  if (rejection) {
+    const field = rejection.reason.includes('destination') ? 'destination' : rejection.reason.includes('depth') ? 'depthLimit' : 'difficultyOffset';
+    throw new Error(`invalid_request:${field}.${rejection.reason}`);
+  }
+  const dungeonId = (destination as number | undefined) ?? party.selectedDungeonId;
+  return {
+    ...party,
+    selectedDungeonId: dungeonId,
+    expeditionDepthLimit: (depthLimit as Party['expeditionDepthLimit'] | undefined) ?? party.expeditionDepthLimit,
+    expeditionDifficultyOffset: (difficultyOffset as number | undefined)
+      ?? (destination === undefined ? party.expeditionDifficultyOffset : party.expeditionDifficultyOffsetByDungeon?.[dungeonId] ?? 0),
+  };
+}
 const SIMULATION_RUN_MAX = 1_000;
 
 export async function buildApiV1ReadData(operationId: string, state: GameState, parameters: Record<string, unknown>, context: ApiV1ReadContext): Promise<Record<string, unknown>> {
@@ -964,6 +994,11 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     }
     if (expedition[2] === 'simulationRun') {
       if (!context.simulation) throw new Error('runtime_unavailable');
+      // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `destination`, `depthLimit`, and `difficultyOffset` forecast another
+      // expedition setting without committing it, with the same choices `changeExpedition` accepts.
+      const override = expeditionOverride(party, parameters, context);
+      const simulationState = override ? { ...state, parties: state.parties.map((entry, position) => (position === index ? override : entry)) } : state;
+      const simulatedParty = simulationState.parties[index];
       const numberOfRun = parameters.numberOfRun === undefined ? SIMULATION_RUN_DEFAULT : parameters.numberOfRun;
       if (typeof numberOfRun !== 'number' || !Number.isInteger(numberOfRun) || numberOfRun < 1 || numberOfRun > SIMULATION_RUN_MAX) throw new Error('invalid_request:numberOfRun');
       // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | optional `objective` (adds `rate` and `standardError`, measured like
@@ -976,11 +1011,15 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
       const measured = objective as MeasuredObjective | undefined;
       // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `gateRoom` (with `objective: gateDamage`) and `startHp` (every run
       // starts with that share of the maximum HP, whatever is simulated).
-      const settings = parseForecastSettings(parameters, party, measured ? [measured] : [], true);
-      const forecastState = measured ? prepareObjectiveState(state, index, measured, settings) : state;
+      const settings = parseForecastSettings(parameters, simulatedParty, measured ? [measured] : [], true);
+      const forecastState = measured ? prepareObjectiveState(simulationState, index, measured, settings) : simulationState;
       const options = { ...objectiveSimulationOptions(measured ?? 'success', settings), ...(settings.startHp === null ? {} : { startHpShare: settings.startHp }) };
       const result = await context.simulation(index, numberOfRun, { state: forecastState, seed, options }) as ExpeditionSimulationResult;
-      const data = { ...buildSimulationRunData(result, context.revision, crypto.randomUUID(), describeSimulationDepthReach(forecastState.parties[index])), ...describeForecastSettings(settings) };
+      const data = {
+        ...buildSimulationRunData(result, context.revision, crypto.randomUUID(), describeSimulationDepthReach(forecastState.parties[index])), ...describeForecastSettings(settings),
+        // The expedition setting the forecast ran: the party's own, or the one the overrides set.
+        expedition: { destination: simulatedParty.selectedDungeonId, depthLimit: simulatedParty.expeditionDepthLimit, difficultyOffset: simulatedParty.expeditionDifficultyOffset, overridden: override !== null },
+      };
       if (!measured) return { ...data, seed };
       const { rate, variance } = measureObjective(measured, result, routeRoomCount(forecastState.parties[index]));
       return { ...data, rate, standardError: Math.sqrt(variance / Math.max(1, result.total)), seed };

@@ -1,4 +1,5 @@
 import { hasNewAvailability } from '../game/inventoryAvailability';
+import { normalizePartyDropStats } from '../game/dropStatistics';
 import { getCharacterCombatBonusLevels } from '../game/combatBonusLevels';
 import { getConditionState, type PartyConditionState } from '../game/partyCondition';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
@@ -1298,6 +1299,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     condition: normalizePartyCondition(party.condition),
     sideQuest: normalizedSideQuest,
     sideQuestStats: getSideQuestStatsWithDefaults(party.sideQuestStats),
+    ...(party.dropStats === undefined ? {} : { dropStats: normalizePartyDropStats(party.dropStats) }),
   };
 }
 
@@ -2529,8 +2531,8 @@ function reduceGameState(
 
     case 'RESET_EXPEDITION_STATS': {
       const updatedParties = [...state.parties];
-      // SpecRef: 9.1.3 | Commit | 3-2-4 {p}/resetStatistics — resets `statistics` and `sideQuestStatistics`.
-      const { sideQuestStats: _clearedSideQuestStats, ...partyWithoutSideQuestStats } = updatedParties[action.partyIndex];
+      // SpecRef: 9.1.3 | Commit | 3-2-4 {p}/resetStatistics — resets `statistics`, `sideQuestStatistics`, and `dropStatistics`.
+      const { sideQuestStats: _clearedSideQuestStats, dropStats: _clearedDropStats, ...partyWithoutSideQuestStats } = updatedParties[action.partyIndex];
       updatedParties[action.partyIndex] = {
         ...partyWithoutSideQuestStats,
         expeditionStats: getExpeditionStatsWithDefaults(null),

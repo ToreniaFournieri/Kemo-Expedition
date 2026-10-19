@@ -8,7 +8,7 @@ import { gameReducer } from '../../hooks/useGameState';
 import { getVariantKey, type Character, type ClassId, type ExpeditionSimulationResult, type GameState, type Item } from '../../types';
 import { describeCharacterBuildCurrent, planCharacterBuildChange, validUniqueSelections } from './buildChange';
 import {
-  buildBasis, compareGuarded, createRandom, createRunMeter, crossCheckObjective, deityHolderIndex, deityOptionsFor, deriveSeed, GA_DEITY_SCOPES,
+  assignPartyDeity, buildBasis, compareGuarded, createRandom, createRunMeter, crossCheckObjective, deityOptionsFor, deriveSeed, describeDeityTaken, GA_DEITY_SCOPES,
   GA_EFFORTS, GA_ITEMS_SCOPES, GA_OBJECTIVES, isRareSuccess, measure, measureSecondObjective, measuredObjectives, parseObjectiveGuard, planGaChangeSummary, rateGaResult, reserveMs,
   runGaSearch, successFitness, summarizeVerification,
   type GaChangeEntry, type GaDeityScope, type GaItemsScope, type GaObjective, type GaSearchDependencies, type GaSearchRequest, type GuardedScore,
@@ -940,11 +940,8 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
       if (deity === currentDeity) continue;
       const deityName = getDeityNameFromId(deity);
       if (!deityName) continue;
-      // A deity another party holds (`allDeities`) is freed first, as `changeSummary` does.
-      let candidate = locked;
-      const holder = deityHolderIndex(candidate, partyIndex, deity);
-      if (holder >= 0) candidate = gameReducer(candidate, { type: 'UPDATE_PARTY_DEITY', partyIndex: holder, deityName: 'None' });
-      candidate = gameReducer(candidate, { type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
+      // A deity another party holds (`allDeities`) is swapped with it, as `changeSummary` does.
+      const candidate = assignPartyDeity(locked, partyIndex, deity);
       tried += 1;
       const candidateScore = await scoreFull(candidate, parameters.confirmRuns, confirmSeed);
       if (!bestScore || compareGuarded(guardedOf(candidateScore), guardedOf(bestScore), guard) > 0) { bestScore = candidateScore; bestDeity = deity; bestState = candidate; }
@@ -1108,6 +1105,7 @@ export async function runDirectedBuild(state: GameState, partyIndex: number, req
       elapsedSeconds: Math.round((dependencies.now() - startedAt) / 100) / 10,
       basis: buildBasis(state, partyIndex, changeSummary),
       verification: summary.verification,
+      deityTaken: changed ? describeDeityTaken(state, finalState, partyIndex) : null,
       ...describeForecastSettings(settings),
       seed,
       direction: request.direction,
