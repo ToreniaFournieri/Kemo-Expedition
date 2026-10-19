@@ -397,6 +397,8 @@ export interface Party {
   sideQuest: SideQuestState | null;
   /** Per `sideQuestId`: quests accepted (`total`), completed (`success`), cancelled by a player action (`cancelled`) and expired (`failed`). Absent until the first quest. */
   sideQuestStats?: Record<string, { success: number; cancelled: number; failed: number; total: number }>;
+  /** The party's own drops since the last Statistics reset (`game/dropStatistics`). Absent until its first expedition. */
+  dropStats?: { items: number; superRare: number; autoSold: number; byEnhancement: number[] };
   /** Inventory revisions observed by the most recent scheduled FULL run. */
   lastFullEquipmentRevision?: number;
   lastFullJewelRevision?: number;

@@ -8332,7 +8332,8 @@
                     "order",
                     "characters",
                     "statistics",
-                    "sideQuestStatistics"
+                    "sideQuestStatistics",
+                    "dropStatistics"
                   ],
                   "properties": {
                     "partyNumber": {
@@ -8772,6 +8773,38 @@
                         "pattern": "^[1-9][0-9]*-[0-9]+/[0-9]+/[0-9]+/[0-9]+$",
                         "type": "string"
                       }
+                    },
+                    "dropStatistics": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "items",
+                        "superRare",
+                        "autoSold",
+                        "byEnhancement"
+                      ],
+                      "properties": {
+                        "items": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "superRare": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "autoSold": {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "byEnhancement": {
+                          "maxItems": 7,
+                          "type": "array",
+                          "items": {
+                            "minimum": 0,
+                            "type": "integer"
+                          }
+                        }
+                      }
                     }
                   }
                 },
@@ -8961,7 +8994,8 @@
                         "order",
                         "characters",
                         "statistics",
-                        "sideQuestStatistics"
+                        "sideQuestStatistics",
+                        "dropStatistics"
                       ],
                       "properties": {
                         "partyNumber": {
@@ -9401,6 +9435,38 @@
                             "pattern": "^[1-9][0-9]*-[0-9]+/[0-9]+/[0-9]+/[0-9]+$",
                             "type": "string"
                           }
+                        },
+                        "dropStatistics": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "items",
+                            "superRare",
+                            "autoSold",
+                            "byEnhancement"
+                          ],
+                          "properties": {
+                            "items": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "superRare": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "autoSold": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "byEnhancement": {
+                              "maxItems": 7,
+                              "type": "array",
+                              "items": {
+                                "minimum": 0,
+                                "type": "integer"
+                              }
+                            }
+                          }
                         }
                       }
                     },
@@ -9611,7 +9677,15 @@
                 },
                 "sideQuestStatistics": [
                   "13-1/0/0/2"
-                ]
+                ],
+                "dropStatistics": {
+                  "items": 0,
+                  "superRare": 0,
+                  "autoSold": 0,
+                  "byEnhancement": [
+                    0
+                  ]
+                }
               },
               "unlockedMimorianEnemyIds": [
                 1
@@ -20825,6 +20899,19 @@
           },
           "seed": {
             "type": "integer"
+          },
+          "destination": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "depthLimit": {
+            "pattern": "^(?:[1-9][0-9]*f-[1-9][0-9]*|beforeBoss|all)$",
+            "type": "string"
+          },
+          "difficultyOffset": {
+            "minimum": 0,
+            "multipleOf": 2,
+            "type": "integer"
           }
         }
       },
@@ -20847,6 +20934,7 @@
             "detail",
             "rooms",
             "startHp",
+            "expedition",
             "seed"
           ],
           "properties": {
@@ -21325,6 +21413,33 @@
                 }
               ]
             },
+            "expedition": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "destination",
+                "depthLimit",
+                "difficultyOffset",
+                "overridden"
+              ],
+              "properties": {
+                "destination": {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "depthLimit": {
+                  "type": "string"
+                },
+                "difficultyOffset": {
+                  "minimum": 0,
+                  "multipleOf": 2,
+                  "type": "integer"
+                },
+                "overridden": {
+                  "type": "boolean"
+                }
+              }
+            },
             "rate": {
               "minimum": 0,
               "type": "number"
@@ -21388,6 +21503,7 @@
                 "detail",
                 "rooms",
                 "startHp",
+                "expedition",
                 "seed"
               ],
               "properties": {
@@ -21866,6 +21982,33 @@
                     }
                   ]
                 },
+                "expedition": {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "destination",
+                    "depthLimit",
+                    "difficultyOffset",
+                    "overridden"
+                  ],
+                  "properties": {
+                    "destination": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "depthLimit": {
+                      "type": "string"
+                    },
+                    "difficultyOffset": {
+                      "minimum": 0,
+                      "multipleOf": 2,
+                      "type": "integer"
+                    },
+                    "overridden": {
+                      "type": "boolean"
+                    }
+                  }
+                },
                 "rate": {
                   "minimum": 0,
                   "type": "number"
@@ -22014,6 +22157,12 @@
               ]
             },
             "startHp": "full",
+            "expedition": {
+              "destination": 1,
+              "depthLimit": "xxxxxxx",
+              "difficultyOffset": 0,
+              "overridden": true
+            },
             "seed": 1
           }
         }
@@ -22908,13 +23057,15 @@
             "elapsedSeconds",
             "basis",
             "startHp",
+            "deityTaken",
             "verification",
             "levelProbe",
             "generationsRun",
             "stopReason",
             "lastImprovementGeneration",
             "quickSignal",
-            "guardStats"
+            "guardStats",
+            "guardReconfirm"
           ],
           "properties": {
             "verdict": {
@@ -23096,6 +23247,39 @@
                   "exclusiveMinimum": 0,
                   "maximum": 1,
                   "type": "number"
+                }
+              ]
+            },
+            "deityTaken": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "partyId",
+                    "deityId",
+                    "newDeityId"
+                  ],
+                  "properties": {
+                    "partyId": {
+                      "minimum": 1,
+                      "maximum": 6,
+                      "type": "integer"
+                    },
+                    "deityId": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "newDeityId": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "null"
                 }
               ]
             },
@@ -23498,7 +23682,8 @@
                           "rate",
                           "standardError",
                           "expectedRuns",
-                          "experienceToLevel"
+                          "experienceToLevel",
+                          "gateRoom"
                         ],
                         "properties": {
                           "level": {
@@ -23535,6 +23720,38 @@
                           "experienceToLevel": {
                             "minimum": 0,
                             "type": "integer"
+                          },
+                          "gateRoom": {
+                            "anyOf": [
+                              {
+                                "additionalProperties": false,
+                                "type": "object",
+                                "required": [
+                                  "room",
+                                  "share",
+                                  "winRate"
+                                ],
+                                "properties": {
+                                  "room": {
+                                    "pattern": "^[1-6]f-[1-4]$",
+                                    "type": "string"
+                                  },
+                                  "share": {
+                                    "minimum": 0,
+                                    "maximum": 1,
+                                    "type": "number"
+                                  },
+                                  "winRate": {
+                                    "minimum": 0,
+                                    "maximum": 1,
+                                    "type": "number"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
                           }
                         }
                       }
@@ -23641,6 +23858,46 @@
                     "reached": {
                       "minimum": 0,
                       "type": "integer"
+                    }
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "guardReconfirm": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "runs",
+                    "rates",
+                    "chosen"
+                  ],
+                  "properties": {
+                    "runs": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "rates": {
+                      "type": "array",
+                      "items": {
+                        "minimum": 0,
+                        "type": "number"
+                      }
+                    },
+                    "chosen": {
+                      "anyOf": [
+                        {
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   }
                 },
@@ -23841,13 +24098,15 @@
                 "elapsedSeconds",
                 "basis",
                 "startHp",
+                "deityTaken",
                 "verification",
                 "levelProbe",
                 "generationsRun",
                 "stopReason",
                 "lastImprovementGeneration",
                 "quickSignal",
-                "guardStats"
+                "guardStats",
+                "guardReconfirm"
               ],
               "properties": {
                 "verdict": {
@@ -24029,6 +24288,39 @@
                       "exclusiveMinimum": 0,
                       "maximum": 1,
                       "type": "number"
+                    }
+                  ]
+                },
+                "deityTaken": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "partyId",
+                        "deityId",
+                        "newDeityId"
+                      ],
+                      "properties": {
+                        "partyId": {
+                          "minimum": 1,
+                          "maximum": 6,
+                          "type": "integer"
+                        },
+                        "deityId": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "newDeityId": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
                     }
                   ]
                 },
@@ -24431,7 +24723,8 @@
                               "rate",
                               "standardError",
                               "expectedRuns",
-                              "experienceToLevel"
+                              "experienceToLevel",
+                              "gateRoom"
                             ],
                             "properties": {
                               "level": {
@@ -24468,6 +24761,38 @@
                               "experienceToLevel": {
                                 "minimum": 0,
                                 "type": "integer"
+                              },
+                              "gateRoom": {
+                                "anyOf": [
+                                  {
+                                    "additionalProperties": false,
+                                    "type": "object",
+                                    "required": [
+                                      "room",
+                                      "share",
+                                      "winRate"
+                                    ],
+                                    "properties": {
+                                      "room": {
+                                        "pattern": "^[1-6]f-[1-4]$",
+                                        "type": "string"
+                                      },
+                                      "share": {
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "type": "number"
+                                      },
+                                      "winRate": {
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                        "type": "number"
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
                               }
                             }
                           }
@@ -24574,6 +24899,46 @@
                         "reached": {
                           "minimum": 0,
                           "type": "integer"
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "guardReconfirm": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "runs",
+                        "rates",
+                        "chosen"
+                      ],
+                      "properties": {
+                        "runs": {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        "rates": {
+                          "type": "array",
+                          "items": {
+                            "minimum": 0,
+                            "type": "number"
+                          }
+                        },
+                        "chosen": {
+                          "anyOf": [
+                            {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         }
                       }
                     },
@@ -24793,6 +25158,11 @@
             "elapsedSeconds": 0,
             "basis": "xxxxxxx",
             "startHp": "full",
+            "deityTaken": {
+              "partyId": 1,
+              "deityId": "xxxxxxx",
+              "newDeityId": "xxxxxxx"
+            },
             "verification": {
               "objective": "success",
               "scoredBy": "success",
@@ -24847,7 +25217,12 @@
                   "rate": 0,
                   "standardError": 0,
                   "expectedRuns": 0,
-                  "experienceToLevel": 0
+                  "experienceToLevel": 0,
+                  "gateRoom": {
+                    "room": "1f-1",
+                    "share": 0,
+                    "winRate": 0
+                  }
                 }
               ],
               "levelNeeded": 1,
@@ -24863,6 +25238,13 @@
             "guardStats": {
               "confirmed": 0,
               "reached": 0
+            },
+            "guardReconfirm": {
+              "runs": 1,
+              "rates": [
+                0
+              ],
+              "chosen": 0
             }
           }
         }
@@ -25322,6 +25704,7 @@
             "elapsedSeconds",
             "basis",
             "startHp",
+            "deityTaken",
             "verification",
             "seed",
             "direction",
@@ -25509,6 +25892,39 @@
                   "exclusiveMinimum": 0,
                   "maximum": 1,
                   "type": "number"
+                }
+              ]
+            },
+            "deityTaken": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "required": [
+                    "partyId",
+                    "deityId",
+                    "newDeityId"
+                  ],
+                  "properties": {
+                    "partyId": {
+                      "minimum": 1,
+                      "maximum": 6,
+                      "type": "integer"
+                    },
+                    "deityId": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "newDeityId": {
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "null"
                 }
               ]
             },
@@ -26117,6 +26533,7 @@
                 "elapsedSeconds",
                 "basis",
                 "startHp",
+                "deityTaken",
                 "verification",
                 "seed",
                 "direction",
@@ -26304,6 +26721,39 @@
                       "exclusiveMinimum": 0,
                       "maximum": 1,
                       "type": "number"
+                    }
+                  ]
+                },
+                "deityTaken": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "partyId",
+                        "deityId",
+                        "newDeityId"
+                      ],
+                      "properties": {
+                        "partyId": {
+                          "minimum": 1,
+                          "maximum": 6,
+                          "type": "integer"
+                        },
+                        "deityId": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "newDeityId": {
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
                     }
                   ]
                 },
@@ -26932,6 +27382,11 @@
             "elapsedSeconds": 0,
             "basis": "xxxxxxx",
             "startHp": "full",
+            "deityTaken": {
+              "partyId": 1,
+              "deityId": "xxxxxxx",
+              "newDeityId": "xxxxxxx"
+            },
             "verification": {
               "objective": "success",
               "scoredBy": "success",
@@ -39235,6 +39690,19 @@
                     "type": "string"
                   }
                 ]
+              },
+              "onStale": {
+                "anyOf": [
+                  {
+                    "const": "reject",
+                    "type": "string"
+                  },
+                  {
+                    "const": "repair",
+                    "type": "string"
+                  }
+                ],
+                "default": "reject"
               }
             }
           },
@@ -39554,6 +40022,100 @@
                         }
                       }
                     }
+                  }
+                }
+              }
+            },
+            "basisStale": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "repairs": {
+              "type": "array",
+              "items": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "index",
+                  "endpoint",
+                  "outcome",
+                  "reason",
+                  "parameters"
+                ],
+                "properties": {
+                  "index": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "endpoint": {
+                    "pattern": "^commit/build/",
+                    "type": "string"
+                  },
+                  "outcome": {
+                    "anyOf": [
+                      {
+                        "const": "substituted",
+                        "type": "string"
+                      },
+                      {
+                        "const": "trimmed",
+                        "type": "string"
+                      },
+                      {
+                        "const": "skipped",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "reason": {
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "parameters": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "patternProperties": {
+                          "^(.*)$": {
+                            "anyOf": [
+                              {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "boolean"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   }
                 }
               }
@@ -39908,6 +40470,100 @@
                             }
                           }
                         }
+                      }
+                    }
+                  }
+                },
+                "basisStale": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "repairs": {
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "index",
+                      "endpoint",
+                      "outcome",
+                      "reason",
+                      "parameters"
+                    ],
+                    "properties": {
+                      "index": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "endpoint": {
+                        "pattern": "^commit/build/",
+                        "type": "string"
+                      },
+                      "outcome": {
+                        "anyOf": [
+                          {
+                            "const": "substituted",
+                            "type": "string"
+                          },
+                          {
+                            "const": "trimmed",
+                            "type": "string"
+                          },
+                          {
+                            "const": "skipped",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "reason": {
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      "parameters": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "patternProperties": {
+                              "^(.*)$": {
+                                "anyOf": [
+                                  {
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "boolean"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "array",
+                                    "items": {
+                                      "minimum": 0,
+                                      "type": "integer"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
                     }
                   }

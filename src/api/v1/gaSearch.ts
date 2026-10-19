@@ -14,7 +14,7 @@ import { buildCalculatedStatus } from './calculatedStatus';
 import { applyApiV1Commit, type ApiV1CommitContext } from './commitOperations';
 import { sameEquipmentSnapshot, snapshotCharacterEquipment } from './equipmentHistoryFacts';
 import { validPartyDeityIds, validRaceAndGenderOptions } from './readModels';
-import { DEFAULT_FORECAST_SETTINGS, describeForecastSettings, describeWinRate, forecastScope, isRoomObjective, measureObjective, objectiveSimulationOptions, parseForecastSettings, prepareObjectiveState, routeRoomCount, type ForecastScope, type ForecastSettings, type ObjectiveMeasure } from './objectiveMeasure';
+import { DEFAULT_FORECAST_SETTINGS, describeForecastSettings, describeWinRate, forecastScope, gateRoomLabel, isRoomObjective, measureObjective, objectiveSimulationOptions, parseForecastSettings, prepareObjectiveState, routeRoomCount, type ForecastScope, type ForecastSettings, type GateRoom, type ObjectiveMeasure } from './objectiveMeasure';
 import { buildSimulationRunData } from './simulationView';
 import { hashText } from './battleLogs';
 import { baseSlotsAt, conquestGoal, expectedRunsToGoal, experienceToLevel, parseLevelProbe, probedLevels, requiredRateForBudget, type LevelProbeGoal, type LevelProbeRequest } from './levelProbe';
@@ -291,14 +291,16 @@ function parseSeedBuilds(party: Party, raw: unknown): SeedBuild[] {
 
 // SpecRef: 9.1.3 | 3-3-2 applyBuildChanges Validation | build-relevant state
 /**
- * The party facts a result depends on: order, deity, and every member's build and equipment, plus the owned count of
- * each item variant and Jewel the result equips or attaches. Other inventory changes (new drops) do not change it.
+ * The party facts a result depends on: order, deity, and every member's build and equipment, plus the slots it takes
+ * from characters outside the party (`considerItemsScope: global`). The Inventory and the Jewel counts are not part of
+ * it: every `equip` and `jewelAttach` entry is validated against the save when it is applied, so a copy that is gone
+ * fails there (`item_not_owned`, `jewel_not_owned`), and a new drop or a sale elsewhere does not make the result stale.
  */
-export function gaBuildFingerprint(state: GameState, partyIndex: number, usedVariants: readonly string[], usedJewels: readonly string[], outsideCharacterIds: readonly number[] = [], takenDeity: string | null = null): string {
+export function gaBuildFingerprint(state: GameState, partyIndex: number, outsideSlots: Readonly<Record<number, readonly number[]>> = {}, takenDeity: string | null = null): string {
   const party = state.parties[partyIndex];
   const holder = takenDeity === null ? -1 : deityHolderIndex(state, partyIndex, takenDeity);
-  const signature = (item: Item | null) => item ? `${getVariantKey(item)}/${item.jewel ? `${item.jewel.key}:${item.jewel.rank}` : ''}` : null;
-  const owned = (key: string) => { const entry = state.global.inventory[key]; return entry && entry.status === 'owned' ? entry.count : 0; };
+  const signature = (item: Item | null | undefined) => item ? `${getVariantKey(item)}/${item.jewel ? `${item.jewel.key}:${item.jewel.rank}` : ''}` : null;
+  const characterOf = (id: number) => state.parties.flatMap((entry) => entry.characters).find((entry) => entry.id === id);
   return JSON.stringify({
     order: party.characters.map((character) => character.id),
     deity: getDeityId(party.deity.name),
@@ -306,11 +308,10 @@ export function gaBuildFingerprint(state: GameState, partyIndex: number, usedVar
       build: describeCharacterBuildCurrent(character),
       equipment: character.equipment.map(signature),
     })),
-    // `considerItemsScope: global` takes items from characters outside the party; their equipment is build-relevant too.
-    outside: [...new Set(outsideCharacterIds)].sort((a, b) => a - b).map((id) => [id, state.parties.flatMap((entry) => entry.characters).find((entry) => entry.id === id)?.equipment.map(signature) ?? null]),
-    items: [...new Set(usedVariants)].sort().map((key) => [key, owned(key)]),
-    jewels: [...new Set(usedJewels)].sort().map((key) => [key, state.global.jewels[key] ?? 0]),
-    // `considerDeityChange: allDeities` frees the deity it takes from the party holding it; that holder is build-relevant too.
+    // Only the slots a donor gives up: its other slots (Auto Equipment of a side party, for example) do not matter.
+    outside: Object.keys(outsideSlots).map(Number).sort((a, b) => a - b)
+      .map((id) => [id, [...new Set(outsideSlots[id])].sort((a, b) => a - b).map((slot) => [slot, signature(characterOf(id)?.equipment[slot])])]),
+    // `considerDeityChange: allDeities` swaps deities with the party holding the deity it takes; that holder is build-relevant too.
     deityHolder: holder >= 0 ? state.parties[holder].id : null,
   });
 }
@@ -320,17 +321,47 @@ export function deityHolderIndex(state: GameState, partyIndex: number, id: strin
   return id === 'none' ? -1 : state.parties.findIndex((party, index) => index !== partyIndex && getDeityId(party.deity.name) === id);
 }
 
-/** The build-relevant facts behind a `changeSummary`: the Items and Jewels it places and the characters it touches. */
+// SpecRef: 9.1.3 | 2-3-2 gaSearch `considerDeityChange` `allDeities` | a held deity is swapped, never taken for nothing.
+/**
+ * Gives party `partyIndex` deity `id`. A deity another party holds is swapped: the holder is set to no deity first (a
+ * deity is held by one party at a time), then the taker gets `id`, and then the holder gets the deity the taker left.
+ * So the holder keeps a deity whenever the taker had one, and a later search that takes the old deity back returns `id`.
+ */
+export function assignPartyDeity(state: GameState, partyIndex: number, id: string): GameState {
+  const deityName = getDeityNameFromId(id);
+  if (!deityName) return state;
+  const left = state.parties[partyIndex].deity.name;
+  const holder = deityHolderIndex(state, partyIndex, id);
+  let next = state;
+  if (holder >= 0) next = gameReducer(next, { type: 'UPDATE_PARTY_DEITY', partyIndex: holder, deityName: 'None' });
+  next = gameReducer(next, { type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
+  if (holder >= 0 && getDeityId(left) !== 'none') next = gameReducer(next, { type: 'UPDATE_PARTY_DEITY', partyIndex: holder, deityName: left });
+  return next;
+}
+
+/**
+ * `deityTaken` (Spec 9.1.3, 2-3-2): the other party whose deity a result changes, its deity before, and the deity it gets
+ * (the one the searched party leaves, or `none`); `null` when the result takes no deity.
+ */
+export function describeDeityTaken(before: GameState, after: GameState, partyIndex: number): { partyId: number; deityId: string; newDeityId: string } | null {
+  const index = before.parties.findIndex((party, position) => position !== partyIndex && getDeityId(party.deity.name) !== getDeityId(after.parties[position]?.deity.name ?? party.deity.name));
+  if (index < 0) return null;
+  return { partyId: before.parties[index].id, deityId: getDeityId(before.parties[index].deity.name), newDeityId: getDeityId(after.parties[index].deity.name) };
+}
+
+/** The build-relevant facts behind a `changeSummary`: the party, the donor slots it takes, and the holder of a taken deity. */
 function fingerprintOfSummary(state: GameState, partyIndex: number, changeSummary: readonly GaChangeEntry[]): string {
   const deityEntry = changeSummary.find((entry) => entry.endpoint === `commit/build/party/${state.parties[partyIndex].id}` && entry.parameters.deityId !== undefined);
-  const usedVariants = changeSummary.filter((entry) => entry.endpoint.endsWith('/equip')).map((entry) => {
-    const [, id, enhancement, superRare] = String(entry.parameters.targetEquipment).split('/');
-    return `${id}-${enhancement}-${superRare}`;
-  });
-  const usedJewels = changeSummary.filter((entry) => entry.endpoint.endsWith('/jewelAttach')).map((entry) => String(entry.parameters.jewelToSet));
   const inParty = new Set(state.parties[partyIndex].characters.map((character) => character.id));
-  const outside = changeSummary.map((entry) => Number(entry.endpoint.match(CHARACTER_ENDPOINT)?.[1])).filter((id) => Number.isInteger(id) && id > 0 && !inParty.has(id));
-  return gaBuildFingerprint(state, partyIndex, usedVariants, usedJewels, outside, deityEntry ? String(deityEntry.parameters.deityId) : null);
+  const outside: Record<number, number[]> = {};
+  for (const entry of changeSummary) {
+    const id = Number(entry.endpoint.match(CHARACTER_ENDPOINT)?.[1]);
+    if (!Number.isInteger(id) || id <= 0 || inParty.has(id)) continue;
+    const target = entry.parameters.targetEquipment;
+    const slots = (Array.isArray(target) ? target : [target]).map(Number).filter((slot) => Number.isSafeInteger(slot) && slot >= 0);
+    outside[id] = [...(outside[id] ?? []), ...slots];
+  }
+  return gaBuildFingerprint(state, partyIndex, outside, deityEntry ? String(deityEntry.parameters.deityId) : null);
 }
 
 // SpecRef: 9.1.4.9 | `basis` | an opaque digest of the build-relevant state a `changeSummary` depends on. It is computed from
@@ -538,13 +569,9 @@ function decode(model: SearchModel, input: Genome, random: () => number): Decode
   let state = model.base;
   const partyIndex = model.partyIndex;
   if (genome.deity !== model.current.deity) {
-    const deityName = getDeityNameFromId(genome.deity);
-    if (deityName) {
-      // A deity another party holds (`allDeities`) is freed first, as `changeSummary` does.
-      const holder = deityHolderIndex(state, partyIndex, genome.deity);
-      if (holder >= 0) state = gameReducer(state, { type: 'UPDATE_PARTY_DEITY', partyIndex: holder, deityName: 'None' });
-      state = gameReducer(state, { type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
-    } else genome.deity = model.current.deity;
+    // A deity another party holds (`allDeities`) is swapped with it, as `changeSummary` does.
+    if (getDeityNameFromId(genome.deity)) state = assignPartyDeity(state, partyIndex, genome.deity);
+    else genome.deity = model.current.deity;
   }
   if (genome.order.join(',') !== model.current.order.join(',')) {
     for (let destination = 0; destination < genome.order.length; destination += 1) {
@@ -717,7 +744,8 @@ function countChanges(model: SearchModel, decoded: Decoded): number {
   const before = model.base.parties[model.partyIndex];
   const after = decoded.state.parties[model.partyIndex];
   let count = decoded.genome.deity !== model.current.deity || decoded.genome.order.join(',') !== model.current.order.join(',') ? 1 : 0;
-  if (deityHolderIndex(model.base, model.partyIndex, decoded.genome.deity) >= 0) count += 1;
+  // A swap: the holder's `none` entry, and its entry for the deity the party leaves (none when the party had no deity).
+  if (deityHolderIndex(model.base, model.partyIndex, decoded.genome.deity) >= 0) count += model.current.deity === 'none' ? 1 : 2;
   for (const target of model.request.targets) {
     const genes = decoded.genome.builds[target.characterId] ?? {};
     if (Object.entries(genes).some(([field, value]) => value !== model.current.builds[target.characterId][field as BuildField])) count += 1;
@@ -1173,16 +1201,19 @@ export function planGaChangeSummary(base: GameState, partyIndex: number, best: G
     const slots = character.equipment.map((item, slot) => (item && !sameSlot(item, after(character.id).equipment[slot]) ? slot : -1)).filter((slot) => slot >= 0);
     if (slots.length > 0) run(`commit/build/character/${character.id}/removeEquipment`, { targetEquipment: slots });
   }
-  // 2. Deity and order. A deity another party holds (`considerDeityChange: allDeities`) is freed first: that party gets none.
+  // 2. Deity and order. A deity another party holds (`considerDeityChange: allDeities`) is swapped: that party is set to
+  // none first, and after the party takes the deity, it gets the deity the party left (when the party had one).
   const party2: Record<string, unknown> = {};
   const deity = getDeityId(target.deity.name);
-  if (deity !== getDeityId(party.deity.name)) {
-    const holder = deityHolderIndex(scratch, partyIndex, deity);
+  const left = getDeityId(party.deity.name);
+  const holder = deity !== left ? deityHolderIndex(scratch, partyIndex, deity) : -1;
+  if (deity !== left) {
     if (holder >= 0) run(`commit/build/party/${scratch.parties[holder].id}`, { deityId: 'none' });
     party2.deityId = deity;
   }
   if (target.characters.map((entry) => entry.id).join(',') !== party.characters.map((entry) => entry.id).join(',')) party2.order = target.characters.map((entry) => entry.id);
   if (Object.keys(party2).length > 0) run(`commit/build/party/${party.id}`, party2);
+  if (holder >= 0 && left !== 'none') run(`commit/build/party/${base.parties[holder].id}`, { deityId: left });
   // 3. Build changes. A new unique selection fixes the character's race, gender, lineage, and predisposition itself, so
   // they are sent only with `none` or an unchanged selection.
   for (const character of party.characters) {
@@ -1231,6 +1262,16 @@ export interface GaSearchOutcome {
 /** `directedBuild` Step 4 (`polishMethod: ga`): search until `deadline`, then return the best confirmed build unverified. */
 export interface GaPolishMode { deadline: number }
 
+/** The fitness a build loses for taking another party's deity: it decides exact ties only. */
+export const DEITY_TAKE_TIE_BREAK = 1e-9;
+
+/**
+ * The finalists the guard re-confirmation may check, at most: the chosen one first, then the next ones in final-score order
+ * (Spec 9.1.3, 2-3-2 `objectiveGuard` Re-confirmation).
+ */
+export const GUARD_RECONFIRM_CANDIDATES = 3;
+const GUARD_RECONFIRM_STREAM = 100;
+
 /** Runs `gaSearch` for party `{p}` (Spec 9.1.3, 2-3-2). Never changes `state`. */
 export async function runGaSearch(state: GameState, partyIndex: number, request: GaSearchRequest, dependencies: GaSearchDependencies, polish?: GaPolishMode): Promise<GaSearchOutcome> {
   const startedAt = dependencies.now();
@@ -1238,6 +1279,8 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   const seed = request.parameters.seed ?? dependencies.createSeed();
   const random = createRandom(deriveSeed(seed, 0));
   const quickSeed = deriveSeed(seed, 1); const confirmSeed = deriveSeed(seed, 2); const finalSeed = deriveSeed(seed, 4);
+  // Streams 7 and up are the level probe's searches (`7 + level`), so the re-confirmation takes one above any level.
+  const reconfirmSeed = deriveSeed(seed, GUARD_RECONFIRM_STREAM);
   const verifySeed = request.parameters.verifySeed ?? deriveSeed(seed, 3);
   const model = buildModel(state, partyIndex, request);
   const { objective, objectiveGuard: guard } = request;
@@ -1257,6 +1300,9 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   const sharedRuns = !isRoomObjective(objective) && !isRoomObjective(crossObjective);
   const secondOf = async (target: GameState, measured: Measured, runs: number, simulationSeed: number): Promise<ObjectiveMeasure> =>
     (sharedRuns ? measureObjective(crossObjective, measured.result, routeRooms) : await second(target, runs, simulationSeed));
+  /** The second objective alone (the guard re-confirmation): with shared runs it needs the objective's route forecast. */
+  const guardOn = async (target: GameState, runs: number, simulationSeed: number): Promise<ObjectiveMeasure> =>
+    (sharedRuns ? measureObjective(crossObjective, (await simulateOnce(target, runs, simulationSeed)), routeRooms) : await second(target, runs, simulationSeed));
   // The current build's success rate per (runs, seed), the `minDefeat` baseline.
   const baselines = new Map<string, number>();
   const baselineOf = async (runs: number, simulationSeed: number): Promise<number | null> => {
@@ -1265,9 +1311,13 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
     if (!baselines.has(key)) { const result = await simulateOnce(state, runs, simulationSeed); baselines.set(key, (result.Clear + result.Return) / Math.max(1, result.total)); }
     return baselines.get(key)!;
   };
+  // SpecRef: 9.1.3 | 2-3-2 `considerDeityChange` `allDeities` | of two builds that score the same, the one that takes no
+  // deity from another party ranks first (a deity with no effect on the forecast is never taken by chance).
+  const takesDeity = (decoded: Decoded) => deityHolderIndex(model.base, partyIndex, decoded.genome.deity) >= 0;
   const evaluate = async (decoded: Decoded, runs: number, simulationSeed: number): Promise<Measured> => {
     const baseline = await baselineOf(runs, simulationSeed);
-    return measure(objective, await simulateOnce(decoded.state, runs, simulationSeed), routeRooms, baseline);
+    const measured = measure(objective, await simulateOnce(decoded.state, runs, simulationSeed), routeRooms, baseline);
+    return takesDeity(decoded) ? { ...measured, fitness: measured.fitness - DEITY_TAKE_TIE_BREAK } : measured;
   };
 
   // The current build's verification runs depend on nothing the search finds, so they run first. Their cost per run sets
@@ -1285,7 +1335,12 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   const probeRuns = probe ? (probe.count + 1) * request.parameters.confirmRuns + probe.count * 2 * request.parameters.quickRuns : 0;
   const reserved: Record<string, number> = { [objective]: verifyRuns + finalSelectionRuns };
   reserved[crossObjective] = (reserved[crossObjective] ?? 0) + verifyRuns + (guard ? finalSelectionRuns : 0);
+  // The guard re-confirmation: up to `GUARD_RECONFIRM_CANDIDATES` guard measures of `verifyRuns` (route runs when shared).
+  const reconfirmKey = sharedRuns ? objective : crossObjective;
+  if (guard && !polish) reserved[reconfirmKey] = (reserved[reconfirmKey] ?? 0) + GUARD_RECONFIRM_CANDIDATES * verifyRuns;
   reserved[probeCostKey] = (reserved[probeCostKey] ?? 0) + probeRuns;
+  // A `conquest` probe also fights the goal's gate room alone at each point (and for each fill): short battle-only runs.
+  if (probe?.purpose === 'conquest') reserved.gateDamage = (reserved.gateDamage ?? 0) + probeRuns;
   // SpecRef: 9.1.3 | 2-3-2 `levelProbe.fill` `search` | the probe's searches get a fixed share of `timeBudgetSeconds`.
   const probeSearchMs = probe?.fill === 'search' ? LEVEL_PROBE_SEARCH_SHARE * request.parameters.timeBudgetSeconds * 1000 : 0;
   const searchDeadline = polish ? polish.deadline : deadline - reserveMs(meter, reserved) - probeSearchMs;
@@ -1467,41 +1522,57 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
   const confirmed = new Map<string, Individual>();
   for (const entry of [...population, best]) if (entry.confirm !== undefined && entry.key !== fallback.key) confirmed.set(entry.key, entry);
   const finalists = [...confirmed.values()].sort((a, b) => compareGuarded(confirmedScore(b), confirmedScore(a), guard)).slice(0, 3);
+  let guardReconfirm: { runs: number; rates: number[]; chosen: number | null } | null = null;
   if (finalists.length > 0 && ranksAbove(finalists[0], fallback)) {
     const finalScore = async (entry: Individual) => {
       const measured = await evaluate(entry.decoded, finalRuns, finalSeed);
       return { measured, guardMeasure: guard ? await secondOf(entry.decoded.state, measured, finalRuns, finalSeed) : null };
     };
-    const scoreOf = (final: Awaited<ReturnType<typeof finalScore>>): GuardedScore => ({ fitness: final.measured.fitness, guard: final.guardMeasure?.rate });
+    type Final = Awaited<ReturnType<typeof finalScore>>;
+    const scoreOf = (final: Final): GuardedScore => ({ fitness: final.measured.fitness, guard: final.guardMeasure?.rate });
     const currentFinal = await finalScore(fallback);
-    let bestFinal = currentFinal;
-    best = fallback;
-    for (const entry of finalists) {
-      const final = await finalScore(entry);
-      if (compareGuarded(scoreOf(final), scoreOf(bestFinal), guard) > 0) { bestFinal = final; best = entry; }
-    }
+    const scored: { entry: Individual; final: Final }[] = [];
+    for (const entry of finalists) scored.push({ entry, final: await finalScore(entry) });
+    // The finalists that rank above the fallback in the final runs, best first (a stable sort keeps the confirm order on ties).
+    const ranked = scored.filter(({ final }) => compareGuarded(scoreOf(final), scoreOf(currentFinal), guard) > 0)
+      .sort((a, b) => compareGuarded(scoreOf(b.final), scoreOf(a.final), guard));
     // A finalist replaces the fallback only when it is ahead by at least one standard error of the objective's rate. For
     // `success`, `progress` breaks a tie the same way (every build at 0 successes, for example). With a guard, a finalist
     // that reaches it replaces a fallback that does not; when both miss it, the finalist must be ahead on the guard instead.
-    if (best !== fallback) {
-      const ahead = (before: ObjectiveMeasure | undefined, after: ObjectiveMeasure | undefined) => before !== undefined && after !== undefined
-        && after.rate - before.rate > Math.sqrt(before.variance / finalRuns + after.variance / finalRuns);
+    const ahead = (before: ObjectiveMeasure | undefined, after: ObjectiveMeasure | undefined) => before !== undefined && after !== undefined
+      && after.rate - before.rate > Math.sqrt(before.variance / finalRuns + after.variance / finalRuns);
+    const replacesFallback = (bestFinal: Final): boolean => {
       const fallbackReaches = !guard || currentFinal.guardMeasure!.rate >= guard.minimum;
       const bestReaches = !guard || bestFinal.guardMeasure!.rate >= guard.minimum;
-      if (guard && bestReaches && !fallbackReaches) {
-        // kept: the finalist reaches the guard and the fallback does not.
-      } else if (guard && !bestReaches) {
-        if (!ahead(currentFinal.guardMeasure!, bestFinal.guardMeasure!)) best = fallback;
-      } else if (objective === 'success' && isRareSuccess(Math.max(currentFinal.measured.rate, bestFinal.measured.rate), finalRuns)) {
+      if (guard && bestReaches && !fallbackReaches) return true;
+      if (guard && !bestReaches) return ahead(currentFinal.guardMeasure!, bestFinal.guardMeasure!);
+      if (objective === 'success' && isRareSuccess(Math.max(currentFinal.measured.rate, bestFinal.measured.rate), finalRuns)) {
         // SpecRef: 9.1.3 | 2-3-2 `verdict` | while successes are rare for both, `progress` decides, as in the verdict; a
         // finalist that loses successes by more than 2 standard errors is not kept.
         const lostSuccess = rateGaResult('success', currentFinal.measured, bestFinal.measured, finalRuns, true).verdict === 'worse';
-        if (lostSuccess || !ahead(currentFinal.measured.progress, bestFinal.measured.progress)) best = fallback;
-      } else {
-        const margin = rateGaResult(objective, currentFinal.measured, bestFinal.measured, finalRuns, true);
-        const tieBroken = bestFinal.measured.rate === currentFinal.measured.rate && ahead(currentFinal.measured.progress, bestFinal.measured.progress);
-        if (!(margin.gain > margin.standardError) && !tieBroken) best = fallback;
+        return !lostSuccess && ahead(currentFinal.measured.progress, bestFinal.measured.progress);
       }
+      const margin = rateGaResult(objective, currentFinal.measured, bestFinal.measured, finalRuns, true);
+      const tieBroken = bestFinal.measured.rate === currentFinal.measured.rate && ahead(currentFinal.measured.progress, bestFinal.measured.progress);
+      return margin.gain > margin.standardError || tieBroken;
+    };
+    // Without a guard only the top finalist is judged. With a guard every finalist that passes the rule is a candidate for
+    // the re-confirmation, in final-score order.
+    const accepted = (guard ? ranked : ranked.slice(0, 1)).filter(({ final }) => replacesFallback(final)).map(({ entry }) => entry);
+    best = accepted[0] ?? fallback;
+    // SpecRef: 9.1.3 | 2-3-2 `objectiveGuard` Re-confirmation | the final runs pick the finalist that is best on `objective`
+    // among those reaching the guard, so its guard rate there is biased upward, and a build just above the minimum often
+    // misses it in the verification (`worse`). Each accepted finalist, in order, is measured on the guard once more on a fresh
+    // seed with `verifyRuns` runs; the first one that reaches the guard there is the result. When none does, the first stays.
+    if (guard && accepted.length > 0) {
+      const rates: number[] = [];
+      let chosen: number | null = null;
+      for (const [index, entry] of accepted.slice(0, GUARD_RECONFIRM_CANDIDATES).entries()) {
+        const rate = (await guardOn(entry.decoded.state, verifyRuns, reconfirmSeed)).rate;
+        rates.push(round4(rate));
+        if (rate >= guard.minimum) { chosen = index; best = entry; break; }
+      }
+      guardReconfirm = { runs: verifyRuns, rates, chosen };
     }
   } else {
     best = fallback;
@@ -1533,9 +1604,9 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
     const outcome = await runLevelProbe({
       model, state, partyIndex, probe, applied, genome: applied ? best.genome : model.current, build: applied ? bestState : state,
       confirmRuns: request.parameters.confirmRuns, quickRuns: request.parameters.quickRuns, quickSeed, verifySeed, seed, deadline, now: dependencies.now,
-      simulate: (target, runs, simulationSeed) => meter.time(probeCostKey, runs, async () => {
+      simulate: (target, runs, simulationSeed, options) => meter.time(options?.onlyRoom ? 'gateDamage' : probeCostKey, runs, async () => {
         evaluations += 1;
-        return await dependencies.simulate(target, partyIndex, runs, simulationSeed) as ExpeditionSimulationResult;
+        return await dependencies.simulate(target, partyIndex, runs, simulationSeed, options) as ExpeditionSimulationResult;
       }),
       searchMs: probeSearchMs,
       search: async (levelState, until, level) => {
@@ -1598,6 +1669,8 @@ export async function runGaSearch(state: GameState, partyIndex: number, request:
       lastImprovementGeneration,
       quickSignal: startSignal === null ? null : { start: startSignal, switchedAt },
       guardStats,
+      guardReconfirm,
+      deityTaken: changeSummary.length > 0 ? describeDeityTaken(state, bestState, partyIndex) : null,
       elapsedSeconds,
       ...describeForecastSettings(settings),
       ...(seeds ? { seeds, seedBaseline } : {}),
@@ -1627,7 +1700,7 @@ interface LevelProbeInput {
   seed: number;
   deadline: number;
   now: () => number;
-  simulate: (target: GameState, runs: number, seed: number) => Promise<ExpeditionSimulationResult>;
+  simulate: (target: GameState, runs: number, seed: number, options?: ExpeditionSimulationOptions) => Promise<ExpeditionSimulationResult>;
   /** `fill: search`: the time all probed levels share, and the search of one probed level's build until `until`. */
   searchMs: number;
   search: (levelState: GameState, until: number, level: number) => Promise<GameState>;
@@ -1640,6 +1713,9 @@ const LEVEL_PROBE_SEARCH_QUICK_RUNS = 100;
 const LEVEL_PROBE_SEARCH_CONFIRM_RUNS = 300;
 
 const round2 = (value: number): number => Math.round(value * 100) / 100;
+
+/** The room a `conquest` goal is won in: the elite gate room of its floor, or the boss room (a boss gate opens the boss). */
+const goalGateRoom = (goal: LevelProbeGoal): GateRoom => (goal.kind === 'eliteGate' && goal.floor !== null ? { floorNumber: goal.floor, roomInFloor: 4 } : { floorNumber: 6, roomInFloor: 4 });
 
 /** A copy of the state with one party changed. */
 function withParty(state: GameState, partyIndex: number, change: Partial<Party>): GameState {
@@ -1662,17 +1738,26 @@ async function runLevelProbe(input: LevelProbeInput): Promise<Record<string, unk
     return measureObjective(conquest ? 'success' : 'minDefeat', await input.simulate(prepared, runs, simulationSeed), 0);
   };
   const expectedRuns = (measured: ObjectiveMeasure) => (goal ? expectedRunsToGoal(measured.rate, goal.required, goal.current) : null);
+  // SpecRef: 9.1.3 | 2-3-2 `levelProbe` `gateRoom` | `conquest` also fights the goal's gate room alone, at full HP: the route
+  // rate of a greedy fill can stay at 0 while the room itself is already winnable (a later gate-focused search then wins it).
+  const gateSettings: ForecastSettings | null = goal ? { gateRoom: goalGateRoom(goal), startHp: null } : null;
+  const gateAt = async (target: GameState, runs: number, simulationSeed: number): Promise<ObjectiveMeasure | null> => {
+    if (!gateSettings) return null;
+    const prepared = prepareObjectiveState(target, partyIndex, 'gateDamage', gateSettings);
+    return measureObjective('gateDamage', await input.simulate(prepared, runs, simulationSeed, objectiveSimulationOptions('gateDamage', gateSettings)), 0);
+  };
   const meets = (measured: ObjectiveMeasure): boolean => {
     if (!conquest) return measured.rate * 100 <= probe.maxDefeat;
     const runs = expectedRuns(measured);
     return runs !== null && runs <= probe.runBudget;
   };
-  const point = (level: number, filledSlots: number, measured: ObjectiveMeasure) => {
+  const point = (level: number, filledSlots: number, measured: ObjectiveMeasure, gate: ObjectiveMeasure | null) => {
     const runs = expectedRuns(measured);
     return {
       level, baseSlots: baseSlotsAt(level), filledSlots, rate: round2(measured.rate * 100),
       standardError: round2(Math.sqrt(measured.variance / input.confirmRuns) * 100),
       expectedRuns: runs === null ? null : round2(runs), experienceToLevel: experienceToLevel(party, level),
+      gateRoom: gate && gateSettings?.gateRoom ? { room: gateRoomLabel(gateSettings.gateRoom), share: round4(gate.rate), winRate: round4(gate.winRate ?? 0) } : null,
     };
   };
   const outOfTime = () => input.now() >= input.deadline;
@@ -1689,7 +1774,7 @@ async function runLevelProbe(input: LevelProbeInput): Promise<Record<string, unk
   else {
     const current = await measureAt(input.build, input.confirmRuns, input.verifySeed);
     if (probe.mode === 'auto' && meets(current)) return null;
-    points.push(point(party.level, 0, current));
+    points.push(point(party.level, 0, current, await gateAt(input.build, input.confirmRuns, input.verifySeed)));
     if (meets(current)) levelNeeded = party.level;
   }
   const random = createRandom(deriveSeed(input.seed, 5));
@@ -1702,7 +1787,7 @@ async function runLevelProbe(input: LevelProbeInput): Promise<Record<string, unk
       const chosen = await input.search(withParty(input.build, partyIndex, { level }), until, level);
       if (outOfTime()) { truncated = true; break; }
       const measured = await measureAt(chosen, input.confirmRuns, input.verifySeed);
-      points.push(point(level, filledSlotsOf(chosen), measured));
+      points.push(point(level, filledSlotsOf(chosen), measured, await gateAt(chosen, input.confirmRuns, input.verifySeed)));
       if (meets(measured)) { levelNeeded = level; break; }
       continue;
     }
@@ -1719,18 +1804,19 @@ async function runLevelProbe(input: LevelProbeInput): Promise<Record<string, unk
     const candidates = (unique.length > 0 ? unique : [input.genome]).map((genome) => decode(levelModel, genome, random).state);
     let chosen = candidates[0];
     if (candidates.length > 1) {
-      // The fill that scores better on the quick runs: more successes for `conquest`, fewer defeats for `farming`.
-      let bestScore = -Infinity;
+      // The fill that scores better on the quick runs: more successes for `conquest`, fewer defeats for `farming`. For
+      // `conquest`, the gate room's share breaks a tie (a route rate of 0 for both fills, for example).
+      let bestScore = [-Infinity, -Infinity];
       for (const candidate of candidates) {
         if (outOfTime()) break;
         const measured = await measureAt(candidate, input.quickRuns, input.quickSeed);
-        const score = conquest ? measured.rate : -measured.rate;
-        if (score > bestScore) { bestScore = score; chosen = candidate; }
+        const score = conquest ? [measured.rate, (await gateAt(candidate, input.quickRuns, input.quickSeed))?.rate ?? 0] : [-measured.rate, 0];
+        if (score[0] > bestScore[0] || (score[0] === bestScore[0] && score[1] > bestScore[1])) { bestScore = score; chosen = candidate; }
       }
     }
     if (outOfTime()) { truncated = true; break; }
     const measured = await measureAt(chosen, input.confirmRuns, input.verifySeed);
-    points.push(point(level, filledSlotsOf(chosen), measured));
+    points.push(point(level, filledSlotsOf(chosen), measured, await gateAt(chosen, input.confirmRuns, input.verifySeed)));
     if (meets(measured)) { levelNeeded = level; break; }
   }
   return {
@@ -1751,6 +1837,7 @@ async function runLevelProbe(input: LevelProbeInput): Promise<Record<string, unk
 
 // SpecRef: 9.1.3 | Commit | 3-3-2 party/{p}/applyBuildChanges
 export const BUILD_APPLY_WARNING_KEY = 'api.warning.applyBuildChanges.unconfirmedImprovement';
+export const BUILD_APPLY_DEITY_WARNING_KEY = 'api.warning.applyBuildChanges.deityTaken';
 
 /** The endpoints `changes` may use: the 9.1.3 `changeSummary` order list. */
 const CHANGE_ENDPOINT = /^commit\/build\/(?:party\/\d+|character\/\d+\/(?:removeEquipment|changeBuild|equip|jewelRemove|jewelAttach))$/;
@@ -1780,7 +1867,7 @@ function parseChanges(value: unknown): GaChangeEntry[] {
  * and the current save, and a given `verdict` can reject the request (`noChange`) or require confirmation (`noisy`, `worse`).
  */
 export function applyBuildChanges(state: GameState, partyNumber: number, parameters: Record<string, unknown>, context: ApiV1CommitContext): { state: GameState; data: Record<string, unknown> } {
-  const allowed = new Set(['changes', 'basis', 'verdict', 'autoEquipmentMode', 'simulation', 'confirmation']);
+  const allowed = new Set(['changes', 'basis', 'verdict', 'autoEquipmentMode', 'simulation', 'confirmation', 'onStale']);
   const unknown = Object.keys(parameters).find((key) => !allowed.has(key));
   if (unknown !== undefined) invalid(`${unknown}.unknown_member`);
   const { basis, verdict, simulation, confirmation } = parameters;
@@ -1792,39 +1879,70 @@ export function applyBuildChanges(state: GameState, partyNumber: number, paramet
   if (typeof simulation !== 'boolean') invalid('simulation');
   if (confirmation !== undefined && confirmation !== 'yes' && confirmation !== 'no') invalid('confirmation');
   if (simulation && confirmation !== undefined) invalid('confirmation_with_simulation');
+  // SpecRef: 9.1.3 | 3-3-2 `onStale` | `reject` (default) or `repair`.
+  const onStale = parameters.onStale === undefined ? 'reject' : parameters.onStale;
+  if (onStale !== 'reject' && onStale !== 'repair') invalid('onStale');
+  const repair = onStale === 'repair';
   const partyIndex = state.parties.findIndex((party) => party.id === partyNumber);
   if (partyIndex < 0) throw new Error('not_found');
 
   if (verdict === 'noChange') throw new Error('illegal_action:build_no_change');
-  if (basis !== undefined && buildBasis(state, partyIndex, changes) !== basis) throw new Error('illegal_action:build_basis_stale');
+  const basisStale = basis !== undefined && buildBasis(state, partyIndex, changes) !== basis;
+  if (basisStale && !repair) throw new Error('illegal_action:build_basis_stale');
 
   const confirmationRequired = verdict === 'worse' || verdict === 'noisy';
-  const warnings = confirmationRequired ? [{ key: BUILD_APPLY_WARNING_KEY, args: { verdict: verdict as string } }] : [];
+  const verdictWarnings = confirmationRequired ? [{ key: BUILD_APPLY_WARNING_KEY, args: { verdict: verdict as string } }] : [];
   const changedIds = [...new Set(changes.map((entry) => Number(entry.endpoint.match(CHARACTER_ENDPOINT)?.[1])).filter((id) => Number.isInteger(id) && id > 0))];
   const equipmentIds = new Set(changes.map((entry) => Number(entry.endpoint.match(EQUIPMENT_ENDPOINT)?.[1])).filter((id) => Number.isInteger(id) && id > 0));
 
   // `considerItemsScope: global` results also change characters of other parties, so each character is looked up on its own party.
   const partyOf = (source: GameState, characterId: number) => source.parties.findIndex((entry) => entry.characters.some((character) => character.id === characterId));
   // Every entry runs against a private history bag: the internal steps record nothing (Spec 9.1.3, 3-3-2 Undo and Redo).
-  const run = (source: GameState): GameState => {
+  // With `onStale: repair`, an entry the save no longer allows is repaired or skipped instead of rejecting the request.
+  const run = (source: GameState): { state: GameState; applied: GaChangeEntry[]; repairs: BuildRepair[] } => {
     let next = source;
-    for (const entry of changes) next = applyApiV1Commit(entry.endpoint, next, entry.parameters, { ...context, equipmentHistory: {} }).state;
+    const applied: GaChangeEntry[] = [];
+    const repairs: BuildRepair[] = [];
+    const commit = (entry: GaChangeEntry) => { next = applyApiV1Commit(entry.endpoint, next, entry.parameters, { ...context, equipmentHistory: {} }).state; applied.push(entry); };
+    changes.forEach((entry, index) => {
+      try { commit(entry); } catch (error) {
+        const code = String((error as Error).message);
+        if (!repair || !code.startsWith('illegal_action:')) throw error;
+        const reason = code.slice('illegal_action:'.length);
+        const fixed = repairBuildChange(next, entry, reason);
+        if (fixed) {
+          try { commit(fixed.entry); repairs.push({ index, endpoint: entry.endpoint, outcome: fixed.outcome, reason, parameters: fixed.entry.parameters }); return; } catch (retry) {
+            if (!String((retry as Error).message).startsWith('illegal_action:')) throw retry;
+          }
+        }
+        repairs.push({ index, endpoint: entry.endpoint, outcome: 'skipped', reason, parameters: null });
+      }
+    });
     for (const id of equipmentIds) {
       next = gameReducer(next, { type: 'UPDATE_CHARACTER', partyIndex: partyOf(next, id), characterId: id, updates: { autoEquipmentMode: mode === 'SEMI' ? 1 : 0 } });
     }
-    return next;
+    return { state: next, applied, repairs };
   };
   const statusOf = (source: GameState) => changedIds.map((characterId) => {
     const party = source.parties[partyOf(source, characterId)];
     const index = party.characters.findIndex((entry) => entry.id === characterId);
     return { characterId, calculatedStatus: buildCalculatedStatus(party.characters[index], computePartyStats(party).characterStats[index], party.level) };
   });
-  const report = (applied: GaChangeEntry[], source: GameState) => ({ applied, confirmationRequired, warnings, calculatedStatus: statusOf(source) });
+  // SpecRef: 9.1.3 | 3-3-2 Return `warnings` | a deity the changes take from another party is reported with what it gets instead.
+  const deityWarnings = (source: GameState) => {
+    const taken = describeDeityTaken(state, source, partyIndex);
+    return taken ? [{ key: BUILD_APPLY_DEITY_WARNING_KEY, args: taken }] : [];
+  };
+  const report = (outcome: { state: GameState; applied: GaChangeEntry[]; repairs: BuildRepair[] }) => ({
+    applied: outcome.applied, confirmationRequired, warnings: [...verdictWarnings, ...deityWarnings(outcome.state)], calculatedStatus: statusOf(outcome.state),
+    ...(repair ? { basisStale: basis === undefined ? null : basisStale, repairs: outcome.repairs } : {}),
+  });
 
-  if (simulation) return { state, data: report(changes, run(state)) };
-  if (confirmation === 'no') return { state, data: report([], state) };
+  if (simulation) return { state, data: report(run(state)) };
+  if (confirmation === 'no') return { state, data: report({ state, applied: [], repairs: [] }) };
   if (confirmationRequired && confirmation !== 'yes') invalid('confirmation_required');
-  const next = run(state);
+  const outcome = run(state);
+  const next = outcome.state;
   for (const characterId of changedIds) {
     const before = state.parties[partyOf(state, characterId)].characters.find((entry) => entry.id === characterId)!;
     const after = next.parties[partyOf(next, characterId)].characters.find((entry) => entry.id === characterId)!;
@@ -1832,5 +1950,43 @@ export function applyBuildChanges(state: GameState, partyNumber: number, paramet
     if (sameEquipmentSnapshot(snapshot, snapshotCharacterEquipment(after, context.simulatedAt))) continue;
     context.equipmentHistory[String(characterId)] = recordEquipmentState(context.equipmentHistory[String(characterId)] ?? { undo: [], redo: [] }, snapshot);
   }
-  return { state: next, data: report(changes, next) };
+  return { state: next, data: report(outcome) };
+}
+
+// SpecRef: 9.1.3 | 3-3-2 `onStale` `repair` | `repairs`: what happened to each entry the save no longer allowed.
+interface BuildRepair { index: number; endpoint: string; outcome: 'substituted' | 'trimmed' | 'skipped'; reason: string; parameters: Record<string, unknown> | null }
+
+const ITEM_FORMAT = /^([01])\/(\d+)\/([0-6])\/(\d+)$/;
+
+/**
+ * The repaired form of an entry the save rejected with `illegal_action:<reason>`, or null to skip it (Spec 9.1.3, 3-3-2
+ * `onStale`): an `equip` whose copy is gone takes another owned copy of the same item and Super Rare title (the same
+ * enhancement first, otherwise the highest); a `removeEquipment` or `jewelRemove` keeps the slots that still hold an item or
+ * a Jewel; a party entry whose deity is no longer allowed keeps its `order`. Every other rejected entry is skipped.
+ */
+function repairBuildChange(state: GameState, entry: GaChangeEntry, reason: string): { entry: GaChangeEntry; outcome: 'substituted' | 'trimmed' } | null {
+  const characterId = Number(entry.endpoint.match(CHARACTER_ENDPOINT)?.[1]);
+  const character = state.parties.flatMap((party) => party.characters).find((candidate) => candidate.id === characterId);
+  const action = entry.endpoint.split('/').at(-1);
+  if (action === 'equip' && reason === 'item_not_owned') {
+    const match = String(entry.parameters.targetEquipment).match(ITEM_FORMAT);
+    if (!match) return null;
+    const [itemId, enhancement, superRare] = [Number(match[2]), Number(match[3]), Number(match[4])];
+    const copies = Object.values(state.global.inventory)
+      .filter((stack) => stack.status === 'owned' && stack.count > 0 && stack.item.id === itemId && stack.item.superRare === superRare)
+      .sort((a, b) => Number(b.item.enhancement === enhancement) - Number(a.item.enhancement === enhancement) || b.item.enhancement - a.item.enhancement);
+    if (copies.length === 0) return null;
+    return { entry: { endpoint: entry.endpoint, parameters: { ...entry.parameters, targetEquipment: itemFormatOf(copies[0].item) } }, outcome: 'substituted' };
+  }
+  if (character && ((action === 'removeEquipment' && reason === 'slot_empty') || (action === 'jewelRemove' && reason === 'no_jewel_attached'))) {
+    const target = entry.parameters.targetEquipment;
+    const slots = (Array.isArray(target) ? target : [target]).map(Number)
+      .filter((slot) => (action === 'removeEquipment' ? Boolean(character.equipment[slot]) : Boolean(character.equipment[slot]?.jewel)));
+    return slots.length > 0 ? { entry: { endpoint: entry.endpoint, parameters: { ...entry.parameters, targetEquipment: slots } }, outcome: 'trimmed' } : null;
+  }
+  if (/^commit\/build\/party\/\d+$/.test(entry.endpoint) && (reason === 'deity_in_use' || reason === 'deity_locked') && entry.parameters.order !== undefined) {
+    const { deityId: _deity, ...rest } = entry.parameters;
+    return { entry: { endpoint: entry.endpoint, parameters: rest }, outcome: 'trimmed' };
+  }
+  return null;
 }

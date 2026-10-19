@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createFreshGameState, gameReducer, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
-import { compareGuarded, deriveSeed, GA_EFFORT_PRESETS, isRareSuccess, measure, measureSecondObjective, parseGaSearchRequest, rateGaResult, runGaSearch, summarizeVerification, type GaChangeEntry, type GaSearchDependencies, type GaSearchOutcome } from '../../src/api/v1/gaSearch';
+import { assignPartyDeity, buildBasis, compareGuarded, deriveSeed, describeDeityTaken, GA_EFFORT_PRESETS, isRareSuccess, measure, measureSecondObjective, parseGaSearchRequest, planGaChangeSummary, rateGaResult, runGaSearch, summarizeVerification, type GaChangeEntry, type GaSearchDependencies, type GaSearchOutcome } from '../../src/api/v1/gaSearch';
 import { forecastScope, measureObjective, objectiveSimulationOptions, prepareObjectiveState, routeRoomCount } from '../../src/api/v1/objectiveMeasure';
 import { buildApiV1ReadData } from '../../src/api/v1/readModels';
 import { buildSimulationRunData } from '../../src/api/v1/simulationView';
@@ -150,7 +150,7 @@ assert.equal(rateGaResult('success', { rate: 0, variance: 0 }, { rate: 0, varian
   // The goal is the next closed Clear-Gate of the destination.
   assert.deepEqual(conquestGoal(base.parties[0]), { kind: 'eliteGate', dungeonId: base.parties[0].selectedDungeonId, floor: 1, required: 7, current: 0 });
 
-  type Probe = { build: string; purpose: string; goal: unknown; target: Record<string, number>; fromLevel: number; steps: string; points: { level: number; baseSlots: number; filledSlots: number; rate: number; expectedRuns: number | null }[]; levelNeeded: number | null; truncated: boolean };
+  type Probe = { build: string; purpose: string; goal: unknown; target: Record<string, number>; fromLevel: number; steps: string; points: { level: number; baseSlots: number; filledSlots: number; rate: number; expectedRuns: number | null; gateRoom: { room: string; share: number; winRate: number } | null }[]; levelNeeded: number | null; truncated: boolean };
   // `always`: the current level first, then the next slot unlock level with its new slots filled from the free items.
   const always = (await search(base, { targets: equipmentTargets, gaParameters: small, levelProbe: { mode: 'always' } })).data.levelProbe as Probe;
   assert.equal(always.purpose, 'conquest');
@@ -163,6 +163,9 @@ assert.equal(rateGaResult('success', { rate: 0, variance: 0 }, { rate: 0, varian
   assert.deepEqual(always.points.map((entry) => [entry.level, entry.baseSlots, entry.filledSlots]), [[1, 1, 0], [3, 2, 6]]);
   assert.ok(always.points[0].expectedRuns! > 10 && always.points[1].expectedRuns! <= 10);
   assert.equal(always.levelNeeded, 3);
+  // `conquest` also fights the goal's gate room alone at each point: here the 1st Elite gate's room, 1f-4.
+  assert.ok(always.points.every((entry) => entry.gateRoom !== null && entry.gateRoom.room === '1f-4'
+    && entry.gateRoom.share >= 0 && entry.gateRoom.share <= 1 && entry.gateRoom.winRate >= 0 && entry.gateRoom.winRate <= entry.gateRoom.share + 1e-9), JSON.stringify(always.points));
   assert.deepEqual((await search(base, { targets: equipmentTargets, gaParameters: small, levelProbe: { mode: 'always' } })).data.levelProbe, always, 'a fixed seed repeats the probe');
   assert.deepEqual(base, baseBefore, 'the probe changes no state');
   // `off` returns null; `auto` returns null only when the target is met at the current level.
@@ -173,7 +176,7 @@ assert.equal(rateGaResult('success', { rate: 0, variance: 0 }, { rate: 0, varian
   const farming = (await search(base, { targets: equipmentTargets, gaParameters: small, levelProbe: { mode: 'always', purpose: 'farming', steps: 'level', count: 2 } })).data.levelProbe as Probe;
   assert.equal(farming.goal, null);
   assert.deepEqual(farming.target, { maxDefeat: 10 });
-  assert.ok(farming.points.every((entry) => entry.expectedRuns === null));
+  assert.ok(farming.points.every((entry) => entry.expectedRuns === null && entry.gateRoom === null), '`farming` has no goal room');
   assert.ok(farming.points.length >= 1 && farming.points.length <= 3);
   assert.equal((await search(base, { targets: equipmentTargets, gaParameters: small, levelProbe: { purpose: 'farming' } })).data.levelProbe, null, '`auto` skips a build that already meets the target');
   // A `gateDamage` search gets the same probe: the route to the goal, not the battle-only share.
@@ -221,6 +224,50 @@ fails({ buildResultId: 'old-result', simulation: true }, 'invalid_request:buildR
   // Progression that leaves the build alone (time, gold) does not change it.
   const richer: GameState = { ...base, global: { ...base.global, gold: base.global.gold + 1000 } };
   applyApiV1Commit(path, richer, { ...searched, simulation: true }, context());
+  // Neither do Inventory or Jewel counts: a new drop of an item the result equips, or a new Jewel, keeps it applicable
+  // (each entry is still validated when it is applied).
+  const equipEntry = (searched.changes as GaChangeEntry[]).find((entry) => entry.endpoint.endsWith('/equip'))!;
+  const [, itemId, enhancement, superRare] = String(equipEntry.parameters.targetEquipment).split('/');
+  const dropped = structuredClone(base);
+  dropped.global.inventory[`${itemId}-${enhancement}-${superRare}`].count += 1;
+  dropped.global.jewels = { ...dropped.global.jewels, 'might:1': (dropped.global.jewels['might:1'] ?? 0) + 1 };
+  assert.equal(buildBasis(dropped, 0, searched.changes as GaChangeEntry[]), (outcome.data as SearchData).basis);
+  applyApiV1Commit(path, dropped, { ...searched, simulation: true }, context());
+}
+{
+  // SpecRef: 9.1.3 | 3-3-2 `onStale` | `reject` (default) rejects an entry the save no longer allows; `repair` repairs or skips it.
+  fails({ ...searched, simulation: true, onStale: 'keep' }, 'invalid_request:onStale');
+  const changes = searched.changes as GaChangeEntry[];
+  const equipIndex = changes.findIndex((entry) => entry.endpoint.endsWith('/equip'));
+  const [, itemId, enhancement, superRare] = String(changes[equipIndex].parameters.targetEquipment).split('/').map(Number);
+  const key = `${itemId}-${enhancement}-${superRare}`;
+  // The equipped copy is gone, but the same item at another enhancement is owned.
+  const other = enhancement === 6 ? 5 : enhancement + 1;
+  const moved = structuredClone(base);
+  const stack = moved.global.inventory[key];
+  moved.global.inventory[`${itemId}-${other}-${superRare}`] = { ...structuredClone(stack), item: { ...stack.item, enhancement: other }, count: 1 };
+  delete moved.global.inventory[key];
+  fails({ ...searched, simulation: false }, 'illegal_action:item_not_owned', moved);
+  const repaired = applyApiV1Commit(path, moved, { ...searched, simulation: false, onStale: 'repair' }, context());
+  const repairs = repaired.data.repairs as { index: number; outcome: string; reason: string; parameters: Record<string, unknown> | null }[];
+  assert.equal(repaired.data.basisStale, false);
+  assert.deepEqual(repairs[0], { index: equipIndex, endpoint: changes[equipIndex].endpoint, outcome: 'substituted', reason: 'item_not_owned', parameters: { ...changes[equipIndex].parameters, targetEquipment: `0/${itemId}/${other}/${superRare}` } });
+  assert.ok(repairs.slice(1).every((entry) => entry.outcome === 'skipped' || entry.outcome === 'substituted'), JSON.stringify(repairs));
+  const repairedCharacter = repaired.state.parties[0].characters.find((entry) => entry.id === Number(changes[equipIndex].endpoint.split('/')[3]))!;
+  assert.equal(repairedCharacter.equipment[changes[equipIndex].parameters.targetSlot as number]?.enhancement, other);
+  assert.deepEqual((repaired.data.applied as GaChangeEntry[]).length, changes.length - repairs.filter((entry) => entry.outcome === 'skipped').length);
+  // No copy of the item at all: the entry is skipped, and the rest still applies.
+  const gone = structuredClone(base);
+  delete gone.global.inventory[key];
+  const skipped = applyApiV1Commit(path, gone, { ...searched, simulation: true, onStale: 'repair' }, context());
+  assert.deepEqual((skipped.data.repairs as { index: number; outcome: string }[])[0], { index: equipIndex, endpoint: changes[equipIndex].endpoint, outcome: 'skipped', reason: 'item_not_owned', parameters: null });
+  // A stale `basis` is reported, not rejected; without `basis` it is `null`. A clean apply reports no repairs.
+  const reordered = gameReducer(base, { type: 'REORDER_PARTY_CHARACTER', partyIndex: 0, fromIndex: 0, toIndex: 1 });
+  assert.equal(applyApiV1Commit(path, reordered, { ...searched, simulation: true, onStale: 'repair' }, context()).data.basisStale, true);
+  const { basis: _basis, ...unchecked } = searched;
+  const clean = applyApiV1Commit(path, base, { ...unchecked, simulation: true, onStale: 'repair' }, context()).data;
+  assert.deepEqual([clean.basisStale, clean.repairs], [null, []]);
+  assert.equal(applyApiV1Commit(path, base, { ...searched, simulation: true }, context()).data.repairs, undefined, '`repairs` only with `repair`');
 }
 {
   // A given `noisy` or `worse` verdict needs `confirmation: "yes"`; `no` cancels without a change. No verdict, no confirmation.
@@ -338,6 +385,13 @@ fails({ buildResultId: 'old-result', simulation: true }, 'invalid_request:buildR
     let message = '';
     try { applyApiV1Commit(path, tampered, { ...applyOf(result), simulation: true }, context()); } catch (error) { message = String(error); }
     assert.ok(message.includes('illegal_action:build_basis_stale'), message);
+    // A donor slot the result does not take is not build-relevant (Auto Equipment of a side party, for example).
+    const takenSlots = new Map(removals.map((entry) => [characterOf(entry), entry.parameters.targetEquipment as number[]]));
+    const kept = donorParty.characters.flatMap((character) => character.equipment.map((item, slot) => (item && takenSlots.has(character.id) && !takenSlots.get(character.id)!.includes(slot) ? [character.id, slot] as const : null))).find(Boolean);
+    if (kept) {
+      const changedElsewhere = gameReducer(donorState, { type: 'EQUIP_ITEM', partyIndex: 1, characterId: kept[0], slotIndex: kept[1], itemKey: null });
+      applyApiV1Commit(path, changedElsewhere, { ...applyOf(result), simulation: true }, context());
+    }
   }
 
   // Locked equipment of a target is never changed, and locked equipment elsewhere is never taken (`global`).
@@ -389,6 +443,30 @@ fails({ buildResultId: 'old-result', simulation: true }, 'invalid_request:buildR
   // `basis` goes stale when the holder no longer holds that deity.
   const released = gameReducer(held, { type: 'UPDATE_PARTY_DEITY', partyIndex: 1, deityName: 'None' });
   fails({ ...applyOf(taken), simulation: true }, 'illegal_action:build_basis_stale', released);
+  // `deityTaken` names the party, its deity, and what it gets: nothing, as party 1 had no deity to leave.
+  assert.deepEqual(taken.data.deityTaken, { partyId: 2, deityId: 'fortification', newDeityId: 'none' });
+  assert.equal((await deityRun('unoccupiedDeities')).data.deityTaken, null);
+
+  // SpecRef: 9.1.3 | 2-3-2 `allDeities` | a held deity is swapped: party 1 (Fertility) takes Fortification, party 2 gets Fertility.
+  const fertility = getDeityId('Goddess of Fertility');
+  const faithful: GameState = { ...held, parties: [{ ...own, deity: { ...own.deity, name: 'Goddess of Fertility' } }, holder], global: { ...held.global, unlockedDeities: ['God of Fortification', 'Goddess of Fertility'] } };
+  const swapped = assignPartyDeity(faithful, 0, 'fortification');
+  assert.deepEqual(swapped.parties.map((party) => getDeityId(party.deity.name)), ['fortification', fertility]);
+  const swapSummary = planGaChangeSummary(faithful, 0, swapped, dependencies().commitContext);
+  assert.deepEqual(swapSummary, [
+    { endpoint: 'commit/build/party/2', parameters: { deityId: 'none' } },
+    { endpoint: 'commit/build/party/1', parameters: { deityId: 'fortification' } },
+    { endpoint: 'commit/build/party/2', parameters: { deityId: fertility } },
+  ], 'the holder is freed, the party takes the deity, and the holder gets the one the party left');
+  assert.deepEqual(describeDeityTaken(faithful, swapped, 0), { partyId: 2, deityId: 'fortification', newDeityId: fertility });
+  const swapApplied = applyApiV1Commit(path, faithful, { changes: swapSummary, basis: buildBasis(faithful, 0, swapSummary), simulation: false }, context());
+  assert.deepEqual(swapApplied.state.parties.map((party) => getDeityId(party.deity.name)), ['fortification', fertility]);
+  assert.deepEqual(swapApplied.data.warnings, [{ key: 'api.warning.applyBuildChanges.deityTaken', args: { partyId: 2, deityId: 'fortification', newDeityId: fertility } }]);
+  // Taking the old deity back returns the taken one, so a side party's deity survives a round trip of the main party.
+  const back = assignPartyDeity(swapApplied.state, 0, fertility);
+  assert.deepEqual(back.parties.map((party) => getDeityId(party.deity.name)), [fertility, 'fortification']);
+  // A result that takes no deity has no deity warning.
+  assert.deepEqual(applyApiV1Commit(path, base, { ...searched, simulation: true }, context()).data.warnings, []);
 }
 
 // ---------------- Empty slots ----------------
@@ -606,6 +684,25 @@ rejects({ targets: equipmentTargets, gaParameters: { timeBudgetSeconds: 601 } },
   assert.deepEqual([boss.verification.crossCheck.objective, boss.verification.crossCheck.minimum, reached.before], ['success', 0.5, guardBefore.rate >= 0.5]);
   assert.equal(reached.after, boss.verification.crossCheck.after >= 0.5);
   assert.equal((boss.verification.crossCheck as unknown as { winRate: unknown }).winRate, null, 'no win rate unless the cross-check is gateDamage');
+  // SpecRef: 9.1.3 | 2-3-2 `guardReconfirm` | the accepted finalists' guard rates on a fresh seed, in order, until one reaches it.
+  type Reconfirm = { runs: number; rates: number[]; chosen: number | null } | null;
+  const checkReconfirm = (value: unknown, minimum: number) => {
+    const reconfirm = value as Reconfirm;
+    if (reconfirm === null) return;
+    assert.equal(reconfirm.runs, small.verifyRuns);
+    assert.ok(reconfirm.rates.length >= 1 && reconfirm.rates.length <= 3, JSON.stringify(reconfirm));
+    if (reconfirm.chosen === null) assert.ok(reconfirm.rates.every((rate) => rate < minimum), JSON.stringify(reconfirm));
+    else assert.ok(reconfirm.chosen === reconfirm.rates.length - 1 && reconfirm.rates[reconfirm.chosen] >= minimum && reconfirm.rates.slice(0, -1).every((rate) => rate < minimum), JSON.stringify(reconfirm));
+  };
+  checkReconfirm((boss as unknown as { guardReconfirm: unknown }).guardReconfirm, 0.5);
+  assert.equal(outcome.data.guardReconfirm, null, 'no re-confirmation without a guard');
+  for (const minimum of [0.05, 0.3, 0.9]) {
+    const guardedSearch = await search(base, { targets: equipmentTargets, objective: 'gateDamage', gateRoom: 'boss', objectiveGuard: { success: minimum }, gaParameters: { ...small, seed: 5 } });
+    checkReconfirm(guardedSearch.data.guardReconfirm, minimum);
+    const reconfirm = guardedSearch.data.guardReconfirm as Reconfirm;
+    // With a re-confirmed guard reached, the result is the chosen finalist and its verdict is not lost to the guard.
+    if (reconfirm?.chosen !== null && reconfirm !== null) assert.ok((guardedSearch.data.changeSummary as unknown[]).length > 0);
+  }
   assert.equal(guardBefore.winRate, undefined);
 }
 

@@ -411,9 +411,9 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
         return failure(409, 'stale_revision', 'The supplied revision is stale.', { currentRevision: snapshot.control.revisionHighWater });
       }
       // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `numberOfRun` is optional, default 100, an integer 1 ~ 1000.
-      // `objective`, `gateRoom`, `startHp`, and `seed` (2-2-3) travel the same way.
+      // `objective`, `gateRoom`, `startHp`, `seed`, and the expedition overrides (2-2-3) travel the same way.
       const readParameters = operation.endsWith('/simulationRun')
-        ? { ...parameters, ...Object.fromEntries((['numberOfRun', 'objective', 'gateRoom', 'startHp', 'seed'] as const).filter((key) => request[key] !== undefined).map((key) => [key, request[key]])) }
+        ? { ...parameters, ...Object.fromEntries((['numberOfRun', 'objective', 'gateRoom', 'startHp', 'seed', 'destination', 'depthLimit', 'difficultyOffset'] as const).filter((key) => request[key] !== undefined).map((key) => [key, request[key]])) }
         : parameters;
       try {
         const data = await buildApiV1ReadData(operation, snapshot.state, readParameters, {

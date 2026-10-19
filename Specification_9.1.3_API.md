@@ -528,6 +528,14 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * Format: `<sideQuestId>-<successfulCount>/<cancelledCount>/<failedCount>/<totalCount>` for each side quest.
         * `cancelledCount`: Number of side quests cancelled by a player action, such as starting a sortie.
         * `failedCount`: Number of side quests that ended without achieving the required goal.
+    * `dropStatistics`
+      * The party's own drops since its last `resetStatistics` (3-2-4). The Inventory does not say which party dropped an item, so this is how a farming party is judged.
+      * Format: `{ items, superRare, autoSold, byEnhancement }`
+        * `items`: rewards the party's expeditions kept (a Defeat keeps none).
+        * `superRare`: how many of them have a Super Rare title.
+        * `autoSold`: drops Auto Sell sold during the party's expeditions.
+        * `byEnhancement`: seven counts, the kept rewards at `+0` .. `+6`.
+      * Example: `{ "items": 412, "superRare": 9, "autoSold": 130, "byEnhancement": [301, 52, 31, 15, 8, 4, 1] }`
 
 **2-1-5. `base`**
 
@@ -643,6 +651,11 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Integer.
     * Default: random.
     * Fixed seed for a reproducible result. The same `seed`, `numberOfRun`, and `objective` on the same save revision give the same result.
+  * `destination`, `depthLimit`, `difficultyOffset`
+    * Optional. Forecast another expedition setting of the party without changing it.
+    * Values and validation as in `{p}/changeExpedition` (3-2-1). A setting `changeExpedition` would reject is `invalid_request`.
+    * A `destination` takes that destination's saved difficulty offset unless `difficultyOffset` is sent too.
+    * Use it to compare destinations, depths, or offsets for a party (for example a farming party) without one commit per option.
 
 * Return:
 * `overview`
@@ -678,6 +691,8 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * `sqrt(variance / numberOfRun)`, with the per-run variance of 7.1.5 (Luck check).
   * `seed`
     * The seed used: the requested one, or the random one chosen. Send it again to reproduce the result.
+  * `expedition`
+    * `{ destination, depthLimit, difficultyOffset, overridden }`: the expedition setting the forecast ran. `overridden` is `true` when the request sent `destination`, `depthLimit`, or `difficultyOffset`.
 
 **2-2-4. `{p}/chargeStock`**
 
@@ -759,7 +774,10 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Options: `none`, `unoccupiedDeities`, `allDeities`
       * `none`: Does not consider changing deities.
       * `unoccupiedDeities`: Considers switching to any deity not currently in use by another party.
-      * `allDeities`: Considers all deities, including those used by other parties.      
+      * `allDeities`: Considers all deities, including those used by other parties.
+        * A deity another party holds is swapped: that party gets the deity party `{p}` leaves (no deity only when party `{p}` had none). So a later result that takes the old deity back also returns the taken one.
+        * Of two builds that score the same, the one that takes no deity ranks first, so a deity with no effect on the forecast is never taken by chance.
+        * See `deityTaken` in the Return.
   * `considerItemsScope`
     * Optional.
     * Default: `normal`
@@ -802,6 +820,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Optional. Format, guard ranking, and guard rule: see 2-0.
     * The guard is checked on every candidate: each candidate scored with `quickRuns` is also measured on the guard objective with `quickRuns` runs (the quick seed), and each candidate re-scored with `confirmRuns` with `confirmRuns` runs (the confirm seed). The population order, the elites, and the parent tournaments use the guard ranking on the quick values. The best confirmed candidate and the final selection use it on the confirm and final values.
     * Reason: when the quick runs ignore the guard, the population moves toward builds that miss it, and the final selection then discards them (`noChange`), although builds that reach the guard and improve `objective` exist.
+    * Re-confirmation: the final selection picks the build that is best on `objective` among those reaching the guard, so its guard rate there is a little too high, and a build just above the minimum often misses it in the verification (`worse`). So the finalists that pass the final selection (at most 3, best first) are measured on the guard once more on a fresh seed with `verifyRuns` runs, and the first one that reaches the guard there is the result. When none does, the best one stays the result. See `guardReconfirm`.
     * Cost:
       * When neither `objective` nor the guard objective is `gateDamage`, the guard is read from the objective's own runs (2-0 Shared runs), at no extra cost.
       * A `gateDamage` guard adds one battle-alone forecast per scored candidate (one battle, so it is short).
@@ -811,7 +830,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Optional. Object. Default: `{ "mode": "auto", "purpose": "conquest" }`.
     * After the verification, measures whether a higher party level would let the result build reach a goal. It answers "farm or keep searching": at a wall where the search returns `noChange` or `noisy`, it reports the level the build needs.
     * Level growth is mostly flat; the large steps are the base equipment slot unlock levels (2.1.1.1 `f.equipment_slots`: 24, 30, 36, 43, 50, 57, 65, ...). So by default only the next slot unlock level is probed.
-    * The probe does not depend on `objective`: every objective gets the same probe. It never measures `gateDamage`, because the battle-only rate ignores the route to the room.
+    * The probe does not depend on `objective`: every objective gets the same probe. Its target (`levelNeeded`) is judged on the route, because the battle-only rate ignores the route to the room. With `conquest`, each point also reports the goal's gate room fought alone (`points[].gateRoom`), so a level at which the room is winnable but the greedy fill's route rate stays low can be seen.
     * Fields:
 
     | Field | Type | Default | Range | Description |
@@ -959,12 +978,14 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * `steps`: `slot` or `level`.
     * `fill`: `greedy` or `search`.
     * `points`: the current level first, then one entry per probed level, in order.
-      * Format: `{ level, baseSlots, filledSlots, rate, standardError, expectedRuns, experienceToLevel }`
+      * Format: `{ level, baseSlots, filledSlots, rate, standardError, expectedRuns, experienceToLevel, gateRoom }`
       * `baseSlots`: base equipment slots at `level` (2.1.1.1 `f.equipment_slots`).
       * `filledSlots`: newly opened slots the probed build fills, over the whole party (fewer than opened when no usable item is left). `0` for the current level.
       * `rate`, `standardError`: `conquest`: `p` in %; `farming`: the defeat rate in %.
       * `expectedRuns`: `conquest` only (`null` for `farming`, and when `p` is `0`).
       * `experienceToLevel`: EXP the party still needs to reach `level` from its current EXP (2.1.1.1). `0` for the current level.
+      * `gateRoom`: `conquest` only (`null` for `farming`). `{ room, share, winRate }`: the goal's gate room (the elite room `X,4` of an Elite gate's floor, the boss room `6f-4` for the Boss unlock and the boss) fought alone at full HP with the point's build, on the same runs: `share` is the `gateDamage` share (2-0) and `winRate` the share of runs that won it.
+      * Reading `gateRoom`: a high `winRate` with a low `rate` means the room is winnable at that level and the route is the problem: farm to that level, then search with `gateDamage` (and an `objectiveGuard` on the route) there.
     * `levelNeeded`: the first level whose point met the target (the current level is possible with `mode: always`); `null` when none did.
     * `truncated`: `true` when the time ran out before the probe finished.
     * Reading it:
@@ -1012,6 +1033,16 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
       * `reached`: how many of them reached the guard in their confirm runs.
     * Reading it with `verdict` `noChange`: `reached: 0` means no build that the search found keeps the guard (lower the minimum, or search without the guard first); `reached` above `0` means builds that keep the guard were found, but none was better than the current build on `objective`.
     * Example: `{ "confirmed": 412, "reached": 37 }`.
+  * `guardReconfirm`
+    * The guard re-confirmation (see `objectiveGuard`). `null` without `objectiveGuard`, or when no finalist passed the final selection.
+    * Format: `{ runs, rates, chosen }`
+      * `runs`: runs per re-confirmation (`verifyRuns`).
+      * `rates`: the guard rates of the finalists measured, best finalist first.
+      * `chosen`: the index in `rates` of the finalist that became the result; `null` when none reached the guard (the best finalist stays the result).
+    * Example: `{ "runs": 500, "rates": [0.7712, 0.8104], "chosen": 1 }`.
+  * `deityTaken`
+    * With `considerDeityChange: allDeities`: the other party whose deity the result takes. `null` when it takes none.
+    * Format: `{ partyId, deityId, newDeityId }`: the party, its deity before, and the deity it gets (the one party `{p}` leaves, or `none`).
   * `elapsedSeconds`
   * `seeds`
     * Returned only when `seedBuilds` is sent. One entry per seed, in request order.
@@ -1095,7 +1126,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * String enum, optional, default `none`.
     * `none`: Does not consider changing deities.
     * `unoccupiedDeities`: Considers any deity not currently in use by another party.
-    * `allDeities`: Considers all deities, including those in use by other parties.
+    * `allDeities`: Considers all deities, including those in use by other parties. A held deity is swapped as in `gaSearch` (2-3-2), and `deityTaken` reports it.
   * `considerItemsScope`
     * Optional.
     * Default: `normal`
@@ -2069,6 +2100,7 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 **3-2-4. `{p}/resetStatistics`**
 
 * Parameters: none.
+* Resets `statistics`, `sideQuestStatistics`, and `dropStatistics` (2-1-4).
 
 
 **3-3. `commit/build`**
@@ -2105,6 +2137,17 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * String.
     * The `basis` returned with `changes` by the search.
     * If omitted, the build-relevant state is not compared. Each entry is still validated by the Commit API against the current state.
+  * `onStale`
+    * Optional.
+    * Default: `reject`.
+    * Allowed values:
+      * `reject`: a stale `basis`, or an entry the current save rejects, rejects the whole request.
+      * `repair`: applies what still applies. A stale `basis` does not reject the request, and an entry the save rejects as an illegal action is repaired or skipped (see `repairs`). Use it when other parties keep playing during a long search (new drops, Auto Sell, side-party Auto Equipment).
+    * Repairs:
+      * `equip` of a copy that is gone: another owned copy of the same item and Super Rare title, the same enhancement first, otherwise the highest.
+      * `removeEquipment` or `jewelRemove` of a slot that is already empty: only the slots that still hold an item or a Jewel.
+      * `commit/build/party/{p}` whose deity is no longer allowed: only its `order`.
+      * Any other rejected entry is skipped.
   * `verdict`
     * Optional.
     * String: `veryGood`, `good`, `noisy`, `noChange`, `worse`.
@@ -2129,16 +2172,17 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
 * Validation:
   * The request is rejected when:
     * `changes` is empty, or an entry uses an endpoint that is not allowed.
-    * `basis` is given and the build-relevant state changed after the search (party order, deity, inventory, jewels, or the build or equipment of any character in party `{p}`).
-      * Other revision changes (e.g., progression) do not make `basis` stale.
+    * `basis` is given and the build-relevant state changed after the search (party order, deity, the build or equipment of any character in party `{p}`, the slots the changes take from characters outside party `{p}`, or the party holding a deity the changes take), unless `onStale` is `repair`.
+      * Inventory and Jewel counts are not compared: an item or Jewel that is gone fails its own entry (`item_not_owned`, `jewel_not_owned`).
+      * Other revision changes (e.g., progression, new drops) do not make `basis` stale.
     * `verdict` is `noChange`.
-    * Any entry fails the validation of its Commit API call.
+    * Any entry fails the validation of its Commit API call, unless `onStale` is `repair`.
   * `confirmationRequired` is `true` when:
     * `verdict` is `worse` or `noisy`.
 
 * Atomicity:
   * All entries in `changes` are applied as one commit.
-  * If any entry fails validation, no game-state change is committed.
+  * If any entry fails validation, no game-state change is committed (with `onStale: repair`, only an invalid request does that).
 
 * Return:
   * `applied`
@@ -2147,8 +2191,19 @@ AI / CUI ── HTTP/JSON adapter ────────┘         │
     * Boolean.
   * `warnings`
     * Returned when confirmation is required. Includes the given `verdict`.
+    * Also returned when the changes change the deity of another party (`allDeities`): `api.warning.applyBuildChanges.deityTaken` with `partyId`, `deityId` (before), and `newDeityId` (after).
   * `calculatedStatus`
     * For each changed character, `CalculatedStatus` as defined in 9.1.4.14.
+  * `basisStale`
+    * Only with `onStale: repair`. `true` when the given `basis` is stale, `false` when it is not, `null` without `basis`.
+  * `repairs`
+    * Only with `onStale: repair`. One entry per repaired or skipped entry of `changes`, in order.
+    * Format: `{ index, endpoint, outcome, reason, parameters }`
+      * `index`: the entry's index in `changes`.
+      * `outcome`: `substituted` (another copy), `trimmed` (fewer slots, or the order without the deity), or `skipped`.
+      * `reason`: the reason the save rejected the entry (for example `item_not_owned`).
+      * `parameters`: the parameters that were applied; `null` when skipped.
+    * `applied` lists the entries as they were applied.
 
 
 **3-3-3. `character/{characterId}/changeBuild`**

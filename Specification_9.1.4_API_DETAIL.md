@@ -560,6 +560,19 @@ definitions in 9.1.3.
   `gateRoom` and `startHp` are validated as in GA search (`gateRoom` only with
   `objective: gateDamage`); `startHp` sets the start HP of every run, route
   included, and the response echoes `startHp` (and `gateRoom` when used).
+* `simulationRun` expedition overrides: `destination`, `depthLimit`, and
+  `difficultyOffset` forecast another expedition setting of party `{p}` on a
+  private copy of the save; nothing is committed. They take the values and the
+  validation of `changeExpedition` (a locked destination, an unknown depth limit,
+  or an offset that is not a step of 2 within the destination's range is
+  `invalid_request`, with the field and `changeExpedition`'s reason as the rule,
+  for example `destination.destination_locked` or
+  `difficultyOffset.difficulty_offset_unavailable`). A `destination` takes that
+  destination's own saved difficulty offset unless `difficultyOffset` is sent too,
+  as a destination change does. `gateRoom: next` and `depthLimit` in the response
+  describe the overridden setting. The response's `expedition` is
+  `{destination, depthLimit, difficultyOffset, overridden}`: the setting the
+  forecast ran, and whether any override was sent.
 * `simulationRun` per-room HP: each run's rooms record the party HP at the room's
   start (the battle log's start HP) and after the battle; `rooms.rows` end with
   `hpAtEntry` and `hpAfterWin` (the averages over the runs that reached the room,
@@ -622,7 +635,7 @@ definitions in 9.1.3.
     button; the commit itself uses the party's current HP, like `triggerSortie`.
 * `resetStatistics` is the Expedition pane's Reset button (9.1.3, 3-2-4): it restores
   the party's expedition statistics (the Clear, Return, Draw, Retreat, and Defeat
-  counts and the donated and saved Gold totals) and the side quest statistics to their
+  counts and the donated and saved Gold totals), the side quest statistics, and the drop statistics to their
   defaults and changes nothing else. It takes no parameters, returns `{}`, and is a valid no-op (no revision
   change) when the statistics already hold their defaults. An unknown party is
   `not_found`.
@@ -897,8 +910,8 @@ definitions in 9.1.3.
   own released items, taken from the party's non-targets first and then from the
   other parties in order; `changeSummary` lists one `removeEquipment` entry per
   emptied character, before any other entry, and `applyBuildChanges` also reports and
-  records Undo for those characters. `basis` also covers the equipment of every
-  character outside party `{p}` that the result touches. `jewels` lets it place free Jewels
+  records Undo for those characters. `basis` also covers the slots the result
+  takes from each character outside party `{p}`. `jewels` lets it place free Jewels
   and those on targets whose Jewels are changeable; with `jewels` but not
   `equipment`, the items stay and only their Jewels change, and with `equipment`
   but not `jewels`, an item that stays in its slot keeps its Jewel and a new item
@@ -914,10 +927,18 @@ definitions in 9.1.3.
   `predisposition` components are ignored. `considerOrderChange`
   permutes the whole party. `considerDeityChange: unoccupiedDeities` chooses from
   `read/build/party/{p}` `validOptions.deityId`; `allDeities` also offers every
-  unlocked deity another party holds. A result that takes such a deity frees it
-  first: `changeSummary` lists `commit/build/party/{holder}` with `deityId: "none"`
-  right before party `{p}`'s own deity entry, so the holder is left with no deity,
-  and `basis` covers which party holds that deity.
+  unlocked deity another party holds. A result that takes such a deity swaps it
+  with the holder: `changeSummary` lists `commit/build/party/{holder}` with
+  `deityId: "none"` right before party `{p}`'s own deity entry (a deity is held by
+  one party at a time), then, when party `{p}` had a deity, `commit/build/party/{holder}`
+  with that deity. So the holder is left with no deity only when party `{p}` had
+  none, and a later result that takes the old deity back returns the taken one the
+  same way. Deity rank belongs to the deity (its donations), so a swap changes no
+  rank. `basis` covers which party holds that deity, and `deityTaken` reports the
+  holder, its deity, and the deity it gets (`null` when no deity is taken). Of two
+  candidates with the same score, the one that takes no deity ranks first: a build
+  that takes a deity loses 10^-9 of its fitness in every quick, confirm, and final
+  score, so a deity with no effect on the forecast is never taken by chance.
 * Search: the first population holds the current build and, with
   `seedWithHeuristics`, one attack-focused and one HP/defense-focused greedy
   build, plus, when an equipment target has an empty slot, the current build
@@ -998,7 +1019,22 @@ definitions in 9.1.3.
   (final seed, same runs): a finalist that reaches the guard replaces a fallback
   that does not; when both miss it, the finalist must be ahead on the guard rate
   by more than one standard error; when both reach it, the objective rule above
-  applies. `guardStats.confirmed` counts the distinct confirmed candidates other
+  applies. With a guard, every finalist that ranks above the fallback in the final
+  runs and passes that rule is accepted (without a guard only the top finalist is
+  judged, as before).
+* Guard re-confirmation (`objectiveGuard` only): the final runs choose, among the
+  finalists that reach the guard, the best on `objective`, so the chosen one's
+  guard rate there is biased upward, and a build just above the minimum often
+  misses it in the verification (`worse`). The accepted finalists, in final-score
+  order, at most 3, are each measured on the guard objective once more on their
+  own seed (derived from `seed`) with `verifyRuns` runs; the first one whose rate
+  reaches the guard is the result. When none does, the first accepted finalist
+  stays the result (its verdict then shows the miss). `guardReconfirm` reports
+  `{runs, rates, chosen}`: `rates` the measured guard rates in order (rounded to 4
+  places) and `chosen` the index of the result in `rates` (`null` when none
+  reached the guard); `guardReconfirm` is `null` without a guard or when no
+  finalist was accepted. The re-confirmation runs count in `evaluations` only
+  when they need a route forecast (shared runs). `guardStats.confirmed` counts the distinct confirmed candidates other
   than the fallback (a cached confirm score counts once), and `guardStats.reached`
   those whose confirm guard rate is at least the minimum. The same quick-run
   guard ranking applies in `directedBuild` Step 4 `ga`.
@@ -1007,7 +1043,8 @@ definitions in 9.1.3.
   first. Their measured wall-clock cost per run sets aside the time of the
   remaining work: the result's two verification forecasts and the final
   selection (five forecasts of the final runs, plus the guard forecasts with a
-  guard), times 1.5 plus one second. Unless `levelProbe.mode` is `off`, the
+  guard, plus three guard re-confirmations of `verifyRuns` with a guard), times
+  1.5 plus one second. Unless `levelProbe.mode` is `off`, the
   reserve also covers the level probe: `confirmRuns` for the current level and
   for each of the `count` probed levels, plus two `quickRuns` fills per probed
   level, at the cost per run of the objective (of the `crossCheck` objective for
@@ -1037,8 +1074,19 @@ definitions in 9.1.3.
     to `all`, so the route ends before the goal's gate room (a closed gate stops a
     run with a Return) or, with every gate open, runs through the boss room; `p`
     is the success rate (Clear or Return). `farming` runs the party's own route
-    and measures the defeat rate. Neither depends on `objective`; the
-    battle-only `gateDamage` forecast is never used.
+    and measures the defeat rate. Neither depends on `objective`, and
+    `levelNeeded` is judged on these rates only.
+  * Gate room (`conquest` only): each point also fights the goal's gate room alone
+    (the `gateDamage` forecast at full HP): the elite room `X,4` of an `eliteGate`
+    goal's floor, and the boss room `6,4` for `bossGate` and `boss`, on the same
+    runs and seed as the point's rate. `points[].gateRoom` is `{room, share,
+    winRate}` (`share` the `gateDamage` share, `winRate` the share of runs that
+    won the room, both rounded to 4 places); `null` for `farming`. A greedy fill
+    can leave the route rate at `0` while the room itself is already winnable at
+    that level; a gate-focused search at that level then wins it. With
+    `fill: greedy` and `conquest`, the gate room's quick share breaks a tie
+    between the two fills (a route rate of `0` for both, for example). The gate
+    room forecasts are reserved in the time budget like the probe's own runs.
   * Each point uses `confirmRuns` runs on the verification seed. `rate` and
     `standardError` (`sqrt(p(1 - p) / confirmRuns)`) are percentages rounded to
     0.01; `expectedRuns` is `E(required) - E(current)` rounded to 0.01;
@@ -1154,11 +1202,14 @@ definitions in 9.1.3.
   `stagedEquipmentTuning`) is an opaque string: a digest of the build-relevant state
   of party `{p}` that the result depends on, namely party order and deity, each
   party member's build and equipment (items and Jewels), who holds each deity the
-  result assigns, the equipment of each character outside the party that an entry
-  touches, and the owned count of every item variant and Jewel that an entry equips
-  or attaches. It is computed from the `changeSummary` entries and the save, so
-  `applyBuildChanges` recomputes it from `changes` and the current save without
-  any stored result. Other inventory, Gold, and progression changes do not change it.
+  result assigns, and the item (and Jewel) in each slot an entry takes from a
+  character outside the party. It is computed from the `changeSummary` entries and
+  the save, so `applyBuildChanges` recomputes it from `changes` and the current save
+  without any stored result. Inventory and Jewel counts are not part of it: each
+  `equip` and `jewelAttach` entry is validated when it is applied, so a copy that is
+  gone is rejected there (`item_not_owned`, `jewel_not_owned`), and a new drop, an
+  Auto Sell, or another party's Auto Equipment does not make a result stale. The
+  other slots of an outside character, Gold, and progression do not change it either.
 * `applyBuildChanges` (9.1.3, 3-3-2) applies `changes` to party `{p}`. It owns its
   confirmation like `changeBuild`: `simulation` is required; `simulation: true`
   reports `applied` (the `changes`), `confirmationRequired`, `warnings`, and the
@@ -1170,7 +1221,28 @@ definitions in 9.1.3.
   field `confirmation`); `confirmation: "no"` cancels with `applied: []` and no
   revision change. Without a `verdict`, or with a `stagedEquipmentTuning` result,
   confirmation is never required. `confirmation` with `simulation: true` is
-  `invalid_request`.
+  `invalid_request`. When the changes change the deity of a party other than `{p}`
+  (an `allDeities` result), `warnings` also holds
+  `api.warning.applyBuildChanges.deityTaken` with `partyId`, `deityId` (its deity
+  before), and `newDeityId` (its deity after), whether or not confirmation is
+  required.
+* `applyBuildChanges` `onStale`: `reject` (default) or `repair` (any other value is
+  `invalid_request`, field `onStale`). With `repair`, a stale `basis` does not reject
+  the request, and an entry whose Commit call fails with `illegal_action` is
+  repaired or skipped instead of rejecting the request; the rest still apply in
+  order, in one transaction. Repairs: an `equip` rejected with `item_not_owned`
+  takes another owned copy of the same item and Super Rare title, the same
+  enhancement first, otherwise the highest (`substituted`); a `removeEquipment`
+  rejected with `slot_empty` or a `jewelRemove` rejected with `no_jewel_attached`
+  keeps only the slots that still hold an item or a Jewel (`trimmed`); a party entry
+  rejected with `deity_in_use` or `deity_locked` keeps its `order` alone
+  (`trimmed`). Any other rejected entry, or a repair the save also rejects, is
+  `skipped`. An `invalid_request` of an entry still rejects the whole request.
+  The Return then also holds `basisStale` (`true` or `false`; `null` without a
+  `basis`) and `repairs`, one `{index, endpoint, outcome, reason, parameters}` per
+  repaired or skipped entry (`index` in `changes`, `reason` the rejection's reason,
+  `parameters` the repaired entry's parameters, `null` when skipped); `applied` lists
+  the entries as they were applied. Without `repair` neither member is returned.
 * `applyBuildChanges` validation: `changes` must be a non-empty array, and every
   entry `{endpoint, parameters}` must use one of the endpoints in the 9.1.3
   `changeSummary` order list (otherwise `invalid_request`, field `changes` with
@@ -1182,7 +1254,7 @@ definitions in 9.1.3.
   validation below applies.
 * `applyBuildChanges` applies every entry in order in one transaction and is
   rejected atomically if any entry fails (with the error of that entry's Commit
-  call). `autoEquipmentMode` (`SEMI` by default; `FULL` is `invalid_request`) is
+  call), unless `onStale` is `repair` (above). `autoEquipmentMode` (`SEMI` by default; `FULL` is `invalid_request`) is
   set on every character with an equipment or Jewel entry. The internal calls record
   no Undo step; afterwards each character with an entry whose equipment state
   (items, Jewels, and mode) changed gets exactly one Undo step, its state before
@@ -1213,7 +1285,7 @@ definitions in 9.1.3.
   * Final selection: the finalists are the Step 1–4 result, the Step 1–3 result when Step 4 changed it, and the current build (not with `strict` and `forcedRecomposition: true`). A finalist that needs no `changeSummary` entry is the current build itself and is dropped. Each is re-scored on the Final selection seed with twice `confirmRuns` runs (at most 1000), with the guard objective too when there is a guard. Margin rule (also used by Steps 2 and 3): a build passes against another when its rate is ahead by more than one standard error (the 7.1.5 Luck check SE); for `success`, an exact tie is broken by `progress` ahead by more than one standard error; with a guard, a build that reaches it passes against one that does not, when both miss it the guard rate must be ahead by more than one standard error, and when both reach it the objective decides. The best other finalist becomes the result only when it passes against the current build; otherwise the result is the current build (`verdict` `noChange`, `changeSummary` `[]`). Without the current build as a finalist, the best finalist is the result.
   * `timeBudgetSeconds` covers the whole request. The current build's verification runs (the objective and the `crossCheck` objective) run first; their cost per run, times 1.5 plus one second, sets aside the result's verification and the Final selection (three forecasts of the final runs, plus the guard forecasts with a guard). Of the time left, Step 1 stops at 50%, Steps 2 and 3 at a further 20%, and Step 4 runs until the reserve, when Step 4 will run; when it will not, Step 1 stops at 75% and Steps 2 and 3 run until the reserve. Time a step does not use passes to the next. A step that runs out locks its best result so far, and a step that has no time left does not run (it gets no `steps` entry). The Final selection and the verification always run.
 * `verdict`, `forecast`, `verification`, `changeSummary`, `revision`, `evaluations`, and `elapsedSeconds` are produced as for `gaSearch`: the verdict compares the current build and the Final selection result on one independent verification seed with `verifyRuns` runs each (`noChange` when the result is the current build), and each `changeSummary` entry is accepted by the Commit API as written. `changeSummary` follows the 9.1.3 order, so items that a class change makes unequippable are removed by `removeEquipment` before the `changeBuild` entry, and the `autoEquipmentRun` and Step 4 results appear as `equip`, `jewelRemove`, and `jewelAttach` entries. `evaluations` counts every scored candidate of all steps (Step 4 tuning candidates included) and every Final selection finalist.
-  * A deity change is a `commit/build/party/{p}` entry with `deityId`. When another party holds the chosen deity, `changeSummary` lists `commit/build/party/{holder}` with `deityId: "none"` right before it, and `basis` covers which party holds that deity.
+  * A deity change is a `commit/build/party/{p}` entry with `deityId`. When another party holds the chosen deity, the deity is swapped as in `gaSearch` (`commit/build/party/{holder}` with `deityId: "none"` right before it, then the holder's entry for the deity party `{p}` left, when it had one), `basis` covers which party holds that deity, and `deityTaken` reports it.
 * `basis` is built as for `gaSearch`. Nothing is kept on the server, so a `directedBuild` result stays applicable until the build-relevant state changes.
 * `seed`: the seed used, the requested one or a random one.
 * `direction`: the requested direction. `directionStrictness`: the requested strictness.
@@ -1518,6 +1590,14 @@ definitions in 9.1.3.
   `successfulCount` when it is completed, and `cancelledCount` when it is
   cancelled by a player action (such as starting a sortie or a God Battle), and `failedCount` when it expires. Only side quests accepted after the counters
   were introduced are counted. `resetStatistics` clears it.
+* `read/observation/party`'s `party.dropStatistics` (9.1.3, 2-1-4) counts the
+  selected party's own drops since its last `resetStatistics`: `items` (the
+  rewards its expeditions kept), `superRare` (those with a Super Rare title),
+  `autoSold` (drops Auto Sell sold during its expeditions), and `byEnhancement`
+  (seven counts, the kept rewards at `+0` .. `+6`). A Defeat keeps no reward, so
+  it adds nothing. Sorties, God Battles, and AFK expeditions all count; forecasts
+  never do. Drops from before the counters were introduced are not counted; every
+  member is `0` until the party's first counted expedition.
 * `read/observation/compact`'s `clearGate` is the party's active Clear-Gate goals
   in the Expedition pane's order (`4th Elite gate: 3/4`, `Boss unlock: c/r`,
   `Gods gate: c/r`, `Entry gate: 0/1`, `Gods entry: 0/1`), joined by `, `, or
