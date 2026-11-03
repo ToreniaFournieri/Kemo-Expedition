@@ -216,7 +216,7 @@ HP 2350 / 4680
 |---|---|---|
 | Entry gate condition | 🗺️ボス撃破せよ| ボス撃破 でヴァルンの樹林帯 開放 |
 | Normal Clear-Gate condition | 🚪0/9 1F-4解放 | 連続攻略成功 0/9 で 1F-4解放 |
-| Gods Battle gate condition | 🗃️2/3 神魔解放 | ボスレアアイテム 2/3 で神魔タヌエ戦 |
+| Gods Battle gate condition | 🗃️2/3 神魔解放 | エピックレアアイテム 2/3 で神魔タヌエ戦 |
 | Side quest | 📜 660分治療を受ける 🕘 | 660分治療を受ける（9%, 63分, 残り9時間） |
 
 - The thin line progress bar is displayed under the text.
@@ -256,10 +256,11 @@ HP 2350 / 4680
 		- Example: ▰▰▰▰▱▱102.
 		- If fully charged, display ▰▰▰▰▰▰MAX.
 		- If no stock is available, display ▱▱▱▱▱▱12.
-	- Pressing `出撃` (`sortie`) or `神魔戦` button consumes 1 stock and immediately processes one full cycle:
-      - If the party is currently in `state.explore`, the current exploration is completed immediately first, then one additional full cycle is processed. (note: always end at the beginning of `state.rest` )
-      - State:  `state.explore` → `state.return` → `state.rest` → `state.free_action` → `state.sound_sleep` (optical) → `state.move` → `state.explore` → `state.return` 
-      - The process ends after the final `state.return` is completed.
+    - Pressing the 出撃 (`sortie`) or 神魔戦 button consumes 1 charge stock and immediately processes one `state.explore` followed by `state.return`. 
+    - If the party is already in `state.explore`, the current exploration is completed immediately before processing the additional `state.explore` and `state.return`.
+    - The additional exploration starts without HP recovery between the two explorations.
+    - Processing always ends at the beginning of `state.rest`.
+      - State:  `state.explore` → `state.return` 
 	- If a Gods Battle is available, the instant expedition is processed as a Gods Battle.
   - **Charge Stock:** 
     - Each cleared expedition tier increases the maximum charge time that can be accumulated for each stock slot.
@@ -369,7 +370,7 @@ HP: 16,035
   - 次の目標: show the next Clear-Gate condition.
 
 - **Gods Battle (神魔戦)**
-  - Gods Battle gate condition: Collect X Boss Rare items in dungeons after defeating the dungeon boss at least once. If the Gods Battle condition is `Simple`, require 1 Boss Rare item instead.
+  - Gods Battle gate condition: Collect X Epic items in dungeons after defeating the dungeon boss at least once. If the Gods Battle condition is `Simple`, require 1 Epic item instead.
     - "特殊目標: `x.expedition`のボスレアアイテム 0/1 で神魔`godname`戦"
   - UI / Trigger:
     - When the condition is met, adding「神魔戦」(Gods Battle) next to 「出撃」 button. (神魔戦, 出撃 button order) 
@@ -380,11 +381,11 @@ HP: 16,035
   - Outcome Handling:
     - **On Victory**
       - The button reverts from 「神魔戦」 → 「出撃」.
-      - The Gods Battle gate counter resets to 0 Boss Rare items collected.
+      - The Gods Battle gate counter resets to 0 Epic items collected.
       - The player can repeat the cycle.
     - **On Defeat**
       - The 「神魔戦」 button remains available.
-      - The player may retry the Gods Battle without re-collecting Boss rare items.
+      - The player may retry the Gods Battle without re-collecting Epic items.
   - **Party Pane Visual State:**
     - After pressed "神魔戦" button, during `state.move` and `state.explore` of Gods battle, the Party pane border uses the Sub color theme (emphasis state).
     - On battle end, the border style reverts to the default (normal) style. 

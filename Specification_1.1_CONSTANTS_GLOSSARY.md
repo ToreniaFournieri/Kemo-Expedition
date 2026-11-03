@@ -49,17 +49,18 @@
 | `e.thunder_xN` | [雷攻N] | `e.thunder_x2/3` -> [雷攻x2/3] |
 
 
-- Translation
+- **1.0.3 Item rarity tier**
 
-| name | Japanese | short word |
+| `itemRarity` | `shortLabel` | Japanese |
 |----|-----|---|
-| common | 通常 | [C] |
-| uncommon | アンコモン | [U] |
-| elite rare | エリートレア | [E] |
-| boss rare | ボスレア | [B] |　
-| mythic rare | 神魔レア | [M] |
+| `common`   | [C] | ノーマル | 
+| `uncommon` | [U] | アンコモン |
+| `rare`     | [R] | レア |
+| `epic`     | [E] | エピックレア |
+| `mythic`   | [M] | 神魔レア |
 
-- **1.0.3 Glossary Reveal Rule:**
+
+- **1.0.4 Glossary Reveal Rule:**
   - Each glossary entry of **ability and terrain effect** has an internal `revealed` flag.
   - A glossary entry is revealed when its related ability, terrain is shown to the player for the first time.
   - Once revealed, the entry is added to the Glossary.
@@ -109,6 +110,7 @@
 | `a.null-death-touch` | 即死無効 | 接死が無効化する | - |
 | `a.null-burn` | 火傷無効 | 火傷を負わなくなる | - |
 | `a.null-bind` | 拘束無効 | 拘束を速やかに解くことができる | - |
+| `a.null-requiem` | 鎮魂無効 | 鎮魂歌では成仏はしない | - |
 | `a.domain-breaker` | 領域破り | 領域展開を無視する(これらの領域の効果の影響を受けない:必達領域、臨界領域、残響領域、静寂領域、剣戟領域、必中狙撃領域、必中魔法領域) | - |
 | `a.wind-rider` | 風乗り | 風の影響を強く受ける(強風下では遠距離攻撃回数が0.50倍(より不利)、追い風では行動順判定に+2d3(より有利)) | - |
 | `a.siege` | 攻城 | 要塞を容易に攻略できる(要塞防備による敵の有利な効果を無視できる) | - |
@@ -343,9 +345,9 @@
 | `f.covering-fire` | 援護射撃 | 味方行動に連動して追撃する。遠距離攻撃可能な味方が即時射撃する。 |
 | `f.reward` | 報酬計算 | 戦闘結果に応じてアイテムの追加抽選の有無を算出する。通常2枚。神の加護により+1枚。 |
 | `f.common-enhancement`| コモンアイテムの通常称号| コモンアイテムで通常称号が付与する可能性。\n| 通常称号 | 可能性 |\n|---------|------|\n| (なし) | 1390 |\n| 名工の | 350 |\n| 魔性の | 180 |\n| 宿った | 60 |\n| 伝説の | 15 |\n| 恐ろしい | 4 |\n| 究極の | 1 ||
-| `f.enhancement`| | \n| 希少アイテムの通常称号 | アンコモン、エリートレア、ボスレア、神魔レアで通常称号が付与する可能性。可能性 |\n|---------|------|\n| (なし) | 5490 |\n| 名工の | 350 |\n| 魔性の | 180 |\n| 宿った | 60 |\n| 伝説の | 15 |\n| 恐ろしい | 4 |\n| 究極の | 1 ||
+| `f.enhancement`| | \n| 希少アイテムの通常称号 | アンコモン、レア、エピックレア、神魔レアで通常称号が付与する可能性。可能性 |\n|---------|------|\n| (なし) | 5490 |\n| 名工の | 350 |\n| 魔性の | 180 |\n| 宿った | 60 |\n| 伝説の | 15 |\n| 恐ろしい | 4 |\n| 究極の | 1 ||
 | `f.enhancement-scaling`| 通常称号の性能向上 | 通常称号の段階に応じた基礎性能補正。\n| 通常称号 | 増加倍率 |\n|-----|------|\n| (なし) | x1.00 |\n| 名工の | x1.33 |\n| 魔性の | x1.58 |\n| 宿った | x2.10 |\n| 伝説の | x2.75 |\n| 恐ろしい | x3.50 |\n| 究極の | x5.00 | |
-| `f.rarity-scaling`| レアリティの性能向上 | レアリティの段階に応じた基礎性能補正。\n| レアリティ | 増加倍率 |\n|------|--------|\n| コモン | x1.0 |\n| アンコモン | x1.2 |\n| エリートレア | x1.6 |\n| ボスレア | x2.4 |\n| 神魔レア | x3.6 | |
+| `f.rarity-scaling`| レアリティの性能向上 | レアリティの段階に応じた基礎性能補正。\n| レアリティ | 増加倍率 |\n|------|--------|\n| コモン | x1.0 |\n| アンコモン | x1.35 |\n| レア | x1.67 |\n| エピックレア | x2.0 |\n| 神魔レア | x2.4 | |
 | `f.super-rare-scaling`| 超レアの性能向上 | 超レア称号が付くと、さらにその基礎性能が2倍される。また、それぞれ独自のボーナスが付与される。 |
 | `f.donation`| 寄付金額 | 祈りフェーズの終わりに、信仰する神に売却益を寄付をすることがある。寄付金額に応じて信仰は強化される。 \n| ランク | 寄付金額 |\n|-------|----------|\n| 1 | 1,000 |\n| 2 | 2,800 |\n| 3 | 7,560 |\n| 4 | 19,656 |\n| 5 | 49,140 |\n| 6 | 117,936 |\n| 7 | 271,253 |\n| 8 | 596,757 |\n| 9 | 1,253,190 |\n| 10 | 2,506,380 ||
  | `f.equipment-slots` | 装備枠増加 | レベルアップに応じて装備枠が増える。
@@ -425,22 +427,22 @@
 #### 1.1.9 q. side quest
 - "求. サイドクエスト (条件達成すると報酬として結晶が手に入る)"
 
-| ID | type | Short text | Display text format | deadline | logic | for Glossary Title | for Glossary content |
-|--|--|---|---|---|---|---|---|
-| 0 | (none) | |  | | | | |
-| 1 | `q.squander` | 散財(XXXG) | 宴会で XXXG 浪費する(0%, XXXG)　(神魔戦で中止) | 250 ~ 1,000 G | 16 hours | | 散財 | 宴会で浪費する(神魔戦で中止) |
-| 2 | `q.sleeping` | 安眠(X回) | X回寝る(0%, X回)　(神魔戦で中止) | 12 hours | | 安眠 | 寝る(神魔戦で中止) |
-| 3 | `q.exercise` | 運動(XX分) | X分歩く(0%, XX分)　(神魔戦で中止) | 16 hours | count the time of 移動中 and 帰還中 state | 運動 | 歩く(神魔戦で中止) |
-| 4 | `q.embezzlement` | 横領(XXXG) | XXXG着服する(60%, XXXG)　(神魔戦で中止) | 16 hours | | 横領 | 着服する(神魔戦で中止) | 
-| 5 | `q.donation` | 寄付(XXXG) | 200G寄付する(10%, XXXG)　(神魔戦で中止) | 12 hours | | 寄付 | 寄付する(神魔戦で中止) | 
-| 6 | `q.healing` | 治療(X分) | X分治療を受ける (10%, XX分)　(神魔戦で中止) | 16 hours | count the time of rest state | 治療 | 治療を受ける(神魔戦で中止) |
-| 7 | `q.AFK` | 放置(X分) | X分神から見放されている (10%, XX分)　(神魔戦で中止) | - | | 放置 | 神から見放されている(神魔戦で中止) |
-| 8 | `q.treasure-super-rare` | 超レア獲得 | 超レアを獲得する(0%)　(神魔戦で中止) | 24 hours | | 超レア獲得 | 超レアを獲得する(神魔戦で中止) |
-| 9 | `q.treasure-boss-rare` | ボスレアXX個獲得 | ボスレアを XX個獲得する(0%, X個)　(神魔戦で中止) | 16 hours | | ボスレア獲得 | ボスレアを獲得する(神魔戦で中止)  | 
-| 10 | `q.poor-kid` | 空振り(XX回) | XX回アイテム獲得空振り(0%, X個)　(神魔戦で中止) | 9 hours | | アイテム獲得空振り | アイテム獲得空振り(自動売却を除いたアイテムの有無で判定)(神魔戦で中止) |
-| 11 | `q.consecutive-wins` | 連続踏破(XX連続) | XX連続して踏破する(30%, XX連)　(神魔戦で中止) | 16 hours | reset to 0 if defeat/retreat/non-victory condition | 連続踏破 | 連続して踏破する(神魔戦で中止) |
-| 12 | `q.losers` | 敗北 | 敗北する(0%)　(神魔戦で中止) | 9 hours | |  敗北 | 敗北する(神魔戦で中止) |
-| 13 | `q.savings` | 貯金(XXXG) | 1,000G貯金する(10%, XXXG)　(神魔戦で中止) | 16 hours | | 貯金 | 貯金する(神魔戦で中止)　|
+| ID | type | Short text | Display text format | `timeLimit` | base value range (lv1) | lv2 | lv3 | lv4 | logic | for Glossary Title | for Glossary content |
+|--|--|--|--|--|--|--|--|--|--|--|--|
+| 0 | (none) | | | | | | | | | | |
+| 1 | `q.squander` | 散財(XXXG) | 宴会で XXXG 浪費する(0%, XXXG)　(神魔戦で中止) | 16 hours | 100 ~ 400 | x1.4 | x1.8 | x2.2 |  | 散財 | 宴会で浪費する(神魔戦で中止) |
+| 2 | `q.sleeping` | 安眠(X回) | X回寝る(0%, X回)　(神魔戦で中止) | 16 hours | 1 ~ 4 | - | - | - |  | 安眠 | 寝る(神魔戦で中止) |
+| 3 | `q.exercise` | 運動(XX分) | X分歩く(0%, XX分)　(神魔戦で中止) | 16 hours | 10 ~ 30 | x1.3 | x1.5 | x2.0 | count the time of 移動中 and 帰還中 state | 運動 | 歩く(神魔戦で中止) |
+| 4 | `q.embezzlement` | 横領(XXXG) | XXXG着服する(60%, XXXG)　(神魔戦で中止) | 16 hours | 10 ~ 50 | x1.4 | x1.8 | x2.2 |  | 横領 | 着服する(神魔戦で中止) |
+| 5 | `q.donation` | 寄付(XXXG) | 200G寄付する(10%, XXXG)　(神魔戦で中止) | 12 hours | 100 ~ 500 | x1.4 | x1.8 | x2.2 |  | 寄付 | 寄付する(神魔戦で中止) |
+| 6 | `q.healing` | 治療(X分) | X分治療を受ける (10%, XX分)　(神魔戦で中止) | 16 hours | 2 ~ 7 | x1.2 | x1.4 | x1.6 | count the time of rest state | 治療 | 治療を受ける(神魔戦で中止) |
+| 7 | `q.AFK` | 放置(X分) | X分神から見放されている (10%, XX分)　(神魔戦で中止) | - | 30 ~ 120 | x1.3 | x1.5 | x2.0 |  | 放置 | 神から見放されている(神魔戦で中止) |
+| 8 | `q.treasure-super-rare` | 超レア獲得 | 超レアを獲得する(0%)　(神魔戦で中止) | 24 hours | 1 | - | - | - |  | 超レア獲得 | 超レアを獲得する(神魔戦で中止) |
+| 9 | `q.treasure-epic-rare` | エピックレアXX個獲得 | エピックレアを XX個獲得する(0%, X個)　(神魔戦で中止) | 20 hours | 1 ~ 3 | - | - | - |  | エピックレア獲得 | エピックレアを獲得する(神魔戦で中止) |
+| 10 | `q.poor-kid` | 空振り(XX回) | XX回アイテム獲得空振り(0%, X個)　(神魔戦で中止) | 9 hours | 5 ~ 15 | x1.2 | x1.4 | x1.6 |  | アイテム獲得空振り | アイテム獲得空振り(自動売却を除いたアイテムの有無で判定)(神魔戦で中止) |
+| 11 | `q.consecutive-wins` | 連続踏破(XX連続) | XX連続して踏破する(30%, XX連)　(神魔戦で中止) | 16 hours | 5 ~ 20 | x1.2 | x1.4 | x1.6 | reset to 0 if defeat/retreat/non-victory condition | 連続踏破 | 連続して踏破する(神魔戦で中止) |
+| 12 | `q.losers` | 敗北 | 敗北する(0%)　(神魔戦で中止) | 9 hours | 1 | - | - | - |  | 敗北 | 敗北する(神魔戦で中止) |
+| 13 | `q.savings` | 貯金(XXXG) | 1,000G貯金する(10%, XXXG)　(神魔戦で中止) | 16 hours | 600 - 2,500 | x1.6 | x2.8 | x4.0 |  | 貯金 | 貯金する(神魔戦で中止) |
 
 #### 1.1.10 t. terrain effects
 - "地. 地形効果"
@@ -449,7 +451,7 @@
 |---|---|---|
 | `terrain.rejuvenation` | 活性化 | 各部屋の終了時、減少HPの2%を回復する |
 | `terrain.abundant` | 豊富 | 各部屋の終了時、最大HPの2%を回復する |
-| `terrain.rotwood` | 腐敗 | すべての回復能力は無効化される |
+| `terrain.rotwood` | 腐敗 | すべての回復能力は無効化される(再生の女神・応急措置・再生・吸血) |
 | `terrain.decay` | 崩壊 | 戦闘終了時、最大HPの2%のダメージを受ける |
 | `terrain.leakage` | 漏電 | 各部屋の終了時、現在HPの3%に等しい雷属性ダメージを受ける |
 | `terrain.exposure` | 露出 | 双方の物理被ダメージが1.3倍になる |

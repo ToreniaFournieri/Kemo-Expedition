@@ -128,7 +128,7 @@ const postBattlePipeline = createOrderedExpeditionPipeline<
     priority: 20,
     sourceOrder: 0,
     apply(state, input) {
-      if (!isQualifyingElite(input)) return state;
+      if (!isQualifyingElite(input) || input.terrainEffect === 'terrain.rotwood') return state;
       let hp = state.hp;
       let facts = state.facts;
       for (const character of input.characters) {
@@ -205,7 +205,8 @@ const postBattlePipeline = createOrderedExpeditionPipeline<
         || input.roomInFloor !== 4
         || !isNormalOrElite(input.roomType)
         || input.terrainEffect !== 'terrain.rotwood'
-        || input.deityKey !== 'Goddess of Restoration') return state;
+        || (input.deityKey !== 'Goddess of Restoration'
+          && !input.characters.some((character) => character.firstAidLevel > 0))) return state;
       return {
         ...state,
         facts: appendFact(state, {

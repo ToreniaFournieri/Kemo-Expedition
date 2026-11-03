@@ -2,9 +2,11 @@ import assert from 'node:assert/strict';
 import { ENEMIES } from '../../src/data/enemies';
 import { executeApiV1CommitTransaction, type ApiV1CommitAuthorityDependencies, type ApiV1CommitAuthorityInput, type ApiV1ControlMetadata } from '../../src/api/v1/authority';
 import { planCharacterBuildChange } from '../../src/api/v1/buildChange';
+import { buildDefaultNamePools, pickDefaultName, stableUnitRandom } from '../../src/game/defaultNames';
+import { translate } from '../../src/i18n';
 import { characterEditToChangeBuildParameters } from '../../src/api/v1/characterBuildParameters';
 import { applyApiV1Commit, type ApiV1CommitContext } from '../../src/api/v1/commitOperations';
-import { buildApiV1ReadData } from '../../src/api/v1/readModels';
+import { readCharacterBuild } from './apiV1CharacterRead.ts';
 import { createFreshGameState, gameReducer } from '../../src/hooks/useGameState';
 import type { GameState } from '../../src/types';
 
@@ -57,6 +59,28 @@ fails(base, characterId, { racesAndGender: 'mimorian/female/999999' }, 'illegal_
   assert.equal(character(mimorian.state).mimorianEnemyId, enemyId);
 }
 
+// SpecRef: 8.2.3 | Default Name Assignment | Trigger: when `Race` is changed — the API names the character as the Party editor does.
+{
+  const pools = buildDefaultNamePools((key) => translate('ja', key));
+  const otherNames = new Set(base.parties.flatMap((party) => party.characters).filter((entry) => entry.id !== characterId).map((entry) => entry.name));
+  const renamed = character(change(base, characterId, { racesAndGender: 'murid/male' }).state);
+  assert.ok(pools[1].murid!.male.includes(renamed.name), `${renamed.name} is a PT1 Murid male default name`);
+  assert.equal(otherNames.has(renamed.name), false, 'an unused candidate is preferred');
+  assert.equal(planCharacterBuildChange(base, characterId, { racesAndGender: 'murid/male' }).updates.name, renamed.name, 'planning is deterministic');
+  assert.equal(character(change(base, characterId, { racesAndGender: 'murid/male', name: 'Kept' }).state).name, 'Kept', 'an explicit name wins');
+  const sameRace = character(base);
+  const genderOnly = `${sameRace.raceId}/${sameRace.gender === 'male' ? 'female' : 'male'}`;
+  const genderPlan = planCharacterBuildChange(base, characterId, { racesAndGender: genderOnly });
+  assert.equal(genderPlan.updates.name, undefined, 'a gender-only change keeps the name');
+  const enemyId = ENEMIES[0].id;
+  const unlocked: GameState = { ...base, global: { ...base.global, unlockedMimorianEnemyIds: [enemyId] } };
+  assert.equal(character(change(unlocked, characterId, { racesAndGender: `mimorian/female/${enemyId}` }).state).name, ENEMIES[0].name, 'a Mimorian takes its form name');
+  assert.equal(stableUnitRandom('a')(), stableUnitRandom('a')());
+  // PT1 lists no Procyonian names, so the other PTs' Procyonian names are used.
+  assert.ok(pools[2].procyonian!.male.includes(pickDefaultName(pools, 1, 'procyonian', 'male', new Set(), () => 0)!));
+  assert.equal(pickDefaultName(pools, 1, 'kemoria', 'male', new Set(), () => 0), undefined);
+}
+
 // Switching this melee character to support-only classes invalidates equipped melee gear and needs confirmation.
 const riskyParameters = { mainClassId: 'guardian', subClassId: 'guardian' };
 const riskyPlan = planCharacterBuildChange(base, characterId, riskyParameters);
@@ -73,7 +97,7 @@ function request(parameters: Record<string, unknown>, overrides: Partial<ApiV1Co
   return { operation: path(characterId, 'changeBuild'), expectedRevision: 0, idempotencyKey: 'change-build-key-001', requestId: 'build', parameters, uploadedFiles: {}, state: base, simulatedAt: now, control: control(), ...overrides };
 }
 
-// The contract's own confirmation protocol (Spec 9.1.3, 3-3-2): `simulation` reports without committing, and a change
+// The contract's own confirmation protocol (Spec 9.1.3, 3-3-3): `simulation` reports without committing, and a change
 // that needs confirmation applies only with `confirmation: yes`. The generic 9.1.4.5 challenge is never issued.
 {
   const simulated = change(base, characterId, riskyParameters, { simulation: true });
@@ -108,7 +132,7 @@ function request(parameters: Record<string, unknown>, overrides: Partial<ApiV1Co
 
   // `calculatedStatus` previews the requested build: the simulation reports exactly the status the confirmed change
   // commits (removed equipment included), and a cancelled change reports the unchanged status.
-  const statusOf = async (state: GameState) => (await buildApiV1ReadData(`read/build/character/${characterId}/status`, state, {}, {
+  const statusOf = async (state: GameState) => (await readCharacterBuild('status', characterId, state, {}, {
     revision: 0, environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, inGameTime: now,
   })).calculatedStatus;
   assert.deepEqual(simulated.data.calculatedStatus, await statusOf(confirmed.state), 'a simulation previews the committed status');
@@ -170,7 +194,7 @@ fails(base, uniqueCharacterId, { name: 'renamed unique' }, 'illegal_action', { s
 {
   const enemyId = ENEMIES[0].id;
   const unlocked: GameState = { ...base, global: { ...base.global, unlockedMimorianEnemyIds: [enemyId] } };
-  const status = await buildApiV1ReadData(`read/build/character/${characterId}/status`, unlocked, {}, {
+  const status = await readCharacterBuild('status', characterId, unlocked, {}, {
     revision: 0, environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, inGameTime: now,
   }) as { current: { racesAndGender: string }; validOptions: { racesAndGender: string[]; lineage: string[]; predisposition: string[] } };
   assert.ok(status.validOptions.racesAndGender.includes(`mimorian/female/${enemyId}`));
@@ -179,7 +203,7 @@ fails(base, uniqueCharacterId, { name: 'renamed unique' }, 'illegal_action', { s
   assert.ok(status.validOptions.lineage.every((id) => id !== 'unascertained'));
   assert.ok(status.validOptions.predisposition.every((id) => id !== 'none'));
 
-  const uniqueStatus = await buildApiV1ReadData(`read/build/character/${uniqueCharacterId}/status`, base, {}, {
+  const uniqueStatus = await readCharacterBuild('status', uniqueCharacterId, base, {}, {
     revision: 0, environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, inGameTime: now,
   }) as { validOptions: { racesAndGender: string[]; lineage: string[]; predisposition: string[] } };
   assert.deepEqual(uniqueStatus.validOptions.racesAndGender, ['none']);
@@ -208,3 +232,67 @@ fails(base, uniqueCharacterId, { name: 'renamed unique' }, 'illegal_action', { s
 }
 
 console.log('apiV1BuildChange profile ok');
+
+// SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique selection: "固有"
+// SpecRef: 9.1.3 | 3-3-3 changeBuild | uniqueSelection
+{
+  const kemo = base.parties[0].characters[0];
+  const normalId = base.parties[0].characters[2].id;
+  const statusOf = async (state: GameState, id: number) => await readCharacterBuild('status', id, state, {}, {
+    revision: 0, environment: 'dev', gameMode: 'mode.normal', enemyLevelOffset: 0, inGameTime: now,
+  }) as { current: { uniqueSelection: unknown }; validOptions: { uniqueSelection: unknown[] } };
+  // PT2 unlocked, so `orca` (Available At PT2) is selectable below.
+  const wide: GameState = { ...base, parties: [...base.parties, { ...base.parties[0], id: 2, characters: base.parties[0].characters.map((entry) => ({ ...entry, id: entry.id + 1000, isUnique: false, uniqueCharacterId: undefined })) }] };
+  assert.equal(kemo.uniqueCharacterId, 'kemo');
+  assert.equal((await statusOf(base, normalId)).current.uniqueSelection, 'none');
+  assert.equal((await statusOf(base, normalId)).validOptions.uniqueSelection.includes('kemo'), false, 'assigned uniques are excluded');
+  assert.equal((await statusOf(wide, normalId)).validOptions.uniqueSelection.includes('orca'), true);
+  assert.equal((await statusOf(base, kemo.id)).validOptions.uniqueSelection.includes('kemo'), true, 'its own unique stays listed');
+
+  fails(base, normalId, { uniqueSelection: 'kemo' }, 'illegal_action:unique_character_assigned');
+  fails(base, normalId, { uniqueSelection: 'nobody' }, 'invalid_request');
+  fails(base, normalId, { uniqueSelection: false }, 'invalid_request');
+  // SpecRef: 2.1.4.2 | `Available At`: a unique character needs its PT unlocked.
+  {
+    const unlocked = base.parties.length;
+    const lockedIds = ['leonard', 'orca', 'nox', 'luna', 'mishka', 'ptitsa', 'hagakure', 'sougaha', 'finn', 'merle']
+      .filter((id) => ({ leonard: 2, orca: 2, nox: 3, luna: 3, mishka: 4, ptitsa: 4, hagakure: 5, sougaha: 5, finn: 6, merle: 6 } as Record<string, number>)[id] > unlocked);
+    const options = (await statusOf(base, normalId)).validOptions.uniqueSelection;
+    for (const id of lockedIds) {
+      assert.equal(options.includes(id), false, `${id} is not listed before its PT unlocks`);
+      fails(base, normalId, { uniqueSelection: id }, 'illegal_action:unique_character_unavailable');
+    }
+  }
+  fails(wide, normalId, { uniqueSelection: 'orca', name: 'other' }, 'unique_character_immutable');
+
+  const picked = change(wide, normalId, { uniqueSelection: 'orca' }).state;
+  const orca = character(picked, normalId);
+  assert.deepEqual([orca.isUnique, orca.uniqueCharacterId, orca.raceId, orca.gender, orca.lineageId, orca.predispositionId],
+    [true, 'orca', 'orcinian', 'female', 'rowdy_orca_girl', 'none']);
+  assert.equal((await statusOf(picked, normalId)).current.uniqueSelection, 'orca');
+
+  // The race change can drop slots or aptitudes, so the release needs the usual confirmation.
+  const released = change(picked, kemo.id, { uniqueSelection: 'none' }, { simulation: false, confirmation: 'yes' }).state;
+  assert.deepEqual([character(released, kemo.id).isUnique, character(released, kemo.id).uniqueCharacterId], [false, undefined]);
+  // SpecRef: 8.2.3 | Changing a unique character to `false`: unique-only race falls back by table order, lineage/predisposition reset, gender/classes kept.
+  {
+    const before = character(picked, kemo.id);
+    const after = character(released, kemo.id);
+    const blockers = base.parties[0].characters.filter((member) => member.id !== kemo.id && member.isUnique !== true && member.gender === before.gender).map((member) => member.raceId);
+    const expectedRace = ['lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian', 'leporian', 'cervin', 'murid'].find((race) => !blockers.includes(race as never));
+    assert.deepEqual([after.raceId, after.lineageId, after.predispositionId], [expectedRace, 'sandstorm', 'aggressive']);
+    assert.deepEqual([after.gender, after.mainClassId, after.subClassId], [before.gender, before.mainClassId, before.subClassId]);
+    // A released unique takes a default name for its new race (ClaudeUQ: released uniques kept, and duplicated, their names).
+    const pools = buildDefaultNamePools((key) => translate('ja', key));
+    assert.notEqual(after.name, before.name);
+    assert.ok(pools[1][expectedRace as 'lupinian']![after.gender].includes(after.name), `${after.name} is a default name`);
+  }
+  // A unique whose race stays valid is renamed on release as well; an explicit name wins.
+  {
+    const orcaRelease = planCharacterBuildChange(picked, normalId, { uniqueSelection: 'none' });
+    assert.notEqual(orcaRelease.updates.name, undefined);
+    assert.notEqual(orcaRelease.updates.name, orca.name);
+    assert.equal(planCharacterBuildChange(picked, normalId, { uniqueSelection: 'none', name: 'Named' }).updates.name, 'Named');
+  }
+  assert.equal(character(change(released, normalId, { uniqueSelection: 'kemo' }).state, normalId).uniqueCharacterId, 'kemo');
+}

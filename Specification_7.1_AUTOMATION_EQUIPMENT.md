@@ -2,7 +2,12 @@
 
 ### 7.1 AUTOMATION EQUIPMENT
 
+- **API Read:**
+  - `read/build/party/{p}/gaSearch`
+  - `read/build/party/{p}/directedBuild`
+
 #### 7.1.1 AUTO equipment logic
+
 - The behavior of automatic equipment is controlled by `m.auto_equipment`.
  
 | Mode     | Description                    |
@@ -12,6 +17,17 @@
 | `FULL` | Automatically **Run `7.1.2 FULL: Equipment logic`**.    |
 
 - Processing priority: Characters are processed sequentially in party order: Row1 → Row2 → … → Row6…
+
+- Scope:
+  * `considerItemsScope`
+    * Optional.
+    * Default: `normal`
+      * API only. The UI always uses `normal`.
+    * Options:
+      * `normal`: Candidate items come from the Inventory and the character's own equipment only. Other characters are never touched.
+      * `withinTargets`: Candidate items come from the Inventory and from the equipment of the characters in `targets`. Characters not in `targets` are never touched. Locked items are never taken. In `directedBuild`, only the initial equipment can be taken: once an item is assigned during the pass, it stays with that character. `gaSearch` distributes the pooled items among the targets as a whole (see `9.1.3`, 2-3-2).
+      * `global`: Candidate items come from the Inventory and from every character's equipment, including other parties. Locked items are never taken. In `directedBuild`, only the initial equipment can be taken: once an item is assigned during the pass, it stays with that character. `gaSearch` distributes the pooled items among the targets as a whole (see `9.1.3`, 2-3-2).
+  * A character that gives up an item keeps an empty slot. `SEMI` and `OFF` never fill empty slots; `FULL` does.
 
 #### 7.1.2 FULL: Equipment logic
 
@@ -378,3 +394,210 @@ at least one party member has an empty equipment slot.
 - notification logic. 
   - empty slot to equip item: PT2ニャンは 恐ろしい月鋼鏃の矢を装備した
   - exist item to equip another item: PT2ニャンは 恐ろしい月鋼鏃の矢 を 魔性の瞬撃の月鋼矢に装備しなおした 
+
+#### 7.1.5 Staged Equipment Tuning
+
+- **Read APIs:**
+  - `read/build/character/stagedEquipmentTuning`
+  - `read/expedition/{p}/simulationRun`
+
+- This is a read API. It never changes the save. If the final check (step 6) passes, the result returns the changes as `changeSummary` (see `9.1.3`, 2-3-8).
+
+- **Parameters:**
+  - `baselineRuns` (constant: `1000`)
+  - `quickRuns` (e.g., `100`, `300`, `1000`; default: `300`)
+  - `finalTuningRuns` (e.g., `300`, `500`, `1000`; default: `500`)
+  - `offenseElementRequest` (e.g., `e.fire`, `e.thunder`, `e.ice`, `e.none`; default: `noRequest`)
+  - `offenseElementTrialRuns` (e.g., `0`, `3`, `6`; default: `3`)
+  - `offenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
+  - `defenseElementTrialRuns` (e.g., `0`, `5`, `10`; default: `5`)
+  - `defenseElementCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
+  - `abilityTrialRuns` (e.g., `0`, `20`, `40`; default: `20`)
+  - `abilityCandidateCount` (e.g., `1`, `2`, `3`; default: `2`)
+  - `minImprovement` (e.g., `0.03`, `0.07`, `0.10`; default: `0.07`)
+  - `minGateImprovement` (e.g., `0.03`, `0.07`, `0.10`; default: `0.07`)
+  - `objective`
+    - Optional.
+    - Default: `success`.
+    - `success`, `minDefeat`, `gateDamage`, `experience`, `progress`
+    - The same objectives as every build search of the API (`9.1.3`, 2-0). See **Score** below.
+    - `gateDamage` simulates only the battle of one gate room (`gateRoom`) of the current destination: an elite gate room, or the boss room (the last gate).
+      - Each run starts that battle at `startHp` (default: full party HP).
+      - The rooms before it, the gates, and the depth limit are ignored. HP lost on the way to the room is not counted; use `success` or `progress` to include it.
+  - `gateRoom`, `startHp`
+    - Optional. See `9.1.3`, 2-0.
+  - `objectiveGuard`
+    - Optional. Default: none.
+    - A minimum on a second objective (`success`, `gateDamage`, or `progress`), so tuning for one objective cannot ruin another. Format, guard ranking, and guard rule: `9.1.3`, 2-0. See **Guard** below.
+  - `seed`
+    - Optional.
+    - Integer.
+    - Default: random.
+    - Fixed seed for a reproducible result. The same `seed` on the same save revision gives the same result.
+
+- **General rules:**
+  - Items come from the Inventory and this character's own equipment. Equipment of other characters is never taken. Locked equipment is never changed.
+  - **Item jars** (the same rule as `gaSearch`, `9.1.3`, 2-3-2):
+    - All copies of one item without a Super Rare title are one jar. Each Super Rare title of an item is a jar of its own, because each title has its own bonuses.
+    - Steps 2–4 choose jars, not copies: each jar is offered once, as the copy it would give.
+    - When a step places an item, it takes the highest-enhancement copy of that jar that the candidate has not used yet. So a lower-enhancement copy is placed only when every higher copy of the same jar is already used.
+    - Items that no step changes stay as they are: the tuning never upgrades a worn copy by itself (that is `SEMI`, 7.1.3). So each step's improvement measures only what that step tried.
+  - Do not select multiple items with the same bonus, since duplicate bonuses do not stack (e.g., two items with `r.ice+0.20` give the same effect as one).
+  - Setting a step's `...TrialRuns` to `0` skips that step.
+  - **Jewels:**
+    - Only slots whose item changed get a new Jewel. Jewels on unchanged slots are kept as they are.
+    - For the changed slots, assign Jewels with the Jewel allocation logic of `7.1.2.2` step 8, using:
+      - the Jewels freed from the items that left the character, and
+      - eligible Jewels in the Inventory, even if the character's party is not the `Jewel Priority Party` (unlike AUTO).
+    - Jewels on unchanged slots count as already used for the "one Jewel per item type and rank" rule.
+    - Jewels on other characters are never taken. Locked equipment keeps its Jewel.
+  - **Same dice:** Builds that are compared with each other are simulated with the same seed, so the difference comes from the build, not from luck.
+    - Steps 2–4: every candidate uses `quickRuns` and one shared seed. The current build is also simulated once with `quickRuns` and that seed, and each candidate is compared with that result (not with the step 1 baseline).
+    - Step 5: every build uses `finalTuningRuns` and a second shared seed, including the current build.
+    - Steps 1 and 6: both use `baselineRuns` and a third shared seed.
+    - These three seeds and the random item draws all derive from `seed`.
+  - **Score** (per `objective`):
+    - `success`: success rate (clear + return).
+      - If the success rate in step 1 is `0`, every step uses `progress` instead, because every build would tie at `0`. The response reports this as `scoredBy: progress`.
+    - `minDefeat`: defeat rate. Lower is better.
+    - `gateDamage`: average share of the enemy HP dealt in the gate room battle. A win counts as `1`.
+    - `experience`: average EXP per run.
+    - `progress`: average over runs of `(rooms cleared + share) / rooms on the route`.
+      - `share`: if the run ended by losing or drawing a battle, the share of enemy HP dealt in that battle. Otherwise `0`.
+      - Rooms on the route: the rooms up to the depth limit or the first closed gate.
+      - A run that clears every room on the route scores `1`.
+      - `progress` is an `objective` of its own, and also the score `success` falls back to.
+  - **Improvement:** the relative change on the rarer side of the score.
+    - `experience`: `ratio = candidateScore / currentScore`, a plain relative change (the score has no upper bound, so there is no rarer side).
+    - `success`, `gateDamage`, `progress`: `ratio = max(candidateScore / currentScore, (1 - currentScore) / (1 - candidateScore))`
+    - `minDefeat`: `ratio = max(currentScore / candidateScore, (1 - candidateScore) / (1 - currentScore))`
+    - In words: the larger of the relative rise of the good outcome and the relative fall of the bad outcome. Near `0` the first ratio decides, and near `1` the second one does, so `minImprovement` and `minGateImprovement` can be met at any score.
+    - Examples (`success`):
+      - `10% → 12%`: `max(1.200, 1.023) = 1.200`, a 20% improvement.
+      - `93% → 95%`: `max(1.022, 1.400) = 1.400`, a 40% improvement (failures fall from 7% to 5%).
+    - A denominator of `0` is treated as `0.001`.
+    - If both scores are equal, `ratio = 1`.
+    - `improvement = ratio - 1` (e.g., `ratio = 1.07` means a 7% improvement).
+  - **Qualify:** In steps 2–4, a candidate qualifies only if `improvement >= minImprovement`.
+  - **Luck check:** Used in step 6.
+    - `gain = afterScore - beforeScore` (for `minDefeat`: `beforeScore - afterScore`).
+    - `SE = sqrt(beforeVariance / runs + afterVariance / runs)`
+      - `variance`: the variance of the per-run score (the average of the squared per-run scores, minus the square of the average score).
+      - For `success` and `minDefeat`, each run scores `0` or `1`, so `variance = score × (1 - score)`.
+      - For `experience`, the per-run score is the run's EXP; `gain` is reported as a relative change (`9.1.3`, 2-0), but the check compares the EXP difference with its `SE`.
+    - `SE` is how much the difference usually moves by luck alone. `gain > 2 × SE` means the gain is very unlikely to be luck.
+  - **Guard** (`objectiveGuard`):
+    - Steps 2–4 qualify candidates on `objective` alone, so the quick screening costs no extra simulation.
+    - Step 5: every build is also measured on the guard objective with `finalTuningRuns` on the step 5 seed. An add or a swap is kept only if the new build ranks above the build before it by the guard ranking (`9.1.3`, 2-0). When both reach the guard, this is the same as `improvement > 0`.
+    - Step 6: the current build and the tuned build are also measured on the guard objective with `baselineRuns` on the step 1 seed. See step 6 for the acceptance rule.
+    - Cost: one extra guard simulation per step 5 build, plus two in steps 1 and 6.
+
+1. Run a baseline simulation and find the bottleneck
+   - Simulate the current build with `baselineRuns` runs (same as `read/expedition/{p}/simulationRun` with `numberOfRun=baselineRuns`).
+   - Bottleneck room: the room in `detail` with the highest `Draw + Retreat + Defeat`.
+     - If no run ends before the end of the route, use the boss room. If the boss room is out of reach, use the latest elite room.
+     - With `gateDamage`, the bottleneck room is always the gate room.
+   - Bottleneck enemies: the enemies of the bottleneck room. Steps 2–4 use them to decide what to try first.
+
+2. Evaluate alternative offense elements
+   - If `offenseElementRequest` is specified, use only the requested element and skip evaluating other elements.
+   - Otherwise, choose up to `offenseElementCandidateCount` elements other than the current one from `e.ice`, `e.thunder`, `e.fire`, and `e.none`.
+     - Try first the elements the bottleneck enemies resist least (e.g., an enemy with `r.fire_x1.3` and `r.ice_x1/5`: try `e.fire` before `e.ice`).
+   - Do not mix equipment of different elements. When switching elements, replace all elemental equipment.
+     - If a slot's category has no item of the new element (e.g., `i.sword` has only `e.fire`), use an item of the same category with no element.
+   - Repeat this step `offenseElementTrialRuns` times, drawing new items for each trial.
+   - Record the top `max(2, floor(offenseElementTrialRuns / 5))` candidates that qualify. If none qualify, record none.
+
+3. Evaluate alternative defense elements
+   - Build up to `defenseElementCandidateCount` combinations from `r.ice`, `r.thunder`, `r.fire`, and `r.none`, excluding the current combination.
+     - Try first the combination that resists the bottleneck enemies' attack element (e.g., `r.thunder` against `e.thunder+20`).
+   - Repeat this step `defenseElementTrialRuns` times, drawing new items for each trial.
+   - Record the top `max(2, floor(defenseElementTrialRuns / 5))` candidates that qualify. If none qualify, record none.
+
+4. Evaluate alternative item abilities
+   - Check the abilities granted by the current equipment.
+   - Try up to `abilityCandidateCount` items (one per jar, see **Item jars**) that grant abilities the character doesn't already have, each replacing one or more unlocked items.
+     - Try first items that grant a counter ability of `7.1.5.1` for the bottleneck room (e.g., `a.illusion-breaker` against an enemy with `a.illusion`; `a.true-sight` on a `terrain.fog` floor).
+       - A counter ability applies only if the character does not have it yet, and for a party-wide counter (marked in the table) only if no party member has it.
+       - If no item grants a counter ability, draw from all items as usual.
+   - Repeat this step `abilityTrialRuns` times, drawing new items for each trial. Do not draw an item that was already tried in this step.
+   - Record the top `max(2, floor(abilityTrialRuns / 5))` candidates that qualify. If none qualify, record none.
+
+5. Final tuning (greedy)
+   - Start from the current build. Every simulation in this step uses `finalTuningRuns`.
+   - Add pass:
+     - Put all candidates recorded in steps 2–4 into one list, sorted by their improvement (best first).
+     - Go through the list in order. Add each candidate to the build, and keep it only if the score improves compared with the build before adding it (`improvement > 0`; with `objectiveGuard`, if it ranks above that build by the guard ranking, see **Guard**).
+     - The build holds at most one step 2 candidate and one step 3 candidate. Skip a step 2 or step 3 candidate if one from the same step is already kept.
+     - Step 4 candidates can be combined (several ability items).
+     - If a candidate needs a slot that an earlier kept candidate already changed, use another unlocked slot. If no unlocked slot is left, skip the candidate.
+   - Swap pass:
+     - For steps 2 and 3, try each other recorded candidate in place of the kept one. Keep the swap only if the score improves (with `objectiveGuard`, if the build ranks higher by the guard ranking).
+   - The result is the tuned build.
+   - If no candidate is kept, there is no change.
+   - Report: for each kept candidate, in the order of the kept list, the improvement of the build with this candidate and every candidate before it, compared with the current build (step 5 seed). After a swap, the swapped-in candidate takes the place of the one it replaced. The last value is the improvement of the tuned build.
+
+6. Run the simulation after tuning (final check)
+   - Simulate the tuned build with `baselineRuns` runs, using the same seed as step 1.
+   - Accept the tuned build only if both are true:
+     - `improvement >= minGateImprovement`
+     - `gain > 2 × SE`
+   - With `objectiveGuard` (measured on the same runs, see **Guard**):
+     - If the current build reaches the guard, the tuned build must reach it too, and both checks above must pass.
+     - If the current build does not reach it, the tuned build is accepted when it reaches the guard (the two checks above are then not required), or when both checks pass and its guard value is not lower than the current build's.
+   - Otherwise, discard the changes and keep the original build. `changeSummary` is empty.
+
+##### 7.1.5.1 Counter ability map
+
+- Used by step 4 to decide which abilities to try first. The map lists only **explicit** counters: abilities that the specification names as the answer to an enemy ability or a terrain effect.
+- Counters that work only through the battle rules (attack type, timing, melee avoidance, etc.) are not listed. The element steps (2 and 3) and the simulation itself cover them.
+- A row applies to the bottleneck room (step 1) when:
+  - **Enemy ability:** at least one enemy of the bottleneck room has the ability.
+  - **Terrain:** the terrain effect of the bottleneck room's floor is the listed terrain.
+
+**Enemy ability counters**
+
+| Enemy ability | Counter ability | Note |
+|-|-|-|
+| `a.counter`, `a.re-counter` | `a.null-counter` | Party-wide |
+| `a.illusion` | `a.illusion-breaker` | |
+| `a.bulwark` | `a.bulwark-breaker` | |
+| `a.defender` | `a.defender-breaker` | |
+| `a.m-barrier`, `a.magical-reflect`, `a.magical-absorb` | `a.m-barrier-breaker` | |
+| fire reflect / absorb | `a.fire-protect-breaker` | |
+| ice reflect / absorb | `a.ice-protect-breaker` | |
+| thunder reflect / absorb | `a.thunder-protect-breaker` | |
+| `a.stealth`, `a.flee` | `a.pursuit` | |
+| `a.rage` | `a.rage-breaker` | |
+| `a.momentum` | `a.momentum-breaker` | |
+| `a.execution` | `a.execution-null` | |
+| `a.ambush` | `a.anti-ambush` | |
+| `a.overwatch` | `a.anti-overwatch` | |
+| `a.oblivion`, `a.fading_memory` | `a.unforgettable` | |
+| `a.shock` | `a.null-shock` | |
+| `a.corrode` | `a.null-corrode` | |
+| `a.life-drain` | `a.null-life-drain` | |
+| `a.death-touch` | `a.null-death-touch` | |
+| `a.burn` | `a.null-burn` | |
+| `a.bind` | `a.null-bind` | |
+| `a.frostbite` | `a.coldproof` | |
+| `a.reanimate` | `a.requiem` | |
+
+**Terrain counters**
+
+| Terrain | Counter ability | Note |
+|-|-|-|
+| `terrain.rough-waves`, `terrain.heavy-wind`, `terrain.burrow`, `terrain.gravity` | `a.output-stabilizer` | Penalty terrains only. Not a counter on `terrain.low-gravity` and `terrain.limestone-cave`: it would also remove their bonus |
+| `terrain.tailwind` | `a.wind-rider` | |
+| `terrain.fog`, `terrain.ash-haze` | `a.true-sight` | |
+| `terrain.machine-logic`, `terrain.silence-field` | `a.equation-breaker` | |
+| `terrain.floor-domain`, `terrain.cap-domain`, `terrain.echo-domain`, `terrain.silence-field`, `terrain.duelist-domain`, `terrain.sniper-domain`, `terrain.spell-domain` | `a.domain-breaker` | |
+| `terrain.suppression` | `a.defiance` | |
+| `terrain.deletion` | `a.unforgettable` | |
+| `terrain.dry` | `a.dryproof` | |
+| `terrain.vine-snare` | `a.vine-cutter` | |
+| `terrain.crystal-zone`, `terrain.mana-burn` | `a.mana-ward` | |
+| `terrain.fortified` | `a.siege` | |
+
+- `terrain.rotwood` disables healing abilities (`a.first-aid`, `a.regeneration`, `a.life-drain`, `God of Restoration`), but has no counter ability. A candidate that adds one of them does not gain priority from this map there.
+- Terrains not listed (e.g., `terrain.decay`, `terrain.heatwave`, `terrain.leakage`, `terrain.exposure`, `terrain.dark-field`, `terrain.frenzy`, `terrain.predation`, `terrain.sacred-judgement`, `terrain.conduction`, `terrain.thunderstorm`, `terrain.chain-lightning`, `terrain.chill`, `terrain.looping-path`, `terrain.transcendence`, `terrain.gehenna`) have no explicit counter ability, so they add no priority.

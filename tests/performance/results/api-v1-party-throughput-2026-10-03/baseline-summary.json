@@ -1,0 +1,138 @@
+{
+  "fresh": {
+    "sameRevisionReads": {
+      "calls": 1000,
+      "totalMs": 645,
+      "p50": 0.5,
+      "p95": 1.32,
+      "first100median": 0.66,
+      "last100median": 0.42,
+      "phasesMs": {
+        "read.projection": 204.39999943971634
+      }
+    },
+    "actualMutations": {
+      "calls": 1900,
+      "totalMs": 6311,
+      "p50": 3.58,
+      "p95": 6.21,
+      "first100median": 2.07,
+      "last100median": 5.87,
+      "phasesMs": {
+        "read.projection": 120.799999833107,
+        "authority.changeDetection": 44.80000019073486,
+        "save.serialization": 33.20000022649765,
+        "save.encoding": 405.0,
+        "account.IPCCommit": 3522.5000001490116
+      }
+    },
+    "noOpCommits": {
+      "calls": 1000,
+      "totalMs": 5768,
+      "p50": 5.65,
+      "p95": 6.8,
+      "first100median": 6.07,
+      "last100median": 6.25,
+      "phasesMs": {
+        "authority.changeDetection": 43.6000000834465,
+        "account.IPCCommit": 4706.099999934435
+      }
+    },
+    "receiptReplays": {
+      "calls": 1000,
+      "totalMs": 335,
+      "p50": 0.3,
+      "p95": 0.43,
+      "first100median": 0.3,
+      "last100median": 0.29,
+      "phasesMs": {}
+    },
+    "workflow": {
+      "kind": "workflow",
+      "fixture": "fresh",
+      "total": 4900,
+      "wallMs": 13260.046415,
+      "instrumentationWallMs": 1737.8219599999998,
+      "cpuMicros": {
+        "user": 5651466,
+        "system": 3048336
+      },
+      "checkpointCpuMicros": {
+        "user": 800432,
+        "system": 78541
+      },
+      "maximumRendererGapMs": 46.80000001192093,
+      "rendererGapSamples": 914,
+      "initialStateHash": "1311641abc9dfed80afb53bdcc359ccf0ed63b4442542b6b4e3faad972b05634",
+      "initialPersistedHash": "20a65006b1330bb1f25f18afeed52ddfb5af82c28d1047d9ecf23b9f65c81f71"
+    }
+  },
+  "d8": {
+    "sameRevisionReads": {
+      "calls": 1000,
+      "totalMs": 867,
+      "p50": 0.74,
+      "p95": 1.92,
+      "first100median": 0.93,
+      "last100median": 0.7,
+      "phasesMs": {
+        "read.projection": 378.0000001192093
+      }
+    },
+    "actualMutations": {
+      "calls": 1900,
+      "totalMs": 112372,
+      "p50": 85.96,
+      "p95": 113.43,
+      "first100median": 81.82,
+      "last100median": 90.63,
+      "phasesMs": {
+        "read.projection": 1013.7999998629093,
+        "authority.changeDetection": 2624.4999995827675,
+        "save.serialization": 17058.600000202656,
+        "save.encoding": 84745.49999982119,
+        "account.IPCCommit": 7423.8999999165535
+      }
+    },
+    "noOpCommits": {
+      "calls": 1000,
+      "totalMs": 10455,
+      "p50": 10.22,
+      "p95": 12.6,
+      "first100median": 9.34,
+      "last100median": 11.08,
+      "phasesMs": {
+        "authority.changeDetection": 1708.2999999523163,
+        "account.IPCCommit": 6399.999999850988
+      }
+    },
+    "receiptReplays": {
+      "calls": 1000,
+      "totalMs": 367,
+      "p50": 0.32,
+      "p95": 0.51,
+      "first100median": 0.37,
+      "last100median": 0.31,
+      "phasesMs": {}
+    },
+    "workflow": {
+      "kind": "workflow",
+      "fixture": "d8",
+      "total": 4900,
+      "wallMs": 124900.64117000002,
+      "instrumentationWallMs": 17670.163704999963,
+      "cpuMicros": {
+        "user": 22666298,
+        "system": 6379707
+      },
+      "checkpointCpuMicros": {
+        "user": 9325985,
+        "system": 624620
+      },
+      "maximumRendererGapMs": 220.2999999821186,
+      "rendererGapSamples": 4834,
+      "initialStateHash": "ce22be24d548dfa577fa96a6401c062d828973c8e122011a2442286ef2968df2",
+      "initialPersistedHash": "a9910dd8ace98ccc313afbd0e47fd684829e0afa88c8b1a6e4f0a9d28e3ed311"
+    }
+  }
+}

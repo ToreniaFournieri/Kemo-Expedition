@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useGameState } from './hooks/useGameState';
-import { HomeScreen, preloadInitialHomeTab, preloadRemainingHomeTabs } from './components/HomeScreen';
+import { GameRuntimeHost, preloadInitialHomeTab, preloadRemainingHomeTabs } from './components/HomeScreen';
 import { createEnvironmentStorageKey, getEnvironmentId } from './game/environment';
 import { setLanguage, t } from './i18n';
 import { getThemeClassName, isGameModeAvailable } from './theme/theme';
@@ -179,8 +179,9 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-screen bg-surface-canvas text-content-primary ${appThemeClasses}`}>
-      <HomeScreen
+    <>
+      <GameRuntimeHost
+        uiClassName={`min-h-screen bg-surface-canvas text-content-primary ${appThemeClasses}`}
         state={state}
         actions={actions}
         bags={bags}
@@ -188,6 +189,6 @@ export default function App() {
         onDismissNotification={actions.dismissNotification}
         onDismissAllNotifications={actions.dismissAllNotifications}
       />
-    </div>
+    </>
   );
 }

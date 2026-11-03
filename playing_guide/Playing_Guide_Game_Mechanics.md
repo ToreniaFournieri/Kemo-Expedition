@@ -162,7 +162,7 @@ Chance for a normal title to be granted to common items.
 
 ## Rare Item Normal Titles
 
-Chance for a normal title to be granted to uncommon, elite rare, boss rare, and mythic rare items.
+Chance for a normal title to be granted to uncommon, rare, epic, and mythic items.
 
 | Normal Title | Chance |
 |---|---:|
@@ -195,10 +195,10 @@ Base performance modifier by rarity tier.
 | Rarity | Multiplier |
 |---|---:|
 | Common | x1.0 |
-| Uncommon | x1.2 |
-| Elite Rare | x1.6 |
-| Boss Rare | x2.4 |
-| Mythic Rare | x3.6 |
+| Uncommon | x1.35 |
+| Rare | x1.67 |
+| Epic | x2.0 |
+| Mythic | x2.4 |
 
 ## Super Rare Performance Boost
 

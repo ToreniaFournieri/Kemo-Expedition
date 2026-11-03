@@ -5,7 +5,7 @@ import type {
 
 export const DEFAULT_DIARY_SETTINGS: Readonly<DiarySettings> = {
   superRareThreshold: 'all',
-  bossThreshold: 'all',
+  epicThreshold: 'all',
   mythicThreshold: 'all',
   rareThreshold: 5,
   sideQuestThreshold: 'all',
@@ -30,14 +30,24 @@ export function normalizeDiaryDefeatNotificationMode(
   return 'defeatOnly';
 }
 
+// SpecRef: 8.5 | UI_DIARY | Setting (エピックレア通知)
+// Saves written before the item rarity rename store the Epic notification threshold as `bossThreshold`.
+// A current `epicThreshold` wins over the legacy key.
+export function upgradeLegacyDiarySettings<T extends object>(value: T): T {
+  if (!('bossThreshold' in value)) return value;
+  const { bossThreshold, ...current } = value as T & { bossThreshold?: unknown };
+  return ('epicThreshold' in current ? current : { ...current, epicThreshold: bossThreshold }) as T;
+}
+
 // SpecRef: 8.5 | UI_DIARY | Setting.
 export function getDiarySettingsWithDefaults(
   value: Partial<DiarySettings> | undefined,
 ): DiarySettings {
-  const raw = value as (Partial<DiarySettings> & { notifyDefeat?: unknown }) | undefined;
+  const upgraded = value ? upgradeLegacyDiarySettings(value) : value;
+  const raw = upgraded as (Partial<DiarySettings> & { notifyDefeat?: unknown }) | undefined;
   return {
     ...DEFAULT_DIARY_SETTINGS,
-    ...(value ?? {}),
+    ...(upgraded ?? {}),
     defeatNotificationMode: normalizeDiaryDefeatNotificationMode(
       raw?.defeatNotificationMode,
       raw?.notifyDefeat,

@@ -1,0 +1,5 @@
+baseline 100.0
+5 Selfin cervin slots 9 items 9 HP 11206 succ 100.0
+5 Selfin felidian slots 9 items 9 HP 11460 succ 100.0
+5 Selfin murid slots 9 items 9 HP 11180 succ 100.0
+5 Selfin vulpinian slots 9 items 9 HP 11507 succ 100.0

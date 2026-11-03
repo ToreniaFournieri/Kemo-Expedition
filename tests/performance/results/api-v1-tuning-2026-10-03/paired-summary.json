@@ -1,0 +1,119 @@
+{
+  "baseline": {
+    "commit/progress/elapsed": {
+      "samples": 6,
+      "medianMs": 92.82983349999995,
+      "minMs": 82.88795800000025,
+      "maxMs": 104.00712500000009,
+      "rendererGapMedianMs": 155.44999998807907,
+      "rendererGapMaxMs": 159.59999999403954,
+      "responseBytes": 456
+    },
+    "commit/setting/backup/export": {
+      "samples": 6,
+      "medianMs": 930.4204580000014,
+      "minMs": 814.1154580000002,
+      "maxMs": 978.444792000002,
+      "rendererGapMedianMs": 873.25,
+      "rendererGapMaxMs": 924.0999999940395,
+      "responseBytes": 1206644
+    },
+    "elapsed3600": {
+      "samples": 6,
+      "medianMs": 189.60785400000168,
+      "minMs": 170.4749159999992,
+      "maxMs": 197.6781669999982,
+      "rendererGapMedianMs": 152.6499999910593,
+      "rendererGapMaxMs": 161.90000000596046,
+      "responseBytes": 464
+    },
+    "elapsed43200": {
+      "samples": 6,
+      "medianMs": 379.4214795000007,
+      "minMs": 357.8351250000014,
+      "maxMs": 419.4377910000003,
+      "rendererGapMedianMs": 153.54999999701977,
+      "rendererGapMaxMs": 179.30000001192093,
+      "responseBytes": 468
+    },
+    "parityDifferences": []
+  },
+  "cache": {
+    "commit/progress/elapsed": {
+      "samples": 6,
+      "medianMs": 91.26987449999979,
+      "minMs": 84.63304200000039,
+      "maxMs": 99.2641249999997,
+      "rendererGapMedianMs": 159.0,
+      "rendererGapMaxMs": 173,
+      "responseBytes": 456
+    },
+    "commit/setting/backup/export": {
+      "samples": 6,
+      "medianMs": 900.3401874999981,
+      "minMs": 841.4530409999988,
+      "maxMs": 913.8996249999982,
+      "rendererGapMedianMs": 845.5499999970198,
+      "rendererGapMaxMs": 853.2999999821186,
+      "responseBytes": 1206644
+    },
+    "elapsed3600": {
+      "samples": 6,
+      "medianMs": 183.6176045000011,
+      "minMs": 171.11583299999984,
+      "maxMs": 197.89741700000013,
+      "rendererGapMedianMs": 145.04999999701977,
+      "rendererGapMaxMs": 158.59999999403954,
+      "responseBytes": 464
+    },
+    "elapsed43200": {
+      "samples": 6,
+      "medianMs": 302.35299999999916,
+      "minMs": 283.7928749999992,
+      "maxMs": 335.89987499999916,
+      "rendererGapMedianMs": 149.0,
+      "rendererGapMaxMs": 173.89999997615814,
+      "responseBytes": 468
+    },
+    "parityDifferences": []
+  },
+  "combined": {
+    "commit/progress/elapsed": {
+      "samples": 6,
+      "medianMs": 91.08333299999958,
+      "minMs": 84.73516699999982,
+      "maxMs": 106.7515829999993,
+      "rendererGapMedianMs": 149.04999999701977,
+      "rendererGapMaxMs": 169.2999999821186,
+      "responseBytes": 456
+    },
+    "commit/setting/backup/export": {
+      "samples": 6,
+      "medianMs": 504.8963125,
+      "minMs": 486.69545800000014,
+      "maxMs": 522.428750000001,
+      "rendererGapMedianMs": 455.59999999403954,
+      "rendererGapMaxMs": 470,
+      "responseBytes": 1206644
+    },
+    "elapsed3600": {
+      "samples": 6,
+      "medianMs": 169.90660449999814,
+      "minMs": 166.47220899999957,
+      "maxMs": 177.81254199999967,
+      "rendererGapMedianMs": 143.25,
+      "rendererGapMaxMs": 157.80000001192093,
+      "responseBytes": 464
+    },
+    "elapsed43200": {
+      "samples": 6,
+      "medianMs": 289.9919585000007,
+      "minMs": 279.9912919999988,
+      "maxMs": 294.83058300000266,
+      "rendererGapMedianMs": 143.15000000596046,
+      "rendererGapMaxMs": 143.90000000596046,
+      "responseBytes": 468
+    },
+    "parityDifferences": []
+  }
+}

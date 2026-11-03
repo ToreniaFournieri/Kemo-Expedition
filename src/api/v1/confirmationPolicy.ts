@@ -4,7 +4,7 @@ import type { GameState } from '../../types';
 
 // SpecRef: 9.1.4.5 | Confirmation protocol | Confirmation challenge and choices
 // Decides, from one immutable snapshot, whether a commit needs the confirmation flow and which choices it offers.
-// `changeBuild` is not listed: it confirms through its own `simulation` and `confirmation` parameters (Spec 9.1.3, 3-3-2).
+// `changeBuild` is not listed: it confirms through its own `simulation` and `confirmation` parameters (Spec 9.1.3, 3-3-3).
 
 export interface ApiV1ConfirmationPolicy {
   warningKey: string;

@@ -11,36 +11,67 @@
   - `commit/diary/{p}/diarySetting`
   - `commit/diary/diaryEntry/markAsRead`
 
-- The Diary has six subcategory tabs: PT1, PT2, PT3, PT4, PT5, PT6. (Default selected tab: `PT1`, or the last selected tab if previously selected.)
+- The Diary has subcategory tabs: `Global`, `PT1`, `PT2`, `PT3`, `PT4`, `PT5`, `PT6`. (Default selected tab: `Global`, or the last selected tab if previously selected.)
+
 - A Party tab becomes visible only when the corresponding Party is unlocked.
 - The selected tab is highlighted using the sub-theme color.
-- If only one Party is unlocked, the subcategory tabs are hidden.
 - Diary unread badges:
   - The main Diary tab displays a red unread badge, showing up to 49 unread entries. (Display `49+` when the count is 49 or greater.)
-  - Each Party subcategory tab also displays its own red unread badge, showing up to 12 unread entries for that Party.
-  - When the user leaves a Party subcategory tab, all entries in that tab are treated as read and its red badge is removed.
-  - The main Diary badge reflects the total number of unread diary entries across all Party subcategories.
+  - Each Party subcategory tab and global tab also displays its own red unread badge, showing up to unread entries for that Party.
+  - When the user leaves a Party subcategory or global tab, all entries in that tab are treated as read and its red badge is removed.
+  - The main Diary badge reflects the total number of unread diary entries across global and all Party subcategories.
 - Each Party has its own independent Diary.
-- Each Party Diary keeps a maximum of 12 entries.
-- Existing Diary entries remain until a new entry is created for that Party. Creating an entry removes only the oldest entries needed to restore the 12-entry maximum; opening, loading, or saving the game must not remove entries.
-- The diary is updated when any of the following events occur:
+- Entry:
+  - Global Diary keeps a maximum of 99 entries.
+    - Existing Global Diary entries remain until a new entry is created. Creating an entry removes only the oldest entries needed to restore the 99-entry maximum; opening, loading, or saving the game must not remove entries.
+  - Each Party Diary keeps a maximum of 12 entries.
+    - Existing party Diary entries remain until a new entry is created for that Party. Creating an entry removes only the oldest entries needed to restore the 12-entry maximum; opening, loading, or saving the game must not remove entries.
+- The **party diary** is updated when any of the following events occur:
   - The party is defeated.
-  - The party obtains a Boss Rare or Mythic Rare item.
+  - The party obtains a Epic or Mythic item.
   - A Gods Battle occurs.
   - The party obtains a Super Rare item.
-  - The party defeats an expedition boss for the first time and unlock a new party
+- The **global Diary** is updated when any of the following events occur:
+  1. **Account creation**
+     - Flavor text: `ケモは目覚めた`
+  2. **First expedition boss defeat**
+     - Triggered when any party defeats an expedition boss for the first time.
+     - Format example: `[PT1] ルピニアンの亜寒帯 初踏破`
+     - If the victory unlocks a new party, include information about the newly unlocked party in the entry.
+  3. **First god defeat**
+     - Triggered when any party defeats a god for the first time.
+     - Format example: `[PT1] セイラン 再生の女神撃破`
+  4. **Achievements**
+     - Achievement statistics are tracked internally and are not cleared by the Statistics reset button.
+     - **Clear milestones:** `100`, `1,000`, `10,000`, `100,000`, and `1,000,000` total Clear outcomes.
+       - Format example: `1,000回 踏破達成`
+     - **Super Rare milestones:** `1`, `10`, `100`, `1,000`, and `10,000` Super Rare items held in inventory.
+       - Format example: `超レア 100個 入手`
+     - **Jewel milestones:** `1`, `10`, `100`, `1,000`, and `10,000` jewels held in inventory.
+       - Format example: `結晶 100個 入手`
+     - Each achievement milestone is recorded only once.
+       - After a milestone has been recorded, it is not triggered again even if the value later falls below the threshold and reaches it again.
+- Global Diary entries contain only a title and do not include detailed battle logs.
 - First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
 - Top record is latest (default position) and bottom is older logs.
 - Use the emulated in-game timestamp rather than the device or system timestamp.
 
-- Setting. 
+**Setting**
+
+**Setting Global Diary**
+
+- No setting pane.
+
+
+**Setting Party Diary**
+
 ```
 日誌記録設定                 ▼
 
 **日誌更新**
 * 超レア通知 (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
-* エリートレア通知 (pull down list) 全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default:恐ろしい以上)
-* ボスレア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
+* レア通知 (pull down list) 全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default:恐ろしい以上)
+* エピックレア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
 * 神魔戦通知 (pull down list) あり/なし
 * 神魔レア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
 * 一般通知 敗北のみ/敗北と引分/敗北と引分と撤退/全て/なし (Default: 敗北のみ)
@@ -54,23 +85,36 @@
  (Ref: 8.1.1 Popup Notification Logic & Display @Specification_8.1_UI_FOUNDATIONS.md)
 ```
 
-- Title of dirary 
+
+**Title of global diary**
+
+line 1: [PT1] ヴァルンの海洋 初踏破
+line 2 gray text: PT2解放     2026/02/14 07:04
+line 1: [PT1] ルピニアンの亜寒帯 初踏破
+line 2 gray text:      2026/02/13 13:04
+(Left-Aligned)         (Right-aligned)
+line 1: [PT1] ケイナイアン平原 初踏破
+line 2 gray text:     2026/02/12 21:28
+line 1: ケモは目覚めた
+line 2 gray text:     2026/02/11 21:00
+
+**Title of party diary**
 ```
 (Left-Aligned)         (Right-aligned)
-line 1: [PT2]ボスレア(秘奥真理の書) 獲得      ▼
-line 2 gray text: ケイナイアン平原      02/12 20:28
+line 1: [PT2]エピックレア(秘奥真理の書) 獲得      ▼
+line 2 gray text: ケイナイアン平原      2026/02/12 20:28
 (Left-Aligned)         (Right-aligned)
 line 1: [PT1] 敗北の記録           ▼
-line 2 gray text: ヴァルンの樹林帯      02/12 20:28
+line 2 gray text: ヴァルンの樹林帯      2026/02/12 20:28
 (Left-Aligned)         (Right-aligned)
 line 1: [PT1] サイドクエスト達成(散財1,000G)           
-line 2 gray text: ウルサンの霊峰: 剛力の雅晶 を手に入れた     02/12 20:28
+line 2 gray text: ウルサンの霊峰: 剛力の雅晶 を手に入れた     2026/02/12 20:28
 (Left-Aligned)         (Right-aligned)
 line 1: [PT1] セイラン 再生の女神撃破          ▼
-line 2 gray text:      02/12 21:28
+line 2 gray text:      2026/02/12 21:28
 (Left-Aligned)         (Right-aligned)
 line 1: [PT1] ガーヴ 消耗の神撃破          ▼
-line 2 gray text:     02/12 21:28
+line 2 gray text:     2026/02/12 21:28
 
 ```
 
@@ -82,8 +126,9 @@ line 2 gray text:     02/12 21:28
    
 ```
 line 1: [PT1] セイラン 再生の女神 敗北          ▼
-line 2 gray text: ケイナイアン平原     02/12 21:28
+line 2 gray text: ケイナイアン平原     2026/02/12 21:28
 ```
+
 
 ### Compact language-neutral records
 - New expedition and Diary records use `compactVersion: 1`. Preserve all facts necessary for the existing UI; generate narration only for expanded rooms using the current language, without combat execution or random draws.

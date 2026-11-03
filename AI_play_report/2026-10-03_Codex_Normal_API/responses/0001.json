@@ -1,0 +1,14 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "dfb1d577-a12b-4f32-bf36-41adb605e1ea",
+  "revision": 0,
+  "observedAt": "2026-10-03T06:40:03.563Z",
+  "data": {
+    "userId": "CodexNormal1003",
+    "environment": "prod",
+    "gameMode": "normal",
+    "levelOffsetForOrca": null,
+    "revision": 0
+  }
+}

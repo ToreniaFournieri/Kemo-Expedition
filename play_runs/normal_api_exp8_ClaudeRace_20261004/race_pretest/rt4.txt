@@ -1,0 +1,9 @@
+baseline 17.3
+5 Selfin leporian slots 9 items 9 HP 23527 succ 15.7
+5 Selfin murid slots 9 items 9 HP 23375 succ 15.3
+5 Selfin vulpinian slots 9 items 9 HP 23796 succ 18.5
+5 Selfin lupinian slots 9 items 9 HP 23502 succ 17.1
+5 Selfin felidian slots 9 items 9 HP 23745 succ 27.9
+5 Selfin procyonian slots 9 items 9 HP 24308 succ 18.0
+5 Selfin ursan slots 11 items 9 HP 24167 succ 14.0
+5 Selfin caninian slots 9 items 9 HP 23895 succ 16.1

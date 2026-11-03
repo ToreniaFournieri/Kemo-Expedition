@@ -1,0 +1,226 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "874c0152-0a60-4f14-9dd3-35b799015ced",
+  "revision": 117,
+  "observedAt": "2026-10-03T08:16:02.153Z",
+  "data": {
+    "expeditionInfo": {
+      "parties": [
+        {
+          "partyNumber": 1,
+          "name": "PT1",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 8606,
+          "maximumHp": 8606,
+          "disclosedFloor": 5,
+          "disclosedOutcome": "Defeat",
+          "destination": 6,
+          "destinationMode": "fixed",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 3,
+          "chargeDuration": 2880,
+          "clearGates": [],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": true,
+              "unavailableReason": null
+            }
+          }
+        },
+        {
+          "partyNumber": 2,
+          "name": "PT2",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 4670,
+          "maximumHp": 4670,
+          "disclosedFloor": 5,
+          "disclosedOutcome": "Retreat",
+          "destination": 4,
+          "destinationMode": "auto",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 6,
+          "chargeDuration": 0,
+          "clearGates": [
+            {
+              "kind": "entryGate",
+              "dungeonId": 5,
+              "floor": null,
+              "current": 0,
+              "required": 1
+            },
+            {
+              "kind": "godEntry",
+              "dungeonId": 4,
+              "floor": null,
+              "current": 0,
+              "required": 1
+            }
+          ],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": false,
+              "unavailableReason": "gods_battle_unavailable"
+            }
+          }
+        },
+        {
+          "partyNumber": 3,
+          "name": "PT3",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 5670,
+          "maximumHp": 5670,
+          "disclosedFloor": 6,
+          "disclosedOutcome": "Defeat",
+          "destination": 4,
+          "destinationMode": "auto",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 6,
+          "chargeDuration": 0,
+          "clearGates": [
+            {
+              "kind": "entryGate",
+              "dungeonId": 5,
+              "floor": null,
+              "current": 0,
+              "required": 1
+            },
+            {
+              "kind": "godEntry",
+              "dungeonId": 4,
+              "floor": null,
+              "current": 0,
+              "required": 1
+            }
+          ],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": false,
+              "unavailableReason": "gods_battle_unavailable"
+            }
+          }
+        },
+        {
+          "partyNumber": 4,
+          "name": "PT4",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 3228,
+          "maximumHp": 3228,
+          "disclosedFloor": 6,
+          "disclosedOutcome": "Defeat",
+          "destination": 4,
+          "destinationMode": "auto",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 6,
+          "chargeDuration": 0,
+          "clearGates": [
+            {
+              "kind": "entryGate",
+              "dungeonId": 5,
+              "floor": null,
+              "current": 0,
+              "required": 1
+            },
+            {
+              "kind": "godEntry",
+              "dungeonId": 4,
+              "floor": null,
+              "current": 0,
+              "required": 1
+            }
+          ],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": false,
+              "unavailableReason": "gods_battle_unavailable"
+            }
+          }
+        },
+        {
+          "partyNumber": 5,
+          "name": "PT5",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 489,
+          "maximumHp": 489,
+          "disclosedFloor": 2,
+          "disclosedOutcome": "Retreat",
+          "destination": 1,
+          "destinationMode": "auto",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 3,
+          "chargeDuration": 0,
+          "clearGates": [
+            {
+              "kind": "eliteGate",
+              "dungeonId": 1,
+              "floor": 2,
+              "current": 0,
+              "required": 6
+            }
+          ],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": false,
+              "unavailableReason": "gods_battle_unavailable"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

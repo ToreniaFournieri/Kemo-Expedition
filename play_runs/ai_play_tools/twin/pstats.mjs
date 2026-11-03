@@ -1,0 +1,4 @@
+import {T} from './lib.mjs'; import * as O from './opt.mjs'; import {replay} from './replay.mjs'; import {readFileSync} from 'node:fs';
+const [,,file,plan]=process.argv; const s=T.loadSave(file); (await import('./race.mjs')).applyRace(s); const m=O.buildModel(s,0); if(plan&&plan!=='none') replay(m,JSON.parse(readFileSync(plan,'utf8')).calls);
+const p=m.p; console.log('HP',T.computePartyStats(p).partyStats.hp);
+for(const [i,c] of p.characters.entries()){const st=T.computeCharacterStatsInParty(p,i);console.log(c.name.padEnd(9),'R',st.rangedAttack,'x',st.rangedNoA,'M',st.magicalAttack,'x',st.magicalNoA,'acc',st.accuracyPotency?.toFixed?.(2),'pdef',st.physicalDefense,'mdef',st.magicalDefense,'el',st.elementalOffense,(+st.elementalOffenseValue).toFixed(2),c.equipment.map(e=>e?e.id+'/'+e.enhancement+(e.elementalOffense?e.elementalOffense[0]:''):'-').join(' '));}

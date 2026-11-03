@@ -292,15 +292,15 @@ test('save bag normalization migrates every bag and preserves Super Rare fallbac
   assert.deepEqual(normalized.commonSuperRareBag.entries, normalized.superRareBag.entries);
   assert.deepEqual(normalized.rareSuperRareBag.entries, normalized.superRareBag.entries);
   assert.deepEqual(Object.keys(normalized).sort(), [
-    'bossRareRewardBag',
     'commonEnhancementBag',
     'commonRewardBag',
     'commonSuperRareBag',
-    'eliteRareRewardBag',
     'enhancementBag',
+    'epicRewardBag',
     'magicalThreatBag',
-    'mythicRareRewardBag',
+    'mythicRewardBag',
     'physicalThreatBag',
+    'rareRewardBag',
     'rareSuperRareBag',
     'sideQuestBag',
     'superRareBag',

@@ -1,4 +1,4 @@
-import type { LineageId, RaceId } from '../../types/index.ts';
+import type { ItemRarity, LineageId, RaceId } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | base
 // The typed read model the Base panes consume. It contains only public projection facts.
@@ -11,7 +11,7 @@ export interface ShopEntryProjection {
   enhancement: number | null;
   superRare: number | null;
   price: number;
-  rarity: 'common' | 'uncommon' | 'eliteRare' | 'bossRare';
+  itemRarity: Exclude<ItemRarity, 'mythic'>;
   soldOut: boolean;
   available: boolean;
   unavailableReason: 'sold_out' | 'insufficient_gold' | null;

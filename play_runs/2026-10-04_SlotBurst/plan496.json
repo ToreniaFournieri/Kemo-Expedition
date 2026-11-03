@@ -1,0 +1,584 @@
+{
+ "save": "play_runs/2026-10-04_SlotBurst/cp494.kemoz",
+ "builds": [],
+ "order": [
+  1,
+  2,
+  4,
+  3,
+  6,
+  5
+ ],
+ "eq": {
+  "1": [
+   {
+    "item": "0/8306/1/0",
+    "jewel": "shade:1"
+   },
+   {
+    "item": "0/7402/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8101/4/0",
+    "jewel": "fort:2"
+   },
+   {
+    "item": "0/8504/2/0",
+    "jewel": "ward:1"
+   },
+   {
+    "item": "0/8102/4/0",
+    "jewel": "fort:1"
+   },
+   {
+    "item": "0/7402/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7406/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8301/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7101/4/0",
+    "jewel": "shade:1"
+   },
+   {
+    "item": "0/8103/4/0",
+    "jewel": "fort:3"
+   },
+   {
+    "item": "0/8301/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8301/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8301/0/0",
+    "jewel": null
+   }
+  ],
+  "2": [
+   {
+    "item": "0/6107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7312/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/4313/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/5107/5/0",
+    "jewel": "might:1"
+   },
+   {
+    "item": "0/3213/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6217/3/0",
+    "jewel": "focus:3"
+   },
+   {
+    "item": "0/7316/0/0",
+    "jewel": "focus:2"
+   },
+   {
+    "item": "0/6313/0/0",
+    "jewel": "focus:1"
+   },
+   {
+    "item": "0/8107/5/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8213/0/0",
+    "jewel": null
+   }
+  ],
+  "3": [
+   {
+    "item": "0/6313/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8217/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/4107/5/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/5107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6213/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2107/6/0",
+    "jewel": "might:1"
+   },
+   {
+    "item": "0/8213/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6213/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7312/0/0",
+    "jewel": null
+   }
+  ],
+  "4": [
+   {
+    "item": "0/2107/6/0",
+    "jewel": "might:2"
+   },
+   {
+    "item": "0/8107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/5107/5/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7312/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6313/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/4313/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8217/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8213/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3213/1/0",
+    "jewel": null
+   }
+  ],
+  "5": [
+   {
+    "item": "0/8219/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6315/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6223/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7110/5/0",
+    "jewel": "arcana:1"
+   },
+   {
+    "item": "0/3110/6/0",
+    "jewel": "arcana:4"
+   },
+   {
+    "item": "0/8321/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/5110/5/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3223/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6110/5/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8223/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8112/1/0",
+    "jewel": null
+   }
+  ],
+  "6": [
+   {
+    "item": "0/6103/6/0",
+    "jewel": "ward:3"
+   },
+   {
+    "item": "0/8103/5/0",
+    "jewel": "shade:2"
+   },
+   {
+    "item": "0/8103/5/0",
+    "jewel": "shade:2"
+   },
+   {
+    "item": "0/5401/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/5401/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/5401/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/5401/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/5401/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6102/6/0",
+    "jewel": "fort:2"
+   },
+   {
+    "item": "0/8103/4/0",
+    "jewel": "ward:2"
+   }
+  ]
+ },
+ "initialEq": {
+  "1": [
+   {
+    "item": "0/8101/4/0",
+    "jewel": "fort:1"
+   },
+   {
+    "item": "0/7402/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8504/2/0",
+    "jewel": "shade:1"
+   },
+   {
+    "item": "0/7406/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8102/4/0",
+    "jewel": "ward:1"
+   },
+   {
+    "item": "0/7402/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8103/4/0",
+    "jewel": "shade:2"
+   },
+   {
+    "item": "0/7304/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7101/4/0",
+    "jewel": "shade:1"
+   },
+   {
+    "item": "0/8301/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8301/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8301/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8301/0/0",
+    "jewel": null
+   }
+  ],
+  "2": [
+   {
+    "item": "0/6107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7312/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/5107/5/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3213/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6217/3/0",
+    "jewel": "focus:3"
+   },
+   {
+    "item": "0/7316/0/0",
+    "jewel": "focus:2"
+   },
+   {
+    "item": "0/6313/0/0",
+    "jewel": "focus:1"
+   },
+   {
+    "item": "0/8107/5/0",
+    "jewel": "might:1"
+   },
+   {
+    "item": "0/8213/0/0",
+    "jewel": null
+   }
+  ],
+  "3": [
+   {
+    "item": "0/6313/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8217/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/4107/5/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6213/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/2107/6/0",
+    "jewel": "might:1"
+   },
+   {
+    "item": "0/8213/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6213/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7312/0/0",
+    "jewel": null
+   }
+  ],
+  "4": [
+   {
+    "item": "0/2107/6/0",
+    "jewel": "might:2"
+   },
+   {
+    "item": "0/8107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8213/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7312/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6313/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7107/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8217/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7107/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/5312/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3213/1/0",
+    "jewel": null
+   }
+  ],
+  "5": [
+   {
+    "item": "0/8219/3/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6315/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6223/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/7110/5/0",
+    "jewel": "arcana:1"
+   },
+   {
+    "item": "0/3110/6/0",
+    "jewel": "arcana:4"
+   },
+   {
+    "item": "0/3223/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/3219/5/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8223/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6110/5/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6112/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8112/4/0",
+    "jewel": null
+   }
+  ],
+  "6": [
+   {
+    "item": "0/6103/6/0",
+    "jewel": "ward:3"
+   },
+   {
+    "item": "0/8103/5/0",
+    "jewel": "shade:2"
+   },
+   {
+    "item": "0/8103/5/0",
+    "jewel": "ward:2"
+   },
+   {
+    "item": "0/5401/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8301/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8301/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6408/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/8301/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/6102/6/0",
+    "jewel": "fort:2"
+   },
+   {
+    "item": "0/8504/0/0",
+    "jewel": null
+   }
+  ]
+ },
+ "initialOrder": [
+  1,
+  2,
+  4,
+  3,
+  6,
+  5
+ ]
+}

@@ -1,0 +1,2476 @@
+{
+  "sourceRevision": 168,
+  "party": {
+    "id": 1,
+    "name": "PT1",
+    "level": 31,
+    "experience": 0,
+    "defeatedBossExpeditions": {
+      "1": true,
+      "2": true,
+      "3": true,
+      "4": true,
+      "5": true,
+      "6": true,
+      "7": true
+    },
+    "clearGateProgress": {
+      "8014": 0,
+      "8024": 0,
+      "8034": 0,
+      "8044": 0,
+      "8054": 0
+    },
+    "clearGateStatus": {
+      "8014": true
+    },
+    "deity": {
+      "name": "Goddess of Precision",
+      "uniqueAbilities": []
+    },
+    "characters": [
+      {
+        "id": 1,
+        "name": "Kemo",
+        "raceId": "kemoria",
+        "gender": "male",
+        "isUnique": true,
+        "mainClassId": "lord",
+        "subClassId": "lord",
+        "lineageId": "unascertained",
+        "predispositionId": "none",
+        "autoEquipmentMode": 1,
+        "equipment": [
+          {
+            "id": 6101,
+            "category": "armor",
+            "name": "機鋼外装",
+            "physicalDefense": 84,
+            "bonuses": [
+              {
+                "type": "physical_defense",
+                "value": 0.07
+              }
+            ],
+            "tier": 6,
+            "enhancement": 5,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 3406,
+            "category": "shield",
+            "name": "矢払盾",
+            "partyHP": 84,
+            "bonuses": [
+              {
+                "type": "ability",
+                "value": 1,
+                "abilityId": "deflection",
+                "abilityLevel": 1
+              }
+            ],
+            "tier": 3,
+            "enhancement": 0,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 4101,
+            "category": "armor",
+            "name": "骨綴じの鎧",
+            "physicalDefense": 49,
+            "bonuses": [
+              {
+                "type": "physical_defense",
+                "value": 0.09
+              }
+            ],
+            "tier": 4,
+            "enhancement": 6,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 6101,
+            "category": "armor",
+            "name": "機鋼外装",
+            "physicalDefense": 84,
+            "bonuses": [
+              {
+                "type": "physical_defense",
+                "value": 0.07
+              }
+            ],
+            "tier": 6,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7102,
+            "category": "robe",
+            "name": "星辰の法衣",
+            "magicalDefense": 92,
+            "bonuses": [
+              {
+                "type": "magical_defense",
+                "value": 0.06
+              }
+            ],
+            "tier": 7,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 5101,
+            "category": "armor",
+            "name": "錆鉄の鎧",
+            "physicalDefense": 63,
+            "bonuses": [
+              {
+                "type": "physical_defense",
+                "value": 0.08
+              }
+            ],
+            "tier": 5,
+            "enhancement": 5,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7103,
+            "category": "shield",
+            "name": "蒼月の盾",
+            "partyHP": 128,
+            "evasionBonus": 0.006,
+            "tier": 7,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7304,
+            "category": "shield",
+            "name": "蹄鉄の大盾",
+            "partyHP": 214,
+            "physicalDefense": 43,
+            "bonuses": [
+              {
+                "type": "ice_defense",
+                "value": 2
+              }
+            ],
+            "evasionBonus": 0.004,
+            "tier": 7,
+            "enhancement": 0,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7102,
+            "category": "robe",
+            "name": "星辰の法衣",
+            "magicalDefense": 92,
+            "bonuses": [
+              {
+                "type": "magical_defense",
+                "value": 0.06
+              }
+            ],
+            "tier": 7,
+            "enhancement": 3,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7103,
+            "category": "shield",
+            "name": "蒼月の盾",
+            "partyHP": 128,
+            "evasionBonus": 0.006,
+            "tier": 7,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7103,
+            "category": "shield",
+            "name": "蒼月の盾",
+            "partyHP": 128,
+            "evasionBonus": 0.006,
+            "tier": 7,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 6103,
+            "category": "shield",
+            "name": "シールド",
+            "partyHP": 96,
+            "evasionBonus": 0.007,
+            "tier": 6,
+            "enhancement": 5,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": {
+              "key": "ward",
+              "rank": 2
+            }
+          },
+          {
+            "id": 4103,
+            "category": "shield",
+            "name": "肋骨の盾",
+            "partyHP": 56,
+            "evasionBonus": 0.009,
+            "tier": 4,
+            "enhancement": 6,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": {
+              "key": "shade",
+              "rank": 3
+            }
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "name": "Sota",
+        "raceId": "ursan",
+        "gender": "male",
+        "isUnique": false,
+        "mainClassId": "ninja",
+        "subClassId": "ranger",
+        "lineageId": "abyssal_sea",
+        "predispositionId": "precise",
+        "autoEquipmentMode": 1,
+        "equipment": [
+          {
+            "id": 6215,
+            "category": "bolt",
+            "name": "銅片",
+            "rangedAttack": 90,
+            "rangedNoABonus": -2,
+            "evasionBonus": -0.006,
+            "elementalOffense": "thunder",
+            "elementalOffenseBonus": 0.09,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.06
+              }
+            ],
+            "tier": 6,
+            "enhancement": 2,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 6313,
+            "category": "archery",
+            "name": "鉄筒",
+            "rangedNoA": 0.67,
+            "rangedNoABonus": 8,
+            "partyHP": 53,
+            "accuracyBonus": 0.008,
+            "tier": 6,
+            "enhancement": 2,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": {
+              "key": "focus",
+              "rank": 1
+            }
+          },
+          {
+            "id": 5107,
+            "category": "arrow",
+            "name": "鋼羽矢",
+            "rangedAttack": 39,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.19
+              }
+            ],
+            "tier": 5,
+            "enhancement": 6,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": {
+              "key": "might",
+              "rank": 4
+            }
+          },
+          {
+            "id": 7107,
+            "category": "arrow",
+            "name": "星羽矢",
+            "rangedAttack": 68,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.17
+              }
+            ],
+            "tier": 7,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 6107,
+            "category": "arrow",
+            "name": "鋼芯矢",
+            "rangedAttack": 51,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.18
+              }
+            ],
+            "tier": 6,
+            "enhancement": 5,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 3314,
+            "category": "archery",
+            "name": "鯨髭の弓",
+            "rangedNoA": 1,
+            "rangedNoABonus": 5,
+            "accuracyBonus": 0.005,
+            "tier": 3,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 3213,
+            "category": "arrow",
+            "name": "波羽矢",
+            "rangedAttack": 30,
+            "elementalOffense": "thunder",
+            "elementalOffenseBonus": 0.12,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.2
+              }
+            ],
+            "tier": 3,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7107,
+            "category": "arrow",
+            "name": "星羽矢",
+            "rangedAttack": 68,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.17
+              }
+            ],
+            "tier": 7,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7109,
+            "category": "archery",
+            "name": "蒼穹の弓",
+            "rangedNoA": 0.3,
+            "rangedNoABonus": 7,
+            "accuracyBonus": 0.007,
+            "tier": 7,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 6109,
+            "category": "archery",
+            "name": "機弦弓",
+            "rangedNoA": 0.4,
+            "rangedNoABonus": 6,
+            "accuracyBonus": 0.006,
+            "tier": 6,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 6107,
+            "category": "arrow",
+            "name": "鋼芯矢",
+            "rangedAttack": 51,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.18
+              }
+            ],
+            "tier": 6,
+            "enhancement": 5,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Kuzunoha",
+        "raceId": "ursan",
+        "gender": "female",
+        "isUnique": false,
+        "mainClassId": "ninja",
+        "subClassId": "ranger",
+        "lineageId": "abyssal_sea",
+        "predispositionId": "precise",
+        "autoEquipmentMode": 1,
+        "equipment": [
+          {
+            "id": 6215,
+            "category": "bolt",
+            "name": "銅片",
+            "rangedAttack": 90,
+            "rangedNoABonus": -2,
+            "evasionBonus": -0.006,
+            "elementalOffense": "thunder",
+            "elementalOffenseBonus": 0.09,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.06
+              }
+            ],
+            "tier": 6,
+            "enhancement": 2,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 5109,
+            "category": "archery",
+            "name": "鉄弦の弓",
+            "rangedNoA": 0.4,
+            "rangedNoABonus": 5,
+            "accuracyBonus": 0.005,
+            "tier": 5,
+            "enhancement": 5,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7109,
+            "category": "archery",
+            "name": "蒼穹の弓",
+            "rangedNoA": 0.3,
+            "rangedNoABonus": 7,
+            "accuracyBonus": 0.007,
+            "tier": 7,
+            "enhancement": 3,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 6109,
+            "category": "archery",
+            "name": "機弦弓",
+            "rangedNoA": 0.4,
+            "rangedNoABonus": 6,
+            "accuracyBonus": 0.006,
+            "tier": 6,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 3213,
+            "category": "arrow",
+            "name": "波羽矢",
+            "rangedAttack": 30,
+            "elementalOffense": "thunder",
+            "elementalOffenseBonus": 0.12,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.2
+              }
+            ],
+            "tier": 3,
+            "enhancement": 3,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7107,
+            "category": "arrow",
+            "name": "星羽矢",
+            "rangedAttack": 68,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.17
+              }
+            ],
+            "tier": 7,
+            "enhancement": 3,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 6107,
+            "category": "arrow",
+            "name": "鋼芯矢",
+            "rangedAttack": 51,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.18
+              }
+            ],
+            "tier": 6,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7107,
+            "category": "arrow",
+            "name": "星羽矢",
+            "rangedAttack": 68,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.17
+              }
+            ],
+            "tier": 7,
+            "enhancement": 3,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7107,
+            "category": "arrow",
+            "name": "星羽矢",
+            "rangedAttack": 68,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.17
+              }
+            ],
+            "tier": 7,
+            "enhancement": 3,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 3107,
+            "category": "arrow",
+            "name": "貝羽矢",
+            "rangedAttack": 23,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.21
+              }
+            ],
+            "tier": 3,
+            "enhancement": 5,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": {
+              "key": "might",
+              "rank": 2
+            }
+          },
+          {
+            "id": 6213,
+            "category": "arrow",
+            "name": "雷尾矢",
+            "rangedAttack": 69,
+            "elementalOffense": "thunder",
+            "elementalOffenseBonus": 0.09,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.17
+              }
+            ],
+            "tier": 6,
+            "enhancement": 2,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "name": "Laika",
+        "raceId": "caninian",
+        "gender": "female",
+        "isUnique": true,
+        "mainClassId": "guardian",
+        "subClassId": "guardian",
+        "lineageId": "pioneer",
+        "predispositionId": "none",
+        "autoEquipmentMode": 1,
+        "equipment": [
+          {
+            "id": 7101,
+            "category": "armor",
+            "name": "天穹の鎧",
+            "physicalDefense": 112,
+            "bonuses": [
+              {
+                "type": "physical_defense",
+                "value": 0.06
+              }
+            ],
+            "tier": 7,
+            "enhancement": 2,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7102,
+            "category": "robe",
+            "name": "星辰の法衣",
+            "magicalDefense": 92,
+            "bonuses": [
+              {
+                "type": "magical_defense",
+                "value": 0.06
+              }
+            ],
+            "tier": 7,
+            "enhancement": 3,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7101,
+            "category": "armor",
+            "name": "天穹の鎧",
+            "physicalDefense": 112,
+            "bonuses": [
+              {
+                "type": "physical_defense",
+                "value": 0.06
+              }
+            ],
+            "tier": 7,
+            "enhancement": 2,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7101,
+            "category": "armor",
+            "name": "天穹の鎧",
+            "physicalDefense": 112,
+            "bonuses": [
+              {
+                "type": "physical_defense",
+                "value": 0.06
+              }
+            ],
+            "tier": 7,
+            "enhancement": 2,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7102,
+            "category": "robe",
+            "name": "星辰の法衣",
+            "magicalDefense": 92,
+            "bonuses": [
+              {
+                "type": "magical_defense",
+                "value": 0.06
+              }
+            ],
+            "tier": 7,
+            "enhancement": 3,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 5401,
+            "category": "armor",
+            "name": "熊厚鎧",
+            "physicalDefense": 126,
+            "partyHP": 76,
+            "vitalityBonus": 1,
+            "tier": 5,
+            "enhancement": 0,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 6102,
+            "category": "robe",
+            "name": "導線ローブ",
+            "magicalDefense": 69,
+            "bonuses": [
+              {
+                "type": "magical_defense",
+                "value": 0.07
+              }
+            ],
+            "tier": 6,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": {
+              "key": "ward",
+              "rank": 4
+            }
+          },
+          {
+            "id": 6102,
+            "category": "robe",
+            "name": "導線ローブ",
+            "magicalDefense": 69,
+            "bonuses": [
+              {
+                "type": "magical_defense",
+                "value": 0.07
+              }
+            ],
+            "tier": 6,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7103,
+            "category": "shield",
+            "name": "蒼月の盾",
+            "partyHP": 128,
+            "evasionBonus": 0.006,
+            "tier": 7,
+            "enhancement": 3,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7103,
+            "category": "shield",
+            "name": "蒼月の盾",
+            "partyHP": 128,
+            "evasionBonus": 0.006,
+            "tier": 7,
+            "enhancement": 3,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Lop",
+        "raceId": "leporian",
+        "gender": "female",
+        "isUnique": false,
+        "mainClassId": "ninja",
+        "subClassId": "ranger",
+        "lineageId": "abyssal_sea",
+        "predispositionId": "precise",
+        "autoEquipmentMode": 1,
+        "equipment": [
+          {
+            "id": 6215,
+            "category": "bolt",
+            "name": "銅片",
+            "rangedAttack": 90,
+            "rangedNoABonus": -2,
+            "evasionBonus": -0.006,
+            "elementalOffense": "thunder",
+            "elementalOffenseBonus": 0.09,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.06
+              }
+            ],
+            "tier": 6,
+            "enhancement": 2,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7217,
+            "category": "archery",
+            "name": "光闇の弓",
+            "rangedNoA": 0.41,
+            "rangedNoABonus": 8,
+            "accuracyBonus": 0.008,
+            "tier": 7,
+            "enhancement": 0,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 6107,
+            "category": "arrow",
+            "name": "鋼芯矢",
+            "rangedAttack": 51,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.18
+              }
+            ],
+            "tier": 6,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7312,
+            "category": "arrow",
+            "name": "冥府の矢",
+            "rangedAttack": 114,
+            "bonuses": [
+              {
+                "type": "penet",
+                "value": 0.12
+              }
+            ],
+            "tier": 7,
+            "enhancement": 0,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7107,
+            "category": "arrow",
+            "name": "星羽矢",
+            "rangedAttack": 68,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.17
+              }
+            ],
+            "tier": 7,
+            "enhancement": 2,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7109,
+            "category": "archery",
+            "name": "蒼穹の弓",
+            "rangedNoA": 0.3,
+            "rangedNoABonus": 7,
+            "accuracyBonus": 0.007,
+            "tier": 7,
+            "enhancement": 3,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 3213,
+            "category": "arrow",
+            "name": "波羽矢",
+            "rangedAttack": 30,
+            "elementalOffense": "thunder",
+            "elementalOffenseBonus": 0.12,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.2
+              }
+            ],
+            "tier": 3,
+            "enhancement": 3,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 6109,
+            "category": "archery",
+            "name": "機弦弓",
+            "rangedNoA": 0.4,
+            "rangedNoABonus": 6,
+            "accuracyBonus": 0.006,
+            "tier": 6,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 3107,
+            "category": "arrow",
+            "name": "貝羽矢",
+            "rangedAttack": 23,
+            "bonuses": [
+              {
+                "type": "ranged_attack",
+                "value": 0.21
+              }
+            ],
+            "tier": 3,
+            "enhancement": 5,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": {
+              "key": "might",
+              "rank": 2
+            }
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "name": "Selfin",
+        "raceId": "cervin",
+        "gender": "female",
+        "isUnique": false,
+        "mainClassId": "wizard",
+        "subClassId": "alchemist",
+        "lineageId": "utopia",
+        "predispositionId": "introspective",
+        "autoEquipmentMode": 1,
+        "equipment": [
+          {
+            "id": 6223,
+            "category": "catalyst",
+            "name": "電晶触媒",
+            "magicalNoA": 0.54,
+            "magicalNoABonus": 7,
+            "elementalOffense": "thunder",
+            "elementalOffenseBonus": 0.09,
+            "tier": 6,
+            "enhancement": 2,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 7110,
+            "category": "wand",
+            "name": "月読の杖",
+            "magicalAttack": 60,
+            "bonuses": [
+              {
+                "type": "magical_attack",
+                "value": 0.17
+              }
+            ],
+            "tier": 7,
+            "enhancement": 5,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 4110,
+            "category": "wand",
+            "name": "骨杖",
+            "magicalAttack": 27,
+            "bonuses": [
+              {
+                "type": "magical_attack",
+                "value": 0.2
+              }
+            ],
+            "tier": 4,
+            "enhancement": 6,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": {
+              "key": "arcana",
+              "rank": 1
+            }
+          },
+          {
+            "id": 7317,
+            "category": "wand",
+            "name": "駿馬の導杖",
+            "magicalAttack": 101,
+            "magicalDefense": 31,
+            "bonuses": [
+              {
+                "type": "ice_defense",
+                "value": 2
+              },
+              {
+                "type": "magical_attack",
+                "value": 0.15
+              }
+            ],
+            "tier": 7,
+            "enhancement": 1,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 3223,
+            "category": "catalyst",
+            "name": "潮核の触媒",
+            "magicalNoA": 0.81,
+            "magicalNoABonus": 4,
+            "elementalOffense": "thunder",
+            "elementalOffenseBonus": 0.12,
+            "tier": 3,
+            "enhancement": 2,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 6110,
+            "category": "wand",
+            "name": "制御ロッド",
+            "magicalAttack": 45,
+            "bonuses": [
+              {
+                "type": "magical_attack",
+                "value": 0.18
+              }
+            ],
+            "tier": 6,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 3110,
+            "category": "wand",
+            "name": "貝核の杖",
+            "magicalAttack": 20,
+            "bonuses": [
+              {
+                "type": "magical_attack",
+                "value": 0.21
+              }
+            ],
+            "tier": 3,
+            "enhancement": 6,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": {
+              "key": "arcana",
+              "rank": 1
+            }
+          },
+          {
+            "id": 7219,
+            "category": "wand",
+            "name": "巨光の杖",
+            "magicalAttack": 82,
+            "bonuses": [
+              {
+                "type": "ice_defense",
+                "value": 3
+              },
+              {
+                "type": "magical_attack",
+                "value": 0.16
+              }
+            ],
+            "tier": 7,
+            "enhancement": 1,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          },
+          {
+            "id": 5110,
+            "category": "wand",
+            "name": "鉄芯の杖",
+            "magicalAttack": 34,
+            "bonuses": [
+              {
+                "type": "magical_attack",
+                "value": 0.19
+              }
+            ],
+            "tier": 5,
+            "enhancement": 4,
+            "superRare": 0,
+            "isLocked": false,
+            "jewel": null
+          }
+        ]
+      }
+    ],
+    "selectedDungeonId": 8,
+    "expeditionDestinationMode": "fixed",
+    "expeditionDepthLimit": "all",
+    "expeditionDifficultyOffset": 0,
+    "expeditionDifficultyOffsetByDungeon": {},
+    "currentHp": 415,
+    "pendingProfit": 0,
+    "expeditionRewardsPending": false,
+    "pendingUnlockState": null,
+    "deityGold": 18081,
+    "lastExpeditionLog": null,
+    "pendingDiaryLog": null,
+    "diaryLogs": [],
+    "hasUnreadDiary": false,
+    "diarySettings": {
+      "superRareThreshold": "all",
+      "bossThreshold": "all",
+      "mythicThreshold": "all",
+      "rareThreshold": 5,
+      "sideQuestThreshold": "all",
+      "notifyGodsBattle": true,
+      "defeatNotificationMode": "defeatOnly",
+      "notifyCyclePopup": true,
+      "notifyItemDropPopup": true,
+      "notifyAutoEquipmentPopup": true,
+      "notifySideQuestPopup": true
+    },
+    "expeditionStats": {
+      "Clear": 0,
+      "Return": 0,
+      "Draw": 0,
+      "Retreat": 0,
+      "Defeat": 0,
+      "donatedGold": 0,
+      "savedGold": 0
+    },
+    "bags": {
+      "commonRewardBag": {
+        "entries": [
+          {
+            "id": 0,
+            "tickets": 40
+          },
+          {
+            "id": 1,
+            "tickets": 10
+          }
+        ]
+      },
+      "commonEnhancementBag": {
+        "entries": [
+          {
+            "id": 0,
+            "tickets": 1390
+          },
+          {
+            "id": 1,
+            "tickets": 350
+          },
+          {
+            "id": 2,
+            "tickets": 180
+          },
+          {
+            "id": 3,
+            "tickets": 60
+          },
+          {
+            "id": 4,
+            "tickets": 15
+          },
+          {
+            "id": 5,
+            "tickets": 4
+          },
+          {
+            "id": 6,
+            "tickets": 1
+          }
+        ]
+      },
+      "uncommonRewardBag": {
+        "entries": [
+          {
+            "id": 0,
+            "tickets": 49
+          },
+          {
+            "id": 1,
+            "tickets": 1
+          }
+        ]
+      },
+      "eliteRareRewardBag": {
+        "entries": [
+          {
+            "id": 0,
+            "tickets": 49
+          },
+          {
+            "id": 1,
+            "tickets": 1
+          }
+        ]
+      },
+      "bossRareRewardBag": {
+        "entries": [
+          {
+            "id": 0,
+            "tickets": 49
+          },
+          {
+            "id": 1,
+            "tickets": 1
+          }
+        ]
+      },
+      "mythicRareRewardBag": {
+        "entries": [
+          {
+            "id": 0,
+            "tickets": 24
+          },
+          {
+            "id": 1,
+            "tickets": 1
+          }
+        ]
+      },
+      "enhancementBag": {
+        "entries": [
+          {
+            "id": 0,
+            "tickets": 5490
+          },
+          {
+            "id": 1,
+            "tickets": 350
+          },
+          {
+            "id": 2,
+            "tickets": 180
+          },
+          {
+            "id": 3,
+            "tickets": 60
+          },
+          {
+            "id": 4,
+            "tickets": 15
+          },
+          {
+            "id": 5,
+            "tickets": 4
+          },
+          {
+            "id": 6,
+            "tickets": 1
+          }
+        ]
+      },
+      "superRareBag": {
+        "entries": [
+          {
+            "id": 0,
+            "tickets": 409918
+          },
+          {
+            "id": 1,
+            "tickets": 1
+          },
+          {
+            "id": 2,
+            "tickets": 1
+          },
+          {
+            "id": 3,
+            "tickets": 1
+          },
+          {
+            "id": 4,
+            "tickets": 1
+          },
+          {
+            "id": 5,
+            "tickets": 1
+          },
+          {
+            "id": 6,
+            "tickets": 1
+          },
+          {
+            "id": 7,
+            "tickets": 1
+          },
+          {
+            "id": 8,
+            "tickets": 1
+          },
+          {
+            "id": 9,
+            "tickets": 1
+          },
+          {
+            "id": 10,
+            "tickets": 1
+          },
+          {
+            "id": 11,
+            "tickets": 1
+          },
+          {
+            "id": 12,
+            "tickets": 1
+          },
+          {
+            "id": 13,
+            "tickets": 1
+          },
+          {
+            "id": 14,
+            "tickets": 1
+          },
+          {
+            "id": 15,
+            "tickets": 1
+          },
+          {
+            "id": 16,
+            "tickets": 1
+          },
+          {
+            "id": 17,
+            "tickets": 1
+          },
+          {
+            "id": 18,
+            "tickets": 1
+          },
+          {
+            "id": 19,
+            "tickets": 1
+          },
+          {
+            "id": 20,
+            "tickets": 1
+          },
+          {
+            "id": 21,
+            "tickets": 1
+          },
+          {
+            "id": 22,
+            "tickets": 1
+          },
+          {
+            "id": 23,
+            "tickets": 1
+          },
+          {
+            "id": 24,
+            "tickets": 1
+          },
+          {
+            "id": 25,
+            "tickets": 1
+          },
+          {
+            "id": 26,
+            "tickets": 1
+          },
+          {
+            "id": 27,
+            "tickets": 1
+          },
+          {
+            "id": 28,
+            "tickets": 1
+          },
+          {
+            "id": 29,
+            "tickets": 1
+          },
+          {
+            "id": 30,
+            "tickets": 1
+          },
+          {
+            "id": 31,
+            "tickets": 1
+          },
+          {
+            "id": 32,
+            "tickets": 1
+          },
+          {
+            "id": 33,
+            "tickets": 1
+          },
+          {
+            "id": 34,
+            "tickets": 1
+          },
+          {
+            "id": 35,
+            "tickets": 1
+          },
+          {
+            "id": 36,
+            "tickets": 1
+          },
+          {
+            "id": 37,
+            "tickets": 1
+          },
+          {
+            "id": 38,
+            "tickets": 1
+          },
+          {
+            "id": 39,
+            "tickets": 1
+          },
+          {
+            "id": 40,
+            "tickets": 1
+          },
+          {
+            "id": 41,
+            "tickets": 1
+          },
+          {
+            "id": 42,
+            "tickets": 1
+          },
+          {
+            "id": 43,
+            "tickets": 1
+          },
+          {
+            "id": 44,
+            "tickets": 1
+          },
+          {
+            "id": 45,
+            "tickets": 1
+          },
+          {
+            "id": 46,
+            "tickets": 1
+          },
+          {
+            "id": 47,
+            "tickets": 1
+          },
+          {
+            "id": 48,
+            "tickets": 1
+          },
+          {
+            "id": 49,
+            "tickets": 1
+          },
+          {
+            "id": 50,
+            "tickets": 1
+          },
+          {
+            "id": 51,
+            "tickets": 1
+          },
+          {
+            "id": 52,
+            "tickets": 1
+          },
+          {
+            "id": 53,
+            "tickets": 1
+          },
+          {
+            "id": 54,
+            "tickets": 1
+          },
+          {
+            "id": 55,
+            "tickets": 1
+          },
+          {
+            "id": 56,
+            "tickets": 1
+          },
+          {
+            "id": 57,
+            "tickets": 1
+          },
+          {
+            "id": 58,
+            "tickets": 1
+          },
+          {
+            "id": 59,
+            "tickets": 1
+          },
+          {
+            "id": 60,
+            "tickets": 1
+          },
+          {
+            "id": 61,
+            "tickets": 1
+          },
+          {
+            "id": 62,
+            "tickets": 1
+          },
+          {
+            "id": 63,
+            "tickets": 1
+          },
+          {
+            "id": 64,
+            "tickets": 1
+          },
+          {
+            "id": 65,
+            "tickets": 1
+          },
+          {
+            "id": 66,
+            "tickets": 1
+          },
+          {
+            "id": 67,
+            "tickets": 1
+          },
+          {
+            "id": 68,
+            "tickets": 1
+          },
+          {
+            "id": 69,
+            "tickets": 1
+          },
+          {
+            "id": 70,
+            "tickets": 1
+          },
+          {
+            "id": 71,
+            "tickets": 1
+          },
+          {
+            "id": 72,
+            "tickets": 1
+          },
+          {
+            "id": 73,
+            "tickets": 1
+          },
+          {
+            "id": 74,
+            "tickets": 1
+          },
+          {
+            "id": 75,
+            "tickets": 1
+          },
+          {
+            "id": 76,
+            "tickets": 1
+          },
+          {
+            "id": 77,
+            "tickets": 1
+          },
+          {
+            "id": 78,
+            "tickets": 1
+          },
+          {
+            "id": 79,
+            "tickets": 1
+          },
+          {
+            "id": 80,
+            "tickets": 1
+          },
+          {
+            "id": 81,
+            "tickets": 1
+          },
+          {
+            "id": 82,
+            "tickets": 1
+          }
+        ]
+      },
+      "commonSuperRareBag": {
+        "entries": [
+          {
+            "id": 0,
+            "tickets": 819918
+          },
+          {
+            "id": 1,
+            "tickets": 1
+          },
+          {
+            "id": 2,
+            "tickets": 1
+          },
+          {
+            "id": 3,
+            "tickets": 1
+          },
+          {
+            "id": 4,
+            "tickets": 1
+          },
+          {
+            "id": 5,
+            "tickets": 1
+          },
+          {
+            "id": 6,
+            "tickets": 1
+          },
+          {
+            "id": 7,
+            "tickets": 1
+          },
+          {
+            "id": 8,
+            "tickets": 1
+          },
+          {
+            "id": 9,
+            "tickets": 1
+          },
+          {
+            "id": 10,
+            "tickets": 1
+          },
+          {
+            "id": 11,
+            "tickets": 1
+          },
+          {
+            "id": 12,
+            "tickets": 1
+          },
+          {
+            "id": 13,
+            "tickets": 1
+          },
+          {
+            "id": 14,
+            "tickets": 1
+          },
+          {
+            "id": 15,
+            "tickets": 1
+          },
+          {
+            "id": 16,
+            "tickets": 1
+          },
+          {
+            "id": 17,
+            "tickets": 1
+          },
+          {
+            "id": 18,
+            "tickets": 1
+          },
+          {
+            "id": 19,
+            "tickets": 1
+          },
+          {
+            "id": 20,
+            "tickets": 1
+          },
+          {
+            "id": 21,
+            "tickets": 1
+          },
+          {
+            "id": 22,
+            "tickets": 1
+          },
+          {
+            "id": 23,
+            "tickets": 1
+          },
+          {
+            "id": 24,
+            "tickets": 1
+          },
+          {
+            "id": 25,
+            "tickets": 1
+          },
+          {
+            "id": 26,
+            "tickets": 1
+          },
+          {
+            "id": 27,
+            "tickets": 1
+          },
+          {
+            "id": 28,
+            "tickets": 1
+          },
+          {
+            "id": 29,
+            "tickets": 1
+          },
+          {
+            "id": 30,
+            "tickets": 1
+          },
+          {
+            "id": 31,
+            "tickets": 1
+          },
+          {
+            "id": 32,
+            "tickets": 1
+          },
+          {
+            "id": 33,
+            "tickets": 1
+          },
+          {
+            "id": 34,
+            "tickets": 1
+          },
+          {
+            "id": 35,
+            "tickets": 1
+          },
+          {
+            "id": 36,
+            "tickets": 1
+          },
+          {
+            "id": 37,
+            "tickets": 1
+          },
+          {
+            "id": 38,
+            "tickets": 1
+          },
+          {
+            "id": 39,
+            "tickets": 1
+          },
+          {
+            "id": 40,
+            "tickets": 1
+          },
+          {
+            "id": 41,
+            "tickets": 1
+          },
+          {
+            "id": 42,
+            "tickets": 1
+          },
+          {
+            "id": 43,
+            "tickets": 1
+          },
+          {
+            "id": 44,
+            "tickets": 1
+          },
+          {
+            "id": 45,
+            "tickets": 1
+          },
+          {
+            "id": 46,
+            "tickets": 1
+          },
+          {
+            "id": 47,
+            "tickets": 1
+          },
+          {
+            "id": 48,
+            "tickets": 1
+          },
+          {
+            "id": 49,
+            "tickets": 1
+          },
+          {
+            "id": 50,
+            "tickets": 1
+          },
+          {
+            "id": 51,
+            "tickets": 1
+          },
+          {
+            "id": 52,
+            "tickets": 1
+          },
+          {
+            "id": 53,
+            "tickets": 1
+          },
+          {
+            "id": 54,
+            "tickets": 1
+          },
+          {
+            "id": 55,
+            "tickets": 1
+          },
+          {
+            "id": 56,
+            "tickets": 1
+          },
+          {
+            "id": 57,
+            "tickets": 1
+          },
+          {
+            "id": 58,
+            "tickets": 1
+          },
+          {
+            "id": 59,
+            "tickets": 1
+          },
+          {
+            "id": 60,
+            "tickets": 1
+          },
+          {
+            "id": 61,
+            "tickets": 1
+          },
+          {
+            "id": 62,
+            "tickets": 1
+          },
+          {
+            "id": 63,
+            "tickets": 1
+          },
+          {
+            "id": 64,
+            "tickets": 1
+          },
+          {
+            "id": 65,
+            "tickets": 1
+          },
+          {
+            "id": 66,
+            "tickets": 1
+          },
+          {
+            "id": 67,
+            "tickets": 1
+          },
+          {
+            "id": 68,
+            "tickets": 1
+          },
+          {
+            "id": 69,
+            "tickets": 1
+          },
+          {
+            "id": 70,
+            "tickets": 1
+          },
+          {
+            "id": 71,
+            "tickets": 1
+          },
+          {
+            "id": 72,
+            "tickets": 1
+          },
+          {
+            "id": 73,
+            "tickets": 1
+          },
+          {
+            "id": 74,
+            "tickets": 1
+          },
+          {
+            "id": 75,
+            "tickets": 1
+          },
+          {
+            "id": 76,
+            "tickets": 1
+          },
+          {
+            "id": 77,
+            "tickets": 1
+          },
+          {
+            "id": 78,
+            "tickets": 1
+          },
+          {
+            "id": 79,
+            "tickets": 1
+          },
+          {
+            "id": 80,
+            "tickets": 1
+          },
+          {
+            "id": 81,
+            "tickets": 1
+          },
+          {
+            "id": 82,
+            "tickets": 1
+          }
+        ]
+      },
+      "rareSuperRareBag": {
+        "entries": [
+          {
+            "id": 0,
+            "tickets": 122918
+          },
+          {
+            "id": 1,
+            "tickets": 1
+          },
+          {
+            "id": 2,
+            "tickets": 1
+          },
+          {
+            "id": 3,
+            "tickets": 1
+          },
+          {
+            "id": 4,
+            "tickets": 1
+          },
+          {
+            "id": 5,
+            "tickets": 1
+          },
+          {
+            "id": 6,
+            "tickets": 1
+          },
+          {
+            "id": 7,
+            "tickets": 1
+          },
+          {
+            "id": 8,
+            "tickets": 1
+          },
+          {
+            "id": 9,
+            "tickets": 1
+          },
+          {
+            "id": 10,
+            "tickets": 1
+          },
+          {
+            "id": 11,
+            "tickets": 1
+          },
+          {
+            "id": 12,
+            "tickets": 1
+          },
+          {
+            "id": 13,
+            "tickets": 1
+          },
+          {
+            "id": 14,
+            "tickets": 1
+          },
+          {
+            "id": 15,
+            "tickets": 1
+          },
+          {
+            "id": 16,
+            "tickets": 1
+          },
+          {
+            "id": 17,
+            "tickets": 1
+          },
+          {
+            "id": 18,
+            "tickets": 1
+          },
+          {
+            "id": 19,
+            "tickets": 1
+          },
+          {
+            "id": 20,
+            "tickets": 1
+          },
+          {
+            "id": 21,
+            "tickets": 1
+          },
+          {
+            "id": 22,
+            "tickets": 1
+          },
+          {
+            "id": 23,
+            "tickets": 1
+          },
+          {
+            "id": 24,
+            "tickets": 1
+          },
+          {
+            "id": 25,
+            "tickets": 1
+          },
+          {
+            "id": 26,
+            "tickets": 1
+          },
+          {
+            "id": 27,
+            "tickets": 1
+          },
+          {
+            "id": 28,
+            "tickets": 1
+          },
+          {
+            "id": 29,
+            "tickets": 1
+          },
+          {
+            "id": 30,
+            "tickets": 1
+          },
+          {
+            "id": 31,
+            "tickets": 1
+          },
+          {
+            "id": 32,
+            "tickets": 1
+          },
+          {
+            "id": 33,
+            "tickets": 1
+          },
+          {
+            "id": 34,
+            "tickets": 1
+          },
+          {
+            "id": 35,
+            "tickets": 1
+          },
+          {
+            "id": 36,
+            "tickets": 1
+          },
+          {
+            "id": 37,
+            "tickets": 1
+          },
+          {
+            "id": 38,
+            "tickets": 1
+          },
+          {
+            "id": 39,
+            "tickets": 1
+          },
+          {
+            "id": 40,
+            "tickets": 1
+          },
+          {
+            "id": 41,
+            "tickets": 1
+          },
+          {
+            "id": 42,
+            "tickets": 1
+          },
+          {
+            "id": 43,
+            "tickets": 1
+          },
+          {
+            "id": 44,
+            "tickets": 1
+          },
+          {
+            "id": 45,
+            "tickets": 1
+          },
+          {
+            "id": 46,
+            "tickets": 1
+          },
+          {
+            "id": 47,
+            "tickets": 1
+          },
+          {
+            "id": 48,
+            "tickets": 1
+          },
+          {
+            "id": 49,
+            "tickets": 1
+          },
+          {
+            "id": 50,
+            "tickets": 1
+          },
+          {
+            "id": 51,
+            "tickets": 1
+          },
+          {
+            "id": 52,
+            "tickets": 1
+          },
+          {
+            "id": 53,
+            "tickets": 1
+          },
+          {
+            "id": 54,
+            "tickets": 1
+          },
+          {
+            "id": 55,
+            "tickets": 1
+          },
+          {
+            "id": 56,
+            "tickets": 1
+          },
+          {
+            "id": 57,
+            "tickets": 1
+          },
+          {
+            "id": 58,
+            "tickets": 1
+          },
+          {
+            "id": 59,
+            "tickets": 1
+          },
+          {
+            "id": 60,
+            "tickets": 1
+          },
+          {
+            "id": 61,
+            "tickets": 1
+          },
+          {
+            "id": 62,
+            "tickets": 1
+          },
+          {
+            "id": 63,
+            "tickets": 1
+          },
+          {
+            "id": 64,
+            "tickets": 1
+          },
+          {
+            "id": 65,
+            "tickets": 1
+          },
+          {
+            "id": 66,
+            "tickets": 1
+          },
+          {
+            "id": 67,
+            "tickets": 1
+          },
+          {
+            "id": 68,
+            "tickets": 1
+          },
+          {
+            "id": 69,
+            "tickets": 1
+          },
+          {
+            "id": 70,
+            "tickets": 1
+          },
+          {
+            "id": 71,
+            "tickets": 1
+          },
+          {
+            "id": 72,
+            "tickets": 1
+          },
+          {
+            "id": 73,
+            "tickets": 1
+          },
+          {
+            "id": 74,
+            "tickets": 1
+          },
+          {
+            "id": 75,
+            "tickets": 1
+          },
+          {
+            "id": 76,
+            "tickets": 1
+          },
+          {
+            "id": 77,
+            "tickets": 1
+          },
+          {
+            "id": 78,
+            "tickets": 1
+          },
+          {
+            "id": 79,
+            "tickets": 1
+          },
+          {
+            "id": 80,
+            "tickets": 1
+          },
+          {
+            "id": 81,
+            "tickets": 1
+          },
+          {
+            "id": 82,
+            "tickets": 1
+          }
+        ]
+      },
+      "physicalThreatBag": {
+        "entries": [
+          {
+            "id": 1,
+            "tickets": 16
+          },
+          {
+            "id": 2,
+            "tickets": 8
+          },
+          {
+            "id": 3,
+            "tickets": 4
+          },
+          {
+            "id": 4,
+            "tickets": 2
+          },
+          {
+            "id": 5,
+            "tickets": 1
+          },
+          {
+            "id": 6,
+            "tickets": 1
+          }
+        ]
+      },
+      "magicalThreatBag": {
+        "entries": [
+          {
+            "id": 1,
+            "tickets": 2
+          },
+          {
+            "id": 2,
+            "tickets": 2
+          },
+          {
+            "id": 3,
+            "tickets": 2
+          },
+          {
+            "id": 4,
+            "tickets": 2
+          },
+          {
+            "id": 5,
+            "tickets": 2
+          },
+          {
+            "id": 6,
+            "tickets": 2
+          }
+        ]
+      },
+      "sideQuestBag": {
+        "entries": [
+          {
+            "id": 0,
+            "tickets": 1287
+          },
+          {
+            "id": 1,
+            "tickets": 1
+          },
+          {
+            "id": 2,
+            "tickets": 1
+          },
+          {
+            "id": 3,
+            "tickets": 1
+          },
+          {
+            "id": 4,
+            "tickets": 1
+          },
+          {
+            "id": 5,
+            "tickets": 1
+          },
+          {
+            "id": 6,
+            "tickets": 1
+          },
+          {
+            "id": 7,
+            "tickets": 1
+          },
+          {
+            "id": 8,
+            "tickets": 1
+          },
+          {
+            "id": 9,
+            "tickets": 1
+          },
+          {
+            "id": 10,
+            "tickets": 1
+          },
+          {
+            "id": 11,
+            "tickets": 1
+          },
+          {
+            "id": 12,
+            "tickets": 1
+          },
+          {
+            "id": 13,
+            "tickets": 1
+          }
+        ]
+      }
+    },
+    "sleepinessOfPartyBag": {
+      "entries": [
+        {
+          "id": 0,
+          "tickets": 9
+        },
+        {
+          "id": 1,
+          "tickets": 2
+        },
+        {
+          "id": 2,
+          "tickets": 1
+        }
+      ]
+    },
+    "currentSleepiness": 0,
+    "condition": -391,
+    "sideQuest": null,
+    "instantExpeditionStock": 6,
+    "instantExpeditionChargeStartedAt": null,
+    "lastFullEquipmentRevision": -1,
+    "lastFullJewelRevision": -1
+  },
+  "rate": 0.287,
+  "clear": 0
+}

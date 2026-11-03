@@ -1,0 +1,4 @@
+#!/bin/zsh
+cd /Users/Torenia/Documents/ChatGPT/BoKemo
+BOKEMO_PLAY_USERDATA=/private/tmp/claude-501/-Users-Torenia-Documents-ChatGPT-BoKemo/b1c6e7ea-d716-452a-9d76-e8b33ee1738a/scratchpad/ud BOKEMO_PLAY_DESCRIPTOR=/private/tmp/claude-501/-Users-Torenia-Documents-ChatGPT-BoKemo/b1c6e7ea-d716-452a-9d76-e8b33ee1738a/scratchpad/desc.json nohup ./node_modules/electron/dist/Electron.app/Contents/MacOS/Electron scripts/run-api-play-session.cjs --environment=prod > /private/tmp/claude-501/-Users-Torenia-Documents-ChatGPT-BoKemo/b1c6e7ea-d716-452a-9d76-e8b33ee1738a/scratchpad/electron.log 2>&1 &
+for i in $(seq 1 40); do grep -q PLAY_SESSION_READY /private/tmp/claude-501/-Users-Torenia-Documents-ChatGPT-BoKemo/b1c6e7ea-d716-452a-9d76-e8b33ee1738a/scratchpad/electron.log 2>/dev/null && { echo ready; exit 0; }; sleep 1; done; echo notready; tail -20 /private/tmp/claude-501/-Users-Torenia-Documents-ChatGPT-BoKemo/b1c6e7ea-d716-452a-9d76-e8b33ee1738a/scratchpad/electron.log

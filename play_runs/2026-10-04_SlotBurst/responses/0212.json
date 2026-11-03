@@ -1,0 +1,1 @@
+{"apiVersion":"v1","schemaVersion":1,"requestId":"712fd77e-73f5-4b4d-813d-47acd90c6579","previousRevision":167,"revision":168,"committedAt":"2026-10-04T08:15:07.710Z","data":{"current":{"deityId":"none","order":[201,202,203,204,205,206]}},"effects":[],"changedResources":["read/observation/party","read/observation/base"]}

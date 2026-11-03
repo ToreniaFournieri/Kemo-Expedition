@@ -1,0 +1,216 @@
+{
+ "save": "play_runs/2026-10-04_SlotBurst/cp17.kemoz",
+ "builds": [],
+ "order": [
+  6,
+  1,
+  4,
+  2,
+  3,
+  5
+ ],
+ "eq": {
+  "1": [
+   {
+    "item": "0/1101/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1102/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1101/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1102/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1103/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1103/0/0",
+    "jewel": null
+   }
+  ],
+  "2": [
+   {
+    "item": "0/1107/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1107/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1107/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1109/0/0",
+    "jewel": null
+   }
+  ],
+  "3": [
+   {
+    "item": "0/1107/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1109/0/0",
+    "jewel": null
+   }
+  ],
+  "4": [
+   {
+    "item": "0/1213/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1109/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1107/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1107/1/0",
+    "jewel": null
+   }
+  ],
+  "5": [
+   {
+    "item": "0/1110/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1112/2/0",
+    "jewel": null
+   }
+  ],
+  "6": [
+   {
+    "item": "0/1203/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1101/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1101/0/0",
+    "jewel": null
+   }
+  ]
+ },
+ "initialEq": {
+  "1": [
+   {
+    "item": "0/1101/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1102/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1108/2/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1107/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1109/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1213/0/0",
+    "jewel": null
+   }
+  ],
+  "2": [
+   {
+    "item": "0/1101/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1102/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1107/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1109/0/0",
+    "jewel": null
+   }
+  ],
+  "3": [
+   {
+    "item": "0/1107/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1109/0/0",
+    "jewel": null
+   }
+  ],
+  "4": [
+   {
+    "item": "0/1107/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1109/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1108/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1101/0/0",
+    "jewel": null
+   }
+  ],
+  "5": [
+   {
+    "item": "0/1110/4/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1112/2/0",
+    "jewel": null
+   }
+  ],
+  "6": [
+   {
+    "item": "0/1203/0/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1101/1/0",
+    "jewel": null
+   },
+   {
+    "item": "0/1103/0/0",
+    "jewel": null
+   }
+  ]
+ },
+ "initialOrder": [
+  6,
+  1,
+  4,
+  2,
+  3,
+  5
+ ]
+}

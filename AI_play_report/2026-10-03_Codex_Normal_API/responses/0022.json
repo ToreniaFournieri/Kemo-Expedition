@@ -1,0 +1,45 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "dc9dad05-c005-494c-b04b-685c3645fd06",
+  "revision": 11,
+  "observedAt": "2026-10-03T08:05:34.133Z",
+  "data": {
+    "expeditionInfo": {
+      "parties": [
+        {
+          "partyNumber": 1,
+          "name": "PT1",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 1310,
+          "maximumHp": 1310,
+          "disclosedFloor": 6,
+          "disclosedOutcome": "Clear",
+          "destination": 1,
+          "destinationMode": "fixed",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 3,
+          "chargeDuration": 900,
+          "clearGates": [],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": true,
+              "unavailableReason": null
+            }
+          }
+        }
+      ]
+    }
+  }
+}

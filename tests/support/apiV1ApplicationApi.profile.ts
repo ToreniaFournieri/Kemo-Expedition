@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { createApplicationApi, type ApplicationApi, type ApplicationApiPorts } from '../../src/api/v1/applicationApi';
-import { createFreshGameState, gameReducer } from '../../src/hooks/useGameState';
+import { createFreshGameState, gameReducer, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { serializeGameState } from '../../src/game/saveCodec';
-import { encodePersistedState } from '../../src/game/storageCompression';
+import { decodePersistedState, encodePersistedState } from '../../src/game/storageCompression';
 import type { GameState } from '../../src/types';
 
 // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | HTTP and in-process adapters share one handler set
@@ -14,7 +14,8 @@ const identity: DesktopApiAccountIdentity = { userId: 'Taro', environment: 'desk
 
 interface Harness {
   api: ApplicationApi;
-  persisted: Array<{ state: GameState; control: DesktopApiControlMetadata }>;
+  failNextPersist: { value: boolean };
+  persisted: Array<{ state: GameState; control: DesktopApiControlMetadata; savePayload: string | null }>;
   persistedPlayers: GameState[];
   published: GameState[];
   playerCommitEvents: string[];
@@ -22,15 +23,18 @@ interface Harness {
   displayWrites: unknown[];
   debugWrites: unknown[];
   sessionEvents: boolean[];
+  headlessEvents: boolean[];
   idleState: GameState;
   /** Moves the runtime's wall clock (the ordinary player's in-game time). */
   setNow: (value: number) => void;
 }
 
-function harness(): Harness {
+function harness(normalizeImport = false, simulate?: ApplicationApiPorts['runtime']['simulate']): Harness {
+  const failNextPersist = { value: false };
   let runtimeNow = t0;
   const idleState = createFreshGameState('ja', t0);
   const accountState = createFreshGameState('ja', t0);
+  accountState.global.userId = 'parity-user';
   accountState.parties[0].diaryLogs = [{
     id: 'parity-diary-id',
     expeditionLog: {
@@ -53,6 +57,7 @@ function harness(): Harness {
   } as NonNullable<ReturnType<NonNullable<ApplicationApiPorts['runtime']['debugSettings']>>>;
   let display = { darkMode: 'off', theme: 'm.kemo', showExpeditionStats: false, autoRepeat: true } as NonNullable<ReturnType<NonNullable<ApplicationApiPorts['runtime']['displaySettings']>>>;
   const sessionEvents: boolean[] = [];
+  const headlessEvents: boolean[] = [];
   let counter = 0;
   let returnPayload: string | null = null;
   const account: DesktopApiAccountRecord = {
@@ -65,15 +70,22 @@ function harness(): Harness {
       accounts: {
         create: async (created) => created,
         load: async () => structuredClone(account),
-        commit: async (committed, savePayload, control) => { persisted.push({ state: JSON.parse(JSON.stringify(serializeGameState(accountState))) as GameState, control: structuredClone(control) }); void committed; void savePayload; return true; },
+        commit: async (committed, savePayload, control) => {
+          void committed;
+          if (failNextPersist.value) { failNextPersist.value = false; throw new Error('injected save failure'); }
+          if (savePayload !== null) account.savePayload = savePayload;
+          account.control = structuredClone(control);
+          persisted.push({ state: JSON.parse(decodePersistedState(account.savePayload)) as GameState, control: structuredClone(control), savePayload });
+          return true;
+        },
       },
       player: {
         flushSave: async () => undefined,
         exportPayload: async () => encodePersistedState(JSON.stringify(serializeGameState(idleState))),
         returnPayload: { get: () => returnPayload, set: (payload) => { returnPayload = payload; }, clear: () => { returnPayload = null; } },
       },
-      importGameState: async (state) => ({ state, errorLog: null }),
-      exportActiveAccountPayload: async () => encodePersistedState(JSON.stringify(serializeGameState(accountState))),
+      importGameState: async (state) => ({ state: normalizeImport ? { ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, name: 'Normalized party' } : party) } : state, errorLog: null }),
+      exportActiveAccountPayload: async () => account.savePayload,
       now: () => t0,
       catchUp: { maximumElapsedMs: 3_600_000, applyAutoEquipment: (state) => state, yieldBetweenChunks: async () => undefined, randomSeed: () => 7 },
     },
@@ -86,7 +98,7 @@ function harness(): Harness {
       enemyLevelOffset: () => 0,
       cycleDurationScale: () => 1,
       applyAutoEquipment: (state) => state,
-      simulate: async () => ({ total: 100, Clear: 40, Return: 10, Draw: 10, Retreat: 10, Defeat: 30 }),
+      simulate: simulate ?? (async () => ({ total: 100, Clear: 40, Return: 10, Draw: 10, Retreat: 10, Defeat: 30 })),
       persistPlayer: async (state) => { playerCommitEvents.push('persist'); persistedPlayers.push(state); },
       publish: async (state) => { playerCommitEvents.push('publish'); published.push(state); },
       partyCycle: () => ({ state: 'explore' }),
@@ -102,9 +114,9 @@ function harness(): Harness {
       now: () => runtimeNow,
     },
     help: { requirements: 'REQUIREMENTS', detail: 'DETAIL' },
-    onSessionActive: (active) => { sessionEvents.push(active); },
+    onSessionActive: (active, _userId, headless) => { sessionEvents.push(active); headlessEvents.push(active && headless === true); },
   };
-  return { cycleWrites, displayWrites, debugWrites, api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, idleState, setNow: (value) => { runtimeNow = value; } };
+  return { failNextPersist, cycleWrites, displayWrites, debugWrites, api: createApplicationApi(ports, idleState), persisted, persistedPlayers, published, playerCommitEvents, sessionEvents, headlessEvents, idleState, setNow: (value) => { runtimeNow = value; } };
 }
 
 type Step = { operation: string; pathParameters?: Record<string, unknown>; parameters?: Record<string, unknown>; mutating: boolean };
@@ -119,7 +131,7 @@ const steps: Step[] = [
   { operation: 'read/observation/setting', mutating: false },
   { operation: 'read/observation/compact', mutating: false },
   { operation: 'read/expedition/{p}/setting', pathParameters: { p: 1 }, mutating: false },
-  { operation: 'read/build/character/{characterId}/equipmentEvaluation', pathParameters: { characterId: createFreshGameState('ja', 0).parties[0].characters[0].id }, parameters: { equipmentChanges: ['0=0', '1=0'], targetItems: ['0/1101/2/0/0:0'.replace('/0:0', '') + '/fort:1'] }, mutating: false },
+  { operation: 'read/build/character/equipmentEvaluation', parameters: { characterId: createFreshGameState('ja', 0).parties[0].characters[0].id, equipmentChanges: ['0=0', '1=0'], targetItems: ['0/1101/2/0/0:0'.replace('/0:0', '') + '/fort:1'] }, mutating: false },
   { operation: 'read/expedition/{p}/setting', pathParameters: { p: 9 }, mutating: false },
   { operation: 'commit/base/changeJewelPriorityParty', parameters: { partyNumber: 'none' }, mutating: true },
   { operation: 'commit/base/changeJewelPriorityParty', parameters: { partyNumber: 'none' }, mutating: true },
@@ -208,12 +220,12 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
   const local = h.api.createInProcessAdapter();
   const charged = { ...h.idleState, parties: h.idleState.parties.map((party, index) => index === 0 ? { ...party, instantExpeditionStock: 3, instantExpeditionChargeStartedAt: null } : party) } as typeof h.idleState;
   h.api.syncIdleState(charged);
-  const sortie = await local.commit('commit/expedition/{p}/sortie', { pathParameters: { p: 1 }, parameters: {} }) as { revision: number; error?: unknown; data: { logId: string } };
+  const sortie = await local.commit('commit/expedition/{p}/sortie', { pathParameters: { p: 1 }, parameters: {} }) as { revision: number; error?: unknown; data: { sorties: { logId: string }[] } };
   assert.equal(sortie.error, undefined);
   assert.equal(sortie.revision, 1);
   assert.deepEqual(h.playerCommitEvents, ['persist', 'cycle', 'publish']);
   assert.deepEqual(h.cycleWrites, [{ partyIndex: 0, cycle: { state: 'rest', stateStartedAt: t0, durationMs: 9_999, restInitialTotalSteps: 1, isCurrentExpeditionGodsBattle: false } }]);
-  assert.match(sortie.data.logId, /^(log:\d+:[0-9a-z]+|diary:.+)$/);
+  assert.match(sortie.data.sorties[0].logId, /^(log:\d+:[0-9a-z]+|diary:.+)$/);
 }
 
 // 1a-ter. The ordinary player's in-game time is the wall clock of each request, not the time the app started: a charge that
@@ -336,18 +348,18 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
 {
   const h = harness();
   const local = h.api.createInProcessAdapter();
-  type Equipment = { data: { validOptions: { undoEquipment: { available: boolean }; redoEquipment: { available: boolean } } } };
-  const readEquipment = () => local.read('read/build/character/{characterId}/equipment', { pathParameters: { characterId: 1 } }) as Promise<Equipment>;
-  assert.equal((await readEquipment()).data.validOptions.undoEquipment.available, false);
+  type Equipment = { data: { characters: { validOptions: { undoEquipment: { available: boolean }; redoEquipment: { available: boolean } } }[] } };
+  const readEquipment = () => local.read('read/build/character/equipment', { parameters: { characterId: 1 } }) as Promise<Equipment>;
+  assert.equal((await readEquipment()).data.characters[0].validOptions.undoEquipment.available, false);
   const seen: Promise<Equipment>[] = [];
   const unsubscribe = local.subscribe(() => { seen.push(readEquipment()); });
   const removed = await local.commit('commit/build/character/{characterId}/removeAllEquipment', { pathParameters: { characterId: 1 } }) as { error?: unknown };
   assert.equal(removed.error, undefined);
   assert.equal(seen.length, 1, 'one notification per successful commit');
-  assert.equal((await seen[0]).data.validOptions.undoEquipment.available, true, 'the history is installed when subscribers are told');
+  assert.equal((await seen[0]).data.characters[0].validOptions.undoEquipment.available, true, 'the history is installed when subscribers are told');
   const undone = await local.commit('commit/build/character/{characterId}/undoEquipment', { pathParameters: { characterId: 1 } }) as { error?: unknown };
   assert.equal(undone.error, undefined);
-  const afterUndo = (await seen[1]).data.validOptions;
+  const afterUndo = (await seen[1]).data.characters[0].validOptions;
   assert.equal(afterUndo.redoEquipment.available, true, 'Redo is available as soon as Undo is installed');
   assert.equal(afterUndo.undoEquipment.available, false);
   const rejected = await local.commit('commit/build/character/{characterId}/undoEquipment', { pathParameters: { characterId: 1 } }) as { error?: unknown };
@@ -454,3 +466,97 @@ async function runInProcess(h: Harness): Promise<unknown[]> {
 }
 
 console.log('apiV1ApplicationApi profile ok');
+
+// API accounts first persist import normalization; subsequent no-ops and control-only writes reuse that save.
+{
+  const location = globalThis as { location?: { pathname: string } };
+  const previousLocation = location.location;
+  location.location = { pathname: '/dev/' };
+  const h = harness(true);
+  await h.api.handle('fundamental/logIn', { ...identity });
+  assert.equal(typeof h.persisted.at(-1)?.savePayload, 'string', 'login persists a complete save');
+  assert.notEqual(h.persisted.at(-1)?.state.parties[0].name, 'Normalized party', 'login writes before runtime import normalization');
+  const adapter = h.api.createInProcessAdapter();
+  const commit = async (operation: string, parameters: Record<string, unknown> = {}) => {
+    const response = await adapter.commit(operation, { parameters }) as { error?: unknown };
+    assert.equal(response.error, undefined);
+    return h.persisted.at(-1)!;
+  };
+  h.failNextPersist.value = true;
+  const failed = await adapter.commit('commit/base/changeJewelPriorityParty', { parameters: { partyNumber: 1 } }) as { error?: { code: string } };
+  assert.equal(failed.error?.code, 'save_failed');
+  assert.notEqual(h.persisted.at(-1)?.state.parties[0].name, 'Normalized party');
+  const primed = await commit('commit/base/changeJewelPriorityParty', { partyNumber: 1 });
+  assert.equal(typeof primed.savePayload, 'string', 'first persistence after import must write normalized state, including after failure');
+  assert.equal(primed.state.parties[0].name, 'Normalized party');
+  assert.equal((await commit('commit/base/changeJewelPriorityParty', { partyNumber: 1 })).savePayload, null);
+  const revision = h.api.authority.getSnapshot().control.revisionHighWater;
+  assert.equal((await commit('commit/setting/debug', { speedOfTime: 'x5' })).savePayload, null, 'metadata-only revision changes reuse save');
+  assert.equal(h.api.authority.getSnapshot().control.revisionHighWater, revision + 1);
+  assert.equal(typeof (await commit('commit/setting/uiPreferences', { changes: [{ key: `party.equipCategory.${h.idleState.parties[0].characters[0].id}`, value: 'wand' }] })).savePayload, 'string');
+  assert.equal(typeof (await commit('commit/base/changeJewelPriorityParty', { partyNumber: 'none' })).savePayload, 'string');
+  const challenge = await adapter.commit('commit/setting/backup/reset', {}) as { error?: { code: string } };
+  assert.equal(challenge.error?.code, 'confirmation_required');
+  assert.equal(h.persisted.at(-1)?.savePayload, null);
+  await h.api.handle('fundamental/logOut', {});
+  assert.equal(typeof h.persisted.at(-1)?.savePayload, 'string', 'logout persists a complete save');
+  assert.equal(h.persisted.at(-1)?.state.parties[0].name, 'Normalized party', 'the durable logout save retains normalization');
+  await h.api.handle('fundamental/logIn', { ...identity });
+  assert.equal(h.api.authority.getSnapshot().state.parties[0].name, 'Normalized party', 'normalization survives reload');
+  assert.equal(typeof (await commit('commit/base/changeJewelPriorityParty', { partyNumber: 'none' })).savePayload, 'string', 'a new session primes its own reuse eligibility');
+  assert.equal((await commit('commit/base/changeJewelPriorityParty', { partyNumber: 'none' })).savePayload, null);
+  location.location = previousLocation;
+}
+
+// Headless is a session presentation option: gameplay and durable state match visible sessions.
+{
+  const visible = harness();
+  const hidden = harness();
+  const invalid = await hidden.api.handle('fundamental/logIn', { ...identity, headless: 'true' }) as { error: { code: string } };
+  assert.equal(invalid.error.code, 'invalid_request');
+  assert.deepEqual(hidden.headlessEvents, [], 'failed login does not change presentation');
+  await visible.api.handle('fundamental/logIn', { ...identity });
+  await hidden.api.handle('fundamental/logIn', { ...identity, headless: true });
+  assert.deepEqual(visible.headlessEvents, [false]);
+  assert.deepEqual(hidden.headlessEvents, [true]);
+  const request = { expectedRevision: hidden.api.authority.getSnapshot().control.revisionHighWater, idempotencyKey: 'headless-elapsed', parameters: { elapsedSeconds: 60 } };
+  assert.deepEqual(await hidden.api.handle('commit/progress/elapsed', request), await visible.api.handle('commit/progress/elapsed', request));
+  assert.deepEqual(hidden.persisted, visible.persisted, 'both modes persist identical state and control');
+  hidden.failNextPersist.value = true;
+  const failedLogout = await hidden.api.handle('fundamental/logOut', {}) as { error: { code: string } };
+  assert.equal(failedLogout.error.code, 'save_failed');
+  assert.deepEqual(hidden.headlessEvents, [true], 'failed logout preserves headless');
+  await hidden.api.handle('fundamental/logOut', {});
+  assert.deepEqual(hidden.headlessEvents, [true, false]);
+  await hidden.api.handle('fundamental/logIn', { ...identity, headless: false });
+  assert.deepEqual(hidden.headlessEvents, [true, false, false]);
+}
+
+// SpecRef: 9.1.4.9 | The server keeps no search result: a `gaSearch` result applies through `applyBuildChanges` from its own
+// `changeSummary` and `basis`, a later tuning of a party member does not discard it, and a rejected tuning returns no `basis`.
+{
+  const h = harness(false, (state, partyIndex, count, seed) => simulateExpeditionRuns(state, partyIndex, 'mode.normal', count, undefined, 0, seed));
+  const local = h.api.createInProcessAdapter();
+  const order = (h.idleState.parties[0].characters).map((character) => character.id);
+  const searched = await local.read('read/build/party/{p}/gaSearch', { pathParameters: { p: 1 }, parameters: {
+    p: 1, targets: order.map((characterId) => ({ characterId, changeableComponents: { equipment: true } })),
+    gaParameters: { seed: 7, populationSize: 8, generations: 1, quickRuns: 10, confirmRuns: 50, verifyRuns: 100, eliteCount: 2 },
+  } }) as { data: { changeSummary: unknown[]; basis: string }; error?: unknown };
+  assert.equal(searched.error, undefined, JSON.stringify(searched.error));
+  assert.equal(typeof searched.data.basis, 'string');
+  const apply = async () => await local.commit('commit/build/party/{p}/applyBuildChanges', { pathParameters: { p: 1 }, parameters: { changes: searched.data.changeSummary, basis: searched.data.basis, simulation: true } }) as { error?: { code: string; details?: { reason?: string } }; data?: { applied: unknown[] } };
+  if (searched.data.changeSummary.length > 0) assert.equal((await apply()).error, undefined, 'the search result applies as written');
+  const tuned = await local.read('read/build/character/stagedEquipmentTuning', { parameters: { characterId: order[1], offenseElementTrialRuns: 0, defenseElementTrialRuns: 0, abilityTrialRuns: 0 } }) as { data: { accepted: boolean; basis?: string }; error?: unknown };
+  assert.equal(tuned.error, undefined, JSON.stringify(tuned.error));
+  assert.equal(tuned.data.accepted, false);
+  assert.equal(tuned.data.basis, undefined);
+  if (searched.data.changeSummary.length > 0) assert.equal((await apply()).error, undefined, 'a later tuning does not discard the search result');
+  const missing = await local.read('read/build/character/stagedEquipmentTuning', { parameters: { characterId: 999999 } }) as { error?: { code: string } };
+  assert.equal(missing.error?.code, 'not_found');
+  // SpecRef: 9.1.3 | 3-3-2 applyBuildChanges | the old `applyGaResult` and `applyBuildResult` names are not routed (no alias).
+  for (const name of ['applyGaResult', 'applyBuildResult']) {
+    const renamed = await local.commit(`commit/build/party/{p}/${name}`, { pathParameters: { p: 1 }, parameters: { changes: searched.data.changeSummary, simulation: true } }) as { error?: { code: string }; data?: unknown };
+    assert.ok(renamed.error, `${name} is gone`);
+    assert.equal(renamed.data, undefined);
+  }
+}

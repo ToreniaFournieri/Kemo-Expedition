@@ -370,11 +370,11 @@ function ShopTab({
     if (!item) return [];
     const rarityClass = entry.soldOut
       ? 'text-gray-400'
-      : entry.rarity === 'bossRare'
+      : entry.itemRarity === 'epic'
         ? 'text-accent'
-        : entry.rarity === 'eliteRare'
+        : entry.itemRarity === 'rare'
           ? 'text-sub'
-          : entry.rarity === 'uncommon'
+          : entry.itemRarity === 'uncommon'
             ? 'font-bold text-gray-900'
             : 'text-gray-900 font-normal';
     // SpecRef: 8.4.1 | Shop (お店) | Enhancement: an identified entry shows its rolled title; an unidentified one shows `?` until bought.

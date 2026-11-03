@@ -35,3 +35,4 @@ __pycache__/
 
 # Generated desktop builds
 release/
+play_runs/ai_play_tools/twin/twin.mjs

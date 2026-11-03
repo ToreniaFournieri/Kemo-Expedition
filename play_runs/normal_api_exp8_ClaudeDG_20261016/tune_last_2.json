@@ -1,0 +1,146 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 9.5% / Draw 6.1% / Retreat 57.8% / Defeat 26.6%",
+ "after": "Success 10.7% / Draw 4.4% / Retreat 57.8% / Defeat 27.1%",
+ "improvement": 0.1263,
+ "gain": 0.012,
+ "standardError": 0.0135,
+ "crossCheck": {
+  "objective": "bossDamage",
+  "before": 0.9361,
+  "after": 0.9414,
+  "minimum": null,
+  "reached": null
+ },
+ "bottleneckRoom": "6f-1",
+ "bottleneckCounters": [
+  {
+   "ability": "a.null-counter",
+   "answers": [
+    "a.counter"
+   ],
+   "status": "noItem"
+  },
+  {
+   "ability": "a.unforgettable",
+   "answers": [
+    "a.oblivion"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 9,
+  "defenseElement": 10,
+  "ability": 12
+ },
+ "steps": {
+  "offenseElement": [
+   {
+    "element": "e.none",
+    "improvement": 0.25,
+    "changes": [
+     "5=0/8320/2/0",
+     "10=0/8321/0/0"
+    ]
+   },
+   {
+    "element": "e.none",
+    "improvement": 0.25,
+    "changes": [
+     "5=0/8320/2/0",
+     "10=0/1309/4/0"
+    ]
+   }
+  ],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.thunder"
+    ],
+    "improvement": 0.65,
+    "changes": [
+     "8=0/6301/1/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.ice"
+    ],
+    "improvement": 0.35,
+    "changes": [
+     "3=0/2220/3/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.thunder"
+    ],
+    "improvement": 0.25,
+    "changes": [
+     "3=0/6301/1/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.defiance"
+    ],
+    "improvement": 0.35,
+    "changes": [
+     "7=0/8320/2/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.null-corrode"
+    ],
+    "improvement": 0.2,
+    "changes": [
+     "8=0/3302/3/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.mana-ward"
+    ],
+    "improvement": 0.2,
+    "changes": [
+     "2=0/2402/0/0"
+    ]
+   }
+  ],
+  "finalTuning": [
+   {
+    "step": "ability",
+    "index": 0,
+    "abilities": [
+     "a.defiance"
+    ],
+    "improvement": 0.0851,
+    "changes": [
+     "7=0/8320/2/0"
+    ]
+   },
+   {
+    "step": "defenseElement",
+    "index": 2,
+    "resistance": [
+     "r.thunder"
+    ],
+    "improvement": 0.1277,
+    "changes": [
+     "3=0/6301/1/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [],
+ "revision": 2546,
+ "simulationRuns": 19100,
+ "elapsedSeconds": 13,
+ "seed": 4025895662
+}

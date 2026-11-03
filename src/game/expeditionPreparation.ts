@@ -101,7 +101,11 @@ export function prepareExpeditionRun(
     partyStatus,
     context,
     transaction: {
-      initialHp: context.partyStats.hp,
+      // SpecRef: 8.3 | UI_EXPEDITION | An online expedition and a sortie begin with the party's current HP (never above the maximum).
+      // An AFK chunk (reactivate) can start from a fragment or mid-state, so it keeps the full-HP start.
+      initialHp: input.chunkPartyStatus
+        ? context.partyStats.hp
+        : Math.min(context.partyStats.hp, Math.max(1, Math.floor(persistedCurrentHp))),
       bags: input.normalizeBags(input.currentParty.bags),
       enemyBattleStats: input.global.enemyBattleStats,
       revealedItemIds: input.global.revealedItemCompendiumItemIds,

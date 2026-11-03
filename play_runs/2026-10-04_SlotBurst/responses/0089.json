@@ -1,0 +1,1 @@
+{"apiVersion":"v1","schemaVersion":1,"requestId":"8fb569b1-c4bf-4874-979a-d18552e6429f","previousRevision":63,"revision":63,"committedAt":"2026-10-04T07:12:07.873Z","data":{"autoEquipmentReport":{"ran":true,"changes":[]},"current":{"mode":"FULL","equipment":["0/0/3315/1/0","1/0/3223/0/0"],"undoAvailable":false,"redoAvailable":false}},"effects":[],"changedResources":[]}

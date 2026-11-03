@@ -346,11 +346,11 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   const at = Date.parse('2026-01-01T03:00:00.000Z');
   const defeated = (state: GameState): GameState => ({ ...state, parties: state.parties.map((party, index) => (index === 0 ? { ...party, defeatedBossExpeditions: { ...party.defeatedBossExpeditions, 7: true } } : party)) });
   const plans: Array<[number, string, string, string]> = [
-    [0, 'C', 'CCCCCC', 'default'], [19, 'C', 'CCCCCC', 'default'], [20, 'CC', 'UCCCC', 'intimacy20'], [40, 'UC', 'EUUCC', 'intimacy40'],
-    [80, 'UU', 'BEEUU', 'intimacy80'], [99, 'UU', 'BEEUU', 'intimacy80'], [100, 'EU', 'BEEEU', 'intimacy100'], [120, 'EE', 'BBEEU', 'intimacy120'],
-    [140, 'BE', 'BBEEE', 'intimacy140'], [199, 'BE', 'BBEEE', 'intimacy140'],
+    [0, 'C', 'CCCCCC', 'default'], [19, 'C', 'CCCCCC', 'default'], [20, 'CC', 'UCCCC', 'intimacy20'], [40, 'UC', 'RUUCC', 'intimacy40'],
+    [80, 'UU', 'ERRUU', 'intimacy80'], [99, 'UU', 'ERRUU', 'intimacy80'], [100, 'RU', 'ERRRU', 'intimacy100'], [120, 'RR', 'EERRU', 'intimacy120'],
+    [140, 'ER', 'EERRR', 'intimacy140'], [199, 'ER', 'EERRR', 'intimacy140'],
   ];
-  const letter: Record<string, string> = { common: 'C', uncommon: 'U', eliteRare: 'E', bossRare: 'B' };
+  const letter: Record<string, string> = { common: 'C', uncommon: 'U', rare: 'R', epic: 'E' };
   for (const [intimacy, identified, unidentified, dialogue] of plans) {
     const state = defeated({ ...seed, global: { ...seed.global, shopIntimacy: intimacy, shopIntimacyLastDecayAt: at } } as GameState);
     const facts = getShopFacts(shopLineupInputOf(state), new Date(at));
@@ -499,18 +499,42 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   const ok = sortie(charged);
   assert.equal(ok.state.parties[0].instantExpeditionStock, 2, 'one stock is consumed');
   assert.deepEqual(ok.partyCycleWrites, [{ partyIndex: 0, cycle: { state: 'rest', stateStartedAt: 777, durationMs: 12_345, restInitialTotalSteps: 1, isCurrentExpeditionGodsBattle: false } }]);
-  const sortieLogId = String((ok.data as { logId: string }).logId);
+  const okSorties = (ok.data as { sorties: { battleOutcome: string; rewards: string[]; diaryEntryId: string | null; logId: string }[] }).sorties;
+  assert.equal(okSorties.length, 1, 'no `numberOfSortie` means one sortie');
+  const sortieLogId = String(okSorties[0].logId);
   assert.match(sortieLogId, /^(log:1:[0-9a-z]+|diary:.+)$/, 'a sortie names its log uniquely, never `latest`');
   if (sortieLogId.startsWith('log:')) {
     const { retainedLogIdOf } = await import('../../src/api/v1/battleLogs');
     assert.equal(sortieLogId, retainedLogIdOf(ok.state.parties[0].lastExpeditionLog!, ok.state.parties[0].id));
   }
-  assert.ok(['Clear', 'Return', 'Draw', 'Retreat', 'Defeat'].includes(String((ok.data as { outcome: string }).outcome)));
+  assert.ok(['Clear', 'Return', 'Draw', 'Retreat', 'Defeat'].includes(String(okSorties[0].battleOutcome)));
   assert.equal(charged.parties[0].instantExpeditionStock, 3, 'the input snapshot is untouched');
+  // `numberOfSortie` runs that many sorties in sequence (ending early only when a Defeat exhausts the party), one stock each,
+  // and writes the rest cycle once.
+  const triple = applyApiV1Commit('commit/expedition/1/sortie', charged, { numberOfSortie: 3 }, context());
+  const tripleSorties = (triple.data as { sorties: unknown[] }).sorties;
+  assert.ok(tripleSorties.length >= 1 && tripleSorties.length <= 3);
+  assert.equal(triple.state.parties[0].instantExpeditionStock, 3 - tripleSorties.length, 'each sortie consumes one stock');
+  assert.equal(triple.partyCycleWrites?.length, 1);
+  // 4 requested with 3 in stock performs as many as the charge allows, reported as `<valid>/<requested>`.
+  const over = applyApiV1Commit('commit/expedition/1/sortie', charged, { numberOfSortie: 4 }, context());
+  const overData = over.data as { summary: string; sorties: unknown[] };
+  assert.ok(overData.sorties.length >= 1 && overData.sorties.length <= 3);
+  assert.equal(overData.summary, `${overData.sorties.length}/4`);
+  for (const bad of [0, 7, 1.5, '2']) assert.throws(() => applyApiV1Commit('commit/expedition/1/sortie', charged, { numberOfSortie: bad }, context()), /invalid_request:numberOfSortie/);
   // Rewards use the Item Format of the rest of the API (`<lock>/<itemId>/<enhancement>/<superRare>`), not variant keys.
-  const rewards = (ok.data as { rewards: string[] }).rewards;
+  const rewards = okSorties[0].rewards;
   assert.equal(rewards.length, ok.state.parties[0].lastExpeditionLog?.rewards.length ?? 0);
   for (const reward of rewards) assert.match(reward, /^[01]\/[1-9][0-9]*\/[0-6]\/[0-9]+$/);
+  // SpecRef: 9.1.4.4 | A sortie restarts the party's Cycle and drops its carry, so the next `elapsed` Cycle is a whole one,
+  // priced from the party as the sortie left it.
+  {
+    const { getApproxAfkCycleDurationMs } = await import('../../src/game/afkScheduler');
+    const timing = ok.data as { carriedSeconds: number; secondsToNextCycle: number };
+    assert.equal(timing.carriedSeconds, 0);
+    assert.equal(timing.secondsToNextCycle, Math.ceil(getApproxAfkCycleDurationMs(ok.state.parties[0], 1, { deityDonations: ok.state.global.deityDonations }) / 1_000));
+    assert.ok(timing.secondsToNextCycle > 0);
+  }
 
   // No charge, no expedition (the button refuses too).
   refuses(withParty(seed, { instantExpeditionStock: 0, instantExpeditionChargeStartedAt: at }), 'charge_insufficient');
@@ -623,6 +647,19 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   assert.equal(reset.state.global, played.global, 'nothing outside the party changes');
   assert.notDeepEqual(played.parties[0].expeditionStats, seed.parties[0].expeditionStats, 'the fixture really differed');
   assert.throws(() => applyApiV1Commit('commit/expedition/9/resetStatistics', played, {}, baseContext()), /not_found/);
+}
+
+// `sideQuestStatistics` is projected as `<sideQuestId>-<successfulCount>/<cancelledCount>/<failedCount>/<totalCount>` and is cleared by resetStatistics (Spec 9.1.3, 2-1-4, 3-2-4).
+{
+  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels.ts');
+  const withStats = { ...seed, parties: seed.parties.map((party, index) => index === 0
+    ? { ...party, sideQuestStats: { '13': { success: 1, cancelled: 1, failed: 1, total: 3 }, '3': { success: 0, cancelled: 0, failed: 0, total: 1 } } }
+    : party) } as GameState;
+  const read = async (state: GameState) => (await buildApiV1ReadData('read/observation/party', state, { partyNumber: 1 }, {} as never) as { partyInfo: { party: { sideQuestStatistics: string[] } } }).partyInfo.party.sideQuestStatistics;
+  assert.deepEqual(await read(withStats), ['3-0/0/0/1', '13-1/1/1/3']);
+  assert.deepEqual(await read(seed), []);
+  const reset = applyApiV1Commit('commit/expedition/1/resetStatistics', withStats, {}, baseContext());
+  assert.deepEqual(await read(reset.state), []);
 }
 
 // A real, freshly resolved expedition (a compact, language-neutral record) renders from the `latestBattleLog` response alone
@@ -769,7 +806,7 @@ function diaryLog(id: string, isRead = false): DiaryLog {
 {
   const character = seed.parties[0].characters.find((entry) => entry.isUnique !== true)!;
   const renamed = applyApiV1Commit(`commit/build/character/${character.id}/changeBuild`, seed, { name: 'Renamed', simulation: false }, baseContext());
-  assert.deepEqual(Object.keys(renamed.data.current as object).sort(), ['lineage', 'mainClassId', 'name', 'predisposition', 'racesAndGender', 'subClassId', 'unique']);
+  assert.deepEqual(Object.keys(renamed.data.current as object).sort(), ['lineage', 'mainClassId', 'name', 'predisposition', 'racesAndGender', 'subClassId', 'uniqueSelection']);
   assert.equal((renamed.data.current as { name: string }).name, 'Renamed');
   const simulated = applyApiV1Commit(`commit/build/character/${character.id}/changeBuild`, seed, { name: 'Renamed', simulation: true }, baseContext());
   assert.equal((simulated.data.current as { name: string }).name, character.name, 'a simulation reports the unchanged build');
@@ -821,13 +858,13 @@ function diaryLog(id: string, isRead = false): DiaryLog {
   const drawn = (bag: { entries: { id: number; tickets: number }[] }) => ({ entries: bag.entries.map((entry, index) => index === 0 ? { ...entry, tickets: Math.max(0, entry.tickets - 1) } : entry) });
   const party = seed.parties[0];
   const activeQuest = { id: 1, type: 'gold', target: 10, progress: 7 } as unknown as NonNullable<GameState['parties'][number]['sideQuest']>;
-  const used = { ...seed, parties: [{ ...party, sideQuest: activeQuest, bags: { ...party.bags, sideQuestBag: drawn(party.bags.sideQuestBag), commonSuperRareBag: drawn(party.bags.commonSuperRareBag), bossRareRewardBag: drawn(party.bags.bossRareRewardBag) } }, ...seed.parties.slice(1)] } as GameState;
+  const used = { ...seed, parties: [{ ...party, sideQuest: activeQuest, bags: { ...party.bags, sideQuestBag: drawn(party.bags.sideQuestBag), commonSuperRareBag: drawn(party.bags.commonSuperRareBag), epicRewardBag: drawn(party.bags.epicRewardBag) } }, ...seed.parties.slice(1)] } as GameState;
   const ctx = baseContext({ settings: { debug: { clairvoyance: true } } });
   const sideQuest = applyApiV1Commit('commit/setting/clairvoyanceReset', used, { partyNumber: party.id, resetSideQuest: true }, ctx).state.parties[0];
   assert.deepEqual(sideQuest.bags.sideQuestBag, seed.parties[0].bags.sideQuestBag, 'the side-quest bag is initialized');
   assert.equal(sideQuest.sideQuest?.progress, 7, 'the side-quest progress is kept');
   const rewards = applyApiV1Commit('commit/setting/clairvoyanceReset', used, { partyNumber: party.id, resetRewards: true }, ctx).state.parties[0];
-  assert.deepEqual(rewards.bags.bossRareRewardBag, seed.parties[0].bags.bossRareRewardBag, 'the party reward bags are initialized');
+  assert.deepEqual(rewards.bags.epicRewardBag, seed.parties[0].bags.epicRewardBag, 'the party reward bags are initialized');
   assert.deepEqual(rewards.bags.commonSuperRareBag, used.parties[0].bags.commonSuperRareBag, 'the common Super Rare bag is left to the common reset');
 }
 

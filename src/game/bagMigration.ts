@@ -1,14 +1,14 @@
 import type { GameBags, RandomBag } from '../types/index.ts';
 import {
-  createBossRareRewardBag,
   createCommonEnhancementBag,
   createCommonRewardBag,
   createCommonSuperRareBag,
-  createEliteRareRewardBag,
   createEnhancementBag,
+  createEpicRewardBag,
   createMagicalThreatBag,
-  createMythicRareRewardBag,
+  createMythicRewardBag,
   createPhysicalThreatBag,
+  createRareRewardBag,
   createRareSuperRareBag,
   createSideQuestBag,
   createSuperRareBag,
@@ -71,10 +71,32 @@ export function migrateLegacyBag(
   return normalizeBagForType(fallbackFactory(), bagType);
 }
 
+// SpecRef: 1.2 | Bag Randomization | `t.rare_reward_bag`, `t.epic_reward_bag`, `t.mythic_reward_bag`
+// Saves written before the item rarity rename store these bags as `eliteRareRewardBag`, `bossRareRewardBag`, and
+// `mythicRareRewardBag`. A current key wins over its legacy key.
+const LEGACY_REWARD_BAG_KEYS: ReadonlyArray<readonly [legacy: string, current: keyof GameBags]> = [
+  ['eliteRareRewardBag', 'rareRewardBag'],
+  ['bossRareRewardBag', 'epicRewardBag'],
+  ['mythicRareRewardBag', 'mythicRewardBag'],
+];
+
+/** Returns a copy of a bag collection with legacy reward bag keys renamed, or the same object when none is legacy. */
+export function upgradeLegacyRewardBagKeys<T extends object>(bags: T): T {
+  const source = bags as Record<string, unknown>;
+  if (!LEGACY_REWARD_BAG_KEYS.some(([legacy]) => legacy in source)) return bags;
+  const result: Record<string, unknown> = { ...source };
+  for (const [legacy, current] of LEGACY_REWARD_BAG_KEYS) {
+    if (!(legacy in result)) continue;
+    if (result[current] === undefined) result[current] = result[legacy];
+    delete result[legacy];
+  }
+  return result as T;
+}
+
 /** Canonical migration for save-level and Party-level legacy bag representations. */
 export function normalizeImportedBags(rawBags: unknown): GameBags {
   const bags = rawBags && typeof rawBags === 'object'
-    ? rawBags as Record<string, unknown>
+    ? upgradeLegacyRewardBagKeys(rawBags as Record<string, unknown>)
     : {};
   return normalizeGameBags({
     commonRewardBag: migrateLegacyBag(
@@ -92,20 +114,20 @@ export function normalizeImportedBags(rawBags: unknown): GameBags {
       createUncommonRewardBag,
       'uncommonRewardBag',
     ),
-    eliteRareRewardBag: migrateLegacyBag(
-      bags.eliteRareRewardBag,
-      createEliteRareRewardBag,
-      'eliteRareRewardBag',
+    rareRewardBag: migrateLegacyBag(
+      bags.rareRewardBag,
+      createRareRewardBag,
+      'rareRewardBag',
     ),
-    bossRareRewardBag: migrateLegacyBag(
-      bags.bossRareRewardBag,
-      createBossRareRewardBag,
-      'bossRareRewardBag',
+    epicRewardBag: migrateLegacyBag(
+      bags.epicRewardBag,
+      createEpicRewardBag,
+      'epicRewardBag',
     ),
-    mythicRareRewardBag: migrateLegacyBag(
-      bags.mythicRareRewardBag,
-      createMythicRareRewardBag,
-      'mythicRareRewardBag',
+    mythicRewardBag: migrateLegacyBag(
+      bags.mythicRewardBag,
+      createMythicRewardBag,
+      'mythicRewardBag',
     ),
     enhancementBag: migrateLegacyBag(
       bags.enhancementBag,

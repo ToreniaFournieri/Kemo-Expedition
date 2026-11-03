@@ -1,0 +1,53 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "0020e8a2-473f-4d20-8444-3b6ea5d9d50b",
+  "revision": 9,
+  "observedAt": "2026-10-03T08:05:15.567Z",
+  "data": {
+    "expeditionInfo": {
+      "parties": [
+        {
+          "partyNumber": 1,
+          "name": "PT1",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 546,
+          "maximumHp": 546,
+          "disclosedFloor": 3,
+          "disclosedOutcome": "Return",
+          "destination": 1,
+          "destinationMode": "fixed",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 3,
+          "chargeDuration": 0,
+          "clearGates": [
+            {
+              "kind": "eliteGate",
+              "dungeonId": 1,
+              "floor": 3,
+              "current": 4,
+              "required": 5
+            }
+          ],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": false,
+              "unavailableReason": "gods_battle_unavailable"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

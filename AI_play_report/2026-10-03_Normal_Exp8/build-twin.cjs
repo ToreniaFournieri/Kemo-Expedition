@@ -1,0 +1,16 @@
+const {build}=require('esbuild');
+const fs=require('node:fs');
+const path=require('node:path');
+const repo=path.resolve(__dirname,'../..');
+const entry=`export {createFreshGameState,simulateExpeditionRuns,simulateApiSortieBatchForTesting} from '${repo}/src/hooks/useGameState.ts';
+export {computeCharacterStats} from '${repo}/src/game/characterComputation.ts';
+export {computePartyStats,computeCharacterHpContribution} from '${repo}/src/game/partyComputation.ts';
+export {getItemById,ITEMS} from '${repo}/src/data/items.ts';
+export {hydrateGameState} from '${repo}/src/game/saveCodec.ts';
+export {canCharacterEquipCategory} from '${repo}/src/game/equipmentSets.ts';
+export {buildBattleLogData} from '${repo}/src/api/v1/battleLogs.ts';
+export {getDeityNameFromId,getNextRankDonationRequirement} from '${repo}/src/game/deity.ts';
+export {isJewelAllowedForCategory} from '${repo}/src/game/jewel.ts';
+export {decodePersistedState} from '${repo}/src/game/storageCompression.ts';
+`;
+build({stdin:{contents:entry,resolveDir:repo,loader:'ts'},outfile:'/tmp/bokemo-normal-twin.cjs',bundle:true,platform:'node',format:'cjs',define:{'import.meta.env.DEV':'false','import.meta.env.BASE_URL':'"/"',__APP_VERSION__:'"0.9.8"',__BUILD_NUMBER__:'12',__PUBLIC_CHARACTER_IMAGE_FILES__:'[]',__PUBLIC_CHIBI_IMAGE_FILES__:'[]',__AUTO_EQUIPMENT_PROFILE_ENABLED__:'false',__AFK_LIVE_PROFILE_ENABLED__:'false',__AFK_LIVE_PROFILE_FIXTURE__:'""',__RUNTIME_DIAGNOSTICS_DEFAULT_ENABLED__:'false'},plugins:[{name:'raw',setup(b){b.onResolve({filter:/\.md\?raw$/},a=>({path:path.resolve(a.resolveDir,a.path.slice(0,-4)),namespace:'raw'}));b.onLoad({filter:/.*/,namespace:'raw'},a=>({contents:`export default ${JSON.stringify(fs.readFileSync(a.path,'utf8'))}`,loader:'js'}));}}],logLevel:'silent'}).then(()=>console.log('Offline twin compiled from unchanged source.')).catch(e=>{console.error(e);process.exitCode=1;});

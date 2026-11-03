@@ -272,6 +272,8 @@ export interface Character {
   name: string;
   gender: CharacterGender;
   isUnique?: boolean;
+  /** Unique character identity; present exactly when `isUnique` is true. SpecRef: 2.1.4.2 */
+  uniqueCharacterId?: import('../data/uniqueCharacters').UniqueCharacterId;
   autoEquipmentMode?: 0 | 1 | 2;
   raceId: RaceId;
   mainClassId: ClassId;
@@ -393,6 +395,10 @@ export interface Party {
   currentSleepiness: SleepinessState;
   condition: number;
   sideQuest: SideQuestState | null;
+  /** Per `sideQuestId`: quests accepted (`total`), completed (`success`), cancelled by a player action (`cancelled`) and expired (`failed`). Absent until the first quest. */
+  sideQuestStats?: Record<string, { success: number; cancelled: number; failed: number; total: number }>;
+  /** The party's own drops since the last Statistics reset (`game/dropStatistics`). Absent until its first expedition. */
+  dropStats?: { items: number; superRare: number; autoSold: number; byEnhancement: number[] };
   /** Inventory revisions observed by the most recent scheduled FULL run. */
   lastFullEquipmentRevision?: number;
   lastFullJewelRevision?: number;
@@ -428,7 +434,7 @@ export type ExpeditionDepthLimit =
   | 'beforeBoss'
   | 'all';
 
-export type DiaryTrigger = 'victory' | 'return' | 'defeat' | 'draw' | 'retreat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock';
+export type DiaryTrigger = 'victory' | 'return' | 'defeat' | 'draw' | 'retreat' | 'rare' | 'epic' | 'mythic' | 'superRare' | 'godsBattle' | 'sideQuest' | 'unlock';
 export type DiaryDefeatNotificationMode = 'defeatOnly' | 'defeatAndDraw' | 'defeatDrawRetreat' | 'all' | 'none';
 
 export interface DiaryLog {
@@ -444,12 +450,32 @@ export interface DiaryLog {
   isRead: boolean;
 }
 
+// SpecRef: 8.5 | UI_DIARY | Global Diary entries contain only language-neutral facts rendered as a title.
+export type GlobalDiaryKind = 'accountCreated' | 'bossFirstClear' | 'godFirstDefeat' | 'achievement';
+export type GlobalAchievementMetric = 'clear' | 'superRare' | 'jewel';
+
+export interface GlobalDiaryLog {
+  id: string;
+  kind: GlobalDiaryKind;
+  /** Party number that first cleared the boss (`bossFirstClear`) or defeated the god (`godFirstDefeat`). */
+  partyNumber?: number;
+  /** Expedition whose boss was cleared (`bossFirstClear`) or whose god was defeated (`godFirstDefeat`) for the first time. */
+  dungeonId?: number;
+  /** Party number unlocked by that victory, when it unlocked one. */
+  unlockedPartyNumber?: number;
+  /** Achievement metric and milestone (`achievement` only). */
+  metric?: GlobalAchievementMetric;
+  threshold?: number;
+  createdAt: number;
+  isRead: boolean;
+}
+
 export type DiaryRarityThreshold = 'all' | 1 | 2 | 3 | 4 | 5 | 6 | 'none';
 export type DiarySideQuestThreshold = 'all' | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 'none';
 
 export interface DiarySettings {
   superRareThreshold: DiaryRarityThreshold;
-  bossThreshold: DiaryRarityThreshold;
+  epicThreshold: DiaryRarityThreshold;
   mythicThreshold: DiaryRarityThreshold;
   rareThreshold: DiaryRarityThreshold;
   sideQuestThreshold: DiarySideQuestThreshold;
@@ -467,7 +493,7 @@ export interface Deity {
   uniqueAbilities: string[];
 }
 
-interface GlobalState {
+export interface GlobalState {
   gold: number;
   prana: number;
   unlockedMimorianEnemyIds: number[];
@@ -495,6 +521,14 @@ interface GlobalState {
   enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
   altarVictoriesByEnemyType?: Record<string, number>;
   readDeveloperNewsItemIds: string[];
+  /** Global Diary (SpecRef 8.5), newest first, at most 99 entries; absent in saves written before it existed. */
+  globalDiary?: GlobalDiaryLog[];
+  /** Lifetime Clear outcomes; unlike `expeditionStats` it is never cleared by the Statistics reset (SpecRef 8.5). */
+  achievementClearTotal?: number;
+  /** Recorded achievement milestones (`<metric>:<threshold>`); each is recorded once. */
+  achievementMilestones?: string[];
+  /** Expedition IDs of gods already defeated, for the first-god-defeat entry. */
+  defeatedGodExpeditionIds?: number[];
   /** Explicitly persisted UI preferences (closed catalog, Spec 9.1.4.17); changed only through `SET_UI_PREFERENCES`. */
   uiPreferences?: Record<string, string | number | boolean>;
   language: Language;
@@ -682,9 +716,9 @@ export interface GameBags {
   commonRewardBag: RandomBag;      // For normal rooms (40 no item, 10 win)
   commonEnhancementBag: RandomBag; // For normal rooms enhancement
   uncommonRewardBag: RandomBag;    // For uncommon rewards (49 no item, 1 win)
-  eliteRareRewardBag: RandomBag;        // For elite rare rewards (49 no item, 1 win)
-  bossRareRewardBag: RandomBag;      // For boss rare rewards (49 no item, 1 win)
-  mythicRareRewardBag: RandomBag;    // For mythic rare rewards (24 no item, 1 win)
+  rareRewardBag: RandomBag;        // For rare rewards (49 no item, 1 win)
+  epicRewardBag: RandomBag;      // For epic rewards (49 no item, 1 win)
+  mythicRewardBag: RandomBag;    // For mythic rewards (24 no item, 1 win)
   enhancementBag: RandomBag;       // For unique rewards enhancement
   superRareBag: RandomBag; // For non-reward systems that still consume shared super rare titles (e.g., shop)
   commonSuperRareBag: RandomBag; // For common reward super rare rolls
@@ -782,6 +816,29 @@ export interface ExpeditionSimulationResult {
   rooms: ExpeditionSimulationRoomResult[];
   /** Sums over all runs; divide by `total` for the expected value per run. */
   totals?: { experience: number; itemDrops: number; dropSaleValue: number };
+  /**
+   * The fought room of a room-only forecast (`onlyRoom`, Spec 9.1.3 `gateDamage`): `reached` runs that fought it, `kills`
+   * won, `damageShare` the sum of each run's dealt damage over the room enemy's maximum HP (capped at 1; 1 for a win), and
+   * `damageShareSquareSum` the sum of each run's share squared (the per-run variance of `gateDamage`).
+   */
+  gateRoom?: { reached: number; kills: number; damageShare: number; damageShareSquareSum: number };
+  /** The party's maximum HP in this forecast: the unit of the rooms' `hpAtEntrySum` and `hpAfterWinSum`. */
+  maximumPartyHp?: number;
+  /** Sum of each run's EXP squared, for the variance of the GA search's `experience` objective. */
+  experienceSquareSum?: number;
+  /**
+   * Each run's progress in rooms: the rooms it cleared, plus the share of enemy HP dealt in its last battle when it lost or
+   * drew that battle (Spec 7.1.5 `progress`, before dividing by the rooms on the route). `sum` and `squareSum` over all runs.
+   */
+  progress?: { sum: number; squareSum: number };
+}
+
+/** Options of a private expedition forecast. */
+export interface ExpeditionSimulationOptions {
+  /** Fight only this room, from the start HP (Spec 9.1.3 `gateDamage`); the forecast state must let the run reach it and end there. */
+  onlyRoom?: { floorNumber: number; roomInFloor: number };
+  /** The party HP each run starts with, as a share of the maximum (0 < share ≤ 1, Spec 9.1.3 `startHp`); full HP when absent. */
+  startHpShare?: number;
 }
 
 export interface ExpeditionSimulationRoomResult {
@@ -797,6 +854,10 @@ export interface ExpeditionSimulationRoomResult {
   total: number;
   successfulHp: ExpeditionSimulationSuccessfulHpBuckets;
   retreatHp: ExpeditionSimulationRetreatHpBuckets;
+  /** Sum of the party HP at the start of this room over the runs that reached it. */
+  hpAtEntrySum: number;
+  /** Sum of the party HP left after this room's battle over the runs that won it. */
+  hpAfterWinSum: number;
 }
 
 export interface ExpeditionSimulationSuccessfulHpBuckets {
@@ -855,7 +916,7 @@ export const MAX_LEVEL = 69;
 // Notification Types
 export type NotificationStyle = 'normal' | 'rare';
 export type NotificationCategory = 'item' | 'stat';
-export type ItemRarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
+export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'mythic';
 
 export interface GameNotification {
   id: string;

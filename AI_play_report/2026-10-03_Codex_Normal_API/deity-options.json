@@ -1,0 +1,34 @@
+{
+  "current": {
+    "deityId": "precision",
+    "order": [
+      1,
+      4,
+      2,
+      6,
+      3,
+      5
+    ]
+  },
+  "validOptions": {
+    "deityId": [
+      "none",
+      "precision",
+      "restoration",
+      "attrition",
+      "fate",
+      "dusk",
+      "mirage",
+      "oblivion",
+      "discord"
+    ],
+    "order": [
+      1,
+      4,
+      2,
+      6,
+      3,
+      5
+    ]
+  }
+}

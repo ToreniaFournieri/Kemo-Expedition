@@ -3,6 +3,7 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { createApiV1 } = require('./api-v1.cjs');
 const { createApiAccountStore } = require('./api-account-store.cjs');
+const { encodeApiAccountSegments } = require('./api-save-encoder.cjs');
 const { normalizeAppMemoryMetrics } = require('./memory-metrics.cjs');
 
 const APP_HOST = 'bokemo';
@@ -26,12 +27,20 @@ let apiShutdownPromise = null;
 let latestPartyProgressSnapshot = null;
 let apiV1RequestId = 0;
 let apiV1RendererReady = false;
+let apiV1Headless = false;
+let mainWindowWasVisibleBeforeHeadless = false;
 const apiV1PendingRequests = new Map();
 const apiAccountStore = createApiAccountStore({ userDataPath: app.getPath('userData') });
 
 function apiV1RendererTimeoutMs(operation) {
   if (operation === 'fundamental/status') return 15_000;
   if (operation === 'fundamental/logIn') return 600_000;
+  // gaSearch and directedBuild fit their whole request, verification included, in `timeBudgetSeconds`, at most 600 s
+  // (Spec 9.1.3, 2-3-2 and 2-3-3 Request time limit).
+  if (operation === 'read/build/party/{p}/gaSearch') return 600_000;
+  if (operation === 'read/build/party/{p}/directedBuild') return 600_000;
+  // stagedEquipmentTuning has no time budget: its largest parameters (Spec 9.1.4.9 ranges) simulate about 270,000 runs.
+  if (operation === 'read/build/character/stagedEquipmentTuning') return 600_000;
   return 120_000;
 }
 
@@ -132,10 +141,12 @@ function createWindow(options = {}) {
   window.webContents.on('did-start-navigation', (details) => {
     if (!details.isMainFrame || details.isSameDocument) return;
     apiV1RendererReady = false;
+    apiV1Headless = false;
     apiV1.releaseForRendererLoss();
   });
   window.webContents.on('render-process-gone', () => {
     apiV1RendererReady = false;
+    apiV1Headless = false;
     apiV1.releaseForRendererLoss();
     for (const pending of apiV1PendingRequests.values()) { clearTimeout(pending.timeout); pending.reject(new Error('Renderer stopped')); }
     apiV1PendingRequests.clear();
@@ -179,6 +190,7 @@ function ensureDockIconVisible() {
 }
 
 function showMainWindow() {
+  if (apiV1Headless) return;
   ensureDockIconVisible();
   if (!mainWindow || mainWindow.isDestroyed()) {
     createWindow();
@@ -257,6 +269,7 @@ function createPartyProgressWindow() {
 }
 
 function togglePartyProgressWindow() {
+  if (apiV1Headless) return;
   const window = createPartyProgressWindow();
   if (window.isVisible()) {
     window.hide();
@@ -420,8 +433,22 @@ ipcMain.handle('desktop:show-notification', (_event, rawPayload) => {
   notification.show();
   return true;
 });
+ipcMain.handle('desktop:api-v1-headless', (event, headless) => {
+  if (event.sender !== mainWindow?.webContents || typeof headless !== 'boolean') return;
+  if (headless === apiV1Headless) return;
+  apiV1Headless = headless;
+  if (headless) {
+    mainWindowWasVisibleBeforeHeadless = mainWindow?.isVisible() === true;
+    mainWindow?.hide();
+    latestPartyProgressSnapshot = null;
+    partyProgressWindow?.hide();
+  } else if (mainWindowWasVisibleBeforeHeadless) {
+    mainWindow?.show();
+    mainWindowWasVisibleBeforeHeadless = false;
+  }
+});
 ipcMain.handle('desktop:update-party-progress-pane', (_event, rawSnapshot) => {
-  if (process.platform !== 'darwin') return false;
+  if (apiV1Headless || process.platform !== 'darwin') return false;
   const snapshot = normalizePartyProgressSnapshot(rawSnapshot);
   if (!snapshot) return false;
   // SpecRef: 9.1.2 | macOS menu-bar Party Progress pane | isolated minimum display snapshot
@@ -470,10 +497,18 @@ ipcMain.handle('desktop:api-account-load', (event, identity) => {
   if (event.sender !== mainWindow?.webContents || identity?.environment !== desktopEnvironment) throw new Error('invalid_environment');
   return apiAccountStore.load(identity);
 });
-ipcMain.handle('desktop:api-account-commit', (event, identity, savePayload, controlJson) => {
-  if (event.sender !== mainWindow?.webContents || typeof savePayload !== 'string' || typeof controlJson !== 'string' || !controlJson.startsWith('{')) throw new Error('invalid_request');
+ipcMain.handle('desktop:api-account-commit', (event, identity, savePayload, controlJson, receiptSync = null) => {
+  if (event.sender !== mainWindow?.webContents || (savePayload !== null && typeof savePayload !== 'string') || typeof controlJson !== 'string' || !controlJson.startsWith('{')) throw new Error('invalid_request');
   if (identity?.environment !== desktopEnvironment) throw new Error('invalid_environment');
-  apiAccountStore.commit(identity, savePayload, controlJson);
+  apiAccountStore.commit(identity, savePayload, controlJson, receiptSync);
+  return true;
+});
+// The renderer sends the save as text pieces plus references to expedition logs this process already compressed;
+// deflate runs here so the renderer stays responsive between API calls.
+ipcMain.handle('desktop:api-account-commit-segments', async (event, identity, segments, controlJson, receiptSync = null) => {
+  if (event.sender !== mainWindow?.webContents || typeof controlJson !== 'string' || !controlJson.startsWith('{')) throw new Error('invalid_request');
+  if (identity?.environment !== desktopEnvironment) throw new Error('invalid_environment');
+  apiAccountStore.commit(identity, await encodeApiAccountSegments(segments), controlJson, receiptSync);
   return true;
 });
 ipcMain.on('desktop:api-v1-ready', (event) => {

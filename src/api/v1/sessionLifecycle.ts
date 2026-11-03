@@ -1,5 +1,6 @@
 import type { GameState } from '../../types';
 import { serializeGameState } from '../../game/saveCodec';
+import type { ApiSaveSegments } from './accountSaveSegments';
 import { encodeStoredState } from '../../game/storageCompression';
 import { createApiRandom, withGameplayRandomSource } from '../../game/gameplayRandom';
 import { createFreshGameState } from '../../hooks/useGameState';
@@ -23,7 +24,9 @@ export interface ApiV1SessionPorts {
   accounts: {
     create: (identity: DesktopApiAccountIdentity, savePayload: string) => Promise<DesktopApiAccountIdentity>;
     load: (identity: DesktopApiAccountIdentity) => Promise<DesktopApiAccountRecord | null>;
-    commit: (identity: DesktopApiAccountIdentity, savePayload: string, control: DesktopApiControlMetadata) => Promise<boolean>;
+    commit: (identity: DesktopApiAccountIdentity, savePayload: string | null, control: DesktopApiControlMetadata) => Promise<boolean>;
+    /** Optional: commits a segmented save that the host reassembles and compresses, keeping encoding off the caller's thread. */
+    commitSegments?: (identity: DesktopApiAccountIdentity, segments: ApiSaveSegments, control: DesktopApiControlMetadata) => Promise<boolean>;
   };
   /** The player's own save, which must survive an API session and be restored on logout or restart. */
   player: {
@@ -106,6 +109,7 @@ export async function signUpApiAccount(request: Record<string, unknown>, ports: 
  * Any failure before the swap leaves the player's runtime state untouched and clears the pending return payload.
  */
 export async function logInApiAccount(request: Record<string, unknown>, activeSession: ApiV1ActiveSession | null, ports: ApiV1SessionPorts): Promise<{ ok: true; session: ApiV1ActiveSession } | ApiV1SessionFailure> {
+  if (request.headless !== undefined && typeof request.headless !== 'boolean') return fail(400, 'invalid_request', 'headless must be a boolean.', { field: 'headless' });
   if (activeSession) return fail(409, 'control_unavailable', 'Another API account is active.');
   const identity = parseIdentity(request, false);
   const modeFailure = environmentModeFailure(identity);

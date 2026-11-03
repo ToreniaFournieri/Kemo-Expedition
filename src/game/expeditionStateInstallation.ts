@@ -5,6 +5,7 @@ import type {
   InventoryRecord,
   Party,
 } from '../types/index.ts';
+import { addPartyDrops } from './dropStatistics.ts';
 import type {
   ExpeditionFinalizationPlan,
   ExpeditionTransactionResult,
@@ -98,6 +99,7 @@ export function planCommittedExpeditionState(
     // Party-cycle spending/donation is defined from the latest expedition only.
     pendingProfit: input.finalization.autoSellProfit,
     expeditionStats: input.finalization.expeditionStats,
+    dropStats: addPartyDrops(input.party.dropStats, input.log.rewards, input.log.autoSellItems?.length ?? 0),
     pendingUnlockState,
   };
 

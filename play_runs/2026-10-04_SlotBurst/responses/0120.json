@@ -1,0 +1,1 @@
+{"apiVersion":"v1","schemaVersion":1,"requestId":"b0f743bb-5622-4f19-97f9-c97d03042c9e","previousRevision":90,"revision":91,"committedAt":"2026-10-04T07:14:28.582Z","data":{"current":{"deityId":"fortification","order":[6,1,4,2,3,5]}},"effects":[],"changedResources":["read/observation/party","read/observation/base"]}

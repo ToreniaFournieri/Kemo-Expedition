@@ -80,12 +80,17 @@ export interface ApiV1CommitAuthorityInput {
   control: ApiV1ControlMetadata;
 }
 
+/** Save-state change information computed by the serialized authority, never supplied by API clients. */
+export interface ApiV1PersistenceContext {
+  stateChanged: boolean;
+}
+
 export interface ApiV1CommitAuthorityDependencies {
   gameMode: ApiV1CommitContext['gameMode'];
   enemyLevelOffset: number;
   cycleDurationScale: number;
   applyAutoEquipment: ApiV1CommitContext['applyAutoEquipment'];
-  persist: (state: GameState, control: ApiV1ControlMetadata) => Promise<void>;
+  persist: (state: GameState, control: ApiV1ControlMetadata, context: ApiV1PersistenceContext) => Promise<void>;
   publish: (state: GameState) => Promise<void>;
   /** Fired after a changed commit is durably persisted, so a transport layer can push open popup-event streams immediately instead of waiting for their next poll. */
   notifyPopupActivity?: () => void;
@@ -175,16 +180,24 @@ const receiptJsonCache = new WeakMap<ApiV1Receipt, string>();
  * The control metadata as JSON (equivalent to `JSON.stringify(control)`, with `receipts` last). Each retained receipt is immutable, so its
  * JSON is built once and reused: re-serializing all 4096 receipts on every commit dominated the account commit cost.
  */
+export function apiV1ReceiptJson(receipt: ApiV1Receipt): string {
+  let json = receiptJsonCache.get(receipt);
+  if (json === undefined) {
+    json = JSON.stringify(receipt);
+    receiptJsonCache.set(receipt, json);
+  }
+  return json;
+}
+
+/** The control metadata as JSON without its receipts, which the account journal stores separately. */
+export function serializeApiV1ControlWithoutReceipts(control: ApiV1ControlMetadata): string {
+  const { receipts: _receipts, ...rest } = control;
+  return JSON.stringify(rest);
+}
+
 export function serializeApiV1Control(control: ApiV1ControlMetadata): string {
   const { receipts, ...rest } = control;
-  const receiptsJson = receipts.map((receipt) => {
-    let json = receiptJsonCache.get(receipt);
-    if (json === undefined) {
-      json = JSON.stringify(receipt);
-      receiptJsonCache.set(receipt, json);
-    }
-    return json;
-  }).join(',');
+  const receiptsJson = receipts.map(apiV1ReceiptJson).join(',');
   const restJson = JSON.stringify(rest);
   return `${restJson.slice(0, -1)}${restJson.length > 2 ? ',' : ''}"receipts":[${receiptsJson}]}`;
 }
@@ -216,7 +229,12 @@ function classifyCommitError(error: unknown): ApiV1AuthorityError {
   // The bare thrown message (`illegal_action:charge_insufficient`), not the stringified `Error: …` wrapper.
   const reason = error instanceof Error ? error.message : String(error);
   if (reason.includes('not_found')) return { code: 'not_found', message: 'The requested resource was not found.', details: { reason } };
-  if (reason.includes('illegal_action')) return { code: 'illegal_action', message: 'The action is unavailable.', details: { reason } };
+  if (reason.includes('illegal_action')) {
+    // A refusal may name the party or item that blocks it (`deity_in_use` → `heldByParty`) beside the reason token.
+    const attached = error instanceof Error ? (error as Error & { details?: unknown }).details : undefined;
+    const extra = typeof attached === 'object' && attached !== null ? attached : {};
+    return { code: 'illegal_action', message: 'The action is unavailable.', details: { reason, ...extra } };
+  }
   const details = describeInvalidRequest(error);
   return { code: 'invalid_request', message: invalidRequestMessage(details, 'The commit could not be applied.'), details: { ...details } };
 }
@@ -276,7 +294,7 @@ export async function executeApiV1CommitTransaction(
       };
       if (!reserved) stagedControl.confirmations.push(challenge);
       try {
-        await dependencies.persist(input.state, stagedControl);
+        await dependencies.persist(input.state, stagedControl, { stateChanged: false });
       } catch {
         return failure('save_failed', 'The confirmation reservation could not be persisted.');
       }
@@ -418,7 +436,7 @@ export async function executeApiV1CommitTransaction(
   }
 
   try {
-    await dependencies.persist(outcome.state, stagedControl);
+    await dependencies.persist(outcome.state, stagedControl, { stateChanged });
   } catch {
     return failure('save_failed', 'The previous account manifest remains authoritative.');
   }
@@ -458,7 +476,7 @@ export interface ApiV1InternalTransactionStep {
 }
 
 export interface ApiV1InternalTransactionDependencies {
-  persist: (state: GameState, control: ApiV1ControlMetadata) => Promise<void>;
+  persist: (state: GameState, control: ApiV1ControlMetadata, context: ApiV1PersistenceContext) => Promise<void>;
   publish: (state: GameState) => Promise<void>;
   onPublicationFailure?: (error: unknown) => void;
 }
@@ -527,7 +545,7 @@ export class SerializedApplicationApiAuthority {
       const { state, control, stateChanged, controlChanged } = result;
       if (stateChanged || controlChanged) control.revisionHighWater += 1;
       try {
-        await dependencies.persist(state, control);
+        await dependencies.persist(state, control, { stateChanged });
       } catch {
         return this.snapshot;
       }

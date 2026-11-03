@@ -5,6 +5,7 @@ import { createFreshGameState, gameReducer } from '../../src/hooks/useGameState'
 import { canCharacterEquipCategory } from '../../src/game/equipmentSets';
 import { getVariantKey, type GameState } from '../../src/types';
 import { planEquipmentIntent, type EquipmentIntent } from '../../src/api/v1/equipmentIntents';
+import { readCharacterBuild } from './apiV1CharacterRead.ts';
 
 // SpecRef: 9.1.4.9 | Operation-specific completion rules | Party build and equipment
 // Slot-addressed equipment commands must validate the whole request against one snapshot and report real effects.
@@ -281,7 +282,7 @@ assert.equal(undoHistory[String(characterId)].redo.length, 0);
   assert.equal(history[String(characterId)].redo.length, 0);
 }
 
-// Every manual equipment change demotes FULL to SEMI (Spec 9.1.3 3-3-3/3-3-4/3-3-9/3-3-10/3-3-12/3-3-15/3-3-16); the
+// Every manual equipment change demotes FULL to SEMI (Spec 9.1.3 3-3-4/3-3-5/3-3-10/3-3-11/3-3-13/3-3-16/3-3-17); the
 // Party pane makes these changes through the same commands. Lock/unlock only mark items and keep FULL.
 {
   assert.equal(character(seeded).autoEquipmentMode, 2, 'the fixture is in FULL mode');
@@ -296,7 +297,7 @@ assert.equal(undoHistory[String(characterId)].redo.length, 0);
   assert.equal(mode(commit(seeded, 'lockEquipment', { targetEquipment: armor })), 2, 'lockEquipment keeps FULL');
   // Re-attaching the Jewel already held is a no-op and keeps FULL.
   assert.equal(mode(commit(full(withJewel), 'jewelAttach', { targetEquipment: armor, jewelToSet: 'fort:3' })), 2, 'same-Jewel jewelAttach keeps FULL');
-  // `equip.remainsMode: true` keeps FULL, so equip-then-lock works (Spec 9.1.3 3-3-5).
+  // `equip.remainsMode: true` keeps FULL, so equip-then-lock works (Spec 9.1.3 3-3-6).
   const freed = full(commit(seeded, 'removeEquipment', { targetEquipment: armor }));
   const freedItem = character(seeded).equipment[armor]!;
   const freedFormat = `0/${freedItem.id}/${freedItem.enhancement}/${freedItem.superRare}`;
@@ -358,8 +359,7 @@ assert.equal(undoHistory[String(characterId)].redo.length, 0);
   const stale = { ...wizard, parties: wizard.parties.map((party, index) => index !== 0 ? party : {
     ...party, characters: party.characters.map((entry) => entry.id !== characterId ? entry : { ...entry, equipment: [...entry.equipment, null, null] }),
   }) };
-  const { buildApiV1ReadData } = await import('../../src/api/v1/readModels');
-  const view = await buildApiV1ReadData(`read/build/character/${characterId}/equipment`, stale, {}, { revision: 1 } as never) as { current: { equipment: string[] } };
+  const view = await readCharacterBuild('equipment', characterId, stale, {}, { revision: 1 } as never) as { current: { equipment: string[] } };
   assert.equal(view.current.equipment.length, maxSlots(wizard), 'the read model lists only real slots');
 }
 

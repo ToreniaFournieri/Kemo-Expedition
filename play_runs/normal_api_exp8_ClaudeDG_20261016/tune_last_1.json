@@ -1,0 +1,110 @@
+{
+ "accepted": true,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 9.9% / Draw 7.0% / Retreat 57.7% / Defeat 25.4%",
+ "after": "Success 25.8% / Draw 3.5% / Retreat 49.9% / Defeat 20.8%",
+ "improvement": 1.6061,
+ "gain": 0.159,
+ "standardError": 0.0168,
+ "crossCheck": {
+  "objective": "bossDamage",
+  "before": 0.9397,
+  "after": 0.9547,
+  "minimum": null,
+  "reached": null
+ },
+ "bottleneckRoom": "6f-1",
+ "bottleneckCounters": [
+  {
+   "ability": "a.null-counter",
+   "answers": [
+    "a.counter"
+   ],
+   "status": "noItem"
+  },
+  {
+   "ability": "a.unforgettable",
+   "answers": [
+    "a.oblivion"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 6,
+  "defenseElement": 3,
+  "ability": 8
+ },
+ "steps": {
+  "offenseElement": [
+   {
+    "element": "e.thunder",
+    "improvement": 1.3333,
+    "changes": [
+     "3=0/6215/3/0",
+     "6=0/3213/2/0"
+    ]
+   },
+   {
+    "element": "e.thunder",
+    "improvement": 1.1333,
+    "changes": [
+     "3=0/6311/0/0",
+     "6=0/3213/2/0"
+    ]
+   }
+  ],
+  "defenseElement": [],
+  "ability": [],
+  "finalTuning": [
+   {
+    "step": "offenseElement",
+    "index": 0,
+    "element": "e.thunder",
+    "improvement": 2.1111,
+    "changes": [
+     "3=0/6215/3/0",
+     "6=0/3213/2/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [
+  {
+   "endpoint": "commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     3,
+     6
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/6215/3/0",
+    "targetSlot": 3
+   }
+  },
+  {
+   "endpoint": "commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/3213/2/0",
+    "targetSlot": 6
+   }
+  },
+  {
+   "endpoint": "commit/build/character/1/jewelAttach",
+   "parameters": {
+    "targetEquipment": 3,
+    "jewelToSet": "might:1"
+   }
+  }
+ ],
+ "revision": 2546,
+ "simulationRuns": 10900,
+ "elapsedSeconds": 6.5,
+ "seed": 149302823,
+ "basis": "1y2l9r50x4u"
+}

@@ -1,0 +1,177 @@
+{
+  "startGameTime": "2026-10-03T14:08:12.012Z",
+  "finalGameTime": "2026-11-18T20:08:12.012Z",
+  "daysAtFinalObservation": 46.25,
+  "requests": 595,
+  "successful": 587,
+  "errors": [
+    {
+      "call": 79,
+      "route": "/commit/build/party/1",
+      "status": 409,
+      "error": {
+        "code": "stale_revision",
+        "message": "The supplied revision is stale.",
+        "details": {
+          "currentRevision": 52
+        }
+      }
+    },
+    {
+      "call": 221,
+      "route": "/fundamental/logIn",
+      "status": 400,
+      "error": {
+        "code": "invalid_request",
+        "message": "The request is invalid: `language` is not a known member.",
+        "details": {
+          "field": "language",
+          "rule": "additionalProperties",
+          "issues": [
+            {
+              "path": "",
+              "keyword": "additionalProperties",
+              "additionalProperty": "language"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "call": 276,
+      "route": "/commit/build/character/6/equip",
+      "status": 409,
+      "error": {
+        "code": "illegal_action",
+        "message": "The action is unavailable.",
+        "details": {
+          "reason": "illegal_action:item_not_equippable"
+        }
+      }
+    },
+    {
+      "call": 328,
+      "route": "/commit/build/party/1",
+      "status": 409,
+      "error": {
+        "code": "illegal_action",
+        "message": "The action is unavailable.",
+        "details": {
+          "reason": "illegal_action:deity_in_use"
+        }
+      }
+    },
+    {
+      "call": 580,
+      "route": "/read/observation/diary",
+      "status": 400,
+      "error": {
+        "code": "invalid_request",
+        "message": "The request is invalid: `limit` is not a known member.",
+        "details": {
+          "field": "limit",
+          "rule": "additionalProperties",
+          "issues": [
+            {
+              "path": "",
+              "keyword": "additionalProperties",
+              "additionalProperty": "limit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "call": 587,
+      "route": "/commit/expedition/1/sortie",
+      "status": 409,
+      "error": {
+        "code": "illegal_action",
+        "message": "The action is unavailable.",
+        "details": {
+          "reason": "illegal_action:party_exhausted"
+        }
+      }
+    }
+  ],
+  "unanswered": [
+    {
+      "call": 537,
+      "route": "/fundamental/logIn",
+      "error": {
+        "code": "UND_ERR_HEADERS_TIMEOUT",
+        "message": "No HTTP response received; no elapsed request was issued by this process."
+      },
+      "startedAtApproximate": true
+    },
+    {
+      "call": 538,
+      "route": "/fundamental/logIn",
+      "error": {
+        "code": "interrupted_no_response",
+        "message": "No HTTP response received; no elapsed request was issued by this process."
+      },
+      "startedAtApproximate": true
+    }
+  ],
+  "apiDurationSeconds": 92.03704700000006,
+  "requestsWithMeasuredDuration": 593,
+  "elapsedCalls": 94,
+  "firstRequestAt": "2026-10-03T14:08:11.915Z",
+  "lastRequestAt": "2026-10-03T17:47:33.069Z",
+  "wallMinutes": 219.35256666666666,
+  "routes": {
+    "/fundamental/signUp": 1,
+    "/fundamental/logIn": 6,
+    "/commit/build/character/1/changeBuild": 1,
+    "/commit/build/character/2/changeBuild": 1,
+    "/commit/build/character/3/changeBuild": 2,
+    "/commit/build/character/4/changeBuild": 6,
+    "/commit/build/character/5/changeBuild": 4,
+    "/commit/build/character/6/changeBuild": 1,
+    "/commit/build/party/1": 13,
+    "/commit/expedition/1/changeExpedition": 8,
+    "/read/observation/expedition": 73,
+    "/read/observation/party": 12,
+    "/read/base/searchItems": 2,
+    "/commit/progress/elapsed": 94,
+    "/commit/setting/backup/export": 30,
+    "/commit/build/character/6/removeEquipment": 17,
+    "/commit/build/character/1/removeEquipment": 18,
+    "/commit/build/character/4/removeEquipment": 16,
+    "/commit/build/character/2/removeEquipment": 16,
+    "/commit/build/character/3/removeEquipment": 16,
+    "/commit/build/character/5/removeEquipment": 16,
+    "/commit/build/character/6/equip": 18,
+    "/commit/build/character/1/equip": 18,
+    "/commit/build/character/4/equip": 16,
+    "/commit/build/character/2/equip": 16,
+    "/commit/build/character/3/equip": 16,
+    "/commit/build/character/5/equip": 17,
+    "/commit/build/character/1/jewelAttach": 33,
+    "/commit/build/character/6/jewelAttach": 27,
+    "/read/expedition/1/simulationRun": 2,
+    "/commit/build/character/3/jewelAttach": 4,
+    "/read/observation/diary": 4,
+    "/read/expedition/1/latestBattleLog": 1,
+    "/read/base/shopItemsList": 1,
+    "/commit/build/character/6/jewelRemove": 5,
+    "/commit/build/character/1/jewelRemove": 13,
+    "/commit/expedition/2/changeExpedition": 2,
+    "/commit/expedition/3/changeExpedition": 2,
+    "/commit/expedition/4/changeExpedition": 2,
+    "/commit/expedition/5/changeExpedition": 2,
+    "/commit/build/character/3/jewelRemove": 1,
+    "/commit/build/character/5/jewelAttach": 13,
+    "/commit/build/party/3": 1,
+    "/commit/build/character/4/jewelAttach": 6,
+    "/commit/build/character/2/jewelAttach": 6,
+    "/commit/build/character/4/jewelRemove": 3,
+    "/commit/build/character/2/jewelRemove": 2,
+    "/commit/build/character/5/jewelRemove": 5,
+    "/commit/build/party/6": 1,
+    "/read/expedition/1/setting": 2,
+    "/fundamental/status": 1,
+    "/commit/expedition/1/sortie": 2
+  }
+}

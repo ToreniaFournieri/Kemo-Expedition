@@ -10,7 +10,7 @@ test('sell price scales with enhancement, halves the old super rare bonus, and r
   assert.equal(calculateItemSellPrice(item(1101, 0, 0)), 12);
   assert.equal(calculateItemSellPrice(item(1101, 3, 0)), 20); // 12 x 1.6 = 19.2
   assert.equal(calculateItemSellPrice(item(1101, 0, 5)), 1200); // 12 x 100
-  assert.equal(calculateItemSellPrice(item(1301, 6, 0)), 264); // 12 x 2.2 x 10 (elite rare)
+  assert.equal(calculateItemSellPrice(item(1301, 6, 0)), 264); // 12 x 2.2 x 10 (rare)
   assert.equal(calculateItemSellPrice(item(1101, 0, 0), 1.5), 18);
 });
 

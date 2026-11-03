@@ -1,0 +1,164 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 7.6% / Draw 6.9% / Retreat 60.3% / Defeat 25.2%",
+ "after": "Success 10.0% / Draw 5.3% / Retreat 58.7% / Defeat 26.0%",
+ "improvement": 0.3158,
+ "gain": 0.024,
+ "standardError": 0.0127,
+ "crossCheck": {
+  "objective": "bossDamage",
+  "before": 0.9365,
+  "after": 0.9399,
+  "minimum": null,
+  "reached": null
+ },
+ "bottleneckRoom": "6f-1",
+ "bottleneckCounters": [
+  {
+   "ability": "a.null-counter",
+   "answers": [
+    "a.counter"
+   ],
+   "status": "noItem"
+  },
+  {
+   "ability": "a.unforgettable",
+   "answers": [
+    "a.oblivion"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 8,
+  "defenseElement": 10,
+  "ability": 12
+ },
+ "steps": {
+  "offenseElement": [
+   {
+    "element": "e.none",
+    "improvement": 0.1818,
+    "changes": [
+     "7=0/8321/0/0"
+    ]
+   }
+  ],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.none"
+    ],
+    "improvement": 0.6364,
+    "changes": [
+     "6=0/7110/4/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.none"
+    ],
+    "improvement": 0.5,
+    "changes": [
+     "6=0/8110/5/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.ice",
+     "r.fire"
+    ],
+    "improvement": 0.2273,
+    "changes": [
+     "2=0/5219/2/0",
+     "6=0/7219/2/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.defiance"
+    ],
+    "improvement": 0.3182,
+    "changes": [
+     "8=0/8320/2/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.true-sight"
+    ],
+    "improvement": 0.2273,
+    "changes": [
+     "6=0/1406/3/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.anti-overwatch"
+    ],
+    "improvement": 0.1818,
+    "changes": [
+     "6=0/4303/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.dryproof"
+    ],
+    "improvement": 0.1818,
+    "changes": [
+     "6=0/4203/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.null-life-drain"
+    ],
+    "improvement": 0.1818,
+    "changes": [
+     "6=0/2307/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.wind-rider"
+    ],
+    "improvement": 0.1818,
+    "changes": [
+     "6=0/1312/2/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.anti-ambush"
+    ],
+    "improvement": 0.0909,
+    "changes": [
+     "8=0/4318/1/0"
+    ]
+   }
+  ],
+  "finalTuning": [
+   {
+    "step": "ability",
+    "index": 0,
+    "abilities": [
+     "a.defiance"
+    ],
+    "improvement": 0.1556,
+    "changes": [
+     "8=0/8320/2/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [],
+ "revision": 2546,
+ "simulationRuns": 19000,
+ "elapsedSeconds": 14.6,
+ "seed": 372612864
+}

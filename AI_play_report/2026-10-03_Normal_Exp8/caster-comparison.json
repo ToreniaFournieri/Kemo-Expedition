@@ -1,0 +1,21 @@
+{
+  "level": 30,
+  "cases": [
+    {
+      "main": "wizard",
+      "sub": "alchemist",
+      "Clear": 7,
+      "Draw": 61,
+      "Retreat": 487,
+      "Defeat": 445
+    },
+    {
+      "main": "alchemist",
+      "sub": "wizard",
+      "Clear": 20,
+      "Draw": 73,
+      "Retreat": 484,
+      "Defeat": 423
+    }
+  ]
+}

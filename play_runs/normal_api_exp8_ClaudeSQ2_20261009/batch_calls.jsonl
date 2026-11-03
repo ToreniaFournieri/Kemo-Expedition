@@ -1,0 +1,495 @@
+{"n": 1, "method": "POST", "path": "/fundamental/signUp", "parameters": {"userId": "ClaudeSQ2", "environment": "prod", "gameMode": "normal", "language": "en"}, "status": 200, "ms": 38, "tag": "", "igt": null, "err": null}
+{"n": 2, "method": "POST", "path": "/fundamental/logIn", "parameters": {"userId": "ClaudeSQ2", "environment": "prod", "gameMode": "normal"}, "status": 200, "ms": 28, "tag": "login", "igt": null, "err": null}
+{"n": 3, "method": "GET", "path": "/read/observation/overview", "parameters": null, "status": 200, "ms": 5, "tag": "", "igt": null, "err": null}
+{"n": 4, "method": "POST", "path": "/commit/build/character/1/changeBuild", "parameters": {"simulation": false, "confirmation": "yes", "mainClassId": "lord", "subClassId": "lord"}, "status": 200, "ms": 19, "tag": "open", "igt": null, "err": null}
+{"n": 5, "method": "POST", "path": "/commit/build/character/6/changeBuild", "parameters": {"simulation": false, "confirmation": "yes", "mainClassId": "guardian", "subClassId": "guardian"}, "status": 200, "ms": 7, "tag": "open", "igt": null, "err": null}
+{"n": 6, "method": "POST", "path": "/commit/build/character/2/changeBuild", "parameters": {"simulation": false, "confirmation": "yes", "racesAndGender": "ursan/female", "mainClassId": "ninja", "subClassId": "ranger", "lineage": "abyssal_sea", "predisposition": "precise"}, "status": 200, "ms": 16, "tag": "open", "igt": null, "err": null}
+{"n": 7, "method": "POST", "path": "/commit/build/character/4/changeBuild", "parameters": {"simulation": false, "confirmation": "yes", "racesAndGender": "ursan/male", "mainClassId": "ninja", "subClassId": "ranger", "lineage": "abyssal_sea", "predisposition": "precise"}, "status": 200, "ms": 10, "tag": "open", "igt": null, "err": null}
+{"n": 8, "method": "POST", "path": "/commit/build/character/3/changeBuild", "parameters": {"simulation": false, "confirmation": "yes", "mainClassId": "ninja", "subClassId": "ranger", "lineage": "abyssal_sea", "predisposition": "precise"}, "status": 200, "ms": 6, "tag": "open", "igt": null, "err": null}
+{"n": 9, "method": "POST", "path": "/commit/build/character/5/changeBuild", "parameters": {"simulation": false, "confirmation": "yes", "mainClassId": "alchemist", "subClassId": "wizard", "lineage": "utopia", "predisposition": "introspective"}, "status": 200, "ms": 7, "tag": "open", "igt": null, "err": null}
+{"n": 10, "method": "POST", "path": "/commit/build/party/1", "parameters": {"order": [6, 1, 4, 2, 3, 5], "deityId": "mirage"}, "status": 200, "ms": 4, "tag": "open", "igt": null, "err": null}
+{"n": 11, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 3}, "status": 200, "ms": 26, "tag": "sortie", "igt": null, "err": null}
+{"n": 12, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 49, "tag": "el", "igt": "2026-10-09T15:36:13.170Z", "err": null}
+{"n": 13, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 98, "tag": "el", "igt": "2026-10-10T03:36:13.170Z", "err": null}
+{"n": 14, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 21, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 15, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 3}, "status": 200, "ms": 28, "tag": "", "igt": null, "err": null}
+{"n": 16, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1}, "status": 400, "ms": 11, "tag": "el", "igt": null, "err": "invalid_request"}
+{"n": 17, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 1, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 18, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 3}, "status": 409, "ms": 12, "tag": "sortie", "igt": null, "err": "illegal_action"}
+{"n": 19, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 62, "tag": "el", "igt": "2026-10-10T15:36:13.170Z", "err": null}
+{"n": 20, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 15, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 21, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 2, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 200, "ms": 18, "tag": "", "igt": null, "err": null}
+{"n": 22, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 4}, "status": 200, "ms": 18, "tag": "sortie", "igt": null, "err": null}
+{"n": 23, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 41, "tag": "el", "igt": "2026-10-11T03:36:13.170Z", "err": null}
+{"n": 24, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 5, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 25, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 12, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 26, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 2, "destinationMode": "fixed", "depthLimit": "5f-3", "difficultyOffset": 0}, "status": 200, "ms": 4, "tag": "depth", "igt": null, "err": null}
+{"n": 27, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 61, "tag": "el", "igt": "2026-10-11T15:36:13.170Z", "err": null}
+{"n": 28, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 7, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 29, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 2, "destinationMode": "fixed", "depthLimit": "beforeBoss", "difficultyOffset": 0}, "status": 200, "ms": 31, "tag": "depth", "igt": null, "err": null}
+{"n": 30, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 14, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 31, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 47, "tag": "el", "igt": "2026-10-12T03:36:13.170Z", "err": null}
+{"n": 32, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 5, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 33, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 2, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 200, "ms": 9, "tag": "depth", "igt": null, "err": null}
+{"n": 34, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 59, "tag": "el", "igt": "2026-10-12T15:36:13.170Z", "err": null}
+{"n": 35, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 7, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 36, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 3, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 409, "ms": 11, "tag": "", "igt": null, "err": "illegal_action"}
+{"n": 37, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 4}, "status": 200, "ms": 30, "tag": "sortie", "igt": null, "err": null}
+{"n": 38, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 92, "tag": "el", "igt": "2026-10-13T03:36:13.170Z", "err": null}
+{"n": 39, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 26, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 40, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 13, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 41, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 52, "tag": "el", "igt": "2026-10-13T15:36:13.170Z", "err": null}
+{"n": 42, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 4, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 43, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 3, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 409, "ms": 11, "tag": "", "igt": null, "err": "illegal_action"}
+{"n": 44, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 3, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 409, "ms": 15, "tag": "", "igt": null, "err": "illegal_action"}
+{"n": 45, "method": "GET", "path": "/read/observation/diary", "parameters": null, "status": 200, "ms": 17, "tag": "", "igt": null, "err": null}
+{"n": 46, "method": "POST", "path": "/commit/setting/backup/export", "parameters": {}, "status": 200, "ms": 62, "tag": "export", "igt": null, "err": null}
+{"n": 47, "method": "POST", "path": "/commit/build/character/4/removeEquipment", "parameters": {"targetEquipment": [0, 2, 3, 7]}, "status": 200, "ms": 24, "tag": "plan", "igt": null, "err": null}
+{"n": 48, "method": "POST", "path": "/commit/build/character/2/removeEquipment", "parameters": {"targetEquipment": [0, 2, 3, 5]}, "status": 200, "ms": 11, "tag": "plan", "igt": null, "err": null}
+{"n": 49, "method": "POST", "path": "/commit/build/character/3/removeEquipment", "parameters": {"targetEquipment": [0, 2, 3]}, "status": 200, "ms": 14, "tag": "plan", "igt": null, "err": null}
+{"n": 50, "method": "POST", "path": "/commit/build/character/5/removeEquipment", "parameters": {"targetEquipment": [2, 3, 5]}, "status": 200, "ms": 15, "tag": "plan", "igt": null, "err": null}
+{"n": 51, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": ["0/2213/0/0", "0/2108/5/0", "0/2312/0/0", "0/1109/3/0"]}, "status": 200, "ms": 31, "tag": "plan", "igt": null, "err": null}
+{"n": 52, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": ["0/2213/0/0", "0/1107/3/0", "0/1109/3/0", "0/2215/1/0"]}, "status": 200, "ms": 8, "tag": "plan", "igt": null, "err": null}
+{"n": 53, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": ["0/2213/0/0", "0/1107/3/0", "0/2107/3/0"]}, "status": 200, "ms": 8, "tag": "plan", "igt": null, "err": null}
+{"n": 54, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": ["0/2226/1/0", "0/1110/5/0", "0/2219/1/0"]}, "status": 200, "ms": 8, "tag": "plan", "igt": null, "err": null}
+{"n": 55, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 49, "tag": "el", "igt": "2026-10-13T21:36:13.170Z", "err": null}
+{"n": 56, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 7, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 57, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 3, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 200, "ms": 17, "tag": "", "igt": null, "err": null}
+{"n": 58, "method": "POST", "path": "/commit/expedition/1/sortie", "parameters": {"numberOfSortie": 5}, "status": 200, "ms": 22, "tag": "sortie", "igt": null, "err": null}
+{"n": 59, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 76, "tag": "el", "igt": "2026-10-14T09:36:13.170Z", "err": null}
+{"n": 60, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 7, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 61, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 10, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 62, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 68, "tag": "el", "igt": "2026-10-14T21:36:13.170Z", "err": null}
+{"n": 63, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 7, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 64, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 16, "tag": "", "igt": null, "err": null}
+{"n": 65, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 4, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 200, "ms": 15, "tag": "", "igt": null, "err": null}
+{"n": 66, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 13, "tag": "compact", "igt": null, "err": null}
+{"n": 67, "method": "POST", "path": "/commit/build/party/1", "parameters": {"deityId": "fortification"}, "status": 200, "ms": 16, "tag": "", "igt": null, "err": null}
+{"n": 68, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 12, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 69, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 4, "destinationMode": "fixed", "depthLimit": "1f-3", "difficultyOffset": 0}, "status": 200, "ms": 6, "tag": "depth", "igt": null, "err": null}
+{"n": 70, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 79, "tag": "el", "igt": "2026-10-15T09:36:13.170Z", "err": null}
+{"n": 71, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 8, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 72, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 78, "tag": "el", "igt": "2026-10-15T21:36:13.170Z", "err": null}
+{"n": 73, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 4, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 74, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 99, "tag": "el", "igt": "2026-10-16T09:36:13.170Z", "err": null}
+{"n": 75, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 9, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 76, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 109, "tag": "el", "igt": "2026-10-16T21:36:13.170Z", "err": null}
+{"n": 77, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 6, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 78, "method": "POST", "path": "/commit/setting/backup/export", "parameters": {}, "status": 200, "ms": 68, "tag": "export", "igt": null, "err": null}
+{"n": 79, "method": "POST", "path": "/commit/build/character/6/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 5, 6]}, "status": 200, "ms": 31, "tag": "plan", "igt": null, "err": null}
+{"n": 80, "method": "POST", "path": "/commit/build/character/1/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 3, 4, 5, 6, 7, 8, 10]}, "status": 200, "ms": 35, "tag": "plan", "igt": null, "err": null}
+{"n": 81, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": ["0/1401/0/0", "0/1401/0/0", "0/3103/4/0", "0/2305/2/0", "0/3103/3/0"]}, "status": 200, "ms": 26, "tag": "plan", "igt": null, "err": null}
+{"n": 82, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": ["0/2103/5/0", "0/4103/2/0", "0/3103/3/0", "0/3103/3/0", "0/3103/3/0", "0/1401/1/0", "0/3103/3/0", "0/1401/0/0", "0/3103/3/0", "0/1401/0/0"]}, "status": 200, "ms": 66, "tag": "plan", "igt": null, "err": null}
+{"n": 83, "method": "POST", "path": "/commit/build/character/103/removeEquipment", "parameters": {"targetEquipment": [0, 1]}, "status": 200, "ms": 18, "tag": "plan", "igt": null, "err": null}
+{"n": 84, "method": "POST", "path": "/commit/build/character/104/removeEquipment", "parameters": {"targetEquipment": [0]}, "status": 200, "ms": 14, "tag": "plan", "igt": null, "err": null}
+{"n": 85, "method": "POST", "path": "/commit/build/character/105/removeEquipment", "parameters": {"targetEquipment": [0]}, "status": 200, "ms": 14, "tag": "plan", "igt": null, "err": null}
+{"n": 86, "method": "POST", "path": "/commit/build/character/106/removeEquipment", "parameters": {"targetEquipment": [0]}, "status": 200, "ms": 24, "tag": "plan", "igt": null, "err": null}
+{"n": 87, "method": "POST", "path": "/commit/build/character/4/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 3, 7]}, "status": 200, "ms": 15, "tag": "plan", "igt": null, "err": null}
+{"n": 88, "method": "POST", "path": "/commit/build/character/2/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 3, 4, 5, 7]}, "status": 200, "ms": 16, "tag": "plan", "igt": null, "err": null}
+{"n": 89, "method": "POST", "path": "/commit/build/character/3/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 3, 4, 5]}, "status": 200, "ms": 11, "tag": "plan", "igt": null, "err": null}
+{"n": 90, "method": "POST", "path": "/commit/build/character/5/removeEquipment", "parameters": {"targetEquipment": [0, 3, 5]}, "status": 200, "ms": 13, "tag": "plan", "igt": null, "err": null}
+{"n": 91, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/4213/1/0", "targetSlot": 0}, "status": 200, "ms": 15, "tag": "plan", "igt": null, "err": null}
+{"n": 92, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/3217/3/0", "targetSlot": 1}, "status": 200, "ms": 13, "tag": "plan", "igt": null, "err": null}
+{"n": 93, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/3107/4/0", "targetSlot": 2}, "status": 200, "ms": 11, "tag": "plan", "igt": null, "err": null}
+{"n": 94, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/4107/2/0", "targetSlot": 3}, "status": 200, "ms": 12, "tag": "plan", "igt": null, "err": null}
+{"n": 95, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/4213/0/0", "targetSlot": 7}, "status": 200, "ms": 10, "tag": "plan", "igt": null, "err": null}
+{"n": 96, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/3314/0/0", "targetSlot": 8}, "status": 200, "ms": 15, "tag": "plan", "igt": null, "err": null}
+{"n": 97, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/3107/3/0", "targetSlot": 0}, "status": 200, "ms": 14, "tag": "plan", "igt": null, "err": null}
+{"n": 98, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/3217/2/0", "targetSlot": 1}, "status": 200, "ms": 13, "tag": "plan", "igt": null, "err": null}
+{"n": 99, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/4107/2/0", "targetSlot": 2}, "status": 200, "ms": 12, "tag": "plan", "igt": null, "err": null}
+{"n": 100, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/3109/4/0", "targetSlot": 3}, "status": 200, "ms": 11, "tag": "plan", "igt": null, "err": null}
+{"n": 101, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/4213/0/0", "targetSlot": 4}, "status": 200, "ms": 22, "tag": "plan", "igt": null, "err": null}
+{"n": 102, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/4213/0/0", "targetSlot": 5}, "status": 200, "ms": 15, "tag": "plan", "igt": null, "err": null}
+{"n": 103, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/4213/0/0", "targetSlot": 7}, "status": 200, "ms": 13, "tag": "plan", "igt": null, "err": null}
+{"n": 104, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/1107/4/0", "targetSlot": 8}, "status": 200, "ms": 12, "tag": "plan", "igt": null, "err": null}
+{"n": 105, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/4213/0/0", "targetSlot": 0}, "status": 200, "ms": 11, "tag": "plan", "igt": null, "err": null}
+{"n": 106, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/3109/4/0", "targetSlot": 1}, "status": 200, "ms": 14, "tag": "plan", "igt": null, "err": null}
+{"n": 107, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/3107/3/0", "targetSlot": 2}, "status": 200, "ms": 11, "tag": "plan", "igt": null, "err": null}
+{"n": 108, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/4107/2/0", "targetSlot": 3}, "status": 200, "ms": 12, "tag": "plan", "igt": null, "err": null}
+{"n": 109, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/4213/0/0", "targetSlot": 4}, "status": 200, "ms": 13, "tag": "plan", "igt": null, "err": null}
+{"n": 110, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/4217/0/0", "targetSlot": 5}, "status": 200, "ms": 11, "tag": "plan", "igt": null, "err": null}
+{"n": 111, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/2107/3/0", "targetSlot": 6}, "status": 200, "ms": 12, "tag": "plan", "igt": null, "err": null}
+{"n": 112, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": "0/4110/4/0", "targetSlot": 0}, "status": 200, "ms": 12, "tag": "plan", "igt": null, "err": null}
+{"n": 113, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": "0/4110/4/0", "targetSlot": 3}, "status": 200, "ms": 14, "tag": "plan", "igt": null, "err": null}
+{"n": 114, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": "0/3110/4/0", "targetSlot": 5}, "status": 200, "ms": 12, "tag": "plan", "igt": null, "err": null}
+{"n": 115, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": "0/1110/5/0", "targetSlot": 6}, "status": 200, "ms": 11, "tag": "plan", "igt": null, "err": null}
+{"n": 116, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 13, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 117, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 56, "tag": "el", "igt": "2026-10-17T09:36:13.170Z", "err": null}
+{"n": 118, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 8, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 119, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 4, "destinationMode": "fixed", "depthLimit": "2f-3", "difficultyOffset": 0}, "status": 200, "ms": 9, "tag": "depth", "igt": null, "err": null}
+{"n": 120, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 103, "tag": "el", "igt": "2026-10-17T21:36:13.170Z", "err": null}
+{"n": 121, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 7, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 122, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 4, "destinationMode": "fixed", "depthLimit": "3f-3", "difficultyOffset": 0}, "status": 200, "ms": 17, "tag": "depth", "igt": null, "err": null}
+{"n": 123, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 108, "tag": "el", "igt": "2026-10-18T09:36:13.170Z", "err": null}
+{"n": 124, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 6, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 125, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 4, "destinationMode": "fixed", "depthLimit": "4f-3", "difficultyOffset": 0}, "status": 200, "ms": 8, "tag": "depth", "igt": null, "err": null}
+{"n": 126, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 131, "tag": "el", "igt": "2026-10-18T21:36:13.170Z", "err": null}
+{"n": 127, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 8, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 128, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 4, "destinationMode": "fixed", "depthLimit": "5f-3", "difficultyOffset": 0}, "status": 200, "ms": 12, "tag": "depth", "igt": null, "err": null}
+{"n": 129, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 108, "tag": "el", "igt": "2026-10-19T09:36:13.170Z", "err": null}
+{"n": 130, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 7, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 131, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 4, "destinationMode": "fixed", "depthLimit": "beforeBoss", "difficultyOffset": 0}, "status": 200, "ms": 14, "tag": "depth", "igt": null, "err": null}
+{"n": 132, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 89, "tag": "el", "igt": "2026-10-19T21:36:13.170Z", "err": null}
+{"n": 133, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 6, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 134, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 4, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 200, "ms": 10, "tag": "depth", "igt": null, "err": null}
+{"n": 135, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 84, "tag": "el", "igt": "2026-10-20T09:36:13.170Z", "err": null}
+{"n": 136, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 6, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 137, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 21, "tag": "compact", "igt": null, "err": null}
+{"n": 138, "method": "POST", "path": "/commit/setting/backup/export", "parameters": {}, "status": 200, "ms": 92, "tag": "export", "igt": null, "err": null}
+{"n": 139, "method": "POST", "path": "/commit/build/character/101/removeEquipment", "parameters": {"targetEquipment": [5]}, "status": 200, "ms": 24, "tag": "plan", "igt": null, "err": null}
+{"n": 140, "method": "POST", "path": "/commit/build/character/6/removeEquipment", "parameters": {"targetEquipment": [2, 5, 6]}, "status": 200, "ms": 26, "tag": "plan", "igt": null, "err": null}
+{"n": 141, "method": "POST", "path": "/commit/build/character/1/removeEquipment", "parameters": {"targetEquipment": [0, 2, 3, 4, 6, 7, 8, 9]}, "status": 200, "ms": 27, "tag": "plan", "igt": null, "err": null}
+{"n": 142, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": ["0/4301/1/0", "0/4301/1/0", "0/4103/3/0"]}, "status": 200, "ms": 14, "tag": "plan", "igt": null, "err": null}
+{"n": 143, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": ["0/4205/3/0", "0/4103/3/0", "0/4103/3/0", "0/4103/3/0", "0/4103/3/0", "0/4103/3/0", "0/1401/0/0", "0/4103/3/0"]}, "status": 200, "ms": 17, "tag": "plan", "igt": null, "err": null}
+{"n": 144, "method": "POST", "path": "/commit/build/character/104/removeEquipment", "parameters": {"targetEquipment": [4]}, "status": 200, "ms": 21, "tag": "plan", "igt": null, "err": null}
+{"n": 145, "method": "POST", "path": "/commit/build/character/4/removeEquipment", "parameters": {"targetEquipment": [0, 1, 3, 5, 6, 7]}, "status": 200, "ms": 17, "tag": "plan", "igt": null, "err": null}
+{"n": 146, "method": "POST", "path": "/commit/build/character/2/removeEquipment", "parameters": {"targetEquipment": [0, 1, 3, 4, 5, 6, 7, 8]}, "status": 200, "ms": 16, "tag": "plan", "igt": null, "err": null}
+{"n": 147, "method": "POST", "path": "/commit/build/character/3/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 4, 6]}, "status": 200, "ms": 14, "tag": "plan", "igt": null, "err": null}
+{"n": 148, "method": "POST", "path": "/commit/build/character/5/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 6]}, "status": 200, "ms": 35, "tag": "plan", "igt": null, "err": null}
+{"n": 149, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": ["0/3215/2/0", "0/4109/6/0", "0/1107/5/0", "0/4315/0/0", "0/4107/4/0", "0/4215/5/0"]}, "status": 200, "ms": 20, "tag": "plan", "igt": null, "err": null}
+{"n": 150, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": ["0/4213/2/0", "0/3217/3/0", "0/3313/0/0", "0/4215/3/0", "0/1308/1/0", "0/3107/3/0", "0/4213/1/0", "0/2107/4/0"]}, "status": 200, "ms": 18, "tag": "plan", "igt": null, "err": null}
+{"n": 151, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": ["0/3213/0/0", "0/4109/3/0", "0/4107/4/0", "0/4213/1/0", "0/3107/3/0"]}, "status": 200, "ms": 18, "tag": "plan", "igt": null, "err": null}
+{"n": 152, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": ["0/4111/6/0", "0/4317/0/0", "0/3223/1/0", "0/4223/3/0"]}, "status": 200, "ms": 16, "tag": "plan", "igt": null, "err": null}
+{"n": 153, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 86, "tag": "el", "igt": "2026-10-20T15:36:13.170Z", "err": null}
+{"n": 154, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 9, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 155, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 1}, "status": 400, "ms": 11, "tag": "el", "igt": null, "err": "invalid_request"}
+{"n": 156, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 2, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 157, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 13, "tag": "compact", "igt": null, "err": null}
+{"n": 158, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 11, "tag": "", "igt": null, "err": null}
+{"n": 159, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 5, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 200, "ms": 20, "tag": "", "igt": null, "err": null}
+{"n": 160, "method": "POST", "path": "/commit/build/party/1", "parameters": {"deityId": "fertility"}, "status": 409, "ms": 15, "tag": "", "igt": null, "err": "illegal_action"}
+{"n": 161, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 10, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 162, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 5, "destinationMode": "fixed", "depthLimit": "1f-3", "difficultyOffset": 0}, "status": 200, "ms": 9, "tag": "depth", "igt": null, "err": null}
+{"n": 163, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 80, "tag": "el", "igt": "2026-10-21T03:36:13.170Z", "err": null}
+{"n": 164, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 7, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 165, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 5, "destinationMode": "fixed", "depthLimit": "2f-3", "difficultyOffset": 0}, "status": 200, "ms": 16, "tag": "depth", "igt": null, "err": null}
+{"n": 166, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 157, "tag": "el", "igt": "2026-10-21T15:36:13.170Z", "err": null}
+{"n": 167, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 6, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 168, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 5, "destinationMode": "fixed", "depthLimit": "3f-3", "difficultyOffset": 0}, "status": 200, "ms": 14, "tag": "depth", "igt": null, "err": null}
+{"n": 169, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 137, "tag": "el", "igt": "2026-10-22T03:36:13.170Z", "err": null}
+{"n": 170, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 6, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 171, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 149, "tag": "el", "igt": "2026-10-22T15:36:13.170Z", "err": null}
+{"n": 172, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 6, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 173, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 132, "tag": "el", "igt": "2026-10-23T03:36:13.170Z", "err": null}
+{"n": 174, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 6, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 175, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 12, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 176, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 91, "tag": "el", "igt": "2026-10-23T15:36:13.170Z", "err": null}
+{"n": 177, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 10, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 178, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 146, "tag": "el", "igt": "2026-10-24T03:36:13.170Z", "err": null}
+{"n": 179, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 8, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 180, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 5, "destinationMode": "fixed", "depthLimit": "4f-3", "difficultyOffset": 0}, "status": 200, "ms": 17, "tag": "depth", "igt": null, "err": null}
+{"n": 181, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 117, "tag": "el", "igt": "2026-10-24T15:36:13.170Z", "err": null}
+{"n": 182, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 5, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 183, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 5, "destinationMode": "fixed", "depthLimit": "5f-3", "difficultyOffset": 0}, "status": 200, "ms": 14, "tag": "depth", "igt": null, "err": null}
+{"n": 184, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 133, "tag": "el", "igt": "2026-10-25T03:36:13.170Z", "err": null}
+{"n": 185, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 6, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 186, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 148, "tag": "el", "igt": "2026-10-25T15:36:13.170Z", "err": null}
+{"n": 187, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 8, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 188, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 157, "tag": "el", "igt": "2026-10-26T03:36:13.170Z", "err": null}
+{"n": 189, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 8, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 190, "method": "POST", "path": "/commit/setting/backup/export", "parameters": {}, "status": 200, "ms": 118, "tag": "export", "igt": null, "err": null}
+{"n": 191, "method": "POST", "path": "/commit/build/character/102/removeEquipment", "parameters": {"targetEquipment": [2]}, "status": 200, "ms": 23, "tag": "plan", "igt": null, "err": null}
+{"n": 192, "method": "POST", "path": "/commit/build/character/201/removeEquipment", "parameters": {"targetEquipment": [5, 6]}, "status": 200, "ms": 33, "tag": "plan", "igt": null, "err": null}
+{"n": 193, "method": "POST", "path": "/commit/build/character/205/removeEquipment", "parameters": {"targetEquipment": [2]}, "status": 200, "ms": 19, "tag": "plan", "igt": null, "err": null}
+{"n": 194, "method": "POST", "path": "/commit/build/character/6/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 3, 4, 5, 6]}, "status": 200, "ms": 58, "tag": "plan", "igt": null, "err": null}
+{"n": 195, "method": "POST", "path": "/commit/build/character/1/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, "status": 200, "ms": 21, "tag": "plan", "igt": null, "err": null}
+{"n": 196, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": "0/5302/6/0", "targetSlot": 0}, "status": 200, "ms": 25, "tag": "plan", "igt": null, "err": null}
+{"n": 197, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": "0/5103/4/0", "targetSlot": 1}, "status": 200, "ms": 21, "tag": "plan", "igt": null, "err": null}
+{"n": 198, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": "0/1401/1/0", "targetSlot": 2}, "status": 200, "ms": 26, "tag": "plan", "igt": null, "err": null}
+{"n": 199, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": "0/1401/1/0", "targetSlot": 3}, "status": 200, "ms": 21, "tag": "plan", "igt": null, "err": null}
+{"n": 200, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": "0/1401/0/0", "targetSlot": 4}, "status": 200, "ms": 21, "tag": "plan", "igt": null, "err": null}
+{"n": 201, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": "0/4205/3/0", "targetSlot": 5}, "status": 200, "ms": 24, "tag": "plan", "igt": null, "err": null}
+{"n": 202, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": "0/1401/0/0", "targetSlot": 6}, "status": 200, "ms": 27, "tag": "plan", "igt": null, "err": null}
+{"n": 203, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": "0/1401/0/0", "targetSlot": 8}, "status": 200, "ms": 22, "tag": "plan", "igt": null, "err": null}
+{"n": 204, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/5103/6/0", "targetSlot": 0}, "status": 200, "ms": 26, "tag": "plan", "igt": null, "err": null}
+{"n": 205, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/5103/5/0", "targetSlot": 1}, "status": 200, "ms": 25, "tag": "plan", "igt": null, "err": null}
+{"n": 206, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/5103/5/0", "targetSlot": 2}, "status": 200, "ms": 22, "tag": "plan", "igt": null, "err": null}
+{"n": 207, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/5103/5/0", "targetSlot": 3}, "status": 200, "ms": 19, "tag": "plan", "igt": null, "err": null}
+{"n": 208, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/5401/2/0", "targetSlot": 4}, "status": 200, "ms": 21, "tag": "plan", "igt": null, "err": null}
+{"n": 209, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/5401/0/0", "targetSlot": 5}, "status": 200, "ms": 26, "tag": "plan", "igt": null, "err": null}
+{"n": 210, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/5401/0/0", "targetSlot": 6}, "status": 200, "ms": 25, "tag": "plan", "igt": null, "err": null}
+{"n": 211, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/5103/4/0", "targetSlot": 7}, "status": 200, "ms": 21, "tag": "plan", "igt": null, "err": null}
+{"n": 212, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/5401/0/0", "targetSlot": 8}, "status": 200, "ms": 23, "tag": "plan", "igt": null, "err": null}
+{"n": 213, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/5401/0/0", "targetSlot": 9}, "status": 200, "ms": 21, "tag": "plan", "igt": null, "err": null}
+{"n": 214, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/5103/4/0", "targetSlot": 10}, "status": 200, "ms": 26, "tag": "plan", "igt": null, "err": null}
+{"n": 215, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/5103/4/0", "targetSlot": 11}, "status": 200, "ms": 23, "tag": "plan", "igt": null, "err": null}
+{"n": 216, "method": "POST", "path": "/commit/build/character/201/removeEquipment", "parameters": {"targetEquipment": [4]}, "status": 200, "ms": 20, "tag": "plan", "igt": null, "err": null}
+{"n": 217, "method": "POST", "path": "/commit/build/character/202/removeEquipment", "parameters": {"targetEquipment": [3]}, "status": 200, "ms": 30, "tag": "plan", "igt": null, "err": null}
+{"n": 218, "method": "POST", "path": "/commit/build/character/203/removeEquipment", "parameters": {"targetEquipment": [4, 5]}, "status": 200, "ms": 20, "tag": "plan", "igt": null, "err": null}
+{"n": 219, "method": "POST", "path": "/commit/build/character/204/removeEquipment", "parameters": {"targetEquipment": [4]}, "status": 200, "ms": 18, "tag": "plan", "igt": null, "err": null}
+{"n": 220, "method": "POST", "path": "/commit/build/character/206/removeEquipment", "parameters": {"targetEquipment": [1]}, "status": 200, "ms": 21, "tag": "plan", "igt": null, "err": null}
+{"n": 221, "method": "POST", "path": "/commit/build/character/4/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 3, 4, 5, 7, 8]}, "status": 200, "ms": 24, "tag": "plan", "igt": null, "err": null}
+{"n": 222, "method": "POST", "path": "/commit/build/character/2/removeEquipment", "parameters": {"targetEquipment": [0, 1, 3, 4, 5, 6, 7, 8]}, "status": 200, "ms": 23, "tag": "plan", "igt": null, "err": null}
+{"n": 223, "method": "POST", "path": "/commit/build/character/3/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 4, 5]}, "status": 200, "ms": 22, "tag": "plan", "igt": null, "err": null}
+{"n": 224, "method": "POST", "path": "/commit/build/character/5/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 4, 6]}, "status": 200, "ms": 20, "tag": "plan", "igt": null, "err": null}
+{"n": 225, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/2215/3/0", "targetSlot": 0}, "status": 200, "ms": 22, "tag": "plan", "igt": null, "err": null}
+{"n": 226, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/5107/5/0", "targetSlot": 1}, "status": 200, "ms": 19, "tag": "plan", "igt": null, "err": null}
+{"n": 227, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/5312/0/0", "targetSlot": 2}, "status": 200, "ms": 16, "tag": "plan", "igt": null, "err": null}
+{"n": 228, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/2213/2/0", "targetSlot": 3}, "status": 200, "ms": 23, "tag": "plan", "igt": null, "err": null}
+{"n": 229, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/5107/5/0", "targetSlot": 4}, "status": 200, "ms": 18, "tag": "plan", "igt": null, "err": null}
+{"n": 230, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/5217/4/0", "targetSlot": 5}, "status": 200, "ms": 20, "tag": "plan", "igt": null, "err": null}
+{"n": 231, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/5213/2/0", "targetSlot": 7}, "status": 200, "ms": 18, "tag": "plan", "igt": null, "err": null}
+{"n": 232, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/4109/6/0", "targetSlot": 8}, "status": 200, "ms": 17, "tag": "plan", "igt": null, "err": null}
+{"n": 233, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/4215/5/0", "targetSlot": 9}, "status": 200, "ms": 20, "tag": "plan", "igt": null, "err": null}
+{"n": 234, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/2215/3/0", "targetSlot": 0}, "status": 200, "ms": 17, "tag": "plan", "igt": null, "err": null}
+{"n": 235, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/5312/0/0", "targetSlot": 1}, "status": 200, "ms": 17, "tag": "plan", "igt": null, "err": null}
+{"n": 236, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/3217/3/0", "targetSlot": 3}, "status": 200, "ms": 22, "tag": "plan", "igt": null, "err": null}
+{"n": 237, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/5107/4/0", "targetSlot": 4}, "status": 200, "ms": 17, "tag": "plan", "igt": null, "err": null}
+{"n": 238, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/5217/0/0", "targetSlot": 5}, "status": 200, "ms": 18, "tag": "plan", "igt": null, "err": null}
+{"n": 239, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/5213/0/0", "targetSlot": 6}, "status": 200, "ms": 19, "tag": "plan", "igt": null, "err": null}
+{"n": 240, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/2213/1/0", "targetSlot": 7}, "status": 200, "ms": 18, "tag": "plan", "igt": null, "err": null}
+{"n": 241, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/5107/4/0", "targetSlot": 8}, "status": 200, "ms": 17, "tag": "plan", "igt": null, "err": null}
+{"n": 242, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/2107/5/0", "targetSlot": 9}, "status": 200, "ms": 20, "tag": "plan", "igt": null, "err": null}
+{"n": 243, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/2215/3/0", "targetSlot": 0}, "status": 200, "ms": 17, "tag": "plan", "igt": null, "err": null}
+{"n": 244, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/5312/0/0", "targetSlot": 1}, "status": 200, "ms": 18, "tag": "plan", "igt": null, "err": null}
+{"n": 245, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/2107/5/0", "targetSlot": 2}, "status": 200, "ms": 24, "tag": "plan", "igt": null, "err": null}
+{"n": 246, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/5107/3/0", "targetSlot": 4}, "status": 200, "ms": 15, "tag": "plan", "igt": null, "err": null}
+{"n": 247, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/5217/0/0", "targetSlot": 5}, "status": 200, "ms": 17, "tag": "plan", "igt": null, "err": null}
+{"n": 248, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/3217/3/0", "targetSlot": 7}, "status": 200, "ms": 19, "tag": "plan", "igt": null, "err": null}
+{"n": 249, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": "0/2226/1/0", "targetSlot": 0}, "status": 200, "ms": 18, "tag": "plan", "igt": null, "err": null}
+{"n": 250, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": "0/5110/5/0", "targetSlot": 1}, "status": 200, "ms": 19, "tag": "plan", "igt": null, "err": null}
+{"n": 251, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": "0/4219/2/42", "targetSlot": 2}, "status": 200, "ms": 18, "tag": "plan", "igt": null, "err": null}
+{"n": 252, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": "0/5219/2/0", "targetSlot": 4}, "status": 200, "ms": 18, "tag": "plan", "igt": null, "err": null}
+{"n": 253, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": "0/5317/3/0", "targetSlot": 6}, "status": 200, "ms": 20, "tag": "plan", "igt": null, "err": null}
+{"n": 254, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": "0/2110/5/0", "targetSlot": 7}, "status": 200, "ms": 23, "tag": "plan", "igt": null, "err": null}
+{"n": 255, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 0, "jewelToSet": "might:1"}, "status": 200, "ms": 18, "tag": "plan", "igt": null, "err": null}
+{"n": 256, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 1, "jewelToSet": "might:2"}, "status": 200, "ms": 18, "tag": "plan", "igt": null, "err": null}
+{"n": 257, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 2, "jewelToSet": "focus:3"}, "status": 200, "ms": 17, "tag": "plan", "igt": null, "err": null}
+{"n": 258, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 13, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 259, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 169, "tag": "el", "igt": "2026-10-26T15:36:13.170Z", "err": null}
+{"n": 260, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 7, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 261, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 5, "destinationMode": "fixed", "depthLimit": "beforeBoss", "difficultyOffset": 0}, "status": 200, "ms": 20, "tag": "depth", "igt": null, "err": null}
+{"n": 262, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 198, "tag": "el", "igt": "2026-10-27T03:36:13.170Z", "err": null}
+{"n": 263, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 7, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 264, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 5, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 200, "ms": 26, "tag": "depth", "igt": null, "err": null}
+{"n": 265, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 194, "tag": "el", "igt": "2026-10-27T15:36:13.170Z", "err": null}
+{"n": 266, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 11, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 267, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 16, "tag": "compact", "igt": null, "err": null}
+{"n": 268, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 10, "tag": "", "igt": null, "err": null}
+{"n": 269, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 6, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 200, "ms": 32, "tag": "", "igt": null, "err": null}
+{"n": 270, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 13, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 271, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 6, "destinationMode": "fixed", "depthLimit": "1f-3", "difficultyOffset": 0}, "status": 200, "ms": 12, "tag": "depth", "igt": null, "err": null}
+{"n": 272, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 178, "tag": "el", "igt": "2026-10-28T03:36:13.170Z", "err": null}
+{"n": 273, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 8, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 274, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 6, "destinationMode": "fixed", "depthLimit": "2f-3", "difficultyOffset": 0}, "status": 200, "ms": 16, "tag": "depth", "igt": null, "err": null}
+{"n": 275, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 244, "tag": "el", "igt": "2026-10-28T15:36:13.170Z", "err": null}
+{"n": 276, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 6, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 277, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 6, "destinationMode": "fixed", "depthLimit": "3f-3", "difficultyOffset": 0}, "status": 200, "ms": 21, "tag": "depth", "igt": null, "err": null}
+{"n": 278, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 235, "tag": "el", "igt": "2026-10-29T03:36:13.170Z", "err": null}
+{"n": 279, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 8, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 280, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 6, "destinationMode": "fixed", "depthLimit": "4f-3", "difficultyOffset": 0}, "status": 200, "ms": 27, "tag": "depth", "igt": null, "err": null}
+{"n": 281, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 284, "tag": "el", "igt": "2026-10-29T15:36:13.170Z", "err": null}
+{"n": 282, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 8, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 283, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 6, "destinationMode": "fixed", "depthLimit": "5f-3", "difficultyOffset": 0}, "status": 200, "ms": 24, "tag": "depth", "igt": null, "err": null}
+{"n": 284, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 245, "tag": "el", "igt": "2026-10-30T03:36:13.170Z", "err": null}
+{"n": 285, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 10, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 286, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 6, "destinationMode": "fixed", "depthLimit": "beforeBoss", "difficultyOffset": 0}, "status": 200, "ms": 24, "tag": "depth", "igt": null, "err": null}
+{"n": 287, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 226, "tag": "el", "igt": "2026-10-30T15:36:13.170Z", "err": null}
+{"n": 288, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 7, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 289, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 6, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 200, "ms": 21, "tag": "depth", "igt": null, "err": null}
+{"n": 290, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 119, "tag": "el", "igt": "2026-10-30T21:36:13.170Z", "err": null}
+{"n": 291, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 7, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 292, "method": "POST", "path": "/commit/setting/backup/export", "parameters": {}, "status": 200, "ms": 196, "tag": "export", "igt": null, "err": null}
+{"n": 293, "method": "POST", "path": "/commit/build/character/301/removeEquipment", "parameters": {"targetEquipment": [1]}, "status": 200, "ms": 28, "tag": "plan", "igt": null, "err": null}
+{"n": 294, "method": "POST", "path": "/commit/build/character/305/removeEquipment", "parameters": {"targetEquipment": [2]}, "status": 200, "ms": 50, "tag": "plan", "igt": null, "err": null}
+{"n": 295, "method": "POST", "path": "/commit/build/character/6/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 3, 4, 5, 6, 8]}, "status": 200, "ms": 65, "tag": "plan", "igt": null, "err": null}
+{"n": 296, "method": "POST", "path": "/commit/build/character/1/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 3, 5, 7, 10, 11]}, "status": 200, "ms": 33, "tag": "plan", "igt": null, "err": null}
+{"n": 297, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": ["0/6301/3/0", "0/5401/0/0", "0/5401/0/0", "0/5401/0/0", "0/5302/6/0", "0/6301/2/0", "0/6103/3/0", "0/1401/1/0"]}, "status": 200, "ms": 33, "tag": "plan", "igt": null, "err": null}
+{"n": 298, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": ["0/6103/6/0", "0/5103/6/0", "0/6103/4/0", "0/6103/4/0", "0/6103/4/0", "0/5103/5/0", "0/5103/5/0", "0/5103/5/0"]}, "status": 200, "ms": 35, "tag": "plan", "igt": null, "err": null}
+{"n": 299, "method": "POST", "path": "/commit/build/character/303/removeEquipment", "parameters": {"targetEquipment": [0, 3]}, "status": 200, "ms": 33, "tag": "plan", "igt": null, "err": null}
+{"n": 300, "method": "POST", "path": "/commit/build/character/304/removeEquipment", "parameters": {"targetEquipment": [5]}, "status": 200, "ms": 23, "tag": "plan", "igt": null, "err": null}
+{"n": 301, "method": "POST", "path": "/commit/build/character/305/removeEquipment", "parameters": {"targetEquipment": [4]}, "status": 200, "ms": 22, "tag": "plan", "igt": null, "err": null}
+{"n": 302, "method": "POST", "path": "/commit/build/character/4/removeEquipment", "parameters": {"targetEquipment": [0, 3, 4, 8]}, "status": 200, "ms": 23, "tag": "plan", "igt": null, "err": null}
+{"n": 303, "method": "POST", "path": "/commit/build/character/2/removeEquipment", "parameters": {"targetEquipment": [0, 1, 3, 4, 5, 6, 7, 8]}, "status": 200, "ms": 25, "tag": "plan", "igt": null, "err": null}
+{"n": 304, "method": "POST", "path": "/commit/build/character/3/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 3, 5, 7]}, "status": 200, "ms": 26, "tag": "plan", "igt": null, "err": null}
+{"n": 305, "method": "POST", "path": "/commit/build/character/5/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 4]}, "status": 200, "ms": 25, "tag": "plan", "igt": null, "err": null}
+{"n": 306, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": ["0/6313/0/0", "0/3107/6/0", "0/6213/1/0", "0/6107/4/0"]}, "status": 200, "ms": 25, "tag": "plan", "igt": null, "err": null}
+{"n": 307, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": ["0/5107/5/0", "0/6313/0/0", "0/5312/0/0", "0/2213/4/0", "0/6109/4/0", "0/6107/3/0", "0/2215/3/0", "0/6309/1/0"]}, "status": 200, "ms": 23, "tag": "plan", "igt": null, "err": null}
+{"n": 308, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": ["0/2107/5/0", "0/6313/0/0", "0/6213/0/0", "0/3213/3/0", "0/5312/0/0", "0/6107/3/0"]}, "status": 200, "ms": 32, "tag": "plan", "igt": null, "err": null}
+{"n": 309, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": ["0/4223/3/0", "0/6110/4/0", "0/5110/5/0", "0/6315/0/0"]}, "status": 200, "ms": 25, "tag": "plan", "igt": null, "err": null}
+{"n": 310, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 0, "jewelToSet": "focus:1"}, "status": 200, "ms": 31, "tag": "plan", "igt": null, "err": null}
+{"n": 311, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 3, "jewelToSet": "might:1"}, "status": 200, "ms": 24, "tag": "plan", "igt": null, "err": null}
+{"n": 312, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 4, "jewelToSet": "might:2"}, "status": 200, "ms": 31, "tag": "plan", "igt": null, "err": null}
+{"n": 313, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 147, "tag": "el", "igt": "2026-10-31T03:36:13.170Z", "err": null}
+{"n": 314, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 9, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 315, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 12, "tag": "", "igt": null, "err": null}
+{"n": 316, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 147, "tag": "el", "igt": "2026-10-31T09:36:13.170Z", "err": null}
+{"n": 317, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 12, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 318, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 7, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 200, "ms": 24, "tag": "", "igt": null, "err": null}
+{"n": 319, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 15, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 320, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 7, "destinationMode": "fixed", "depthLimit": "1f-3", "difficultyOffset": 0}, "status": 200, "ms": 12, "tag": "depth", "igt": null, "err": null}
+{"n": 321, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 235, "tag": "el", "igt": "2026-10-31T21:36:13.170Z", "err": null}
+{"n": 322, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 9, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 323, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 7, "destinationMode": "fixed", "depthLimit": "2f-3", "difficultyOffset": 0}, "status": 200, "ms": 21, "tag": "depth", "igt": null, "err": null}
+{"n": 324, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 303, "tag": "el", "igt": "2026-11-01T09:36:13.170Z", "err": null}
+{"n": 325, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 7, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 326, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 7, "destinationMode": "fixed", "depthLimit": "3f-3", "difficultyOffset": 0}, "status": 200, "ms": 24, "tag": "depth", "igt": null, "err": null}
+{"n": 327, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 319, "tag": "el", "igt": "2026-11-01T21:36:13.170Z", "err": null}
+{"n": 328, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 8, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 329, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 7, "destinationMode": "fixed", "depthLimit": "4f-3", "difficultyOffset": 0}, "status": 200, "ms": 25, "tag": "depth", "igt": null, "err": null}
+{"n": 330, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 315, "tag": "el", "igt": "2026-11-02T09:36:13.170Z", "err": null}
+{"n": 331, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 8, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 332, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 7, "destinationMode": "fixed", "depthLimit": "5f-3", "difficultyOffset": 0}, "status": 200, "ms": 25, "tag": "depth", "igt": null, "err": null}
+{"n": 333, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 308, "tag": "el", "igt": "2026-11-02T21:36:13.170Z", "err": null}
+{"n": 334, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 9, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 335, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 290, "tag": "el", "igt": "2026-11-03T09:36:13.170Z", "err": null}
+{"n": 336, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 8, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 337, "method": "POST", "path": "/commit/setting/backup/export", "parameters": {}, "status": 200, "ms": 200, "tag": "export", "igt": null, "err": null}
+{"n": 338, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 26, "tag": "compact", "igt": null, "err": null}
+{"n": 339, "method": "POST", "path": "/commit/build/character/302/removeEquipment", "parameters": {"targetEquipment": [5]}, "status": 200, "ms": 28, "tag": "plan", "igt": null, "err": null}
+{"n": 340, "method": "POST", "path": "/commit/build/character/403/removeEquipment", "parameters": {"targetEquipment": [0, 1]}, "status": 200, "ms": 30, "tag": "plan", "igt": null, "err": null}
+{"n": 341, "method": "POST", "path": "/commit/build/character/404/removeEquipment", "parameters": {"targetEquipment": [1]}, "status": 200, "ms": 36, "tag": "plan", "igt": null, "err": null}
+{"n": 342, "method": "POST", "path": "/commit/build/character/405/removeEquipment", "parameters": {"targetEquipment": [1]}, "status": 200, "ms": 51, "tag": "plan", "igt": null, "err": null}
+{"n": 343, "method": "POST", "path": "/commit/build/character/406/removeEquipment", "parameters": {"targetEquipment": [4]}, "status": 200, "ms": 29, "tag": "plan", "igt": null, "err": null}
+{"n": 344, "method": "POST", "path": "/commit/build/character/4/removeEquipment", "parameters": {"targetEquipment": [1, 4, 5, 6, 7, 8]}, "status": 200, "ms": 29, "tag": "plan", "igt": null, "err": null}
+{"n": 345, "method": "POST", "path": "/commit/build/character/2/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 3, 4, 5, 6, 7, 8]}, "status": 200, "ms": 32, "tag": "plan", "igt": null, "err": null}
+{"n": 346, "method": "POST", "path": "/commit/build/character/3/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 3, 4, 5, 6, 7]}, "status": 200, "ms": 27, "tag": "plan", "igt": null, "err": null}
+{"n": 347, "method": "POST", "path": "/commit/build/character/5/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 3, 4, 5, 7]}, "status": 200, "ms": 48, "tag": "plan", "igt": null, "err": null}
+{"n": 348, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": ["0/7316/3/0", "0/7107/5/0", "0/4213/2/0", "0/6109/4/0", "0/7107/4/0", "0/5213/2/0"]}, "status": 200, "ms": 36, "tag": "plan", "igt": null, "err": null}
+{"n": 349, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": ["0/7107/3/0", "0/7316/0/0", "0/5107/5/0", "0/6313/0/0", "0/4215/3/0", "0/7109/5/0", "0/6107/4/0", "0/3107/5/0", "0/7408/1/0"]}, "status": 200, "ms": 56, "tag": "plan", "igt": null, "err": null}
+{"n": 350, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": ["0/7316/0/0", "0/7107/3/0", "0/5213/1/0", "0/3107/5/0", "0/5107/5/0", "0/6313/0/0", "0/7109/5/0", "0/4107/4/0"]}, "status": 200, "ms": 36, "tag": "plan", "igt": null, "err": null}
+{"n": 351, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": ["0/7110/5/0", "0/4223/3/0", "0/7317/1/0", "0/6110/4/0", "0/7219/3/0", "0/5110/5/0", "0/3110/6/0"]}, "status": 200, "ms": 38, "tag": "plan", "igt": null, "err": null}
+{"n": 352, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 1, "jewelToSet": "focus:2"}, "status": 200, "ms": 32, "tag": "plan", "igt": null, "err": null}
+{"n": 353, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 3, "jewelToSet": "might:2"}, "status": 200, "ms": 27, "tag": "plan", "igt": null, "err": null}
+{"n": 354, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 4, "jewelToSet": "might:1"}, "status": 200, "ms": 24, "tag": "plan", "igt": null, "err": null}
+{"n": 355, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 5, "jewelToSet": "might:2"}, "status": 200, "ms": 25, "tag": "plan", "igt": null, "err": null}
+{"n": 356, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 7, "jewelToSet": "might:2"}, "status": 200, "ms": 23, "tag": "plan", "igt": null, "err": null}
+{"n": 357, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 8, "jewelToSet": "might:1"}, "status": 200, "ms": 25, "tag": "plan", "igt": null, "err": null}
+{"n": 358, "method": "POST", "path": "/commit/build/character/2/jewelAttach", "parameters": {"targetEquipment": 1, "jewelToSet": "focus:1"}, "status": 200, "ms": 26, "tag": "plan", "igt": null, "err": null}
+{"n": 359, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 12, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 360, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 280, "tag": "el", "igt": "2026-11-03T21:36:13.170Z", "err": null}
+{"n": 361, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 8, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 362, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 258, "tag": "el", "igt": "2026-11-04T09:36:13.170Z", "err": null}
+{"n": 363, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 10, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 364, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 7, "destinationMode": "fixed", "depthLimit": "beforeBoss", "difficultyOffset": 0}, "status": 200, "ms": 26, "tag": "depth", "igt": null, "err": null}
+{"n": 365, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 300, "tag": "el", "igt": "2026-11-04T21:36:13.170Z", "err": null}
+{"n": 366, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 8, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 367, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 7, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 200, "ms": 23, "tag": "depth", "igt": null, "err": null}
+{"n": 368, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 178, "tag": "el", "igt": "2026-11-05T03:36:13.170Z", "err": null}
+{"n": 369, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 9, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 370, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 160, "tag": "el", "igt": "2026-11-05T09:36:13.170Z", "err": null}
+{"n": 371, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 9, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 372, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 161, "tag": "el", "igt": "2026-11-05T15:36:13.170Z", "err": null}
+{"n": 373, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 10, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 374, "method": "POST", "path": "/commit/setting/backup/export", "parameters": {}, "status": 200, "ms": 226, "tag": "export", "igt": null, "err": null}
+{"n": 375, "method": "POST", "path": "/commit/build/character/6/removeEquipment", "parameters": {"targetEquipment": [4, 5, 6, 7, 8]}, "status": 200, "ms": 74, "tag": "plan", "igt": null, "err": null}
+{"n": 376, "method": "POST", "path": "/commit/build/character/1/removeEquipment", "parameters": {"targetEquipment": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]}, "status": 200, "ms": 47, "tag": "plan", "igt": null, "err": null}
+{"n": 377, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": ["0/5401/0/0", "0/5401/0/0", "0/5401/0/0", "0/6301/2/0", "0/5302/6/0"]}, "status": 200, "ms": 127, "tag": "plan", "igt": null, "err": null}
+{"n": 378, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": ["0/7103/4/0", "0/7103/4/0", "0/7402/0/0", "0/7402/0/0", "0/7402/0/0", "0/7402/0/0", "0/5401/2/0", "0/7103/3/0", "0/7103/3/0", "0/7103/3/0"]}, "status": 200, "ms": 44, "tag": "plan", "igt": null, "err": null}
+{"n": 379, "method": "POST", "path": "/commit/build/character/306/removeEquipment", "parameters": {"targetEquipment": [5]}, "status": 200, "ms": 38, "tag": "plan", "igt": null, "err": null}
+{"n": 380, "method": "POST", "path": "/commit/build/character/2/removeEquipment", "parameters": {"targetEquipment": [7]}, "status": 200, "ms": 35, "tag": "plan", "igt": null, "err": null}
+{"n": 381, "method": "POST", "path": "/commit/build/character/3/removeEquipment", "parameters": {"targetEquipment": [3, 7]}, "status": 200, "ms": 29, "tag": "plan", "igt": null, "err": null}
+{"n": 382, "method": "POST", "path": "/commit/build/character/5/removeEquipment", "parameters": {"targetEquipment": [2, 7]}, "status": 200, "ms": 32, "tag": "plan", "igt": null, "err": null}
+{"n": 383, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": ["0/7213/1/0"]}, "status": 200, "ms": 31, "tag": "plan", "igt": null, "err": null}
+{"n": 384, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": ["0/7213/1/0", "0/3107/5/0"]}, "status": 200, "ms": 28, "tag": "plan", "igt": null, "err": null}
+{"n": 385, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": ["0/7110/5/0", "0/7317/1/0"]}, "status": 200, "ms": 30, "tag": "plan", "igt": null, "err": null}
+{"n": 386, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 4, "jewelToSet": "might:2"}, "status": 200, "ms": 32, "tag": "plan", "igt": null, "err": null}
+{"n": 387, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 9, "jewelToSet": "might:1"}, "status": 200, "ms": 30, "tag": "plan", "igt": null, "err": null}
+{"n": 388, "method": "POST", "path": "/commit/build/character/5/jewelAttach", "parameters": {"targetEquipment": 0, "jewelToSet": "arcana:2"}, "status": 200, "ms": 28, "tag": "plan", "igt": null, "err": null}
+{"n": 389, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 205, "tag": "el", "igt": "2026-11-05T21:36:13.170Z", "err": null}
+{"n": 390, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 14, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 391, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 21600}, "status": 200, "ms": 208, "tag": "el", "igt": "2026-11-06T03:36:13.170Z", "err": null}
+{"n": 392, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 5, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 393, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 8, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 200, "ms": 24, "tag": "", "igt": null, "err": null}
+{"n": 394, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 12, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 395, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 8, "destinationMode": "fixed", "depthLimit": "1f-3", "difficultyOffset": 0}, "status": 200, "ms": 15, "tag": "depth", "igt": null, "err": null}
+{"n": 396, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 382, "tag": "el", "igt": "2026-11-06T15:36:13.170Z", "err": null}
+{"n": 397, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 12, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 398, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 8, "destinationMode": "fixed", "depthLimit": "2f-3", "difficultyOffset": 0}, "status": 200, "ms": 28, "tag": "depth", "igt": null, "err": null}
+{"n": 399, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 435, "tag": "el", "igt": "2026-11-07T03:36:13.170Z", "err": null}
+{"n": 400, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 9, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 401, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 403, "tag": "el", "igt": "2026-11-07T15:36:13.170Z", "err": null}
+{"n": 402, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 4, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 403, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 366, "tag": "el", "igt": "2026-11-08T03:36:13.170Z", "err": null}
+{"n": 404, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 10, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 405, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 385, "tag": "el", "igt": "2026-11-08T15:36:13.170Z", "err": null}
+{"n": 406, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 6, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 407, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 359, "tag": "el", "igt": "2026-11-09T03:36:13.170Z", "err": null}
+{"n": 408, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 4, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 409, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 23, "tag": "compact", "igt": null, "err": null}
+{"n": 410, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 7, "destinationMode": "fixed", "depthLimit": "beforeBoss", "difficultyOffset": 0}, "status": 200, "ms": 32, "tag": "", "igt": null, "err": null}
+{"n": 411, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 348, "tag": "el", "igt": "2026-11-09T15:36:13.170Z", "err": null}
+{"n": 412, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 11, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 413, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 319, "tag": "el", "igt": "2026-11-10T03:36:13.170Z", "err": null}
+{"n": 414, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 12, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 415, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 338, "tag": "el", "igt": "2026-11-10T15:36:13.170Z", "err": null}
+{"n": 416, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 3, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 417, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 17, "tag": "compact", "igt": null, "err": null}
+{"n": 418, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 20, "tag": "", "igt": null, "err": null}
+{"n": 419, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 19, "tag": "", "igt": null, "err": null}
+{"n": 420, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 316, "tag": "el", "igt": "2026-11-11T03:36:13.170Z", "err": null}
+{"n": 421, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 25, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 422, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 29, "tag": "", "igt": null, "err": null}
+{"n": 423, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 336, "tag": "el", "igt": "2026-11-11T15:36:13.170Z", "err": null}
+{"n": 424, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 5, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 425, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 362, "tag": "el", "igt": "2026-11-12T03:36:13.170Z", "err": null}
+{"n": 426, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 9, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 427, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 21, "tag": "", "igt": null, "err": null}
+{"n": 428, "method": "POST", "path": "/commit/setting/backup/export", "parameters": {}, "status": 200, "ms": 295, "tag": "export", "igt": null, "err": null}
+{"n": 429, "method": "POST", "path": "/commit/build/character/6/removeEquipment", "parameters": {"targetEquipment": [0, 1, 2, 7, 8]}, "status": 200, "ms": 43, "tag": "plan", "igt": null, "err": null}
+{"n": 430, "method": "POST", "path": "/commit/build/character/1/removeEquipment", "parameters": {"targetEquipment": [3, 8]}, "status": 200, "ms": 52, "tag": "plan", "igt": null, "err": null}
+{"n": 431, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": "0/7402/0/0", "targetSlot": 0}, "status": 200, "ms": 61, "tag": "plan", "igt": null, "err": null}
+{"n": 432, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": "0/5401/2/0", "targetSlot": 1}, "status": 200, "ms": 73, "tag": "plan", "igt": null, "err": null}
+{"n": 433, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": "0/6301/3/0", "targetSlot": 2}, "status": 200, "ms": 45, "tag": "plan", "igt": null, "err": null}
+{"n": 434, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": "0/7103/4/0", "targetSlot": 7}, "status": 200, "ms": 42, "tag": "plan", "igt": null, "err": null}
+{"n": 435, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": "0/5401/0/0", "targetSlot": 8}, "status": 200, "ms": 38, "tag": "plan", "igt": null, "err": null}
+{"n": 436, "method": "POST", "path": "/commit/build/character/6/equip", "parameters": {"targetEquipment": "0/5401/0/0", "targetSlot": 9}, "status": 200, "ms": 40, "tag": "plan", "igt": null, "err": null}
+{"n": 437, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/7402/0/0", "targetSlot": 3}, "status": 200, "ms": 38, "tag": "plan", "igt": null, "err": null}
+{"n": 438, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/7402/0/0", "targetSlot": 8}, "status": 200, "ms": 34, "tag": "plan", "igt": null, "err": null}
+{"n": 439, "method": "POST", "path": "/commit/build/character/1/equip", "parameters": {"targetEquipment": "0/7402/0/0", "targetSlot": 12}, "status": 200, "ms": 35, "tag": "plan", "igt": null, "err": null}
+{"n": 440, "method": "POST", "path": "/commit/build/character/503/removeEquipment", "parameters": {"targetEquipment": [0]}, "status": 200, "ms": 38, "tag": "plan", "igt": null, "err": null}
+{"n": 441, "method": "POST", "path": "/commit/build/character/505/removeEquipment", "parameters": {"targetEquipment": [0]}, "status": 200, "ms": 34, "tag": "plan", "igt": null, "err": null}
+{"n": 442, "method": "POST", "path": "/commit/build/character/4/removeEquipment", "parameters": {"targetEquipment": [3, 6]}, "status": 200, "ms": 32, "tag": "plan", "igt": null, "err": null}
+{"n": 443, "method": "POST", "path": "/commit/build/character/2/removeEquipment", "parameters": {"targetEquipment": [4, 8, 9]}, "status": 200, "ms": 35, "tag": "plan", "igt": null, "err": null}
+{"n": 444, "method": "POST", "path": "/commit/build/character/3/removeEquipment", "parameters": {"targetEquipment": [2, 3, 7]}, "status": 200, "ms": 34, "tag": "plan", "igt": null, "err": null}
+{"n": 445, "method": "POST", "path": "/commit/build/character/5/removeEquipment", "parameters": {"targetEquipment": [2, 7]}, "status": 200, "ms": 33, "tag": "plan", "igt": null, "err": null}
+{"n": 446, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/8107/5/0", "targetSlot": 3}, "status": 200, "ms": 31, "tag": "plan", "igt": null, "err": null}
+{"n": 447, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/3217/6/0", "targetSlot": 6}, "status": 200, "ms": 33, "tag": "plan", "igt": null, "err": null}
+{"n": 448, "method": "POST", "path": "/commit/build/character/4/equip", "parameters": {"targetEquipment": "0/6109/4/0", "targetSlot": 10}, "status": 200, "ms": 33, "tag": "plan", "igt": null, "err": null}
+{"n": 449, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/2213/4/0", "targetSlot": 4}, "status": 200, "ms": 30, "tag": "plan", "igt": null, "err": null}
+{"n": 450, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/7213/1/0", "targetSlot": 8}, "status": 200, "ms": 31, "tag": "plan", "igt": null, "err": null}
+{"n": 451, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/8213/0/0", "targetSlot": 9}, "status": 200, "ms": 33, "tag": "plan", "igt": null, "err": null}
+{"n": 452, "method": "POST", "path": "/commit/build/character/2/equip", "parameters": {"targetEquipment": "0/6109/4/0", "targetSlot": 10}, "status": 200, "ms": 31, "tag": "plan", "igt": null, "err": null}
+{"n": 453, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/7408/1/0", "targetSlot": 2}, "status": 200, "ms": 31, "tag": "plan", "igt": null, "err": null}
+{"n": 454, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/8107/3/0", "targetSlot": 3}, "status": 200, "ms": 30, "tag": "plan", "igt": null, "err": null}
+{"n": 455, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/3213/3/0", "targetSlot": 7}, "status": 200, "ms": 32, "tag": "plan", "igt": null, "err": null}
+{"n": 456, "method": "POST", "path": "/commit/build/character/3/equip", "parameters": {"targetEquipment": "0/3107/6/0", "targetSlot": 8}, "status": 200, "ms": 35, "tag": "plan", "igt": null, "err": null}
+{"n": 457, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": "0/8219/3/0", "targetSlot": 2}, "status": 200, "ms": 35, "tag": "plan", "igt": null, "err": null}
+{"n": 458, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": "0/7110/5/0", "targetSlot": 7}, "status": 200, "ms": 35, "tag": "plan", "igt": null, "err": null}
+{"n": 459, "method": "POST", "path": "/commit/build/character/5/equip", "parameters": {"targetEquipment": "0/5223/1/0", "targetSlot": 8}, "status": 200, "ms": 35, "tag": "plan", "igt": null, "err": null}
+{"n": 460, "method": "POST", "path": "/commit/build/character/4/jewelAttach", "parameters": {"targetEquipment": 3, "jewelToSet": "might:2"}, "status": 200, "ms": 30, "tag": "plan", "igt": null, "err": null}
+{"n": 461, "method": "POST", "path": "/commit/build/character/2/jewelAttach", "parameters": {"targetEquipment": 0, "jewelToSet": "might:1"}, "status": 200, "ms": 31, "tag": "plan", "igt": null, "err": null}
+{"n": 462, "method": "POST", "path": "/commit/build/character/2/jewelAttach", "parameters": {"targetEquipment": 2, "jewelToSet": "might:1"}, "status": 200, "ms": 27, "tag": "plan", "igt": null, "err": null}
+{"n": 463, "method": "POST", "path": "/commit/build/character/2/jewelAttach", "parameters": {"targetEquipment": 3, "jewelToSet": "focus:2"}, "status": 200, "ms": 31, "tag": "plan", "igt": null, "err": null}
+{"n": 464, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 8, "destinationMode": "fixed", "depthLimit": "2f-3", "difficultyOffset": 0}, "status": 200, "ms": 30, "tag": "", "igt": null, "err": null}
+{"n": 465, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 14, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 466, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 422, "tag": "el", "igt": "2026-11-12T15:36:13.170Z", "err": null}
+{"n": 467, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 11, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 468, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 8, "destinationMode": "fixed", "depthLimit": "3f-3", "difficultyOffset": 0}, "status": 200, "ms": 29, "tag": "depth", "igt": null, "err": null}
+{"n": 469, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 542, "tag": "el", "igt": "2026-11-13T03:36:13.170Z", "err": null}
+{"n": 470, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 10, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 471, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 8, "destinationMode": "fixed", "depthLimit": "4f-3", "difficultyOffset": 0}, "status": 200, "ms": 33, "tag": "depth", "igt": null, "err": null}
+{"n": 472, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 406, "tag": "el", "igt": "2026-11-13T15:36:13.170Z", "err": null}
+{"n": 473, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 12, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 474, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 8, "destinationMode": "fixed", "depthLimit": "5f-3", "difficultyOffset": 0}, "status": 200, "ms": 38, "tag": "depth", "igt": null, "err": null}
+{"n": 475, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 391, "tag": "el", "igt": "2026-11-14T03:36:13.170Z", "err": null}
+{"n": 476, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 11, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 477, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 386, "tag": "el", "igt": "2026-11-14T15:36:13.170Z", "err": null}
+{"n": 478, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 4, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 479, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 8, "destinationMode": "fixed", "depthLimit": "beforeBoss", "difficultyOffset": 0}, "status": 200, "ms": 40, "tag": "depth", "igt": null, "err": null}
+{"n": 480, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 43200}, "status": 200, "ms": 393, "tag": "el", "igt": "2026-11-15T03:36:13.170Z", "err": null}
+{"n": 481, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 4, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 482, "method": "POST", "path": "/commit/expedition/1/changeExpedition", "parameters": {"destination": 8, "destinationMode": "fixed", "depthLimit": "all", "difficultyOffset": 0}, "status": 200, "ms": 38, "tag": "depth", "igt": null, "err": null}
+{"n": 483, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 10800}, "status": 200, "ms": 143, "tag": "el", "igt": "2026-11-15T06:36:13.170Z", "err": null}
+{"n": 484, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 9, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 485, "method": "POST", "path": "/commit/progress/elapsed", "parameters": {"elapsedSeconds": 10800}, "status": 200, "ms": 145, "tag": "el", "igt": "2026-11-15T09:36:13.170Z", "err": null}
+{"n": 486, "method": "GET", "path": "/read/observation/expedition", "parameters": null, "status": 200, "ms": 12, "tag": "obs-exp", "igt": null, "err": null}
+{"n": 487, "method": "GET", "path": "/read/observation/diary", "parameters": null, "status": 200, "ms": 15, "tag": "diary", "igt": null, "err": null}
+{"n": 488, "method": "GET", "path": "/read/observation/compact", "parameters": null, "status": 200, "ms": 17, "tag": "compact", "igt": null, "err": null}
+{"n": 489, "method": "GET", "path": "/read/observation/party?partyNumber=1", "parameters": null, "status": 200, "ms": 7, "tag": "party-sq", "igt": null, "err": null}
+{"n": 490, "method": "GET", "path": "/read/observation/party?partyNumber=2", "parameters": null, "status": 200, "ms": 3, "tag": "party-sq", "igt": null, "err": null}
+{"n": 491, "method": "GET", "path": "/read/observation/party?partyNumber=3", "parameters": null, "status": 200, "ms": 2, "tag": "party-sq", "igt": null, "err": null}
+{"n": 492, "method": "GET", "path": "/read/observation/party?partyNumber=4", "parameters": null, "status": 200, "ms": 1, "tag": "party-sq", "igt": null, "err": null}
+{"n": 493, "method": "GET", "path": "/read/observation/party?partyNumber=5", "parameters": null, "status": 200, "ms": 2, "tag": "party-sq", "igt": null, "err": null}
+{"n": 494, "method": "GET", "path": "/read/observation/party?partyNumber=6", "parameters": null, "status": 200, "ms": 1, "tag": "party-sq", "igt": null, "err": null}
+{"n": 495, "method": "POST", "path": "/commit/setting/backup/export", "parameters": {}, "status": 200, "ms": 305, "tag": "export", "igt": null, "err": null}

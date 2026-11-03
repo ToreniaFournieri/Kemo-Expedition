@@ -1,9 +1,10 @@
-import type { ExpeditionLog, GameState } from '../../types';
+import type { ExpeditionLog, ExpeditionSimulationOptions, GameState } from '../../types';
 import { describeInvalidRequest, invalidRequestMessage } from './requestErrors';
 import { buildApiV1ReadData, type ApiV1ReadContext } from './readModels';
 import { SerializedApplicationApiAuthority, type ApiV1CommitAuthorityDependencies, type ApiV1ControlMetadata, type ApiV1InternalTransactionDependencies } from './authority';
 import { normalizeApiV1PopupEvents } from './popupEvents';
 import { serializeGameState } from '../../game/saveCodec';
+import { API_SAVE_SEGMENT_MISS, buildApiSaveSegments, forgetApiSaveSegmentsHeld, markApiSaveSegmentsHeld } from './accountSaveSegments';
 import { encodeStoredState } from '../../game/storageCompression';
 import { logInApiAccount, logOutApiAccount, signUpApiAccount, type ApiV1SessionPorts } from './sessionLifecycle';
 import { accountDebugSettingsOf, accountTimeScale } from './debugSettings';
@@ -12,6 +13,9 @@ import { setColosseumEnemySettingsOverride } from '../../game/colosseum';
 import { accountEnemyEditSettingsOf } from './enemyEditPane';
 import { claimNextDelivery, settleDelivery, type ApiV1DeliveryOutcome, type ApiV1DeliveryRecord } from './deliveries';
 import { completeDeliveredBenefit } from './deliveryCompletion';
+import { parseGaSearchRequest, runGaSearch, type GaSearchDependencies } from './gaSearch';
+import { parseDirectedBuildRequest, runDirectedBuild } from './directedBuild';
+import { parseStagedTuningRequest, runStagedEquipmentTuning } from './stagedEquipmentTuning';
 
 // SpecRef: 9.1.4.13 | Adapter and contract-test requirements | One transport-neutral Application API
 // SpecRef: 9.1.3 | API | React UI, Desktop, and AI/CUI HTTP adapters share these handlers
@@ -32,8 +36,12 @@ export interface ApplicationApiPorts {
     enemyLevelOffset: () => number;
     cycleDurationScale: () => number;
     applyAutoEquipment: ApiV1CommitAuthorityDependencies['applyAutoEquipment'];
-    /** Private, non-persisted forecast simulation; must not touch the live game state or RNG. */
-    simulate: (state: GameState, partyIndex: number, count: number) => Promise<unknown>;
+    /**
+     * Private, non-persisted forecast simulation; must not touch the live game state or RNG. `seed` fixes its random numbers.
+     * `options.onlyRoom` fights one room's battle alone (`gateDamage`); `options.reportProgress` marks a Simulation Run read, which reports
+     * into the Expedition pane like an unseeded forecast (a search's seeded runs never do).
+     */
+    simulate: (state: GameState, partyIndex: number, count: number, seed?: number, options?: ExpeditionSimulationOptions & { reportProgress?: boolean }) => Promise<unknown>;
     /** Durably persists a trusted in-process player's state before it is published. */
     persistPlayer: (state: GameState) => Promise<void>;
     /** SpecRef: 9.1.4.15 | Used instead of `persistPlayer` only for `commit/setting/backup/import`/`reset`: the new
@@ -77,7 +85,7 @@ export interface ApplicationApiPorts {
   };
   help: { requirements: string; detail: string };
   /** Notifies the UI that an exclusive API session started or ended (it disables state-mutating controls). `userId` is the logged-in account's. */
-  onSessionActive: (active: boolean, userId?: string) => void;
+  onSessionActive: (active: boolean, userId?: string, headless?: boolean) => void;
   /** SpecRef: 9.1.4.15 | The actual network send for a claimed delivery job; never called more than once per claim. */
   delivery: { send: (record: ApiV1DeliveryRecord) => Promise<ApiV1DeliveryOutcome> };
 }
@@ -139,7 +147,47 @@ function resolveOperation(template: string, pathParameters: Record<string, unkno
 export function createApplicationApi(ports: ApplicationApiPorts, initialState: GameState): ApplicationApi {
   const authority = new SerializedApplicationApiAuthority({ state: initialState, control: emptyControl(), simulatedAt: ports.runtime.now() });
   let activeIdentity: DesktopApiAccountIdentity | null = null;
+  // Login imports may normalize the state after their durable write. Prime the save once before reuse.
+  let accountSaveReusable = false;
+
+  async function persistAccount(identity: DesktopApiAccountIdentity, snapshot: GameState, control: ApiV1ControlMetadata, stateChanged: boolean): Promise<void> {
+    const accounts = ports.session.accounts;
+    if (stateChanged || !accountSaveReusable) {
+      const serialized = serializeGameState(snapshot);
+      if (accounts.commitSegments) {
+        for (let attempt = 0; ; attempt += 1) {
+          const { segments, defined } = buildApiSaveSegments(serialized);
+          try {
+            await accounts.commitSegments(identity, segments, control as DesktopApiControlMetadata);
+            markApiSaveSegmentsHeld(defined);
+            break;
+          } catch (error) {
+            // The host lost its compressed-log cache (restart or eviction): resend every log once.
+            if (attempt > 0 || !String((error as Error)?.message ?? error).includes(API_SAVE_SEGMENT_MISS)) throw error;
+            forgetApiSaveSegmentsHeld();
+          }
+        }
+      } else await accounts.commit(identity, await encodeStoredState(JSON.stringify(serialized)), control as DesktopApiControlMetadata);
+    } else await accounts.commit(identity, null, control as DesktopApiControlMetadata);
+    accountSaveReusable = true;
+  }
   let idleSimulatedAt = ports.runtime.now();
+  // SpecRef: 9.1.4.9 | The server keeps no search result: `changeSummary` is the whole result and `applyBuildChanges` takes
+  // it back as `changes`.
+  /** The search collaborators of `gaSearch`, `directedBuild`, and `stagedEquipmentTuning` for one snapshot. */
+  const searchDependencies = (snapshot: ReturnType<typeof authority.getSnapshot>, revision: number): GaSearchDependencies => ({
+    simulate: (state, index, count, seed, options) => ports.runtime.simulate(state, index, count, seed, options),
+    now: ports.runtime.now,
+    createSeed: ports.runtime.createRandomSeed,
+    revision,
+    commitContext: {
+      simulatedAt: activeIdentity ? snapshot.simulatedAt : ports.runtime.now(),
+      gameMode: ports.runtime.gameMode(),
+      enemyLevelOffset: ports.runtime.enemyLevelOffset(),
+      applyAutoEquipment: ports.runtime.applyAutoEquipment,
+      now: ports.runtime.now,
+    },
+  });
 
   const failure = (status: number, code: string, message: string, details?: Record<string, unknown>): ApiV1ApplicationResponse => ({
     status,
@@ -168,8 +216,8 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
   function deliveryTransactionDependencies(identity: DesktopApiAccountIdentity | null): ApiV1InternalTransactionDependencies & { now: () => number } {
     return {
       now: ports.runtime.now,
-      persist: async (snapshot, control) => {
-        if (identity) await ports.session.accounts.commit(identity, await encodeStoredState(JSON.stringify(serializeGameState(snapshot))), control as DesktopApiControlMetadata);
+      persist: async (snapshot, control, { stateChanged }) => {
+        if (identity) await persistAccount(identity, snapshot, control, stateChanged);
         else await ports.runtime.persistPlayer(snapshot);
       },
       publish: ports.runtime.publish,
@@ -276,9 +324,10 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       if (!login.ok) return failure(login.status, login.code, login.message, login.details);
       const { session } = login;
       activeIdentity = session.identity;
+      accountSaveReusable = false;
       authority.replaceSnapshot({ state: session.state, control: session.control as ApiV1ControlMetadata, simulatedAt: session.simulatedAt });
       syncAccountDebugOverride();
-      ports.onSessionActive(true, session.identity.userId);
+      ports.onSessionActive(true, session.identity.userId, request.headless === true);
       return { revision: session.control.revisionHighWater, identity: session.identity, data: { ...session.identity } };
     }
 
@@ -287,6 +336,7 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       const logout = await logOutApiAccount(session ? { ...session, control: session.control as DesktopApiControlMetadata } : null, ports.session);
       if (!logout.ok) return failure(logout.status, logout.code, logout.message, logout.details);
       activeIdentity = null;
+      accountSaveReusable = false;
       idleSimulatedAt = ports.runtime.now();
       authority.replaceSnapshot({ state: logout.restoredState, control: emptyControl(), simulatedAt: idleSimulatedAt });
       syncAccountDebugOverride();
@@ -309,13 +359,62 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       return { revision: snapshot.control.revisionHighWater, data: { events: events.slice(start + 1) } };
     }
 
+    const partySearch = operation.match(/^read\/build\/party\/(\d+)\/(gaSearch|directedBuild)$/);
+    if (partySearch) {
+      // SpecRef: 9.1.3 | Read | 2-3-2 party/{p}/gaSearch | a POST Read like `simulationRun`: private, never committed.
+      // SpecRef: 9.1.3 | Read | 2-3-3 party/{p}/directedBuild | a POST Read like `gaSearch`.
+      const snapshot = authority.getSnapshot();
+      const revision = snapshot.control.revisionHighWater;
+      if (request.expectedRevision !== undefined && Number(request.expectedRevision) !== revision) {
+        return failure(409, 'stale_revision', 'The supplied revision is stale.', { currentRevision: revision });
+      }
+      const partyIndex = snapshot.state.parties.findIndex((party) => party.id === Number(partySearch[1]));
+      if (partyIndex < 0) return failure(404, 'not_found', 'The requested projection is unavailable.');
+      // HTTP sends the members as the POST body; the in-process adapter sends them as `parameters` (with the path's `p`).
+      const { pathParameters: _path, transport: _transport, expectedRevision: _revision, uploadedFiles: _files, parameters: _parameters, ...body } = request;
+      const { p: _party, ...inProcessParameters } = parameters;
+      try {
+        const raw = trustedInProcess ? inProcessParameters : body;
+        const dependencies = searchDependencies(snapshot, revision);
+        const outcome = partySearch[2] === 'gaSearch'
+          ? await runGaSearch(snapshot.state, partyIndex, parseGaSearchRequest(snapshot.state, partyIndex, raw), dependencies)
+          : await runDirectedBuild(snapshot.state, partyIndex, parseDirectedBuildRequest(snapshot.state, partyIndex, raw), dependencies);
+        return { revision, data: outcome.data };
+      } catch (error) {
+        const details = describeInvalidRequest(error);
+        return failure(400, 'invalid_request', invalidRequestMessage(details, 'The request is invalid.'), { ...details });
+      }
+    }
+
+    if (operation === 'read/build/character/stagedEquipmentTuning') {
+      // SpecRef: 9.1.3 | Read | 2-3-8 character/stagedEquipmentTuning | a POST Read like `gaSearch`: private, never committed.
+      const snapshot = authority.getSnapshot();
+      const revision = snapshot.control.revisionHighWater;
+      if (request.expectedRevision !== undefined && Number(request.expectedRevision) !== revision) {
+        return failure(409, 'stale_revision', 'The supplied revision is stale.', { currentRevision: revision });
+      }
+      const { pathParameters: _path, transport: _transport, expectedRevision: _revision, uploadedFiles: _files, parameters: _parameters, ...body } = request;
+      try {
+        const tuningRequest = parseStagedTuningRequest(snapshot.state, trustedInProcess ? parameters : body);
+        const outcome = await runStagedEquipmentTuning(snapshot.state, tuningRequest, searchDependencies(snapshot, revision));
+        return { revision, data: outcome.data };
+      } catch (error) {
+        if (error instanceof Error && error.message === 'not_found') return failure(404, 'not_found', 'The requested projection is unavailable.');
+        const details = describeInvalidRequest(error);
+        return failure(400, 'invalid_request', invalidRequestMessage(details, 'The request is invalid.'), { ...details });
+      }
+    }
+
     if (operation.startsWith('read/') || operation.startsWith('resources/')) {
       const snapshot = authority.getSnapshot();
       if (operation.endsWith('/simulationRun') && request.expectedRevision !== undefined && Number(request.expectedRevision) !== snapshot.control.revisionHighWater) {
         return failure(409, 'stale_revision', 'The supplied revision is stale.', { currentRevision: snapshot.control.revisionHighWater });
       }
       // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `numberOfRun` is optional, default 100, an integer 1 ~ 1000.
-      const readParameters = operation.endsWith('/simulationRun') ? { ...parameters, ...(request.numberOfRun !== undefined ? { numberOfRun: request.numberOfRun } : {}) } : parameters;
+      // `objective`, `gateRoom`, `startHp`, `seed`, and the expedition overrides (2-2-3) travel the same way.
+      const readParameters = operation.endsWith('/simulationRun')
+        ? { ...parameters, ...Object.fromEntries((['numberOfRun', 'objective', 'gateRoom', 'startHp', 'seed', 'destination', 'depthLimit', 'difficultyOffset'] as const).filter((key) => request[key] !== undefined).map((key) => [key, request[key]])) }
+        : parameters;
       try {
         const data = await buildApiV1ReadData(operation, snapshot.state, readParameters, {
           revision: snapshot.control.revisionHighWater,
@@ -324,7 +423,10 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
           enemyLevelOffset: ports.runtime.enemyLevelOffset(),
           // The player's in-game time is the wall clock of the request; an API account's is its own clock.
           inGameTime: activeIdentity ? snapshot.simulatedAt : ports.runtime.now(),
-          simulation: (partyIndex, count) => ports.runtime.simulate(snapshot.state, partyIndex, count),
+          simulation: (partyIndex, count, forecast) => (forecast
+            ? ports.runtime.simulate(forecast.state, partyIndex, count, forecast.seed, { ...forecast.options, reportProgress: true })
+            : ports.runtime.simulate(snapshot.state, partyIndex, count)),
+          createSeed: ports.runtime.createRandomSeed,
           control: snapshot.control,
           // The live cycle and the disclosed logs belong to the ordinary player's runtime; an API account has neither, and its
           // charge clock runs at its own debug Speed of Time.
@@ -372,8 +474,8 @@ export function createApplicationApi(ports: ApplicationApiPorts, initialState: G
       createRandomSeed: ports.runtime.createRandomSeed,
       now: ports.runtime.now,
       notifyPopupActivity: ports.runtime.notifyPopupActivity,
-      persist: async (snapshot, control) => {
-        if (identity) await ports.session.accounts.commit(identity, await encodeStoredState(JSON.stringify(serializeGameState(snapshot))), control as DesktopApiControlMetadata);
+      persist: async (snapshot, control, { stateChanged }) => {
+        if (identity) await persistAccount(identity, snapshot, control, stateChanged);
         else if ((operation === 'commit/setting/backup/import' || operation === 'commit/setting/backup/reset') && ports.runtime.persistPlayerReplacement) await ports.runtime.persistPlayerReplacement(snapshot);
         else await ports.runtime.persistPlayer(snapshot);
       },

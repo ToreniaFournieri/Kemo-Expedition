@@ -172,7 +172,8 @@ export class PersistenceCoordinator {
   }
   requestDurable(state: GameState): Promise<void> { const revision = this.enqueue(state); return this.waitForRevision(revision) }
   replaceDurable(state: GameState): Promise<void> { const revision = this.enqueue(state, true); return this.waitForRevision(revision) }
-  async createExportPayload(state: GameState): Promise<string> {
+  /** `stored` yields the fast internal-storage encoding for payloads only this runtime reads (API account hand-over). */
+  async createExportPayload(state: GameState, encoding: 'portable' | 'stored' = 'portable'): Promise<string> {
     if (this.stopped) throw new PersistenceShutdownError();
     const jsonPayload = JSON.stringify(serializeGameState(state));
     const worker = this.options.workerFactory();
@@ -187,7 +188,7 @@ export class PersistenceCoordinator {
       worker.onerror = (event) => { finish(); reject(new Error(event.message || 'Export compression worker failed.')); };
       worker.postMessage({
         type: 'encode',
-        codec: 'portable',
+        ...(encoding === 'portable' ? { codec: 'portable' as const } : {}),
         requestId: 0,
         revision: 0,
         jsonPayload,

@@ -1,0 +1,10 @@
+[
+{"route":"/commit/build/character/1/changeBuild","parameters":{"mainClassId":"lord","subClassId":"lord","simulation":false,"confirmation":"yes"}},
+{"route":"/commit/build/character/6/changeBuild","parameters":{"mainClassId":"guardian","subClassId":"guardian","simulation":false,"confirmation":"yes"}},
+{"route":"/commit/build/character/4/changeBuild","parameters":{"racesAndGender":"ursan/male","mainClassId":"ninja","subClassId":"ranger","lineage":"abyssal_sea","predisposition":"precise","simulation":false,"confirmation":"yes"}},
+{"route":"/commit/build/character/2/changeBuild","parameters":{"racesAndGender":"ursan/female","mainClassId":"ninja","subClassId":"ranger","lineage":"abyssal_sea","predisposition":"precise","simulation":false,"confirmation":"yes"}},
+{"route":"/commit/build/character/3/changeBuild","parameters":{"mainClassId":"ninja","subClassId":"ranger","lineage":"abyssal_sea","predisposition":"precise","simulation":false,"confirmation":"yes"}},
+{"route":"/commit/build/character/5/changeBuild","parameters":{"mainClassId":"wizard","subClassId":"alchemist","lineage":"utopia","predisposition":"introspective","simulation":false,"confirmation":"yes"}},
+{"route":"/commit/build/party/1","parameters":{"deityId":"precision","order":[6,1,4,2,3,5]}},
+{"route":"/commit/expedition/1/changeExpedition","parameters":{"destinationMode":"fixed","destination":1,"depthLimit":"all","difficultyOffset":0}}
+]

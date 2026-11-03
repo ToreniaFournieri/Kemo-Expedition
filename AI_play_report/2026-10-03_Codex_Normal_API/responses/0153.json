@@ -1,0 +1,30 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "86012fcb-42fd-4198-9323-15f1dd8db740",
+  "previousRevision": 101,
+  "revision": 102,
+  "committedAt": "2026-10-03T08:16:00.025Z",
+  "data": {
+    "current": {
+      "mode": "SEMI",
+      "equipment": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "undoAvailable": true,
+      "redoAvailable": false
+    }
+  },
+  "effects": [],
+  "changedResources": [
+    "read/observation/party",
+    "read/observation/base"
+  ]
+}

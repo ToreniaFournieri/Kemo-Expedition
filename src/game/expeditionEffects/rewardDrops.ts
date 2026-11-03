@@ -1,8 +1,9 @@
-import type { GameBags, Item, ItemDef, TerrainEffectKey } from '../../types/index.ts';
+import type { GameBags, Item, ItemDef, ItemRarity, TerrainEffectKey } from '../../types/index.ts';
 import { drawFromBagWithRandom } from '../weightedBag.ts';
+import { getItemRarityById } from '../itemRarity.ts';
 
-export type RewardRarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
-type RewardBagType = 'commonRewardBag' | 'uncommonRewardBag' | 'eliteRareRewardBag' | 'bossRareRewardBag' | 'mythicRareRewardBag';
+export type RewardRarity = ItemRarity;
+type RewardBagType = 'commonRewardBag' | 'uncommonRewardBag' | 'rareRewardBag' | 'epicRewardBag' | 'mythicRewardBag';
 type SuperRareBagType = 'commonSuperRareBag' | 'rareSuperRareBag';
 type RewardDrawBagType = RewardBagType | SuperRareBagType | 'commonEnhancementBag' | 'enhancementBag';
 
@@ -28,18 +29,13 @@ export interface EnemyRewardDropsResult {
 }
 
 export function getRewardRarityByItemId(itemId: number): RewardRarity {
-  const rarityCode = itemId % 1000;
-  if (rarityCode >= 500) return 'mythicRare';
-  if (rarityCode >= 400) return 'bossRare';
-  if (rarityCode >= 300) return 'eliteRare';
-  if (rarityCode >= 200) return 'uncommon';
-  return 'common';
+  return getItemRarityById(itemId);
 }
 
 export function getRewardRarityRank(rarity: RewardRarity): number {
-  if (rarity === 'mythicRare') return 5;
-  if (rarity === 'bossRare') return 4;
-  if (rarity === 'eliteRare') return 3;
+  if (rarity === 'mythic') return 5;
+  if (rarity === 'epic') return 4;
+  if (rarity === 'rare') return 3;
   if (rarity === 'uncommon') return 2;
   return 1;
 }
@@ -56,9 +52,9 @@ export function getRewardTicketCount(modifiers: RewardTicketModifiers): number {
 
 function getRewardBagType(rarity: RewardRarity): RewardBagType {
   if (rarity === 'uncommon') return 'uncommonRewardBag';
-  if (rarity === 'eliteRare') return 'eliteRareRewardBag';
-  if (rarity === 'bossRare') return 'bossRareRewardBag';
-  if (rarity === 'mythicRare') return 'mythicRareRewardBag';
+  if (rarity === 'rare') return 'rareRewardBag';
+  if (rarity === 'epic') return 'epicRewardBag';
+  if (rarity === 'mythic') return 'mythicRewardBag';
   return 'commonRewardBag';
 }
 

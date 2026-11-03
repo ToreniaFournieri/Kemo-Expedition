@@ -1,10 +1,11 @@
 import { getIdentifiedShopItemPrice, getShopItemPrice as getTierShopItemPrice } from './pricing';
 import { refillBagIfEmpty } from './bags';
+import { getItemRarityById } from './itemRarity.ts';
 import { createApiRandom, gameplayRandom } from './gameplayRandom';
 import { drawFromBagWithRandom } from './weightedBag';
 import { DUNGEONS } from '../data/dungeons';
 import { ITEMS } from '../data/items';
-import type { GameBags, Item, Party } from '../types';
+import type { GameBags, Item, ItemRarity, Party } from '../types';
 
 const SHOP_REFRESH_BASE_PRICE = 200;
 const SHOP_REFRESH_HOURS = [2, 10, 18] as const;
@@ -97,7 +98,7 @@ const SHOP_IDENTIFIED_ENHANCEMENT_MINIMUM = 2;
 const SHOP_IDENTIFIED_SUPER_RARE_DRAWS = 10;
 const SHOP_UNIDENTIFIED_SUPER_RARE_DRAWS = 20;
 
-export type ShopEntryRarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare';
+export type ShopEntryRarity = Exclude<ItemRarity, 'mythic'>;
 
 /**
  * One stock entry of a generated lineup. Identified entries carry the enhancement and Super Rare title rolled when the
@@ -139,11 +140,8 @@ export interface ShopLineupEntry {
 }
 
 function getShopItemRarity(itemId: number): ShopEntryRarity {
-  const rarityCode = itemId % 1000;
-  if (rarityCode >= 400) return 'bossRare';
-  if (rarityCode >= 300) return 'eliteRare';
-  if (rarityCode >= 200) return 'uncommon';
-  return 'common';
+  const rarity = getItemRarityById(itemId);
+  return rarity === 'mythic' ? 'epic' : rarity;
 }
 
 /** The id under which a slot (0-based index) of a lineup is sold out in `shopPurchases`. */
@@ -186,7 +184,7 @@ export function rollUnidentifiedShopItem(bags: GameBags): { enhancement: number;
 }
 
 // SpecRef: 8.4.1 | Shop (お店) | Lineup
-// Rarity base codes (100 common, 200 uncommon, 300 elite rare, 400 boss rare) of the identified slots and of the unidentified
+// Rarity base codes (100 common, 200 uncommon, 300 rare, 400 epic) of the identified slots and of the unidentified
 // slots, by intimacy tier. The identified slots come first; every tier fills all 7 slots.
 const SHOP_RARITY_PLANS: ReadonlyArray<{ minimumIntimacy: number; identified: number[]; unidentified: number[] }> = [
   { minimumIntimacy: 140, identified: [400, 300], unidentified: [400, 400, 300, 300, 300] },

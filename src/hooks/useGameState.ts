@@ -1,4 +1,5 @@
 import { hasNewAvailability } from '../game/inventoryAvailability';
+import { normalizePartyDropStats } from '../game/dropStatistics';
 import { getCharacterCombatBonusLevels } from '../game/combatBonusLevels';
 import { getConditionState, type PartyConditionState } from '../game/partyCondition';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
@@ -27,6 +28,7 @@ import {
   EnemyDef,
   ExpeditionDepthLimit,
   ExpeditionDestinationMode,
+  ExpeditionSimulationOptions,
   ExpeditionSimulationResult,
   SavedEquipmentSet,
 } from '../types';
@@ -72,6 +74,7 @@ import {
 } from '../game/glossaryDisclosure';
 import { upgradeLegacyOutcomeKeys } from '../game/legacyOutcomeKeys';
 import { gameplayRandom, createApiRandom, withGameplayRandomSource } from '../game/gameplayRandom';
+import { withForecastBattleSeedSource } from '../game/battleSeedSource';
 import { replaceCharacterEquipment } from '../game/equipment';
 import {
   applyEquipmentSet,
@@ -90,9 +93,9 @@ import {
   createCommonRewardBag,
   createCommonEnhancementBag,
   createUncommonRewardBag,
-  createEliteRareRewardBag,
-  createBossRareRewardBag,
-  createMythicRareRewardBag,
+  createRareRewardBag,
+  createEpicRewardBag,
+  createMythicRewardBag,
   createEnhancementBag,
   createSuperRareBag,
   createCommonSuperRareBag,
@@ -105,6 +108,7 @@ import {
   initializeBags,
 } from '../game/bags';
 import { getItemById } from '../data/items';
+import { getUniqueCharacterDef, getUniqueCharacterDefByLineage } from '../data/uniqueCharacters';
 import { hydrateGameState } from '../game/saveCodec';
 import type {
   AutoEquipmentHpStrategy,
@@ -126,10 +130,12 @@ import {
   isGodsBattleAvailable,
 } from '../game/clearGate';
 import { resolveSideQuestOutcome } from '../game/expeditionEffects/sideQuestOutcome';
+import { getSideQuestLevelFromExpId } from '../game/expeditionGoals';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { MAX_LEVEL } from '../types';
 import { createEnvironmentStorageKey, getEnvironmentId } from '../game/environment';
 import { addDiaryLogs } from '../game/diary';
+import { addGlobalDiaryLogs, applyAchievementMilestones, createAccountCreatedDiaryLog, createBossFirstClearDiaryLog, createGodFirstDefeatDiaryLog, normalizeGlobalDiaryLogs, seedAchievementState } from '../game/globalDiary';
 import { computeCharacterStats } from '../game/characterComputation';
 import {
   getShopHourKey,
@@ -213,27 +219,20 @@ type SideQuestRuntimeDef = {
 
 const SIDE_QUEST_RUNTIME_DEFS: Record<number, SideQuestRuntimeDef> = {
   1: { type: 'q.squander', shortTextKey: 'sideQuest.squander.short', baseMin: 100, baseMax: 400, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
-  2: { type: 'q.sleeping', shortTextKey: 'sideQuest.sleeping.short', baseMin: 1, baseMax: 4, deadlineHours: 12, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  3: { type: 'q.exercise', shortTextKey: 'sideQuest.exercise.short', baseMin: 5, baseMax: 15, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
-  4: { type: 'q.embezzlement', shortTextKey: 'sideQuest.embezzlement.short', baseMin: 25, baseMax: 100, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+  2: { type: 'q.sleeping', shortTextKey: 'sideQuest.sleeping.short', baseMin: 1, baseMax: 4, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  3: { type: 'q.exercise', shortTextKey: 'sideQuest.exercise.short', baseMin: 10, baseMax: 30, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  4: { type: 'q.embezzlement', shortTextKey: 'sideQuest.embezzlement.short', baseMin: 10, baseMax: 50, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
   5: { type: 'q.donation', shortTextKey: 'sideQuest.donation.short', baseMin: 100, baseMax: 500, deadlineHours: 12, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
-  6: { type: 'q.healing', shortTextKey: 'sideQuest.healing.short', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  6: { type: 'q.healing', shortTextKey: 'sideQuest.healing.short', baseMin: 2, baseMax: 7, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.2, 3: 1.4, 4: 1.6 } },
   7: { type: 'q.AFK', shortTextKey: 'sideQuest.afk.short', baseMin: 30, baseMax: 120, deadlineHours: 0, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
   8: { type: 'q.treasure-super-rare', shortTextKey: 'sideQuest.treasureSuperRare.short', baseMin: 1, baseMax: 1, deadlineHours: 24, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  9: { type: 'q.treasure-boss-rare', shortTextKey: 'sideQuest.treasureBossRare.short', baseMin: 1, baseMax: 4, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  10: { type: 'q.poor-kid', shortTextKey: 'sideQuest.poorKid.short', baseMin: 10, baseMax: 30, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
-  11: { type: 'q.consecutive-wins', shortTextKey: 'sideQuest.consecutiveWins.short', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  9: { type: 'q.treasure-epic-rare', shortTextKey: 'sideQuest.treasureEpicRare.short', baseMin: 1, baseMax: 3, deadlineHours: 20, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  10: { type: 'q.poor-kid', shortTextKey: 'sideQuest.poorKid.short', baseMin: 5, baseMax: 15, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1.2, 3: 1.4, 4: 1.6 } },
+  11: { type: 'q.consecutive-wins', shortTextKey: 'sideQuest.consecutiveWins.short', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.2, 3: 1.4, 4: 1.6 } },
   12: { type: 'q.losers', shortTextKey: 'sideQuest.losers.short', baseMin: 1, baseMax: 1, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  13: { type: 'q.savings', shortTextKey: 'sideQuest.savings.short', baseMin: 200, baseMax: 1000, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+  13: { type: 'q.savings', shortTextKey: 'sideQuest.savings.short', baseMin: 600, baseMax: 2500, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.6, 3: 2.8, 4: 4.0 } },
 };
 
-function getSideQuestLevelFromExpId(expId: number): 1 | 2 | 3 | 4 {
-  // SpecRef: 5.1.2 | Side Quest | Side quest difficulty
-  if (expId <= 2) return 1;
-  if (expId <= 4) return 2;
-  if (expId <= 6) return 3;
-  return 4;
-}
 
 
 function getSideQuestShortTextKey(type: string): string | undefined {
@@ -244,7 +243,8 @@ function normalizeSideQuestType(type: string): string {
   // SpecRef: 5.1.2 | Side Quest | Runtime quest id normalization
   const legacyToCurrentTypeMap: Record<string, string> = {
     'q.treasure_super_rare': 'q.treasure-super-rare',
-    'q.treasure_boss_rare': 'q.treasure-boss-rare',
+    'q.treasure_boss_rare': 'q.treasure-epic-rare',
+    'q.treasure-boss-rare': 'q.treasure-epic-rare',
     'q.poor_kid': 'q.poor-kid',
     'q.consecutive_wins': 'q.consecutive-wins',
   };
@@ -343,37 +343,6 @@ function getUnlockedStateFromEntries(logs: ExpeditionLog[], initialPartySlots: n
   return { unlockedPartySlots };
 }
 
-// SpecRef: 5.1.3.2 | Unlock party | Party unlock condition
-function getUnlockDiaryLog(
-  log: ExpeditionLog | null,
-  previousPartySlots: number,
-  pendingUnlockState: NonNullable<Party['pendingUnlockState']>,
-  createdAt: number,
-): DiaryLog | null {
-  if (!log) return null;
-
-  const unlockedPartySlot = pendingUnlockState.partySlotCount > previousPartySlots
-    ? pendingUnlockState.partySlotCount
-    : null;
-  if (!unlockedPartySlot) return null;
-
-  const unlockSourceEntry = [...log.entries]
-    .reverse()
-    .find((entry) => {
-      const partyUnlock = getUnlockedPartySlotFromEntry(entry, log.dungeonId);
-      return !!partyUnlock;
-    });
-
-  return {
-    id: `${createdAt}-${gameplayRandom().toString(36).slice(2, 8)}`,
-    expeditionLog: log,
-    triggers: ['unlock'],
-    semantic: { version: 1, unlock: { boss: unlockSourceEntry?.roomType === 'battle_Boss', slot: unlockedPartySlot } },
-    createdAt,
-    isRead: false,
-  };
-}
-
 function getCycleDurationScale(): number {
   const env = getEnvironmentId();
   return env === 'dev' ? DEBUG_CYCLE_DURATION_SCALE : 1;
@@ -392,7 +361,7 @@ function formatSideQuestShortText(type: string, shortTextKey: string, target: nu
     'q.healing': 'sideQuest.target.minutes',
     'q.AFK': 'sideQuest.target.minutes',
     'q.treasure-super-rare': '',
-    'q.treasure-boss-rare': 'sideQuest.target.items',
+    'q.treasure-epic-rare': 'sideQuest.target.items',
     'q.poor-kid': 'sideQuest.target.count',
     'q.consecutive-wins': 'sideQuest.target.streak',
     'q.losers': '',
@@ -631,9 +600,18 @@ function normalizeImportedCharacter(character: Character, fallbackCharacter: Cha
     ? (ENEMIES.some((enemy) => enemy.id === character.mimorianEnemyId) ? character.mimorianEnemyId : ENEMIES[0]?.id)
     : undefined;
 
-  return {
+  // SpecRef: 2.1.4.2 | Initial setup | Saves made before `uniqueCharacterId` derive it from the unique lineage.
+  const wasUnique = typeof character.isUnique === 'boolean' ? character.isUnique : (fallbackCharacter.isUnique ?? false);
+  const normalizedUniqueCharacterId = wasUnique
+    ? (getUniqueCharacterDef(character.uniqueCharacterId)?.id
+      ?? getUniqueCharacterDefByLineage(character.lineageId)?.id
+      ?? fallbackCharacter.uniqueCharacterId)
+    : undefined;
+
+  const normalized: Character = {
     ...character,
-    isUnique: typeof character.isUnique === 'boolean' ? character.isUnique : (fallbackCharacter.isUnique ?? false),
+    isUnique: normalizedUniqueCharacterId !== undefined,
+    uniqueCharacterId: normalizedUniqueCharacterId,
     raceId: normalizedRaceId,
     mimorianEnemyId: normalizedMimorianEnemyId,
     mainClassId: normalizedMainClassId,
@@ -648,6 +626,8 @@ function normalizeImportedCharacter(character: Character, fallbackCharacter: Cha
     }),
     autoEquipmentMode: normalizeCharacterAutoEquipmentMode(character.autoEquipmentMode),
   };
+  if (normalized.uniqueCharacterId === undefined) delete normalized.uniqueCharacterId;
+  return normalized;
 }
 
 function getDeityDonationsWithDefaults(value: unknown): Record<string, number> {
@@ -696,6 +676,36 @@ function getExpeditionStatsWithDefaults(value: unknown) {
     donatedGold: typeof raw.donatedGold === 'number' ? raw.donatedGold : 0,
     savedGold: typeof raw.savedGold === 'number' ? raw.savedGold : 0,
   };
+}
+
+type SideQuestStats = NonNullable<Party['sideQuestStats']>;
+
+function getSideQuestStatsWithDefaults(value: unknown): SideQuestStats {
+  if (!value || typeof value !== 'object') return {};
+  const count = (raw: unknown) => (typeof raw === 'number' && Number.isFinite(raw) ? Math.max(0, Math.floor(raw)) : 0);
+  const result: SideQuestStats = {};
+  for (const [id, raw] of Object.entries(value as Record<string, unknown>)) {
+    if (!raw || typeof raw !== 'object') continue;
+    const entry = raw as Record<string, unknown>;
+    // Only quests accepted after the counters existed are counted; older saves simply start from zero.
+    const total = count(entry.total);
+    const success = Math.min(total, count(entry.success));
+    const cancelled = Math.min(total - success, count(entry.cancelled));
+    result[id] = { success, cancelled, failed: Math.min(total - success - cancelled, count(entry.failed)), total };
+  }
+  return result;
+}
+
+function bumpSideQuestStats(party: Party, id: number, delta: { success?: number; cancelled?: number; failed?: number; total?: number }): SideQuestStats {
+  const stats = getSideQuestStatsWithDefaults(party.sideQuestStats);
+  const entry = stats[String(id)] ?? { success: 0, cancelled: 0, failed: 0, total: 0 };
+  stats[String(id)] = {
+    success: entry.success + (delta.success ?? 0),
+    cancelled: entry.cancelled + (delta.cancelled ?? 0),
+    failed: entry.failed + (delta.failed ?? 0),
+    total: entry.total + (delta.total ?? 0),
+  };
+  return stats;
 }
 
 function getExpeditionDepthLimitWithDefault(value: unknown): ExpeditionDepthLimit {
@@ -842,7 +852,7 @@ export class AfkInventoryOverlay {
 }
 
 interface AfkChunkReducerContext {
-  inventoryOverlay: AfkInventoryOverlay;
+  inventoryOverlay?: AfkInventoryOverlay;
   encounterCache: Map<string, EnemyDef>;
   profitAbilityCache: Map<number, { partyLevel: number; characters: Party['characters']; levels: ProfitAbilityLevels }>;
   hpBaseCache: Map<number, { partyLevel: number; characters: Party['characters']; bonusHp: number }>;
@@ -958,6 +968,8 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
             enemyBattleStats: {},
             altarVictoriesByEnemyType: {},
             readDeveloperNewsItemIds: [],
+            globalDiary: [],
+            defeatedGodExpeditionIds: [],
           };
         }
         if (Array.isArray(parsed.global.inventory)) {
@@ -975,6 +987,12 @@ function loadSavedState(encodedState?: string): LoadSavedStateResult {
           : [];
         parsed.global.enemyBattleStats = getEnemyBattleStatsWithDefaults(parsed.global.enemyBattleStats);
         parsed.global.altarVictoriesByEnemyType = getAltarVictoriesWithDefaults(parsed.global.altarVictoriesByEnemyType);
+        parsed.global.globalDiary = normalizeGlobalDiaryLogs(parsed.global.globalDiary);
+        parsed.global.defeatedGodExpeditionIds = Array.isArray(parsed.global.defeatedGodExpeditionIds)
+          ? parsed.global.defeatedGodExpeditionIds.filter((id: unknown): id is number => Number.isInteger(id))
+          : [];
+        // Achievements start from the loaded state; only new milestones are recorded (SpecRef 8.5).
+        parsed.global = seedAchievementState(parsed.global, (parsed.parties as Party[]).reduce((sum, party) => sum + (party.expeditionStats?.Clear ?? 0), 0));
         parsed.global.readDeveloperNewsItemIds = Array.isArray(parsed.global.readDeveloperNewsItemIds)
           ? Array.from(new Set(parsed.global.readDeveloperNewsItemIds.filter((itemId: unknown): itemId is string => typeof itemId === 'string' && itemId.trim().length > 0)))
           : [];
@@ -1280,6 +1298,8 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
       : -1,
     condition: normalizePartyCondition(party.condition),
     sideQuest: normalizedSideQuest,
+    sideQuestStats: getSideQuestStatsWithDefaults(party.sideQuestStats),
+    ...(party.dropStats === undefined ? {} : { dropStats: normalizePartyDropStats(party.dropStats) }),
   };
 }
 
@@ -1352,6 +1372,7 @@ function createInitialParty(language?: Language) {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    ...((setup as { isUnique?: boolean }).isUnique ? { uniqueCharacterId: getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id } : {}),
     autoEquipmentMode: 2,
     equipment: setup.equipmentIds.map((itemId) => ({
       ...getItemById(itemId)!,
@@ -1416,6 +1437,7 @@ function createSecondParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    ...((setup as { isUnique?: boolean }).isUnique ? { uniqueCharacterId: getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id } : {}),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1476,6 +1498,7 @@ function createThirdParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    ...((setup as { isUnique?: boolean }).isUnique ? { uniqueCharacterId: getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id } : {}),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1536,6 +1559,7 @@ function createFourthParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    ...((setup as { isUnique?: boolean }).isUnique ? { uniqueCharacterId: getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id } : {}),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1596,6 +1620,7 @@ function createFifthParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    ...((setup as { isUnique?: boolean }).isUnique ? { uniqueCharacterId: getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id } : {}),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1657,6 +1682,7 @@ function createSixthParty() {
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
     isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    ...((setup as { isUnique?: boolean }).isUnique ? { uniqueCharacterId: getUniqueCharacterDefByLineage(setup.lineage as LineageId)?.id } : {}),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1709,7 +1735,7 @@ type InitialStateResult = {
 // SpecRef: 9.1.3 | API | fundamental/signUp
 // New API accounts and ordinary resets must start from the same authoritative
 // game factory; transports must never synthesize their own initial save.
-export function createFreshGameState(language: Language, now: number = Date.now()): GameState {
+export function createFreshGameState(language: Language, now: number = Date.now(), inGameNow: number = now): GameState {
   return {
     scene: 'home',
     global: {
@@ -1738,6 +1764,11 @@ export function createFreshGameState(language: Language, now: number = Date.now(
       enemyBattleStats: {},
       altarVictoriesByEnemyType: {},
       readDeveloperNewsItemIds: [],
+      // SpecRef: 8.5 | UI_DIARY | The global Diary starts with the account-created entry (new accounts only).
+      globalDiary: [createAccountCreatedDiaryLog(inGameNow, 'account')],
+      achievementClearTotal: 0,
+      achievementMilestones: [],
+      defeatedGodExpeditionIds: [],
       language,
     },
     parties: [createInitialParty(language)],
@@ -1746,9 +1777,9 @@ export function createFreshGameState(language: Language, now: number = Date.now(
       commonRewardBag: createCommonRewardBag(),
       commonEnhancementBag: createCommonEnhancementBag(),
       uncommonRewardBag: createUncommonRewardBag(),
-      eliteRareRewardBag: createEliteRareRewardBag(),
-      bossRareRewardBag: createBossRareRewardBag(),
-      mythicRareRewardBag: createMythicRareRewardBag(),
+      rareRewardBag: createRareRewardBag(),
+      epicRewardBag: createEpicRewardBag(),
+      mythicRewardBag: createMythicRewardBag(),
       enhancementBag: createEnhancementBag(),
       superRareBag: createSuperRareBag(),
       commonSuperRareBag: createCommonSuperRareBag(),
@@ -1855,7 +1886,7 @@ export type GameAction =
   | { type: 'SPEND_PENDING_PROFIT'; partyIndex: number; amount: number }
   | { type: 'ROLL_PARTY_SLEEPINESS'; partyIndex: number }
   | { type: 'ROLL_SIDE_QUEST'; partyIndex: number; rolledTier: number; simulatedAt?: number }
-  | { type: 'CANCEL_SIDE_QUEST'; partyIndex: number }
+  | { type: 'CANCEL_SIDE_QUEST'; partyIndex: number; expired?: boolean }
   | { type: 'ADVANCE_SIDE_QUEST'; partyIndex: number; amount: number; simulatedAt?: number }
   | { type: 'SET_SIDE_QUEST_PROGRESS'; partyIndex: number; progress: number }
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null; partyIndex?: number }
@@ -1869,7 +1900,7 @@ export type GameAction =
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
   | { type: 'STAMP_FULL_AUTO_EQUIPMENT'; partyIndex: number; equipmentRevision: number; jewelRevision: number }
   | { type: 'APPLY_AUTO_EQUIPMENT_ACTIONS'; actions: AutoEquipmentProfileAction[]; attribution?: AutoEquipmentReducerAttribution; hpStrategy?: AutoEquipmentHpStrategy; stateStrategy?: AutoEquipmentStateStrategy }
-  | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number; validatedMimorianAssignments?: boolean }
+  | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character>; partyIndex?: number; validatedMimorianAssignments?: boolean; allowUniqueIdentityChange?: boolean }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number; partyIndex?: number }
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SELL_ALL_OWNED' }
@@ -1935,7 +1966,8 @@ function getApproxAfkTimeQuestProgressPerCycle(
   // SpecRef: 5.1.2 | Side Quest | AFK handling
   if (!party.sideQuest) return 0;
   if (party.sideQuest.type === 'q.sleeping') {
-    return normalizeSleepinessState(party.currentSleepiness ?? 2) > 0 ? 1 : 0;
+    // SpecRef: 5.1.1 | Party State Machine | state.free_action: only sleepiness 2 enters state.sound_sleep.
+    return normalizeSleepinessState(party.currentSleepiness) === 2 ? 1 : 0;
   }
   if (!TIME_BASED_SIDE_QUEST_TYPES.has(party.sideQuest.type)) return 0;
 
@@ -2261,7 +2293,8 @@ function syncPartyCurrentHpAfterMaxHpChange(
   const previousMaxHp = cachedPreviousMaxHp ?? measureAutoEquipmentReducerWork(
     autoEquipmentContext,
     'partyStatsMs',
-    () => autoEquipmentContext?.hpStrategy === 'whole_party_max_hp'
+    // `computePartyStats(...).partyStats.hp` is `computePartyMaxHp`; without a strategy context only the HP is needed.
+    () => !autoEquipmentContext || autoEquipmentContext.hpStrategy === 'whole_party_max_hp'
       ? computePartyMaxHp(previousParty)
       : computePartyStats(previousParty).partyStats.hp,
   );
@@ -2280,7 +2313,7 @@ function syncPartyCurrentHpAfterMaxHpChange(
   const nextMaxHp = measureAutoEquipmentReducerWork(
     autoEquipmentContext,
     'partyStatsMs',
-    () => autoEquipmentContext?.hpStrategy === 'whole_party_max_hp'
+    () => !autoEquipmentContext || autoEquipmentContext.hpStrategy === 'whole_party_max_hp'
       ? computePartyMaxHp(nextParty)
       : computePartyStats(nextParty).partyStats.hp,
   );
@@ -2498,8 +2531,10 @@ function reduceGameState(
 
     case 'RESET_EXPEDITION_STATS': {
       const updatedParties = [...state.parties];
+      // SpecRef: 9.1.3 | Commit | 3-2-4 {p}/resetStatistics — resets `statistics`, `sideQuestStatistics`, and `dropStatistics`.
+      const { sideQuestStats: _clearedSideQuestStats, dropStats: _clearedDropStats, ...partyWithoutSideQuestStats } = updatedParties[action.partyIndex];
       updatedParties[action.partyIndex] = {
-        ...updatedParties[action.partyIndex],
+        ...partyWithoutSideQuestStats,
         expeditionStats: getExpeditionStatsWithDefaults(null),
       };
       return { ...state, parties: updatedParties };
@@ -2619,18 +2654,47 @@ function reduceGameState(
       const pendingUnlockState = party.pendingUnlockState;
       // SpecRef: 8.5 | UI_DIARY | Use the emulated in-game timestamp rather than the device or system timestamp.
       const createdAtBase = pendingDiaryLog?.createdAt ?? action.simulatedAt ?? Date.now();
-      const unlockDiaryLog = pendingUnlockState
-        ? getUnlockDiaryLog(
-            party.lastExpeditionLog,
-            state.parties.length,
-            pendingUnlockState,
-            createdAtBase + 1,
-          )
-        : null;
       const nextDiaryLogs = addDiaryLogs(party.diaryLogs ?? [], [
-        ...(unlockDiaryLog ? [unlockDiaryLog] : []),
         ...(pendingDiaryLog ? [pendingDiaryLog] : []),
       ]);
+
+      // SpecRef: 8.5 | UI_DIARY | The global Diary records a party's first expedition boss defeat and the Party it unlocks.
+      const clearedLog = party.expeditionRewardsPending ? party.lastExpeditionLog : null;
+      const firstClearedDungeonId = clearedLog
+        && clearedLog.finalOutcome === 'Clear'
+        && !isGodsBattleExpedition(clearedLog)
+        && party.pendingClearGateSnapshot
+        && !party.pendingClearGateSnapshot.defeatedBossExpeditions?.[clearedLog.dungeonId]
+        && party.defeatedBossExpeditions?.[clearedLog.dungeonId]
+        // SpecRef: 8.5 | UI_DIARY | Only the first party to defeat a boss is recorded.
+        // An unfinalized clear on another party is judged by its pre-run snapshot, so two parties clearing the same boss
+        // in one window cannot each hide the other; the Global Diary's per-boss event key keeps a single entry.
+        && !state.parties.some((other) => other !== party
+          && (other.pendingClearGateSnapshot?.defeatedBossExpeditions ?? other.defeatedBossExpeditions)?.[clearedLog.dungeonId])
+        ? clearedLog.dungeonId
+        : null;
+      // SpecRef: 8.5 | UI_DIARY | First god defeat: a Gods Battle won against a god not defeated before.
+      const defeatedGodExpeditionId = clearedLog
+        && clearedLog.finalOutcome === 'Clear'
+        && isGodsBattleExpedition(clearedLog)
+        && !(state.global.defeatedGodExpeditionIds ?? []).includes(clearedLog.dungeonId)
+        ? clearedLog.dungeonId
+        : null;
+      const godFirstDefeatDiaryLog = defeatedGodExpeditionId === null ? null : createGodFirstDefeatDiaryLog({
+        createdAt: createdAtBase,
+        partyNumber: party.id,
+        godExpeditionId: defeatedGodExpeditionId,
+      });
+      const unlockedPartyNumber = pendingUnlockState && pendingUnlockState.partySlotCount > state.parties.length
+        ? pendingUnlockState.partySlotCount
+        : null;
+      const firstClearDiaryLog = firstClearedDungeonId === null ? null : createBossFirstClearDiaryLog({
+        createdAt: createdAtBase,
+        idToken: `p${party.id}d${firstClearedDungeonId}`,
+        partyNumber: party.id,
+        dungeonId: firstClearedDungeonId,
+        unlockedPartyNumber,
+      });
 
       let nextLevel = party.level;
       let nextExperience = party.experience;
@@ -2675,6 +2739,20 @@ function reduceGameState(
       };
 
       let nextGlobal = state.global;
+      if (firstClearDiaryLog) {
+        nextGlobal = { ...nextGlobal, globalDiary: addGlobalDiaryLogs(nextGlobal.globalDiary, [firstClearDiaryLog]) };
+      }
+      if (godFirstDefeatDiaryLog && defeatedGodExpeditionId !== null) {
+        nextGlobal = {
+          ...nextGlobal,
+          globalDiary: addGlobalDiaryLogs(nextGlobal.globalDiary, [godFirstDefeatDiaryLog]),
+          defeatedGodExpeditionIds: [...(nextGlobal.defeatedGodExpeditionIds ?? []), defeatedGodExpeditionId],
+        };
+      }
+      // SpecRef: 8.5 | UI_DIARY | Clear milestones count total Clear outcomes, tracked apart from the resettable statistics.
+      if (clearedLog?.finalOutcome === 'Clear') {
+        nextGlobal = { ...nextGlobal, achievementClearTotal: (nextGlobal.achievementClearTotal ?? 0) + 1 };
+      }
       if (pendingUnlockState) {
         const nextUnlockedPartySlots = Math.max(1, Math.min(6, pendingUnlockState.partySlotCount));
         const defaultParties = createDefaultParties();
@@ -2689,8 +2767,9 @@ function reduceGameState(
           pendingUnlockState: null,
         };
 
+        // Builds on nextGlobal so the same finalization's first-clear entry and Clear count are kept.
         nextGlobal = {
-          ...state.global,
+          ...nextGlobal,
           unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
         };
       }
@@ -2812,6 +2891,7 @@ function reduceGameState(
       updatedParties[action.partyIndex] = {
         ...currentParty,
         bags,
+        sideQuestStats: bumpSideQuestStats(currentParty, ticket, { total: 1 }),
         sideQuest: {
           id: ticket,
           type: def.type,
@@ -2831,7 +2911,11 @@ function reduceGameState(
       const currentParty = state.parties[action.partyIndex];
       if (!currentParty || !currentParty.sideQuest) return state;
       const updatedParties = [...state.parties];
-      updatedParties[action.partyIndex] = { ...currentParty, sideQuest: null };
+      updatedParties[action.partyIndex] = {
+        ...currentParty,
+        sideQuest: null,
+        sideQuestStats: bumpSideQuestStats(currentParty, currentParty.sideQuest.id, action.expired ? { failed: 1 } : { cancelled: 1 }),
+      };
       return { ...state, parties: updatedParties };
     }
 
@@ -2897,6 +2981,7 @@ function reduceGameState(
       updatedParties[action.partyIndex] = {
         ...currentParty,
         sideQuest: null,
+        sideQuestStats: bumpSideQuestStats(currentParty, currentParty.sideQuest.id, { success: 1 }),
         diaryLogs: nextDiaryLogs,
         hasUnreadDiary: sideQuestDiaryLog ? true : currentParty.hasUnreadDiary,
       };
@@ -3310,7 +3395,7 @@ function reduceGameState(
       const oldChar = currentParty.characters[charIndex];
       // SpecRef: 2.1.4.2 | Initial setup | Unique Character Flag.
       const immutableForUnique: ReadonlySet<keyof Character> = new Set(['name', 'raceId', 'lineageId', 'predispositionId']);
-      const sanitizedUpdates = oldChar.isUnique
+      const sanitizedUpdates = oldChar.isUnique && !action.allowUniqueIdentityChange
         ? Object.fromEntries(
           Object.entries(action.updates).filter(([key]) => !immutableForUnique.has(key as keyof Character))
         ) as Partial<Character>
@@ -3659,6 +3744,10 @@ function reduceGameState(
     }
 
     case 'MARK_DIARY_LOG_SEEN': {
+      const globalDiary = state.global.globalDiary;
+      const nextGlobal = globalDiary?.some((diaryLog) => diaryLog.id === action.logId && !diaryLog.isRead)
+        ? { ...state.global, globalDiary: globalDiary.map((diaryLog) => (diaryLog.id === action.logId ? { ...diaryLog, isRead: true } : diaryLog)) }
+        : state.global;
       const updatedParties = state.parties.map((party) => {
         const nextDiaryLogs = party.diaryLogs.map((diaryLog) => (
           diaryLog.id === action.logId
@@ -3676,6 +3765,7 @@ function reduceGameState(
       return {
         ...state,
         parties: updatedParties,
+        global: nextGlobal,
       };
     }
 
@@ -3829,7 +3919,7 @@ function reduceGameState(
           const activeParty = workingState.parties[partyIndex];
           if (!activeParty) continue;
 
-          if (activeParty.sideQuest && TIME_BASED_SIDE_QUEST_TYPES.has(activeParty.sideQuest.type)) {
+          if (activeParty.sideQuest && (activeParty.sideQuest.type === 'q.sleeping' || TIME_BASED_SIDE_QUEST_TYPES.has(activeParty.sideQuest.type))) {
             const approximateProgress = getApproxAfkTimeQuestProgressPerCycle(
               activeParty,
               partyCycleDurationMs,
@@ -3931,13 +4021,16 @@ function reduceGameState(
             }, undefined, afkChunkContext);
           }
 
+          // SpecRef: 5.1.1 | Party State Machine | sleepiness is drawn at the end of state.return for the next cycle.
+          workingState = reduceGameState(workingState, { type: 'ROLL_PARTY_SLEEPINESS', partyIndex }, undefined, afkChunkContext);
+
           const latestParty = workingState.parties[partyIndex];
           // SpecRef: 5.1.2 | Side Quest | AFK handling
           if (
             latestParty?.sideQuest
             && simulatedAt >= getScaledSideQuestExpiresAt(latestParty.sideQuest, resolvedCycleDurationScale)
           ) {
-            workingState = reduceGameState(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex }, undefined, afkChunkContext);
+            workingState = reduceGameState(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex, expired: true }, undefined, afkChunkContext);
           }
           if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(action.workerAttribution, 'sideQuestAutomationMs', postProfitAutomationStartedAt);
           completedOperationCount += 1;
@@ -4076,6 +4169,11 @@ function reduceGameState(
           readDeveloperNewsItemIds: Array.isArray(hydrated.global.readDeveloperNewsItemIds)
             ? Array.from(new Set(hydrated.global.readDeveloperNewsItemIds.filter((itemId) => typeof itemId === 'string' && itemId.trim().length > 0)))
             : [],
+          globalDiary: normalizeGlobalDiaryLogs(hydrated.global.globalDiary),
+          defeatedGodExpeditionIds: Array.isArray(hydrated.global.defeatedGodExpeditionIds)
+            ? hydrated.global.defeatedGodExpeditionIds.filter((id) => Number.isInteger(id))
+            : [],
+          ...pickAchievementState(seedAchievementState(hydrated.global, trimmedParties.reduce((sum, party) => sum + (party.expeditionStats?.Clear ?? 0), 0))),
           prana: Number.isFinite(hydrated.global.prana) ? Math.max(0, Math.floor(hydrated.global.prana)) : 0,
           unlockedMimorianEnemyIds: Array.isArray(hydrated.global.unlockedMimorianEnemyIds)
             ? Array.from(new Set(hydrated.global.unlockedMimorianEnemyIds.filter((enemyId) => Number.isInteger(enemyId) && ENEMIES.some((enemy) => enemy.id === enemyId))))
@@ -4165,9 +4263,9 @@ function reduceGameState(
           ...normalizeImportedBags(currentParty.bags),
           commonRewardBag: createCommonRewardBag(),
           uncommonRewardBag: createUncommonRewardBag(),
-          eliteRareRewardBag: createEliteRareRewardBag(),
-          bossRareRewardBag: createBossRareRewardBag(),
-          mythicRareRewardBag: createMythicRareRewardBag(),
+          rareRewardBag: createRareRewardBag(),
+          epicRewardBag: createEpicRewardBag(),
+          mythicRewardBag: createMythicRewardBag(),
           enhancementBag: createEnhancementBag(),
           rareSuperRareBag: createRareSuperRareBag(),
         },
@@ -4232,7 +4330,45 @@ function reduceGameState(
 }
 
 /** Top-level reducer boundary: availability revisions are derived from committed state. */
+function pickAchievementState(global: Pick<GameState['global'], 'achievementClearTotal' | 'achievementMilestones'>) {
+  return { achievementClearTotal: global.achievementClearTotal, achievementMilestones: global.achievementMilestones };
+}
+
+// SpecRef: 8.5 | UI_DIARY | Achievements are evaluated on the authoritative state after every change to what they count,
+// so parallel AFK Chunks (each seeing only its own snapshot) can neither double-record nor miss a milestone.
+function achievementTimestamp(action: GameAction, state: GameState): number {
+  if (action.type === 'COMMIT_AFK_PARTY_CHUNK' || action.type === 'COMMIT_AFK_PARTY_TRANSACTION') return action.result.simulatedCompletedAt;
+  const clock = action as { simulatedAt?: unknown; simulatedEndAt?: unknown };
+  if (typeof clock.simulatedAt === 'number') return clock.simulatedAt;
+  if (typeof clock.simulatedEndAt === 'number') return clock.simulatedEndAt;
+  // No in-game clock on this action: never stamp a system time behind the in-game entries already recorded. Party
+  // Diaries carry the latest in-game time; the Global Diary alone can lag far behind it (its newest entry may be old).
+  const latestPartyEntry = state.parties.reduce((latest, party) => (party.diaryLogs ?? [])
+    .reduce((partyLatest, entry) => Math.max(partyLatest, entry.createdAt), latest), 0);
+  return (state.global.globalDiary ?? []).reduce((latest, entry) => Math.max(latest, entry.createdAt), Math.max(Date.now(), latestPartyEntry));
+}
+
 export function gameReducer(
+  state: GameState,
+  action: GameAction,
+  autoEquipmentContext?: AutoEquipmentReducerContext,
+  afkChunkContext?: AfkChunkReducerContext,
+): GameState {
+  const next = gameReducerWithoutAchievements(state, action, autoEquipmentContext, afkChunkContext);
+  // AFK workers never evaluate milestones: the main thread does, once, on the merged authoritative state.
+  if (action.type === 'COMMIT_API_STATE' || next === state || afkChunkContext) return next;
+  const before = state.global;
+  const after = next.global;
+  const countedStateChanged = after.inventory !== before.inventory
+    || after.jewels !== before.jewels
+    || after.achievementClearTotal !== before.achievementClearTotal;
+  // States without the milestone record predate achievements and are seeded when loaded, never evaluated here.
+  if (!countedStateChanged || after.achievementMilestones === undefined) return next;
+  const withMilestones = applyAchievementMilestones(after, achievementTimestamp(action, next));
+  return withMilestones === after ? next : { ...next, global: withMilestones };
+}
+
+function gameReducerWithoutAchievements(
   state: GameState,
   action: GameAction,
   autoEquipmentContext?: AutoEquipmentReducerContext,
@@ -4389,6 +4525,8 @@ export function simulateAfkPartyChunkForWorker(
     inventoryStrategy?: 'immutable' | 'overlay';
     workerOptimization?: AfkWorkerSimulationStrategy;
     compactBattleResultOutput?: boolean;
+    /** Reference path for verifying Chunk-local cache reuse independently of inventory ownership. */
+    chunkComputationCache?: 'shared' | 'none';
     workerAttribution?: AfkWorkerPhaseAttribution;
   },
 ): GameState {
@@ -4421,10 +4559,13 @@ export function simulateAfkPartyChunkForWorker(
     };
   }
   if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(options.workerAttribution, 'statusSnapshotMs', statusSnapshotStartedAt);
-  const afkChunkContext: AfkChunkReducerContext | undefined = options.inventoryStrategy === 'immutable'
+  const workerOptimization = options.workerOptimization ?? 'optimized';
+  // Computation caches belong to the Chunk, independently of inventory ownership. API elapsed
+  // keeps immutable inventory writes while reusing the same enemy inputs and unchanged HP/ability bases.
+  const afkChunkContext: AfkChunkReducerContext | undefined = options.inventoryStrategy === 'immutable' && (workerOptimization === 'legacy' || options.chunkComputationCache === 'none')
     ? undefined
     : {
-      inventoryOverlay: new AfkInventoryOverlay(state.global.inventory),
+      ...(options.inventoryStrategy === 'immutable' ? {} : { inventoryOverlay: new AfkInventoryOverlay(state.global.inventory) }),
       encounterCache: new Map(),
       profitAbilityCache: new Map(),
       hpBaseCache: new Map(),
@@ -4432,7 +4573,6 @@ export function simulateAfkPartyChunkForWorker(
         ? { workerAttribution: options.workerAttribution }
         : {}),
     };
-  const workerOptimization = options.workerOptimization ?? 'optimized';
   if (workerOptimization === 'optimized') {
     const workingState = gameReducer(state, {
       type: 'SIMULATE_AFK',
@@ -4452,7 +4592,7 @@ export function simulateAfkPartyChunkForWorker(
       workerAttribution: options.workerAttribution,
       onOperationComplete: options.onProgress,
     }, undefined, afkChunkContext);
-    if (afkChunkContext) {
+    if (afkChunkContext?.inventoryOverlay) {
       const inventoryDeltaStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && options.workerAttribution ? performance.now() : 0;
       afkInventoryDeltaByState.set(workingState, afkChunkContext.inventoryOverlay.createDelta());
       if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(options.workerAttribution, 'inventoryDeltaMs', inventoryDeltaStartedAt);
@@ -4481,7 +4621,7 @@ export function simulateAfkPartyChunkForWorker(
     }, undefined, afkChunkContext);
     options.onProgress?.(operationIndex + 1, operationCount);
   }
-  if (afkChunkContext) {
+  if (afkChunkContext?.inventoryOverlay) {
     const inventoryDeltaStartedAt = AFK_LIVE_PROFILE_BUILD_ENABLED && options.workerAttribution ? performance.now() : 0;
     afkInventoryDeltaByState.set(workingState, afkChunkContext.inventoryOverlay.createDelta());
     if (AFK_LIVE_PROFILE_BUILD_ENABLED) addAfkWorkerPhaseDuration(options.workerAttribution, 'inventoryDeltaMs', inventoryDeltaStartedAt);
@@ -4543,12 +4683,14 @@ const yieldToExpeditionSimulationUi = () => new Promise<void>((resolve) => {
  * read-only. Persistent-only collections are replaced with scratch collections
  * because forecast results are discarded and cannot reveal or commit them.
  */
-export function createSimulationSandbox(state: GameState, partyIndex: number): SimulationSandbox {
+export function createSimulationSandbox(state: GameState, partyIndex: number, startHpShare = 1): SimulationSandbox {
   const sourceParty = state.parties[partyIndex];
   if (!sourceParty) throw new Error('party_not_found');
   const party = structuredClone(sourceParty);
   const authoritativePartyStatus = computePartyStats(party);
-  party.currentHp = authoritativePartyStatus.partyStats.hp;
+  // SpecRef: 9.1.3 | 2-0 `startHp` | every run starts at full HP, or at the requested share of it (at least 1 HP).
+  const maximumHp = authoritativePartyStatus.partyStats.hp;
+  party.currentHp = startHpShare >= 1 ? maximumHp : Math.max(1, Math.floor(maximumHp * startHpShare));
   party.lastExpeditionLog = null;
   party.pendingDiaryLog = null;
   party.diaryLogs = [];
@@ -4636,7 +4778,7 @@ export function resolveSimulationRunForTesting(
  * SpecRef: 8.3 | UI_EXPEDITION | Simulation Run
  *
  * Resolve forecast expeditions only against private clones. Each run starts from
- * the same current configuration and full HP, matching a normal post-rest
+ * the same current configuration and full HP (or `options.startHpShare` of it), matching a normal post-rest
  * expedition without committing rewards, progression, Diary entries, or state.
  */
 export async function simulateExpeditionRuns(
@@ -4646,14 +4788,24 @@ export async function simulateExpeditionRuns(
   count = EXPEDITION_SIMULATION_RUN_COUNT,
   onProgress?: (completed: number, total: number) => void,
   enemyLevelOffset: number = 0,
+  /** A fixed forecast seed (the GA search compares builds on the same random numbers); a fresh one when omitted. */
+  fixedSeed?: number,
+  options: ExpeditionSimulationOptions = {},
 ): Promise<ExpeditionSimulationResult> {
   void memoryMonitor.recordEvent('simulation_start');
   const total = Math.max(1, Math.floor(count));
-  const sandbox = createSimulationSandbox(state, partyIndex);
+  const sandbox = createSimulationSandbox(state, partyIndex, options.startHpShare ?? 1);
+  // A room-only forecast starts at its room, so its battle is that room's bar and every earlier bar is not reached.
+  const onlyRoom = options.onlyRoom;
+  const firstRoomIndex = onlyRoom ? (onlyRoom.floorNumber - 1) * 4 + onlyRoom.roomInFloor - 1 : 0;
   // All forecasts share the sandbox party status, so they also share enemies and prepared battle inputs.
   const forecastEncounterCache = new Map<string, EnemyDef>();
-  const seed = new Uint32Array(1); crypto.getRandomValues(seed);
+  const seed = new Uint32Array(1);
+  if (fixedSeed === undefined) crypto.getRandomValues(seed); else seed[0] = fixedSeed;
   const forecastRandom = createApiRandom(seed[0]);
+  // A fixed seed also fixes the battle seeds (they otherwise come from Web Crypto), so the whole forecast repeats.
+  const battleRandom = fixedSeed === undefined ? null : createApiRandom((seed[0] ^ 0x5bd1e995) >>> 0);
+  const nextBattleSeed = () => (BigInt(Math.floor(battleRandom!.next() * 4294967296)) << 32n) | BigInt(Math.floor(battleRandom!.next() * 4294967296));
 
   const result: ExpeditionSimulationResult = {
     Clear: 0,
@@ -4664,13 +4816,17 @@ export async function simulateExpeditionRuns(
     total,
     rooms: createExpeditionSimulationRoomResults(total),
     totals: { experience: 0, itemDrops: 0, dropSaleValue: 0 },
+    ...(onlyRoom ? { gateRoom: { reached: 0, kills: 0, damageShare: 0, damageShareSquareSum: 0 } } : {}),
+    maximumPartyHp: sandbox.authoritativePartyStatus.partyStats.hp,
+    experienceSquareSum: 0,
+    progress: { sum: 0, squareSum: 0 },
   };
 
   let sliceStartedAt = performance.now();
   let lastProgressAt = sliceStartedAt - EXPEDITION_SIMULATION_PROGRESS_INTERVAL_MS;
   for (let index = 0; index < total; index += 1) {
     const runState = createSimulationRunState(sandbox);
-    const resolvedState = withGameplayRandomSource(forecastRandom.next, () => gameReducer(runState, {
+    const resolveRun = () => withGameplayRandomSource(forecastRandom.next, () => gameReducer(runState, {
       type: 'RUN_EXPEDITION',
       partyIndex,
       gameMode,
@@ -4683,14 +4839,34 @@ export async function simulateExpeditionRuns(
         computed: sandbox.authoritativePartyStatus,
       },
       forecastEncounterCache,
+      ...(onlyRoom ? { onlyRoom } : {}),
     }));
+    const resolvedState = battleRandom ? withForecastBattleSeedSource(nextBattleSeed, resolveRun) : resolveRun();
     const resolution = forecastResolutionByState.get(resolvedState);
     if (!resolution) throw new Error('simulation_failed');
     memoryMonitor.incrementBattleCount(resolution.completedRooms);
     result.totals!.experience += resolution.experience;
+    result.experienceSquareSum! += resolution.experience * resolution.experience;
     result.totals!.itemDrops += resolution.rewards.length + resolution.autoSellCount;
     result.totals!.dropSaleValue += resolution.autoSellProfit
       + resolution.rewards.reduce((sum, item) => sum + calculateSellPrice(item, resolution.autoSellMultiplier), 0);
+    const shareOf = (battle: { outcome: string; damageDealt: number; enemyHp: number }) => (battle.outcome === 'victory' ? 1 : Math.min(1, battle.damageDealt / Math.max(1, battle.enemyHp)));
+    // SpecRef: 7.1.5 | General rules | Score `progress`: the rooms cleared, plus the enemy-HP share of a lost or drawn last battle.
+    const battles = resolution.battleDiagnostics.filter((battle) => battle.enemyId !== undefined);
+    // SpecRef: 9.1.3 | 2-0 `gateDamage` | a room-only run fights one battle: the gate room's.
+    const gateBattle = onlyRoom ? battles[0] : undefined;
+    if (gateBattle) {
+      result.gateRoom!.reached += 1;
+      if (gateBattle.outcome === 'victory') result.gateRoom!.kills += 1;
+      const share = shareOf(gateBattle);
+      result.gateRoom!.damageShare += share;
+      result.gateRoom!.damageShareSquareSum += share * share;
+    }
+    const lastBattle = battles[battles.length - 1];
+    const runProgress = battles.filter((battle) => battle.outcome === 'victory').length
+      + (lastBattle && lastBattle.outcome !== 'victory' ? shareOf(lastBattle) : 0);
+    result.progress!.sum += runProgress;
+    result.progress!.squareSum += runProgress * runProgress;
 
     let terminalStatus: 'Clear' | 'Return' | 'Draw' | 'Retreat' | 'Defeat';
     if (resolution.outcome === 'Clear') {
@@ -4718,6 +4894,7 @@ export async function simulateExpeditionRuns(
       resolution.battleDiagnostics,
       sandbox.authoritativePartyStatus.partyStats.hp,
       resolution.endedAtGate,
+      firstRoomIndex,
     );
 
     const completed = index + 1;
@@ -4931,7 +5108,7 @@ export function useGameState() {
     style: NotificationStyle = 'normal',
     category: NotificationCategory = 'item',
     isPositive?: boolean,
-    options?: { rarity?: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare'; isSuperRareItem?: boolean }
+    options?: { rarity?: 'common' | 'uncommon' | 'rare' | 'epic' | 'mythic'; isSuperRareItem?: boolean }
   ) => {
     const notification: GameNotification = {
       id: `${Date.now()}-${gameplayRandom().toString(36).substr(2, 9)}`,
@@ -5055,8 +5232,8 @@ export function useGameState() {
       dispatch({ type: 'ROLL_PARTY_SLEEPINESS', partyIndex });
     }, []),
 
-    cancelSideQuest: useCallback((partyIndex: number) => {
-      dispatch({ type: 'CANCEL_SIDE_QUEST', partyIndex });
+    cancelSideQuest: useCallback((partyIndex: number, expired?: boolean) => {
+      dispatch({ type: 'CANCEL_SIDE_QUEST', partyIndex, expired });
     }, []),
 
     advanceSideQuest: useCallback((partyIndex: number, amount: number, simulatedAt?: number) => {
@@ -5214,11 +5391,11 @@ export function useGameState() {
       }
     }, []),
 
-    getCompressedSavePayload: useCallback(async (): Promise<string> => {
+    getCompressedSavePayload: useCallback(async (encoding: 'portable' | 'stored' = 'portable'): Promise<string> => {
       await persistenceCoordinatorRef.current?.requestDurable(latestGameStateRef.current);
       const coordinator = persistenceCoordinatorRef.current;
       if (!coordinator) throw new Error('Persistence coordinator was unavailable.');
-      return coordinator.createExportPayload(latestGameStateRef.current);
+      return coordinator.createExportPayload(latestGameStateRef.current, encoding);
     }, []),
 
     resetCommonBags: useCallback((partyIndex?: number) => {

@@ -277,3 +277,16 @@ function ports(overrides: Partial<ApiV1SessionPorts> = {}): {
 }
 
 console.log('apiV1SessionLifecycle profile ok');
+
+// Headless is strictly boolean; invalid requests cannot stage or swap the player's save.
+for (const headless of ['true', 1, null]) {
+  const p = ports();
+  const result = await logInApiAccount({ userId: 'Taro', environment: 'desktop', gameMode: 'normal', headless }, null, p.value);
+  assert.equal(result.ok, false);
+  if (result.ok) throw new Error('expected invalid_request');
+  assert.equal(result.code, 'invalid_request');
+  assert.deepEqual(result.details, { field: 'headless' });
+  assert.equal(p.accountsCommitted.length, 0);
+  assert.equal(p.imported.length, 0);
+  assert.equal(p.returnStore.value, null);
+}

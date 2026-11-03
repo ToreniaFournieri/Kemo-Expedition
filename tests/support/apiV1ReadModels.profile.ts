@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { buildApiV1ReadData } from '../../src/api/v1/readModels.ts';
+import { readCharacterBuild } from './apiV1CharacterRead.ts';
 import { buildDiaryTabView, type DiaryProjection } from '../../src/api/v1/diaryTabView.ts';
-import { createFreshGameState } from '../../src/hooks/useGameState.ts';
+import { createFreshGameState, gameReducer } from '../../src/hooks/useGameState.ts';
+import { addPartyDrops, normalizePartyDropStats } from '../../src/game/dropStatistics.ts';
 
 import { createExpeditionSimulationRoomResults } from '../../src/game/expeditionSimulation.ts';
 import { computePartyStats as computePartyStatsForPadding } from '../../src/game/partyComputation.ts';
+import { createAccountCreatedDiaryLog, createBossFirstClearDiaryLog, createGodFirstDefeatDiaryLog } from '../../src/game/globalDiary.ts';
 import type { DiaryLog, ExpeditionLog } from '../../src/types/index.ts';
 
 // A hand-built forecast: room 1 is reached by every run, room 2 by 900, and later rooms by nobody.
@@ -38,6 +42,22 @@ const context = {
 const quickCompact = await buildApiV1ReadData('read/observation/compact', state, {}, context) as { attention: Record<string, unknown> };
 assert.deepEqual(calls, []);
 assert.equal('latestSimulationResult' in quickCompact.attention, false);
+// `clearGate` and `sideQuest` (Spec 9.1.3, 2-1-1): the first locked Elite gate, and the side quest as one line.
+{
+  const compactParty = (source: typeof state) => (buildApiV1ReadData('read/observation/compact', source, {}, context) as Promise<{ partyInfo: { clearGate: string | null; sideQuest: string | null }[] }>).then((result) => result.partyInfo[0]);
+  const idle = await compactParty(state);
+  assert.match(idle.clearGate ?? '', /^\d+(?:st|nd|rd|th) Elite gate: 0\/\d+$/);
+  assert.equal(idle.sideQuest, null);
+  const now = context.inGameTime;
+  const withQuest = (quest: object) => ({ ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, sideQuest: quest } : party) }) as typeof state;
+  // The start timestamp is UTC whatever the host time zone, and matches the catalog's `sideQuest` pattern.
+  const timed = { id: 3, type: 'q.exercise', target: 600, progress: 240, rolledTier: 3, assignedAt: now - 10 * 3_600_000 - 42 * 60_000, expiresAt: now + 78 * 60_000 };
+  const timedLine = (await compactParty(withQuest(timed))).sideQuest;
+  assert.equal(timedLine, 'q.exercise-2: 4/10-2h/12h-20260919 13:18');
+  const sideQuestPattern = readFileSync('desktop/api-v1-contract.json', 'utf8').match(/"pattern": "(\^q[^"]+)"/)?.[1];
+  assert.ok(sideQuestPattern && new RegExp(JSON.parse(`"${sideQuestPattern}"`)).test(timedLine ?? ''));
+  assert.equal((await compactParty(withQuest({ ...timed, id: 7, type: 'q.AFK', expiresAt: Number.MAX_SAFE_INTEGER }))).sideQuest, 'q.AFK-2: 4/10');
+}
 const slowCompact = await buildApiV1ReadData('read/observation/compact', state, { quick: false }, context) as { attention: { latestSimulationResult?: string[] } };
 assert.deepEqual(calls, state.parties.map((_, partyIndex) => ({ partyIndex, count: 100 })));
 assert.equal(slowCompact.attention.latestSimulationResult?.length, state.parties.length);
@@ -140,6 +160,22 @@ calls.length = 0;
   const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'read/observation/diary')!.response.data);
   assert.equal(validate(projection), true, JSON.stringify(validate.errors?.slice(0, 3)));
 
+  // Global Diary entries (scope 0) must satisfy the same catalog schemas; a mismatch fails the read closed as `internal_error`.
+  const globalEntries = [
+    createAccountCreatedDiaryLog(Date.UTC(2026, 8, 20, 0), 'a'),
+    createBossFirstClearDiaryLog({ createdAt: Date.UTC(2026, 8, 20, 3), idToken: 'b', partyNumber: 1, dungeonId: 8, unlockedPartyNumber: 2 }),
+    createGodFirstDefeatDiaryLog({ createdAt: Date.UTC(2026, 8, 20, 4), partyNumber: 1, godExpeditionId: 1 }),
+  ];
+  const globalDiaryState = { ...diaryState, global: { ...diaryState.global, globalDiary: globalEntries } };
+  for (const parameters of [{ partyNumber: 1 }, { partyNumber: 0 }, { partyNumber: 0, diaryEntryId: globalEntries[1].id }]) {
+    const withGlobal = await buildApiV1ReadData('read/observation/diary', globalDiaryState, parameters, context) as any;
+    assert.equal(validate(withGlobal), true, JSON.stringify(validate.errors?.slice(0, 3)));
+    assert.equal(withGlobal.diaryInfo.global.entries.length, 3);
+  }
+  const validateEntry = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'read/diary/diaryEntry/{diaryEntryId}')!.response.data);
+  const globalDetail = await buildApiV1ReadData(`read/diary/diaryEntry/${encodeURIComponent(globalEntries[1].id)}`, globalDiaryState, {}, context) as any;
+  assert.equal(validateEntry(globalDetail), true, JSON.stringify(validateEntry.errors?.slice(0, 3)));
+
   const detail = await buildApiV1ReadData(`read/diary/diaryEntry/${encodeURIComponent(legacyEntry.id)}`, diaryState, {}, context) as any;
   assert.equal(detail.entry.diaryEntryId, legacyEntry.id);
   assert.equal(detail.entry.content.format, 'legacy');
@@ -157,7 +193,7 @@ calls.length = 0;
   const { snapshotCharacterEquipment } = await import('../../src/api/v1/equipmentHistoryFacts.ts');
   type Action = { equipmentStates: string[][]; available: boolean; unavailableReason: string | null };
   const target = state.parties[0].characters[0];
-  const readEquipment = async (history?: Record<string, { undo: never[]; redo: never[] }>) => (await buildApiV1ReadData(`read/build/character/${target.id}/equipment`, state, {}, { ...context, control: { equipmentHistory: history } }) as {
+  const readEquipment = async (history?: Record<string, { undo: never[]; redo: never[] }>) => (await readCharacterBuild('equipment', target.id, state, {}, { ...context, control: { equipmentHistory: history } }) as {
     validOptions: { numberOfEmptyEquipmentSlots: number; undoEquipment: Action; redoEquipment: Action };
   }).validOptions;
   const options = await readEquipment();
@@ -188,7 +224,7 @@ calls.length = 0;
   assert.equal(listed.equipmentStates[0].length, thirty[29].equipment.length, 'the most recent state is first');
 
   const shortArray = { ...state, parties: state.parties.map((party, index) => index === 0 ? { ...party, characters: party.characters.map((entry) => entry.id === target.id ? { ...entry, equipment: [] } : entry) } : party) };
-  const bare = await buildApiV1ReadData(`read/build/character/${target.id}/equipment`, shortArray, {}, context) as { validOptions: { numberOfEmptyEquipmentSlots: number } };
+  const bare = await readCharacterBuild('equipment', target.id, shortArray, {}, context) as { validOptions: { numberOfEmptyEquipmentSlots: number } };
   assert.ok(bare.validOptions.numberOfEmptyEquipmentSlots > 0, 'empty slots are counted against the real slot count, not the array length');
 }
 // Item and equipment-entry formats round-trip through master data, so a projection is enough to rebuild a display item.
@@ -218,7 +254,7 @@ calls.length = 0;
   // The saved Jewel is in the Jewel inventory, so the entry is available (Spec 8.2.4: a set is the item and Jewel combination).
   const withSet = { ...state, global: { ...state.global, jewels: { ...state.global.jewels, 'ward:2': 1 }, savedEquipmentSets: [{ slot: 4, name: 'Boss', createdAt: Date.UTC(2026, 8, 20), equipment: [{ slotIndex: first.slot, item: { ...first.item, isLocked: false, jewel: { key: 'ward' as const, rank: 2 } }, isLocked: true }] }] } };
   for (const detail of [true, 'true']) {
-    const read = await buildApiV1ReadData(`read/build/character/${target.id}/equipmentSet`, withSet, { isEquipmentSetDetail: detail }, context) as {
+    const read = await readCharacterBuild('equipmentSet', target.id, withSet, { isEquipmentSetDetail: detail }, context) as {
       equipmentSets: { equipmentSetId: number; equipmentSet: { name: string; createdAt: string; equipment?: string[]; availability: { allAvailable: boolean; entries: Array<{ slotIndex: number; item: string; available: boolean; unavailableReason: string | null }> } } }[];
     };
     assert.equal(read.equipmentSets[0].equipmentSet.equipment?.[0], `${first.slot}/1/${first.item.id}/${first.item.enhancement}/${first.item.superRare}/ward:2`, 'saved sets carry their Jewel');
@@ -236,7 +272,7 @@ calls.length = 0;
     }]);
     assert.equal(rebuilt.availability.entries[0].available, true);
   }
-  const summary = await buildApiV1ReadData(`read/build/character/${target.id}/equipmentSet`, withSet, {}, context) as { equipmentSets: { equipmentSet: { equipment?: string[] } }[] };
+  const summary = await readCharacterBuild('equipmentSet', target.id, withSet, {}, context) as { equipmentSets: { equipmentSet: { equipment?: string[] } }[] };
   assert.equal(summary.equipmentSets[0].equipmentSet.equipment, undefined, 'the summary omits equipment');
 }
 
@@ -318,7 +354,7 @@ calls.length = 0;
   for (const api of ['sword', 'archery', 'gauntlet', 'grimoire', 'bow', 'glove', 'book']) {
     for (const stack of await search({ category: api })) assert.equal(Object.values(parseInventoryStacks([stack]))[0].item.category, categoryOf(api));
   }
-  assert.equal((await search({ rarity: 'bossRare' })).length, 0, 'a fresh state owns no boss rare items');
+  assert.equal((await search({ itemRarity: 'epic' })).length, 0, 'a fresh state owns no epic items');
   assert.equal((await search({ superRare: 'true' })).length, 0);
   assert.equal((await search({ superRare: true })).length, 0);
   assert.equal((await search({ superRare: false })).length, owned.length);
@@ -348,7 +384,7 @@ calls.length = 0;
   assert.match(assigned[0], /\/fort:4\/-?\d+/);
   assert.equal((await search({ category: 'jewel', state: 'all' })).length, 3);
   assert.deepEqual(await search({ category: 'jewel', state: 'sold' }), []);
-  assert.deepEqual(await search({ category: 'jewel', rarity: 'bossRare' }), [], 'item filters exclude unassigned Jewels');
+  assert.deepEqual(await search({ category: 'jewel', itemRarity: 'epic' }), [], 'item filters exclude unassigned Jewels');
 
   // Details follow the base format, in the fixed order ability, cBonus, otherBonus.
   const sample = Object.values(state.global.inventory).find((variant) => variant.item.id === 1104)!;
@@ -713,23 +749,23 @@ calls.length = 0;
   assert.equal(compact.attention.notification[0].unreadDiary, 1);
   const dungeonName = getDungeonById(1)!.name;
   assert.deepEqual(compact.attention.notification[0].unreadDiaryTitle, [`120/Defeat Record/${dungeonName.replace(/%/g, '%25').replace(/\//g, '%2F')}/20260916 22:04`]);
-  // A rare-drop entry is titled with the Diary tab's headline, which names the item: `[PT1] Boss Rare acquired (Item)`.
+  // A rare-drop entry is titled with the Diary tab's headline, which names the item: `[PT1] Epic acquired (Item)`.
   {
     const { ITEMS, getItemById } = await import('../../src/data/items.ts');
     const { diaryItemName } = await import('../../src/game/compactDiary.ts');
-    const bossRare = ITEMS.find((item) => item.id % 1000 >= 400 && item.id % 1000 < 500)!;
-    const drop = { ...getItemById(bossRare.id)!, enhancement: 0, superRare: 0 };
-    const bossEntry = { ...unreadEntry, id: '130', triggers: ['bossRare'], expeditionLog: { ...log, rewards: [drop] } } as unknown as DiaryLog;
+    const epic = ITEMS.find((item) => item.id % 1000 >= 400 && item.id % 1000 < 500)!;
+    const drop = { ...getItemById(epic.id)!, enhancement: 0, superRare: 0 };
+    const bossEntry = { ...unreadEntry, id: '130', triggers: ['epic'], expeditionLog: { ...log, rewards: [drop] } } as unknown as DiaryLog;
     const withBoss = { ...withDiary, parties: withDiary.parties.map((party, index) => index === 0 ? { ...party, diaryLogs: [bossEntry] } : party) };
     const bossCompact = await buildApiV1ReadData('read/observation/compact', withBoss, {}, context) as typeof compact;
     const title = decodeURIComponent(bossCompact.attention.notification[0].unreadDiaryTitle[0].split('/')[1]);
-    assert.equal(title, `[${withBoss.parties[0].name}] Boss Rare acquired (${diaryItemName(drop)})`);
+    assert.equal(title, `[${withBoss.parties[0].name}] Epic acquired (${diaryItemName(drop)})`);
     // `diaryEntry/{id}` names the same item, and only the item the trigger is about, not the expedition's whole drop list.
     const common = { ...getItemById(ITEMS.find((item) => item.id % 1000 < 200)!.id)!, enhancement: 0, superRare: 0 };
     const mixed = { ...withBoss, parties: withBoss.parties.map((party, index) => index === 0 ? { ...party, diaryLogs: [{ ...bossEntry, expeditionLog: { ...log, rewards: [common, drop] } } as unknown as DiaryLog] } : party) };
     const read = await buildApiV1ReadData('read/diary/diaryEntry/130', mixed, {}, context) as { entry: { content: { title: { args: unknown }; events: { key: string; args: unknown }[] } } };
     assert.deepEqual(read.entry.content.title.args, { items: diaryItemName(drop) });
-    assert.deepEqual(read.entry.content.events, [{ key: 'diary.event.bossRare', args: { items: diaryItemName(drop) } }]);
+    assert.deepEqual(read.entry.content.events, [{ key: 'diary.event.epic', args: { items: diaryItemName(drop) } }]);
     // The list read carries the same content, so it names the same item.
     const list = await buildApiV1ReadData('read/observation/diary', mixed, {}, context) as unknown as { diaryInfo: { parties: { entries: { content: typeof read.entry.content }[] }[] } };
     assert.deepEqual(list.diaryInfo.parties[0].entries[0].content, read.entry.content, 'observation/diary and diaryEntry share one content shape');
@@ -781,17 +817,17 @@ calls.length = 0;
   assert.equal(last.nextCursor, null, 'a complete list reports a null cursor');
 }
 
-// Item Compendium filters (9.1.3 4-2-5): tier, rarity, ability/bonus search, and `details`; rarity and tier are reported.
+// Item Compendium filters (9.1.3 4-2-5): tier, `itemRarity`, ability/bonus search, and `details`; `itemRarity` and tier are reported.
 {
   const { ITEMS } = await import('../../src/data/items.ts');
-  type Compendium = { items: { itemId: number; rarity: string; tier: number; ability?: string[]; cBonus?: string[]; otherBonus?: string[] }[]; nextCursor: string | null };
+  type Compendium = { items: { itemId: number; itemRarity: string; tier: number; ability?: string[]; cBonus?: string[]; otherBonus?: string[] }[]; nextCursor: string | null };
   // Every item revealed, so the detail filters and fields apply (an unrevealed item is only a placeholder).
   const allRevealed = { ...state, global: { ...state.global, revealedItemCompendiumItemIds: ITEMS.map((item) => item.id) } };
   const read = (parameters: Record<string, unknown>) => buildApiV1ReadData('resources/itemCompendium', allRevealed, { limit: 200, ...parameters }, context) as Promise<Compendium>;
   const tier2 = await read({ category: 'sword', tier: 2 });
   assert.ok(tier2.items.length > 0 && tier2.items.every((item) => item.tier === 2 && Math.floor(item.itemId / 1000) === 2));
-  const common = await read({ category: 'sword', rarity: 'common' });
-  assert.ok(common.items.length > 0 && common.items.every((item) => item.rarity === 'common'));
+  const common = await read({ category: 'sword', itemRarity: 'common' });
+  assert.ok(common.items.length > 0 && common.items.every((item) => item.itemRarity === 'common'));
   const withAbility = (await read({ category: 'sword', details: 'all' })).items.find((item) => (item.ability ?? []).length > 0);
   assert.ok(withAbility, 'some sword has an ability');
   if (withAbility) {
@@ -805,10 +841,10 @@ calls.length = 0;
   const aliases = await read({ category: 'book' });
   assert.deepEqual(aliases.items.map((item) => item.itemId), (await read({ category: 'grimoire' })).items.map((item) => item.itemId));
   assert.equal((await read({ category: 'grimoire' })).items.length, ITEMS.filter((item) => item.category === 'grimoire').length);
-  // An unrevealed item is a placeholder: ID, category, rarity, and tier only; the detail searches never match it (9.1.4.7).
+  // An unrevealed item is a placeholder: ID, category, `itemRarity`, and tier only; the detail searches never match it (9.1.4.7).
   const hidden = await buildApiV1ReadData('resources/itemCompendium', state, { category: 'sword', details: 'all', limit: 200 }, context) as Compendium;
   assert.ok(hidden.items.length > 0);
-  for (const item of hidden.items) assert.deepEqual(Object.keys(item).sort(), ['category', 'itemId', 'rarity', 'revealed', 'tier']);
+  for (const item of hidden.items) assert.deepEqual(Object.keys(item).sort(), ['category', 'itemId', 'itemRarity', 'revealed', 'tier']);
   const abilityId = withAbility!.ability![0].split(':')[0];
   assert.deepEqual((await buildApiV1ReadData('resources/itemCompendium', state, { category: 'sword', searchAbility: abilityId }, context) as Compendium).items, []);
 }
@@ -853,7 +889,7 @@ assert.deepEqual(state, before);
   const { CalculatedStatusSchema } = await import('../../src/api/v1/contracts.ts');
   const party = await buildApiV1ReadData('read/observation/party', state, {}, context) as { partyInfo: { party: { characters: { characterId: number; calculatedStatus: unknown }[] } } };
   const character = party.partyInfo.party.characters[0];
-  const status = await buildApiV1ReadData(`read/build/character/${character.characterId}/status`, state, {}, context) as { calculatedStatus: { stats: { key: string }[]; attacks: { attackType: string; available: boolean; speed: unknown }[] } };
+  const status = await readCharacterBuild('status', character.characterId, state, {}, context) as { calculatedStatus: { stats: { key: string }[]; attacks: { attackType: string; available: boolean; speed: unknown }[] } };
   for (const projected of [character.calculatedStatus, status.calculatedStatus]) {
     assert.equal(Value.Check(CalculatedStatusSchema, projected), true, JSON.stringify([...Value.Errors(CalculatedStatusSchema, projected)].slice(0, 3)));
   }
@@ -1191,4 +1227,78 @@ assert.deepEqual(state, before);
   const room = buildBattleRoomData({ room: 1, enemyHP: 1, outcome: 'victory', damageDealt: 0, damageTaken: 0, remainingPartyHP: 1, maxPartyHP: 1, details: [], compactBattle } as never) as { events: unknown[][] };
   assert.equal(room.events[0][8], 0.714, 'Howl 5/7 is published at 3 decimals');
   assert.equal(Math.round((room.events[0][8] as number) * 7), 5, 'the numerator is still recoverable');
+}
+
+// Multi-character reads and the new party projection facts.
+{
+  const fresh = createFreshGameState('en', Date.UTC(2026, 8, 20));
+  const ids = fresh.parties[0].characters.slice(0, 2).map((character) => character.id);
+  const ctx = { revision: 1, environment: 'desktop', now: Date.UTC(2026, 8, 20) } as never;
+  const many = await buildApiV1ReadData('read/build/character/status', fresh, { characterId: ids }, ctx) as { characters: { characterId: number }[] };
+  assert.deepEqual(many.characters.map((entry) => entry.characterId), ids, 'one result per requested character, in request order');
+  const single = await buildApiV1ReadData('read/build/character/status', fresh, { characterId: ids[0] }, ctx) as { characters: unknown[] };
+  assert.equal(single.characters.length, 1);
+  await assert.rejects(() => buildApiV1ReadData('read/build/character/status', fresh, {}, ctx), /invalid_request:characterId/);
+  await assert.rejects(() => buildApiV1ReadData('read/build/character/status', fresh, { characterId: [ids[0], ids[0]] }, ctx), /invalid_request:characterId/);
+  await assert.rejects(() => buildApiV1ReadData('read/build/character/status', fresh, { characterId: 999999 }, ctx), /not_found/);
+}
+
+// SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `destination`, `depthLimit`, and `difficultyOffset` forecast another
+// expedition setting without committing it, validated like `changeExpedition`.
+{
+  const fresh = createFreshGameState('en', Date.UTC(2026, 8, 20));
+  const forecasts: { destination: number; depthLimit: string; difficultyOffset: number }[] = [];
+  const recording = {
+    ...context,
+    simulation: async (partyIndex: number, count: number, forecast?: { state: typeof fresh }) => {
+      const party = (forecast?.state ?? fresh).parties[partyIndex];
+      forecasts.push({ destination: party.selectedDungeonId, depthLimit: party.expeditionDepthLimit, difficultyOffset: party.expeditionDifficultyOffset });
+      return { ...fakeSimulation(count) };
+    },
+  };
+  const run = (source: typeof fresh, parameters: Record<string, unknown>) => buildApiV1ReadData('read/expedition/1/simulationRun', source, { numberOfRun: 10, ...parameters }, recording) as Promise<{ expedition: Record<string, unknown> }>;
+  const own = fresh.parties[0];
+  assert.deepEqual((await run(fresh, {})).expedition, { destination: own.selectedDungeonId, depthLimit: own.expeditionDepthLimit, difficultyOffset: own.expeditionDifficultyOffset, overridden: false });
+  const shallow = await run(fresh, { depthLimit: '2f-3' });
+  assert.deepEqual(shallow.expedition, { destination: own.selectedDungeonId, depthLimit: '2f-3', difficultyOffset: own.expeditionDifficultyOffset, overridden: true });
+  assert.equal(forecasts.at(-1)!.depthLimit, '2f-3', 'the forecast runs the overridden setting');
+  assert.equal(fresh.parties[0].expeditionDepthLimit, own.expeditionDepthLimit, 'nothing is committed');
+  // A locked destination, an unknown depth limit, or an offset the destination does not allow yet is rejected.
+  await assert.rejects(() => run(fresh, { destination: 2 }), /invalid_request:destination\.destination_locked/);
+  await assert.rejects(() => run(fresh, { depthLimit: 'deep' }), /invalid_request:depthLimit\.invalid_depth_limit/);
+  await assert.rejects(() => run(fresh, { difficultyOffset: 2 }), /invalid_request:difficultyOffset\.difficulty_offset_unavailable/);
+  await assert.rejects(() => run(fresh, { destination: '2' }), /invalid_request:destination/);
+  // After the boss of destination 1: destination 2 opens (with its own saved offset), and destination 1 takes an offset.
+  const veteran = { ...fresh, parties: fresh.parties.map((party, index) => (index === 0 ? { ...party, defeatedBossExpeditions: { 1: true }, expeditionDifficultyOffsetByDungeon: { 2: 0 } } : party)) };
+  assert.deepEqual((await run(veteran, { destination: 2 })).expedition, { destination: 2, depthLimit: own.expeditionDepthLimit, difficultyOffset: 0, overridden: true });
+  const harder = await run(veteran, { destination: 1, difficultyOffset: 2 });
+  assert.deepEqual([harder.expedition.destination, harder.expedition.difficultyOffset], [1, 2]);
+  const Ajv = (await import('ajv')).default;
+  const catalog = (await import('../../desktop/api-v1-contract.json', { with: { type: 'json' } })).default as { operations: { operationId: string; response: { data: object } }[] };
+  const validate = new Ajv({ strict: false }).compile(catalog.operations.find((operation) => operation.operationId === 'read/expedition/{p}/simulationRun')!.response.data);
+  assert.equal(validate(harder), true, JSON.stringify(validate.errors?.slice(0, 2)));
+}
+
+// SpecRef: 9.1.3 | Read | 2-1-4 party `dropStatistics` | the party's own drops since the last Statistics reset.
+{
+  assert.deepEqual(normalizePartyDropStats(undefined), { items: 0, superRare: 0, autoSold: 0, byEnhancement: [0, 0, 0, 0, 0, 0, 0] });
+  assert.deepEqual(normalizePartyDropStats({ items: -3, superRare: 1.7, byEnhancement: [2, 'x'] }), { items: 0, superRare: 1, autoSold: 0, byEnhancement: [2, 0, 0, 0, 0, 0, 0] });
+  const counted = addPartyDrops({ items: 1, superRare: 0, autoSold: 2, byEnhancement: [1, 0, 0, 0, 0, 0, 0] }, [{ enhancement: 0, superRare: 0 }, { enhancement: 4, superRare: 3 }, { enhancement: 6, superRare: 0 }], 5);
+  assert.deepEqual(counted, { items: 4, superRare: 1, autoSold: 7, byEnhancement: [2, 0, 0, 0, 1, 0, 1] });
+  // A finished expedition adds the rewards it kept; the Statistics reset clears the counters with the other statistics.
+  let played = createFreshGameState('en', Date.UTC(2026, 8, 20));
+  const partyRead = async (source: typeof played) => (await buildApiV1ReadData('read/observation/party', source, { partyNumber: 1 }, context) as { partyInfo: { party: { dropStatistics: ReturnType<typeof normalizePartyDropStats> } } }).partyInfo.party.dropStatistics;
+  assert.deepEqual(await partyRead(played), normalizePartyDropStats(undefined));
+  let kept = 0; let sold = 0;
+  for (let run = 0; run < 3; run += 1) {
+    played = gameReducer(played, { type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex: 0, simulatedAt: Date.UTC(2026, 8, 20) + run * 60_000 });
+    kept += played.parties[0].lastExpeditionLog?.rewards.length ?? 0;
+    sold += played.parties[0].lastExpeditionLog?.autoSellItems.length ?? 0;
+  }
+  const afterRuns = await partyRead(played);
+  assert.deepEqual([afterRuns.items, afterRuns.autoSold], [kept, sold]);
+  assert.equal(afterRuns.byEnhancement.reduce((sum, value) => sum + value, 0), kept);
+  played = gameReducer(played, { type: 'RESET_EXPEDITION_STATS', partyIndex: 0 });
+  assert.equal(played.parties[0].dropStats, undefined);
+  assert.deepEqual(await partyRead(played), normalizePartyDropStats(undefined));
 }

@@ -21,6 +21,10 @@ const DISPLAY_IMPORTS = {
   gameState: ['getItemDisplayName'],
   jewel: ['getJewelDisplayName', 'getJewelOwnedCount', 'JEWELS_BY_ITEM_CATEGORY'],
   magic: ['getMagicStyleLabel', 'resolveMagicProfile', 'resolveSpecialMagicFromAbilities'],
+  // Draft-only preview of the build a released unique character takes (Spec 8.2.3); the commit is still decided by changeBuild.
+  uniqueRelease: ['resolveReleasedUniqueBuild'],
+  // Draft-only default name for a race change or a unique release (Spec 8.2.3); changeBuild picks the same way when no name is sent.
+  defaultNames: ['pickDefaultName'],
 };
 
 // Reviewed exceptions: each is a known gap that is recorded in the plan, with the reason it cannot be projected yet.

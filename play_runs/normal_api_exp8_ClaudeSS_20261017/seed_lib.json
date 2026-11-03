@@ -1,0 +1,6758 @@
+{
+"None": [
+{
+"label": "GP-DNone-end11",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+}
+],
+"order": [
+6,
+1,
+4,
+2,
+3,
+5
+],
+"deityId": "mirage"
+},
+{
+"label": "GX-DNone-end11",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+}
+],
+"order": [
+6,
+1,
+4,
+2,
+3,
+5
+],
+"deityId": "mirage"
+}
+],
+"1": [
+{
+"label": "GP-D1-ga14",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "ninja",
+"subClassId": "alchemist",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+}
+],
+"order": [
+6,
+1,
+4,
+2,
+3,
+5
+],
+"deityId": "cunning"
+},
+{
+"label": "GP-D1-ga52",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "ninja",
+"subClassId": "wizard",
+"lineage": "adaptation",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+}
+],
+"order": [
+6,
+1,
+4,
+2,
+3,
+5
+],
+"deityId": "cunning"
+},
+{
+"label": "GP-D1-ga75",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "sword-saint"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "ninja",
+"subClassId": "wizard",
+"lineage": "adaptation",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "windcross",
+"predisposition": "serene"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+}
+],
+"order": [
+2,
+1,
+4,
+6,
+3,
+5
+],
+"deityId": "none"
+},
+{
+"label": "GX-D1-ga15",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+}
+],
+"order": [
+6,
+1,
+4,
+2,
+3,
+5
+],
+"deityId": "mirage"
+},
+{
+"label": "GX-D1-ga59",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "resourceful"
+},
+{
+"characterId": 3,
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+}
+],
+"order": [
+6,
+2,
+4,
+1,
+3,
+5
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D1-ga78",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "resourceful"
+},
+{
+"characterId": 3,
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "striker",
+"subClassId": "guardian"
+}
+],
+"order": [
+6,
+1,
+4,
+2,
+3,
+5
+],
+"deityId": "restoration"
+},
+{
+"label": "GX-D1-ga81",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "resourceful"
+},
+{
+"characterId": 3,
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "striker",
+"subClassId": "guardian"
+}
+],
+"order": [
+2,
+1,
+4,
+3,
+5,
+6
+],
+"deityId": "restoration"
+}
+],
+"2": [
+{
+"label": "GP-D2-ga109",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "sword-saint"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "ninja",
+"subClassId": "wizard",
+"lineage": "adaptation",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "windcross",
+"predisposition": "serene"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+}
+],
+"order": [
+2,
+1,
+4,
+3,
+6,
+5
+],
+"deityId": "fortification"
+},
+{
+"label": "GP-D2-ga130",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "samurai"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "wizard",
+"lineage": "machina",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "windcross",
+"predisposition": "serene"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "alchemist"
+}
+],
+"order": [
+2,
+1,
+4,
+3,
+6,
+5
+],
+"deityId": "fortification"
+},
+{
+"label": "GP-D2-ga149",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "samurai"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "firmament",
+"predisposition": "serene"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "alchemist"
+}
+],
+"order": [
+2,
+1,
+4,
+3,
+6,
+5
+],
+"deityId": "fortification"
+},
+{
+"label": "GP-D2-ga173",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "samurai"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "firmament",
+"predisposition": "serene"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "alchemist"
+}
+],
+"order": [
+2,
+1,
+4,
+3,
+6,
+5
+],
+"deityId": "fortification"
+},
+{
+"label": "GP-D2-ga197",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "firmament",
+"predisposition": "serene"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "alchemist"
+}
+],
+"order": [
+2,
+1,
+4,
+3,
+5,
+6
+],
+"deityId": "mirage"
+},
+{
+"label": "GX-D2-ga106",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "resourceful"
+},
+{
+"characterId": 3,
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "striker",
+"subClassId": "guardian"
+}
+],
+"order": [
+2,
+1,
+4,
+3,
+5,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D2-ga123",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "resourceful"
+},
+{
+"characterId": 3,
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "striker",
+"subClassId": "guardian"
+}
+],
+"order": [
+2,
+1,
+4,
+3,
+5,
+6
+],
+"deityId": "attrition"
+},
+{
+"label": "GX-D2-ga153",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "resourceful"
+},
+{
+"characterId": 3,
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "sword-saint",
+"subClassId": "guardian"
+}
+],
+"order": [
+2,
+1,
+4,
+3,
+6,
+5
+],
+"deityId": "fortification"
+},
+{
+"label": "GX-D2-ga172",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "perceptive"
+},
+{
+"characterId": 6,
+"mainClassId": "alchemist",
+"subClassId": "lord"
+}
+],
+"order": [
+4,
+1,
+2,
+3,
+6,
+5
+],
+"deityId": "attrition"
+},
+{
+"label": "GX-D2-ga176",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "perceptive"
+},
+{
+"characterId": 6,
+"mainClassId": "alchemist",
+"subClassId": "lord"
+}
+],
+"order": [
+4,
+1,
+2,
+3,
+6,
+5
+],
+"deityId": "fortification"
+}
+],
+"3": [
+{
+"label": "GP-D3-ga222",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "firmament",
+"predisposition": "serene"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "introspective"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "striker"
+}
+],
+"order": [
+2,
+1,
+4,
+3,
+5,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D3-ga243",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "serene"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "introspective",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "sage"
+}
+],
+"order": [
+2,
+4,
+1,
+3,
+5,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D3-ga265",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "serene"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "evasive",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "sage"
+}
+],
+"order": [
+2,
+4,
+1,
+3,
+6,
+5
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D3-ga285",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "serene"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "evasive",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "sage"
+}
+],
+"order": [
+2,
+4,
+6,
+3,
+1,
+5
+],
+"deityId": "restoration"
+},
+{
+"label": "GP-D3-ga287",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "serene"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "aggressive",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "sage"
+}
+],
+"order": [
+2,
+4,
+6,
+5,
+1,
+3
+],
+"deityId": "fortification"
+},
+{
+"label": "GP-D3-ga330",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "amiable",
+"racesAndGender": "vulpinian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "aggressive",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "sword-saint"
+}
+],
+"order": [
+1,
+4,
+2,
+3,
+6,
+5
+],
+"deityId": "attrition"
+},
+{
+"label": "GX-D3-ga186",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "perceptive"
+},
+{
+"characterId": 6,
+"mainClassId": "samurai",
+"subClassId": "guardian"
+}
+],
+"order": [
+3,
+1,
+2,
+6,
+4,
+5
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D3-ga216",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "perceptive"
+},
+{
+"characterId": 6,
+"mainClassId": "samurai",
+"subClassId": "guardian"
+}
+],
+"order": [
+3,
+4,
+2,
+6,
+5,
+1
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D3-ga246",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "perceptive"
+},
+{
+"characterId": 6,
+"mainClassId": "sword-saint",
+"subClassId": "ninja"
+}
+],
+"order": [
+3,
+1,
+4,
+2,
+5,
+6
+],
+"deityId": "fortification"
+},
+{
+"label": "GX-D3-ga265",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "perceptive"
+},
+{
+"characterId": 6,
+"mainClassId": "ninja",
+"subClassId": "ninja"
+}
+],
+"order": [
+1,
+2,
+4,
+3,
+6,
+5
+],
+"deityId": "fertility"
+}
+],
+"4": [
+{
+"label": "GP-D4-ga372",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "serene",
+"racesAndGender": "vulpinian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "aggressive",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "alchemist"
+}
+],
+"order": [
+1,
+4,
+2,
+3,
+5,
+6
+],
+"deityId": "mirage"
+},
+{
+"label": "GP-D4-ga405",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "serene",
+"racesAndGender": "vulpinian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "devoted",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "alchemist"
+}
+],
+"order": [
+1,
+4,
+2,
+3,
+5,
+6
+],
+"deityId": "mirage"
+},
+{
+"label": "GP-D4-ga491",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "serene",
+"racesAndGender": "vulpinian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "guardian",
+"lineage": "oath",
+"predisposition": "devoted",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "alchemist"
+}
+],
+"order": [
+1,
+4,
+2,
+3,
+5,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D4-ga493",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "resourceful",
+"racesAndGender": "vulpinian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "sword-saint",
+"lineage": "oath",
+"predisposition": "stubborn",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "alchemist"
+}
+],
+"order": [
+1,
+2,
+4,
+3,
+5,
+6
+],
+"deityId": "fortification"
+},
+{
+"label": "GP-D4-ga513",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "wizard",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "resourceful",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "alchemist",
+"lineage": "oath",
+"predisposition": "stubborn",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "alchemist"
+}
+],
+"order": [
+1,
+2,
+4,
+3,
+6,
+5
+],
+"deityId": "fortification"
+},
+{
+"label": "GP-D4-ga548",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "wizard",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "resourceful",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "samurai",
+"subClassId": "alchemist",
+"lineage": "oath",
+"predisposition": "stubborn",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "sage"
+}
+],
+"order": [
+1,
+2,
+4,
+3,
+6,
+5
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D4-ga550",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "wizard",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "resourceful",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sword-saint",
+"subClassId": "alchemist",
+"lineage": "oath",
+"predisposition": "stubborn",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "sage"
+}
+],
+"order": [
+1,
+2,
+4,
+6,
+3,
+5
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D4-ga569",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "wizard",
+"subClassId": "wizard",
+"lineage": "utopia",
+"predisposition": "resourceful",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sword-saint",
+"subClassId": "alchemist",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "sage"
+}
+],
+"order": [
+1,
+2,
+4,
+6,
+5,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D4-ga571",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "wizard",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "resourceful",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sword-saint",
+"subClassId": "alchemist",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "pilgrim"
+}
+],
+"order": [
+1,
+2,
+4,
+6,
+5,
+3
+],
+"deityId": "fortification"
+},
+{
+"label": "GP-D4-ga597",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "striker",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "resourceful",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "ninja",
+"subClassId": "wizard",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "pilgrim"
+}
+],
+"order": [
+1,
+4,
+2,
+6,
+5,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D4-ga717",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "striker",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "resourceful",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "ninja",
+"subClassId": "wizard",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "pilgrim"
+}
+],
+"order": [
+1,
+2,
+4,
+6,
+5,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D4-ga310",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "perceptive"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "samurai"
+}
+],
+"order": [
+1,
+4,
+3,
+2,
+6,
+5
+],
+"deityId": "fortification"
+},
+{
+"label": "GX-D4-ga379",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "perceptive"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "sword-saint"
+}
+],
+"order": [
+1,
+4,
+3,
+5,
+6,
+2
+],
+"deityId": "fortification"
+},
+{
+"label": "GX-D4-ga381",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "precise",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+4,
+3,
+5,
+6,
+2
+],
+"deityId": "fortification"
+},
+{
+"label": "GX-D4-ga423",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "introspective",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim",
+"lineage": "utopia",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+4,
+3,
+2,
+6,
+5
+],
+"deityId": "fortification"
+},
+{
+"label": "GX-D4-ga505",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "introspective",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "alchemist",
+"subClassId": "sage",
+"lineage": "utopia",
+"predisposition": "nimble",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+4,
+3,
+2,
+6,
+5
+],
+"deityId": "fortification"
+},
+{
+"label": "GX-D4-ga522",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "introspective",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "pilgrim",
+"subClassId": "sage",
+"lineage": "utopia",
+"predisposition": "nimble",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+4,
+3,
+2,
+6,
+5
+],
+"deityId": "fortification"
+},
+{
+"label": "GX-D4-ga540",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "perceptive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "sage",
+"lineage": "sandstorm",
+"predisposition": "inquisitive",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+5,
+1,
+4,
+2,
+3,
+6
+],
+"deityId": "fortification"
+}
+],
+"5": [
+{
+"label": "GP-D5-ga817",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "striker",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "resourceful",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "ninja",
+"subClassId": "wizard",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "alchemist"
+}
+],
+"order": [
+1,
+2,
+4,
+5,
+6,
+3
+],
+"deityId": "fortification"
+},
+{
+"label": "GP-D5-ga839",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "striker",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "perceptive",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "ninja",
+"subClassId": "wizard",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "alchemist"
+}
+],
+"order": [
+1,
+2,
+4,
+5,
+6,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D5-ga841",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "perceptive",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "ninja",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "alchemist"
+}
+],
+"order": [
+1,
+2,
+4,
+5,
+6,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D5-ga883",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "ninja",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "alchemist"
+}
+],
+"order": [
+1,
+2,
+4,
+5,
+6,
+3
+],
+"deityId": "mirage"
+},
+{
+"label": "GP-D5-ga955",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "ninja",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "alchemist"
+}
+],
+"order": [
+1,
+2,
+4,
+6,
+5,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D5-ga957",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "ninja",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "sage"
+}
+],
+"order": [
+1,
+2,
+4,
+6,
+5,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D5-ga1034",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "devoted",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "sage"
+}
+],
+"order": [
+1,
+4,
+2,
+5,
+6,
+3
+],
+"deityId": "mirage"
+},
+{
+"label": "GX-D5-ga567",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "perceptive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "sage",
+"lineage": "sandstorm",
+"predisposition": "inquisitive",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+5,
+1,
+4,
+2,
+3,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D5-ga583",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "sage",
+"lineage": "abyssal_sea",
+"predisposition": "inquisitive",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "pilgrim"
+}
+],
+"order": [
+5,
+1,
+4,
+2,
+3,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D5-ga600",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "samurai"
+}
+],
+"order": [
+5,
+1,
+4,
+2,
+3,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D5-ga792",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "sage"
+}
+],
+"order": [
+5,
+1,
+4,
+3,
+6,
+2
+],
+"deityId": "restoration"
+},
+{
+"label": "GX-D5-ga812",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "sage",
+"subClassId": "sage"
+}
+],
+"order": [
+1,
+4,
+3,
+2,
+5,
+6
+],
+"deityId": "precision"
+},
+{
+"label": "GX-D5-ga816",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+5,
+4,
+2,
+6,
+3
+],
+"deityId": "restoration"
+},
+{
+"label": "GX-D5-ga820",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "wizard",
+"subClassId": "lord"
+}
+],
+"order": [
+5,
+1,
+4,
+2,
+3,
+6
+],
+"deityId": "restoration"
+}
+],
+"6": [
+{
+"label": "GP-D6-ga1101",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "resourceful",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "pilgrim",
+"subClassId": "sage"
+}
+],
+"order": [
+1,
+4,
+2,
+5,
+6,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D6-ga1103",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "resourceful",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "sage"
+}
+],
+"order": [
+1,
+4,
+2,
+5,
+6,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D6-ga1124",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "perceptive"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "resourceful",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "sage"
+}
+],
+"order": [
+1,
+4,
+2,
+5,
+6,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D6-ga1267",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "resourceful",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "duelist"
+}
+],
+"order": [
+1,
+4,
+2,
+3,
+6,
+5
+],
+"deityId": "precision"
+},
+{
+"label": "GP-D6-ga1449",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "firmament",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "ninja",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "resourceful",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "duelist"
+}
+],
+"order": [
+1,
+4,
+2,
+3,
+5,
+6
+],
+"deityId": "precision"
+},
+{
+"label": "GP-D6-ga1532",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "ranger",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "utopia",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "duelist"
+}
+],
+"order": [
+1,
+4,
+2,
+5,
+6,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D6-ga1544",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "wizard",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "utopia",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "duelist"
+}
+],
+"order": [
+1,
+4,
+2,
+5,
+6,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D6-ga830",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "utopia",
+"predisposition": "aggressive"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "wizard",
+"subClassId": "lord"
+}
+],
+"order": [
+5,
+1,
+4,
+2,
+3,
+6
+],
+"deityId": "attrition"
+},
+{
+"label": "GX-D6-ga846",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "utopia",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "sandstorm",
+"predisposition": "aggressive",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "wizard",
+"subClassId": "lord"
+}
+],
+"order": [
+5,
+1,
+4,
+2,
+3,
+6
+],
+"deityId": "fortification"
+},
+{
+"label": "GX-D6-ga863",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "perceptive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "machina",
+"predisposition": "aggressive",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "sword-saint",
+"subClassId": "lord"
+}
+],
+"order": [
+5,
+1,
+4,
+2,
+3,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D6-ga865",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "sword-saint",
+"subClassId": "pilgrim"
+}
+],
+"order": [
+5,
+1,
+4,
+2,
+3,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D6-ga894",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "ninja",
+"subClassId": "pilgrim"
+}
+],
+"order": [
+5,
+1,
+4,
+2,
+3,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D6-ga896",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "ninja",
+"subClassId": "pilgrim"
+}
+],
+"order": [
+5,
+1,
+4,
+2,
+3,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D6-ga981",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "ranger",
+"subClassId": "guardian"
+}
+],
+"order": [
+1,
+4,
+2,
+3,
+6,
+5
+],
+"deityId": "attrition"
+},
+{
+"label": "GX-D6-ga1069",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "ranger",
+"subClassId": "guardian"
+}
+],
+"order": [
+1,
+5,
+4,
+2,
+3,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D6-ga1090",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "ranger",
+"subClassId": "guardian"
+}
+],
+"order": [
+1,
+5,
+4,
+2,
+3,
+6
+],
+"deityId": "attrition"
+},
+{
+"label": "GX-D6-ga1215",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "ranger",
+"subClassId": "guardian"
+}
+],
+"order": [
+1,
+5,
+4,
+2,
+3,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D6-ga1274",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "ranger",
+"subClassId": "guardian"
+}
+],
+"order": [
+1,
+5,
+4,
+2,
+3,
+6
+],
+"deityId": "mirage"
+},
+{
+"label": "GX-D6-ga1277",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "ranger",
+"subClassId": "guardian"
+}
+],
+"order": [
+1,
+5,
+4,
+2,
+3,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D6-ga1336",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "ranger",
+"subClassId": "guardian"
+}
+],
+"order": [
+1,
+5,
+4,
+2,
+3,
+6
+],
+"deityId": "mirage"
+},
+{
+"label": "GX-D6-ga1339",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+}
+],
+"order": [
+1,
+5,
+4,
+2,
+3,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D6-ga1398",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+}
+],
+"order": [
+1,
+4,
+5,
+2,
+3,
+6
+],
+"deityId": "fertility"
+}
+],
+"7": [
+{
+"label": "GP-D7-ga1720",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "ninja",
+"subClassId": "wizard",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "utopia",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "duelist"
+}
+],
+"order": [
+1,
+2,
+4,
+5,
+6,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D7-ga1758",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "guardian",
+"subClassId": "wizard",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "utopia",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "utopia",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "duelist"
+}
+],
+"order": [
+1,
+2,
+4,
+5,
+6,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D7-ga1760",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "guardian",
+"subClassId": "wizard",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "ashen_capital",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "utopia",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+2,
+4,
+5,
+6,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D7-ga1854",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "procyonian/male",
+"mainClassId": "guardian",
+"subClassId": "wizard",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "ashen_capital",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "utopia",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "perceptive",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "samurai"
+}
+],
+"order": [
+1,
+4,
+5,
+2,
+3,
+6
+],
+"deityId": "attrition"
+},
+{
+"label": "GP-D7-ga1858",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "procyonian/male",
+"mainClassId": "guardian",
+"subClassId": "wizard",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "ashen_capital",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "utopia",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "perceptive",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "samurai"
+}
+],
+"order": [
+1,
+2,
+6,
+3,
+4,
+5
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D7-ga1876",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "procyonian/male",
+"mainClassId": "guardian",
+"subClassId": "wizard",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "ashen_capital",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "utopia",
+"predisposition": "precise"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "perceptive",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "samurai"
+}
+],
+"order": [
+2,
+1,
+6,
+3,
+4,
+5
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D7-ga1910",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "leporian/female",
+"mainClassId": "guardian",
+"subClassId": "wizard",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "ashen_capital",
+"predisposition": "devoted",
+"racesAndGender": "felidian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "perceptive",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "samurai"
+}
+],
+"order": [
+2,
+1,
+4,
+3,
+6,
+5
+],
+"deityId": "attrition"
+},
+{
+"label": "GP-D7-ga1940",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "leporian/female",
+"mainClassId": "guardian",
+"subClassId": "wizard",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "wizard",
+"lineage": "ashen_capital",
+"predisposition": "devoted",
+"racesAndGender": "ursan/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "perceptive",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "samurai"
+}
+],
+"order": [
+2,
+1,
+6,
+3,
+4,
+5
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D7-ga2033",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "leporian/female",
+"mainClassId": "guardian",
+"subClassId": "wizard",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "wizard",
+"lineage": "oath",
+"predisposition": "devoted",
+"racesAndGender": "ursan/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "perceptive",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "samurai"
+}
+],
+"order": [
+2,
+1,
+4,
+6,
+3,
+5
+],
+"deityId": "precision"
+},
+{
+"label": "GP-D7-ga2045",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "leporian/female",
+"mainClassId": "guardian",
+"subClassId": "wizard",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "oath",
+"predisposition": "devoted",
+"racesAndGender": "ursan/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "perceptive",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "samurai"
+}
+],
+"order": [
+2,
+1,
+3,
+5,
+4,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D7-ga2063",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "leporian/female",
+"mainClassId": "guardian",
+"subClassId": "samurai",
+"lineage": "fragment",
+"predisposition": "nimble"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "oath",
+"predisposition": "devoted",
+"racesAndGender": "ursan/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "perceptive",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "samurai"
+}
+],
+"order": [
+2,
+1,
+3,
+4,
+5,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D7-ga1440",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "aggressive",
+"racesAndGender": "vulpinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "lupinian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "striker"
+}
+],
+"order": [
+1,
+4,
+3,
+2,
+6,
+5
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D7-ga1458",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "abyssal_sea",
+"predisposition": "stubborn",
+"racesAndGender": "lupinian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+}
+],
+"order": [
+1,
+4,
+2,
+3,
+6,
+5
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D7-ga1488",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "sage",
+"lineage": "fragment",
+"predisposition": "serene",
+"racesAndGender": "lupinian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "sword-saint",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+4,
+2,
+3,
+6,
+5
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D7-ga1531",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "sage",
+"lineage": "fragment",
+"predisposition": "perceptive",
+"racesAndGender": "caninian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "sword-saint",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+4,
+2,
+3,
+6,
+5
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D7-ga1547",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "ursan/female",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "wizard",
+"lineage": "fragment",
+"predisposition": "perceptive",
+"racesAndGender": "caninian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "sword-saint",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+4,
+2,
+3,
+6,
+5
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D7-ga1549",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "lupinian/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "fragment",
+"predisposition": "nimble",
+"racesAndGender": "caninian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+4,
+2,
+3,
+6,
+5
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D7-ga1807",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "lupinian/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "fragment",
+"predisposition": "nimble",
+"racesAndGender": "caninian/male"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+4,
+2,
+5,
+6,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D7-ga1810",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "lupinian/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "fragment",
+"predisposition": "nimble",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+4,
+2,
+5,
+6,
+3
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D7-ga1859",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "lupinian/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "precise"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "vulpinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "nimble"
+},
+{
+"characterId": 5,
+"mainClassId": "guardian",
+"subClassId": "ninja",
+"lineage": "fragment",
+"predisposition": "nimble",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+4,
+2,
+5,
+3,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D7-ga1882",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "lupinian/male",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "perceptive"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "inquisitive",
+"racesAndGender": "lupinian/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "samurai",
+"subClassId": "striker",
+"lineage": "fragment",
+"predisposition": "nimble",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+3,
+2,
+4,
+6,
+5
+],
+"deityId": "mirage"
+},
+{
+"label": "GX-D7-ga1888",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "guardian",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "lupinian/male",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "perceptive"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "samurai",
+"subClassId": "striker",
+"lineage": "blaze_peak",
+"predisposition": "nimble",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+6,
+5,
+3,
+4,
+2
+],
+"deityId": "fertility"
+}
+],
+"8": [
+{
+"label": "GP-D8-ga2129",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "procyonian/female",
+"mainClassId": "guardian",
+"subClassId": "samurai",
+"lineage": "fragment",
+"predisposition": "nimble"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "fragment",
+"predisposition": "devoted",
+"racesAndGender": "ursan/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "perceptive",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "samurai"
+}
+],
+"order": [
+2,
+1,
+3,
+4,
+5,
+6
+],
+"deityId": "fortification"
+},
+{
+"label": "GP-D8-ga2165",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "procyonian/female",
+"mainClassId": "guardian",
+"subClassId": "samurai",
+"lineage": "fragment",
+"predisposition": "nimble"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "fragment",
+"predisposition": "devoted",
+"racesAndGender": "ursan/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "sword-saint",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "precise",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "guardian",
+"subClassId": "samurai"
+}
+],
+"order": [
+2,
+1,
+3,
+4,
+5,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D8-ga2251",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "procyonian/female",
+"mainClassId": "guardian",
+"subClassId": "samurai",
+"lineage": "fragment",
+"predisposition": "nimble"
+},
+{
+"characterId": 3,
+"mainClassId": "guardian",
+"subClassId": "lord",
+"lineage": "fragment",
+"predisposition": "devoted",
+"racesAndGender": "ursan/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "precise",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim"
+}
+],
+"order": [
+1,
+2,
+3,
+4,
+5,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D8-ga2478",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "procyonian/female",
+"mainClassId": "guardian",
+"subClassId": "samurai",
+"lineage": "fragment",
+"predisposition": "nimble"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "lord",
+"lineage": "fragment",
+"predisposition": "devoted",
+"racesAndGender": "ursan/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim"
+}
+],
+"order": [
+2,
+1,
+3,
+4,
+5,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GP-D8-ga2482",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "lord",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "procyonian/female",
+"mainClassId": "guardian",
+"subClassId": "samurai",
+"lineage": "fragment",
+"predisposition": "serene"
+},
+{
+"characterId": 3,
+"mainClassId": "pilgrim",
+"subClassId": "lord",
+"lineage": "fragment",
+"predisposition": "devoted",
+"racesAndGender": "ursan/female"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "firmament",
+"predisposition": "aggressive"
+},
+{
+"characterId": 5,
+"mainClassId": "sage",
+"subClassId": "sage",
+"lineage": "oath",
+"predisposition": "nimble",
+"racesAndGender": "murid/female"
+},
+{
+"characterId": 6,
+"mainClassId": "alchemist",
+"subClassId": "pilgrim"
+}
+],
+"order": [
+2,
+1,
+3,
+4,
+5,
+6
+],
+"deityId": "fertility"
+},
+{
+"label": "GX-D8-ga1907",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "guardian",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "lupinian/male",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "perceptive"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "samurai",
+"subClassId": "guardian",
+"lineage": "blaze_peak",
+"predisposition": "nimble",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+5,
+6,
+1,
+3,
+4,
+2
+],
+"deityId": "attrition"
+},
+{
+"label": "GX-D8-ga1910",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "guardian",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "lupinian/male",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "perceptive"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble",
+"racesAndGender": "procyonian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "samurai",
+"subClassId": "guardian",
+"lineage": "blaze_peak",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+5,
+6,
+1,
+3,
+4,
+2
+],
+"deityId": "attrition"
+},
+{
+"label": "GX-D8-ga1954",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "guardian",
+"subClassId": "lord"
+},
+{
+"characterId": 2,
+"racesAndGender": "lupinian/male",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "perceptive"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble",
+"racesAndGender": "felidian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "samurai",
+"subClassId": "guardian",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+5,
+6,
+1,
+3,
+4,
+2
+],
+"deityId": "attrition"
+},
+{
+"label": "GX-D8-ga2067",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+},
+{
+"characterId": 2,
+"racesAndGender": "lupinian/male",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "perceptive"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble",
+"racesAndGender": "felidian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "samurai",
+"subClassId": "guardian",
+"lineage": "machina",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+5,
+6,
+1,
+3,
+4,
+2
+],
+"deityId": "attrition"
+},
+{
+"label": "GX-D8-ga2070",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+},
+{
+"characterId": 2,
+"racesAndGender": "lupinian/male",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "perceptive"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble",
+"racesAndGender": "felidian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "samurai",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+6,
+5,
+3,
+4,
+2
+],
+"deityId": "mirage"
+},
+{
+"label": "GX-D8-ga2153",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+},
+{
+"characterId": 2,
+"racesAndGender": "murid/female",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "aggressive"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble",
+"racesAndGender": "felidian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "samurai",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+6,
+5,
+3,
+4,
+2
+],
+"deityId": "fortification"
+},
+{
+"label": "GX-D8-ga2210",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+},
+{
+"characterId": 2,
+"racesAndGender": "murid/female",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "aggressive"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "nimble",
+"racesAndGender": "felidian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "samurai",
+"subClassId": "guardian",
+"lineage": "utopia",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+6,
+5,
+4,
+3,
+2
+],
+"deityId": "fortification"
+},
+{
+"label": "GX-D8-ga2280",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+},
+{
+"characterId": 2,
+"racesAndGender": "murid/female",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "aggressive"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "felidian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "samurai",
+"subClassId": "guardian",
+"lineage": "firmament",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+5,
+6,
+4,
+2,
+3
+],
+"deityId": "attrition"
+},
+{
+"label": "GX-D8-ga2438",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+},
+{
+"characterId": 2,
+"racesAndGender": "murid/female",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "aggressive"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "felidian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "pilgrim",
+"subClassId": "guardian",
+"lineage": "firmament",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+5,
+6,
+4,
+2,
+3
+],
+"deityId": "mirage"
+},
+{
+"label": "GX-D8-ga2521",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+},
+{
+"characterId": 2,
+"racesAndGender": "murid/female",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "aggressive"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "abyssal_sea",
+"predisposition": "precise",
+"racesAndGender": "felidian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "pilgrim",
+"subClassId": "lord",
+"lineage": "firmament",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+5,
+6,
+4,
+3,
+2
+],
+"deityId": "fortification"
+},
+{
+"label": "GX-D8-ga2523",
+"characters": [
+{
+"characterId": 1,
+"mainClassId": "guardian",
+"subClassId": "guardian"
+},
+{
+"characterId": 2,
+"racesAndGender": "murid/female",
+"mainClassId": "alchemist",
+"subClassId": "striker",
+"lineage": "oath",
+"predisposition": "aggressive"
+},
+{
+"characterId": 3,
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "oath",
+"predisposition": "precise",
+"racesAndGender": "felidian/male"
+},
+{
+"characterId": 4,
+"racesAndGender": "ursan/male",
+"mainClassId": "alchemist",
+"subClassId": "ranger",
+"lineage": "ashen_capital",
+"predisposition": "inquisitive"
+},
+{
+"characterId": 5,
+"mainClassId": "pilgrim",
+"subClassId": "lord",
+"lineage": "firmament",
+"predisposition": "stubborn",
+"racesAndGender": "procyonian/female"
+},
+{
+"characterId": 6,
+"mainClassId": "lord",
+"subClassId": "lord"
+}
+],
+"order": [
+1,
+5,
+6,
+4,
+2,
+3
+],
+"deityId": "fortification"
+}
+]
+}

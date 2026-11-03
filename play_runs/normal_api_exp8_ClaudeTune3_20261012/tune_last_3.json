@@ -1,0 +1,98 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 3.3% / Draw 6.6% / Retreat 60.4% / Defeat 29.7%",
+ "after": "Success 3.2% / Draw 5.6% / Retreat 64.3% / Defeat 26.9%",
+ "improvement": -0.001,
+ "gain": -0.001,
+ "standardError": 0.0079,
+ "bottleneckRoom": "3f-4",
+ "steps": {
+  "offenseElement": [
+   {
+    "element": "e.ice",
+    "improvement": 0.125,
+    "changes": [
+     "4=0/2303/1/0"
+    ]
+   }
+  ],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.ice"
+    ],
+    "improvement": 0.375,
+    "changes": [
+     "1=0/7302/3/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.ice"
+    ],
+    "improvement": 0.25,
+    "changes": [
+     "4=0/7209/3/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.bulwark-breaker"
+    ],
+    "improvement": 0.875,
+    "changes": [
+     "1=0/5403/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.anti-overwatch"
+    ],
+    "improvement": 0.25,
+    "changes": [
+     "1=0/4303/3/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.boost"
+    ],
+    "improvement": 0.25,
+    "changes": [
+     "4=0/4406/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.life-drain"
+    ],
+    "improvement": 0.125,
+    "changes": [
+     "4=0/7306/0/0"
+    ]
+   }
+  ],
+  "finalTuning": [
+   {
+    "step": "ability",
+    "index": 0,
+    "abilities": [
+     "a.bulwark-breaker"
+    ],
+    "improvement": 0.1176,
+    "changes": [
+     "1=0/5403/0/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [],
+ "revision": 1860,
+ "simulationRuns": 11100,
+ "elapsedSeconds": 6.2,
+ "seed": 373420628
+}

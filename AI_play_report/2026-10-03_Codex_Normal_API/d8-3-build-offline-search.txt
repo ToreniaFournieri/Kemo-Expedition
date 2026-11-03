@@ -1,0 +1,85 @@
+baseline {"rate":0.342,"clear":0,"hp":20073,"rooms":[{"room":1,"success":0.928,"defeat":0.066,"draw":0},{"room":2,"success":0.844,"defeat":0.074,"draw":0},{"room":3,"success":0.844,"defeat":0,"draw":0},{"room":4,"success":0.836,"defeat":0.004,"draw":0.004},{"room":5,"success":0.614,"defeat":0.222,"draw":0},{"room":6,"success":0.406,"defeat":0.208,"draw":0},{"room":7,"success":0.388,"defeat":0.002,"draw":0},{"room":8,"success":0.38,"defeat":0.008,"draw":0},{"room":9,"success":0.354,"defeat":0,"draw":0},{"room":10,"success":0.342,"defeat":0,"draw":0},{"room":11,"success":0.342,"defeat":0,"draw":0},{"room":12,"success":0,"defeat":0,"draw":0},{"room":13,"success":0,"defeat":0,"draw":0},{"room":14,"success":0,"defeat":0,"draw":0},{"room":15,"success":0,"defeat":0,"draw":0},{"room":16,"success":0,"defeat":0,"draw":0},{"room":17,"success":0,"defeat":0,"draw":0},{"room":18,"success":0,"defeat":0,"draw":0},{"room":19,"success":0,"defeat":0,"draw":0},{"room":20,"success":0,"defeat":0,"draw":0},{"room":21,"success":0,"defeat":0,"draw":0},{"room":22,"success":0,"defeat":0,"draw":0},{"room":23,"success":0,"defeat":0,"draw":0},{"room":24,"success":0,"defeat":0,"draw":0}]}
+structured 0 1 0.216 HP 15051
+structured 0 6 0.228 HP 14324
+structured 1 1 0.004 HP 15056
+structured 1 6 0 HP 14329
+structured 2 1 0 HP 15018
+structured 2 6 0 HP 14296
+element none 0 0.02
+element none 1 0
+element fire 0 0.054285714285714284
+element fire 1 0
+element thunder 0 0.32571428571428573
+element thunder 1 0.18571428571428572
+element ice 0 0.022857142857142857
+element ice 1 0
+order [ 6, 1, 4, 2, 3, 5 ] 0.34
+order [ 1, 6, 4, 2, 3, 5 ] 0.26
+order [ 1, 4, 2, 3, 6, 5 ] 0.3175
+order [ 6, 4, 2, 3, 1, 5 ] 0.145
+order [ 1, 4, 2, 6, 3, 5 ] 0.34
+order [ 1, 2, 4, 3, 6, 5 ] 0.3325
+vitality 0 4 [ 1, 6, 4, 2, 3, 5 ] 0.2775 HP 21122
+vitality 0 4 [ 6, 1, 4, 2, 3, 5 ] 0.2975 HP 21122
+vitality 0 4 [ 1, 4, 2, 6, 3, 5 ] 0.3475 HP 21122
+vitality 0 8 [ 1, 6, 4, 2, 3, 5 ] 0.28 HP 20603
+vitality 0 8 [ 6, 1, 4, 2, 3, 5 ] 0.305 HP 20603
+vitality 0 8 [ 1, 4, 2, 6, 3, 5 ] 0.345 HP 20603
+vitality 4 0 [ 1, 6, 4, 2, 3, 5 ] 0.325 HP 18068
+vitality 4 0 [ 6, 1, 4, 2, 3, 5 ] 0.2775 HP 18068
+vitality 4 0 [ 1, 4, 2, 6, 3, 5 ] 0.295 HP 18068
+vitality 4 4 [ 1, 6, 4, 2, 3, 5 ] 0.255 HP 19029
+vitality 4 4 [ 6, 1, 4, 2, 3, 5 ] 0.2475 HP 19029
+vitality 4 4 [ 1, 4, 2, 6, 3, 5 ] 0.3175 HP 19029
+vitality 4 8 [ 1, 6, 4, 2, 3, 5 ] 0.2575 HP 18492
+vitality 4 8 [ 6, 1, 4, 2, 3, 5 ] 0.2475 HP 18492
+vitality 4 8 [ 1, 4, 2, 6, 3, 5 ] 0.3225 HP 18492
+vitality 8 0 [ 1, 6, 4, 2, 3, 5 ] 0.2825 HP 17449
+vitality 8 0 [ 6, 1, 4, 2, 3, 5 ] 0.3075 HP 17449
+vitality 8 0 [ 1, 4, 2, 6, 3, 5 ] 0.3175 HP 17449
+vitality 8 4 [ 1, 6, 4, 2, 3, 5 ] 0.26 HP 18403
+vitality 8 4 [ 6, 1, 4, 2, 3, 5 ] 0.275 HP 18403
+vitality 8 4 [ 1, 4, 2, 6, 3, 5 ] 0.34 HP 18403
+vitality 8 8 [ 1, 6, 4, 2, 3, 5 ] 0.29 HP 17878
+vitality 8 8 [ 6, 1, 4, 2, 3, 5 ] 0.25 HP 17878
+vitality 8 8 [ 1, 4, 2, 6, 3, 5 ] 0.3475 HP 17878
+vitality 12 0 [ 1, 6, 4, 2, 3, 5 ] 0.2825 HP 17449
+vitality 12 0 [ 6, 1, 4, 2, 3, 5 ] 0.3075 HP 17449
+vitality 12 0 [ 1, 4, 2, 6, 3, 5 ] 0.3175 HP 17449
+vitality 12 4 [ 1, 6, 4, 2, 3, 5 ] 0.26 HP 18403
+vitality 12 4 [ 6, 1, 4, 2, 3, 5 ] 0.275 HP 18403
+vitality 12 4 [ 1, 4, 2, 6, 3, 5 ] 0.34 HP 18403
+vitality 12 8 [ 1, 6, 4, 2, 3, 5 ] 0.29 HP 17878
+vitality 12 8 [ 6, 1, 4, 2, 3, 5 ] 0.25 HP 17878
+vitality 12 8 [ 1, 4, 2, 6, 3, 5 ] 0.3475 HP 17878
+build 2 ursan ninja 0.36
+build 2 ursan sword-saint 0.31142857142857144
+build 2 ursan striker 0.2357142857142857
+build 2 felidian ninja 0.28714285714285714
+build 2 felidian sword-saint 0.36714285714285716
+build 2 felidian striker 0.22714285714285715
+build 2 leporian ninja 0.3342857142857143
+build 2 leporian sword-saint 0.2957142857142857
+build 2 leporian striker 0.19
+build 3 ursan ninja 0.36857142857142855
+build 3 ursan sword-saint 0.3842857142857143
+build 3 ursan striker 0.3057142857142857
+build 3 felidian ninja 0.36428571428571427
+build 3 felidian sword-saint 0.35
+build 3 felidian striker 0.34714285714285714
+build 3 leporian ninja 0.36
+build 3 leporian sword-saint 0.39714285714285713
+build 3 leporian striker 0.32285714285714284
+build 4 ursan ninja 0.36
+build 4 ursan sword-saint 0.29428571428571426
+build 4 ursan striker 0.22142857142857142
+build 4 felidian ninja 0.2342857142857143
+build 4 felidian sword-saint 0.32
+build 4 felidian striker 0.1442857142857143
+build 4 leporian ninja 0.31285714285714283
+build 4 leporian sword-saint 0.2857142857142857
+build 4 leporian striker 0.16428571428571428
+build 5 cervin wizard 0.36
+build 5 cervin alchemist 0.36857142857142855
+build 5 cervin sage 0.3757142857142857
+best {"rate":0.384,"clear":0,"hp":21119,"order":[1,4,2,6,3,5],"characters":[{"id":1,"stats":{"characterId":1,"row":1,"baseStats":{"vitality":18,"strength":10,"intelligence":10,"mind":10},"rangedAttack":0,"magicalAttack":0,"meleeAttack":0,"rangedNoA":0,"magicalNoA":0,"meleeNoA":2,"physicalDefense":570,"magicalDefense":83,"physicalDefenseAmplifier":0.376,"magicalDefenseAmplifier":0.77,"maxEquipSlots":13,"abilities":[{"id":"command","name":"指揮2","level":2,"description":"自身より後列の味方が与える物理ダメージをx1.5倍にする"},{"id":"squander","name":"浪費1","level":1,"description":"宴会で消費するゴールドがx1.3倍になる"}],"penetMultiplier":0,"originalRangedNoA":0,"originalMagicalNoA":0,"originalMeleeNoA":2,"elementalOffense":"none","elementalOffenseValue":1,"accuracyPotency":1,"accuracyBonus":0,"evasionBonus":0.011,"meleeAttackCBonus":0,"rangedAttackCBonus":0,"magicalAttackCBonus":0,"physicalAttackCBonus":0,"physicalOffenseMultiplier":1,"magicalOffenseMultiplier":1,"physicalDefenseMultiplier":1,"magicalDefenseMultiplier":1,"elementalDefenseMultipliers":{"fire":1,"thunder":1,"ice":1},"offenseCBonusNames":[],"deityOffenseAmplifierBonus":0,"deityDefenseAmplifierBonus":{"physical":1,"magical":1},"hasAntagonism":false},"eq":["0/5401/0/0","0/5401/0/0","0/7403/0/0","0/7403/0/0","0/1401/3/0","0/1401/0/0","0/1401/0/0","0/7103/4/0","0/7103/4/0","0/1401/0/0","0/7103/4/0","0/8103/3/0","0/8103/3/0"]},{"id":4,"stats":{"characterId":4,"row":2,"baseStats":{"vitality":13,"strength":12,"intelligence":7,"mind":7},"rangedAttack":1931,"magicalAttack":0,"meleeAttack":227,"rangedNoA":33,"magicalNoA":0,"meleeNoA":0,"physicalDefense":10,"magicalDefense":0,"physicalDefenseAmplifier":0.76,"magicalDefenseAmplifier":1.32,"maxEquipSlots":11,"abilities":[{"id":"bulwark","name":"壁1","level":1,"description":"真後ろの味方への攻撃を肩代わりする(対象:遠距離)"},{"id":"first_strike","name":"先制攻撃1","level":1,"description":"行動が少し(+1~3)速くなる"},{"id":"output_stabilizer","name":"攻撃安定化","level":1,"description":"いつでも安定して攻撃を行う（地形効果による攻撃回数の変動を受けなくなる）"},{"id":"null_bind","name":"拘束無効","level":1,"description":"拘束を速やかに解くことができる"}],"penetMultiplier":0,"originalRangedNoA":33,"originalMagicalNoA":0,"originalMeleeNoA":0,"elementalOffense":"thunder","elementalOffenseValue":1.21,"accuracyPotency":0.85,"accuracyBonus":0.054,"evasionBonus":-0.006,"meleeAttackCBonus":0,"rangedAttackCBonus":0.9600000000000001,"magicalAttackCBonus":0,"physicalAttackCBonus":0.18,"physicalOffenseMultiplier":1,"magicalOffenseMultiplier":1,"physicalDefenseMultiplier":1,"magicalDefenseMultiplier":1,"elementalDefenseMultipliers":{"fire":1,"thunder":1,"ice":1},"offenseCBonusNames":["c.ranged_attack+0.06","c.ranged_attack+0.19","c.ranged_attack+0.17","c.ranged_attack+0.18","c.ranged_attack+0.2","c.ranged_attack+0.16","c.physical_attack+18"],"deityOffenseAmplifierBonus":0,"deityDefenseAmplifierBonus":{"physical":1,"magical":1},"hasAntagonism":false},"eq":["0/6215/2/0","0/6313/2/0","0/5107/6/0","0/7107/4/0","0/6107/5/0","0/3314/4/0","0/3213/4/0","0/8107/2/0","0/7109/4/0","0/7107/4/0","0/6109/4/0"]},{"id":2,"stats":{"characterId":2,"row":3,"baseStats":{"vitality":13,"strength":12,"intelligence":7,"mind":7},"rangedAttack":1713,"magicalAttack":0,"meleeAttack":253,"rangedNoA":30,"magicalNoA":0,"meleeNoA":0,"physicalDefense":30,"magicalDefense":0,"physicalDefenseAmplifier":0.76,"magicalDefenseAmplifier":1.32,"maxEquipSlots":11,"abilities":[{"id":"bulwark","name":"壁1","level":1,"description":"真後ろの味方への攻撃を肩代わりする(対象:遠距離)"},{"id":"first_strike","name":"先制攻撃1","level":1,"description":"行動が少し(+1~3)速くなる"},{"id":"output_stabilizer","name":"攻撃安定化","level":1,"description":"いつでも安定して攻撃を行う（地形効果による攻撃回数の変動を受けなくなる）"},{"id":"null_bind","name":"拘束無効","level":1,"description":"拘束を速やかに解くことができる"}],"penetMultiplier":0,"originalRangedNoA":30,"originalMagicalNoA":0,"originalMeleeNoA":0,"elementalOffense":"thunder","elementalOffenseValue":1.18,"accuracyPotency":0.7224999999999999,"accuracyBonus":0.052,"evasionBonus":-0.006,"meleeAttackCBonus":0,"rangedAttackCBonus":0.92,"magicalAttackCBonus":0,"physicalAttackCBonus":0.39,"physicalOffenseMultiplier":1,"magicalOffenseMultiplier":1,"physicalDefenseMultiplier":1,"magicalDefenseMultiplier":1,"elementalDefenseMultipliers":{"fire":1,"thunder":1,"ice":1},"offenseCBonusNames":["c.ranged_attack+0.06","c.ranged_attack+0.18","c.ranged_attack+0.17","c.ranged_attack+0.16","c.ranged_attack+0.2","c.ranged_attack+0.15","c.physical_attack+18","c.physical_attack+21"],"deityOffenseAmplifierBonus":0,"deityDefenseAmplifierBonus":{"physical":1,"magical":1},"hasAntagonism":false},"eq":["0/6215/2/0","0/8109/4/0","0/6107/5/0","0/7107/3/0","0/8107/2/0","0/7109/3/0","0/4107/5/0","0/6109/4/0","0/8213/1/0","0/6213/2/0","0/5109/5/0"]},{"id":6,"stats":{"characterId":6,"row":4,"baseStats":{"vitality":18,"strength":10,"intelligence":10,"mind":10},"rangedAttack":0,"magicalAttack":0,"meleeAttack":0,"rangedNoA":0,"magicalNoA":0,"meleeNoA":0,"physicalDefense":456,"magicalDefense":54,"physicalDefenseAmplifier":0.47,"magicalDefenseAmplifier":0.91,"maxEquipSlots":10,"abilities":[{"id":"howl","name":"遠吠え1","level":1,"description":"戦闘フェーズ8タイミングで発動し、相手の次の攻撃回数をx5/7倍にする"},{"id":"defender","name":"防人2","level":2,"description":"自身より後列の味方への物理ダメージをx3/5倍にする"},{"id":"seeker","name":"探究者1","level":1,"description":"魔導書の効果を増加する(レベル毎に+0.50%)"}],"penetMultiplier":0,"originalRangedNoA":0,"originalMagicalNoA":0,"originalMeleeNoA":0,"elementalOffense":"none","elementalOffenseValue":1,"accuracyPotency":0.6141249999999999,"accuracyBonus":0,"evasionBonus":0.011,"meleeAttackCBonus":0,"rangedAttackCBonus":0,"magicalAttackCBonus":0,"physicalAttackCBonus":0,"physicalOffenseMultiplier":1,"magicalOffenseMultiplier":1,"physicalDefenseMultiplier":1,"magicalDefenseMultiplier":1,"elementalDefenseMultipliers":{"fire":1,"thunder":1,"ice":1},"offenseCBonusNames":[],"deityOffenseAmplifierBonus":0,"deityDefenseAmplifierBonus":{"physical":1,"magical":1},"hasAntagonism":false},"eq":["0/1401/0/0","0/1401/0/0","0/1401/0/0","0/1401/0/0","0/1401/0/0","0/1401/0/0","0/1401/0/0","0/8103/3/0","0/8103/3/0","0/1401/0/0"]},{"id":3,"stats":{"characterId":3,"row":5,"baseStats":{"vitality":9,"strength":9,"intelligence":14,"mind":10},"rangedAttack":1514,"magicalAttack":0,"meleeAttack":96,"rangedNoA":22,"magicalNoA":0,"meleeNoA":0,"physicalDefense":12,"magicalDefense":0,"physicalDefenseAmplifier":1.1,"magicalDefenseAmplifier":1,"maxEquipSlots":9,"abilities":[{"id":"composure","name":"平静1","level":1,"description":"命中率が+10%加算される"},{"id":"re_attack","name":"連撃1","level":1,"description":"攻撃時に追加攻撃を行う(攻撃回数がx0.5倍になる)"},{"id":"output_stabilizer","name":"攻撃安定化","level":1,"description":"いつでも安定して攻撃を行う（地形効果による攻撃回数の変動を受けなくなる）"},{"id":"null_bind","name":"拘束無効","level":1,"description":"拘束を速やかに解くことができる"}],"penetMultiplier":0,"originalRangedNoA":22,"originalMagicalNoA":0,"originalMeleeNoA":0,"elementalOffense":"thunder","elementalOffenseValue":1.21,"accuracyPotency":0.6220062499999999,"accuracyBonus":0.049,"evasionBonus":-0.006,"meleeAttackCBonus":0,"rangedAttackCBonus":0.9200000000000002,"magicalAttackCBonus":0,"physicalAttackCBonus":0.21,"physicalOffenseMultiplier":1,"magicalOffenseMultiplier":1,"physicalDefenseMultiplier":1,"magicalDefenseMultiplier":1,"elementalDefenseMultipliers":{"fire":1,"thunder":1,"ice":1},"offenseCBonusNames":["c.ranged_attack+0.06","c.ranged_attack+0.17","c.ranged_attack+0.18","c.ranged_attack+0.16","c.ranged_attack+0.15","c.ranged_attack+0.2","c.physical_attack+21"],"deityOffenseAmplifierBonus":0,"deityDefenseAmplifierBonus":{"physical":1,"magical":1},"hasAntagonism":false},"eq":["0/6215/2/0","0/8109/4/0","0/7107/3/0","0/6107/4/0","0/8107/2/0","0/7109/3/0","0/8213/0/0","0/3213/3/0","0/6109/4/0"]},{"id":5,"stats":{"characterId":5,"row":6,"baseStats":{"vitality":8,"strength":7,"intelligence":13,"mind":12},"rangedAttack":0,"magicalAttack":2129,"meleeAttack":0,"rangedNoA":0,"magicalNoA":23,"meleeNoA":0,"physicalDefense":33,"magicalDefense":99,"physicalDefenseAmplifier":1.2,"magicalDefenseAmplifier":0.83,"maxEquipSlots":9,"abilities":[{"id":"focus","name":"集中1","level":1,"description":"命中ボーナスの効果がx1.2倍になる"},{"id":"resonance","name":"共鳴1","level":1,"description":"魔法攻撃を行うたびに、全ヒットのダメージが+4%増加する"},{"id":"unforgettable","name":"不忘","level":1,"description":"アビリティは消して忘れることがなくなる(忘却無効)"},{"id":"null_death_touch","name":"即死無効","level":1,"description":"接死が無効化する"}],"penetMultiplier":0.03,"originalRangedNoA":0,"originalMagicalNoA":23,"originalMeleeNoA":0,"elementalOffense":"thunder","elementalOffenseValue":1.21,"accuracyPotency":0.44370531249999995,"accuracyBonus":0,"evasionBonus":0,"meleeAttackCBonus":0,"rangedAttackCBonus":0,"magicalAttackCBonus":1.08,"physicalAttackCBonus":0,"physicalOffenseMultiplier":1,"magicalOffenseMultiplier":1,"physicalDefenseMultiplier":1,"magicalDefenseMultiplier":1,"elementalDefenseMultipliers":{"fire":1,"thunder":1,"ice":0.98},"offenseCBonusNames":["c.magical_attack+0.17","c.magical_attack+0.2","c.ice_defense_2","c.magical_attack+0.15","c.magical_attack+0.18","c.magical_attack+0.16","c.magical_attack+22"],"deityOffenseAmplifierBonus":0,"deityDefenseAmplifierBonus":{"physical":1,"magical":1},"hasAntagonism":false},"eq":["0/6223/2/0","0/7110/5/0","0/4110/6/0","0/7317/1/0","0/3223/2/0","0/6110/4/0","0/8110/3/0","0/3404/4/0","0/8112/5/0"]}]}

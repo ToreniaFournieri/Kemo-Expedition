@@ -3,6 +3,7 @@ import { requireBattleSeed } from './battleReplay.ts';
 export type BattleSeedSource = () => bigint;
 
 let injectedSource: BattleSeedSource | null = null;
+let forecastSource: BattleSeedSource | null = null;
 
 /** Low word is values[0], high word is values[1], matching the protocol fields. */
 function createWebCryptoBattleSeed(): bigint {
@@ -25,7 +26,22 @@ export function createWebCryptoBattleSeedForTesting(crypto: Pick<Crypto, 'getRan
 }
 
 export function acquireBattleSeed(): bigint {
-  return requireBattleSeed((injectedSource ?? createWebCryptoBattleSeed)());
+  return requireBattleSeed((forecastSource ?? injectedSource ?? createWebCryptoBattleSeed)());
+}
+
+// SpecRef: 9.1.3 | Read | 2-3-2 party/{p}/gaSearch | builds are compared on the same random numbers.
+/**
+ * Runs one synchronous private forecast whose battles take their seeds from `source` (a seeded forecast stream), so a
+ * fixed forecast seed repeats every battle. It takes precedence over any other source only for the duration of `operation`.
+ */
+export function withForecastBattleSeedSource<T>(source: BattleSeedSource, operation: () => T): T {
+  const previous = forecastSource;
+  forecastSource = source;
+  try {
+    return operation();
+  } finally {
+    forecastSource = previous;
+  }
 }
 
 /** Scoped, realm-local deterministic seed injection for tests only. */

@@ -1,0 +1,287 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "978bc9ad-c10b-45fb-afbc-a693c8083803",
+  "previousRevision": 227,
+  "revision": 228,
+  "committedAt": "2026-10-03T08:41:31.707Z",
+  "data": {
+    "calculatedStatus": {
+      "stats": [
+        {
+          "key": "b.vitality",
+          "value": 9,
+          "unit": "number"
+        },
+        {
+          "key": "b.strength",
+          "value": 9,
+          "unit": "number"
+        },
+        {
+          "key": "b.intelligence",
+          "value": 14,
+          "unit": "number"
+        },
+        {
+          "key": "b.mind",
+          "value": 10,
+          "unit": "number"
+        },
+        {
+          "key": "d.physical_defense",
+          "value": 0,
+          "unit": "number"
+        },
+        {
+          "key": "d.magical_defense",
+          "value": 0,
+          "unit": "number"
+        },
+        {
+          "key": "f.defense_amplifier.physical",
+          "value": 1.1,
+          "unit": "ratio"
+        },
+        {
+          "key": "f.defense_amplifier.magical",
+          "value": 1,
+          "unit": "ratio"
+        },
+        {
+          "key": "f.offense_amplifier.melee",
+          "value": 1.1,
+          "unit": "ratio"
+        },
+        {
+          "key": "f.offense_amplifier.ranged",
+          "value": 1.94,
+          "unit": "ratio"
+        },
+        {
+          "key": "f.offense_amplifier.magical",
+          "value": 1.45,
+          "unit": "ratio"
+        },
+        {
+          "key": "f.c_accuracy",
+          "value": 0.06,
+          "unit": "ratio"
+        },
+        {
+          "key": "f.accuracy_decay",
+          "value": 0.96,
+          "unit": "ratio"
+        },
+        {
+          "key": "f.penetration",
+          "value": 0,
+          "unit": "ratio"
+        },
+        {
+          "key": "d.accuracy_potency",
+          "value": 0.62,
+          "unit": "ratio"
+        },
+        {
+          "key": "c.accuracy",
+          "value": 0.06,
+          "unit": "ratio"
+        },
+        {
+          "key": "c.evasion",
+          "value": -0.011,
+          "unit": "ratio"
+        },
+        {
+          "key": "c.penet",
+          "value": 0,
+          "unit": "ratio"
+        },
+        {
+          "key": "e.thunder",
+          "value": 1.21,
+          "unit": "ratio"
+        },
+        {
+          "key": "r.fire",
+          "value": 1,
+          "unit": "ratio"
+        },
+        {
+          "key": "r.ice",
+          "value": 1,
+          "unit": "ratio"
+        },
+        {
+          "key": "r.thunder",
+          "value": 1,
+          "unit": "ratio"
+        },
+        {
+          "key": "f.equipment_slots",
+          "value": 9,
+          "unit": "number"
+        },
+        {
+          "key": "f.hp_contribution.base",
+          "value": 1169,
+          "unit": "number"
+        },
+        {
+          "key": "f.hp_contribution.item",
+          "value": 0,
+          "unit": "number"
+        },
+        {
+          "key": "f.race_unlock_active",
+          "value": 0,
+          "unit": "number"
+        }
+      ],
+      "abilities": [
+        {
+          "abilityId": "a.composure",
+          "level": 1
+        },
+        {
+          "abilityId": "a.re-attack",
+          "level": 1
+        },
+        {
+          "abilityId": "a.output-stabilizer",
+          "level": 1
+        },
+        {
+          "abilityId": "a.null-bind",
+          "level": 1
+        }
+      ],
+      "bonuses": [
+        {
+          "bonusId": "c.melee-attack",
+          "value": 0
+        },
+        {
+          "bonusId": "c.ranged-attack",
+          "value": 0.92
+        },
+        {
+          "bonusId": "c.magical-attack",
+          "value": 0
+        },
+        {
+          "bonusId": "c.physical-attack",
+          "value": 0.21
+        },
+        {
+          "bonusId": "c.physical-offense-multiplier",
+          "value": 1
+        },
+        {
+          "bonusId": "c.magical-offense-multiplier",
+          "value": 1
+        },
+        {
+          "bonusId": "c.physical-defense-multiplier",
+          "value": 1
+        },
+        {
+          "bonusId": "c.magical-defense-multiplier",
+          "value": 1
+        },
+        {
+          "bonusId": "c.fire-defense-multiplier",
+          "value": 1
+        },
+        {
+          "bonusId": "c.ice-defense-multiplier",
+          "value": 1
+        },
+        {
+          "bonusId": "c.thunder-defense-multiplier",
+          "value": 1
+        }
+      ],
+      "attacks": [
+        {
+          "attackType": "melee",
+          "available": false,
+          "facts": [
+            {
+              "key": "d.melee_attack",
+              "value": 96,
+              "unit": "number"
+            },
+            {
+              "key": "d.melee_NoA",
+              "value": 0,
+              "unit": "number"
+            },
+            {
+              "key": "d.melee_NoA.original",
+              "value": 0,
+              "unit": "number"
+            }
+          ],
+          "speed": {
+            "min": 1,
+            "max": 3,
+            "diceCount": 1,
+            "dieSize": 3
+          }
+        },
+        {
+          "attackType": "ranged",
+          "available": true,
+          "facts": [
+            {
+              "key": "d.ranged_attack",
+              "value": 1514,
+              "unit": "number"
+            },
+            {
+              "key": "d.ranged_NoA",
+              "value": 22,
+              "unit": "number"
+            },
+            {
+              "key": "d.ranged_NoA.original",
+              "value": 22,
+              "unit": "number"
+            }
+          ],
+          "speed": {
+            "min": 4,
+            "max": 12,
+            "diceCount": 4,
+            "dieSize": 3
+          }
+        },
+        {
+          "attackType": "magical",
+          "available": false,
+          "facts": [],
+          "speed": null
+        }
+      ]
+    },
+    "current": {
+      "unique": false,
+      "name": "Lop",
+      "racesAndGender": "leporian/female",
+      "mainClassId": "sword-saint",
+      "subClassId": "ranger",
+      "lineage": "abyssal_sea",
+      "predisposition": "precise"
+    },
+    "confirmationRequired": false,
+    "warnings": [],
+    "applied": true
+  },
+  "effects": [],
+  "changedResources": [
+    "read/observation/party",
+    "read/observation/base"
+  ]
+}

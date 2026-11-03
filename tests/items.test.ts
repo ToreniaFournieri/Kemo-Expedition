@@ -30,16 +30,16 @@ test('every item specification row has the exact explicit runtime ID', () => {
   }
 
   const specIds: number[] = [];
-  const regularSection = itemSpec.slice(0, itemSpec.indexOf('### 3.2.2 Mythic rare item from gods'));
+  const regularSection = itemSpec.slice(0, itemSpec.indexOf('### 3.2.2 Mythic item from gods'));
   const rarityNames: Record<string, string> = {
     C: 'common',
     U: 'uncommon',
-    E: 'eliteRare',
-    B: 'bossRare',
+    R: 'rare',
+    E: 'epic',
   };
   for (const line of regularSection.split('\n')) {
     const match = line.match(
-      /^\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*([CUEB])\s*\|\s*[^|]+\|\s*`i\.([^`]+)`[A-Z]+\s*\|\s*([^|]+?)\s*\|/,
+      /^\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*([CURE])\s*\|\s*[^|]+\|\s*`i\.([^`]+)`[A-Z]+\s*\|\s*([^|]+?)\s*\|/,
     );
     if (!match) continue;
     const [, id, tier, rarityCode, category, name] = match;
@@ -53,12 +53,12 @@ test('every item specification row has the exact explicit runtime ID', () => {
   assert.equal(new Set(specIds).size, 407);
   assert.match(source, /getMasterItemId\(tier, 'common'/);
   assert.match(source, /getMasterItemId\(tier, 'uncommon'/);
-  assert.match(source, /getMasterItemId\(tier, 'eliteRare'/);
-  assert.match(source, /getMasterItemId\(tier, 'bossRare'/);
+  assert.match(source, /getMasterItemId\(tier, 'rare'/);
+  assert.match(source, /getMasterItemId\(tier, 'epic'/);
 });
 
 test('Mythic specification IDs follow the runtime drop order', () => {
-  const mythicSection = itemSpec.slice(itemSpec.indexOf('### 3.2.2 Mythic rare item from gods'));
+  const mythicSection = itemSpec.slice(itemSpec.indexOf('### 3.2.2 Mythic item from gods'));
   const ids = [...mythicSection.matchAll(/^\|\s*(85\d{2})\s*\|/gm)].map((match) => Number(match[1]));
   assert.deepEqual(ids, Array.from({ length: 24 }, (_, index) => 8501 + index));
   assert.match(source, /const id = 8500 \+ index \+ 1;/);

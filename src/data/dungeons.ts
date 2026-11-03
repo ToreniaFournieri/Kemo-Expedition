@@ -300,7 +300,7 @@ const DUNGEON_DEFINITIONS: Dungeon[] = [
   {
     id: 8,
     tier: 8,
-    expLevel: 40,
+    expLevel: 39,
     deployStatus: 'prod',
     get name() { return t('data.dungeons.8.name'); },
     enemyPoolIds: [8],
@@ -313,7 +313,7 @@ const DUNGEON_DEFINITIONS: Dungeon[] = [
   {
     id: 9,
     tier: 1,
-    expLevel: 44,
+    expLevel: 43,
     deployStatus: 'test',
     get name() { return t('data.dungeons.9.name'); },
     enemyPoolIds: [9],
