@@ -34,27 +34,29 @@
 
 | races      |体,力,知,精| default ability　 | unlock ability       | c. bonus      | selectable |
 |------------|-----------|-------------------|----------------------|--------------|------------|
-| Lupinian   |10,13, 8, 7| `a.rage`1         | `a.re-counter`1      | `c.katana_x1.3`,   `c.wand_x1.2`,     `c.equip_slot+1`, `c.ice-defense-multiplier_x2/3`| `true` |
-| Vulpinian  |10,11,12, 8| `a.momentum`1     | `a.cunning`1         | `c.sword_x1.3`,    `c.grimoire_x1.2`, `c.equip_slot+1`| `true` |
-| Felidian   | 9,10,10,13| `a.first-strike`1 | `a.covering-fire`1   | `c.robe_x1.3`,     `c.sword_x1.1`,    `c.arrow_x1.1`, `c.fire-defense-multiplier_x2/3`| `true` |
-| Caninian   |10,10,10,10| `a.howl`1        | `a.resurrect`1       | `c.shield_x1.3`,   `c.gauntlet_x1.2`, `c.archery_x1.1`, `c.growth_x1.1`| `true` |
-| Ursan      |13,11, 7, 7| `a.bulwark`1      | `a.cyborgization`1   | `c.catalyst_x1.3`, `c.katana_x1.1`,   `c.equip_slot+2`| `true` |
-| Procyonian |14, 8, 8, 6| `a.illusion`1        | `a.resonance`1  | `c.grimoire_x1.3`, `c.katana_x1.2`,   `c.robe_x1.2`,  `c.equip_slot+1`, `c.thunder-defense-multiplier_x2/3` | `true` |
-| Leporian   | 9, 8,14,10| `a.composure`1    | `a.magical-counter`1 | `c.arrow_x1.3`,  `c.sword_x1.2`,    `c.armor_x1.3`| `true` |
-| Cervin     | 8, 8,13,11| `a.focus`1        | `a.prophecy`1        | `c.wand_x1.3`,     `c.gauntlet_x1.2`, `c.shield_x1.2`| `true` |
-| Murid      | 7, 8,11,14| `a.stealth`1      | (none)               | `c.bolt_x1.3`,     `c.grimoire_x1.3`  `c.penet+0.20` | `true` |
-| Kemoria    |10,10,10,10| (none)            | (none)               | `c.growth_x1.2`, `c.equip_ranged`, `c.equip_melee`  | `false` |
-| Orcinian   |11,13,10, 8| `a.execution` 1   | `a.overwatch`1       | `c.archery_x1.2`, `c.catalyst_x1.2`, `c.equip_slot+2` | `false` |
-| Avian      | 8,11,11, 9| `a.flying`1       | `a.wind-rider`1       | `c.gauntlet_x1.3`, `c.penet+0.15`  | `false` |
-| Mimorian   | 8, 8, 8, 8| `a.base-status-cap-at-15` | -                    | `c.equip_slot-1`  | `true` |
-
+| `lupinian`   |10,13, 8, 7| `a.rage`1         | `a.re-counter`1      | `c.katana_x1.3`,   `c.wand_x1.2`,     `c.equip_slot+1`, `c.ice-defense-multiplier_x2/3`| `true` |
+| `vulpinian`  |10,11,12, 8| `a.momentum`1     | `a.cunning`1         | `c.sword_x1.3`,    `c.grimoire_x1.2`, `c.equip_slot+1`| `true` |
+| `felidian`   | 9,10,10,13| `a.first-strike`1 | `a.covering-fire`1   | `c.robe_x1.3`,     `c.sword_x1.1`,    `c.arrow_x1.1`, `c.fire-defense-multiplier_x2/3`| `true` |
+| `caninian`   |10,10,10,10| `a.howl`1        | `a.resurrect`1       | `c.shield_x1.3`,   `c.gauntlet_x1.2`, `c.archery_x1.1`, `c.growth_x1.1`| `true` |
+| `ursan`      |13,11, 7, 7| `a.bulwark`1      | `a.cyborgization`1   | `c.catalyst_x1.3`, `c.katana_x1.1`,   `c.equip_slot+2`| `true` |
+| `procyonian` |14, 8, 8, 6| `a.illusion`1        | `a.resonance`1  | `c.grimoire_x1.3`, `c.katana_x1.2`,   `c.robe_x1.2`,  `c.equip_slot+1`, `c.thunder-defense-multiplier_x2/3` | `true` |
+| `leporian`   | 9, 8,14,10| `a.composure`1    | `a.magical-counter`1 | `c.arrow_x1.3`,  `c.sword_x1.2`,    `c.armor_x1.3`| `true` |
+| `cervin`     | 8, 8,13,11| `a.focus`1        | `a.prophecy`1        | `c.wand_x1.3`,     `c.gauntlet_x1.2`, `c.shield_x1.2`| `true` |
+| `kemoria`    |10,10,10,10| (none)            | (none)               | `c.growth_x1.2`, `c.equip_ranged`, `c.equip_melee`  | `false` |
+| `orcinian`   |11,13,10, 8| `a.execution` 1   | `a.overwatch`1       | `c.archery_x1.2`, `c.catalyst_x1.2`, `c.equip_slot+2` | `false` |
+| `avian`      | 8,11,11, 9| `a.flying`1       | `a.wind-rider`1       | `c.gauntlet_x1.3`, `c.penet+0.15`  | `false` |
+| `mimorian`   | 8, 8, 8, 8| `a.base-status-cap-at-15` | -                    | `c.equip_slot-1`  | `true` |
+| `murid`      | 7, 8,11,14| `a.stealth`1      | (none)               | `c.bolt_x1.3`,     `c.grimoire_x1.3`  `c.penet+0.20` | `true` |
+| `mustelid`   | 10,10,10,10| TBA | TBA | `c.throwing_x1.3`  | `false` |
+| `strigian`    | 10,10,10,10| TBA | TBA | `c.staff_x1.3` | `false` |
+| `ovinian`   | 10,10,10,10| TBA | TBA | `c.bell_x1.3` | `false` |
+| `equinian`   | 10,10,10,10| TBA | TBA | `c.lance_x1.3` | `false` |
 
 | races | Japanese name | category | concept | availability | PT1:Prairie Courier, green | PT2:Tropical seaside expedition traveler, aqua | PT3:Desert adventurer outfit | PT4: Pyrepeak, red and black | PT5: Steam punk, brown | PT6:Lerporian Moon Palace, Maid/Moon Steward, indigo |
 |------|----------------|----------|--------|--------------|------|------|------|------|------|------|
 | Lupinian | ルピニアン | 肉食 | 🐺Wolf | Y | - | blue and white, aqua splash pattern | Arabian Wolf, Full moon sand silver, indigo | - | Arctic wolf | Manded Wolf |
 | Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox | Y | - | Rüppell’s Fox, Burnt crimson | Corsac Fox, | - | snow fox | Fennec Fox |
 | Felidian | フェリディアン | 肉食 | 😺Cat | Y | - | Siamese cat | Sand Cat, crystalline | - | MIkeneko | Maine Coon |
-| Mustelid | マステリド | 肉食 | 🦡Ferret | N | - | - | - | - | - | - |
 | Caninian | ケイナイアン | 雑食 | 🐶Dog | Y | - | Carolina Dog | Saluki, Palm Oasis Green, Lapis Turquoise | - | Border collie | Siberian Husky |
 | Ursan | ウルサン | 雑食 | 🐻Bear | Y | - | Sun Bear | Sloth Bear, yellow | - | Panda | Tukinowaguma |
 | Procyonian | プロキオニアン | 雑食 | 🦝Tanuki | Y | - | blue and white, aqua stripe pattern | Ring-tailed Coati, dusty cream with dark dune stripes, brown | Red panda | Tanuki | Pristinailurus |
@@ -62,10 +64,13 @@
 | Cervin | セルヴィン | 草食 | 🦌Deer | Y | - | Axis Deer | Dorcas Gazelle, yellow-green | - | Reindeer | White-tailed Deer + Reindeer |
 | Murid | ミュリッド | 草食 | 🐭Mouse | Y | - | Harvest Mouse, warm harvest-mouse brown fur with subtle coral reef speckle markings in pale aqua and soft coral pink, yellow | Jerboa, warm dune-brown fur with pale sandstone speckles | - | - | Dormouse |
 | Mimorian | ミモリアン | 雑食 | shapeshifter | Y | - | - | - | - | - | - |
-| Caprion | カプリオン | 草食 | 🐐Goat | N | - | - | - | - | - | - |
 | Kemoria | ケモリア | 雑食 | origin | N | - | - | - | - | - | - |
 | Orcinian | オルシニアン | 肉食 | orca | N | - | - | - | - | - | - |
 | Avian | アヴィアン | 雑食 | 🐓bird | N | - | - | - | - | - | - |
+| Mustelid | マステリド | 肉食 | 🦡Ferret | N | - | - | - | - | - | - |
+| Strigian | ストリジアン | 肉食 | 🦉Owl | N | - | - | - | - | - | - |
+| Ovinian | オヴィニアン | 草食 | 🐑Sheep | N | - | - | - | - | - | - |
+| Equinian | エクイニアン | 草食 | 🐴Horse | N | - | - | - | - | - | - |
 
 **classes:**
 - `Main Class` and `Sub Class`
