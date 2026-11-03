@@ -1442,7 +1442,8 @@ export default function SettingTab({
                   className="block w-full space-y-1 border-b border-gray-100 p-3 text-left last:border-b-0"
                 >
                   <div className="flex items-center justify-between gap-3 text-xs text-gray-500">
-                    <span className="font-semibold text-gray-700">{item.version}</span>
+                    {/* item.version is the read-tracking id ("v1.0.0|2026/11/3"); the date already shows on the right. */}
+                    <span className="font-semibold text-gray-700">{item.version.split('|')[0]}</span>
                     <span>{item.date}</span>
                   </div>
                   <p className={`text-gray-700 ${unreadDeveloperNewsItems.some((unreadItem) => unreadItem.version === item.version) ? 'font-bold' : 'font-normal'}`}>
