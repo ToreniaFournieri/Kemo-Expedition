@@ -69,8 +69,8 @@
   --outcome-defeat: color-mix(in srgb, rgb(var(--theme-accent)) 80%, white);
   --rarity-common: var(--content-strong);
   --rarity-uncommon: var(--content-strong);
-  --rarity-elite: var(--theme-sub);
-  --rarity-boss: var(--theme-accent);
+  --rarity-rare: var(--theme-sub);
+  --rarity-epic: var(--theme-accent);
   --rarity-mythic: var(--theme-accent);
   --rarity-super-rare: var(--theme-accent);
   --notification-normal-text: var(--theme-sub);
@@ -507,8 +507,8 @@ body.app-dark {
   --outcome-defeat: color-mix(in srgb, rgb(var(--theme-accent)) 80%, white);
   --rarity-common: var(--content-strong);
   --rarity-uncommon: var(--content-strong);
-  --rarity-elite: var(--theme-sub);
-  --rarity-boss: var(--theme-accent);
+  --rarity-rare: var(--theme-sub);
+  --rarity-epic: var(--theme-accent);
   --rarity-mythic: var(--theme-accent);
   --rarity-super-rare: var(--theme-accent);
   --notification-normal-text: var(--theme-sub);

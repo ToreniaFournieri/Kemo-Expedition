@@ -43,17 +43,17 @@ function NotificationItem({ notification, onDismiss, onDismissAll }: Notificatio
   const isItem = notification.category === 'item';
   const itemTextColor = notification.isSuperRareItem
     ? 'text-rarity-super-rare'
-    : notification.rarity === 'eliteRare'
-      ? 'text-rarity-elite'
-      : notification.rarity === 'bossRare' || notification.rarity === 'mythicRare'
-        ? notification.rarity === 'bossRare' ? 'text-rarity-boss' : 'text-rarity-mythic'
+    : notification.rarity === 'rare'
+      ? 'text-rarity-rare'
+      : notification.rarity === 'epic' || notification.rarity === 'mythic'
+        ? notification.rarity === 'epic' ? 'text-rarity-epic' : 'text-rarity-mythic'
         : notification.rarity === 'common' || notification.rarity === 'uncommon'
           ? notification.rarity === 'common' ? 'text-rarity-common' : 'text-rarity-uncommon'
           : 'text-content-strong';
 
   // For drop notifications: Super Rare overrides to bold dark orange.
   const fontWeight = isItem
-    ? (notification.isSuperRareItem || notification.rarity === 'mythicRare' ? 'font-bold' : 'font-medium')
+    ? (notification.isSuperRareItem || notification.rarity === 'mythic' ? 'font-bold' : 'font-medium')
     : notification.isPositive === true
       ? 'font-bold'
       : notification.isPositive === false

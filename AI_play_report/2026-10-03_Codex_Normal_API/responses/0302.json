@@ -1,0 +1,36 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "820c1216-4296-4813-872d-d324932a5cf6",
+  "previousRevision": 219,
+  "revision": 220,
+  "committedAt": "2026-10-03T08:32:40.299Z",
+  "data": {
+    "jewelAttachReport": {
+      "slotIndex": 2,
+      "attached": "arcana:1",
+      "replaced": null
+    },
+    "current": {
+      "mode": "SEMI",
+      "equipment": [
+        "0/0/6223/2/0",
+        "1/0/7110/5/0/arcana:1",
+        "2/0/4110/6/0/arcana:1",
+        "3/0/7317/1/0",
+        "4/0/3223/2/0",
+        "5/0/6110/4/0",
+        "6/0/8110/2/0",
+        "7/0/3404/4/0",
+        "8/0/8112/3/0"
+      ],
+      "undoAvailable": true,
+      "redoAvailable": false
+    }
+  },
+  "effects": [],
+  "changedResources": [
+    "read/observation/party",
+    "read/observation/base"
+  ]
+}

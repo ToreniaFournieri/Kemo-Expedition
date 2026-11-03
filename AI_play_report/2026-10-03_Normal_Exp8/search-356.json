@@ -1,0 +1,1051 @@
+{
+  "phase": "D7-boss-upgrade",
+  "checkpoint": "checkpoint-469.bokemo",
+  "wallMs": 109786.43299,
+  "revision": 356,
+  "bestScore": 0.01,
+  "validation": {
+    "Clear": 8,
+    "Return": 0,
+    "Draw": 75,
+    "Retreat": 452,
+    "Defeat": 465,
+    "total": 1000,
+    "rooms": [
+      {
+        "room": 1,
+        "Victory": 1000,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 0,
+        "Defeat": 0,
+        "NotReached": 0,
+        "reached": 1000,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 922,
+          "From80": 12,
+          "From70": 20,
+          "From60": 24,
+          "From50": 12,
+          "From40": 9,
+          "Below40": 1
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 0,
+          "From10": 0,
+          "Below10": 0
+        }
+      },
+      {
+        "room": 2,
+        "Victory": 998,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 1,
+        "Defeat": 1,
+        "NotReached": 0,
+        "reached": 1000,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 830,
+          "From80": 12,
+          "From70": 49,
+          "From60": 63,
+          "From50": 28,
+          "From40": 14,
+          "Below40": 2
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 0,
+          "From10": 1,
+          "Below10": 0
+        }
+      },
+      {
+        "room": 3,
+        "Victory": 998,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 0,
+        "Defeat": 0,
+        "NotReached": 2,
+        "reached": 998,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 830,
+          "From80": 9,
+          "From70": 37,
+          "From60": 69,
+          "From50": 32,
+          "From40": 17,
+          "Below40": 4
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 0,
+          "From10": 0,
+          "Below10": 0
+        }
+      },
+      {
+        "room": 4,
+        "Victory": 998,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 0,
+        "Defeat": 0,
+        "NotReached": 2,
+        "reached": 998,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 703,
+          "From80": 128,
+          "From70": 33,
+          "From60": 64,
+          "From50": 37,
+          "From40": 22,
+          "Below40": 11
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 0,
+          "From10": 0,
+          "Below10": 0
+        }
+      },
+      {
+        "room": 5,
+        "Victory": 982,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 16,
+        "Defeat": 0,
+        "NotReached": 2,
+        "reached": 998,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 536,
+          "From80": 98,
+          "From70": 76,
+          "From60": 162,
+          "From50": 57,
+          "From40": 32,
+          "Below40": 21
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 15,
+          "From10": 1,
+          "Below10": 0
+        }
+      },
+      {
+        "room": 6,
+        "Victory": 968,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 11,
+        "Defeat": 3,
+        "NotReached": 18,
+        "reached": 982,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 351,
+          "From80": 69,
+          "From70": 116,
+          "From60": 279,
+          "From50": 86,
+          "From40": 37,
+          "Below40": 30
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 8,
+          "From10": 2,
+          "Below10": 1
+        }
+      },
+      {
+        "room": 7,
+        "Victory": 966,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 2,
+        "Defeat": 0,
+        "NotReached": 32,
+        "reached": 968,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 337,
+          "From80": 79,
+          "From70": 116,
+          "From60": 276,
+          "From50": 88,
+          "From40": 40,
+          "Below40": 30
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 0,
+          "From10": 2,
+          "Below10": 0
+        }
+      },
+      {
+        "room": 8,
+        "Victory": 966,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 0,
+        "Defeat": 0,
+        "NotReached": 34,
+        "reached": 966,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 337,
+          "From80": 79,
+          "From70": 116,
+          "From60": 276,
+          "From50": 88,
+          "From40": 40,
+          "Below40": 30
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 0,
+          "From10": 0,
+          "Below10": 0
+        }
+      },
+      {
+        "room": 9,
+        "Victory": 965,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 0,
+        "Defeat": 1,
+        "NotReached": 34,
+        "reached": 966,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 332,
+          "From80": 79,
+          "From70": 118,
+          "From60": 275,
+          "From50": 88,
+          "From40": 42,
+          "Below40": 31
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 0,
+          "From10": 0,
+          "Below10": 0
+        }
+      },
+      {
+        "room": 10,
+        "Victory": 961,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 2,
+        "Defeat": 2,
+        "NotReached": 35,
+        "reached": 965,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 326,
+          "From80": 80,
+          "From70": 116,
+          "From60": 274,
+          "From50": 87,
+          "From40": 47,
+          "Below40": 31
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 1,
+          "From10": 1,
+          "Below10": 0
+        }
+      },
+      {
+        "room": 11,
+        "Victory": 960,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 0,
+        "Defeat": 1,
+        "NotReached": 39,
+        "reached": 961,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 326,
+          "From80": 80,
+          "From70": 116,
+          "From60": 274,
+          "From50": 87,
+          "From40": 46,
+          "Below40": 31
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 0,
+          "From10": 0,
+          "Below10": 0
+        }
+      },
+      {
+        "room": 12,
+        "Victory": 886,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 54,
+        "Defeat": 20,
+        "NotReached": 40,
+        "reached": 960,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 289,
+          "From80": 70,
+          "From70": 106,
+          "From60": 245,
+          "From50": 81,
+          "From40": 53,
+          "Below40": 42
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 21,
+          "From10": 16,
+          "Below10": 17
+        }
+      },
+      {
+        "room": 13,
+        "Victory": 876,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 8,
+        "Defeat": 2,
+        "NotReached": 114,
+        "reached": 886,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 266,
+          "From80": 75,
+          "From70": 109,
+          "From60": 238,
+          "From50": 84,
+          "From40": 59,
+          "Below40": 45
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 4,
+          "From10": 1,
+          "Below10": 3
+        }
+      },
+      {
+        "room": 14,
+        "Victory": 874,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 1,
+        "Defeat": 1,
+        "NotReached": 124,
+        "reached": 876,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 247,
+          "From80": 83,
+          "From70": 111,
+          "From60": 235,
+          "From50": 91,
+          "From40": 60,
+          "Below40": 47
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 1,
+          "From10": 0,
+          "Below10": 0
+        }
+      },
+      {
+        "room": 15,
+        "Victory": 873,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 1,
+        "Defeat": 0,
+        "NotReached": 126,
+        "reached": 874,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 228,
+          "From80": 85,
+          "From70": 117,
+          "From60": 229,
+          "From50": 105,
+          "From40": 59,
+          "Below40": 50
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 1,
+          "From10": 0,
+          "Below10": 0
+        }
+      },
+      {
+        "room": 16,
+        "Victory": 744,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 1,
+        "Retreat": 104,
+        "Defeat": 24,
+        "NotReached": 127,
+        "reached": 873,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 146,
+          "From80": 50,
+          "From70": 84,
+          "From60": 172,
+          "From50": 123,
+          "From40": 90,
+          "Below40": 79
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 42,
+          "From10": 34,
+          "Below10": 28
+        }
+      },
+      {
+        "room": 17,
+        "Victory": 646,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 27,
+        "Defeat": 71,
+        "NotReached": 256,
+        "reached": 744,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 123,
+          "From80": 47,
+          "From70": 73,
+          "From60": 148,
+          "From50": 107,
+          "From40": 79,
+          "Below40": 69
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 5,
+          "From10": 9,
+          "Below10": 13
+        }
+      },
+      {
+        "room": 18,
+        "Victory": 530,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 32,
+        "Defeat": 84,
+        "NotReached": 354,
+        "reached": 646,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 98,
+          "From80": 38,
+          "From70": 64,
+          "From60": 116,
+          "From50": 92,
+          "From40": 63,
+          "Below40": 59
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 5,
+          "From10": 16,
+          "Below10": 11
+        }
+      },
+      {
+        "room": 19,
+        "Victory": 512,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 8,
+        "Retreat": 9,
+        "Defeat": 1,
+        "NotReached": 470,
+        "reached": 530,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 89,
+          "From80": 41,
+          "From70": 58,
+          "From60": 114,
+          "From50": 83,
+          "From40": 67,
+          "Below40": 60
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 8,
+          "From10": 0,
+          "Below10": 1
+        }
+      },
+      {
+        "room": 20,
+        "Victory": 437,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 23,
+        "Defeat": 52,
+        "NotReached": 488,
+        "reached": 512,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 74,
+          "From80": 35,
+          "From70": 51,
+          "From60": 95,
+          "From50": 65,
+          "From40": 56,
+          "Below40": 61
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 4,
+          "From10": 6,
+          "Below10": 13
+        }
+      },
+      {
+        "room": 21,
+        "Victory": 374,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 46,
+        "Defeat": 17,
+        "NotReached": 563,
+        "reached": 437,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 40,
+          "From80": 24,
+          "From70": 48,
+          "From60": 73,
+          "From50": 50,
+          "From40": 69,
+          "Below40": 70
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 26,
+          "From10": 13,
+          "Below10": 7
+        }
+      },
+      {
+        "room": 22,
+        "Victory": 309,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 0,
+        "Retreat": 50,
+        "Defeat": 15,
+        "NotReached": 626,
+        "reached": 374,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 26,
+          "From80": 11,
+          "From70": 27,
+          "From60": 54,
+          "From50": 55,
+          "From40": 59,
+          "Below40": 77
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 29,
+          "From10": 16,
+          "Below10": 5
+        }
+      },
+      {
+        "room": 23,
+        "Victory": 235,
+        "Clear": 0,
+        "Return": 0,
+        "Draw": 5,
+        "Retreat": 65,
+        "Defeat": 4,
+        "NotReached": 691,
+        "reached": 309,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 12,
+          "From80": 8,
+          "From70": 26,
+          "From60": 41,
+          "From50": 40,
+          "From40": 47,
+          "Below40": 61
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 31,
+          "From10": 27,
+          "Below10": 7
+        }
+      },
+      {
+        "room": 24,
+        "Victory": 0,
+        "Clear": 8,
+        "Return": 0,
+        "Draw": 61,
+        "Retreat": 0,
+        "Defeat": 166,
+        "NotReached": 765,
+        "reached": 235,
+        "total": 1000,
+        "successfulHp": {
+          "Full": 0,
+          "From90": 0,
+          "From80": 0,
+          "From70": 0,
+          "From60": 0,
+          "From50": 0,
+          "From40": 2,
+          "Below40": 6
+        },
+        "retreatHp": {
+          "From30": 0,
+          "From20": 0,
+          "From10": 0,
+          "Below10": 0
+        }
+      }
+    ],
+    "totals": {
+      "experience": 3290123,
+      "itemDrops": 11503,
+      "dropSaleValue": 406486
+    }
+  },
+  "history": [
+    {
+      "kind": "structured",
+      "opts": {
+        "order": [
+          6,
+          1,
+          4,
+          2,
+          3,
+          5
+        ],
+        "element": "fire",
+        "enemyDefense": 770
+      },
+      "score": 0.0075
+    },
+    {
+      "kind": "structured",
+      "opts": {
+        "order": [
+          6,
+          1,
+          4,
+          2,
+          3,
+          5
+        ],
+        "element": "fire",
+        "hpWeight": 2,
+        "defenseCap": 665,
+        "enemyDefense": 770
+      },
+      "score": 0
+    },
+    {
+      "kind": "structured",
+      "opts": {
+        "order": [
+          6,
+          1,
+          4,
+          2,
+          3,
+          5
+        ],
+        "element": "fire",
+        "hpWeight": 1,
+        "physicalWeight": 0.5,
+        "magicalWeight": 1.5,
+        "enemyDefense": 770
+      },
+      "score": 0.01
+    },
+    {
+      "kind": "structured",
+      "opts": {
+        "order": [
+          1,
+          6,
+          4,
+          2,
+          3,
+          5
+        ],
+        "element": "fire",
+        "enemyDefense": 770
+      },
+      "score": 0.0025
+    },
+    {
+      "kind": "structured",
+      "opts": {
+        "order": [
+          1,
+          6,
+          4,
+          2,
+          3,
+          5
+        ],
+        "element": "fire",
+        "hpWeight": 2,
+        "defenseCap": 665,
+        "enemyDefense": 770
+      },
+      "score": 0
+    },
+    {
+      "kind": "structured",
+      "opts": {
+        "order": [
+          1,
+          6,
+          4,
+          2,
+          3,
+          5
+        ],
+        "element": "fire",
+        "hpWeight": 1,
+        "physicalWeight": 0.5,
+        "magicalWeight": 1.5,
+        "enemyDefense": 770
+      },
+      "score": 0.0025
+    },
+    {
+      "kind": "structured",
+      "opts": {
+        "order": [
+          1,
+          4,
+          2,
+          3,
+          6,
+          5
+        ],
+        "element": "fire",
+        "enemyDefense": 770
+      },
+      "score": 0
+    },
+    {
+      "kind": "structured",
+      "opts": {
+        "order": [
+          1,
+          4,
+          2,
+          3,
+          6,
+          5
+        ],
+        "element": "fire",
+        "hpWeight": 2,
+        "defenseCap": 665,
+        "enemyDefense": 770
+      },
+      "score": 0.005
+    },
+    {
+      "kind": "structured",
+      "opts": {
+        "order": [
+          1,
+          4,
+          2,
+          3,
+          6,
+          5
+        ],
+        "element": "fire",
+        "hpWeight": 1,
+        "physicalWeight": 0.5,
+        "magicalWeight": 1.5,
+        "enemyDefense": 770
+      },
+      "score": 0.005
+    },
+    {
+      "kind": "structured",
+      "opts": {
+        "order": [
+          6,
+          4,
+          2,
+          3,
+          1,
+          5
+        ],
+        "element": "fire",
+        "enemyDefense": 770
+      },
+      "score": 0
+    },
+    {
+      "kind": "structured",
+      "opts": {
+        "order": [
+          6,
+          4,
+          2,
+          3,
+          1,
+          5
+        ],
+        "element": "fire",
+        "hpWeight": 2,
+        "defenseCap": 665,
+        "enemyDefense": 770
+      },
+      "score": 0
+    },
+    {
+      "kind": "structured",
+      "opts": {
+        "order": [
+          6,
+          4,
+          2,
+          3,
+          1,
+          5
+        ],
+        "element": "fire",
+        "hpWeight": 1,
+        "physicalWeight": 0.5,
+        "magicalWeight": 1.5,
+        "enemyDefense": 770
+      },
+      "score": 0
+    }
+  ],
+  "build": {
+    "level": 30,
+    "order": [
+      6,
+      1,
+      4,
+      2,
+      3,
+      5
+    ],
+    "hp": 18877,
+    "characters": [
+      {
+        "id": 6,
+        "gear": [
+          "0/7101/6/0/shade:1",
+          "0/1401/0/0",
+          "0/1401/0/0",
+          "0/7103/3/0",
+          "0/1401/2/0",
+          "0/1401/1/0",
+          "0/5103/5/0/shade:3",
+          "0/5103/5/0/ward:1",
+          "0/1401/0/0",
+          "0/1401/0/0"
+        ],
+        "ranged": 0,
+        "noa": 0,
+        "magic": 0,
+        "mnoa": 0,
+        "pdef": 1335,
+        "mdef": 93
+      },
+      {
+        "id": 1,
+        "gear": [
+          "0/6304/3/0",
+          "0/7103/4/0/shade:3",
+          "0/6103/5/0/fort:1",
+          "0/5401/0/0",
+          "0/5401/0/0",
+          "0/7205/2/0",
+          "0/5401/0/0",
+          "0/5401/0/0",
+          "0/7103/3/0",
+          "0/7103/3/0",
+          "0/7103/3/0",
+          "0/7103/3/0",
+          "0/1401/2/0"
+        ],
+        "ranged": 0,
+        "noa": 0,
+        "magic": 0,
+        "mnoa": 0,
+        "pdef": 709,
+        "mdef": 148
+      },
+      {
+        "id": 4,
+        "gear": [
+          "0/3107/5/0",
+          "0/5107/6/0",
+          "0/6313/2/0/focus:1",
+          "0/7107/4/0",
+          "0/5213/0/0",
+          "0/7107/4/0",
+          "0/7107/4/0",
+          "0/5312/2/0/focus:2",
+          "0/7312/0/0",
+          "0/2107/6/0",
+          "0/4217/4/0"
+        ],
+        "ranged": 1818,
+        "noa": 27,
+        "magic": 0,
+        "mnoa": 0,
+        "pdef": 22,
+        "mdef": 0
+      },
+      {
+        "id": 2,
+        "gear": [
+          "0/3313/3/0",
+          "0/7107/3/0",
+          "0/6313/0/0",
+          "0/4213/3/0",
+          "0/6107/4/0",
+          "0/6217/2/0",
+          "0/7107/3/0",
+          "0/7107/3/0",
+          "0/7107/3/0",
+          "0/6107/4/0",
+          "0/4107/4/0"
+        ],
+        "ranged": 1716,
+        "noa": 25,
+        "magic": 0,
+        "mnoa": 0,
+        "pdef": 0,
+        "mdef": 0
+      },
+      {
+        "id": 3,
+        "gear": [
+          "0/7107/2/0",
+          "0/6309/2/0",
+          "0/6313/0/0",
+          "0/4213/2/0",
+          "0/6107/3/0",
+          "0/7107/2/0",
+          "0/7107/2/0",
+          "0/4107/4/0",
+          "0/6217/0/0"
+        ],
+        "ranged": 1557,
+        "noa": 17,
+        "magic": 0,
+        "mnoa": 0,
+        "pdef": 0,
+        "mdef": 0
+      },
+      {
+        "id": 5,
+        "gear": [
+          "0/7110/3/0",
+          "0/4223/2/0",
+          "0/7110/6/0/arcana:1",
+          "0/6110/4/0",
+          "0/3110/6/0",
+          "0/5223/0/0",
+          "0/4110/5/0",
+          "0/5110/4/0",
+          "0/7317/0/0"
+        ],
+        "ranged": 0,
+        "noa": 0,
+        "magic": 2328,
+        "mnoa": 14,
+        "pdef": 0,
+        "mdef": 74
+      }
+    ]
+  }
+}

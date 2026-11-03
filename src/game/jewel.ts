@@ -83,7 +83,7 @@ export const AUTO_JEWEL_KEY_BY_ITEM_CATEGORY: Partial<Record<ItemCategory, Jewel
   catalyst: 'ward',
 };
 
-const AUTO_JEWEL_ASSIGNMENT_CATEGORY_ORDER: ItemCategory[] = [
+export const AUTO_JEWEL_ASSIGNMENT_CATEGORY_ORDER: readonly ItemCategory[] = [
   'armor',
   'robe',
   'shield',

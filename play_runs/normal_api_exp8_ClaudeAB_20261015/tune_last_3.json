@@ -1,0 +1,64 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "progress",
+ "before": "Success 0.0% / Draw 7.6% / Retreat 35.5% / Defeat 56.9%",
+ "after": "Success 0.0% / Draw 7.6% / Retreat 35.5% / Defeat 56.9%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.01,
+ "bottleneckRoom": "2f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.null-shock",
+   "answers": [
+    "a.shock"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 11,
+  "defenseElement": 16,
+  "ability": 8
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.none"
+    ],
+    "improvement": 0.0901,
+    "changes": [
+     "8=0/6110/3/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.none"
+    ],
+    "improvement": 0.0901,
+    "changes": [
+     "8=0/3110/4/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.none"
+    ],
+    "improvement": 0.0901,
+    "changes": [
+     "8=0/4110/3/0"
+    ]
+   }
+  ],
+  "ability": [],
+  "finalTuning": []
+ },
+ "changeSummary": [],
+ "revision": 1268,
+ "simulationRuns": 13800,
+ "elapsedSeconds": 6.7,
+ "seed": 3521644757
+}

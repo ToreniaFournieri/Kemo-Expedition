@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { createApplicationApi, type ApplicationApiPorts } from '../../src/api/v1/applicationApi';
-import { createFreshGameState } from '../../src/hooks/useGameState';
+import { createFreshGameState, gameReducer, simulateExpeditionRuns } from '../../src/hooks/useGameState';
 import { serializeGameState } from '../../src/game/saveCodec';
 import { encodePersistedState } from '../../src/game/storageCompression';
 import { decodeApiSavePayload } from '../../src/api/v1/commitOperations';
@@ -66,7 +66,7 @@ let savePayload = defaultSavePayload;
 /** The first party has met the Gods Battle gate for its selected destination (Spec 5.1.3.1). */
 function godsBattleReady(state: GameState) {
   const party = state.parties[0];
-  party.clearGateProgress = { ...party.clearGateProgress, [`godBattle:${party.selectedDungeonId}:bossRare`]: 3 };
+  party.clearGateProgress = { ...party.clearGateProgress, [`godBattle:${party.selectedDungeonId}:epic`]: 3 };
   party.defeatedBossExpeditions = { ...party.defeatedBossExpeditions, [party.selectedDungeonId]: true } as typeof party.defeatedBossExpeditions;
 }
 
@@ -115,7 +115,10 @@ const ports: ApplicationApiPorts = {
     enemyLevelOffset: () => 0,
     cycleDurationScale: () => 1,
     applyAutoEquipment: (state) => state,
-    simulate: async () => ({ total: 100, Clear: 40, Return: 10, Draw: 10, Retreat: 10, Defeat: 30, rooms: [] }),
+    // A seeded forecast is a GA search's: it runs the real engine, which repeats exactly for one seed.
+    simulate: async (state, partyIndex, count, seed) => seed === undefined
+      ? { total: 100, Clear: 40, Return: 10, Draw: 10, Retreat: 10, Defeat: 30, rooms: [] }
+      : simulateExpeditionRuns(state, partyIndex, 'mode.normal', count, undefined, 0, seed),
     persistPlayer: async () => undefined,
     publish: async () => undefined,
     yieldBetweenChunks: async () => undefined,
@@ -150,6 +153,11 @@ const descriptor = JSON.parse(fs.readFileSync(settings.connectionFile, 'utf8')) 
 interface HttpResult { sent?: CommitRequest; status: number; body: Record<string, unknown> & { error?: { code: string; details?: Record<string, unknown> }; data?: Record<string, unknown>; revision?: number } ; bytes?: Uint8Array }
 
 const byId = new Map(contract.operations.map((operation) => [operation.operationId, operation]));
+
+/** A POST Read (`simulationRun`, `gaSearch`) takes its members as the JSON body; a GET Read as the query. */
+function readInit(operationId: string, path: Record<string, unknown>, query: Record<string, unknown>) {
+  return byId.get(operationId)?.method === 'POST' ? { path, body: query } : { path, query };
+}
 
 function routeFor(operationId: string, pathParameters: Record<string, unknown> = {}): string {
   const operation = byId.get(operationId);
@@ -214,7 +222,7 @@ class Client {
   }
 
   async read(operationId: string, path: Record<string, unknown> = {}, query: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
-    const result = await this.send(operationId, { path, query });
+    const result = await this.send(operationId, readInit(operationId, path, query));
     assert.equal(result.status, 200, `${operationId}: ${JSON.stringify(result.body)}`);
     return result.body.data as Record<string, unknown>;
   }
@@ -284,6 +292,8 @@ interface ReadFixture {
   path?: (client: Actor) => Promise<Record<string, unknown>>;
   query?: Record<string, unknown>;
   missingPath?: Record<string, unknown>;
+  dynamicQuery?: (client: Actor) => Promise<Record<string, unknown>>;
+  missingQuery?: Record<string, unknown>;
   prepare?: (client: Actor) => Promise<void>;
   environment?: 'dev';
 }
@@ -293,6 +303,30 @@ async function firstCharacterId(client: Actor): Promise<number> {
   return party.current.order[0];
 }
 async function characterPath(client: Actor) { return { characterId: await firstCharacterId(client) }; }
+// SpecRef: 9.1.3 | 2-3-2 gaSearch | a small, seeded search over party 1's equipment (the matrix clock never reaches the time budget).
+async function gaSearchBody(client: Actor) {
+  const party = await client.read('read/build/party/{p}', { p: 1 }) as { current: { order: number[] } };
+  return {
+    targets: party.current.order.map((characterId) => ({ characterId, changeableComponents: { equipment: true } })),
+    gaParameters: { seed: 7, populationSize: 8, generations: 2, quickRuns: 10, confirmRuns: 50, verifyRuns: 100, eliteCount: 2 },
+  };
+}
+// SpecRef: 9.1.3 | 2-3-3 directedBuild | a small, seeded `balance` search over party 1's sub classes.
+async function directedBuildBody(client: Actor) {
+  const party = await client.read('read/build/party/{p}', { p: 1 }) as { current: { order: number[] } };
+  return {
+    direction: 'balance',
+    targets: party.current.order.map((characterId) => ({ characterId, changeableComponents: { raceGender: false, mainClass: false } })),
+    tuningParameters: { seed: 7, populationSize: 8, generations: 1, quickRuns: 10, confirmRuns: 50, verifyRuns: 100, eliteCount: 2 },
+  };
+}
+/** Party 1 without equipment and with a shallow depth, so the search always finds and verifies a better build. */
+function gaImprovable(state: GameState) {
+  let next = state;
+  for (const character of state.parties[0].characters) next = gameReducer(next, { type: 'REMOVE_ALL_EQUIPMENT', partyIndex: 0, characterId: character.id });
+  Object.assign(state, next);
+  state.parties[0] = { ...state.parties[0], expeditionDepthLimit: '1f-3' };
+}
 async function ownedItems(client: Client, category?: string): Promise<string[]> {
   const data = await client.read('read/base/searchItems', {}, { state: 'owned', ...(category ? { category } : {}) }) as { items: string[] };
   return data.items.map((entry) => entry.split('/').slice(0, 4).join('/'));
@@ -326,6 +360,13 @@ const commitFixtures: Record<string, CommitFixture> = {
       return { path: { p: 1 }, parameters: { order } };
     },
   },
+  'commit/build/party/{p}/applyBuildChanges': {
+    save: gaImprovable,
+    request: async (client) => {
+      const result = await client.read('read/build/party/{p}/gaSearch', { p: 1 }, await gaSearchBody(client)) as { changeSummary: unknown[]; basis: string; verdict: string };
+      return { path: { p: 1 }, parameters: { changes: result.changeSummary, basis: result.basis, verdict: result.verdict, simulation: false, confirmation: 'yes' } };
+    },
+  },
   'commit/build/character/{characterId}/changeBuild': {
     // The starting characters are unique and cannot be edited (Spec 8.2.3), so the save makes the second one editable.
     save: (state) => { state.parties[0].characters[1].isUnique = false; },
@@ -340,7 +381,7 @@ const commitFixtures: Record<string, CommitFixture> = {
   'commit/build/character/{characterId}/equip': {
     prepare: async (client) => { await client.commitOk('commit/build/character/{characterId}/removeEquipment', { path: await characterPath(client), parameters: { targetEquipment: 1 } }); },
     request: async (client) => {
-      const equipment = await client.read('read/build/character/{characterId}/equipment', await characterPath(client)) as { current: { equipment: Array<string | null> } };
+      const equipment = await client.read('read/build/character/equipment', {}, await characterPath(client)) as { characters: Array<{ current: { equipment: Array<string | null> } }> };
       void equipment;
       const armor = await ownedItems(client, 'armor');
       return { path: await characterPath(client), parameters: { targetEquipment: armor[0] } };
@@ -360,7 +401,7 @@ const commitFixtures: Record<string, CommitFixture> = {
   'commit/build/character/{characterId}/saveEquipmentSet': { request: async (client) => ({ path: await characterPath(client), parameters: { equipmentSet: { name: 'Matrix' } } }) },
   'commit/build/character/{characterId}/loadEquipmentSet': {
     request: async (client) => {
-      // Selling one saved item makes the load partial, which is the case that asks for confirmation (Spec 9.1.3, 3-3-12).
+      // Selling one saved item makes the load partial, which is the case that asks for confirmation (Spec 9.1.3, 3-3-13).
       const setId = await saveSet(client);
       await client.commitOk('commit/build/character/{characterId}/removeAllEquipment', { path: await characterPath(client) });
       await client.commitOk('commit/base/sellInventoryItems', { parameters: { items: [(await ownedItems(client, 'armor'))[0]] } });
@@ -445,10 +486,14 @@ const readFixtures: Record<string, ReadFixture> = {
   'read/expedition/{p}/simulationRun': { path: async () => ({ p: 1 }), missingPath: { p: 6 } },
   'read/expedition/{p}/chargeStock': { path: async () => ({ p: 1 }), missingPath: { p: 6 } },
   'read/build/party/{p}': { path: async () => ({ p: 1 }), missingPath: { p: 6 } },
-  'read/build/character/{characterId}/status': { path: characterPath, missingPath: { characterId: 999999 } },
-  'read/build/character/{characterId}/equipment': { path: characterPath, missingPath: { characterId: 999999 } },
-  'read/build/character/{characterId}/equipmentSet': { path: characterPath, missingPath: { characterId: 999999 } },
-  'read/build/character/{characterId}/equipmentEvaluation': { path: characterPath, query: { equipmentChanges: '1=0' }, missingPath: { characterId: 999999 } },
+  'read/build/party/{p}/gaSearch': { path: async () => ({ p: 1 }), dynamicQuery: gaSearchBody, missingPath: { p: 6 } },
+  'read/build/party/{p}/directedBuild': { path: async () => ({ p: 1 }), dynamicQuery: directedBuildBody, missingPath: { p: 6 } },
+  'read/build/character/status': { dynamicQuery: characterPath, missingQuery: { characterId: 999999 } },
+  'read/build/character/equipment': { dynamicQuery: characterPath, missingQuery: { characterId: 999999 } },
+  'read/build/character/equipmentSet': { dynamicQuery: characterPath, missingQuery: { characterId: 999999 } },
+  'read/build/character/equipmentEvaluation': { dynamicQuery: characterPath, query: { equipmentChanges: '1=0' }, missingQuery: { characterId: 999999 } },
+  // SpecRef: 9.1.3 | 2-3-8 stagedEquipmentTuning | steps 2–4 off: the baseline and the final check alone (2 × 1000 runs).
+  'read/build/character/stagedEquipmentTuning': { dynamicQuery: characterPath, query: { offenseElementTrialRuns: 0, defenseElementTrialRuns: 0, abilityTrialRuns: 0 }, missingQuery: { characterId: 999999 } },
   'read/base/searchItems': { query: { state: 'owned' } },
   'resources/glossary': { query: { category: 'Ab.' } },
   'resources/itemCompendium': { query: { category: 'armor' } },
@@ -692,13 +737,14 @@ async function runRead(operation: CatalogOperation) {
   const execute = async (client: Client | null) => {
     const probe = client ?? new Client();
     const path = (await fixture.path?.(probe)) ?? {};
-    return { client: probe, path };
+    const query = { ...fixture.query, ...((await fixture.dynamicQuery?.(probe)) ?? {}) };
+    return { client: probe, path, query };
   };
 
   await cell(id, 'success', async () => {
     const run = async (client: Client | null) => {
-      const { client: active, path } = await execute(client);
-      const result = await active.send(id, { path, query: fixture.query });
+      const { client: active, path, query } = await execute(client);
+      const result = await active.send(id, readInit(id, path, query));
       assert.equal(result.status, 200, JSON.stringify(result.body));
     };
     if (needsSession) await withSession({ environment }, run); else await run(null);
@@ -706,10 +752,10 @@ async function runRead(operation: CatalogOperation) {
 
   await cell(id, 'invalidInput', async () => {
     const run = async (client: Client | null) => {
-      const { client: active, path } = await execute(client);
+      const { client: active, path, query } = await execute(client);
       const result = operation.method === 'POST'
         ? await active.send(id, { path, body: { ...(operation.examples.invalidRequest?.body ?? { unexpectedMember: true }) } })
-        : await active.send(id, { path, query: { ...fixture.query, ...(operation.examples.invalidRequest?.query ?? { unexpectedMember: 'true' }) } });
+        : await active.send(id, { path, query: { ...query, ...(operation.examples.invalidRequest?.query ?? { unexpectedMember: 'true' }) } });
       expectError(result, 'invalid_request', 'an unknown query member');
     };
     if (needsSession) await withSession({ environment }, run); else await run(null);
@@ -717,10 +763,10 @@ async function runRead(operation: CatalogOperation) {
 
   if (needsSession) {
     await cell(id, 'readOnly', () => withSession({ environment }, async (client) => {
-      const { path } = await execute(client);
+      const { path, query } = await execute(client);
       const before = await snapshot(client);
       const persisted = persistCount;
-      const result = await client.send(id, { path, query: fixture.query });
+      const result = await client.send(id, readInit(id, path, query));
       assert.equal(result.status, 200, JSON.stringify(result.body));
       assert.equal(await snapshot(client), before, 'a read changes nothing');
       assert.equal(persistCount, persisted, 'a read persists nothing');
@@ -729,9 +775,10 @@ async function runRead(operation: CatalogOperation) {
     record(id, 'readOnly', 'n/a: public operation without a save');
   }
 
-  if (errors.has('not_found') && fixture.missingPath) {
+  if (errors.has('not_found') && (fixture.missingPath || fixture.missingQuery)) {
     await cell(id, 'notFound', () => withSession({ environment }, async (client) => {
-      const result = await client.send(id, { path: fixture.missingPath, query: fixture.query });
+      const query = { ...fixture.query, ...((await fixture.dynamicQuery?.(client)) ?? {}), ...fixture.missingQuery };
+      const result = await client.send(id, readInit(id, fixture.missingPath ?? {}, query));
       expectError(result, 'not_found', 'a missing path resource');
     }));
   } else if (errors.has('not_found')) {
@@ -799,6 +846,8 @@ function normalize(value: unknown, extraVolatile: readonly string[] = []): unkno
   return JSON.parse(JSON.stringify(value, (key, entry) => {
     if (VOLATILE_KEYS.has(key) || extraVolatile.includes(key)) return undefined;
     if (typeof entry === 'string' && /^matrix-(opaque|inprocess)-\d+$/.test(entry)) return '<opaque-id>';
+    // Global Diary entry IDs start with their wall-clock creation time, which differs between the two adapters' runs.
+    if (typeof entry === 'string') return entry.replace(/\b\d{13}-(?=[a-z])/g, '<ms>-');
     return entry;
   }));
 }
@@ -869,8 +918,9 @@ async function runParity(filter: RegExp | null) {
         const environment = fixture.environment ?? 'prod';
         const http = await withSession({ environment }, async (client) => {
           const path = (await fixture.path?.(client)) ?? {};
+          const query = { ...fixture.query, ...((await fixture.dynamicQuery?.(client)) ?? {}) };
           await settleDeliveries(application);
-          const result = await client.send(id, { path, query: fixture.query });
+          const result = await client.send(id, readInit(id, path, query));
           assert.equal(result.status, 200, JSON.stringify(result.body));
           return normalize({ revision: result.body.revision, data: result.body.data });
         });
@@ -878,8 +928,9 @@ async function runParity(filter: RegExp | null) {
         try {
           const local = new InProcessActor(inProcessApplication());
           const path = (await fixture.path?.(local)) ?? {};
+          const query = { ...fixture.query, ...((await fixture.dynamicQuery?.(local)) ?? {}) };
           await settleDeliveries(local.api);
-          const result = await local.raw(id, path, fixture.query ?? {});
+          const result = await local.raw(id, path, query);
           assert.equal(result.error, undefined, JSON.stringify(result.error));
           assert.deepEqual(normalize({ revision: result.revision, data: result.data }), http, 'the read differs between adapters');
         } finally {

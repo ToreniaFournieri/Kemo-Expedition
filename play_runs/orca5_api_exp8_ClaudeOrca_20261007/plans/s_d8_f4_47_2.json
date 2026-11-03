@@ -1,0 +1,1 @@
+{"calls":[{"path":"/commit/build/character/6/jewelRemove","params":{"targetEquipment":1}},{"path":"/commit/build/character/1/jewelAttach","params":{"targetEquipment":11,"jewelToSet":"shade:3"}},{"path":"/commit/build/character/5/jewelAttach","params":{"targetEquipment":5,"jewelToSet":"arcana:1"}}]}

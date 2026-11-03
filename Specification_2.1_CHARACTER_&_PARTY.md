@@ -34,15 +34,15 @@
 
 | races      |体,力,知,精| default ability　 | unlock ability       | c. bonus      | selectable |
 |------------|-----------|-------------------|----------------------|--------------|------------|
-| Lupinian   |10,12, 8, 7| `a.rage`1         | `a.re-counter`1      | `c.katana_x1.3`,   `c.wand_x1.2`,     `c.equip_slot+1`, `c.ice-defense-multiplier_x2/3`| `true` |
-| Vulpinian  |11,10,12, 8| `a.momentum`1     | `a.cunning`1         | `c.sword_x1.3`,    `c.grimoire_x1.2`, `c.equip_slot+1`| `true` |
-| Felidian   | 9, 9,10,13| `a.first-strike`1 | `a.covering-fire`1   | `c.robe_x1.3`,     `c.sword_x1.1`,    `c.arrow_x1.1`, `c.fire-defense-multiplier_x2/3`| `true` |
+| Lupinian   |10,13, 8, 7| `a.rage`1         | `a.re-counter`1      | `c.katana_x1.3`,   `c.wand_x1.2`,     `c.equip_slot+1`, `c.ice-defense-multiplier_x2/3`| `true` |
+| Vulpinian  |10,11,12, 8| `a.momentum`1     | `a.cunning`1         | `c.sword_x1.3`,    `c.grimoire_x1.2`, `c.equip_slot+1`| `true` |
+| Felidian   | 9,10,10,13| `a.first-strike`1 | `a.covering-fire`1   | `c.robe_x1.3`,     `c.sword_x1.1`,    `c.arrow_x1.1`, `c.fire-defense-multiplier_x2/3`| `true` |
 | Caninian   |10,10,10,10| `a.howl`1        | `a.resurrect`1       | `c.shield_x1.3`,   `c.gauntlet_x1.2`, `c.archery_x1.1`, `c.growth_x1.1`| `true` |
 | Ursan      |13,11, 7, 7| `a.bulwark`1      | `a.cyborgization`1   | `c.catalyst_x1.3`, `c.katana_x1.1`,   `c.equip_slot+2`| `true` |
 | Procyonian |14, 8, 8, 6| `a.illusion`1        | `a.resonance`1  | `c.grimoire_x1.3`, `c.katana_x1.2`,   `c.robe_x1.2`,  `c.equip_slot+1`, `c.thunder-defense-multiplier_x2/3` | `true` |
 | Leporian   | 9, 8,14,10| `a.composure`1    | `a.magical-counter`1 | `c.arrow_x1.3`,  `c.sword_x1.2`,    `c.armor_x1.3`| `true` |
-| Cervin     | 8, 7,13,11| `a.focus`1        | `a.prophecy`1        | `c.wand_x1.3`,     `c.gauntlet_x1.2`, `c.shield_x1.2`| `true` |
-| Murid      | 7, 8,11,14| `a.stealth`1      | (none)               | `c.bolt_x1.3`,     `c.grimoire_x1.3`  `c.penet+0.10` | `true` |
+| Cervin     | 8, 8,13,11| `a.focus`1        | `a.prophecy`1        | `c.wand_x1.3`,     `c.gauntlet_x1.2`, `c.shield_x1.2`| `true` |
+| Murid      | 7, 8,11,14| `a.stealth`1      | (none)               | `c.bolt_x1.3`,     `c.grimoire_x1.3`  `c.penet+0.20` | `true` |
 | Kemoria    |10,10,10,10| (none)            | (none)               | `c.growth_x1.2`, `c.equip_ranged`, `c.equip_melee`  | `false` |
 | Orcinian   |11,13,10, 8| `a.execution` 1   | `a.overwatch`1       | `c.archery_x1.2`, `c.catalyst_x1.2`, `c.equip_slot+2` | `false` |
 | Avian      | 8,11,11, 9| `a.flying`1       | `a.wind-rider`1       | `c.gauntlet_x1.3`, `c.penet+0.15`  | `false` |
@@ -51,16 +51,16 @@
 
 | races | Japanese name | category | concept | availability | PT1:Prairie Courier, green | PT2:Tropical seaside expedition traveler, aqua | PT3:Desert adventurer outfit | PT4: Pyrepeak, red and black | PT5: Steam punk, brown | PT6:Lerporian Moon Palace, Maid/Moon Steward, indigo |
 |------|----------------|----------|--------|--------------|------|------|------|------|------|------|
-| Lupinian | ルピニアン | 肉食 | 🐺Wolf, lively | Y | - | blue and white, aqua splash pattern | Arabian Wolf, Full moon sand silver, indigo | - | Arctic wolf | Manded Wolf |
-| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox, sly, smiling| Y | - | Rüppell’s Fox, Burnt crimson | Corsac Fox, | - | snow fox | Fennec Fox |
-| Felidian | フェリディアン | 肉食 | 😺Cat, agile | Y | - | Siamese cat | Sand Cat, crystalline | - | MIkeneko | Maine Coon |
+| Lupinian | ルピニアン | 肉食 | 🐺Wolf | Y | - | blue and white, aqua splash pattern | Arabian Wolf, Full moon sand silver, indigo | - | Arctic wolf | Manded Wolf |
+| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox | Y | - | Rüppell’s Fox, Burnt crimson | Corsac Fox, | - | snow fox | Fennec Fox |
+| Felidian | フェリディアン | 肉食 | 😺Cat | Y | - | Siamese cat | Sand Cat, crystalline | - | MIkeneko | Maine Coon |
 | Mustelid | マステリド | 肉食 | 🦡Ferret | N | - | - | - | - | - | - |
-| Caninian | ケイナイアン | 雑食 | 🐶Dog, curious | Y | - | Carolina Dog | Saluki, Palm Oasis Green, Lapis Turquoise | - | Border collie | Siberian Husky |
-| Ursan | ウルサン | 雑食 | 🐻Bear, Strong and imposing. Bold  | Y | - | Sun Bear | Sloth Bear, yellow | - | Panda | Tukinowaguma |
-| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki, A little timid | Y | - | blue and white, aqua stripe pattern | Ring-tailed Coati, dusty cream with dark dune stripes, brown | Red panda | Tanuki | Pristinailurus |
-| Leporian | レポリアン | 草食 | 🐰Rabbit, cheerful personality | Y | - | Cinnamon Rabbit | Desert Cottontail, deep green | - | Dwarf Hotot | Holland Lop |
-| Cervin | セルヴィン | 草食 | 🦌Deer, modest | Y | - | Axis Deer | Dorcas Gazelle, yellow-green | - | Reindeer | White-tailed Deer + Reindeer |
-| Murid | ミュリッド | 草食 | 🐭Mouse, energetic, jumps | Y | - | Harvest Mouse, warm harvest-mouse brown fur with subtle coral reef speckle markings in pale aqua and soft coral pink, yellow | Jerboa, warm dune-brown fur with pale sandstone speckles | - | - | Dormouse |
+| Caninian | ケイナイアン | 雑食 | 🐶Dog | Y | - | Carolina Dog | Saluki, Palm Oasis Green, Lapis Turquoise | - | Border collie | Siberian Husky |
+| Ursan | ウルサン | 雑食 | 🐻Bear | Y | - | Sun Bear | Sloth Bear, yellow | - | Panda | Tukinowaguma |
+| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki | Y | - | blue and white, aqua stripe pattern | Ring-tailed Coati, dusty cream with dark dune stripes, brown | Red panda | Tanuki | Pristinailurus |
+| Leporian | レポリアン | 草食 | 🐰Rabbit | Y | - | Cinnamon Rabbit | Desert Cottontail, deep green | - | Dwarf Hotot | Holland Lop |
+| Cervin | セルヴィン | 草食 | 🦌Deer | Y | - | Axis Deer | Dorcas Gazelle, yellow-green | - | Reindeer | White-tailed Deer + Reindeer |
+| Murid | ミュリッド | 草食 | 🐭Mouse | Y | - | Harvest Mouse, warm harvest-mouse brown fur with subtle coral reef speckle markings in pale aqua and soft coral pink, yellow | Jerboa, warm dune-brown fur with pale sandstone speckles | - | - | Dormouse |
 | Mimorian | ミモリアン | 雑食 | shapeshifter | Y | - | - | - | - | - | - |
 | Caprion | カプリオン | 草食 | 🐐Goat | N | - | - | - | - | - | - |
 | Kemoria | ケモリア | 雑食 | origin | N | - | - | - | - | - | - |
@@ -68,6 +68,7 @@
 | Avian | アヴィアン | 雑食 | 🐓bird | N | - | - | - | - | - | - |
 
 **classes:**
+- `Main Class` and `Sub Class`
 
 | key | Japanese | short name | main/sub bonuses | main bonus | master bonus |
 |-----|----------|------------|------------------|------------|--------------|
@@ -85,6 +86,7 @@
 | class.lord | 君主 | 君 | `c.shield_x1.4`, `c.equip_slot+2` | `a.command`1, `a.squander`1 | `a.command`2, `a.squander`1, `c.shield_x1.2` |
 
 **lineage(系譜):**
+- `Lineage`
 
 -Selectable:
   - `true`: Available for player selection during character creation or edit.
@@ -92,18 +94,18 @@
 
 | lineage |　Text | short | category | bonus | selectable |
 |--------|-----|------|----------|-------|------|
-| `sandstorm` | 砂塵 | 砂 | 動乱 | `a.null-corrode`, `c.sword_x1.2`, `c.grimoire_x1.2` | `true` |
-| `ashen_capital` | 灰都 | 灰 | 動乱 | `a.null-life-drain`, `c.katana_x1.2`, `c.arrow_x1.2` | `true` |
-| `blaze_peak` | 焔嶺 | 焔 | 動乱 | `a.null-burn`, `c.gauntlet_x1.2`, `c.armor_x1.2`, `c.fire-defense-multiplier_x4/5` | `true` |
-| `abyssal_sea` | 深海 | 海 | 狩猟 | `a.null-bind`, `c.arrow_x1.2`, `c.catalyst_x1.2` | `true` |
-| `firmament` | 天穹 | 穹 | 狩猟 | `a.siege`, `c.bolt_x1.2`, `c.shield_x1.2` | `true` |
-| `frozen_forest` | 凍森 | 凍 | 狩猟 | a.coldproof`1, `c.archery_x1.2`, `c.robe_x1.2`, `c.ice-defense-multiplier_x4/5` | `true` |
-| `utopia` | 桃源 | 桃 | 学識 | `a.null-death-touch`, `c.wand_x1.2`, `c.bolt_x1.2` | `true` |
-| `machina` | 機骸 | 機 | 学識 | `a.null-shock`, `c.grimoire_x1.2`, `c.gauntlet_x1.2` | `true` |
-| `adaptation` | 適応 | 適 | 学識 | `c.catalyst_x1.2`, `c.archery_x1.2`,　`c.evasion+20`, `c.thunder-defense-multiplier_x3/4` | `true` |
-| `fragment` | 断章 | 断 | 生存 | `a.unforgettable`, `c.armor_x1.2`, `c.wand_x1.2` | `true` |
-| `windcross` | 風渡 | 風 | 生存 | `a.wind-rider`, `c.robe_x1.2`, `c.katana_x1.2` | `true` |
-| `oath` | 誓約 | 誓 | 生存 | `a.requiem`, `c.shield_x1.2`, `c.sword_x1.2` | `true` |
+| `sandstorm` | 砂塵 | 砂 | 動乱 | `a.null-corrode`, `c.sword_x1.2`, `c.grimoire_x1.2`, `c.evasion+0.005`  | `true` |
+| `ashen_capital` | 灰都 | 灰 | 動乱 | `a.null-life-drain`, `c.katana_x1.2`, `c.arrow_x1.2`, `c.growth_x1.1` | `true` |
+| `blaze_peak` | 焔嶺 | 焔 | 動乱 | `a.null-burn`, `c.gauntlet_x1.2`, `c.armor_x1.2`, `c.evasion+0.005`, `c.fire-defense-multiplier_x4/5` | `true` |
+| `abyssal_sea` | 深海 | 海 | 狩猟 | `a.null-bind`, `c.arrow_x1.2`, `c.catalyst_x1.2`, `c.accuracy+0.005` | `true` |
+| `firmament` | 天穹 | 穹 | 狩猟 | `a.siege`, `c.bolt_x1.2`, `c.shield_x1.2`, `c.accuracy+0.005` | `true` |
+| `frozen_forest` | 凍森 | 凍 | 狩猟 | `a.coldproof`1, `c.archery_x1.2`, `c.robe_x1.2`, `c.accuracy+0.005`, `c.ice-defense-multiplier_x4/5` | `true` |
+| `utopia` | 桃源 | 桃 | 学識 | `a.null-death-touch`, `c.wand_x1.2`, `c.bolt_x1.2`, `c.magical-defense-multiplier_x0.95` | `true` |
+| `machina` | 機骸 | 機 | 学識 | `a.null-shock`, `c.grimoire_x1.2`, `c.gauntlet_x1.2`, `c.magical-defense-multiplier_x0.95` | `true` |
+| `adaptation` | 適応 | 適 | 学識 | `c.catalyst_x1.2`, `c.archery_x1.2`,　`c.evasion+0.025`, `c.thunder-defense-multiplier_x3/4` | `true` |
+| `fragment` | 断章 | 断 | 生存 | `c.equip-slot+1`, `a.unforgettable`, `c.shield_x1.2` | `true` |
+| `windcross` | 風渡 | 風 | 生存 | `c.equip-slot+1`, `a.wind-rider`, `c.robe_x1.2` | `true` |
+| `oath` | 誓約 | 誓 | 生存 | `c.equip-slot+2`, `a.requiem` | `true` |
 | `unascertained` | 不詳 | 不 | - | `c.equip-slot+3` | `false` |
 | `pioneer` | 先駆者 | 先 | - | `c.wand_x1.3`, `a.seeker`1 | `false` |
 | `almighty` | 全能 | 全 | - | `c.growth_x1.3`, `c.sword_x1.3`, `c.arrow_x1.3`, `c.wand_x1.3`, `b.vitality+1`, `b.strength+1`, `b.intelligence+1`, `b.mind+1` | `false` |
@@ -120,6 +122,8 @@
 
 
 **predisposition(性格):**
+- `Predisposition`
+
 -Selectable:
   - `true`: Available for player selection during character creation or edit.
   - `false`: Not available for manual selection (e.g., reserved for unique characters, events, or system assignment).
@@ -127,13 +131,13 @@
 
 | predisposition | Japanese | short | category | bonus | selectable |
 |-----|-----|---|-----|-----------|--------|
-| `aggressive` | 好戦| 好 | 外向的 | `c.sword_x1.1`, `c.bolt_x1.1`, `c.physical-offense-multiplier_x1.1` | `true` |
-| `inquisitive` | 探求 | 探 | 外向的 | `c.arrow_x1.1`, `c.grimoire_x1.1`, `c.magical-offense-multiplier_x1.1` | `true` |
-| `amiable` | 親和 | 和 | 外向的 | `c.gauntlet_x1.1`, `c.bolt_x1.1`, `c.magical_defense+0.10` | `true` |
-| `stubborn` | 頑固 | 頑 | 内向的 | `c.shield_x1.1`, `c.physical_defense+0.10`, `b.vitality+1` | `true` |
+| `aggressive` | 好戦| 好 | 外向的 | `c.sword_x1.1`, `c.bolt_x1.1`, `c.physical-offense-multiplier_x1.1`, `c.penet+0.050` | `true` |
+| `inquisitive` | 探求 | 探 | 外向的 | `c.arrow_x1.1`, `c.grimoire_x1.1`, `c.penet+0.050`, `c.magical-offense-multiplier_x1.1` | `true` |
+| `amiable` | 親和 | 和 | 外向的 | `c.gauntlet_x1.1`, `c.bolt_x1.1`, `c.penet+0.050`, `c.magical_defense+0.10` | `true` |
+| `stubborn` | 頑固 | 頑 | 内向的 | `c.equip-slot+1`, `c.shield_x1.1`, `c.physical_defense+0.10` | `true` |
 | `evasive` | 責任回避 | 避 | 内向的 | `a.null-antagonism`, `c.evasion+0.020`, `c.robe_x1.1` | `true` |
 | `introspective` | 内省 | 内 | 内向的 | `a.unforgettable`, `c.wand_x1.1`, `c.armor_x1.1`,  | `true` |
-| `devoted` | 献身 | 献 | 適応 | `a.first-aid`1, `c.shield_x1.1`, `c.fire-defense-multiplier_x4/5` | `true` |
+| `devoted` | 献身 | 献 | 適応 | `c.equip-slot+2`, `a.first-aid`1, `c.shield_x1.1`, `c.fire-defense-multiplier_x4/5` | `true` |
 | `serene` | 冷静 | 冷 | 適応 | `a.equation-breaker`, `c.growth_x1.1`, `c.catalyst_x1.1`, `c.ice-defense-multiplier_x4/5` | `true` |
 | `nimble` | 軽快 | 軽 | 適応 | `a.boost`1, `c.evasion+0.010`, `c.katana_x1.1`, `c.thunder-defense-multiplier_x4/5` | `true` |
 | `perceptive` | 看破 | 看 | 機知 | `a.true-sight`, `c.penet+0.100`, `c.bolt_x1.1`, `b.intelligence+1` | `true` |
@@ -411,6 +415,7 @@ Party.`d.HP` =
   - bags: `t.common_reward_bag`, `t.common_enhancement_bag`, `t.uncommon_reward_bag`, `t.rare_reward_bag`, `t.mythic_reward_bag`, `t.enhancement_bag`, `t.superRare_bag`, `t.physical_threat_weight_bag`, `t.magical_threat_weight_bag`, `t.side_quest_bag`, and `t.sleepiness_of_party_bag` for each party. 
 
 ##### 2.1.4.2 Initial setup
+
 - Initial setup (or reset condition)
 
 - unlocked deity: none (all of other deity is unlocked)
@@ -422,75 +427,97 @@ Party.`d.HP` =
   - `PartyLevel`: 1
   - `xp_current`: 0
 
+- Unique character
+
+| `uniqueCharacterId` | i18n key | Gender | Race | Lineage | Predisposition | Ref: Japanese name | Available At |
+|----|----|-----|----|----|----|----|----|
+| `kemo` | `character.default.n1` | Male | Kemoria | `unascertained` | `none` | ケモ | Initial |
+| `laika` | `character.default.n2` | Female | Caninian | `pioneer` | `none` | ライカ | Initial |
+| `leonard` | `character.default.n3` | Male | Vulpinian | `meddlesome_fox` | `none` | レナード | PT2 unlocked |
+| `orca` | `character.default.n4` | Female | Orcinian | `rowdy_orca_girl` | `none` | オルカ | PT2 unlocked |
+| `nox` | `character.default.n5` | Male | Murid | `phantom_thief` | `none` | ノクス | PT3 unlocked |
+| `luna` | `character.default.n6` | Female | Felidian | `crescent_jade` | `none` | ルナ | PT3 unlocked |
+| `mishka` | `character.default.n7` | Male | Ursan | `apostate` | `none` | ミシュカ | PT4 unlocked |
+| `ptitsa` | `character.default.n8` | Male | Avian | `flamebound_grove` | `none` | プチーツァ | PT4 unlocked |
+| `hagakure` | `character.default.n9` | Male | Procyonian | `hidden_grail` | `none` | 葉隠 | PT5 unlocked |
+| `sougaha` | `character.default.n10` | Male | Lupinian | `almighty` | `none` | 蒼牙破 | PT5 unlocked |
+| `finn` | `character.default.n11` | Male | Leporian | `unexpected_prince(ss)` | `none` | フィン | PT6 unlocked |
+| `merle` | `character.default.n12` | Female | Cervin | `incarnation` | `none` | マーレ | PT6 unlocked |
+
+
 - **PT1** Party initial condition.
   - deity: `Goddess of Restoration`
 
-| order | Name | Gender | Race | main class | sub class | lineage | predisposition | Initial equipment | Unique |
+| `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Initial equipment | Unique |
 |------|------|------|------|------|------|------|------|------|------|
-| 1 | **ケモ** | Male | **Kemoria** | `class.guardian` | `class.samurai` | **`unascertained`** | `none` | 1101, 1102, 1104, 1105, 1106, 1211 | **`true`** |
+| 1 | **`kemo`** | Male | **Kemoria** | `class.guardian` | `class.samurai` | **`unascertained`** | `none` | 1101, 1102, 1104, 1105, 1106, 1211 | **`true`** |
 | 2 | クズノハ | Female | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `aggressive` | `1104`, `1106` | `false` |
 | 3 | ロップ | Female | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `inquisitive` | `1107`, `1109` |  `false` |
 | 4 | ソウタ | Male | Procyonian | `class.ninja`| `class.striker` | `firmament` | `evasive` | `1107`, `1109` | `false` |
 | 5 | セルフィン | Female | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `introspective` | `1110`, `1112` | `false` |
-| 6 | **ライカ** | Female | Caninian | `class.sage` | `class.alchemist`| **`pioneer`** | `none` | `1110`, `1112`  | **`true`** |
+| 6 | **`laika`** | Female | Caninian | `class.sage` | `class.alchemist`| **`pioneer`** | `none` | `1110`, `1112`  | **`true`** |
 
 - **PT2** initial condition (when unlocked)
   - deity: `God of Cunning`
+    - If this deity is unavailable, assign no deity instead.
 
-| order | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+| `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
-| 1 | **レナード** | Male | Vulpinian | `class.duelist`| `class.lord` | **`meddlesome_fox`** | `none` | **`true`** |
-| 2 | **オルカ** | Female | **Orcinian** | `class.samurai` | `class.sword-saint` | **`rowdy_orca_girl`** | `none` | **`true`** |
-| 1 | カイマ | Male | Procyonian | `class.ranger` | `class.ranger` | `frozen_forest` | `nimble` | `false` |
-| 3 | マナエル | Male | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `inquisitive` | `false` |
-| 5 | レイナ | Female | Felidian | `class.alchemist` | `class.wizard` | `machina` | `serene` | `false` |
-| 6 | タウロ | Male | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `perceptive` | `false` |
+| 101 | **`leonard`** | Male | Vulpinian | `class.duelist`| `class.lord` | **`meddlesome_fox`** | `none` | **`true`** |
+| 102 | **`orca`** | Female | **Orcinian** | `class.samurai` | `class.sword-saint` | **`rowdy_orca_girl`** | `none` | **`true`** |
+| 103 | カイマ | Male | Procyonian | `class.ranger` | `class.ranger` | `frozen_forest` | `nimble` | `false` |
+| 104 | マナエル | Male | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `inquisitive` | `false` |
+| 105 | レイナ | Female | Felidian | `class.alchemist` | `class.wizard` | `machina` | `serene` | `false` |
+| 106 | タウロ | Male | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `perceptive` | `false` |
 
 - **PT3** initial condition (when unlocked)
   - deity: `Goddess of Fertility`
+    - If this deity is unavailable, assign no deity instead.
 
-| order | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+| `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
-| 1 | ハムザ | Male | Ursan | `class.guardian` | `class.ranger` | `firmament` | `evasive` | `false` |
-| 2 | ユースフ | Male | Caninian | `class.lord` | `class.ninja` | `firmament` | `precise` | `false` |
-| 3 | **ノクス** | Male | Murid | `class.ninja`| `class.ranger` | **`phantom_thief`** | `none` | **`true`** |
-| 4 | **ルナ** | Female | Felidian | `class.sword-saint` | `class.ranger` | **`crescent_jade`** | `none` | **`true`** |
-| 5 | カリーム | Male | Lupinian | `class.duelist` | `class.striker` | `frozen_forest` | `perceptive` | `false` |
-| 6 | ジャリル | Male | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `inquisitive` | `false` |
+| 201 | ハムザ | Male | Ursan | `class.guardian` | `class.ranger` | `firmament` | `evasive` | `false` |
+| 202 | ユースフ | Male | Caninian | `class.lord` | `class.ninja` | `firmament` | `precise` | `false` |
+| 203 | **`nox`** | Male | Murid | `class.ninja`| `class.ranger` | **`phantom_thief`** | `none` | **`true`** |
+| 204 | **`luna`** | Female | Felidian | `class.sword-saint` | `class.ranger` | **`crescent_jade`** | `none` | **`true`** |
+| 205 | カリーム | Male | Lupinian | `class.duelist` | `class.striker` | `frozen_forest` | `perceptive` | `false` |
+| 206 | ジャリル | Male | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `inquisitive` | `false` |
 
 - **PT4** initial condition (when unlocked)
   - deity:  `God of Fortification`
+    - If this deity is unavailable, assign no deity instead.
 
-| order | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+| `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
-| 1 | **ミシュカ** | Male | Ursan | `class.lord` | `class.duelist` | **`apostate`** | `none` | **`true`** |
-| 2 | **プチーツァ** | Male | **Avian** | `class.ninja` | `class.sword-saint` | **`flamebound_grove`** | `none` | **`true`** |
-| 3 | ヴェーラ | Female | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `precise` | `false` |
-| 4 | イリーナ | Female | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `devoted` | `false` |
-| 5 | ドミトリ | Male | Lupinian | `class.wizard` | `class.sage` | `machina` | `introspective` | `false` |
-| 6 | ミラ | Female | Cervin | `class.sage` | `class.wizard` | `utopia` | `resourceful` | `false` |
+| 301 | **`mishka`** | Male | Ursan | `class.lord` | `class.duelist` | **`apostate`** | `none` | **`true`** |
+| 302 | **`ptitsa`** | Male | **Avian** | `class.ninja` | `class.sword-saint` | **`flamebound_grove`** | `none` | **`true`** |
+| 303 | ヴェーラ | Female | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `precise` | `false` |
+| 304 | イリーナ | Female | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `devoted` | `false` |
+| 305 | ドミトリ | Male | Lupinian | `class.wizard` | `class.sage` | `machina` | `introspective` | `false` |
+| 306 | ミラ | Female | Cervin | `class.sage` | `class.wizard` | `utopia` | `resourceful` | `false` |
 
 - **PT5** initial condition (when unlocked)
   - deity: `God of Resonance`
+    - If this deity is unavailable, assign no deity instead.
 
-| order | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+| `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
-| 1 | **葉隠** | Male | Procyonian | `class.samurai` | `class.guardian` | **`hidden_grail`** | `none` | **`true`** |
-| 2 | **蒼牙破** | Male | Lupinian | `class.sword-saint` | `class.samurai` | **`almighty`** | `none` | **`true`** |
-| 3 | 影髭 | Male | Felidian | `class.wizard` | `class.ranger` | `abyssal_sea` | `precise` | `false` |
-| 4 | 砕歯 | Male | Murid | `class.striker`| `class.striker` | `firmament` | `aggressive` | `false` |
-| 5 | 霜踏 | Female | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `amiable` | `false` |
-| 6 | 狐火 | Female | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `serene` | `false` |
+| 401 | **`hagakure`** | Male | Procyonian | `class.samurai` | `class.guardian` | **`hidden_grail`** | `none` | **`true`** |
+| 402 | **`sougaha`** | Male | Lupinian | `class.sword-saint` | `class.samurai` | **`almighty`** | `none` | **`true`** |
+| 403 | 影髭 | Male | Felidian | `class.wizard` | `class.ranger` | `abyssal_sea` | `precise` | `false` |
+| 404 | 砕歯 | Male | Murid | `class.striker`| `class.striker` | `firmament` | `aggressive` | `false` |
+| 405 | 霜踏 | Female | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `amiable` | `false` |
+| 406 | 狐火 | Female | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `serene` | `false` |
 
 - **PT6** initial condition (when unlocked)
   - deity: Goddess of Precision
+    - If this deity is unavailable, assign no deity instead.
 
-| order | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+| `characterId` | Name | Gender | Race | Main class | Sub class | Lineage | Predisposition | Unique |
 |------|------|------|------|------|------|------|------|------|
-| 1 | マーカス | Male | Ursan | `class.pilgrim` | `class.samurai` | `fragment` | `stubborn` | `false` |
-| 2 | ランスロット | Male | Caninian | `class.samurai` | `class.sword-saint` | `abyssal_sea` | `resourceful` | `false` |
-| 3 | **フィン** | Male | Leporian | `class.sword-saint` | `class.ranger` | **``unexpected_prince(ss)``** | `none` | **`true`** |
-| 4 | パーシヴァル | Male | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `inquisitive` | `false` |
-| 5 | **マーレ** | Female | Cervin | `class.sage` | `class.wizard` | **`incarnation`** | `none` | **`true`** |
-| 6 | サム | Male | Murid | `class.wizard` | `class.alchemist` | `utopia` | `nimble` | `false` |
-  
+| 501 | マーカス | Male | Ursan | `class.pilgrim` | `class.samurai` | `fragment` | `stubborn` | `false` |
+| 502 | ランスロット | Male | Caninian | `class.samurai` | `class.sword-saint` | `abyssal_sea` | `resourceful` | `false` |
+| 503 | **`finn`** | Male | Leporian | `class.sword-saint` | `class.ranger` | **``unexpected_prince(ss)``** | `none` | **`true`** |
+| 504 | パーシヴァル | Male | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `inquisitive` | `false` |
+| 505 | **`merle`** | Female | Cervin | `class.sage` | `class.wizard` | **`incarnation`** | `none` | **`true`** |
+| 506 | サム | Male | Murid | `class.wizard` | `class.alchemist` | `utopia` | `nimble` | `false` |

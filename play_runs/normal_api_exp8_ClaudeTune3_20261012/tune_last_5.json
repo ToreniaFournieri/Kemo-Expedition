@@ -1,0 +1,117 @@
+{
+ "accepted": true,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 2.7% / Draw 6.8% / Retreat 64.1% / Defeat 26.4%",
+ "after": "Success 5.0% / Draw 7.8% / Retreat 58.5% / Defeat 28.7%",
+ "improvement": 0.8519,
+ "gain": 0.023,
+ "standardError": 0.0086,
+ "bottleneckRoom": "3f-4",
+ "steps": {
+  "offenseElement": [
+   {
+    "element": "e.thunder",
+    "improvement": 0.2222,
+    "changes": [
+     "9=0/6221/2/0"
+    ]
+   }
+  ],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.ice",
+     "r.thunder"
+    ],
+    "improvement": 1.2222,
+    "changes": [
+     "4=0/7304/0/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.ice",
+     "r.thunder"
+    ],
+    "improvement": 0.3333,
+    "changes": [
+     "7=0/7317/0/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.anti-overwatch"
+    ],
+    "improvement": 1.8889,
+    "changes": [
+     "4=0/4303/3/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.dryproof"
+    ],
+    "improvement": 1.5556,
+    "changes": [
+     "4=0/4203/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.null-life-drain"
+    ],
+    "improvement": 1.4444,
+    "changes": [
+     "4=0/2307/0/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.true-sight"
+    ],
+    "improvement": 1.4444,
+    "changes": [
+     "4=0/1406/0/0"
+    ]
+   }
+  ],
+  "finalTuning": [
+   {
+    "step": "ability",
+    "index": 0,
+    "abilities": [
+     "a.anti-overwatch"
+    ],
+    "improvement": 0.5238,
+    "changes": [
+     "4=0/4303/3/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [
+  {
+   "endpoint": "commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": "0/4303/3/0",
+    "targetSlot": 4
+   }
+  }
+ ],
+ "revision": 1860,
+ "simulationRuns": 12600,
+ "elapsedSeconds": 7.6,
+ "seed": 4021123475,
+ "buildResultId": "b714c817-83fe-4af7-8a9b-2b2d4d574531"
+}

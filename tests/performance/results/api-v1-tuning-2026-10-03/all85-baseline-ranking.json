@@ -1,0 +1,682 @@
+[
+  {
+    "operationId": "read/expedition/{p}/simulationRun",
+    "n": 3,
+    "medianMs": 17.90725000000384,
+    "minMs": 17.612750000000233,
+    "maxMs": 18.740791999996873,
+    "maxBytes": 1501
+  },
+  {
+    "operationId": "fundamental/logOut",
+    "n": 3,
+    "medianMs": 17.706709000000046,
+    "minMs": 16.29062500000009,
+    "maxMs": 18.31095899999991,
+    "maxBytes": 177
+  },
+  {
+    "operationId": "fundamental/logIn",
+    "n": 3,
+    "medianMs": 15.183541999999761,
+    "minMs": 14.610541999999896,
+    "maxMs": 15.696542000000136,
+    "maxBytes": 412
+  },
+  {
+    "operationId": "read/base/enemyFormList",
+    "n": 3,
+    "medianMs": 7.210708999991766,
+    "minMs": 6.532999999995809,
+    "maxMs": 7.5627499999973224,
+    "maxBytes": 142376
+  },
+  {
+    "operationId": "commit/expedition/{p}/sortie",
+    "n": 3,
+    "medianMs": 5.475791999997455,
+    "minMs": 5.022750000003725,
+    "maxMs": 5.80449999999837,
+    "maxBytes": 419
+  },
+  {
+    "operationId": "commit/expedition/{p}/godsBattle",
+    "n": 3,
+    "medianMs": 5.002500000002328,
+    "minMs": 4.598792000004323,
+    "maxMs": 5.290374999996857,
+    "maxBytes": 446
+  },
+  {
+    "operationId": "commit/setting/backup/export",
+    "n": 3,
+    "medianMs": 4.681250000008731,
+    "minMs": 3.7830829999875277,
+    "maxMs": 4.821416999999201,
+    "maxBytes": 7014
+  },
+  {
+    "operationId": "commit/setting/backup/import",
+    "n": 3,
+    "medianMs": 4.141250000000582,
+    "minMs": 4.132207999995444,
+    "maxMs": 5.093582999994396,
+    "maxBytes": 277
+  },
+  {
+    "operationId": "commit/progress/progressReport",
+    "n": 3,
+    "medianMs": 4.024334000001545,
+    "minMs": 3.7411250000004657,
+    "maxMs": 4.1052500000078,
+    "maxBytes": 383
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/changeBuild",
+    "n": 3,
+    "medianMs": 4.024124999996275,
+    "minMs": 3.796542000010959,
+    "maxMs": 5.790999999997439,
+    "maxBytes": 2980
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/removeEquipment",
+    "n": 3,
+    "medianMs": 3.9968340000050375,
+    "minMs": 3.6352909999986878,
+    "maxMs": 4.33262499999546,
+    "maxBytes": 417
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/removeAllEquipment",
+    "n": 3,
+    "medianMs": 3.9420830000017304,
+    "minMs": 3.8528750000114087,
+    "maxMs": 4.2433750000054715,
+    "maxBytes": 362
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/redoEquipment",
+    "n": 3,
+    "medianMs": 3.928833999991184,
+    "minMs": 3.540374999996857,
+    "maxMs": 4.193417000002228,
+    "maxBytes": 417
+  },
+  {
+    "operationId": "commit/setting/feedback",
+    "n": 3,
+    "medianMs": 3.8821249999891734,
+    "minMs": 3.7714170000108425,
+    "maxMs": 4.006458000003477,
+    "maxBytes": 331
+  },
+  {
+    "operationId": "fundamental/signUp",
+    "n": 3,
+    "medianMs": 3.858041000000412,
+    "minMs": 2.5342500000001564,
+    "maxMs": 4.347042000000329,
+    "maxBytes": 252
+  },
+  {
+    "operationId": "commit/progress/elapsed",
+    "n": 3,
+    "medianMs": 3.77483399999619,
+    "minMs": 3.2020420000044396,
+    "maxMs": 3.8336249999993015,
+    "maxBytes": 456
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/undoEquipment",
+    "n": 3,
+    "medianMs": 3.7640840000094613,
+    "minMs": 3.6424169999954756,
+    "maxMs": 4.418208999995841,
+    "maxBytes": 428
+  },
+  {
+    "operationId": "commit/base/purchaseShopItems",
+    "n": 3,
+    "medianMs": 3.7245830000028946,
+    "minMs": 3.4211660000000848,
+    "maxMs": 3.7288339999940945,
+    "maxBytes": 356
+  },
+  {
+    "operationId": "help/endpoints",
+    "n": 3,
+    "medianMs": 3.666165999995428,
+    "minMs": 3.5132080000039423,
+    "maxMs": 3.9542919999948936,
+    "maxBytes": 169932
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/jewelAttach",
+    "n": 3,
+    "medianMs": 3.5572919999976875,
+    "minMs": 3.4648749999905704,
+    "maxMs": 3.925541999997222,
+    "maxBytes": 507
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/autoEquipment",
+    "n": 3,
+    "medianMs": 3.400041999993846,
+    "minMs": 3.165374999996857,
+    "maxMs": 4.206417000008514,
+    "maxBytes": 476
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/equip",
+    "n": 3,
+    "medianMs": 3.38504200000898,
+    "minMs": 3.1490410000114935,
+    "maxMs": 4.5715000000054715,
+    "maxBytes": 442
+  },
+  {
+    "operationId": "commit/build/party/{p}",
+    "n": 3,
+    "medianMs": 3.2908749999915017,
+    "minMs": 2.879665999993449,
+    "maxMs": 4.308541999998852,
+    "maxBytes": 313
+  },
+  {
+    "operationId": "commit/expedition/{p}/changeExpedition",
+    "n": 3,
+    "medianMs": 3.251917000001413,
+    "minMs": 2.8912080000009155,
+    "maxMs": 3.4890420000010636,
+    "maxBytes": 407
+  },
+  {
+    "operationId": "commit/base/paidShopRefresh",
+    "n": 3,
+    "medianMs": 3.1858329999959096,
+    "minMs": 3.0232079999987036,
+    "maxMs": 3.210708999991766,
+    "maxBytes": 328
+  },
+  {
+    "operationId": "commit/setting/enemyEditPane",
+    "n": 3,
+    "medianMs": 3.161416999999801,
+    "minMs": 2.9059159999997064,
+    "maxMs": 4.279416999999739,
+    "maxBytes": 422
+  },
+  {
+    "operationId": "commit/setting/modeSelect",
+    "n": 3,
+    "medianMs": 3.123874999990221,
+    "minMs": 2.9576669999951264,
+    "maxMs": 3.161791999998968,
+    "maxBytes": 351
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/jewelRemove",
+    "n": 3,
+    "medianMs": 3.1192920000030426,
+    "minMs": 3.063917000006768,
+    "maxMs": 3.1547500000015134,
+    "maxBytes": 428
+  },
+  {
+    "operationId": "commit/setting/debug",
+    "n": 3,
+    "medianMs": 3.0960000000000036,
+    "minMs": 2.614708999999948,
+    "maxMs": 3.183291000000281,
+    "maxBytes": 582
+  },
+  {
+    "operationId": "commit/base/unlockForm",
+    "n": 3,
+    "medianMs": 3.0720839999994496,
+    "minMs": 2.9009579999983544,
+    "maxMs": 3.431958000001032,
+    "maxBytes": 288
+  },
+  {
+    "operationId": "commit/setting/uiPreferences",
+    "n": 3,
+    "medianMs": 3.0013340000004973,
+    "minMs": 2.829542000006768,
+    "maxMs": 4.142709000007017,
+    "maxBytes": 326
+  },
+  {
+    "operationId": "commit/diary/diaryEntry/markAsRead",
+    "n": 3,
+    "medianMs": 2.996207999996841,
+    "minMs": 2.850957999995444,
+    "maxMs": 3.0277079999941634,
+    "maxBytes": 310
+  },
+  {
+    "operationId": "commit/diary/{p}/diarySetting",
+    "n": 3,
+    "medianMs": 2.9882499999948777,
+    "minMs": 2.819667000003392,
+    "maxMs": 3.155333000002429,
+    "maxBytes": 563
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/lockEquipment",
+    "n": 3,
+    "medianMs": 2.9646669999929145,
+    "minMs": 2.7784580000006827,
+    "maxMs": 3.1680839999899035,
+    "maxBytes": 428
+  },
+  {
+    "operationId": "commit/setting/markNewsAsRead",
+    "n": 3,
+    "medianMs": 2.9415829999925336,
+    "minMs": 2.86058399999456,
+    "maxMs": 3.068375000002561,
+    "maxBytes": 610
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/saveEquipmentSet",
+    "n": 3,
+    "medianMs": 2.8740840000100434,
+    "minMs": 2.431665999989491,
+    "maxMs": 4.475916000010329,
+    "maxBytes": 274
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/loadEquipmentSet",
+    "n": 3,
+    "medianMs": 2.853791999994428,
+    "minMs": 2.65320800000336,
+    "maxMs": 2.9332920000015292,
+    "maxBytes": 911
+  },
+  {
+    "operationId": "commit/base/markItemsAsSeen",
+    "n": 3,
+    "medianMs": 2.8107920000038575,
+    "minMs": 2.6587500000023283,
+    "maxMs": 2.9119580000115093,
+    "maxBytes": 279
+  },
+  {
+    "operationId": "commit/expedition/{p}/resetStatistics",
+    "n": 3,
+    "medianMs": 2.80858400001307,
+    "minMs": 2.7560840000078315,
+    "maxMs": 2.939124999989872,
+    "maxBytes": 208
+  },
+  {
+    "operationId": "commit/setting/backup/reset",
+    "n": 3,
+    "medianMs": 2.8041249999951106,
+    "minMs": 2.573208000001614,
+    "maxMs": 3.1623340000078315,
+    "maxBytes": 262
+  },
+  {
+    "operationId": "read/observation/compact",
+    "n": 3,
+    "medianMs": 2.799582999999984,
+    "minMs": 2.5774579999997513,
+    "maxMs": 3.0058329999992566,
+    "maxBytes": 649
+  },
+  {
+    "operationId": "commit/base/sellInventoryItems",
+    "n": 3,
+    "medianMs": 2.7685420000052545,
+    "minMs": 2.6352500000066357,
+    "maxMs": 2.8071669999917503,
+    "maxBytes": 333
+  },
+  {
+    "operationId": "commit/setting/clairvoyanceReset",
+    "n": 3,
+    "medianMs": 2.6802090000001044,
+    "minMs": 2.3904169999996157,
+    "maxMs": 3.2464170000002923,
+    "maxBytes": 293
+  },
+  {
+    "operationId": "commit/base/unlockSoldItems",
+    "n": 3,
+    "medianMs": 2.6752919999998994,
+    "minMs": 2.6086250000080327,
+    "maxMs": 2.7190410000039265,
+    "maxBytes": 281
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/deleteEquipmentSet",
+    "n": 3,
+    "medianMs": 2.6733749999984866,
+    "minMs": 2.6398339999868767,
+    "maxMs": 3.918707999997423,
+    "maxBytes": 429
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/renameEquipmentSet",
+    "n": 3,
+    "medianMs": 2.6718330000003334,
+    "minMs": 2.6440829999919515,
+    "maxMs": 2.7057499999937136,
+    "maxBytes": 429
+  },
+  {
+    "operationId": "read/observation/base",
+    "n": 3,
+    "medianMs": 2.6676250000000437,
+    "minMs": 2.315708000000086,
+    "maxMs": 2.673208000000159,
+    "maxBytes": 11287
+  },
+  {
+    "operationId": "commit/base/changeJewelPriorityParty",
+    "n": 3,
+    "medianMs": 2.6265409999905387,
+    "minMs": 2.496584000007715,
+    "maxMs": 2.7113749999989523,
+    "maxBytes": 291
+  },
+  {
+    "operationId": "commit/build/character/{characterId}/unlockEquipment",
+    "n": 3,
+    "medianMs": 2.5915420000092126,
+    "minMs": 2.5745420000021113,
+    "maxMs": 3.1115419999987353,
+    "maxBytes": 428
+  },
+  {
+    "operationId": "read/observation/party",
+    "n": 3,
+    "medianMs": 2.568333000000166,
+    "minMs": 2.5577089999997042,
+    "maxMs": 2.774790999999823,
+    "maxBytes": 18016
+  },
+  {
+    "operationId": "read/observation",
+    "n": 3,
+    "medianMs": 2.4983750000001237,
+    "minMs": 2.4203749999996944,
+    "maxMs": 2.6455000000000837,
+    "maxBytes": 649
+  },
+  {
+    "operationId": "read/observation/expedition",
+    "n": 3,
+    "medianMs": 1.812249999999949,
+    "minMs": 1.703165999999328,
+    "maxMs": 1.841957999999977,
+    "maxBytes": 780
+  },
+  {
+    "operationId": "read/build/character/{characterId}/status",
+    "n": 3,
+    "medianMs": 1.6689170000026934,
+    "minMs": 1.4095419999939622,
+    "maxMs": 1.7057090000016615,
+    "maxBytes": 3133
+  },
+  {
+    "operationId": "resources/bestiary",
+    "n": 3,
+    "medianMs": 1.6362499999959255,
+    "minMs": 1.4266670000070008,
+    "maxMs": 1.7017919999925653,
+    "maxBytes": 6238
+  },
+  {
+    "operationId": "read/build/character/{characterId}/equipment",
+    "n": 3,
+    "medianMs": 1.5410830000037095,
+    "minMs": 1.2620830000087153,
+    "maxMs": 1.617499999993015,
+    "maxBytes": 550
+  },
+  {
+    "operationId": "read/base/shopInfo",
+    "n": 3,
+    "medianMs": 1.488459000000148,
+    "minMs": 1.3665840000030585,
+    "maxMs": 1.5075829999987036,
+    "maxBytes": 330
+  },
+  {
+    "operationId": "read/base/shopItemsList",
+    "n": 3,
+    "medianMs": 1.46379199999501,
+    "minMs": 1.304415999999037,
+    "maxMs": 1.5132500000036089,
+    "maxBytes": 1693
+  },
+  {
+    "operationId": "read/build/character/{characterId}/equipmentSet",
+    "n": 3,
+    "medianMs": 1.4491659999912372,
+    "minMs": 1.3108340000035241,
+    "maxMs": 1.528667000005953,
+    "maxBytes": 169
+  },
+  {
+    "operationId": "read/setting/enemyEditPane",
+    "n": 3,
+    "medianMs": 1.4215000000112923,
+    "minMs": 1.349333000005572,
+    "maxMs": 1.4234580000047572,
+    "maxBytes": 4040
+  },
+  {
+    "operationId": "read/observation/setting",
+    "n": 3,
+    "medianMs": 1.3924999999999272,
+    "minMs": 1.2723329999998896,
+    "maxMs": 1.4410840000000462,
+    "maxBytes": 1784
+  },
+  {
+    "operationId": "resources/superRareList",
+    "n": 3,
+    "medianMs": 1.3896250000107102,
+    "minMs": 1.2508749999979045,
+    "maxMs": 1.4032499999884749,
+    "maxBytes": 4673
+  },
+  {
+    "operationId": "read/observation/diary",
+    "n": 3,
+    "medianMs": 1.3781669999998485,
+    "minMs": 1.3239579999999478,
+    "maxMs": 1.389208999999937,
+    "maxBytes": 2010
+  },
+  {
+    "operationId": "read/base/altarInfo",
+    "n": 3,
+    "medianMs": 1.3549579999962589,
+    "minMs": 1.2227920000004815,
+    "maxMs": 1.5193339999968885,
+    "maxBytes": 4443
+  },
+  {
+    "operationId": "resources/clairvoyance/{p}",
+    "n": 3,
+    "medianMs": 1.329542000006768,
+    "minMs": 1.2975829999923008,
+    "maxMs": 1.379625000001397,
+    "maxBytes": 168
+  },
+  {
+    "operationId": "read/diary/{p}/diarySetting",
+    "n": 3,
+    "medianMs": 1.2674590000096941,
+    "minMs": 1.2269169999926817,
+    "maxMs": 1.5294159999903059,
+    "maxBytes": 963
+  },
+  {
+    "operationId": "read/build/party/{p}",
+    "n": 3,
+    "medianMs": 1.2572499999951106,
+    "minMs": 1.1312919999909354,
+    "maxMs": 1.3679169999959413,
+    "maxBytes": 398
+  },
+  {
+    "operationId": "help/overview",
+    "n": 3,
+    "medianMs": 1.2235839999921154,
+    "minMs": 1.165292000005138,
+    "maxMs": 1.2547079999931157,
+    "maxBytes": 10531
+  },
+  {
+    "operationId": "read/setting/modeSelect",
+    "n": 3,
+    "medianMs": 1.2229590000060853,
+    "minMs": 1.189250000010361,
+    "maxMs": 1.320917000004556,
+    "maxBytes": 522
+  },
+  {
+    "operationId": "read/build/character/{characterId}/equipmentEvaluation",
+    "n": 3,
+    "medianMs": 1.2120839999988675,
+    "minMs": 1.1418750000011642,
+    "maxMs": 1.550582999989274,
+    "maxBytes": 292
+  },
+  {
+    "operationId": "resources/characterRoster",
+    "n": 3,
+    "medianMs": 1.2078330000076676,
+    "minMs": 1.0971250000002328,
+    "maxMs": 2.7869170000049053,
+    "maxBytes": 442
+  },
+  {
+    "operationId": "resources/developerNewsNotification",
+    "n": 3,
+    "medianMs": 1.185957999987295,
+    "minMs": 1.1677919999929145,
+    "maxMs": 1.302416999998968,
+    "maxBytes": 4083
+  },
+  {
+    "operationId": "read/expedition/{p}/chargeStock",
+    "n": 3,
+    "medianMs": 1.1772499999933643,
+    "minMs": 1.1388330000045244,
+    "maxMs": 2.629165999998804,
+    "maxBytes": 185
+  },
+  {
+    "operationId": "read/base/searchItems",
+    "n": 3,
+    "medianMs": 1.1732499999925494,
+    "minMs": 1.1306670000049053,
+    "maxMs": 1.319707999995444,
+    "maxBytes": 879
+  },
+  {
+    "operationId": "resources/itemCompendium",
+    "n": 3,
+    "medianMs": 1.1633750000037253,
+    "minMs": 1.157082999998238,
+    "maxMs": 1.3509999999951106,
+    "maxBytes": 3167
+  },
+  {
+    "operationId": "read/expedition/{p}/latestBattleLog",
+    "n": 3,
+    "medianMs": 1.1429580000112765,
+    "minMs": 1.0885839999973541,
+    "maxMs": 1.2226670000090962,
+    "maxBytes": 207
+  },
+  {
+    "operationId": "read/observation/overview",
+    "n": 3,
+    "medianMs": 1.13537499999984,
+    "minMs": 0.9622909999998228,
+    "maxMs": 1.2278750000004948,
+    "maxBytes": 394
+  },
+  {
+    "operationId": "read/expedition/{p}/setting",
+    "n": 3,
+    "medianMs": 1.1312499999912689,
+    "minMs": 1.0161670000088634,
+    "maxMs": 1.1612910000112606,
+    "maxBytes": 428
+  },
+  {
+    "operationId": "read/setting/debug",
+    "n": 3,
+    "medianMs": 1.1277079999999842,
+    "minMs": 1.045709000012721,
+    "maxMs": 1.142375000010361,
+    "maxBytes": 925
+  },
+  {
+    "operationId": "resources/glossary",
+    "n": 3,
+    "medianMs": 1.0838329999969574,
+    "minMs": 1.0680839999986347,
+    "maxMs": 1.207250000006752,
+    "maxBytes": 287
+  },
+  {
+    "operationId": "read/base/jewelPriorityParty",
+    "n": 3,
+    "medianMs": 1.076042000000598,
+    "minMs": 1.0730409999960102,
+    "maxMs": 1.1650419999932637,
+    "maxBytes": 220
+  },
+  {
+    "operationId": "read/setting/delivery/{deliveryId}",
+    "n": 3,
+    "medianMs": 1.020875000001979,
+    "minMs": 0.9639999999926658,
+    "maxMs": 1.9232910000137053,
+    "maxBytes": 343
+  },
+  {
+    "operationId": "resources/donationBox",
+    "n": 3,
+    "medianMs": 1.0082920000131708,
+    "minMs": 0.9304170000104932,
+    "maxMs": 1.2201249999925494,
+    "maxBytes": 399
+  },
+  {
+    "operationId": "fundamental/status",
+    "n": 3,
+    "medianMs": 0.9911250000000109,
+    "minMs": 0.9761669999998048,
+    "maxMs": 1.0795419999999467,
+    "maxBytes": 209
+  },
+  {
+    "operationId": "read/observation/popupEventStream",
+    "n": 3,
+    "medianMs": 0.9805419999997866,
+    "minMs": 0.9092909999999392,
+    "maxMs": 0.9847500000000764,
+    "maxBytes": 0
+  },
+  {
+    "operationId": "read/diary/diaryEntry/{diaryEntryId}",
+    "n": 3,
+    "medianMs": 0.958874999996624,
+    "minMs": 0.9567500000121072,
+    "maxMs": 1.0314999999973224,
+    "maxBytes": 588
+  }
+]

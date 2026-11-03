@@ -1,0 +1,125 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "607c8625-5aa3-4c54-86c9-6fc20e26f5e5",
+  "revision": 44,
+  "observedAt": "2026-10-03T08:10:32.510Z",
+  "data": {
+    "expeditionInfo": {
+      "parties": [
+        {
+          "partyNumber": 1,
+          "name": "PT1",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 4081,
+          "maximumHp": 4081,
+          "disclosedFloor": 4,
+          "disclosedOutcome": "Defeat",
+          "destination": 4,
+          "destinationMode": "fixed",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 3,
+          "chargeDuration": 2880,
+          "clearGates": [],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": true,
+              "unavailableReason": null
+            }
+          }
+        },
+        {
+          "partyNumber": 2,
+          "name": "PT2",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 1520,
+          "maximumHp": 1520,
+          "disclosedFloor": 1,
+          "disclosedOutcome": "Return",
+          "destination": 3,
+          "destinationMode": "auto",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 5,
+          "chargeDuration": 0,
+          "clearGates": [
+            {
+              "kind": "eliteGate",
+              "dungeonId": 3,
+              "floor": 1,
+              "current": 1,
+              "required": 7
+            }
+          ],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": false,
+              "unavailableReason": "gods_battle_unavailable"
+            }
+          }
+        },
+        {
+          "partyNumber": 3,
+          "name": "PT3",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 613,
+          "maximumHp": 613,
+          "disclosedFloor": 1,
+          "disclosedOutcome": "Return",
+          "destination": 1,
+          "destinationMode": "auto",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 3,
+          "chargeDuration": 0,
+          "clearGates": [
+            {
+              "kind": "eliteGate",
+              "dungeonId": 1,
+              "floor": 1,
+              "current": 4,
+              "required": 7
+            }
+          ],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": false,
+              "unavailableReason": "gods_battle_unavailable"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

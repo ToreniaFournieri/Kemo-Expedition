@@ -1,0 +1,21 @@
+{
+ "verdict": "noChange",
+ "forecast": {
+  "before": "Success 25.2% / Draw 0.6% / Retreat 53.4% / Defeat 20.8%",
+  "after": "Success 25.2% / Draw 0.6% / Retreat 53.4% / Defeat 20.8%"
+ },
+ "changeSummary": [],
+ "revision": 2067,
+ "evaluations": 1359,
+ "elapsedSeconds": 83.8,
+ "buildResultId": "4835392c-b002-40ff-8e1a-afa9a92ca5e5",
+ "verification": {
+  "objective": "success",
+  "runs": 500,
+  "before": 0.252,
+  "after": 0.252,
+  "gain": 0,
+  "standardError": 0,
+  "seed": 3834605439
+ }
+}

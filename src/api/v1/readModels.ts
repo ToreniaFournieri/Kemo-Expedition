@@ -7,6 +7,8 @@ import { LINEAGES } from '../../data/lineages.ts';
 import { PREDISPOSITIONS } from '../../data/predispositions.ts';
 import { RACES } from '../../data/races.ts';
 import { getDiaryRewardHeadline } from '../../game/diaryHeadline.ts';
+import { countUnreadGlobalDiaryLogs, GLOBAL_DIARY_PARTY_NUMBER } from '../../game/globalDiary.ts';
+import { renderGlobalDiaryTitle } from '../../game/globalDiaryTitle.ts';
 import { buildDiaryProjection, DIARY_SETTING_VALID_OPTIONS, diaryEntryContent, diarySettingsView, findDiaryEntryView } from './diaryView.ts';
 import { getConditionState } from '../../game/partyCondition.ts';
 import { getDungeonById } from '../../data/dungeons.ts';
@@ -26,15 +28,16 @@ import { describeEquipmentHistory, type EquipmentHistoryBag } from './equipmentH
 import { apiExpeditionOutcome, apiExpeditionOutcomeOrNull } from './expeditionOutcome.ts';
 import { buildBattleLogData, buildBattleRoomData, buildRoomResources, retainedLogIdOf } from './battleLogs.ts';
 import { buildSimulationRunData, describeSimulationDepthReach } from './simulationView.ts';
-import { describeCharacterBuildCurrent } from './buildChange.ts';
+import { describeForecastSettings, MEASURED_OBJECTIVES, measureObjective, objectiveSimulationOptions, parseForecastSettings, prepareObjectiveState, routeRoomCount, type MeasuredObjective } from './objectiveMeasure.ts';
+import { describeCharacterBuildCurrent, validUniqueSelections } from './buildChange.ts';
 import { EQUIPMENT_EVALUATION_LIMIT } from './requestLimits.ts';
 import { paginate } from './pagination.ts';
 import { getItemTier } from '../../game/pricing.ts';
 import { getLocalizedItemName, getLocalizedSuperRareTitle } from '../../game/gameState.ts';
 import { describeUiPreferenceCatalog, listUiPreferences } from './uiPreferenceCatalog.ts';
-import { getExpeditionGoals, getSideQuestFacts } from '../../game/expeditionGoals.ts';
+import { formatCompactClearGate, formatCompactSideQuest, getExpeditionGoals, getSideQuestFacts } from '../../game/expeditionGoals.ts';
 import { getEstimatedStartHp, getPartyStateProgress } from '../../game/partyStateProgress.ts';
-import { DIFFICULTY_OFFSET_STEP, EXPEDITION_DEPTH_LIMITS, getSelectableDestinationIds, getSelectableDifficultyOffsetMax } from '../../game/expeditionSettings.ts';
+import { DIFFICULTY_OFFSET_STEP, EXPEDITION_DEPTH_LIMITS, getExpeditionChangeRejection, getSelectableDestinationIds, getSelectableDifficultyOffsetMax } from '../../game/expeditionSettings.ts';
 import { getSortieUnavailableReason } from './sortieAvailability.ts';
 import { getXpToNextLevel } from '../../game/partyLevel.ts';
 import { getPublicShopLineupId, getShopFacts, shopLineupInputOf } from '../../game/shopFacts.ts';
@@ -47,8 +50,8 @@ import { buildEnemyStatus } from './enemyStatus.ts';
 import { GLOSSARY_SECTIONS } from '../../data/glossary.ts';
 import { formatBonusAbilityPhaseDisplay, LOCALIZED_BONUS_ABILITY_GLOSSARY_ENTRIES } from '../../data/bonusAbilityGlossary.ts';
 import {
-  createCommonEnhancementBag, createCommonRewardBag, createCommonSuperRareBag, createEliteRareRewardBag, createEnhancementBag,
-  createBossRareRewardBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag,
+  createCommonEnhancementBag, createCommonRewardBag, createCommonSuperRareBag, createRareRewardBag, createEnhancementBag,
+  createEpicRewardBag, createMythicRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag,
   createUncommonRewardBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag,
 } from '../../game/bags.ts';
 import type { ApiV1PartyCycleView } from './commitOperations.ts';
@@ -58,7 +61,8 @@ import { getPartyClairvoyanceAccess } from '../../game/clairvoyanceAccess.ts';
 import type { DebugSettings } from '../../game/debugSettings.ts';
 import type { ColosseumEnemySettings } from '../../game/colosseum.ts';
 import { accountEnemyEditSettingsOf, describeEnemyEditPane, enemyEditPaneValidOptions } from './enemyEditPane.ts';
-import { MAX_LEVEL, type DiaryLog, type EnemyDef, type ExpeditionLog, type Character, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party, type RandomBag } from '../../types/index.ts';
+import { normalizePartyDropStats } from '../../game/dropStatistics.ts';
+import { MAX_LEVEL, type DiaryLog, type EnemyDef, type ExpeditionLog, type Character, type ExpeditionSimulationOptions, type ExpeditionSimulationResult, type GameState, type Item, type JewelKey, type Party, type RandomBag } from '../../types/index.ts';
 
 // SpecRef: 9.1.4.7 | Observation projections | transport-neutral read models
 
@@ -78,7 +82,13 @@ export interface ApiV1ReadContext {
   readonly gameMode: 'mode.normal' | 'mode.orca';
   readonly enemyLevelOffset: number;
   readonly inGameTime: number;
-  readonly simulation?: (partyIndex: number, count: number) => Promise<unknown>;
+  /**
+   * A private forecast of party `partyIndex`: of `forecast.state` when given (an objective's prepared state, 9.1.3 2-2-3
+   * `objective`), else of the read's state; on `forecast.seed` when given, else on fresh random numbers.
+   */
+  readonly simulation?: (partyIndex: number, count: number, forecast?: { state: GameState; seed: number; options: ExpeditionSimulationOptions }) => Promise<unknown>;
+  /** A fresh random seed for a forecast whose seed was not requested (Web Crypto when absent). */
+  readonly createSeed?: () => number;
   /** The live party cycle of a party (by index) for the ordinary player's runtime; absent for an API account. */
   readonly partyCycle?: (partyIndex: number) => ApiV1PartyCycleView | undefined;
   /**
@@ -118,7 +128,7 @@ function overviewProjection(state: GameState, context: ApiV1ReadContext) {
     gold: state.global.gold,
     prana: state.global.prana,
     environment: context.environment,
-    unreadDiary: state.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0),
+    unreadDiary: countUnreadGlobalDiaryLogs(state.global.globalDiary) + state.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0),
     speedOfTime: runtime ? {
       base: SPEED_OF_TIME_KEYS[runtime.timeSpeed] ?? 'real',
       scale: context.chargeDurationScale ?? 1,
@@ -138,7 +148,7 @@ function equipmentEntry(item: Item | null, slotIndex: number): string {
   return item ? formatEquipmentEntry(slotIndex, item, item.isLocked === true, item.jewel) : '0';
 }
 
-// SpecRef: 9.1.3 | 2-3-3 equipment | Array in equipment-slot order; an empty slot is `0`.
+// SpecRef: 9.1.3 | 2-3-5 equipment | Array in equipment-slot order; an empty slot is `0`.
 /**
  * Every slot the character has, including trailing empty ones the saved equipment array may not store. Empty entries
  * past the last slot (left by a save from before a class change trimmed them) are not slots and are not listed.
@@ -148,9 +158,35 @@ function equipmentEntries(character: Character, maxEquipSlots: number): string[]
   return Array.from({ length: Math.max(lastEquipped + 1, maxEquipSlots) }, (_, slot) => equipmentEntry(character.equipment[slot] ?? null, slot));
 }
 
-/** The API's one spelling of Auto Equipment mode (9.1.3 2-3-3 `mode`), shared by every projection. */
+/** The API's one spelling of Auto Equipment mode (9.1.3 2-3-5 `mode`), shared by every projection. */
 export function autoEquipmentModeName(mode: Character['autoEquipmentMode']): 'FULL' | 'SEMI' | 'OFF' {
   return mode === 2 ? 'FULL' : mode === 1 ? 'SEMI' : 'OFF';
+}
+
+// SpecRef: 9.1.3 | Read | 2-3-1 party/{p} `validOptions.deityId`
+/** `none`, the party's own deity, and every unlocked deity no other party holds (also the GA search's deity choices). */
+export function validPartyDeityIds(state: GameState, party: Party): string[] {
+  const currentDeityId = getDeityId(party.deity.name);
+  const usedByOtherParties = new Set(state.parties.filter((entry) => entry.id !== party.id).map((entry) => getDeityId(entry.deity.name)));
+  return Array.from(new Set(['none', currentDeityId, ...state.global.unlockedDeities.map(getDeityId)]))
+    .filter((id) => id === 'none' || id === currentDeityId || !usedByOtherParties.has(id));
+}
+
+const EDITABLE_RACE_IDS = new Set(['lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian', 'leporian', 'cervin', 'murid']);
+
+// SpecRef: 9.1.3 | Read | 2-3-4 character/status `validOptions.racesAndGender`
+/** Race/gender keys not held by another non-unique party member, plus unlocked Mimorian forms no other character uses. */
+export function validRaceAndGenderOptions(state: GameState, party: Party, character: Party['characters'][number]): string[] {
+  const normalRaceOptions = RACES.filter((race) => EDITABLE_RACE_IDS.has(race.id)).flatMap((race) => (['male', 'female'] as const)
+    .filter((gender) => !party.characters.some((candidate) => candidate.id !== character.id && candidate.isUnique !== true && candidate.raceId === race.id && candidate.gender === gender))
+    .map((gender) => `${race.id}/${gender}`));
+  const assignedMimorianForms = new Set(state.parties.flatMap((entry) => entry.characters)
+    .filter((candidate) => candidate.id !== character.id && candidate.raceId === 'mimorian')
+    .map((candidate) => candidate.mimorianEnemyId));
+  const mimorianOptions = state.global.unlockedMimorianEnemyIds
+    .filter((enemyId) => ENEMIES.some((enemy) => enemy.id === enemyId) && !assignedMimorianForms.has(enemyId))
+    .map((enemyId) => `mimorian/female/${enemyId}`);
+  return [...normalRaceOptions, ...mimorianOptions];
 }
 
 function partyByNumber(state: GameState, value: unknown): { party: Party; index: number } | null {
@@ -182,6 +218,9 @@ function compactObservation(state: GameState, context: ApiV1ReadContext, simulat
         condition: `${getConditionState(party.condition).slice('condition.'.length)}/${party.condition}`,
       },
       state: partyStateKey(party, computePartyStats(party).partyStats.hp, context.partyCycle?.(partyIndex)),
+      // SpecRef: 9.1.3 | 2-1-1 compact | `clearGate`, `sideQuest`
+      clearGate: formatCompactClearGate(getExpeditionGoals(party, context.partyCycle?.(partyIndex)?.state)),
+      sideQuest: formatCompactSideQuest(party, context.chargeDurationScale ?? 1, context.inGameTime),
       lastDestination: disclosedLogOf(state, context, partyIndex)?.dungeonId ?? party.selectedDungeonId,
       lastOutcome: apiExpeditionOutcomeOrNull(disclosedLogOf(state, context, partyIndex)),
     })),
@@ -195,9 +234,22 @@ function compactObservation(state: GameState, context: ApiV1ReadContext, simulat
         partyNumber: party.id,
         unreadDiary: party.diaryLogs.filter((entry) => !entry.isRead).length,
         unreadDiaryTitle: party.diaryLogs.filter((entry) => !entry.isRead).map((entry) => compactDiaryTitle(entry, party.name)),
-      })),
+      })).concat(globalDiaryNotification(state)),
     },
   };
+}
+
+// SpecRef: 9.1.3 | 2-1-1 compact | The Global Diary (`partyNumber` 0) is listed only while it has unread entries.
+function globalDiaryNotification(state: GameState) {
+  const unread = (state.global.globalDiary ?? []).filter((entry) => !entry.isRead);
+  return unread.length === 0 ? [] : [{
+    partyNumber: GLOBAL_DIARY_PARTY_NUMBER,
+    unreadDiary: unread.length,
+    unreadDiaryTitle: unread.map((entry) => {
+      const { headline, detail } = renderGlobalDiaryTitle(entry);
+      return `${encodeCompactText(entry.id)}/${encodeCompactText(headline)}/${encodeCompactText(detail)}/${compactDiaryTimestamp(entry.createdAt)}`;
+    }),
+  }];
 }
 
 /** `YYYYMMDD HH:MM` in the game clock's display timezone (the device's local time, as the Diary tab shows it). */
@@ -215,7 +267,7 @@ function encodeCompactText(text: string): string {
 
 // SpecRef: 9.1.3 | 2-1-1 compact | unreadDiaryTitle `<diaryEntryId>/<diaryTitle>/<diarySubtitle>/<timeStamp>`
 // The title and subtitle are the Diary tab's own (current language), escaped as compact free text (9.1.4.14).
-// A rare-drop entry is titled with the Diary tab's own headline, which names the dropped items (`[PT1] Boss Rare acquired (Item)`).
+// A rare-drop entry is titled with the Diary tab's own headline, which names the dropped items (`[PT1] Epic acquired (Item)`).
 function compactDiaryTitle(entry: DiaryLog, partyName: string): string {
   const content = diaryEntryContent(entry);
   const namesItems = content.format === 'semantic'
@@ -310,6 +362,9 @@ function expeditionProjection(state: GameState, context: ApiV1ReadContext) {
           rooms: revealed.map(buildBattleRoomData),
           resources: { rooms: revealed.map(buildRoomResources), compact: runningLog.compactVersion === 1 },
         } : null,
+        level: party.level,
+        // SpecRef: 9.1.3 | 2-1-4 party | `experienceRatio`: whole percent of the current level's EXP, 0 at the maximum level
+        experienceRatio: party.level < MAX_LEVEL ? Math.floor((party.experience / Math.max(1, getXpToNextLevel(party.level))) * 100) : 0,
         currentHp: displayedHp,
         maximumHp,
         disclosedFloor: log?.entries.at(-1)?.floor ?? null,
@@ -368,6 +423,7 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>, 
   if (characterId !== null && !party.characters.some((character) => character.id === characterId)) throw new Error('not_found');
   const partyStatus = computePartyStats(party);
   const computed = partyStatus.characterStats;
+  const deityTotalDonation = state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0;
   return {
     effectiveSelection: { partyNumber: party.id, characterId: characterId ?? party.characters[0]?.id ?? null },
     party: {
@@ -376,9 +432,14 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>, 
       level: party.level,
       experience: party.experience,
       experienceToNext: party.level < MAX_LEVEL ? Math.ceil(getXpToNextLevel(party.level)) : 0,
+      // SpecRef: 9.1.3 | 2-1-4 party | `experienceRatio`: whole percent of the current level's EXP, 0 at the maximum level
+      experienceRatio: party.level < MAX_LEVEL ? Math.floor((party.experience / Math.max(1, getXpToNextLevel(party.level))) * 100) : 0,
+      currentHp: Math.max(0, Math.floor(party.currentHp)),
       maxHp: Math.floor(partyStatus.partyStats.hp),
       deityId: getDeityId(party.deity.name),
-      deityRank: getDeityRank(state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0),
+      deityRank: getDeityRank(deityTotalDonation),
+      deityTotalDonation,
+      deityNextRankThreshold: getNextRankDonationRequirement(deityTotalDonation),
       condition: party.condition,
       order: party.characters.map((character) => character.id),
       characters: party.characters.map((character, index) => ({
@@ -397,6 +458,12 @@ function partyProjection(state: GameState, parameters: Record<string, unknown>, 
         autoEquipmentMode: autoEquipmentModeName(character.autoEquipmentMode),
       })),
       statistics: expeditionStatistics(state, context, state.parties.indexOf(party)),
+      // SpecRef: 9.1.3 | 2-1-4 party | `sideQuestStatistics`
+      sideQuestStatistics: Object.entries(party.sideQuestStats ?? {})
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .map(([id, { success, cancelled, failed, total }]) => `${id}-${success}/${cancelled}/${failed ?? 0}/${total}`), // saves from before `failed` existed have no value
+      // SpecRef: 9.1.3 | 2-1-4 party | `dropStatistics`: the party's own drops since the last Statistics reset.
+      dropStatistics: normalizePartyDropStats(party.dropStats),
     },
   };
 }
@@ -429,12 +496,12 @@ function searchItems(state: GameState, parameters: Record<string, unknown>) {
   const limit = parameters.limit === undefined ? SEARCH_ITEMS_DEFAULT_LIMIT : Number(parameters.limit);
   if (!Number.isInteger(limit) || limit < 1 || limit > SEARCH_ITEMS_MAX_LIMIT) throw new Error('invalid_request:limit');
   const includesState = (name: 'owned' | 'sold' | 'equipped') => wantedState === 'all' || wantedState === name;
-  const itemFilterGiven = (parameters.rarity !== undefined && parameters.rarity !== 'all') || parameters.superRare !== undefined
+  const itemFilterGiven = (parameters.itemRarity !== undefined && parameters.itemRarity !== 'all') || parameters.superRare !== undefined
     || parameters.superRareId !== undefined || parameters.itemId !== undefined;
 
   const matchesItem = (item: Item): boolean => {
     if (category !== null && category !== 'jewel' && item.category !== API_CATEGORY_TO_ITEM_CATEGORY[category]) return false;
-    if (parameters.rarity !== undefined && parameters.rarity !== 'all' && getItemRarityById(item.id) !== parameters.rarity) return false;
+    if (parameters.itemRarity !== undefined && parameters.itemRarity !== 'all' && getItemRarityById(item.id) !== parameters.itemRarity) return false;
     if (parameters.superRare !== undefined && (item.superRare > 0) !== (parameters.superRare === true || parameters.superRare === 'true')) return false;
     if (parameters.superRareId !== undefined && item.superRare !== Number(parameters.superRareId)) return false;
     if (parameters.itemId !== undefined && item.id !== Number(parameters.itemId)) return false;
@@ -501,12 +568,12 @@ function matchesDetailFilters(details: ItemDetails, parameters: Record<string, u
 // SpecRef: 9.1.3 | 4-2-5 itemCompendium
 // SpecRef: 8.6 | UI_SETTING | Item Compendium (アイテム図鑑)
 // Lists every item, base level, regardless of ownership. `revealed` follows the Item Reveal Rule (or the Debug "Display all
-// Compendium" setting). An unrevealed item is still listed, as a placeholder: only its ID, category, rarity, and tier, never
+// Compendium" setting). An unrevealed item is still listed, as a placeholder: only its ID, category, `itemRarity`, and tier, never
 // its name or details, and the ability and bonus searches never match it (9.1.4.7: no undisclosed content).
 // `details` selects which of `ability`, `cBonus`, and `otherBonus` a revealed item includes, like `searchItems`.
 function itemCompendium(state: GameState, parameters: Record<string, unknown>, context: ApiV1ReadContext) {
   const category = parameters.category === undefined ? null : String(parameters.category);
-  const rarity = parameters.rarity === undefined || parameters.rarity === 'all' ? null : String(parameters.rarity);
+  const rarity = parameters.itemRarity === undefined || parameters.itemRarity === 'all' ? null : String(parameters.itemRarity);
   const tier = parameters.tier === undefined ? null : Number(parameters.tier);
   const itemId = parameters.itemId === undefined ? null : Number(parameters.itemId);
   const mode = String(parameters.details ?? 'abilityAndCBonus') as ItemDetailsMode;
@@ -522,7 +589,7 @@ function itemCompendium(state: GameState, parameters: Record<string, unknown>, c
     if (tier !== null && getItemTier(item.id) !== tier) return [];
     if (itemId !== null && item.id !== itemId) return [];
     const isRevealed = revealAll || revealed.has(item.id);
-    const placeholder = { itemId: item.id, category: item.category, rarity: itemRarity, tier: getItemTier(item.id), revealed: isRevealed };
+    const placeholder = { itemId: item.id, category: item.category, itemRarity, tier: getItemTier(item.id), revealed: isRevealed };
     const searchesDetails = parameters.searchAbility !== undefined || parameters.searchBonus !== undefined;
     if (!isRevealed) return searchesDetails ? [] : [placeholder];
     // The Compendium shows every item at base level (Spec 8.6: Enhancement = 0, SuperRare = 0), not an owned instance.
@@ -668,7 +735,7 @@ export interface ApiV1ClairvoyanceSleepinessFacts {
 export type ApiV1ClairvoyanceResource = { available: false } | ({ available: true; canReset: boolean } & ApiV1ClairvoyanceProjection);
 
 export interface ApiV1ClairvoyanceProjection {
-  reward: { common: ApiV1ClairvoyanceBagFacts; uncommon: ApiV1ClairvoyanceBagFacts; eliteRare: ApiV1ClairvoyanceBagFacts; bossRare: ApiV1ClairvoyanceBagFacts; mythicRare: ApiV1ClairvoyanceBagFacts };
+  reward: { common: ApiV1ClairvoyanceBagFacts; uncommon: ApiV1ClairvoyanceBagFacts; rare: ApiV1ClairvoyanceBagFacts; epic: ApiV1ClairvoyanceBagFacts; mythic: ApiV1ClairvoyanceBagFacts };
   enhancement: { common: ApiV1ClairvoyanceEnhancementFacts; general: ApiV1ClairvoyanceEnhancementFacts };
   superRare: { common: ApiV1ClairvoyanceBagFacts; rare: ApiV1ClairvoyanceBagFacts };
   sideQuest: ApiV1ClairvoyanceBagFacts;
@@ -704,9 +771,9 @@ function clairvoyance(party: Party) {
     reward: {
       common: bagHitFacts(bags.commonRewardBag, createCommonRewardBag(), [1]),
       uncommon: bagHitFacts(bags.uncommonRewardBag, createUncommonRewardBag(), [1]),
-      eliteRare: bagHitFacts(bags.eliteRareRewardBag, createEliteRareRewardBag(), [1]),
-      bossRare: bagHitFacts(bags.bossRareRewardBag, createBossRareRewardBag(), [1]),
-      mythicRare: bagHitFacts(bags.mythicRareRewardBag, createMythicRareRewardBag(), [1]),
+      rare: bagHitFacts(bags.rareRewardBag, createRareRewardBag(), [1]),
+      epic: bagHitFacts(bags.epicRewardBag, createEpicRewardBag(), [1]),
+      mythic: bagHitFacts(bags.mythicRewardBag, createMythicRewardBag(), [1]),
     },
     enhancement: {
       common: enhancementBagFacts(bags.commonEnhancementBag, createCommonEnhancementBag()),
@@ -737,7 +804,7 @@ function shopProjection(state: GameState, nowMs: number) {
     paidRefreshPrice: facts.paidRefreshPrice,
     paidRefresh: { available: facts.paidRefreshAvailable, unavailableReason: facts.paidRefreshAvailable ? null : 'insufficient_gold' },
     refreshesAt: new Date(facts.refreshesAt).toISOString(),
-    entries: facts.entries.map((entry) => ({ shopItemId: entry.shopItemId, itemId: entry.itemId, identified: entry.identified, enhancement: entry.enhancement, superRare: entry.superRare, price: entry.price, rarity: entry.rarity, soldOut: entry.soldOut, available: entry.available, unavailableReason: entry.unavailableReason })),
+    entries: facts.entries.map((entry) => ({ shopItemId: entry.shopItemId, itemId: entry.itemId, identified: entry.identified, enhancement: entry.enhancement, superRare: entry.superRare, price: entry.price, itemRarity: entry.rarity, soldOut: entry.soldOut, available: entry.available, unavailableReason: entry.unavailableReason })),
   };
 }
 
@@ -825,6 +892,33 @@ function baseProjection(state: GameState, context: ApiV1ReadContext) {
 
 // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `numberOfRun` defaults to 100 and ranges 1 ~ 1000.
 const SIMULATION_RUN_DEFAULT = 100;
+
+/**
+ * The party with the `simulationRun` expedition overrides applied (Spec 9.1.3, 2-2-3), or null when none is sent. They are
+ * validated like `changeExpedition` (a locked destination or an offset above the destination's range is rejected), and a
+ * destination takes its own saved difficulty offset unless `difficultyOffset` is sent too, as a destination change does.
+ */
+function expeditionOverride(party: Party, parameters: Record<string, unknown>, context: ApiV1ReadContext): Party | null {
+  const { destination, depthLimit, difficultyOffset } = parameters;
+  if (destination === undefined && depthLimit === undefined && difficultyOffset === undefined) return null;
+  if (destination !== undefined && (typeof destination !== 'number' || !Number.isSafeInteger(destination))) throw new Error('invalid_request:destination');
+  if (depthLimit !== undefined && typeof depthLimit !== 'string') throw new Error('invalid_request:depthLimit');
+  if (difficultyOffset !== undefined && (typeof difficultyOffset !== 'number' || !Number.isSafeInteger(difficultyOffset))) throw new Error('invalid_request:difficultyOffset');
+  const colosseumEnabled = context.colosseumEnabled ?? (context.control?.settings?.debug as { colosseumMode?: unknown } | undefined)?.colosseumMode === true;
+  const rejection = getExpeditionChangeRejection(party, { destination: destination as number | undefined, depthLimit: depthLimit as string | undefined, difficultyOffset: difficultyOffset as number | undefined }, colosseumEnabled);
+  if (rejection) {
+    const field = rejection.reason.includes('destination') ? 'destination' : rejection.reason.includes('depth') ? 'depthLimit' : 'difficultyOffset';
+    throw new Error(`invalid_request:${field}.${rejection.reason}`);
+  }
+  const dungeonId = (destination as number | undefined) ?? party.selectedDungeonId;
+  return {
+    ...party,
+    selectedDungeonId: dungeonId,
+    expeditionDepthLimit: (depthLimit as Party['expeditionDepthLimit'] | undefined) ?? party.expeditionDepthLimit,
+    expeditionDifficultyOffset: (difficultyOffset as number | undefined)
+      ?? (destination === undefined ? party.expeditionDifficultyOffset : party.expeditionDifficultyOffsetByDungeon?.[dungeonId] ?? 0),
+  };
+}
 const SIMULATION_RUN_MAX = 1_000;
 
 export async function buildApiV1ReadData(operationId: string, state: GameState, parameters: Record<string, unknown>, context: ApiV1ReadContext): Promise<Record<string, unknown>> {
@@ -900,9 +994,35 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     }
     if (expedition[2] === 'simulationRun') {
       if (!context.simulation) throw new Error('runtime_unavailable');
+      // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `destination`, `depthLimit`, and `difficultyOffset` forecast another
+      // expedition setting without committing it, with the same choices `changeExpedition` accepts.
+      const override = expeditionOverride(party, parameters, context);
+      const simulationState = override ? { ...state, parties: state.parties.map((entry, position) => (position === index ? override : entry)) } : state;
+      const simulatedParty = simulationState.parties[index];
       const numberOfRun = parameters.numberOfRun === undefined ? SIMULATION_RUN_DEFAULT : parameters.numberOfRun;
       if (typeof numberOfRun !== 'number' || !Number.isInteger(numberOfRun) || numberOfRun < 1 || numberOfRun > SIMULATION_RUN_MAX) throw new Error('invalid_request:numberOfRun');
-      return buildSimulationRunData(await context.simulation(index, numberOfRun) as ExpeditionSimulationResult, context.revision, crypto.randomUUID(), describeSimulationDepthReach(party));
+      // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | optional `objective` (adds `rate` and `standardError`, measured like
+      // `gaSearch`) and `seed` (a reproducible forecast; the seed used is returned either way).
+      const objective = parameters.objective;
+      if (objective !== undefined && (typeof objective !== 'string' || !(MEASURED_OBJECTIVES as readonly string[]).includes(objective))) throw new Error('invalid_request:objective');
+      const requestedSeed = parameters.seed;
+      if (requestedSeed !== undefined && (typeof requestedSeed !== 'number' || !Number.isSafeInteger(requestedSeed))) throw new Error('invalid_request:seed');
+      const seed = (requestedSeed as number | undefined) ?? context.createSeed?.() ?? crypto.getRandomValues(new Uint32Array(1))[0];
+      const measured = objective as MeasuredObjective | undefined;
+      // SpecRef: 9.1.3 | Read | 2-2-3 {p}/simulationRun | `gateRoom` (with `objective: gateDamage`) and `startHp` (every run
+      // starts with that share of the maximum HP, whatever is simulated).
+      const settings = parseForecastSettings(parameters, simulatedParty, measured ? [measured] : [], true);
+      const forecastState = measured ? prepareObjectiveState(simulationState, index, measured, settings) : simulationState;
+      const options = { ...objectiveSimulationOptions(measured ?? 'success', settings), ...(settings.startHp === null ? {} : { startHpShare: settings.startHp }) };
+      const result = await context.simulation(index, numberOfRun, { state: forecastState, seed, options }) as ExpeditionSimulationResult;
+      const data = {
+        ...buildSimulationRunData(result, context.revision, crypto.randomUUID(), describeSimulationDepthReach(forecastState.parties[index])), ...describeForecastSettings(settings),
+        // The expedition setting the forecast ran: the party's own, or the one the overrides set.
+        expedition: { destination: simulatedParty.selectedDungeonId, depthLimit: simulatedParty.expeditionDepthLimit, difficultyOffset: simulatedParty.expeditionDifficultyOffset, overridden: override !== null },
+      };
+      if (!measured) return { ...data, seed };
+      const { rate, variance } = measureObjective(measured, result, routeRoomCount(forecastState.parties[index]));
+      return { ...data, rate, standardError: Math.sqrt(variance / Math.max(1, result.total)), seed };
     }
     const charge = getInstantExpeditionChargeState(party, context.inGameTime, context.chargeDurationScale ?? 1);
     return { chargeStock: charge.stock, chargeDuration: charge.remainingMs <= 0 ? 0 : Math.ceil(charge.remainingMs / 1000) };
@@ -913,113 +1033,109 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
     const selected = partyByNumber(state, partyBuild[1]);
     if (!selected) throw new Error('not_found');
     const currentDeityId = getDeityId(selected.party.deity.name);
-    const usedByOtherParties = new Set(state.parties.filter((party) => party.id !== selected.party.id).map((party) => getDeityId(party.deity.name)));
-    const deityId = Array.from(new Set(['none', currentDeityId, ...state.global.unlockedDeities.map(getDeityId)]))
-      .filter((id) => id === 'none' || id === currentDeityId || !usedByOtherParties.has(id));
-    return { current: { deityId: currentDeityId, order: selected.party.characters.map((entry) => entry.id) }, validOptions: { deityId, order: selected.party.characters.map((entry) => entry.id) } };
+    return { current: { deityId: currentDeityId, order: selected.party.characters.map((entry) => entry.id) }, validOptions: { deityId: validPartyDeityIds(state, selected.party), order: selected.party.characters.map((entry) => entry.id) } };
   }
-  const characterRead = operationId.match(/^read\/build\/character\/(\d+)\/(status|equipment|equipmentSet|equipmentEvaluation)$/);
+  const characterRead = operationId.match(/^read\/build\/character\/(status|equipment|equipmentSet|equipmentEvaluation)$/);
   if (characterRead) {
-    const found = findCharacter(state, characterRead[1]);
-    if (!found) throw new Error('not_found');
-    const { party, character, characterIndex } = found;
-    if (characterRead[2] === 'status') {
-      const editableRaceIds = new Set(['lupinian', 'vulpinian', 'felidian', 'caninian', 'ursan', 'procyonian', 'leporian', 'cervin', 'murid']);
-      const normalRaceOptions = RACES.filter((race) => editableRaceIds.has(race.id)).flatMap((race) => (['male', 'female'] as const)
-        .filter((gender) => !party.characters.some((candidate) => candidate.id !== character.id && candidate.isUnique !== true && candidate.raceId === race.id && candidate.gender === gender))
-        .map((gender) => `${race.id}/${gender}`));
-      const assignedMimorianForms = new Set(state.parties.flatMap((entry) => entry.characters)
-        .filter((candidate) => candidate.id !== character.id && candidate.raceId === 'mimorian')
-        .map((candidate) => candidate.mimorianEnemyId));
-      const mimorianOptions = state.global.unlockedMimorianEnemyIds
-        .filter((enemyId) => ENEMIES.some((enemy) => enemy.id === enemyId) && !assignedMimorianForms.has(enemyId))
-        .map((enemyId) => `mimorian/female/${enemyId}`);
-      return {
-        calculatedStatus: buildCalculatedStatus(party.characters[characterIndex], computePartyStats(party).characterStats[characterIndex], party.level),
-        current: describeCharacterBuildCurrent(character),
-        editableFields: { name: character.isUnique !== true, unique: character.isUnique === true },
-        validOptions: {
-          racesAndGender: character.isUnique ? ['none'] : [...normalRaceOptions, ...mimorianOptions],
-          mainClassId: CLASSES.map((entry) => entry.id),
-          subClassId: CLASSES.map((entry) => entry.id),
-          lineage: character.isUnique ? ['none'] : LINEAGES.filter((entry) => entry.selectable === true).map((entry) => entry.id),
-          predisposition: character.isUnique ? ['none'] : PREDISPOSITIONS.filter((entry) => entry.selectable === true).map((entry) => entry.id),
-        },
-      };
-    }
-    if (characterRead[2] === 'equipment') {
-      // Empty slots are counted against the character's real slot count: the equipment array may be shorter.
+    // SpecRef: 9.1.3 | 2-3-4..2-3-7 | `characterId` is one ID or an array of IDs; the remaining parameters apply to every listed character.
+    if (parameters.characterId === undefined) throw new Error('invalid_request:characterId');
+    const requestedIds = (Array.isArray(parameters.characterId) ? parameters.characterId : [parameters.characterId]).map(Number);
+    if (requestedIds.length === 0 || requestedIds.length > 36 || requestedIds.some((id) => !Number.isInteger(id) || id < 1)) throw new Error('invalid_request:characterId');
+    if (new Set(requestedIds).size !== requestedIds.length) throw new Error('invalid_request:characterId.duplicate');
+    const readCharacter = (characterIdValue: number) => {
+      const found = findCharacter(state, characterIdValue);
+      if (!found) throw new Error('not_found');
+      const { party, character, characterIndex } = found;
+      if (characterRead[1] === 'status') {
+        return {
+          calculatedStatus: buildCalculatedStatus(party.characters[characterIndex], computePartyStats(party).characterStats[characterIndex], party.level),
+          current: describeCharacterBuildCurrent(character),
+          editableFields: { name: character.isUnique !== true },
+          validOptions: {
+            uniqueSelection: validUniqueSelections(state, character),
+            racesAndGender: character.isUnique ? ['none'] : validRaceAndGenderOptions(state, party, character),
+            mainClassId: CLASSES.map((entry) => entry.id),
+            subClassId: CLASSES.map((entry) => entry.id),
+            lineage: character.isUnique ? ['none'] : LINEAGES.filter((entry) => entry.selectable === true).map((entry) => entry.id),
+            predisposition: character.isUnique ? ['none'] : PREDISPOSITIONS.filter((entry) => entry.selectable === true).map((entry) => entry.id),
+          },
+        };
+      }
+      if (characterRead[1] === 'equipment') {
+        // Empty slots are counted against the character's real slot count: the equipment array may be shorter.
+        const maxSlots = computePartyStats(party).characterStats[characterIndex].maxEquipSlots;
+        const emptySlots = Array.from({ length: maxSlots }, (_, slot) => slot).filter((slot) => !character.equipment[slot]).length;
+        return {
+          current: { mode: autoEquipmentModeName(character.autoEquipmentMode), equipment: equipmentEntries(character, maxSlots) },
+          validOptions: { mode: ['FULL', 'SEMI', 'OFF'], numberOfEmptyEquipmentSlots: emptySlots, ...describeEquipmentHistory(state, character.id, context.control?.equipmentHistory) },
+        };
+      }
+      if (characterRead[1] === 'equipmentEvaluation') {
+        // SpecRef: 9.1.3 | Read | 2-3-7 character/equipmentEvaluation
+        const requested = parameters.targetItems === undefined ? [] : Array.isArray(parameters.targetItems) ? parameters.targetItems : [parameters.targetItems];
+        const requestedChanges = parameters.equipmentChanges === undefined ? [] : Array.isArray(parameters.equipmentChanges) ? parameters.equipmentChanges : [parameters.equipmentChanges];
+        if (requested.length === 0 && requestedChanges.length === 0) throw new Error('invalid_request:targetItems.or_equipmentChanges_required');
+        if (new Set(requested).size !== requested.length) throw new Error('invalid_request:targetItems.duplicate');
+        if (new Set(requestedChanges).size !== requestedChanges.length) throw new Error('invalid_request:equipmentChanges.duplicate');
+        if (requested.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:targetItems.maxItems');
+        if (requestedChanges.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:equipmentChanges.maxItems');
+        const currentStats = computeCharacterStatsInParty(party, characterIndex);
+        return {
+          // A rejected entry is named by its request index so a caller can find it among many.
+          calculatedItemStatus: requested.map((entry, index) => {
+            const item = typeof entry === 'string' ? parseEvaluatedItemFormat(entry) : null;
+            if (!item) throw new Error(`invalid_request:targetItems[${index}].format`);
+            if (item.jewel && !isJewelAllowedForCategory(item.category, item.jewel.key)) throw new Error(`invalid_request:targetItems[${index}].jewel_category`);
+            return { item: entry as string, ...evaluateItemForCharacter(character, item, party.level), abilities: describeItem(item).ability };
+          }),
+          calculatedEquipmentChange: requestedChanges.map((entry, index) => {
+            const change = typeof entry === 'string' ? parseEquipmentChange(entry) : null;
+            if (!change) throw new Error(`invalid_request:equipmentChanges[${index}].format`);
+            if (change.slotIndex >= currentStats.maxEquipSlots) throw new Error(`invalid_request:equipmentChanges[${index}].slotIndex`);
+            if (change.item?.jewel && !isJewelAllowedForCategory(change.item.category, change.item.jewel.key)) {
+              throw new Error(`invalid_request:equipmentChanges[${index}].jewel_category`);
+            }
+            const equipment = [...character.equipment];
+            equipment[change.slotIndex] = change.item;
+            const nextStats = computeCharacterStatsInParty(party, characterIndex, { ...character, equipment });
+            return {
+              change: entry as string,
+              equippable: change.item === null || evaluateItemForCharacter(character, change.item, party.level).equippable,
+              physicalDefenseDelta: Math.round(nextStats.physicalDefense) - Math.round(currentStats.physicalDefense),
+              magicalDefenseDelta: Math.round(nextStats.magicalDefense) - Math.round(currentStats.magicalDefense),
+            };
+          }),
+        };
+      }
+      const ids = Array.isArray(parameters.equipmentSetId) ? parameters.equipmentSetId.map(Number) : parameters.equipmentSetId ? [Number(parameters.equipmentSetId)] : null;
       const maxSlots = computePartyStats(party).characterStats[characterIndex].maxEquipSlots;
-      const emptySlots = Array.from({ length: maxSlots }, (_, slot) => slot).filter((slot) => !character.equipment[slot]).length;
       return {
-        current: { mode: autoEquipmentModeName(character.autoEquipmentMode), equipment: equipmentEntries(character, maxSlots) },
-        validOptions: { mode: ['FULL', 'SEMI', 'OFF'], numberOfEmptyEquipmentSlots: emptySlots, ...describeEquipmentHistory(state, character.id, context.control?.equipmentHistory) },
-      };
-    }
-    if (characterRead[2] === 'equipmentEvaluation') {
-      // SpecRef: 9.1.3 | Read | 2-3-5 character/{characterId}/equipmentEvaluation
-      const requested = parameters.targetItems === undefined ? [] : Array.isArray(parameters.targetItems) ? parameters.targetItems : [parameters.targetItems];
-      const requestedChanges = parameters.equipmentChanges === undefined ? [] : Array.isArray(parameters.equipmentChanges) ? parameters.equipmentChanges : [parameters.equipmentChanges];
-      if (requested.length === 0 && requestedChanges.length === 0) throw new Error('invalid_request:targetItems.or_equipmentChanges_required');
-      if (new Set(requested).size !== requested.length) throw new Error('invalid_request:targetItems.duplicate');
-      if (new Set(requestedChanges).size !== requestedChanges.length) throw new Error('invalid_request:equipmentChanges.duplicate');
-      if (requested.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:targetItems.maxItems');
-      if (requestedChanges.length > EQUIPMENT_EVALUATION_LIMIT) throw new Error('invalid_request:equipmentChanges.maxItems');
-      const currentStats = computeCharacterStatsInParty(party, characterIndex);
-      return {
-        // A rejected entry is named by its request index so a caller can find it among many.
-        calculatedItemStatus: requested.map((entry, index) => {
-          const item = typeof entry === 'string' ? parseEvaluatedItemFormat(entry) : null;
-          if (!item) throw new Error(`invalid_request:targetItems[${index}].format`);
-          if (item.jewel && !isJewelAllowedForCategory(item.category, item.jewel.key)) throw new Error(`invalid_request:targetItems[${index}].jewel_category`);
-          return { item: entry as string, ...evaluateItemForCharacter(character, item, party.level), abilities: describeItem(item).ability };
-        }),
-        calculatedEquipmentChange: requestedChanges.map((entry, index) => {
-          const change = typeof entry === 'string' ? parseEquipmentChange(entry) : null;
-          if (!change) throw new Error(`invalid_request:equipmentChanges[${index}].format`);
-          if (change.slotIndex >= currentStats.maxEquipSlots) throw new Error(`invalid_request:equipmentChanges[${index}].slotIndex`);
-          if (change.item?.jewel && !isJewelAllowedForCategory(change.item.category, change.item.jewel.key)) {
-            throw new Error(`invalid_request:equipmentChanges[${index}].jewel_category`);
-          }
-          const equipment = [...character.equipment];
-          equipment[change.slotIndex] = change.item;
-          const nextStats = computeCharacterStatsInParty(party, characterIndex, { ...character, equipment });
+        equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => {
+          const availability = evaluateEquipmentSet(set, character, state.global.inventory, state.global.jewels, maxSlots);
           return {
-            change: entry as string,
-            equippable: change.item === null || evaluateItemForCharacter(character, change.item, party.level).equippable,
-            physicalDefenseDelta: Math.round(nextStats.physicalDefense) - Math.round(currentStats.physicalDefense),
-            magicalDefenseDelta: Math.round(nextStats.magicalDefense) - Math.round(currentStats.magicalDefense),
+            equipmentSetId: set.slot,
+            equipmentSet: {
+              equipmentSetId: set.slot,
+              name: set.name,
+              createdAt: new Date(set.createdAt).toISOString(),
+              ...(parameters.isEquipmentSetDetail === true || parameters.isEquipmentSetDetail === 'true'
+                ? { equipment: set.equipment.map((entry, index) => formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, entry.item.jewel)) }
+                : {}),
+              availability: {
+                allAvailable: availability.allAvailable,
+                entries: availability.entries.map(({ entry, available, unavailableReason }, index) => ({
+                  slotIndex: getSavedEquipmentSlot(entry, index),
+                  item: formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, entry.item.jewel),
+                  available,
+                  unavailableReason,
+                })),
+              },
+            },
           };
         }),
       };
-    }
-    const ids = Array.isArray(parameters.equipmentSetId) ? parameters.equipmentSetId.map(Number) : parameters.equipmentSetId ? [Number(parameters.equipmentSetId)] : null;
-    const maxSlots = computePartyStats(party).characterStats[characterIndex].maxEquipSlots;
-    return {
-      equipmentSets: state.global.savedEquipmentSets.filter((set) => !ids || ids.includes(set.slot)).map((set) => {
-        const availability = evaluateEquipmentSet(set, character, state.global.inventory, state.global.jewels, maxSlots);
-        return {
-          equipmentSetId: set.slot,
-          equipmentSet: {
-            equipmentSetId: set.slot,
-            name: set.name,
-            createdAt: new Date(set.createdAt).toISOString(),
-            ...(parameters.isEquipmentSetDetail === true || parameters.isEquipmentSetDetail === 'true'
-              ? { equipment: set.equipment.map((entry, index) => formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, entry.item.jewel)) }
-              : {}),
-            availability: {
-              allAvailable: availability.allAvailable,
-              entries: availability.entries.map(({ entry, available, unavailableReason }, index) => ({
-                slotIndex: getSavedEquipmentSlot(entry, index),
-                item: formatEquipmentEntry(getSavedEquipmentSlot(entry, index), entry.item, entry.isLocked, entry.item.jewel),
-                available,
-                unavailableReason,
-              })),
-            },
-          },
-        };
-      }),
     };
+    return { characters: requestedIds.map((id) => ({ characterId: id, ...readCharacter(id) })) };
   }
 
   if (operationId === 'read/base/searchItems') return searchItems(state, parameters);
@@ -1049,6 +1165,8 @@ export async function buildApiV1ReadData(operationId: string, state: GameState, 
   }
 
   const diarySetting = operationId.match(/^read\/diary\/(\d+)\/diarySetting$/);
+  // SpecRef: 9.1.4 | `{p}` = 0 on `diarySetting` is reserved for future expansion and returns nothing.
+  if (diarySetting && Number(diarySetting[1]) === GLOBAL_DIARY_PARTY_NUMBER) return { current: {} };
   if (diarySetting) { const selected = partyByNumber(state, diarySetting[1]); if (!selected) throw new Error('not_found'); return { current: diarySettingsView(selected.party.diarySettings), validOptions: DIARY_SETTING_VALID_OPTIONS }; }
   const diaryEntry = operationId.match(/^read\/diary\/diaryEntry\/(.+)$/);
   if (diaryEntry) return { entry: findDiaryEntryView(state, decodeURIComponent(diaryEntry[1])) };

@@ -1,0 +1,2582 @@
+[
+  {
+    "batchFile": "d5-r47-equipment.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/6/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 83,
+        "durationMs": 44.811
+      },
+      {
+        "route": "/commit/build/character/1/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 84,
+        "durationMs": 18.045
+      },
+      {
+        "route": "/commit/build/character/4/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 85,
+        "durationMs": 16.566
+      },
+      {
+        "route": "/commit/build/character/2/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 86,
+        "durationMs": 16.124
+      },
+      {
+        "route": "/commit/build/character/3/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 87,
+        "durationMs": 16.181
+      },
+      {
+        "route": "/commit/build/character/5/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 88,
+        "durationMs": 15.687
+      },
+      {
+        "route": "/commit/build/character/6/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/4101/6/0",
+            "0/4102/4/0",
+            "0/4101/5/0",
+            "0/4102/4/0",
+            "0/3102/5/0",
+            "0/3304/3/0",
+            "0/5101/2/0",
+            "0/5102/2/0",
+            "0/1401/0/0"
+          ]
+        },
+        "recordedCall": 89,
+        "durationMs": 18.579
+      },
+      {
+        "route": "/commit/build/character/1/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/4101/3/0",
+            "0/4102/3/0",
+            "0/4101/3/0",
+            "0/3101/4/0",
+            "0/3102/4/0",
+            "0/3101/4/0",
+            "0/3101/4/0",
+            "0/3102/4/0",
+            "0/5101/2/0",
+            "0/5101/2/0",
+            "0/5102/2/0",
+            "0/2101/5/0"
+          ]
+        },
+        "recordedCall": 90,
+        "durationMs": 18.179
+      },
+      {
+        "route": "/commit/build/character/4/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5101/1/0",
+            "0/3314/4/0",
+            "0/5312/0/0",
+            "0/2213/3/0",
+            "0/5217/3/0",
+            "0/1107/5/0",
+            "0/4109/4/0",
+            "0/2215/3/0",
+            "0/4107/3/0",
+            "0/5107/2/0"
+          ]
+        },
+        "recordedCall": 91,
+        "durationMs": 25.616
+      },
+      {
+        "route": "/commit/build/character/2/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5101/1/0",
+            "0/5217/0/0",
+            "0/5109/4/0",
+            "0/3213/2/0",
+            "0/4109/3/0",
+            "0/3109/4/0",
+            "0/1107/4/0",
+            "0/2107/5/0",
+            "0/5107/2/0",
+            "0/4108/4/0"
+          ]
+        },
+        "recordedCall": 92,
+        "durationMs": 21.422
+      },
+      {
+        "route": "/commit/build/character/3/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/4301/0/0",
+            "0/5217/0/0",
+            "0/5109/4/0",
+            "0/4213/1/0",
+            "0/4107/3/0",
+            "0/2107/5/0",
+            "0/5213/0/0",
+            "0/3107/3/0"
+          ]
+        },
+        "recordedCall": 93,
+        "durationMs": 16.314
+      },
+      {
+        "route": "/commit/build/character/5/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/4301/0/0",
+            "0/5317/0/0",
+            "0/4110/6/0",
+            "0/3110/5/0",
+            "0/5110/2/0",
+            "0/5223/0/0",
+            "0/2110/5/0",
+            "0/1110/6/0"
+          ]
+        },
+        "recordedCall": 94,
+        "durationMs": 20.457
+      }
+    ],
+    "apiDurationMs": 247.981,
+    "matchedCalls": 12
+  },
+  {
+    "batchFile": "d5-r47-jewels.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "focus:1"
+        },
+        "recordedCall": 96,
+        "durationMs": 18.004
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 5,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 97,
+        "durationMs": 13.372
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 98,
+        "durationMs": 12.543
+      }
+    ],
+    "apiDurationMs": 43.919,
+    "matchedCalls": 3
+  },
+  {
+    "batchFile": "d6-r71-equipment.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/6/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 115,
+        "durationMs": 58.764
+      },
+      {
+        "route": "/commit/build/character/1/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 116,
+        "durationMs": 43.407
+      },
+      {
+        "route": "/commit/build/character/4/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 117,
+        "durationMs": 22.618
+      },
+      {
+        "route": "/commit/build/character/2/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 118,
+        "durationMs": 29.346
+      },
+      {
+        "route": "/commit/build/character/3/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 119,
+        "durationMs": 34.641
+      },
+      {
+        "route": "/commit/build/character/5/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 120,
+        "durationMs": 19.372
+      },
+      {
+        "route": "/commit/build/character/6/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5302/0/0",
+            "0/4101/6/0",
+            "0/5102/4/0",
+            "0/5101/5/0",
+            "0/5102/4/0",
+            "0/4102/4/0",
+            "0/4102/4/0",
+            "0/5401/0/0",
+            "0/5401/0/0"
+          ]
+        },
+        "recordedCall": 121,
+        "durationMs": 21.284
+      },
+      {
+        "route": "/commit/build/character/1/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5302/0/0",
+            "0/5302/0/0",
+            "0/5101/4/0",
+            "0/6102/2/0",
+            "0/4101/5/0",
+            "0/5302/0/0",
+            "0/5302/0/0",
+            "0/5302/0/0",
+            "0/6102/2/0",
+            "0/5302/0/0",
+            "0/6102/2/0",
+            "0/6102/2/0"
+          ]
+        },
+        "recordedCall": 122,
+        "durationMs": 28.526
+      },
+      {
+        "route": "/commit/build/character/4/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5302/0/0",
+            "0/6313/0/0",
+            "0/5107/6/0",
+            "0/6107/3/0",
+            "0/3213/3/0",
+            "0/3314/4/0",
+            "0/6213/0/0",
+            "0/3107/5/0",
+            "0/6217/0/0",
+            "0/6215/2/0"
+          ]
+        },
+        "recordedCall": 123,
+        "durationMs": 25.836
+      },
+      {
+        "route": "/commit/build/character/2/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5302/0/0",
+            "0/6313/0/0",
+            "0/6217/0/0",
+            "0/2213/3/0",
+            "0/6109/4/0",
+            "0/5109/5/0",
+            "0/2215/3/0",
+            "0/6107/3/0",
+            "0/6107/3/0",
+            "0/5107/3/0"
+          ]
+        },
+        "recordedCall": 124,
+        "durationMs": 21.425
+      },
+      {
+        "route": "/commit/build/character/3/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5302/0/0",
+            "0/6313/0/0",
+            "0/6217/0/0",
+            "0/5217/3/0",
+            "0/3213/2/0",
+            "0/5109/5/0",
+            "0/6213/0/0",
+            "0/5107/3/0"
+          ]
+        },
+        "recordedCall": 125,
+        "durationMs": 20.614
+      },
+      {
+        "route": "/commit/build/character/5/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6101/2/0",
+            "0/5223/3/0",
+            "0/4110/6/0",
+            "0/5110/4/0",
+            "0/3110/5/0",
+            "0/5317/0/0",
+            "0/6110/2/0",
+            "0/6219/0/0"
+          ]
+        },
+        "recordedCall": 126,
+        "durationMs": 31.091
+      }
+    ],
+    "apiDurationMs": 356.924,
+    "matchedCalls": 12
+  },
+  {
+    "batchFile": "d6-r71-jewels.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "ward:2"
+        },
+        "recordedCall": 128,
+        "durationMs": 18.798
+      },
+      {
+        "route": "/commit/build/character/2/jewelAttach",
+        "parameters": {
+          "targetEquipment": 3,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 129,
+        "durationMs": 27.16
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "focus:1"
+        },
+        "recordedCall": 130,
+        "durationMs": 22.419
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 7,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 131,
+        "durationMs": 21.028
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 132,
+        "durationMs": 17.999
+      }
+    ],
+    "apiDurationMs": 107.404,
+    "matchedCalls": 5
+  },
+  {
+    "batchFile": "d6-r96-equipment.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/6/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 148,
+        "durationMs": 65.132
+      },
+      {
+        "route": "/commit/build/character/1/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 149,
+        "durationMs": 31.208
+      },
+      {
+        "route": "/commit/build/character/4/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 150,
+        "durationMs": 27.784
+      },
+      {
+        "route": "/commit/build/character/2/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 151,
+        "durationMs": 21.035
+      },
+      {
+        "route": "/commit/build/character/3/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 152,
+        "durationMs": 33.594
+      },
+      {
+        "route": "/commit/build/character/5/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 153,
+        "durationMs": 22.756
+      },
+      {
+        "route": "/commit/build/character/6/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5302/0/0",
+            "0/5302/0/0",
+            "0/6101/3/0",
+            "0/5302/0/0",
+            "0/5102/4/0",
+            "0/5302/0/0",
+            "0/5102/4/0",
+            "0/5102/4/0",
+            "0/1401/0/0"
+          ]
+        },
+        "recordedCall": 154,
+        "durationMs": 20.952
+      },
+      {
+        "route": "/commit/build/character/1/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6101/5/0",
+            "0/6102/3/0",
+            "0/4101/6/0",
+            "0/5101/5/0",
+            "0/6102/3/0",
+            "0/6101/3/0",
+            "0/6102/3/0",
+            "0/6102/3/0",
+            "0/5401/0/0",
+            "0/5401/0/0",
+            "0/1401/0/0",
+            "0/1401/0/0"
+          ]
+        },
+        "recordedCall": 155,
+        "durationMs": 31.343
+      },
+      {
+        "route": "/commit/build/character/4/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6313/2/0",
+            "0/5107/6/0",
+            "0/6107/5/0",
+            "0/6107/5/0",
+            "0/3314/4/0",
+            "0/6213/2/0",
+            "0/3213/4/0",
+            "0/6217/2/0",
+            "0/3107/5/0",
+            "0/6109/4/0"
+          ]
+        },
+        "recordedCall": 156,
+        "durationMs": 24.722
+      },
+      {
+        "route": "/commit/build/character/2/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6314/0/0",
+            "0/6217/1/0",
+            "0/2213/3/0",
+            "0/6107/4/0",
+            "0/6107/3/0",
+            "0/4107/4/0",
+            "0/5107/3/0",
+            "0/6107/3/0",
+            "0/6109/4/0",
+            "0/6213/0/0"
+          ]
+        },
+        "recordedCall": 157,
+        "durationMs": 29.213
+      },
+      {
+        "route": "/commit/build/character/3/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6314/0/0",
+            "0/6217/1/0",
+            "0/5217/3/0",
+            "0/3213/3/0",
+            "0/6107/3/0",
+            "0/6107/3/0",
+            "0/3107/5/0",
+            "0/6213/0/0"
+          ]
+        },
+        "recordedCall": 158,
+        "durationMs": 33.555
+      },
+      {
+        "route": "/commit/build/character/5/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5223/3/0",
+            "0/4110/6/0",
+            "0/6110/4/0",
+            "0/5110/4/0",
+            "0/5317/0/0",
+            "0/6219/1/0",
+            "0/3110/5/0",
+            "0/6315/0/0"
+          ]
+        },
+        "recordedCall": 159,
+        "durationMs": 23.662
+      }
+    ],
+    "apiDurationMs": 364.95599999999996,
+    "matchedCalls": 12
+  },
+  {
+    "batchFile": "d6-r96-jewels.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 0,
+          "jewelToSet": "shade:3"
+        },
+        "recordedCall": 161,
+        "durationMs": 26.263
+      },
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 0,
+          "jewelToSet": "ward:2"
+        },
+        "recordedCall": 162,
+        "durationMs": 28.106
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 0,
+          "jewelToSet": "focus:1"
+        },
+        "recordedCall": 163,
+        "durationMs": 24.408
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 164,
+        "durationMs": 19.827
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 6,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 165,
+        "durationMs": 20.951
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 166,
+        "durationMs": 21.93
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 6,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 167,
+        "durationMs": 22.503
+      }
+    ],
+    "apiDurationMs": 163.988,
+    "matchedCalls": 7
+  },
+  {
+    "batchFile": "d7-r120-equipment.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/party/1",
+        "parameters": {
+          "order": [
+            1,
+            6,
+            4,
+            2,
+            3,
+            5
+          ]
+        },
+        "recordedCall": 178,
+        "durationMs": 57.999
+      },
+      {
+        "route": "/commit/build/character/1/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 179,
+        "durationMs": 40.005
+      },
+      {
+        "route": "/commit/build/character/6/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 180,
+        "durationMs": 32.305
+      },
+      {
+        "route": "/commit/build/character/4/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 181,
+        "durationMs": 34.608
+      },
+      {
+        "route": "/commit/build/character/2/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 182,
+        "durationMs": 25.687
+      },
+      {
+        "route": "/commit/build/character/3/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 183,
+        "durationMs": 26.278
+      },
+      {
+        "route": "/commit/build/character/5/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 184,
+        "durationMs": 24.293
+      },
+      {
+        "route": "/commit/build/character/1/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6101/5/0",
+            "0/6102/4/0",
+            "0/4101/6/0",
+            "0/6101/4/0",
+            "0/6102/4/0",
+            "0/5401/0/0",
+            "0/6102/3/0",
+            "0/6103/5/0",
+            "0/6304/0/0",
+            "0/6304/0/0",
+            "0/4103/6/0",
+            "0/6408/0/0",
+            "0/7103/3/0"
+          ]
+        },
+        "recordedCall": 185,
+        "durationMs": 46.123
+      },
+      {
+        "route": "/commit/build/character/6/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5101/5/0",
+            "0/6102/3/0",
+            "0/6101/3/0",
+            "0/5401/0/0",
+            "0/6102/3/0",
+            "0/4102/5/0",
+            "0/5102/4/0",
+            "0/6304/0/0",
+            "0/7103/3/0",
+            "0/7103/3/0"
+          ]
+        },
+        "recordedCall": 186,
+        "durationMs": 37.425
+      },
+      {
+        "route": "/commit/build/character/4/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/7213/0/0",
+            "0/6313/2/0",
+            "0/5107/6/0",
+            "0/6107/5/0",
+            "0/6107/5/0",
+            "0/3314/4/0",
+            "0/2213/3/0",
+            "0/7107/2/0",
+            "0/7109/3/0",
+            "0/4107/4/0",
+            "0/6109/4/0"
+          ]
+        },
+        "recordedCall": 187,
+        "durationMs": 53.78
+      },
+      {
+        "route": "/commit/build/character/2/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/7213/0/0",
+            "0/7217/0/0",
+            "0/6107/4/0",
+            "0/6107/4/0",
+            "0/7107/1/0",
+            "0/7109/3/0",
+            "0/4107/4/0",
+            "0/3107/5/0",
+            "0/6109/4/0",
+            "0/5107/3/0",
+            "0/7213/0/0"
+          ]
+        },
+        "recordedCall": 188,
+        "durationMs": 37.304
+      },
+      {
+        "route": "/commit/build/character/3/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/7213/0/0",
+            "0/7217/0/0",
+            "0/6107/3/0",
+            "0/6107/3/0",
+            "0/7107/1/0",
+            "0/7109/2/0",
+            "0/3107/5/0",
+            "0/5107/3/0",
+            "0/6109/4/0"
+          ]
+        },
+        "recordedCall": 189,
+        "durationMs": 35.404
+      },
+      {
+        "route": "/commit/build/character/5/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/7223/0/0",
+            "0/2226/2/0",
+            "0/7112/3/0",
+            "0/1110/6/0",
+            "0/4110/6/0",
+            "0/6110/4/0",
+            "0/3110/6/0",
+            "0/5110/4/0",
+            "0/7110/2/0"
+          ]
+        },
+        "recordedCall": 190,
+        "durationMs": 26.041
+      }
+    ],
+    "apiDurationMs": 477.252,
+    "matchedCalls": 13
+  },
+  {
+    "batchFile": "d7-r120-jewels.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 10,
+          "jewelToSet": "ward:2"
+        },
+        "recordedCall": 192,
+        "durationMs": 43.433
+      },
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 0,
+          "jewelToSet": "shade:3"
+        },
+        "recordedCall": 193,
+        "durationMs": 32.409
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "focus:1"
+        },
+        "recordedCall": 194,
+        "durationMs": 23.15
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 195,
+        "durationMs": 40.546
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 6,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 196,
+        "durationMs": 30.81
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 3,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 197,
+        "durationMs": 24.124
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 4,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 198,
+        "durationMs": 24.304
+      }
+    ],
+    "apiDurationMs": 218.77599999999998,
+    "matchedCalls": 7
+  },
+  {
+    "batchFile": "d7-r144-equipment.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/1/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 208,
+        "durationMs": 74.678
+      },
+      {
+        "route": "/commit/build/character/6/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 209,
+        "durationMs": 56.573
+      },
+      {
+        "route": "/commit/build/character/4/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 210,
+        "durationMs": 43.769
+      },
+      {
+        "route": "/commit/build/character/2/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 211,
+        "durationMs": 48.001
+      },
+      {
+        "route": "/commit/build/character/3/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 212,
+        "durationMs": 31.989
+      },
+      {
+        "route": "/commit/build/character/5/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 213,
+        "durationMs": 39.033
+      },
+      {
+        "route": "/commit/build/character/1/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6101/5/0",
+            "0/6102/4/0",
+            "0/4101/6/0",
+            "0/6101/4/0",
+            "0/6102/4/0",
+            "0/5401/0/0",
+            "0/7102/2/0",
+            "0/7103/4/0",
+            "0/6304/0/0",
+            "0/6103/5/0",
+            "0/6304/0/0",
+            "0/6408/0/0",
+            "0/4103/6/0"
+          ]
+        },
+        "recordedCall": 214,
+        "durationMs": 36.131
+      },
+      {
+        "route": "/commit/build/character/6/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5101/5/0",
+            "0/7102/2/0",
+            "0/6101/3/0",
+            "0/5401/0/0",
+            "0/7102/2/0",
+            "0/7102/2/0",
+            "0/7102/2/0",
+            "0/6304/0/0",
+            "0/7103/3/0",
+            "0/1404/0/0"
+          ]
+        },
+        "recordedCall": 215,
+        "durationMs": 46.52
+      },
+      {
+        "route": "/commit/build/character/4/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/4213/4/0",
+            "0/6313/2/0",
+            "0/7107/4/0",
+            "0/6107/5/0",
+            "0/5107/6/0",
+            "0/3314/4/0",
+            "0/6107/5/0",
+            "0/7109/3/0",
+            "0/3107/5/0",
+            "0/6109/4/0",
+            "0/4107/4/0"
+          ]
+        },
+        "recordedCall": 216,
+        "durationMs": 52.018
+      },
+      {
+        "route": "/commit/build/character/2/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5311/2/0",
+            "0/7217/0/0",
+            "0/7107/3/0",
+            "0/6107/4/0",
+            "0/7107/3/0",
+            "0/7109/3/0",
+            "0/6107/4/0",
+            "0/6109/4/0",
+            "0/3107/5/0",
+            "0/4107/4/0",
+            "0/5107/3/0"
+          ]
+        },
+        "recordedCall": 217,
+        "durationMs": 39.903
+      },
+      {
+        "route": "/commit/build/character/3/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5213/2/0",
+            "0/7217/0/0",
+            "0/7107/2/0",
+            "0/7107/2/0",
+            "0/4107/4/0",
+            "0/7109/3/0",
+            "0/3107/5/0",
+            "0/5107/3/0",
+            "0/4215/3/0"
+          ]
+        },
+        "recordedCall": 218,
+        "durationMs": 33.64
+      },
+      {
+        "route": "/commit/build/character/5/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5223/3/0",
+            "0/7110/5/0",
+            "0/4110/6/0",
+            "0/6110/4/0",
+            "0/4223/3/0",
+            "0/3110/6/0",
+            "0/5110/4/0",
+            "0/6315/1/0",
+            "0/7317/0/0"
+          ]
+        },
+        "recordedCall": 219,
+        "durationMs": 33.975
+      }
+    ],
+    "apiDurationMs": 536.23,
+    "matchedCalls": 12
+  },
+  {
+    "batchFile": "d7-r144-jewels.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 12,
+          "jewelToSet": "shade:3"
+        },
+        "recordedCall": 221,
+        "durationMs": 25.258
+      },
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 0,
+          "jewelToSet": "ward:2"
+        },
+        "recordedCall": 222,
+        "durationMs": 25.594
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "focus:1"
+        },
+        "recordedCall": 223,
+        "durationMs": 29.19
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 4,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 224,
+        "durationMs": 32.351
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 4,
+          "jewelToSet": "might:4"
+        },
+        "recordedCall": 225,
+        "durationMs": 27.204
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 6,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 226,
+        "durationMs": 31.818
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 227,
+        "durationMs": 27.762
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 5,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 228,
+        "durationMs": 39.104
+      }
+    ],
+    "apiDurationMs": 238.281,
+    "matchedCalls": 8
+  },
+  {
+    "batchFile": "d8-r169-equipment.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/party/1",
+        "parameters": {
+          "order": [
+            1,
+            4,
+            2,
+            6,
+            3,
+            5
+          ]
+        },
+        "recordedCall": 240,
+        "durationMs": 94.878
+      },
+      {
+        "route": "/commit/build/character/1/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 241,
+        "durationMs": 36.876
+      },
+      {
+        "route": "/commit/build/character/4/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 242,
+        "durationMs": 34.748
+      },
+      {
+        "route": "/commit/build/character/2/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 243,
+        "durationMs": 40.975
+      },
+      {
+        "route": "/commit/build/character/6/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 244,
+        "durationMs": 41.059
+      },
+      {
+        "route": "/commit/build/character/3/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 245,
+        "durationMs": 34.925
+      },
+      {
+        "route": "/commit/build/character/5/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 246,
+        "durationMs": 29.553
+      },
+      {
+        "route": "/commit/build/character/1/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6101/5/0",
+            "0/3406/0/0",
+            "0/4101/6/0",
+            "0/6101/4/0",
+            "0/7102/4/0",
+            "0/5101/5/0",
+            "0/7103/4/0",
+            "0/7304/0/0",
+            "0/7102/3/0",
+            "0/7103/4/0",
+            "0/7103/4/0",
+            "0/6103/5/0",
+            "0/4103/6/0"
+          ]
+        },
+        "recordedCall": 247,
+        "durationMs": 38.739
+      },
+      {
+        "route": "/commit/build/character/4/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6215/2/0",
+            "0/6313/2/0",
+            "0/5107/6/0",
+            "0/7107/4/0",
+            "0/6107/5/0",
+            "0/3314/4/0",
+            "0/3213/4/0",
+            "0/7107/4/0",
+            "0/7109/4/0",
+            "0/6109/4/0",
+            "0/6107/5/0"
+          ]
+        },
+        "recordedCall": 248,
+        "durationMs": 33.753
+      },
+      {
+        "route": "/commit/build/character/2/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6215/2/0",
+            "0/5109/5/0",
+            "0/7109/3/0",
+            "0/6109/4/0",
+            "0/3213/3/0",
+            "0/7107/3/0",
+            "0/6107/4/0",
+            "0/7107/3/0",
+            "0/7107/3/0",
+            "0/3107/5/0",
+            "0/6213/2/0"
+          ]
+        },
+        "recordedCall": 249,
+        "durationMs": 44.174
+      },
+      {
+        "route": "/commit/build/character/6/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/7101/2/0",
+            "0/7102/3/0",
+            "0/7101/2/0",
+            "0/7101/2/0",
+            "0/7102/3/0",
+            "0/5401/0/0",
+            "0/6102/4/0",
+            "0/6102/4/0",
+            "0/7103/3/0",
+            "0/7103/3/0"
+          ]
+        },
+        "recordedCall": 250,
+        "durationMs": 52.634
+      },
+      {
+        "route": "/commit/build/character/3/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6215/2/0",
+            "0/7217/0/0",
+            "0/6107/4/0",
+            "0/7312/0/0",
+            "0/7107/2/0",
+            "0/7109/3/0",
+            "0/3213/3/0",
+            "0/6109/4/0",
+            "0/3107/5/0"
+          ]
+        },
+        "recordedCall": 251,
+        "durationMs": 44.443
+      },
+      {
+        "route": "/commit/build/character/5/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6223/2/0",
+            "0/7110/5/0",
+            "0/4110/6/0",
+            "0/7317/1/0",
+            "0/3223/2/0",
+            "0/6110/4/0",
+            "0/3110/6/0",
+            "0/7219/1/0",
+            "0/5110/4/0"
+          ]
+        },
+        "recordedCall": 252,
+        "durationMs": 34.713
+      }
+    ],
+    "apiDurationMs": 561.4699999999999,
+    "matchedCalls": 13
+  },
+  {
+    "batchFile": "d8-r169-jewels.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 11,
+          "jewelToSet": "ward:2"
+        },
+        "recordedCall": 254,
+        "durationMs": 39.977
+      },
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 12,
+          "jewelToSet": "shade:3"
+        },
+        "recordedCall": 255,
+        "durationMs": 37.806
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "focus:1"
+        },
+        "recordedCall": 256,
+        "durationMs": 27.458
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "might:4"
+        },
+        "recordedCall": 257,
+        "durationMs": 26.292
+      },
+      {
+        "route": "/commit/build/character/2/jewelAttach",
+        "parameters": {
+          "targetEquipment": 9,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 258,
+        "durationMs": 36.869
+      },
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 6,
+          "jewelToSet": "ward:4"
+        },
+        "recordedCall": 259,
+        "durationMs": 32.709
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 8,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 260,
+        "durationMs": 27.509
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 261,
+        "durationMs": 41.344
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 6,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 262,
+        "durationMs": 29.611
+      }
+    ],
+    "apiDurationMs": 299.575,
+    "matchedCalls": 9
+  },
+  {
+    "batchFile": "d8-r197-equipment.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/1/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 279,
+        "durationMs": 78.897
+      },
+      {
+        "route": "/commit/build/character/4/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 280,
+        "durationMs": 56.989
+      },
+      {
+        "route": "/commit/build/character/2/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 281,
+        "durationMs": 40.133
+      },
+      {
+        "route": "/commit/build/character/6/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 282,
+        "durationMs": 32.445
+      },
+      {
+        "route": "/commit/build/character/3/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 283,
+        "durationMs": 42.055
+      },
+      {
+        "route": "/commit/build/character/5/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 284,
+        "durationMs": 50.692
+      },
+      {
+        "route": "/commit/build/character/1/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5401/0/0",
+            "0/5401/0/0",
+            "0/7403/0/0",
+            "0/7403/0/0",
+            "0/1401/3/0",
+            "0/1401/0/0",
+            "0/1401/0/0",
+            "0/7103/4/0",
+            "0/7103/4/0",
+            "0/1401/0/0",
+            "0/7103/4/0",
+            "0/8103/3/0",
+            "0/8103/3/0"
+          ]
+        },
+        "recordedCall": 285,
+        "durationMs": 45.913
+      },
+      {
+        "route": "/commit/build/character/4/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6215/2/0",
+            "0/6313/2/0",
+            "0/5107/6/0",
+            "0/7107/4/0",
+            "0/6107/5/0",
+            "0/3314/4/0",
+            "0/3213/4/0",
+            "0/8107/2/0",
+            "0/7109/4/0",
+            "0/7107/4/0",
+            "0/6109/4/0"
+          ]
+        },
+        "recordedCall": 286,
+        "durationMs": 42.939
+      },
+      {
+        "route": "/commit/build/character/2/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6215/2/0",
+            "0/8109/3/0",
+            "0/6107/5/0",
+            "0/7107/3/0",
+            "0/8107/2/0",
+            "0/7109/3/0",
+            "0/4107/5/0",
+            "0/6109/4/0",
+            "0/8213/0/0",
+            "0/6213/2/0",
+            "0/5109/5/0"
+          ]
+        },
+        "recordedCall": 287,
+        "durationMs": 37.844
+      },
+      {
+        "route": "/commit/build/character/6/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/1401/0/0",
+            "0/1401/0/0",
+            "0/1401/0/0",
+            "0/1401/0/0",
+            "0/8101/1/0",
+            "0/7102/3/0",
+            "0/7302/0/0",
+            "0/8103/3/0",
+            "0/8103/3/0",
+            "0/6103/5/0"
+          ]
+        },
+        "recordedCall": 288,
+        "durationMs": 41.313
+      },
+      {
+        "route": "/commit/build/character/3/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6215/2/0",
+            "0/8109/2/0",
+            "0/7107/3/0",
+            "0/6107/4/0",
+            "0/8107/2/0",
+            "0/7109/3/0",
+            "0/8213/0/0",
+            "0/3213/3/0",
+            "0/6109/4/0"
+          ]
+        },
+        "recordedCall": 289,
+        "durationMs": 36.488
+      },
+      {
+        "route": "/commit/build/character/5/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6223/2/0",
+            "0/7110/5/0",
+            "0/4110/6/0",
+            "0/7317/1/0",
+            "0/3223/2/0",
+            "0/6110/4/0",
+            "0/8110/2/0",
+            "0/3404/4/0",
+            "0/8112/3/0"
+          ]
+        },
+        "recordedCall": 290,
+        "durationMs": 35.435
+      }
+    ],
+    "apiDurationMs": 541.143,
+    "matchedCalls": 12
+  },
+  {
+    "batchFile": "d8-r197-jewels.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 7,
+          "jewelToSet": "ward:2"
+        },
+        "recordedCall": 292,
+        "durationMs": 32.236
+      },
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 8,
+          "jewelToSet": "shade:3"
+        },
+        "recordedCall": 293,
+        "durationMs": 30.855
+      },
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 10,
+          "jewelToSet": "ward:4"
+        },
+        "recordedCall": 294,
+        "durationMs": 31.584
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "focus:1"
+        },
+        "recordedCall": 295,
+        "durationMs": 33.208
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "might:4"
+        },
+        "recordedCall": 296,
+        "durationMs": 29.14
+      },
+      {
+        "route": "/commit/build/character/2/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 297,
+        "durationMs": 60.339
+      },
+      {
+        "route": "/commit/build/character/2/jewelAttach",
+        "parameters": {
+          "targetEquipment": 6,
+          "jewelToSet": "might:4"
+        },
+        "recordedCall": 298,
+        "durationMs": 44.067
+      },
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 9,
+          "jewelToSet": "fort:1"
+        },
+        "recordedCall": 299,
+        "durationMs": 43.818
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 3,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 300,
+        "durationMs": 35.462
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 301,
+        "durationMs": 33.294
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 302,
+        "durationMs": 31.404
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 7,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 303,
+        "durationMs": 50.645
+      }
+    ],
+    "apiDurationMs": 456.0519999999999,
+    "matchedCalls": 12
+  },
+  {
+    "batchFile": "d8-r227-equipment.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/3/changeBuild",
+        "parameters": {
+          "mainClassId": "sword-saint",
+          "subClassId": "ranger",
+          "simulation": false,
+          "confirmation": "yes"
+        },
+        "recordedCall": 317,
+        "durationMs": 90.589
+      },
+      {
+        "route": "/commit/build/character/6/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 318,
+        "durationMs": 42.407
+      },
+      {
+        "route": "/commit/build/character/6/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/1401/0/0",
+            "0/1401/0/0",
+            "0/1401/0/0",
+            "0/1401/0/0",
+            "0/1401/0/0",
+            "0/1401/0/0",
+            "0/1401/0/0",
+            "0/8103/3/0",
+            "0/8103/3/0",
+            "0/1401/0/0"
+          ]
+        },
+        "recordedCall": 319,
+        "durationMs": 61.413
+      }
+    ],
+    "apiDurationMs": 194.409,
+    "matchedCalls": 3
+  },
+  {
+    "batchFile": "d8-r227-jewels.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/1/jewelRemove",
+        "parameters": {
+          "targetEquipment": 8
+        },
+        "recordedCall": 321,
+        "durationMs": 58.199
+      },
+      {
+        "route": "/commit/build/character/1/jewelRemove",
+        "parameters": {
+          "targetEquipment": 10
+        },
+        "recordedCall": 322,
+        "durationMs": 72.037
+      },
+      {
+        "route": "/commit/build/character/2/jewelRemove",
+        "parameters": {
+          "targetEquipment": 2
+        },
+        "recordedCall": 323,
+        "durationMs": 43.628
+      },
+      {
+        "route": "/commit/build/character/2/jewelRemove",
+        "parameters": {
+          "targetEquipment": 6
+        },
+        "recordedCall": 324,
+        "durationMs": 52.161
+      },
+      {
+        "route": "/commit/build/character/5/jewelRemove",
+        "parameters": {
+          "targetEquipment": 7
+        },
+        "recordedCall": 325,
+        "durationMs": 67.751
+      },
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 8,
+          "jewelToSet": "fort:1"
+        },
+        "recordedCall": 326,
+        "durationMs": 65.086
+      },
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 10,
+          "jewelToSet": "ward:3"
+        },
+        "recordedCall": 327,
+        "durationMs": 57.328
+      },
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 11,
+          "jewelToSet": "fort:1"
+        },
+        "recordedCall": 328,
+        "durationMs": 42.24
+      },
+      {
+        "route": "/commit/build/character/2/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "focus:3"
+        },
+        "recordedCall": 329,
+        "durationMs": 36.641
+      },
+      {
+        "route": "/commit/build/character/2/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "might:4"
+        },
+        "recordedCall": 330,
+        "durationMs": 33.695
+      },
+      {
+        "route": "/commit/build/character/2/jewelAttach",
+        "parameters": {
+          "targetEquipment": 6,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 331,
+        "durationMs": 37.716
+      },
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 7,
+          "jewelToSet": "shade:3"
+        },
+        "recordedCall": 332,
+        "durationMs": 44.63
+      },
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 8,
+          "jewelToSet": "ward:4"
+        },
+        "recordedCall": 333,
+        "durationMs": 32.987
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "focus:1"
+        },
+        "recordedCall": 334,
+        "durationMs": 34.261
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 5,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 335,
+        "durationMs": 34.364
+      }
+    ],
+    "apiDurationMs": 712.7239999999999,
+    "matchedCalls": 15
+  },
+  {
+    "batchFile": "d8-r251-equipment.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/party/1",
+        "parameters": {
+          "order": [
+            1,
+            6,
+            4,
+            2,
+            3,
+            5
+          ]
+        },
+        "recordedCall": 349,
+        "durationMs": 79.421
+      },
+      {
+        "route": "/commit/build/character/1/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 350,
+        "durationMs": 112.865
+      },
+      {
+        "route": "/commit/build/character/6/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 351,
+        "durationMs": 55.963
+      },
+      {
+        "route": "/commit/build/character/4/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 352,
+        "durationMs": 33.347
+      },
+      {
+        "route": "/commit/build/character/2/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 353,
+        "durationMs": 44.567
+      },
+      {
+        "route": "/commit/build/character/3/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 354,
+        "durationMs": 54.789
+      },
+      {
+        "route": "/commit/build/character/5/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 355,
+        "durationMs": 51.436
+      },
+      {
+        "route": "/commit/build/character/1/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/7402/0/0",
+            "0/7109/4/0",
+            "0/7402/0/0",
+            "0/7402/0/0",
+            "0/1401/3/0",
+            "0/7403/0/0",
+            "0/6103/5/0",
+            "0/7403/0/0",
+            "0/8103/5/0",
+            "0/5401/0/0",
+            "0/7103/4/0",
+            "0/7103/4/0",
+            "0/7103/4/0"
+          ]
+        },
+        "recordedCall": 356,
+        "durationMs": 40.915
+      },
+      {
+        "route": "/commit/build/character/6/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/4301/4/0",
+            "0/8303/0/0",
+            "0/4301/4/0",
+            "0/8101/2/0",
+            "0/8101/2/0",
+            "0/8303/0/0",
+            "0/8303/0/0",
+            "0/8103/3/0",
+            "0/8103/3/0",
+            "0/8103/3/0"
+          ]
+        },
+        "recordedCall": 357,
+        "durationMs": 61.826
+      },
+      {
+        "route": "/commit/build/character/4/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6215/2/0",
+            "0/8217/0/0",
+            "0/5107/6/0",
+            "0/7107/4/0",
+            "0/6107/5/0",
+            "0/6313/2/0",
+            "0/8107/3/0",
+            "0/3213/4/0",
+            "0/3314/4/0",
+            "0/8213/1/0",
+            "0/5401/0/0"
+          ]
+        },
+        "recordedCall": 358,
+        "durationMs": 43.635
+      },
+      {
+        "route": "/commit/build/character/2/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6215/2/0",
+            "0/8217/0/0",
+            "0/7107/4/0",
+            "0/6107/5/0",
+            "0/8213/1/0",
+            "0/8109/4/0",
+            "0/8107/2/0",
+            "0/3213/3/0",
+            "0/7109/3/0",
+            "0/6109/4/0",
+            "0/6213/2/0"
+          ]
+        },
+        "recordedCall": 359,
+        "durationMs": 40.814
+      },
+      {
+        "route": "/commit/build/character/3/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6215/2/0",
+            "0/8109/4/0",
+            "0/7107/3/0",
+            "0/6107/4/0",
+            "0/8107/2/0",
+            "0/7109/3/0",
+            "0/4107/5/0",
+            "0/8213/0/0",
+            "0/6109/4/0"
+          ]
+        },
+        "recordedCall": 360,
+        "durationMs": 42.912
+      },
+      {
+        "route": "/commit/build/character/5/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6223/2/0",
+            "0/7110/5/0",
+            "0/8110/4/0",
+            "0/4110/6/0",
+            "0/8321/0/0",
+            "0/6111/3/0",
+            "0/6110/4/0",
+            "0/3110/6/0",
+            "0/6203/1/0"
+          ]
+        },
+        "recordedCall": 361,
+        "durationMs": 44.976
+      }
+    ],
+    "apiDurationMs": 707.466,
+    "matchedCalls": 13
+  },
+  {
+    "batchFile": "d8-r251-jewels.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 8,
+          "jewelToSet": "ward:2"
+        },
+        "recordedCall": 363,
+        "durationMs": 32.904
+      },
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 10,
+          "jewelToSet": "ward:3"
+        },
+        "recordedCall": 364,
+        "durationMs": 41.966
+      },
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 11,
+          "jewelToSet": "shade:3"
+        },
+        "recordedCall": 365,
+        "durationMs": 30.258
+      },
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 12,
+          "jewelToSet": "ward:4"
+        },
+        "recordedCall": 366,
+        "durationMs": 31.519
+      },
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 0,
+          "jewelToSet": "fort:1"
+        },
+        "recordedCall": 367,
+        "durationMs": 30.573
+      },
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "fort:1"
+        },
+        "recordedCall": 368,
+        "durationMs": 48.591
+      },
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 3,
+          "jewelToSet": "fort:1"
+        },
+        "recordedCall": 369,
+        "durationMs": 48.995
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "focus:1"
+        },
+        "recordedCall": 370,
+        "durationMs": 42.229
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "might:4"
+        },
+        "recordedCall": 371,
+        "durationMs": 41.161
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 4,
+          "jewelToSet": "might:3"
+        },
+        "recordedCall": 372,
+        "durationMs": 40.734
+      },
+      {
+        "route": "/commit/build/character/2/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "focus:3"
+        },
+        "recordedCall": 373,
+        "durationMs": 36.332
+      },
+      {
+        "route": "/commit/build/character/2/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "might:4"
+        },
+        "recordedCall": 374,
+        "durationMs": 33.334
+      },
+      {
+        "route": "/commit/build/character/2/jewelAttach",
+        "parameters": {
+          "targetEquipment": 3,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 375,
+        "durationMs": 35.197
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "focus:1"
+        },
+        "recordedCall": 376,
+        "durationMs": 53.169
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 3,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 377,
+        "durationMs": 52.079
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 5,
+          "jewelToSet": "focus:3"
+        },
+        "recordedCall": 378,
+        "durationMs": 36.298
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 6,
+          "jewelToSet": "might:4"
+        },
+        "recordedCall": 379,
+        "durationMs": 32.749
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 380,
+        "durationMs": 38.346
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "arcana:2"
+        },
+        "recordedCall": 381,
+        "durationMs": 36.919
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 3,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 382,
+        "durationMs": 34.204
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 7,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 383,
+        "durationMs": 43.295
+      }
+    ],
+    "apiDurationMs": 820.8519999999999,
+    "matchedCalls": 21
+  },
+  {
+    "batchFile": "d8-r289-equipment.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/party/1",
+        "parameters": {
+          "order": [
+            6,
+            1,
+            4,
+            2,
+            3,
+            5
+          ]
+        },
+        "recordedCall": 395,
+        "durationMs": 84.994
+      },
+      {
+        "route": "/commit/build/character/6/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 396,
+        "durationMs": 49.432
+      },
+      {
+        "route": "/commit/build/character/1/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 397,
+        "durationMs": 56.96
+      },
+      {
+        "route": "/commit/build/character/4/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 398,
+        "durationMs": 49.461
+      },
+      {
+        "route": "/commit/build/character/2/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 399,
+        "durationMs": 41.631
+      },
+      {
+        "route": "/commit/build/character/3/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 400,
+        "durationMs": 35.692
+      },
+      {
+        "route": "/commit/build/character/5/removeAllEquipment",
+        "parameters": {},
+        "recordedCall": 401,
+        "durationMs": 49.024
+      },
+      {
+        "route": "/commit/build/character/6/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/7402/0/0",
+            "0/1401/0/0",
+            "0/8301/0/0",
+            "0/1401/0/0",
+            "0/8301/0/0",
+            "0/1401/0/0",
+            "0/5103/3/0",
+            "0/7103/4/0",
+            "0/8103/3/0",
+            "0/5401/0/0"
+          ]
+        },
+        "recordedCall": 402,
+        "durationMs": 46.756
+      },
+      {
+        "route": "/commit/build/character/1/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/5401/0/0",
+            "0/7403/0/0",
+            "0/7403/0/0",
+            "0/1401/3/0",
+            "0/7402/0/0",
+            "0/8103/5/0",
+            "0/8303/1/0",
+            "0/8103/4/0",
+            "0/1404/0/0",
+            "0/8103/4/0",
+            "0/7103/4/0",
+            "0/7103/4/0",
+            "0/7402/0/0"
+          ]
+        },
+        "recordedCall": 403,
+        "durationMs": 55.888
+      },
+      {
+        "route": "/commit/build/character/4/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6215/2/0",
+            "0/8217/1/0",
+            "0/8107/4/0",
+            "0/5107/6/0",
+            "0/6313/2/0",
+            "0/7107/4/0",
+            "0/6107/5/0",
+            "0/3213/4/0",
+            "0/3314/4/0",
+            "0/8213/2/0",
+            "0/7109/4/0"
+          ]
+        },
+        "recordedCall": 404,
+        "durationMs": 48.067
+      },
+      {
+        "route": "/commit/build/character/2/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6215/2/0",
+            "0/8217/1/0",
+            "0/7107/4/0",
+            "0/6107/5/0",
+            "0/8107/3/0",
+            "0/8109/4/0",
+            "0/8213/1/0",
+            "0/7109/3/0",
+            "0/3213/3/0",
+            "0/8107/3/0",
+            "0/6109/4/0"
+          ]
+        },
+        "recordedCall": 405,
+        "durationMs": 51.093
+      },
+      {
+        "route": "/commit/build/character/3/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6215/2/0",
+            "0/8217/0/0",
+            "0/8213/1/0",
+            "0/7107/3/0",
+            "0/6107/4/0",
+            "0/8109/4/0",
+            "0/8107/2/0",
+            "0/3213/3/0",
+            "0/7109/3/0"
+          ]
+        },
+        "recordedCall": 406,
+        "durationMs": 47.55
+      },
+      {
+        "route": "/commit/build/character/5/equip",
+        "parameters": {
+          "targetEquipment": [
+            "0/6223/2/0",
+            "0/7110/5/0",
+            "0/8110/4/0",
+            "0/4110/6/0",
+            "0/8321/0/0",
+            "0/6110/4/0",
+            "0/3110/6/0",
+            "0/4219/4/0",
+            "0/3223/2/0"
+          ]
+        },
+        "recordedCall": 407,
+        "durationMs": 44.561
+      }
+    ],
+    "apiDurationMs": 661.1089999999998,
+    "matchedCalls": 13
+  },
+  {
+    "batchFile": "d8-r289-jewels.batch.json",
+    "steps": [
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 0,
+          "jewelToSet": "shade:3"
+        },
+        "recordedCall": 409,
+        "durationMs": 31.715
+      },
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "ward:4"
+        },
+        "recordedCall": 410,
+        "durationMs": 40.205
+      },
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 7,
+          "jewelToSet": "ward:2"
+        },
+        "recordedCall": 411,
+        "durationMs": 52.11
+      },
+      {
+        "route": "/commit/build/character/6/jewelAttach",
+        "parameters": {
+          "targetEquipment": 8,
+          "jewelToSet": "ward:3"
+        },
+        "recordedCall": 412,
+        "durationMs": 53.481
+      },
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 5,
+          "jewelToSet": "fort:1"
+        },
+        "recordedCall": 413,
+        "durationMs": 34.786
+      },
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 7,
+          "jewelToSet": "fort:1"
+        },
+        "recordedCall": 414,
+        "durationMs": 43.809
+      },
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 8,
+          "jewelToSet": "fort:1"
+        },
+        "recordedCall": 415,
+        "durationMs": 40.912
+      },
+      {
+        "route": "/commit/build/character/1/jewelAttach",
+        "parameters": {
+          "targetEquipment": 9,
+          "jewelToSet": "fort:3"
+        },
+        "recordedCall": 416,
+        "durationMs": 33.117
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "focus:1"
+        },
+        "recordedCall": 417,
+        "durationMs": 41.214
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 3,
+          "jewelToSet": "might:3"
+        },
+        "recordedCall": 418,
+        "durationMs": 45.427
+      },
+      {
+        "route": "/commit/build/character/4/jewelAttach",
+        "parameters": {
+          "targetEquipment": 6,
+          "jewelToSet": "might:4"
+        },
+        "recordedCall": 419,
+        "durationMs": 36.484
+      },
+      {
+        "route": "/commit/build/character/2/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "focus:3"
+        },
+        "recordedCall": 420,
+        "durationMs": 45.726
+      },
+      {
+        "route": "/commit/build/character/2/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 421,
+        "durationMs": 34.394
+      },
+      {
+        "route": "/commit/build/character/2/jewelAttach",
+        "parameters": {
+          "targetEquipment": 3,
+          "jewelToSet": "might:4"
+        },
+        "recordedCall": 422,
+        "durationMs": 50.539
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "focus:1"
+        },
+        "recordedCall": 423,
+        "durationMs": 33.453
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 3,
+          "jewelToSet": "might:2"
+        },
+        "recordedCall": 424,
+        "durationMs": 38.618
+      },
+      {
+        "route": "/commit/build/character/3/jewelAttach",
+        "parameters": {
+          "targetEquipment": 4,
+          "jewelToSet": "might:4"
+        },
+        "recordedCall": 425,
+        "durationMs": 34.362
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 0,
+          "jewelToSet": "focus:3"
+        },
+        "recordedCall": 426,
+        "durationMs": 37.379
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 1,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 427,
+        "durationMs": 37.258
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 2,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 428,
+        "durationMs": 40.989
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 3,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 429,
+        "durationMs": 37.103
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 5,
+          "jewelToSet": "arcana:1"
+        },
+        "recordedCall": 430,
+        "durationMs": 45.854
+      },
+      {
+        "route": "/commit/build/character/5/jewelAttach",
+        "parameters": {
+          "targetEquipment": 6,
+          "jewelToSet": "arcana:2"
+        },
+        "recordedCall": 431,
+        "durationMs": 53.541
+      }
+    ],
+    "apiDurationMs": 942.4760000000001,
+    "matchedCalls": 23
+  }
+]

@@ -1,0 +1,100 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 7.4% / Draw 14.9% / Retreat 63.4% / Defeat 14.3%",
+ "after": "Success 7.4% / Draw 16.1% / Retreat 61.0% / Defeat 15.5%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.0117,
+ "bottleneckRoom": "5f-4",
+ "bottleneckCounters": [
+  {
+   "ability": "a.defiance",
+   "answers": [
+    "terrain.suppression"
+   ],
+   "status": "noItem"
+  }
+ ],
+ "candidatesTried": {
+  "offenseElement": 0,
+  "defenseElement": 9,
+  "ability": 10
+ },
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [
+   {
+    "resistance": [
+     "r.ice",
+     "r.fire"
+    ],
+    "improvement": 0.8235,
+    "changes": [
+     "4=0/6101/4/0",
+     "5=0/8306/2/0",
+     "7=0/6102/3/0"
+    ]
+   },
+   {
+    "resistance": [
+     "r.ice",
+     "r.thunder"
+    ],
+    "improvement": 0.6471,
+    "changes": [
+     "10=0/8306/2/0"
+    ]
+   }
+  ],
+  "ability": [
+   {
+    "abilities": [
+     "a.wind-rider"
+    ],
+    "improvement": 0.1765,
+    "changes": [
+     "1=0/1312/2/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.pursuit"
+    ],
+    "improvement": 0.1176,
+    "changes": [
+     "0=0/1304/2/0"
+    ]
+   },
+   {
+    "abilities": [
+     "a.bulwark-breaker"
+    ],
+    "improvement": 0.1176,
+    "changes": [
+     "6=0/5403/0/0"
+    ]
+   }
+  ],
+  "finalTuning": [
+   {
+    "step": "defenseElement",
+    "index": 1,
+    "resistance": [
+     "r.ice",
+     "r.thunder"
+    ],
+    "improvement": 0.2703,
+    "changes": [
+     "10=0/8306/2/0"
+    ]
+   }
+  ]
+ },
+ "changeSummary": [],
+ "revision": 2634,
+ "simulationRuns": 11000,
+ "elapsedSeconds": 7,
+ "seed": 3174056104
+}

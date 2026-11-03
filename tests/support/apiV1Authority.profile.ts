@@ -8,6 +8,7 @@ import {
   type ApiV1CommitAuthorityDependencies,
   type ApiV1CommitAuthorityInput,
   type ApiV1ControlMetadata,
+  type ApiV1PersistenceContext,
 } from '../../src/api/v1/authority';
 import { createFreshGameState } from '../../src/hooks/useGameState';
 import { stageApiV1ElapsedProgression } from '../../src/api/v1/elapsedProgression';
@@ -41,14 +42,14 @@ function input(overrides: Partial<ApiV1CommitAuthorityInput> = {}): ApiV1CommitA
 }
 
 function dependencies(overrides: Partial<ApiV1CommitAuthorityDependencies> = {}) {
-  const persisted: Array<{ state: GameState; control: ApiV1ControlMetadata }> = [];
+  const persisted: Array<{ state: GameState; control: ApiV1ControlMetadata; context: ApiV1PersistenceContext }> = [];
   const published: GameState[] = [];
   const value: ApiV1CommitAuthorityDependencies = {
     gameMode: 'mode.normal',
     enemyLevelOffset: 0,
     cycleDurationScale: 1,
     applyAutoEquipment: state => state,
-    persist: async (state, metadata) => { persisted.push({ state, control: metadata }); },
+    persist: async (state, metadata, context) => { persisted.push({ state, control: metadata, context }); },
     publish: async state => { published.push(state); },
     createOpaqueId: () => 'opaque-fixed-id',
     createRandomSeed: () => 0xa91f_0028,
@@ -71,6 +72,7 @@ function dependencies(overrides: Partial<ApiV1CommitAuthorityDependencies> = {})
   assert.equal(seed.global.jewelAutoEquipPriorityPartyId, 1, 'the immutable input is untouched');
   assert.equal(deps.persisted.length, 1);
   assert.equal(deps.published.length, 1);
+  assert.equal(deps.persisted[0].context.stateChanged, true);
 
   const replayDeps = dependencies();
   const replay = await executeApiV1CommitTransaction(input({ state: result.state, control: result.control, expectedRevision: 0 }), replayDeps.value);
@@ -118,6 +120,7 @@ function dependencies(overrides: Partial<ApiV1CommitAuthorityDependencies> = {})
   assert.equal(result.ok, true);
   if (!result.ok) throw new Error(result.error.code);
   assert.equal(result.response.revision, 0);
+  assert.equal(deps.persisted[0].context.stateChanged, false);
   assert.equal(result.response.changedResources.length, 0);
   assert.equal(result.control.receipts.length, 1);
   assert.equal(deps.persisted.length, 1);
@@ -148,6 +151,7 @@ function dependencies(overrides: Partial<ApiV1CommitAuthorityDependencies> = {})
   assert.equal(first.ok, false);
   if (first.ok) throw new Error('expected confirmation challenge');
   assert.equal(first.error.code, 'confirmation_required');
+  assert.equal(deps.persisted[0].context.stateChanged, false);
   assert.equal(first.durableControl?.revisionHighWater, 0);
   assert.equal(first.durableControl?.receipts.length, 0);
   assert.equal(first.durableControl?.confirmations?.[0].token, 'opaque-fixed-id');
@@ -348,9 +352,50 @@ for (const [thrown, code] of [['illegal_action:charge_insufficient', 'illegal_ac
   assert.ok(totalChunks > 0, 'short steps must still complete Cycles');
   assert.equal(simulatedAt, long.simulatedAt, 'the clock advances by the same total time');
 
+  // SpecRef: 9.1.4.4 | Each `parties` entry reports its carry and what is left of its next Cycle; sending exactly that
+  // completes the Cycle, which ends at maximum HP.
+  {
+    const last = await stageApiV1ElapsedProgression(state, { elapsedSeconds: 60 }, { ...options, simulatedAt, carriedMsByPartyId: carried });
+    const cycleMs = cycleMsOf(last.state);
+    const entries = last.data.parties as { partyNumber: number; currentHp: number; maximumHp: number; carriedSeconds: number; secondsToNextCycle: number }[];
+    for (const entry of entries) {
+      const carriedMs = last.carriedMsByPartyId[String(entry.partyNumber)] ?? 0;
+      assert.equal(entry.carriedSeconds, Math.floor(carriedMs / 1_000), `party ${entry.partyNumber} carriedSeconds`);
+      assert.equal(entry.secondsToNextCycle, Math.ceil((cycleMs[String(entry.partyNumber)] - carriedMs) / 1_000), `party ${entry.partyNumber} secondsToNextCycle`);
+    }
+    const target = entries.find((entry) => entry.secondsToNextCycle >= 60)!;
+    assert.ok(target, 'the fixture needs a party more than a minute from its next Cycle');
+    const index = last.state.parties.findIndex((party) => party.id === target.partyNumber);
+    const wounded = { ...last.state, parties: last.state.parties.map((party, partyIndex) => (partyIndex === index ? { ...party, currentHp: 1 } : party)) };
+    const healed = await stageApiV1ElapsedProgression(wounded, { elapsedSeconds: target.secondsToNextCycle }, { ...options, simulatedAt: last.simulatedAt, carriedMsByPartyId: last.carriedMsByPartyId });
+    const after = (healed.data.parties as typeof entries).find((entry) => entry.partyNumber === target.partyNumber)!;
+    assert.ok((healed.carriedMsByPartyId[String(target.partyNumber)] ?? 0) < 1_000, 'exactly one Cycle completed, with under a second left over');
+    assert.equal(after.currentHp, after.maximumHp, 'the completed Cycle ends at maximum HP');
+  }
+
   const noOp = await stageApiV1ElapsedProgression(state, {}, { ...options, simulatedAt, carriedMsByPartyId: carried });
   assert.deepEqual(noOp.carriedMsByPartyId, carried);
   assert.equal(noOp.state, state);
+}
+
+// SpecRef: 8.5 | UI_DIARY | Worker Chunks skip achievements, so elapsed progression records them itself, stamped with the
+// Chunk's in-game end rather than the newest (possibly old) Global Diary entry.
+{
+  const options = {
+    simulatedAt: fixedNow,
+    realNow: fixedNow,
+    gameMode: 'mode.normal' as const,
+    enemyLevelOffset: 0,
+    cycleDurationScale: 1,
+    applyAutoEquipment: (state: GameState) => state,
+    runWithRandom: <T>(operation: () => T) => operation(),
+  };
+  const withJewel = { ...seed, global: { ...seed.global, jewels: { ...seed.global.jewels, achievementFixture: 1 } } } as GameState;
+  const staged = await stageApiV1ElapsedProgression(withJewel, { elapsedSeconds: 3_600 }, options);
+  assert.ok(staged.chunkCount > 0);
+  assert.ok(staged.state.global.achievementMilestones?.includes('jewel:1'));
+  const entry = staged.state.global.globalDiary?.find((log) => log.kind === 'achievement' && log.metric === 'jewel' && log.threshold === 1);
+  assert.ok(entry && entry.createdAt > fixedNow && entry.createdAt <= staged.simulatedAt, `achievement stamped in-game: ${entry?.createdAt}`);
 }
 
 // The carried remainder lives in the account control beside the clock: elapsed stores it and import/reset clears it.
@@ -545,3 +590,19 @@ for (const [thrown, code] of [['illegal_action:charge_insufficient', 'illegal_ac
 }
 
 console.log('apiV1Authority profile ok');
+
+// Internal delivery transactions use the same persistence context and retain their snapshot on save failure.
+{
+  const authority = new SerializedApplicationApiAuthority({ state: seed, control: control(), simulatedAt: fixedNow });
+  const contexts: boolean[] = [];
+  const deps = {
+    persist: async (_state: GameState, _control: ApiV1ControlMetadata, context: ApiV1PersistenceContext) => { contexts.push(context.stateChanged); },
+    publish: async () => undefined,
+  };
+  await authority.runInternalTransaction((state, metadata) => ({ state, control: { ...metadata }, stateChanged: false, controlChanged: true }), deps);
+  await authority.runInternalTransaction((state, metadata) => ({ state: { ...state, global: { ...state.global, jewelAutoEquipPriorityPartyId: null } }, control: { ...metadata }, stateChanged: true, controlChanged: true }), deps);
+  assert.deepEqual(contexts, [false, true]);
+  const before = authority.getSnapshot();
+  await authority.runInternalTransaction((state, metadata) => ({ state, control: { ...metadata }, stateChanged: false, controlChanged: true }), { ...deps, persist: async () => { throw new Error('save failure'); } });
+  assert.equal(authority.getSnapshot(), before);
+}

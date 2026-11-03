@@ -1,0 +1,43 @@
+{
+  "version": "0.9.8",
+  "build": 5,
+  "buildPass": true,
+  "apiContractPass": true,
+  "desktopSmokePass": true,
+  "changedLintPass": true,
+  "fullTestTotal": 495,
+  "reconciledPass": 492,
+  "preexistingFailures": 3,
+  "initialPass": 478,
+  "initialSandboxTransportFailures": 14,
+  "transportRerunPass": 16,
+  "transportRerunTotal": 16,
+  "baselineFailureReproduction": {
+    "tests": 42,
+    "pass": 39,
+    "fail": 3
+  },
+  "fullLintPreexistingErrors": 3,
+  "baselineSurvey": {
+    "operations": 85,
+    "successRequests": 340,
+    "uniqueMeasuredOperationSamples": 255
+  },
+  "finalSurvey": {
+    "operations": 85,
+    "successRequests": 344,
+    "measuredRequestsIncludingStreamDuplicate": 258
+  },
+  "heavySurvey": {
+    "fixtures": 2,
+    "casesEach": 16,
+    "successRequests": 128
+  },
+  "controlledMatrix": {
+    "variants": 3,
+    "blocksEach": 3,
+    "casesEach": 4,
+    "measuredEachCaseVariant": 6,
+    "successRequestsIncludingWarmups": 108
+  }
+}

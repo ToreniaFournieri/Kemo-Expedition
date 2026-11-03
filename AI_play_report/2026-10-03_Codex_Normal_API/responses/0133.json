@@ -1,0 +1,22 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "baa4a991-632c-4f59-9f22-7d85a1c99ac7",
+  "previousRevision": 88,
+  "revision": 89,
+  "committedAt": "2026-10-03T08:14:43.210Z",
+  "data": {
+    "requestedElapsedSeconds": 43200,
+    "acceptedElapsedSeconds": 43200,
+    "cappedElapsedSeconds": 43200,
+    "elapsedSeconds": 43200,
+    "inGameTime": "2026-10-19T08:04:50.843Z"
+  },
+  "effects": [],
+  "changedResources": [
+    "read/observation/overview",
+    "read/observation/expedition",
+    "read/observation/base",
+    "read/observation/diary"
+  ]
+}

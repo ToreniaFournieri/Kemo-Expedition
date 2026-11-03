@@ -233,6 +233,23 @@ Left-aligned
       - If `gender` is missing, assign randomly:
       - `♂` or `♀`
 
+- Unique selection: "固有"
+  - Pull-down list: `none` and available `uniqueCharacterId` values.
+    - Example: `none`, `kemo`, `laika`, etc.
+    - Japanese UI example: （なし）, ケモ, ライカ, etc.
+  - If the selection changes, update the background image immediately to reflect the newly selected character.
+  - If a unique character such as `kemo` is changed to `none`, convert the character to a non-unique character.
+    - Preserve the current race if it is valid for a non-unique character.
+    - If the current race is unique-only, such as Kemoria, Orcinian, or Avian, change it to an available selectable race according to the race-table entry order.
+      - Example priority: Lupinian > Vulpinian > Felidian.
+      - Selectable race: The first race in table order that is selectable and not blocked by the same-race, same-gender rule in the party
+    - `Gender`, `Main Class`, and `Sub Class` are preserved unchanged.
+      - Exception: when switching from `none` to a unique character, the unique character's fixed gender takes precedence.
+      - Example: switching a `Male` non-unique character to `luna` changes the gender to `Female`.
+    - `Lineage` and `Predisposition` are reset according to the entry order defined in the Lineage table and Predisposition table, respectively.
+  - A unique character already assigned to another `characterId` is excluded from the list.
+
+
 - Race selection: "**種族**:icon.race ケイナイアン |体10,力10,知10,精10 | 盾x1.3, 手x1.2, 弓x1.1, 成長x1.1""
   - Display the selected race summary as a single-line header above the selector buttons.
   - If another member in the same party already has the same race, same gender, and `unique_character == false`, that race option cannot be selected for the current member. (not display race icon image if cannot be selected, just bottun)
@@ -485,8 +502,8 @@ The toggle cycles through the following modes:
 **4. Inventory Pane:**
   - Always visible on the same screen at the bottom.
   - Stacked by item variant
-  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, 神魔レアのみ : [ALL] [C] [U] [R] [M] |超レア: ON/OFF
-    - IF player selects [M],  　　神魔レアのみ: [ALL] [C] [U] [R] **[M]** 
+  - Filter button by rarelity (right-aligned): 全て表示, ノーマルのみ, アンコモンのみ, レアのみ, 神魔レアのみ : [ALL] [C] [U] [R] [E] [M] |超レア: ON/OFF
+    - IF player selects [M],  　　神魔レアのみ: [ALL] [C] [U] [R] [E] **[M]** 
     - 超レア[ON/OFF] default: OFF, if ON, filter superRare >= 1.
   - Inventory includes item category tabs:
     - Displays [耐久:鎧,衣,盾] for all character

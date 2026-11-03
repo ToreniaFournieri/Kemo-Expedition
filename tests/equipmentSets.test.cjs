@@ -215,3 +215,25 @@ test('Jewel availability counts the copies already worn and each Jewel only once
   const two = createEquipmentSetSnapshot([wornJewel, { ...armor, jewel: { key: 'fort', rank: 2 } }], true);
   assert.equal(evaluateEquipmentState(two, character([]), inventoryOf(armor, armor), { 'fort:2': 1 }, 2).allAvailable, false, 'two attachments need two Jewels');
 });
+
+test('equipment evaluation and application never mutate the caller inventory or jewels', async () => {
+  const { evaluateEquipmentState, applyEquipmentState, applyEquipmentSet } = await modulePromise;
+  const worn = [item(1), item(2)];
+  const wearer = character(worn);
+  const inventory = inventoryOf(item(1), item(3), item(3), item(4));
+  const before = JSON.stringify(inventory);
+  const frozen = Object.freeze({ ...inventory });
+  const state = setOf(item(3), item(4), item(1));
+
+  assert.equal(evaluateEquipmentState(state, wearer, frozen, {}, 4).allAvailable, true);
+  const applied = applyEquipmentState(state, wearer, frozen, {}, 0, 4);
+  assert.notEqual(applied.inventory, frozen);
+  assert.equal(JSON.stringify(frozen), before);
+  assert.equal(applied.inventory['3-0-0'].count, 1);
+  assert.equal(applied.inventory['2-0-0'].count, 1, 'the replaced item returns to the inventory');
+  assert.equal(applied.character.equipment.filter(Boolean).length, 3);
+
+  const loaded = applyEquipmentSet(state, wearer, frozen, {}, 0, 4, 'exact');
+  assert.equal(JSON.stringify(frozen), before);
+  assert.deepEqual(loaded.inventory, applied.inventory);
+});

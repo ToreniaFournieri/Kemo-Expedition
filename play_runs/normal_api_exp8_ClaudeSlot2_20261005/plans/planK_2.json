@@ -1,0 +1,1 @@
+{"score":-1.7897977470028357,"scen":"base","calls":[{"path":"/commit/build/character/3/removeEquipment","params":{"targetEquipment":[3]}},{"path":"/commit/build/character/3/equip","params":{"targetEquipment":["0/3108/1/0"]}}],"jfree0":{}}

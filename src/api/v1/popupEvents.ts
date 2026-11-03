@@ -93,7 +93,7 @@ function itemDropCandidates(party: Party, diaryEntryId: string | null, rewards: 
       args: {
         partyName: party.name,
         item: formatItem(item, item.isLocked === true),
-        rarity: getItemRarityById(item.id),
+        itemRarity: getItemRarityById(item.id),
         isSuperRare: item.superRare > 0,
       },
       partyNumber: party.id,

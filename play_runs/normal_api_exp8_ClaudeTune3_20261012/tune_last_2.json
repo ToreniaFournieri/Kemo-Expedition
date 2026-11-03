@@ -1,0 +1,22 @@
+{
+ "accepted": false,
+ "objective": "success",
+ "scoredBy": "success",
+ "before": "Success 4.0% / Draw 7.6% / Retreat 60.2% / Defeat 28.2%",
+ "after": "Success 4.0% / Draw 7.6% / Retreat 60.2% / Defeat 28.2%",
+ "improvement": 0,
+ "gain": 0,
+ "standardError": 0.0088,
+ "bottleneckRoom": "3f-4",
+ "steps": {
+  "offenseElement": [],
+  "defenseElement": [],
+  "ability": [],
+  "finalTuning": []
+ },
+ "changeSummary": [],
+ "revision": 1860,
+ "simulationRuns": 7600,
+ "elapsedSeconds": 3.9,
+ "seed": 2953754139
+}

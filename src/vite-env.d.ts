@@ -118,8 +118,11 @@ interface Window {
     createApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string) => Promise<DesktopApiAccountIdentity>;
     loadApiAccount: (identity: DesktopApiAccountIdentity) => Promise<DesktopApiAccountRecord | null>;
     /** `controlJson` is the control metadata serialized by `serializeApiV1Control`. */
-    commitApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string, controlJson: string) => Promise<boolean>;
+    /** Same as `commitApiAccount`, but the save travels as JSON text pieces and log references that the main process compresses. */
+    commitApiAccountSegments?: (identity: DesktopApiAccountIdentity, segments: import('./api/v1/accountSaveSegments').ApiSaveSegments, controlJson: string, receiptSync?: import('./api/v1/receiptJournalSync').ApiReceiptSync) => Promise<boolean>;
+    commitApiAccount: (identity: DesktopApiAccountIdentity, savePayload: string | null, controlJson: string, receiptSync?: import('./api/v1/receiptJournalSync').ApiReceiptSync) => Promise<boolean>;
     onApiV1Request: (callback: (operation: string, payload: unknown) => unknown | Promise<unknown>) => () => void;
+    setApiV1Headless?: (headless: boolean) => Promise<void>;
     notifyApiV1PopupActivity: () => Promise<void>;
     onNotificationActivated: (callback: (payload: DesktopNotificationPayload) => void) => () => void;
     onPartyProgressPartyActivated: (callback: (partyId: number) => void) => () => void;

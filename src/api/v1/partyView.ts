@@ -10,7 +10,7 @@ import { parseEquipmentEntry } from './itemFormat';
 export interface PartyProjection {
   effectiveSelection: { partyNumber: number; characterId: number | null };
   party: {
-    partyNumber: number; name: string; level: number; experience: number; experienceToNext: number; maxHp: number; deityId: string; deityRank: number; condition: number; order: number[];
+    partyNumber: number; name: string; level: number; experience: number; experienceToNext: number; experienceRatio: number; currentHp: number; maxHp: number; deityId: string; deityRank: number; deityTotalDonation: number; deityNextRankThreshold: number | null; condition: number; order: number[];
     characters: {
       characterId: number; name: string; raceId: string; gender: string; mainClassId: string; subClassId: string; lineageId: string | null; predispositionId: string | null;
       isUnique: boolean; mimorianEnemyId: number | null; equipment: string[]; autoEquipmentMode: 'FULL' | 'SEMI' | 'OFF'; calculatedStatus: CalculatedStatus;

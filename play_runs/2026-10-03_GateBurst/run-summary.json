@@ -1,0 +1,30 @@
+{
+  "version": "v0.9.8 (12)",
+  "mode": "Normal",
+  "account": "GateBurst1003",
+  "boss8Defeated": true,
+  "gameDays": 38.625,
+  "gameDuration": "38 days 15 hours",
+  "bossClearResponseIndex": 528,
+  "completedHttpCalls": 534,
+  "failedTransportAttempts": 2,
+  "totalApiAttempts": 536,
+  "completedHttpErrors": 0,
+  "elapsedCommits": 81,
+  "instantSorties": 9,
+  "buildCommits": 320,
+  "apiResponseWaitMs": 118850.48783700001,
+  "preplayStrategyRecordedAt": "2026-10-03T22:17:17Z",
+  "bossClearRealTime": "2026-10-04T05:35:13.746Z",
+  "finalProofRealTime": "2026-10-04T05:35:36.609Z",
+  "bossClearGameTime": "2026-11-11T13:19:58.972Z",
+  "bossLog": {
+    "logId": "diary:1794403198972-gvmr5j",
+    "completedRooms": 24,
+    "totalRooms": 24,
+    "enemyId": 387,
+    "remainingHp": 74,
+    "maxHp": 25075
+  },
+  "finalSaveSha256": "081d95725ba1b0bde5d5a18421ca9af066ebc8ec975e6e328c895189c8a84789"
+}

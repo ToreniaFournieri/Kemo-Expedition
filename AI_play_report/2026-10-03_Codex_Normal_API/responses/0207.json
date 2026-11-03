@@ -1,0 +1,14 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "f890f188-2aac-436f-9167-aef79254c6f9",
+  "revision": 144,
+  "observedAt": "2026-10-03T08:19:14.076Z",
+  "data": {
+    "items": [
+      "might:4/1/ability=[]/cBonus=[c.physical-attack+18]/otherBonus=[d.melee_attack:27, d.ranged_attack:20]"
+    ],
+    "totalCount": 1,
+    "truncated": false
+  }
+}

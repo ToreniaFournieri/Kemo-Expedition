@@ -12,7 +12,7 @@ import { accountEnemyEditSettingsOf, describeEnemyEditPane, planEnemyEditPaneWri
 import { canCharacterEquipCategory, createDefaultEquipmentSetName, evaluateEquipmentSet, evaluateEquipmentState, getSavedEquipmentSlot, MAX_SAVED_EQUIPMENT_SETS } from '../../game/equipmentSets';
 import { recordEquipmentState, redoEquipmentState, undoEquipmentState } from '../../game/equipmentHistory';
 import { computeCharacterStats } from '../../game/characterComputation';
-import { getSortieUnavailableReason } from './sortieAvailability';
+import { getCycleTimingFacts, getSortieControlFacts, getSortieUnavailableReason } from './sortieAvailability';
 import { getExpeditionChangeRejection } from '../../game/expeditionSettings';
 import { getInstantExpeditionChargeState } from '../../game/instantExpedition';
 import { computePartyStats } from '../../game/partyComputation';
@@ -32,8 +32,10 @@ import type { Character, GameState, Party, SavedEquipmentSet } from '../../types
 import { getVariantKey } from '../../types';
 import { ITEM_MAX_STACK } from '../../game/inventoryMutation';
 import { diarySettingsView } from './diaryView';
+import { countUnreadGlobalDiaryLogs, GLOBAL_DIARY_PARTY_NUMBER } from '../../game/globalDiary';
 import { formatItem } from './itemFormat';
 import { retainedLogIdOf } from './battleLogs';
+import { applyBuildChanges } from './gaSearch';
 
 // SpecRef: 9.1 | Desktop distribution | Application API
 // This is the transport-neutral gameplay-mutation slice of the `/api/v1` commit dispatcher. It owns exactly the
@@ -220,7 +222,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     } else if (partyMatch[2] === 'resetStatistics') {
       // SpecRef: 9.1.3 | Commit | 3-2-4 {p}/resetStatistics
       // The Expedition pane's Reset button: the same reducer action, which restores the party's expedition statistics
-      // (Clear, Return, Draw, Retreat, Defeat, and the totals) to their defaults.
+      // (Clear, Return, Draw, Retreat, Defeat, and the totals) and the side quest counters to their defaults.
       reduce({ type: 'RESET_EXPEDITION_STATS', partyIndex });
       data = {};
     } else {
@@ -229,39 +231,63 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       // The same sequence of reducer actions as pressing the Sortie or Gods Battle button (HomeScreen `triggerSortie`),
       // with the same refusals. The live party cycle is read through the context and its reset to the beginning of
       // `state.rest` is returned as a write the caller applies once the commit is durable.
-      const party = next.parties[partyIndex];
       const godsBattle = partyMatch[2] === 'godsBattle';
-      const isColosseum = party.selectedDungeonId === 99;
+      // SpecRef: 9.1.3 | 3-2-2 `numberOfSortie` (1–6); a Gods Battle is always one run.
+      const requested = parameters.numberOfSortie;
+      if (requested !== undefined && (!Number.isInteger(requested) || (requested as number) < 1 || (requested as number) > 6)) throw new Error('invalid_request:numberOfSortie');
+      const sortieCount = godsBattle ? 1 : (requested as number | undefined) ?? 1;
+      const isColosseum = next.parties[partyIndex].selectedDungeonId === 99;
       const cycle = context.partyCycle?.(partyIndex);
-      const maximumHp = computePartyStats(party).partyStats.hp;
+      const maximumHp = computePartyStats(next.parties[partyIndex]).partyStats.hp;
       const chargeScale = context.chargeDurationScale ?? 1;
-      const previousDiaryIds = new Set(party.diaryLogs.map((entry) => entry.id));
-      const unavailable = getSortieUnavailableReason({
-        party,
-        godsBattle,
-        hp: party.currentHp,
-        maximumHp,
-        chargeStock: getInstantExpeditionChargeState(party, context.simulatedAt, chargeScale).stock,
-        cycle,
-      });
-      if (unavailable) throw new Error(`illegal_action:${unavailable}`);
-      if (godsBattle && party.sideQuest) reduce({ type: 'CANCEL_SIDE_QUEST', partyIndex });
-      if (!isColosseum) reduce({ type: 'CONSUME_INSTANT_EXPEDITION_STOCK', partyIndex, now: context.simulatedAt, chargeDurationScale: chargeScale });
-      if (cycle?.state === 'explore') reduce({ type: 'FINALIZE_DIARY_LOG', partyIndex, simulatedAt: context.simulatedAt });
-      reduce({ type: 'CLEAR_PENDING_PROFIT', partyIndex });
-      reduce({ type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
-      reduce({ type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, simulatedAt: context.simulatedAt, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, triggerGodsBattle: godsBattle });
-      reduce({ type: 'ROLL_PARTY_SLEEPINESS', partyIndex });
+      const chargeStockNow = () => getInstantExpeditionChargeState(next.parties[partyIndex], context.simulatedAt, chargeScale).stock;
+      const unavailableNow = (liveCycle: typeof cycle) => getSortieUnavailableReason({ party: next.parties[partyIndex], godsBattle, hp: next.parties[partyIndex].currentHp, maximumHp, chargeStock: chargeStockNow(), cycle: liveCycle });
+      // A request above the available charge performs as many sorties as the charge allows (none: refused on the first run).
+      const sorties: Record<string, unknown>[] = [];
+      for (let run = 0; run < sortieCount; run += 1) {
+        // After the first run the party is at the beginning of `state.rest`, so only the first run sees the live cycle.
+        const runCycle = run === 0 ? cycle : undefined;
+        const unavailable = unavailableNow(runCycle);
+        if (unavailable) {
+          // The first run is refused outright; a later run that cannot start (a Defeat exhausts the party) ends the batch.
+          if (run === 0) throw new Error(`illegal_action:${unavailable}`);
+          break;
+        }
+        const previousDiaryIds = new Set(next.parties[partyIndex].diaryLogs.map((entry) => entry.id));
+        if (godsBattle && next.parties[partyIndex].sideQuest) reduce({ type: 'CANCEL_SIDE_QUEST', partyIndex });
+        if (!isColosseum) reduce({ type: 'CONSUME_INSTANT_EXPEDITION_STOCK', partyIndex, now: context.simulatedAt, chargeDurationScale: chargeScale });
+        if (runCycle?.state === 'explore') reduce({ type: 'FINALIZE_DIARY_LOG', partyIndex, simulatedAt: context.simulatedAt });
+        reduce({ type: 'CLEAR_PENDING_PROFIT', partyIndex });
+        // SpecRef: 8.3 | UI_EXPEDITION | The sortie enters the dungeon with the party's current HP (no recovery to maximum).
+        // The Colosseum is exempt from the HP gate, so it still starts at full HP.
+        if (isColosseum) reduce({ type: 'HEAL_PARTY_HP', partyIndex, amount: maximumHp });
+        reduce({ type: 'RESOLVE_INSTANT_EXPEDITION', partyIndex, simulatedAt: context.simulatedAt, gameMode: context.gameMode, enemyLevelOffset: context.enemyLevelOffset, triggerGodsBattle: godsBattle });
+        reduce({ type: 'ROLL_PARTY_SLEEPINESS', partyIndex });
+        const resolved = next.parties[partyIndex];
+        // Only an outcome the party's Diary settings record creates an entry; otherwise the result is the party's newest
+        // retained log, named by its own unique ID.
+        const newDiaryEntry = resolved.diaryLogs.find((entry) => !previousDiaryIds.has(entry.id));
+        const logId = newDiaryEntry ? `diary:${newDiaryEntry.id}` : resolved.lastExpeditionLog ? retainedLogIdOf(resolved.lastExpeditionLog, resolved.id) : null;
+        sorties.push({ battleOutcome: apiExpeditionOutcomeOrNull(resolved.lastExpeditionLog), rewards: resolved.lastExpeditionLog?.rewards.map((item) => formatItem(item, item.isLocked === true)) ?? [], diaryEntryId: newDiaryEntry?.id ?? null, logId });
+      }
       if (context.partyCycle && context.restDurationMs) {
         partyCycleWrites.push({ partyIndex, cycle: { state: 'rest', stateStartedAt: context.now(), durationMs: context.restDurationMs(next.parties[partyIndex]), restInitialTotalSteps: 1, isCurrentExpeditionGodsBattle: false } });
       }
-      const resolved = next.parties[partyIndex];
-      // Only an outcome the party's Diary settings record creates an entry; otherwise the result is the party's newest
-      // retained log, named by its own unique ID.
-      const newDiaryEntry = resolved.diaryLogs.find((entry) => !previousDiaryIds.has(entry.id));
-      const logId = newDiaryEntry ? `diary:${newDiaryEntry.id}` : resolved.lastExpeditionLog ? retainedLogIdOf(resolved.lastExpeditionLog, resolved.id) : null;
-      data = { outcome: apiExpeditionOutcomeOrNull(resolved.lastExpeditionLog), rewards: resolved.lastExpeditionLog?.rewards.map((item) => formatItem(item, item.isLocked === true)) ?? [], diaryEntryId: newDiaryEntry?.id ?? null, logId };
+      // A Gods Battle keeps its single-result shape; a sortie reports one entry per run.
+      const { battleOutcome, ...godsResult } = sorties[0];
+      // SpecRef: 9.1.4.4 | A sortie restarts the party's Cycle and drops its carry, so its next Cycle is a whole one. Charge and
+      // Cycles run on the same Speed of Time.
+      const after = {
+        ...getSortieControlFacts(next.parties[partyIndex], context.simulatedAt, chargeScale),
+        ...getCycleTimingFacts(next.parties[partyIndex], 0, chargeScale, next.global.deityDonations),
+      };
+      data = godsBattle ? { outcome: battleOutcome, ...godsResult, ...after } : { summary: `${sorties.length}/${sortieCount}`, sorties, ...after };
     }
+  } else if (operation.match(/^commit\/build\/party\/(\d+)\/applyBuildChanges$/)) {
+    // SpecRef: 9.1.3 | Commit | 3-3-2 party/{p}/applyBuildChanges
+    const applied = applyBuildChanges(next, Number(operation.split('/')[3]), parameters, context);
+    next = applied.state;
+    data = applied.data;
   } else if (operation.match(/^commit\/build\/party\/(\d+)$/)) {
     const partyNumber = Number(operation.split('/').at(-1));
     const partyIndex = next.parties.findIndex((entry) => entry.id === partyNumber);
@@ -272,9 +298,9 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       const normalized = normalizeDeityName(deityName);
       const current = normalizeDeityName(next.parties[partyIndex].deity.name);
       const unlocked = next.global.unlockedDeities.map(normalizeDeityName).includes(normalized);
-      const usedElsewhere = !isNoFaithDeity(normalized) && next.parties.some((party, index) => index !== partyIndex && normalizeDeityName(party.deity.name) === normalized);
+      const holder = isNoFaithDeity(normalized) ? undefined : next.parties.find((party, index) => index !== partyIndex && normalizeDeityName(party.deity.name) === normalized);
       if (!isNoFaithDeity(normalized) && normalized !== current && !unlocked) throw new Error('illegal_action:deity_locked');
-      if (usedElsewhere) throw new Error('illegal_action:deity_in_use');
+      if (holder) throw Object.assign(new Error('illegal_action:deity_in_use'), { details: { heldByParty: holder.id } });
       reduce({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
     }
     if (Array.isArray(parameters.order)) {
@@ -295,7 +321,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const action = characterMatch[2];
     const characterBefore = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!;
     // SpecRef: 8.2.4 | Equipment management | three-state toggle(手動/補助/一任)
-    // SpecRef: 9.1.3 | 3-3-3/3-3-4/3-3-5/3-3-9/3-3-10/3-3-12 | If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
+    // SpecRef: 9.1.3 | 3-3-4/3-3-5/3-3-6/3-3-10/3-3-11/3-3-13 | If `autoEquipment.mode` is `FULL`, change it to `SEMI`.
     // A manual equipment change (equip, remove one or all, Jewel attach or remove, loading a set) made while FULL demotes
     // the character to SEMI. The Party pane makes these changes through the same commands. Undo and Redo instead restore
     // the mode recorded with the target state.
@@ -309,7 +335,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     const sameEquipment = sameEquipmentSnapshot;
     const recordsEquipmentHistory = !['saveEquipmentSet', 'deleteEquipmentSet', 'renameEquipmentSet', 'undoEquipment', 'redoEquipment'].includes(action);
     if (action === 'changeBuild') {
-      // SpecRef: 9.1.3 | Commit | 3-3-2 character/{characterId}/changeBuild
+      // SpecRef: 9.1.3 | Commit | 3-3-3 character/{characterId}/changeBuild
       // `simulation` validates and reports without committing; `confirmation` answers a reported warning. This operation
       // owns its confirmation, so it never issues the generic 9.1.4.5 confirmation challenge.
       const { simulation, confirmation, ...buildParameters } = parameters;
@@ -321,7 +347,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       if (!simulation && confirmation !== 'no') {
         if (plan.requiresConfirmation && confirmation !== 'yes') throw new Error('invalid_request:confirmation_required');
         if (Object.keys(plan.updates).length > 0) {
-          reduce({ type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: plan.updates, validatedMimorianAssignments: true });
+          reduce({ type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: plan.updates, validatedMimorianAssignments: true, allowUniqueIdentityChange: true });
           applied = true;
         }
       }
@@ -330,7 +356,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       // `calculatedStatus` previews the requested build: a simulation runs the pure reducer on a discarded state, so it
       // shows the result a `yes` would commit, including any equipment the change would remove.
       const previewState = simulation && Object.keys(plan.updates).length > 0
-        ? gameReducer(next, { type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: plan.updates, validatedMimorianAssignments: true })
+        ? gameReducer(next, { type: 'UPDATE_CHARACTER', partyIndex, characterId, updates: plan.updates, validatedMimorianAssignments: true, allowUniqueIdentityChange: true })
         : next;
       const previewParty = previewState.parties[partyIndex];
       const previewIndex = previewParty.characters.findIndex((entry) => entry.id === characterId);
@@ -425,13 +451,13 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
       };
     }
     else if (action === 'equip') {
-      // SpecRef: 9.1.3 | 3-3-5 equip | `remainsMode: true` preserves the current auto-equipment mode.
+      // SpecRef: 9.1.3 | 3-3-6 equip | `remainsMode: true` preserves the current auto-equipment mode.
       if (parameters.remainsMode !== undefined && typeof parameters.remainsMode !== 'boolean') throw new Error('invalid_request:remainsMode');
       const maxSlots = computeCharacterStats(characterBefore, next.parties[partyIndex].level).maxEquipSlots;
       const steps = planEquipOperation(characterBefore, next.global.inventory, parameters.targetEquipment, maxSlots, parameters.targetSlot);
       for (const step of steps) reduce({ type: 'EQUIP_ITEM', partyIndex, characterId, slotIndex: step.slotIndex, itemKey: step.itemKey });
       if (parameters.remainsMode !== true) demoteFullAutoEquipment();
-      // SpecRef: 9.1.3 | 3-3-5 equip | An unlocked item equipped while the mode is kept stays open to automatic
+      // SpecRef: 9.1.3 | 3-3-6 equip | An unlocked item equipped while the mode is kept stays open to automatic
       // equipment (a later FULL pass may replace it), so the caller is warned; `lockEquipment` keeps it.
       const equipped = next.parties[partyIndex].characters.find((entry) => entry.id === characterId)!.equipment;
       const unlocked = parameters.remainsMode === true ? steps.filter((step) => equipped[step.slotIndex]?.isLocked !== true).length : 0;
@@ -589,25 +615,35 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (changed.length > 0) next = { ...next, global: { ...next.global, inventory: { ...next.global.inventory, ...Object.fromEntries(changed.map((key) => [key, { ...next.global.inventory[key], isNew: false }])) } } };
     data = { items: changed };
   } else if (operation.match(/^commit\/diary\/(\d+)\/diarySetting$/)) {
-    const partyNumber = Number(operation.split('/')[2]); const partyIndex = next.parties.findIndex((entry) => entry.id === partyNumber); if (partyIndex < 0) throw new Error('not_found'); reduce({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings: parameters }); data = { current: diarySettingsView(next.parties[partyIndex].diarySettings) };
+    const partyNumber = Number(operation.split('/')[2]);
+    // SpecRef: 9.1.4 | `{p}` = 0 on `diarySetting` is reserved for future expansion: nothing changes and nothing is returned.
+    if (partyNumber === GLOBAL_DIARY_PARTY_NUMBER) { data = { current: {} }; } else {
+    const partyIndex = next.parties.findIndex((entry) => entry.id === partyNumber); if (partyIndex < 0) throw new Error('not_found'); reduce({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings: parameters }); data = { current: diarySettingsView(next.parties[partyIndex].diarySettings) }; }
   } else if (operation === 'commit/diary/diaryEntry/markAsRead') {
     const partyNumber = parameters.partyNumber === undefined ? null : Number(parameters.partyNumber);
+    // SpecRef: 8.5 / 9.1.4 | `partyNumber` 0 selects the Global Diary; omitted selects the Global Diary and every Party.
+    const includesGlobal = partyNumber === null || partyNumber === GLOBAL_DIARY_PARTY_NUMBER;
     const selectedParties = partyNumber === null ? next.parties : next.parties.filter((party) => party.id === partyNumber);
-    if (selectedParties.length === 0) throw new Error('not_found');
+    if (selectedParties.length === 0 && !includesGlobal) throw new Error('not_found');
+    const globalLogs = includesGlobal ? next.global.globalDiary ?? [] : [];
     const requested = parameters.diaryEntryId;
     if (requested !== 'ALL' && typeof requested !== 'string' && !Array.isArray(requested)) throw new Error('invalid_request:diaryEntryId');
+    const allEntries = [...globalLogs, ...selectedParties.flatMap((party) => party.diaryLogs)];
     const ids = requested === 'ALL'
-      ? selectedParties.flatMap((party) => party.diaryLogs.map((entry) => entry.id))
+      ? allEntries.map((entry) => entry.id)
       : (Array.isArray(requested) ? requested : [requested]).map(String);
     if (ids.length === 0 && requested !== 'ALL') throw new Error('invalid_request:diaryEntryId');
     if (new Set(ids).size !== ids.length) throw new Error('invalid_request:duplicate_diaryEntryId');
-    const applicableIds = new Set(selectedParties.flatMap((party) => party.diaryLogs.map((entry) => entry.id)));
+    const applicableIds = new Set(allEntries.map((entry) => entry.id));
     if (ids.some((id) => !applicableIds.has(id))) throw new Error('not_found');
     // Only the entries that were unread are affected; already-read entries are a no-op.
-    const unreadIds = new Set(selectedParties.flatMap((party) => party.diaryLogs.filter((entry) => !entry.isRead).map((entry) => entry.id)));
+    const unreadIds = new Set(allEntries.filter((entry) => !entry.isRead).map((entry) => entry.id));
     const affected = ids.filter((id) => unreadIds.has(id));
     for (const id of affected) reduce({ type: 'MARK_DIARY_LOG_SEEN', logId: id });
-    data = { diaryEntryId: affected, unreadTotal: next.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0) };
+    data = {
+      diaryEntryId: affected,
+      unreadTotal: countUnreadGlobalDiaryLogs(next.global.globalDiary) + next.parties.reduce((sum, party) => sum + party.diaryLogs.filter((entry) => !entry.isRead).length, 0),
+    };
   } else if (operation === 'commit/setting/markNewsAsRead') {
     // An unknown version rejects the whole request; only the versions that were unread are affected and returned.
     const requested = parameters.version === undefined ? DEVELOPER_NEWS_ITEMS.map((entry) => entry.id) : (Array.isArray(parameters.version) ? parameters.version : [parameters.version]).map(String);
@@ -631,7 +667,7 @@ export function applyApiV1Commit(operation: string, state: GameState, parameters
     if (parameters.resetSideQuest === true) reduce({ type: 'RESET_SIDE_QUEST_BAG', partyIndex });
     data = { partyNumber, resetCommonRewards: parameters.resetCommonRewards === true, resetRewards: parameters.resetRewards === true, resetSideQuest: parameters.resetSideQuest === true };
   } else if (operation === 'commit/setting/backup/reset') {
-    next = createFreshGameState(next.global.language); resetControlEvents = true; data = {};
+    next = createFreshGameState(next.global.language, undefined, context.simulatedAt); resetControlEvents = true; data = {};
   } else if (operation === 'commit/setting/modeSelect') {
     if (parameters.mode !== undefined && parameters.mode !== context.gameMode) throw new Error('illegal_action:mode_fixed');
     if (parameters.enemyLevelOffset !== undefined && Number(parameters.enemyLevelOffset) !== context.enemyLevelOffset) throw new Error('illegal_action:enemy_level_offset_fixed');

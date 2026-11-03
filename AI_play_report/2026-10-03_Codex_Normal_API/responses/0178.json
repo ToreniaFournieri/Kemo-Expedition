@@ -1,0 +1,26 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "86b230e0-6a35-4044-af99-ebf33e85ce45",
+  "previousRevision": 120,
+  "revision": 121,
+  "committedAt": "2026-10-03T08:17:55.825Z",
+  "data": {
+    "current": {
+      "deityId": "precision",
+      "order": [
+        1,
+        6,
+        4,
+        2,
+        3,
+        5
+      ]
+    }
+  },
+  "effects": [],
+  "changedResources": [
+    "read/observation/party",
+    "read/observation/base"
+  ]
+}

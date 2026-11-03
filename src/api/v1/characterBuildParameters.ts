@@ -6,16 +6,19 @@ import type { Character } from '../../types';
 // parameters. It only names the fields that actually changed; the shared build-change planner owns all validation.
 
 const EDITABLE_KEYS = new Set<keyof Character>([
-  'name', 'raceId', 'gender', 'mimorianEnemyId', 'mainClassId', 'subClassId', 'lineageId', 'predispositionId',
+  'name', 'raceId', 'gender', 'mimorianEnemyId', 'mainClassId', 'subClassId', 'lineageId', 'predispositionId', 'isUnique', 'uniqueCharacterId',
 ]);
 
-type EditableCharacter = Pick<Character, 'name' | 'raceId' | 'gender' | 'mimorianEnemyId' | 'mainClassId' | 'subClassId' | 'lineageId' | 'predispositionId'>;
+type EditableCharacter = Pick<Character, 'name' | 'raceId' | 'gender' | 'mimorianEnemyId' | 'mainClassId' | 'subClassId' | 'lineageId' | 'predispositionId' | 'uniqueCharacterId'>;
 
 export function characterEditToChangeBuildParameters(character: EditableCharacter, edits: Partial<Character>): Record<string, unknown> {
   for (const key of Object.keys(edits) as (keyof Character)[]) {
     if (edits[key] !== undefined && !EDITABLE_KEYS.has(key)) throw new Error(`unsupported_character_edit:${key}`);
   }
   const parameters: Record<string, unknown> = {};
+  // SpecRef: 8.2.3 | Unique selection: `uniqueCharacterId` picks a unique character; `isUnique: false` releases it.
+  if (edits.uniqueCharacterId !== undefined && edits.uniqueCharacterId !== character.uniqueCharacterId) parameters.uniqueSelection = edits.uniqueCharacterId;
+  else if (edits.isUnique === false && character.uniqueCharacterId !== undefined) parameters.uniqueSelection = 'none';
   const changed = (key: keyof EditableCharacter): boolean => edits[key] !== undefined && edits[key] !== character[key];
 
   if (changed('name')) parameters.name = edits.name;
@@ -32,7 +35,7 @@ export function characterEditToChangeBuildParameters(character: EditableCharacte
   return parameters;
 }
 
-// SpecRef: 9.1.3 | Commit | 3-3-2 character/{characterId}/changeBuild
+// SpecRef: 9.1.3 | Commit | 3-3-3 character/{characterId}/changeBuild
 /** What the Party editor asks of `changeBuild`: a simulation (no commit) or a commit, with the player's answer if needed. */
 export type CharacterBuildRequest = { simulation: true } | { simulation: false; confirmation?: 'yes' | 'no' };
 

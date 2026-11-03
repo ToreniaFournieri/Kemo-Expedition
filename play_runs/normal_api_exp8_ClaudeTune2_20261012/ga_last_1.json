@@ -1,0 +1,111 @@
+{
+ "verdict": "veryGood",
+ "forecast": {
+  "before": "Success 14.6% / Draw 19.0% / Retreat 53.4% / Defeat 13.0%",
+  "after": "Success 29.6% / Draw 34.6% / Retreat 24.0% / Defeat 11.8%"
+ },
+ "changeSummary": [
+  {
+   "endpoint": "commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     7
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     6
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/503/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     3
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/party/1",
+   "parameters": {
+    "deityId": "restoration"
+   }
+  },
+  {
+   "endpoint": "commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/8103/3/0",
+    "targetSlot": 1
+   }
+  },
+  {
+   "endpoint": "commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/7402/0/0",
+    "targetSlot": 7
+   }
+  },
+  {
+   "endpoint": "commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": "0/6103/3/0",
+    "targetSlot": 2
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/6201/5/0",
+    "targetSlot": 1
+   }
+  },
+  {
+   "endpoint": "commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/8303/2/0",
+    "targetSlot": 6
+   }
+  },
+  {
+   "endpoint": "commit/build/character/4/jewelAttach",
+   "parameters": {
+    "targetEquipment": 5,
+    "jewelToSet": "might:1"
+   }
+  },
+  {
+   "endpoint": "commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 6,
+    "jewelToSet": "fort:1"
+   }
+  }
+ ],
+ "revision": 2714,
+ "evaluations": 1847,
+ "elapsedSeconds": 302,
+ "buildResultId": "eea48160-336b-40fb-841a-916f5a4fa992",
+ "verification": {
+  "objective": "success",
+  "runs": 500,
+  "before": 0.146,
+  "after": 0.296,
+  "gain": 15,
+  "standardError": 2.58,
+  "seed": 2113691438
+ }
+}

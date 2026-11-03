@@ -69,8 +69,9 @@ REST_HEAL_MAX_HP_RATIO,
 REST_HEAL_MIN_HP,
 } from '../../game/restHealing';
 import { Language,t } from '../../i18n';
+import { buildDefaultNamePools,type DefaultNamePools } from '../../game/defaultNames';
 import type { AfkPartyTransactionAttribution,AfkPartyTransactionPlanner } from '../../hooks/useGameState';
-import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,RaceId,type BattleLogEntry } from '../../types';
+import { AbilityId,Bonus,BonusType,Character,ComputedCharacterStats,DiaryDefeatNotificationMode,DiaryRarityThreshold,DiarySettings,DiarySideQuestThreshold,Dungeon,ElementalOffense,EnemyDef,ExpeditionDepthLimit,ExpeditionDestinationMode,ExpeditionLog,ExpeditionLogEntry,GameBags,GameNotification,GameState,InventoryVariant,Item,ItemCategory,JewelKey,NotificationCategory,NotificationStyle,Party,Race,type BattleLogEntry } from '../../types';
 
 export function resolvePublicAssetPath(path?: string): string | null {
   if (!path) return null;
@@ -222,7 +223,7 @@ export interface HomeScreenProps {
     spendPendingProfit: (partyIndex: number, amount: number) => void;
     rollPartySleepiness: (partyIndex: number) => void;
     rollSideQuest: (partyIndex: number, rolledTier: number, simulatedAt?: number) => void;
-    cancelSideQuest: (partyIndex: number) => void;
+    cancelSideQuest: (partyIndex: number, expired?: boolean) => void;
     advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
     applyAutoEquipmentActions: (actions: AutoEquipmentProfileAction[]) => void;
@@ -266,7 +267,7 @@ export interface HomeScreenProps {
     };
     resetGame: () => void;
     importGameState: (state: GameState) => Promise<{ state: GameState | null; errorLog: string | null }>;
-    getCompressedSavePayload: () => Promise<string>;
+    getCompressedSavePayload: (encoding?: 'portable' | 'stored') => Promise<string>;
     resetCommonBags: () => void;
     resetUniqueBags: () => void;
     resetCommonSuperRareBag: () => void;
@@ -1241,38 +1242,38 @@ export function buildAfkSummaryNotification(stats: AfkSummaryStats): string | nu
   return [summaryParts.join('/'), financeParts.join(', ')].filter(Boolean).join(' ');
 }
 
-export type ItemRarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
+export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'mythic';
 export type RarityFilter = 'all' | ItemRarity;
 
 export const RARITY_SHORT_CODES: Record<ItemRarity, string> = {
   common: 'C',
   uncommon: 'U',
-  eliteRare: 'E',
-  bossRare: 'B',
-  mythicRare: 'M',
+  rare: 'R',
+  epic: 'E',
+  mythic: 'M',
 };
 
 export const RARITY_FILTER_LABELS: Record<RarityFilter, string> = {
   all: 'ALL',
   common: 'C',
   uncommon: 'U',
-  eliteRare: 'E',
-  bossRare: 'B',
-  mythicRare: 'M',
+  rare: 'R',
+  epic: 'E',
+  mythic: 'M',
 };
 
 const RARITY_FILTER_NOTE_KEYS: Record<RarityFilter, string> = {
   all: 'party.rarity.all',
   common: 'party.rarity.common',
   uncommon: 'party.rarity.uncommon',
-  eliteRare: 'diary.reward.eliteRare',
-  bossRare: 'diary.reward.bossRare',
-  mythicRare: 'diary.reward.mythicRare',
+  rare: 'diary.reward.rare',
+  epic: 'diary.reward.epic',
+  mythic: 'diary.reward.mythic',
 };
 
 export const getRarityFilterNote = (filter: RarityFilter): string => t(RARITY_FILTER_NOTE_KEYS[filter]);
 
-export const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRare'];
+export const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'rare', 'epic', 'mythic'];
 
 export const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; labelKey: string }> = [
   { value: 'all', labelKey: 'party.rarity.all' },
@@ -1333,93 +1334,9 @@ export function getExpeditionDepthOptions(dungeonId: number): Array<{ value: Exp
   ];
 }
 
-export type GenderedNamePool = { male: string[]; female: string[] };
-export function getPotentialDefaultNamesByPt(): Record<number, Partial<Record<RaceId, GenderedNamePool>>> {
+export function getPotentialDefaultNamesByPt(): DefaultNamePools {
   // Build the pools on demand so their i18n values follow the currently active language.
-  const pools: Record<number, Partial<Record<RaceId, GenderedNamePool | string[]>>> = {
-  1: {
-    caninian: t('home.defaultNames.pt1.caninian').split('|').map((name) => name.trim()).filter(Boolean),
-    lupinian: t('home.defaultNames.pt1.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
-    vulpinian: t('home.defaultNames.pt1.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
-    ursan: t('home.defaultNames.pt1.ursan').split('|').map((name) => name.trim()).filter(Boolean),
-    felidian: t('home.defaultNames.pt1.felidian').split('|').map((name) => name.trim()).filter(Boolean),
-    leporian: t('home.defaultNames.pt1.leporian').split('|').map((name) => name.trim()).filter(Boolean),
-    cervin: t('home.defaultNames.pt1.cervin').split('|').map((name) => name.trim()).filter(Boolean),
-    murid: t('home.defaultNames.pt1.murid').split('|').map((name) => name.trim()).filter(Boolean),
-  },
-  2: {
-    lupinian: t('home.defaultNames.pt2.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
-    vulpinian: t('home.defaultNames.pt2.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
-    felidian: t('home.defaultNames.pt2.felidian').split('|').map((name) => name.trim()).filter(Boolean),
-    caninian: t('home.defaultNames.pt2.caninian').split('|').map((name) => name.trim()).filter(Boolean),
-    ursan: t('home.defaultNames.pt2.ursan').split('|').map((name) => name.trim()).filter(Boolean),
-    procyonian: t('home.defaultNames.pt2.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
-    leporian: t('home.defaultNames.pt2.leporian').split('|').map((name) => name.trim()).filter(Boolean),
-    cervin: t('home.defaultNames.pt2.cervin').split('|').map((name) => name.trim()).filter(Boolean),
-    murid: t('home.defaultNames.pt2.murid').split('|').map((name) => name.trim()).filter(Boolean),
-  },
-  3: {
-    lupinian: t('home.defaultNames.pt3.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
-    vulpinian: t('home.defaultNames.pt3.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
-    felidian: t('home.defaultNames.pt3.felidian').split('|').map((name) => name.trim()).filter(Boolean),
-    caninian: t('home.defaultNames.pt3.caninian').split('|').map((name) => name.trim()).filter(Boolean),
-    ursan: t('home.defaultNames.pt3.ursan').split('|').map((name) => name.trim()).filter(Boolean),
-    procyonian: t('home.defaultNames.pt3.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
-    leporian: t('home.defaultNames.pt3.leporian').split('|').map((name) => name.trim()).filter(Boolean),
-    cervin: t('home.defaultNames.pt3.cervin').split('|').map((name) => name.trim()).filter(Boolean),
-    murid: t('home.defaultNames.pt3.murid').split('|').map((name) => name.trim()).filter(Boolean),
-  },
-  4: {
-    lupinian: t('home.defaultNames.pt4.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
-    vulpinian: t('home.defaultNames.pt4.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
-    felidian: t('home.defaultNames.pt4.felidian').split('|').map((name) => name.trim()).filter(Boolean),
-    caninian: t('home.defaultNames.pt4.caninian').split('|').map((name) => name.trim()).filter(Boolean),
-    ursan: t('home.defaultNames.pt4.ursan').split('|').map((name) => name.trim()).filter(Boolean),
-    procyonian: t('home.defaultNames.pt4.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
-    leporian: t('home.defaultNames.pt4.leporian').split('|').map((name) => name.trim()).filter(Boolean),
-    cervin: t('home.defaultNames.pt4.cervin').split('|').map((name) => name.trim()).filter(Boolean),
-    murid: t('home.defaultNames.pt4.murid').split('|').map((name) => name.trim()).filter(Boolean),
-  },
-  5: {
-    lupinian: t('home.defaultNames.pt5.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
-    vulpinian: t('home.defaultNames.pt5.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
-    felidian: t('home.defaultNames.pt5.felidian').split('|').map((name) => name.trim()).filter(Boolean),
-    caninian: t('home.defaultNames.pt5.caninian').split('|').map((name) => name.trim()).filter(Boolean),
-    ursan: t('home.defaultNames.pt5.ursan').split('|').map((name) => name.trim()).filter(Boolean),
-    procyonian: t('home.defaultNames.pt5.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
-    leporian: t('home.defaultNames.pt5.leporian').split('|').map((name) => name.trim()).filter(Boolean),
-    cervin: t('home.defaultNames.pt5.cervin').split('|').map((name) => name.trim()).filter(Boolean),
-    murid: t('home.defaultNames.pt5.murid').split('|').map((name) => name.trim()).filter(Boolean),
-  },
-  6: {
-    lupinian: t('home.defaultNames.pt6.lupinian').split('|').map((name) => name.trim()).filter(Boolean),
-    vulpinian: t('home.defaultNames.pt6.vulpinian').split('|').map((name) => name.trim()).filter(Boolean),
-    felidian: t('home.defaultNames.pt6.felidian').split('|').map((name) => name.trim()).filter(Boolean),
-    caninian: t('home.defaultNames.pt6.caninian').split('|').map((name) => name.trim()).filter(Boolean),
-    ursan: t('home.defaultNames.pt6.ursan').split('|').map((name) => name.trim()).filter(Boolean),
-    procyonian: t('home.defaultNames.pt6.procyonian').split('|').map((name) => name.trim()).filter(Boolean),
-    leporian: t('home.defaultNames.pt6.leporian').split('|').map((name) => name.trim()).filter(Boolean),
-    cervin: t('home.defaultNames.pt6.cervin').split('|').map((name) => name.trim()).filter(Boolean),
-    murid: t('home.defaultNames.pt6.murid').split('|').map((name) => name.trim()).filter(Boolean),
-  },
-  };
-
-
-const getGenderedNamePool = (names: string[]): GenderedNamePool => {
-  const pivot = Math.ceil(names.length / 2);
-  return { male: names.slice(0, pivot), female: names.slice(pivot) };
-};
-
-  Object.values(pools).forEach((races) => {
-    Object.keys(races).forEach((raceKey) => {
-      const value = (races as Record<string, unknown>)[raceKey];
-      if (Array.isArray(value)) {
-        (races as Record<string, GenderedNamePool>)[raceKey] = getGenderedNamePool(value as string[]);
-      }
-    });
-  });
-
-  return pools as Record<number, Partial<Record<RaceId, GenderedNamePool>>>;
+  return buildDefaultNamePools((key) => t(key));
 }
 
 export function parseDiaryThreshold(value: string): DiaryRarityThreshold {
@@ -1532,7 +1449,7 @@ export const MYTHIC_TIER_BY_NAME = new Map(GOD_MYTHIC_DROPS.map((drop) => [drop.
 
 export function getDisplayTier(itemId: number, itemName?: string): number {
   const tier = Math.floor(itemId / 1000);
-  if (getItemRarityById(itemId) === 'mythicRare' && itemName) {
+  if (getItemRarityById(itemId) === 'mythic' && itemName) {
     return MYTHIC_TIER_BY_NAME.get(itemName) ?? tier;
   }
   return tier;
@@ -1551,23 +1468,23 @@ export function matchesRarityFilter(itemId: number, filter: RarityFilter): boole
 
 export function getRarityTextClass(rarity: ItemRarity, isSuperRare: boolean): string {
   if (isSuperRare) return 'text-accent font-bold';
-  if (rarity === 'eliteRare') return 'text-sub';
-  if (rarity === 'bossRare') return 'text-accent';
-  if (rarity === 'mythicRare') return 'text-accent font-bold';
+  if (rarity === 'rare') return 'text-sub';
+  if (rarity === 'epic') return 'text-accent';
+  if (rarity === 'mythic') return 'text-accent font-bold';
   return 'text-black';
 }
 
 export function getRewardTextClass(rarity?: ItemRarity, isSuperRare?: boolean): string {
   if (isSuperRare) return 'text-accent';
-  if (rarity === 'mythicRare') return 'text-accent';
-  if (rarity === 'bossRare') return 'text-accent';
-  if (rarity === 'eliteRare') return 'text-sub';
+  if (rarity === 'mythic') return 'text-accent';
+  if (rarity === 'epic') return 'text-accent';
+  if (rarity === 'rare') return 'text-sub';
   return 'text-black';
 }
 
 export function getRewardFontWeightClass(rarity: ItemRarity, isSuperRare: boolean): string {
   if (isSuperRare) return 'font-bold';
-  if (rarity === 'mythicRare') return 'font-bold';
+  if (rarity === 'mythic') return 'font-bold';
   return rarity === 'common' ? 'font-normal' : 'font-medium';
 }
 
@@ -1678,7 +1595,7 @@ export function formatSideQuestShortText(type: string, shortText: string, displa
     'q.healing': t('home.unit.minutes', { value: formatNumber(displayTarget) }),
     'q.AFK': t('home.unit.minutes', { value: formatNumber(displayTarget) }),
     'q.treasure-super-rare': '',
-    'q.treasure-boss-rare': t('home.unit.items', { value: formatNumber(displayTarget) }),
+    'q.treasure-epic-rare': t('home.unit.items', { value: formatNumber(displayTarget) }),
     'q.poor-kid': t('home.unit.count', { value: formatNumber(displayTarget) }),
     'q.consecutive-wins': t('home.unit.streak', { value: formatNumber(displayTarget) }),
     'q.losers': '',
@@ -1746,8 +1663,8 @@ export function getSideQuestDisplay(party: Party, cycleDurationScale: number, em
     'q.treasure-super-rare': {
       text: t('home.sideQuest.treasureSuperRare'),
     },
-    'q.treasure-boss-rare': {
-      text: t('home.sideQuest.treasureBossRare', { count: formatNumber(displayTarget) }),
+    'q.treasure-epic-rare': {
+      text: t('home.sideQuest.treasureEpicRare', { count: formatNumber(displayTarget) }),
       current: t('home.unit.items', { value: formatNumber(displayProgress) }),
     },
     'q.poor-kid': {
@@ -1847,7 +1764,7 @@ export function getProjectedCompactProgressItems(
       'q.healing': t('home.sideQuest.healing', { minutes: formatNumber(target) }),
       'q.AFK': t('home.sideQuest.afk', { minutes: formatNumber(target) }),
       'q.treasure-super-rare': t('home.sideQuest.treasureSuperRare'),
-      'q.treasure-boss-rare': t('home.sideQuest.treasureBossRare', { count: formatNumber(target) }),
+      'q.treasure-epic-rare': t('home.sideQuest.treasureEpicRare', { count: formatNumber(target) }),
       'q.poor-kid': t('home.sideQuest.poorKid', { count: formatNumber(target) }),
       'q.consecutive-wins': t('home.sideQuest.consecutiveWins', { streak: formatNumber(target) }),
       'q.losers': t('home.sideQuest.losers'),
@@ -1859,7 +1776,7 @@ export function getProjectedCompactProgressItems(
       'q.donation': `${formatNumber(progress)}G`, 'q.savings': `${formatNumber(progress)}G`,
       'q.exercise': t('home.unit.minutes', { value: formatNumber(progress) }), 'q.healing': t('home.unit.minutes', { value: formatNumber(progress) }), 'q.AFK': t('home.unit.minutes', { value: formatNumber(progress) }),
       'q.sleeping': t('home.unit.count', { value: formatNumber(progress) }), 'q.poor-kid': t('home.unit.count', { value: formatNumber(progress) }),
-      'q.treasure-boss-rare': t('home.unit.items', { value: formatNumber(progress) }), 'q.consecutive-wins': t('home.unit.streak', { value: formatNumber(progress) }),
+      'q.treasure-epic-rare': t('home.unit.items', { value: formatNumber(progress) }), 'q.consecutive-wins': t('home.unit.streak', { value: formatNumber(progress) }),
     };
     const parts = [`${sideQuest.percent}%`];
     if (currentByType[sideQuest.type]) parts.push(currentByType[sideQuest.type]);

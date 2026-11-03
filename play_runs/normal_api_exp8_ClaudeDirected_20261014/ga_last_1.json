@@ -1,0 +1,74 @@
+{
+ "verdict": "good",
+ "forecast": {
+  "before": "Success 15.4% / Draw 7.4% / Retreat 47.6% / Defeat 29.6%",
+  "after": "Success 24.6% / Draw 23.0% / Retreat 35.2% / Defeat 17.2%"
+ },
+ "changeSummary": [
+  {
+   "endpoint": "commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     7
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     5
+    ]
+   }
+  },
+  {
+   "endpoint": "commit/build/party/1",
+   "parameters": {
+    "deityId": "fertility"
+   }
+  },
+  {
+   "endpoint": "commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": "0/8223/2/0",
+    "targetSlot": 1
+   }
+  },
+  {
+   "endpoint": "commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": "0/3303/0/0",
+    "targetSlot": 7
+   }
+  },
+  {
+   "endpoint": "commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": "0/8107/4/0",
+    "targetSlot": 5
+   }
+  }
+ ],
+ "revision": 2339,
+ "evaluations": 1657,
+ "elapsedSeconds": 303,
+ "basis": "smt3sub4t",
+ "verification": {
+  "objective": "success",
+  "scoredBy": "success",
+  "runs": 500,
+  "before": 0.154,
+  "after": 0.246,
+  "gain": 9.2,
+  "standardError": 2.51,
+  "seed": 1173503673
+ }
+}

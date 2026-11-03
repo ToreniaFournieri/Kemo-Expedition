@@ -1,0 +1,4590 @@
+{
+ "logId": "x",
+ "partyNumber": 1,
+ "dungeonId": 7,
+ "difficultyOffset": 0,
+ "finalOutcome": "Defeat",
+ "totalExperience": 4448,
+ "completedRooms": 24,
+ "totalRooms": 24,
+ "remainingPartyHp": 0,
+ "maximumPartyHp": 13296,
+ "rewards": [],
+ "autoSell": {
+  "count": 0,
+  "gold": 0
+ },
+ "rooms": [
+  {
+   "room": 1,
+   "floor": 1,
+   "roomInFloor": 1,
+   "roomType": "battle_Normal",
+   "enemyId": 318,
+   "enemyMaximumHp": 18762,
+   "outcome": "victory",
+   "damageDealt": 18762,
+   "damageTaken": 0,
+   "startingPartyHp": 13296,
+   "remainingPartyHp": 13031,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.decay",
+   "actors": [
+    {
+     "id": 2147483966,
+     "kind": "enemy",
+     "enemyId": 318
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     34,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     3,
+     2147483966,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "mutual_magic_amplify",
+      "subtype": 15,
+      "flags": 32
+     }
+    ],
+    [
+     2,
+     12,
+     3,
+     9,
+     2147483966,
+     "fire",
+     4,
+     17,
+     19936,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 18762
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     2,
+     {
+      "id": 7110,
+      "enhancement": 0,
+      "superRare": 0
+     },
+     24
+    ],
+    [
+     2,
+     {
+      "id": 7111,
+      "enhancement": 0,
+      "superRare": 0
+     },
+     24
+    ],
+    [
+     0,
+     {
+      "type": "terrain-decay",
+      "amount": 265
+     }
+    ]
+   ]
+  },
+  {
+   "room": 2,
+   "floor": 1,
+   "roomInFloor": 2,
+   "roomType": "battle_Normal",
+   "enemyId": 316,
+   "enemyMaximumHp": 32164,
+   "outcome": "victory",
+   "damageDealt": 32164,
+   "damageTaken": 0,
+   "startingPartyHp": 13031,
+   "remainingPartyHp": 12766,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.decay",
+   "actors": [
+    {
+     "id": 2147483964,
+     "kind": "enemy",
+     "enemyId": 316
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     34,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     3,
+     2147483964,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "mutual_magic_amplify",
+      "subtype": 15,
+      "flags": 32
+     }
+    ],
+    [
+     2,
+     13,
+     4,
+     9,
+     2147483964,
+     "fire",
+     8,
+     24,
+     42128,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 32164
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     0,
+     {
+      "type": "terrain-decay",
+      "amount": 265
+     }
+    ]
+   ]
+  },
+  {
+   "room": 3,
+   "floor": 1,
+   "roomInFloor": 3,
+   "roomType": "battle_Normal",
+   "enemyId": 320,
+   "enemyMaximumHp": 50928,
+   "outcome": "victory",
+   "damageDealt": 50928,
+   "damageTaken": 0,
+   "startingPartyHp": 12766,
+   "remainingPartyHp": 12501,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.decay",
+   "actors": [
+    {
+     "id": 2147483968,
+     "kind": "enemy",
+     "enemyId": 320
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     34,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     3,
+     2147483968,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "mutual_magic_amplify",
+      "subtype": 15,
+      "flags": 32
+     }
+    ],
+    [
+     2,
+     13,
+     2,
+     9,
+     2147483968,
+     "fire",
+     8,
+     26,
+     27608,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     11,
+     3,
+     9,
+     2147483968,
+     "fire",
+     10,
+     17,
+     37960,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 23320
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     2,
+     {
+      "id": 7102,
+      "enhancement": 1,
+      "superRare": 0
+     }
+    ],
+    [
+     2,
+     {
+      "id": 7103,
+      "enhancement": 0,
+      "superRare": 0
+     },
+     24
+    ],
+    [
+     0,
+     {
+      "type": "terrain-decay",
+      "amount": 265
+     }
+    ]
+   ]
+  },
+  {
+   "room": 4,
+   "floor": 1,
+   "roomInFloor": 4,
+   "roomType": "battle_Elite",
+   "enemyId": 321,
+   "enemyMaximumHp": 69717,
+   "outcome": "victory",
+   "damageDealt": 69717,
+   "damageTaken": 1181,
+   "startingPartyHp": 12501,
+   "remainingPartyHp": 11095,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.decay",
+   "actors": [
+    {
+     "id": 2147483969,
+     "kind": "enemy",
+     "enemyId": 321
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     34,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     3,
+     2147483969,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "mutual_magic_amplify",
+      "subtype": 15,
+      "flags": 32
+     }
+    ],
+    [
+     2,
+     11,
+     3,
+     9,
+     2147483969,
+     "fire",
+     7,
+     17,
+     29197,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     3,
+     11,
+     3,
+     9,
+     2147483969,
+     "fire",
+     4,
+     9,
+     16684,
+     {
+      "attackType": "ranged",
+      "reaction": 3
+     }
+    ],
+    [
+     2,
+     10,
+     2147483969,
+     9,
+     2,
+     "none",
+     1,
+     1,
+     821,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     10,
+     2147483969,
+     9,
+     1,
+     "none",
+     1,
+     1,
+     358,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     10,
+     2147483969,
+     9,
+     6,
+     "none",
+     2,
+     3,
+     2,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     9,
+     2,
+     9,
+     2147483969,
+     "fire",
+     16,
+     26,
+     61520,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 23836
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     0,
+     {
+      "type": "first-aid",
+      "actorName": "Lop",
+      "amount": 19
+     }
+    ],
+    [
+     0,
+     {
+      "type": "first-aid",
+      "actorName": "Selfin",
+      "amount": 21
+     }
+    ],
+    [
+     2,
+     {
+      "id": 7102,
+      "enhancement": 0,
+      "superRare": 0
+     },
+     24
+    ],
+    [
+     0,
+     {
+      "type": "terrain-decay",
+      "amount": 265
+     }
+    ]
+   ]
+  },
+  {
+   "room": 5,
+   "floor": 2,
+   "roomInFloor": 1,
+   "roomType": "battle_Normal",
+   "enemyId": 322,
+   "enemyMaximumHp": 31902,
+   "outcome": "victory",
+   "damageDealt": 31902,
+   "damageTaken": 5375,
+   "startingPartyHp": 11095,
+   "remainingPartyHp": 5720,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.chain-lightning",
+   "actors": [
+    {
+     "id": 2147483970,
+     "kind": "enemy",
+     "enemyId": 322
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "thunder",
+     0,
+     0,
+     35,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     3,
+     2147483970,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "mutual_magic_amplify",
+      "subtype": 15,
+      "flags": 32
+     }
+    ],
+    [
+     2,
+     14,
+     2147483970,
+     9,
+     6,
+     "none",
+     9,
+     15,
+     9,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     14,
+     2147483970,
+     9,
+     1,
+     "none",
+     6,
+     9,
+     6,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     14,
+     2147483970,
+     9,
+     2,
+     "none",
+     7,
+     10,
+     3668,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     14,
+     2147483970,
+     9,
+     4,
+     "none",
+     1,
+     1,
+     656,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     14,
+     2147483970,
+     9,
+     5,
+     "none",
+     1,
+     2,
+     1036,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     10,
+     2,
+     9,
+     2147483970,
+     "fire",
+     7,
+     26,
+     29722,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     8,
+     4,
+     9,
+     2147483970,
+     "fire",
+     6,
+     24,
+     30324,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 2180
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     2,
+     {
+      "id": 7107,
+      "enhancement": 0,
+      "superRare": 0
+     }
+    ],
+    [
+     2,
+     {
+      "id": 7108,
+      "enhancement": 0,
+      "superRare": 0
+     }
+    ]
+   ]
+  },
+  {
+   "room": 6,
+   "floor": 2,
+   "roomInFloor": 2,
+   "roomType": "battle_Normal",
+   "enemyId": 323,
+   "enemyMaximumHp": 37219,
+   "outcome": "victory",
+   "damageDealt": 37219,
+   "damageTaken": 0,
+   "startingPartyHp": 5720,
+   "remainingPartyHp": 5720,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.chain-lightning",
+   "actors": [
+    {
+     "id": 2147483971,
+     "kind": "enemy",
+     "enemyId": 323
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "thunder",
+     0,
+     0,
+     35,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     3,
+     2147483971,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "mutual_magic_amplify",
+      "subtype": 15,
+      "flags": 32
+     }
+    ],
+    [
+     2,
+     10,
+     2,
+     9,
+     2147483971,
+     "fire",
+     15,
+     26,
+     65250,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 37219
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     2,
+     {
+      "id": 7110,
+      "enhancement": 0,
+      "superRare": 0
+     },
+     24
+    ]
+   ]
+  },
+  {
+   "room": 7,
+   "floor": 2,
+   "roomInFloor": 3,
+   "roomType": "battle_Normal",
+   "enemyId": 326,
+   "enemyMaximumHp": 26585,
+   "outcome": "victory",
+   "damageDealt": 26585,
+   "damageTaken": 0,
+   "startingPartyHp": 5720,
+   "remainingPartyHp": 5720,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.chain-lightning",
+   "actors": [
+    {
+     "id": 2147483974,
+     "kind": "enemy",
+     "enemyId": 326
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "thunder",
+     0,
+     0,
+     35,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     13,
+     2,
+     9,
+     2147483974,
+     "fire",
+     12,
+     26,
+     54732,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 26585
+     }
+    ]
+   ],
+   "endEvents": []
+  },
+  {
+   "room": 8,
+   "floor": 2,
+   "roomInFloor": 4,
+   "roomType": "battle_Elite",
+   "enemyId": 327,
+   "enemyMaximumHp": 43574,
+   "outcome": "victory",
+   "damageDealt": 43574,
+   "damageTaken": 0,
+   "startingPartyHp": 5720,
+   "remainingPartyHp": 5760,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.chain-lightning",
+   "actors": [
+    {
+     "id": 2147483975,
+     "kind": "enemy",
+     "enemyId": 327
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "thunder",
+     0,
+     0,
+     35,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     3,
+     2147483975,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "mutual_magic_amplify",
+      "subtype": 15,
+      "flags": 32
+     }
+    ],
+    [
+     2,
+     14,
+     2,
+     9,
+     2147483975,
+     "fire",
+     15,
+     26,
+     64155,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 43574
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     0,
+     {
+      "type": "first-aid",
+      "actorName": "Lop",
+      "amount": 19
+     }
+    ],
+    [
+     0,
+     {
+      "type": "first-aid",
+      "actorName": "Selfin",
+      "amount": 21
+     }
+    ],
+    [
+     2,
+     {
+      "id": 7110,
+      "enhancement": 0,
+      "superRare": 0
+     },
+     24
+    ],
+    [
+     2,
+     {
+      "id": 7112,
+      "enhancement": 0,
+      "superRare": 0
+     },
+     24
+    ]
+   ]
+  },
+  {
+   "room": 9,
+   "floor": 3,
+   "roomInFloor": 1,
+   "roomType": "battle_Normal",
+   "enemyId": 329,
+   "enemyMaximumHp": 48682,
+   "outcome": "victory",
+   "damageDealt": 48682,
+   "damageTaken": 0,
+   "startingPartyHp": 5760,
+   "remainingPartyHp": 5760,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.light-field",
+   "actors": [
+    {
+     "id": 2147483977,
+     "kind": "enemy",
+     "enemyId": 329
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     36,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     10,
+     2,
+     9,
+     2147483977,
+     "fire",
+     6,
+     26,
+     30408,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     9,
+     4,
+     9,
+     2147483977,
+     "fire",
+     5,
+     24,
+     29495,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 18274
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     2,
+     {
+      "id": 7102,
+      "enhancement": 0,
+      "superRare": 0
+     },
+     24
+    ]
+   ]
+  },
+  {
+   "room": 10,
+   "floor": 3,
+   "roomInFloor": 2,
+   "roomType": "battle_Normal",
+   "enemyId": 328,
+   "enemyMaximumHp": 19712,
+   "outcome": "victory",
+   "damageDealt": 19712,
+   "damageTaken": 0,
+   "startingPartyHp": 5760,
+   "remainingPartyHp": 5760,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.light-field",
+   "actors": [
+    {
+     "id": 2147483976,
+     "kind": "enemy",
+     "enemyId": 328
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     36,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     12,
+     2,
+     9,
+     2147483976,
+     "fire",
+     7,
+     26,
+     47397,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 19712
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     2,
+     {
+      "id": 7112,
+      "enhancement": 1,
+      "superRare": 0
+     }
+    ]
+   ]
+  },
+  {
+   "room": 11,
+   "floor": 3,
+   "roomInFloor": 3,
+   "roomType": "battle_Normal",
+   "enemyId": 332,
+   "enemyMaximumHp": 29184,
+   "outcome": "victory",
+   "damageDealt": 29184,
+   "damageTaken": 0,
+   "startingPartyHp": 5760,
+   "remainingPartyHp": 5760,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.light-field",
+   "actors": [
+    {
+     "id": 2147483980,
+     "kind": "enemy",
+     "enemyId": 332
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     36,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     3,
+     2147483980,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "mutual_magic_amplify",
+      "subtype": 15,
+      "flags": 32
+     }
+    ],
+    [
+     2,
+     13,
+     2,
+     9,
+     2147483980,
+     "fire",
+     12,
+     26,
+     54168,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 29184
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     2,
+     {
+      "id": 7110,
+      "enhancement": 3,
+      "superRare": 0
+     }
+    ]
+   ]
+  },
+  {
+   "room": 12,
+   "floor": 3,
+   "roomInFloor": 4,
+   "roomType": "battle_Elite",
+   "enemyId": 333,
+   "enemyMaximumHp": 63074,
+   "outcome": "victory",
+   "damageDealt": 63074,
+   "damageTaken": 0,
+   "startingPartyHp": 5760,
+   "remainingPartyHp": 5800,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.light-field",
+   "actors": [
+    {
+     "id": 2147483981,
+     "kind": "enemy",
+     "enemyId": 333
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     36,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     15,
+     4,
+     9,
+     2147483981,
+     "fire",
+     7,
+     24,
+     38731,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     11,
+     2,
+     9,
+     2147483981,
+     "fire",
+     5,
+     26,
+     23920,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     9,
+     3,
+     9,
+     2147483981,
+     "fire",
+     3,
+     17,
+     15963,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 423
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     0,
+     {
+      "type": "first-aid",
+      "actorName": "Lop",
+      "amount": 19
+     }
+    ],
+    [
+     0,
+     {
+      "type": "first-aid",
+      "actorName": "Selfin",
+      "amount": 21
+     }
+    ]
+   ]
+  },
+  {
+   "room": 13,
+   "floor": 4,
+   "roomInFloor": 1,
+   "roomType": "battle_Normal",
+   "enemyId": 335,
+   "enemyMaximumHp": 58098,
+   "outcome": "victory",
+   "damageDealt": 58098,
+   "damageTaken": 1806,
+   "startingPartyHp": 5800,
+   "remainingPartyHp": 3994,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.dark-field",
+   "actors": [
+    {
+     "id": 2147483983,
+     "kind": "enemy",
+     "enemyId": 335
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     37,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     9,
+     2147483983,
+     24,
+     6,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "howl",
+      "subtype": 15,
+      "flags": 4
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     12,
+     4,
+     9,
+     2147483983,
+     "fire",
+     9,
+     24,
+     44397,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     11,
+     2,
+     9,
+     2147483983,
+     "fire",
+     16,
+     26,
+     66912,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 13701
+     }
+    ],
+    [
+     1,
+     11,
+     2147483983,
+     19,
+     2147483983,
+     "none",
+     0,
+     0,
+     18011,
+     {
+      "attackType": "ranged",
+      "ability": "reanimate",
+      "subtype": 1
+     }
+    ],
+    [
+     2,
+     10,
+     2147483983,
+     9,
+     4,
+     "none",
+     1,
+     1,
+     1284,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     10,
+     2147483983,
+     9,
+     6,
+     "none",
+     2,
+     3,
+     2,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     10,
+     2147483983,
+     9,
+     1,
+     "none",
+     1,
+     1,
+     520,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     9,
+     3,
+     9,
+     2147483983,
+     "fire",
+     6,
+     17,
+     27216,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 18011
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     2,
+     {
+      "id": 7205,
+      "enhancement": 0,
+      "superRare": 0
+     }
+    ],
+    [
+     2,
+     {
+      "id": 7101,
+      "enhancement": 1,
+      "superRare": 0
+     }
+    ]
+   ]
+  },
+  {
+   "room": 14,
+   "floor": 4,
+   "roomInFloor": 2,
+   "roomType": "battle_Normal",
+   "enemyId": 336,
+   "enemyMaximumHp": 40865,
+   "outcome": "victory",
+   "damageDealt": 40865,
+   "damageTaken": 0,
+   "startingPartyHp": 3994,
+   "remainingPartyHp": 3994,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.dark-field",
+   "actors": [
+    {
+     "id": 2147483984,
+     "kind": "enemy",
+     "enemyId": 336
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     37,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     9,
+     2147483984,
+     24,
+     3,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "composure",
+      "subtype": 15,
+      "flags": 4
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     14,
+     4,
+     9,
+     2147483984,
+     "fire",
+     11,
+     24,
+     56210,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 40865
+     }
+    ],
+    [
+     1,
+     14,
+     2147483984,
+     19,
+     2147483984,
+     "none",
+     0,
+     0,
+     12669,
+     {
+      "attackType": "ranged",
+      "ability": "reanimate",
+      "subtype": 1
+     }
+    ],
+    [
+     2,
+     13,
+     2,
+     9,
+     2147483984,
+     "fire",
+     13,
+     26,
+     56147,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 12669
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     2,
+     {
+      "id": 7111,
+      "enhancement": 0,
+      "superRare": 0
+     },
+     24
+    ]
+   ]
+  },
+  {
+   "room": 15,
+   "floor": 4,
+   "roomInFloor": 3,
+   "roomType": "battle_Normal",
+   "enemyId": 337,
+   "enemyMaximumHp": 42736,
+   "outcome": "victory",
+   "damageDealt": 42736,
+   "damageTaken": 0,
+   "startingPartyHp": 3994,
+   "remainingPartyHp": 3994,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.dark-field",
+   "actors": [
+    {
+     "id": 2147483985,
+     "kind": "enemy",
+     "enemyId": 337
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     37,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     11,
+     2,
+     9,
+     2147483985,
+     "fire",
+     5,
+     26,
+     35095,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     9,
+     4,
+     9,
+     2147483985,
+     "fire",
+     4,
+     24,
+     32516,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 7641
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     2,
+     {
+      "id": 7104,
+      "enhancement": 1,
+      "superRare": 0
+     }
+    ],
+    [
+     2,
+     {
+      "id": 7106,
+      "enhancement": 0,
+      "superRare": 0
+     },
+     24
+    ]
+   ]
+  },
+  {
+   "room": 16,
+   "floor": 4,
+   "roomInFloor": 4,
+   "roomType": "battle_Elite",
+   "enemyId": 339,
+   "enemyMaximumHp": 80965,
+   "outcome": "victory",
+   "damageDealt": 80965,
+   "damageTaken": 0,
+   "startingPartyHp": 3994,
+   "remainingPartyHp": 4034,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.dark-field",
+   "actors": [
+    {
+     "id": 2147483987,
+     "kind": "enemy",
+     "enemyId": 339
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     37,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     9,
+     2147483987,
+     24,
+     4,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "null_bind",
+      "subtype": 15,
+      "flags": 4
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     10,
+     2,
+     9,
+     2147483987,
+     "fire",
+     18,
+     26,
+     71694,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     9,
+     3,
+     9,
+     2147483987,
+     "fire",
+     11,
+     17,
+     47817,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 9271
+     }
+    ],
+    [
+     1,
+     9,
+     2147483987,
+     19,
+     2147483987,
+     "none",
+     0,
+     0,
+     25100,
+     {
+      "attackType": "ranged",
+      "ability": "reanimate",
+      "subtype": 1
+     }
+    ],
+    [
+     3,
+     9,
+     3,
+     9,
+     2147483987,
+     "fire",
+     6,
+     9,
+     26082,
+     {
+      "attackType": "ranged",
+      "reaction": 3,
+      "sourceValue": 25100
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     0,
+     {
+      "type": "first-aid",
+      "actorName": "Lop",
+      "amount": 19
+     }
+    ],
+    [
+     0,
+     {
+      "type": "first-aid",
+      "actorName": "Selfin",
+      "amount": 21
+     }
+    ],
+    [
+     2,
+     {
+      "id": 7107,
+      "enhancement": 0,
+      "superRare": 0
+     }
+    ],
+    [
+     2,
+     {
+      "id": 7108,
+      "enhancement": 0,
+      "superRare": 0
+     }
+    ]
+   ]
+  },
+  {
+   "room": 17,
+   "floor": 5,
+   "roomInFloor": 1,
+   "roomType": "battle_Normal",
+   "enemyId": 340,
+   "enemyMaximumHp": 30979,
+   "outcome": "victory",
+   "damageDealt": 30979,
+   "damageTaken": 0,
+   "startingPartyHp": 4034,
+   "remainingPartyHp": 4034,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.dark-field",
+   "actors": [
+    {
+     "id": 2147483988,
+     "kind": "enemy",
+     "enemyId": 340
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     37,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     12,
+     4,
+     9,
+     2147483988,
+     "fire",
+     4,
+     24,
+     42800,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 30979
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     2,
+     {
+      "id": 7107,
+      "enhancement": 2,
+      "superRare": 0
+     }
+    ]
+   ]
+  },
+  {
+   "room": 18,
+   "floor": 5,
+   "roomInFloor": 2,
+   "roomType": "battle_Normal",
+   "enemyId": 342,
+   "enemyMaximumHp": 22638,
+   "outcome": "victory",
+   "damageDealt": 22638,
+   "damageTaken": 0,
+   "startingPartyHp": 4034,
+   "remainingPartyHp": 4034,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.dark-field",
+   "actors": [
+    {
+     "id": 2147483990,
+     "kind": "enemy",
+     "enemyId": 342
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     37,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     11,
+     2,
+     9,
+     2147483990,
+     "fire",
+     4,
+     26,
+     38392,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 22638
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     2,
+     {
+      "id": 7110,
+      "enhancement": 1,
+      "superRare": 0
+     }
+    ],
+    [
+     2,
+     {
+      "id": 7112,
+      "enhancement": 0,
+      "superRare": 0
+     },
+     24
+    ]
+   ]
+  },
+  {
+   "room": 19,
+   "floor": 5,
+   "roomInFloor": 3,
+   "roomType": "battle_Normal",
+   "enemyId": 343,
+   "enemyMaximumHp": 89647,
+   "outcome": "victory",
+   "damageDealt": 89647,
+   "damageTaken": 0,
+   "startingPartyHp": 4034,
+   "remainingPartyHp": 4034,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.dark-field",
+   "actors": [
+    {
+     "id": 2147483991,
+     "kind": "enemy",
+     "enemyId": 343
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     37,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     9,
+     2147483991,
+     24,
+     2,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "first_strike",
+      "subtype": 15,
+      "flags": 4
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     12,
+     2,
+     9,
+     2147483991,
+     "fire",
+     12,
+     26,
+     41784,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     11,
+     4,
+     9,
+     2147483991,
+     "fire",
+     8,
+     24,
+     32232,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     1,
+     8,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     0.714,
+     {
+      "attackType": "ranged",
+      "ability": "howl",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     7,
+     5,
+     9,
+     2147483991,
+     "fire",
+     16,
+     28,
+     124800,
+     {
+      "attackType": "magical",
+      "reaction": 1,
+      "sourceValue": 15631
+     }
+    ],
+    [
+     1,
+     7,
+     2147483991,
+     19,
+     2147483991,
+     "none",
+     0,
+     0,
+     27791,
+     {
+      "attackType": "magical",
+      "ability": "reanimate",
+      "subtype": 1
+     }
+    ],
+    [
+     2,
+     5,
+     3,
+     9,
+     2147483991,
+     "fire",
+     6,
+     17,
+     23226,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     3,
+     5,
+     3,
+     9,
+     2147483991,
+     "fire",
+     5,
+     9,
+     19355,
+     {
+      "attackType": "ranged",
+      "reaction": 3,
+      "sourceValue": 4565
+     }
+    ]
+   ],
+   "endEvents": []
+  },
+  {
+   "room": 20,
+   "floor": 5,
+   "roomInFloor": 4,
+   "roomType": "battle_Elite",
+   "enemyId": 345,
+   "enemyMaximumHp": 74920,
+   "outcome": "victory",
+   "damageDealt": 74920,
+   "damageTaken": 0,
+   "startingPartyHp": 4034,
+   "remainingPartyHp": 4074,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.dark-field",
+   "actors": [
+    {
+     "id": 2147483993,
+     "kind": "enemy",
+     "enemyId": 345
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     37,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     9,
+     2147483993,
+     24,
+     2,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "output_stabilizer",
+      "subtype": 15,
+      "flags": 4
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     11,
+     2,
+     9,
+     2147483993,
+     "fire",
+     10,
+     26,
+     40380,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     10,
+     4,
+     9,
+     2147483993,
+     "fire",
+     7,
+     24,
+     33229,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     1,
+     8,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     0.714,
+     {
+      "attackType": "ranged",
+      "ability": "howl",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     8,
+     5,
+     9,
+     2147483993,
+     "fire",
+     17,
+     28,
+     107593,
+     {
+      "attackType": "magical",
+      "reaction": 1,
+      "sourceValue": 1311
+     }
+    ],
+    [
+     1,
+     8,
+     2147483993,
+     19,
+     2147483993,
+     "none",
+     0,
+     0,
+     23226,
+     {
+      "attackType": "magical",
+      "ability": "reanimate",
+      "subtype": 1
+     }
+    ],
+    [
+     2,
+     7,
+     3,
+     9,
+     2147483993,
+     "fire",
+     4,
+     17,
+     17596,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     3,
+     7,
+     3,
+     9,
+     2147483993,
+     "fire",
+     3,
+     9,
+     13197,
+     {
+      "attackType": "ranged",
+      "reaction": 3,
+      "sourceValue": 5630
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     0,
+     {
+      "type": "first-aid",
+      "actorName": "Lop",
+      "amount": 19
+     }
+    ],
+    [
+     0,
+     {
+      "type": "first-aid",
+      "actorName": "Selfin",
+      "amount": 21
+     }
+    ],
+    [
+     2,
+     {
+      "id": 7104,
+      "enhancement": 1,
+      "superRare": 0
+     }
+    ]
+   ]
+  },
+  {
+   "room": 21,
+   "floor": 6,
+   "roomInFloor": 1,
+   "roomType": "battle_Normal",
+   "enemyId": 348,
+   "enemyMaximumHp": 92457,
+   "outcome": "victory",
+   "damageDealt": 92457,
+   "damageTaken": 0,
+   "startingPartyHp": 4074,
+   "remainingPartyHp": 4074,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.low-gravity",
+   "actors": [
+    {
+     "id": 2147483996,
+     "kind": "enemy",
+     "enemyId": 348
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     38,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     3,
+     2147483996,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "mutual_magic_amplify",
+      "subtype": 15,
+      "flags": 32
+     }
+    ],
+    [
+     2,
+     11,
+     4,
+     9,
+     2147483996,
+     "fire",
+     14,
+     24,
+     62188,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     10,
+     2,
+     9,
+     2147483996,
+     "fire",
+     11,
+     26,
+     41503,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 30269
+     }
+    ]
+   ],
+   "endEvents": []
+  },
+  {
+   "room": 22,
+   "floor": 6,
+   "roomInFloor": 2,
+   "roomType": "battle_Normal",
+   "enemyId": 347,
+   "enemyMaximumHp": 86188,
+   "outcome": "victory",
+   "damageDealt": 86188,
+   "damageTaken": 0,
+   "startingPartyHp": 4074,
+   "remainingPartyHp": 4074,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.low-gravity",
+   "actors": [
+    {
+     "id": 2147483995,
+     "kind": "enemy",
+     "enemyId": 347
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     38,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     3,
+     2147483995,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "mutual_magic_amplify",
+      "subtype": 15,
+      "flags": 32
+     }
+    ],
+    [
+     2,
+     15,
+     4,
+     9,
+     2147483995,
+     "fire",
+     6,
+     24,
+     25506,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     10,
+     5,
+     9,
+     2147483995,
+     "fire",
+     20,
+     37,
+     82280,
+     {
+      "attackType": "magical",
+      "reaction": 1,
+      "sourceValue": 60682
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     2,
+     {
+      "id": 7221,
+      "enhancement": 0,
+      "superRare": 0
+     }
+    ],
+    [
+     2,
+     {
+      "id": 7101,
+      "enhancement": 0,
+      "superRare": 0
+     },
+     24
+    ],
+    [
+     2,
+     {
+      "id": 7102,
+      "enhancement": 3,
+      "superRare": 0
+     }
+    ],
+    [
+     2,
+     {
+      "id": 7103,
+      "enhancement": 2,
+      "superRare": 0
+     }
+    ]
+   ]
+  },
+  {
+   "room": 23,
+   "floor": 6,
+   "roomInFloor": 3,
+   "roomType": "battle_Normal",
+   "enemyId": 349,
+   "enemyMaximumHp": 64642,
+   "outcome": "victory",
+   "damageDealt": 64642,
+   "damageTaken": 0,
+   "startingPartyHp": 4074,
+   "remainingPartyHp": 4074,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.low-gravity",
+   "actors": [
+    {
+     "id": 2147483997,
+     "kind": "enemy",
+     "enemyId": 349
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     38,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     9,
+     2147483997,
+     24,
+     5,
+     "none",
+     0,
+     0,
+     1,
+     {
+      "phase": 1,
+      "ability": "arcane_stability",
+      "subtype": 15,
+      "flags": 4
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     11,
+     4,
+     9,
+     2147483997,
+     "fire",
+     9,
+     24,
+     28692,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     9,
+     2,
+     9,
+     2147483997,
+     "fire",
+     10,
+     26,
+     27180,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     9,
+     3,
+     9,
+     2147483997,
+     "fire",
+     6,
+     23,
+     17826,
+     {
+      "attackType": "ranged",
+      "reaction": 1,
+      "sourceValue": 8770
+     }
+    ],
+    [
+     1,
+     9,
+     2147483997,
+     19,
+     2147483997,
+     "none",
+     0,
+     0,
+     20040,
+     {
+      "attackType": "ranged",
+      "ability": "reanimate",
+      "subtype": 1
+     }
+    ],
+    [
+     3,
+     9,
+     3,
+     9,
+     2147483997,
+     "fire",
+     5,
+     12,
+     14855,
+     {
+      "attackType": "ranged",
+      "reaction": 3
+     }
+    ],
+    [
+     1,
+     8,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     0.714,
+     {
+      "attackType": "ranged",
+      "ability": "howl",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     8,
+     5,
+     9,
+     2147483997,
+     "fire",
+     8,
+     37,
+     57672,
+     {
+      "attackType": "magical",
+      "reaction": 1,
+      "sourceValue": 5185
+     }
+    ]
+   ],
+   "endEvents": [
+    [
+     2,
+     {
+      "id": 7109,
+      "enhancement": 0,
+      "superRare": 0
+     }
+    ]
+   ]
+  },
+  {
+   "room": 24,
+   "floor": 6,
+   "roomInFloor": 4,
+   "roomType": "battle_Boss",
+   "enemyId": 351,
+   "enemyMaximumHp": 177121,
+   "outcome": "defeat",
+   "damageDealt": 154415,
+   "damageTaken": 4074,
+   "startingPartyHp": 4074,
+   "remainingPartyHp": 0,
+   "maximumPartyHp": 13296,
+   "healAmount": null,
+   "attritionAmount": null,
+   "eventFormat": "compact-v1",
+   "terrain": "terrain.low-gravity",
+   "actors": [
+    {
+     "id": 2147483999,
+     "kind": "enemy",
+     "enemyId": 351
+    },
+    {
+     "id": 6,
+     "kind": "character",
+     "characterId": 6,
+     "name": "Laika"
+    },
+    {
+     "id": 1,
+     "kind": "character",
+     "characterId": 1,
+     "name": "Kemo"
+    },
+    {
+     "id": 2,
+     "kind": "character",
+     "characterId": 2,
+     "name": "Kuzunoha"
+    },
+    {
+     "id": 4,
+     "kind": "character",
+     "characterId": 4,
+     "name": "Sota"
+    },
+    {
+     "id": 3,
+     "kind": "character",
+     "characterId": 3,
+     "name": "Lop"
+    },
+    {
+     "id": 5,
+     "kind": "character",
+     "characterId": 5,
+     "name": "Selfin"
+    }
+   ],
+   "modifiers": [],
+   "events": [
+    [
+     0,
+     9,
+     0,
+     4,
+     0,
+     "none",
+     0,
+     0,
+     38,
+     {
+      "phase": 1,
+      "flags": 8
+     }
+    ],
+    [
+     1,
+     7,
+     6,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "defender",
+      "subtype": 15
+     }
+    ],
+    [
+     1,
+     7,
+     1,
+     5,
+     0,
+     "none",
+     0,
+     0,
+     2,
+     {
+      "phase": 1,
+      "ability": "command",
+      "subtype": 15
+     }
+    ],
+    [
+     2,
+     9,
+     2147483999,
+     9,
+     6,
+     "ice",
+     7,
+     14,
+     7,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     9,
+     2147483999,
+     9,
+     1,
+     "ice",
+     3,
+     6,
+     735,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     9,
+     2147483999,
+     9,
+     2,
+     "ice",
+     2,
+     2,
+     2194,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     9,
+     2147483999,
+     9,
+     4,
+     "ice",
+     0,
+     1,
+     0,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     9,
+     2,
+     9,
+     2147483999,
+     "fire",
+     11,
+     26,
+     29700,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     9,
+     4,
+     9,
+     2147483999,
+     "fire",
+     8,
+     24,
+     24448,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     6,
+     3,
+     9,
+     2147483999,
+     "fire",
+     3,
+     23,
+     9246,
+     {
+      "attackType": "ranged",
+      "reaction": 1
+     }
+    ],
+    [
+     3,
+     6,
+     3,
+     9,
+     2147483999,
+     "fire",
+     3,
+     12,
+     9246,
+     {
+      "attackType": "ranged",
+      "reaction": 3
+     }
+    ],
+    [
+     2,
+     6,
+     5,
+     9,
+     2147483999,
+     "fire",
+     25,
+     37,
+     81775,
+     {
+      "attackType": "magical",
+      "reaction": 1
+     }
+    ],
+    [
+     2,
+     3,
+     2147483999,
+     9,
+     1,
+     "ice",
+     4,
+     5,
+     3460,
+     {
+      "attackType": "melee",
+      "reaction": 1,
+      "sourceValue": 1138
+     }
+    ]
+   ],
+   "endEvents": []
+  }
+ ]
+}

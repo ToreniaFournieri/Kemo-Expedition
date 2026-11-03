@@ -749,8 +749,8 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         get description() { return t('data.glossary.132.description'); }
       },
       {
-        "key": "q.treasure-boss-rare",
-        get label() { return t('sideQuest.treasureBossRare.short'); },
+        "key": "q.treasure-epic-rare",
+        get label() { return t('sideQuest.treasureEpicRare.short'); },
         get description() { return t('data.glossary.133.description'); }
       },
       {

@@ -1,0 +1,10 @@
+{
+  "build_number.txt": "a1fb50e6c86fae1679ef3351296fd6713411a08cf8dd1790a4fd05fae8688164",
+  "package.json": "4c3fc77ffdbadb716ca012f141d0b630aaf9a0ed5e80a115eeda0b8774050ecc",
+  "src/hooks/useGameState.ts": "a8ebf896faf65d394d693573d94bf88de5cbe8e945555f43b0e6cd55f91327fd",
+  "src/game/characterComputation.ts": "f008593f33ff8842a9441f680de993c188b183b2bbaf29203ab12f72b16b9ccf",
+  "src/game/partyComputation.ts": "6d5ee50065464c712fe8c67ffe38e5a94dbc4fc46ca5f5f7e67e89b8a4d2fb3e",
+  "src/game/battleKernelBinary.ts": "be45a3f9c8c3bae62e45c6896ed24d112c0e3000d95a6bb903013bc6103ff3a3",
+  "src/api/v1/applicationApi.ts": "c9ecb0934d7c3e92c82811cc1a616bcedd073cbb327afdc25d7faa23efe8d869",
+  "desktop/api-v1.cjs": "eefe93425914adfe1b8cec0861a917d9de0c48727168fd35020ae2ef077d668b"
+}

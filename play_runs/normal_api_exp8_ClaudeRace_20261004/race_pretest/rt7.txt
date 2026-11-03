@@ -1,0 +1,7 @@
+baseline 4.3
+5 Selfin cervin slots 9 items 9 HP 18570 succ 4.3
+3 Lop cervin slots 9 items 9 HP 18457 succ 1.6
+5 Selfin felidian slots 9 items 9 HP 18843 succ 0.0
+3 Lop felidian slots 9 items 9 HP 18760 succ 2.3
+5 Selfin felidian:ranger:ninja slots 9 items 0 HP 18772 succ 0.0
+3 Lop felidian:ranger:ninja slots 9 items 9 HP 18760 succ 3.6

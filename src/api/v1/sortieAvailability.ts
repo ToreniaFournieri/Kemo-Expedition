@@ -1,4 +1,7 @@
+import { getApproxAfkCycleDurationMs } from '../../game/afkScheduler.ts';
 import { isDungeonEntryUnlocked, isGodsBattleAvailable } from '../../game/clearGate.ts';
+import { getInstantExpeditionChargeState } from '../../game/instantExpedition.ts';
+import { computePartyStats } from '../../game/partyComputation.ts';
 import type { Party } from '../../types/index.ts';
 
 // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
@@ -35,4 +38,38 @@ export function getSortieUnavailableReason(input: SortieAvailabilityInput): Sort
   if (godsBattle && cycle?.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true) return 'already_moving_to_gods_battle';
   if (!isColosseum && chargeStock <= 0) return 'charge_insufficient';
   return null;
+}
+
+export interface SortieControlFacts {
+  currentHp: number;
+  maximumHp: number;
+  chargeStock: number;
+  controls: { sortie: { available: boolean; unavailableReason: SortieUnavailableReason | null }; godsBattle: { available: boolean; unavailableReason: SortieUnavailableReason | null } };
+}
+
+// SpecRef: 9.1.3 | 3-2-2 {p}/sortie | `currentHp`, `chargeStock`, `controls` after the commit
+/** What the next Sortie / Gods Battle would be refused for, from the party as a commit leaves it (no live cycle). */
+export function getSortieControlFacts(party: Party, nowMs: number, chargeDurationScale: number): SortieControlFacts {
+  const maximumHp = computePartyStats(party).partyStats.hp;
+  const chargeStock = getInstantExpeditionChargeState(party, nowMs, chargeDurationScale).stock;
+  const control = (godsBattle: boolean) => {
+    const reason = getSortieUnavailableReason({ party, godsBattle, hp: party.currentHp, maximumHp, chargeStock });
+    return { available: reason === null, unavailableReason: reason };
+  };
+  return { currentHp: Math.max(0, Math.floor(party.currentHp)), maximumHp: Math.floor(maximumHp), chargeStock, controls: { sortie: control(false), godsBattle: control(true) } };
+}
+
+export interface CycleTimingFacts {
+  carriedSeconds: number;
+  secondsToNextCycle: number;
+}
+
+// SpecRef: 9.1.4.4 | the carried sub-Cycle progress, and what is left of the party's next `elapsed` Cycle
+/**
+ * The effective time a party carries toward its next Cycle and about how much more completes it: the Cycle priced from the
+ * party as it stands, as the next `elapsed` Chunk would price it. A completed Cycle ends at maximum HP.
+ */
+export function getCycleTimingFacts(party: Party, carriedMs: number, cycleDurationScale: number, deityDonations: Record<string, number> | undefined): CycleTimingFacts {
+  const cycleMs = getApproxAfkCycleDurationMs(party, cycleDurationScale, { deityDonations });
+  return { carriedSeconds: Math.floor(carriedMs / 1_000), secondsToNextCycle: Math.ceil(Math.max(0, cycleMs - carriedMs) / 1_000) };
 }

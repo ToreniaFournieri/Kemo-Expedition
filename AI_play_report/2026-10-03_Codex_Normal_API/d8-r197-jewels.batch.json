@@ -1,0 +1,86 @@
+[
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 7,
+      "jewelToSet": "ward:2"
+    }
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 8,
+      "jewelToSet": "shade:3"
+    }
+  },
+  {
+    "route": "/commit/build/character/1/jewelAttach",
+    "parameters": {
+      "targetEquipment": 10,
+      "jewelToSet": "ward:4"
+    }
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "focus:1"
+    }
+  },
+  {
+    "route": "/commit/build/character/4/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "might:4"
+    }
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "might:2"
+    }
+  },
+  {
+    "route": "/commit/build/character/2/jewelAttach",
+    "parameters": {
+      "targetEquipment": 6,
+      "jewelToSet": "might:4"
+    }
+  },
+  {
+    "route": "/commit/build/character/6/jewelAttach",
+    "parameters": {
+      "targetEquipment": 9,
+      "jewelToSet": "fort:1"
+    }
+  },
+  {
+    "route": "/commit/build/character/3/jewelAttach",
+    "parameters": {
+      "targetEquipment": 3,
+      "jewelToSet": "might:2"
+    }
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 1,
+      "jewelToSet": "arcana:1"
+    }
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 2,
+      "jewelToSet": "arcana:1"
+    }
+  },
+  {
+    "route": "/commit/build/character/5/jewelAttach",
+    "parameters": {
+      "targetEquipment": 7,
+      "jewelToSet": "arcana:1"
+    }
+  }
+]

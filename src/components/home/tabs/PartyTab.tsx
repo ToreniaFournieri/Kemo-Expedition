@@ -9,6 +9,9 @@ import { getSuperRareBonuses } from '../../../data/items';
 import { LINEAGES } from '../../../data/lineages';
 import { PREDISPOSITIONS } from '../../../data/predispositions';
 import { RACES } from '../../../data/races';
+import { resolveReleasedUniqueBuild } from '../../../game/uniqueRelease';
+import { pickDefaultName } from '../../../game/defaultNames';
+import { isUniqueCharacterAvailable, UNIQUE_CHARACTERS,type UniqueCharacterId } from '../../../data/uniqueCharacters';
 import { buildCombatTotals, buildPartyStatsView } from '../../../api/v1/statusView';
 import { readStatusFacts } from '../../../api/v1/calculatedStatus';
 import type { InProcessApiAdapter } from '../../../api/v1/applicationApi';
@@ -95,6 +98,7 @@ export default function PartyTab({
   editingCharacter,
   setEditingCharacter,
   onChangeCharacterBuild,
+  uniqueAssignments,
   onReorderPartyCharacter,
   onEquipItem,
   onToggleEquipmentLock,
@@ -136,6 +140,8 @@ export default function PartyTab({
   editingCharacter: number | null;
   setEditingCharacter: Dispatch<SetStateAction<number | null>>;
   onChangeCharacterBuild: (characterId: number, edits: Partial<Character>, request: CharacterBuildRequest) => Promise<CharacterBuildOutcome>;
+  /** characterId -> uniqueCharacterId for every assigned unique character in all parties. */
+  uniqueAssignments: Readonly<Record<number, UniqueCharacterId>>;
   onReorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
   onToggleEquipmentLock: (characterId: number, slotIndex: number) => void;
@@ -518,25 +524,18 @@ export default function PartyTab({
   };
 
   // SpecRef: 2.2.1 | Potential default name for player side characters | Trigger: when race is changed.
-  const getDefaultNameForRace = (raceId: RaceId): string => {
-    const genderedPool = getPotentialDefaultNamesByPt()[party.id]?.[raceId];
-    const ptCandidates = genderedPool?.[(pendingEdits?.gender ?? char.gender)] ?? [];
-    if (ptCandidates.length === 0) return char.name;
-
+  const getDefaultNameForRace = (raceId: RaceId, gender: Character['gender'] = pendingEdits?.gender ?? char.gender): string => {
     const usedNames = new Set(
       parties
         .flatMap((currentParty) => currentParty.characters)
         .filter((character) => character.id !== char.id)
         .map((character) => character.name)
     );
-
-    const availableCandidates = ptCandidates.filter((candidate: string) => !usedNames.has(candidate));
-    const candidatePool = availableCandidates.length > 0 ? availableCandidates : ptCandidates;
-    return candidatePool[Math.floor(gameplayRandom() * candidatePool.length)];
+    return pickDefaultName(getPotentialDefaultNamesByPt(), party.id, raceId, gender, usedNames, gameplayRandom) ?? char.name;
   };
 
   const handleRaceChange = (raceId: Character['raceId']) => {
-    if (char.isUnique) return;
+    if (editingUnique) return;
     const assignedMimorianEnemyIds = new Set(
       parties
         .flatMap((currentParty) => currentParty.characters)
@@ -567,6 +566,10 @@ export default function PartyTab({
   }, [party.deity.name, editingDeity]);
 
   const char = selectedChar;
+  // A pending "固有" selection (or release) decides which identity fields are locked before it is saved.
+  const editingUnique = pendingEdits?.isUnique ?? char.isUnique ?? false;
+  // The party projection carries no `uniqueCharacterId`; the saved assignment comes from `uniqueAssignments`.
+  const currentUniqueId: UniqueCharacterId | undefined = char.isUnique ? uniqueAssignments[char.id] : undefined;
   const hpDisplayMultiplier = ((stats.baseStats.vitality + stats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(char);
   const race = RACES.find(r => r.id === char.raceId) ?? RACES[0];
   const mainClass = CLASSES.find(c => c.id === char.mainClassId) ?? CLASSES[0];
@@ -592,7 +595,8 @@ export default function PartyTab({
     male: 'Male',
     female: 'Female',
   };
-  const uniquePartyMemberImageFileName = char.isUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[char.lineageId] : undefined;
+  // A pending "固有" selection (or release) changes the background image immediately, before it is saved.
+  const uniquePartyMemberImageFileName = editingUnique ? UNIQUE_PARTY_MEMBER_IMAGE_BY_LINEAGE[pendingEdits?.lineageId ?? char.lineageId] : undefined;
   const raceLabel = raceLabelByRaceId[previewRaceId];
   const genderLabel = genderLabelByGender[previewGender];
   const ptRaceGenderImageFileName = party.id >= 1 && party.id <= 6 && raceLabel && genderLabel
@@ -719,7 +723,7 @@ export default function PartyTab({
     setShowAutoEquipmentHelp(true);
   };
 
-  // SpecRef: 9.1.3 | Commit | 3-3-2 character/{characterId}/changeBuild
+  // SpecRef: 9.1.3 | Commit | 3-3-3 character/{characterId}/changeBuild
   // The API decides whether a build change needs confirmation and reports the warnings: the edit is first simulated
   // (nothing is committed), and only a confirmed change is committed. The tab holds no hypothetical-stats logic of its own.
   const CHANGE_BUILD_WARNING_TEXT: Record<string, (args: Record<string, number>) => string> = {
@@ -785,7 +789,7 @@ export default function PartyTab({
     ? retainedEquipCategory
     : availableCategories.includes('armor') ? 'armor' : availableCategories[0] ?? 'armor';
 
-  // SpecRef: 9.1.3 | Read | 2-3-5 character/{characterId}/equipmentEvaluation
+  // SpecRef: 9.1.3 | Read | 2-3-7 character/equipmentEvaluation
   // Every displayed defense preview is evaluated against one immutable Application API snapshot. The tab only formats
   // the returned deltas; it does not simulate equipment or recalculate character status.
   const previewTargetSlot = selectingSlot ?? Array.from({ length: stats.maxEquipSlots }).findIndex((_, index) => !char.equipment[index]);
@@ -807,19 +811,19 @@ export default function PartyTab({
   // pause so that a burst of inventory changes issues one set of requests.
   const equipmentChangeInputs = useMemo(() => Array.from(
     { length: Math.ceil(equipmentChanges.length / EQUIPMENT_EVALUATION_LIMIT) },
-    (_, chunk) => ({ pathParameters: { characterId: char.id }, parameters: { equipmentChanges: equipmentChanges.slice(chunk * EQUIPMENT_EVALUATION_LIMIT, (chunk + 1) * EQUIPMENT_EVALUATION_LIMIT) } }),
+    (_, chunk) => ({ parameters: { characterId: char.id, equipmentChanges: equipmentChanges.slice(chunk * EQUIPMENT_EVALUATION_LIMIT, (chunk + 1) * EQUIPMENT_EVALUATION_LIMIT) } }),
   ), [char.id, equipmentChanges]);
   const equipmentChangeProjections = useApiReadMany<{
-    calculatedEquipmentChange: Array<{ change: string; equippable: boolean; physicalDefenseDelta: number; magicalDefenseDelta: number }>;
+    characters: { calculatedEquipmentChange: Array<{ change: string; equippable: boolean; physicalDefenseDelta: number; magicalDefenseDelta: number }> }[];
   }>(
     apiAdapter,
-    'read/build/character/{characterId}/equipmentEvaluation',
+    'read/build/character/equipmentEvaluation',
     equipmentChangeInputs,
     [char.id, equipmentChanges.join('|')],
     120,
   );
   const equipmentChangeByTarget = useMemo(
-    () => new Map((equipmentChangeProjections ?? []).flatMap((projection) => projection.calculatedEquipmentChange).map((entry) => [entry.change, entry])),
+    () => new Map((equipmentChangeProjections ?? []).flatMap((projection) => projection.characters.flatMap((entry) => entry.calculatedEquipmentChange)).map((entry) => [entry.change, entry])),
     [equipmentChangeProjections],
   );
 
@@ -1289,8 +1293,42 @@ export default function PartyTab({
         <div className="flex justify-between items-start mb-2 gap-2">
           {editingCharacter === selectedCharacter ? (
             <div className="flex-1 min-w-0 space-y-1">
+              {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique selection: "固有" */}
+              <label className="flex items-center gap-2 text-xs text-gray-600">
+                <span>{t('home.party.uniqueSelectLabel')}</span>
+                <select
+                  value={pendingEdits?.isUnique === false ? 'false' : (pendingEdits?.uniqueCharacterId ?? currentUniqueId ?? 'false')}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Identity fields come from the unique table (Spec 2.1.4.2); drop pending identity edits first.
+                    const { name: _name, gender: _gender, raceId: _raceId, mimorianEnemyId: _enemy, lineageId: _lineage, predispositionId: _predisposition, isUnique: _isUnique, uniqueCharacterId: _uniqueId, ...kept } = pendingEdits ?? {};
+                    if (value === 'false') {
+                      if (!char.isUnique) {
+                        setPendingEdits(kept);
+                        return;
+                      }
+                      // A released unique takes a default name too, so it never keeps (and duplicates) the unique's name.
+                      const released = resolveReleasedUniqueBuild(char, party.characters.filter((_member, memberIndex) => memberIndex !== selectedCharacter));
+                      setPendingEdits({ ...kept, isUnique: false, ...released, name: getDefaultNameForRace(released.raceId, char.gender) });
+                      return;
+                    }
+                    const def = UNIQUE_CHARACTERS.find((entry) => entry.id === value)!;
+                    setPendingEdits(def.id === currentUniqueId ? kept : {
+                      ...kept, isUnique: true, uniqueCharacterId: def.id, name: t(`character.default.${def.nameKey}` as never), gender: def.gender,
+                      raceId: def.raceId, lineageId: def.lineageId, predispositionId: 'none',
+                    });
+                  }}
+                  className="border rounded bg-transparent px-1 py-0.5"
+                >
+                  <option value="false">{t('home.party.uniqueSelectNone')}</option>
+                  {UNIQUE_CHARACTERS
+                    .filter((entry) => (currentUniqueId === entry.id || isUniqueCharacterAvailable(entry, parties.length))
+                      && !Object.entries(uniqueAssignments).some(([ownerId, assignedId]) => Number(ownerId) !== char.id && assignedId === entry.id))
+                    .map((entry) => <option key={entry.id} value={entry.id}>{t(`character.default.${entry.nameKey}` as never)}</option>)}
+                </select>
+              </label>
               {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique Character Flag. */}
-              {char.isUnique && (
+              {editingUnique && (
                 <div className="text-[11px] text-gray-500">
                   {t('home.party.uniqueCharacterClassOnly')}
                 </div>
@@ -1302,12 +1340,12 @@ export default function PartyTab({
                   value={pendingEdits?.name ?? char.name}
                   maxLength={MAX_CHARACTER_NAME_LENGTH}
                   onChange={(e) => {
-                    if (char.isUnique) return;
+                    if (editingUnique) return;
                     setPendingEdits({ ...pendingEdits, name: e.target.value });
                   }}
-                  disabled={char.isUnique}
+                  disabled={editingUnique}
                   className={`text-lg font-bold border-b focus:outline-none min-w-0 flex-1 ${
-                    char.isUnique
+                    editingUnique
                       ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
                       : 'bg-transparent border-sub'
                   }`}
@@ -1328,8 +1366,8 @@ export default function PartyTab({
                       {(['male', 'female'] as const).map((gender) => {
                         const isBlockedByDuplicate = isGenderOptionBlockedByDuplicate(gender);
                         const isBlockedByMimorianGender = selectedRaceId === 'mimorian' && gender === 'male';
-                        const isDisabled = char.isUnique || isBlockedByDuplicate || isBlockedByMimorianGender;
-                        const shouldShowGenderSymbol = char.isUnique
+                        const isDisabled = editingUnique || isBlockedByDuplicate || isBlockedByMimorianGender;
+                        const shouldShowGenderSymbol = editingUnique
                           ? (pendingEdits?.gender ?? char.gender) === gender
                           : !isBlockedByDuplicate && !isBlockedByMimorianGender;
 
@@ -1439,8 +1477,8 @@ export default function PartyTab({
                     const isBlockedByDuplicate = isRaceOptionBlockedByDuplicate(race.id);
                     // SpecRef: 8.2.3 | Character Edit Mode (selected member): | Mimorian characters are an exception: Only `女` may be selected.
                     const isBlockedByMimorianGender = race.id === 'mimorian' && selectedGender === 'male';
-                    const isDisabled = char.isUnique || isBlockedByDuplicate || isBlockedByMimorianGender;
-                    const shouldShowRaceIcon = char.isUnique
+                    const isDisabled = editingUnique || isBlockedByDuplicate || isBlockedByMimorianGender;
+                    const shouldShowRaceIcon = editingUnique
                       ? isSelectedRace
                       : !isBlockedByDuplicate && !isBlockedByMimorianGender;
 
@@ -1774,14 +1812,14 @@ export default function PartyTab({
                                   <button
                                     key={`lineage-${category.label}-${lineageId}`}
                                     type="button"
-                                    disabled={char.isUnique}
+                                    disabled={editingUnique}
                                     onClick={() => setPendingEdits({ ...pendingEdits, lineageId })}
                                     className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
                                       index === 0 ? 'rounded-l' : index === category.ids.length - 1 ? 'rounded-r' : ''
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : `border-gray-200 ${char.isUnique ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
+                                        : `border-gray-200 ${editingUnique ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
                                     }`}
                                   >
                                     {lineageData.shortName ?? LINEAGE_SHORT_NAME_KEYS[lineageId] ? t(LINEAGE_SHORT_NAME_KEYS[lineageId]) : lineageData.name}
@@ -1824,14 +1862,14 @@ export default function PartyTab({
                                   <button
                                     key={`pred-${category.label}-${predispositionId}`}
                                     type="button"
-                                    disabled={char.isUnique || !isSelectable}
+                                    disabled={editingUnique || !isSelectable}
                                     onClick={() => setPendingEdits({ ...pendingEdits, predispositionId })}
                                     className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
                                       index === 0 ? 'rounded-l' : index === category.ids.length - 1 ? 'rounded-r' : ''
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : `border-gray-200 ${char.isUnique || !isSelectable ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
+                                        : `border-gray-200 ${editingUnique || !isSelectable ? 'bg-transparent text-gray-400' : 'bg-white/20 text-gray-700 hover:bg-white/30'}`
                                     }`}
                                   >
                                     {predispositionData.shortName ?? PREDISPOSITION_SHORT_NAME_KEYS[predispositionId] ? t(PREDISPOSITION_SHORT_NAME_KEYS[predispositionId]) : predispositionData.name}

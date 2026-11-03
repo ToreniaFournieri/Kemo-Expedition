@@ -57,7 +57,7 @@ Common identifiers:
 | `revision` | Monotonically increasing integer for the active save. |
 | `requestId` | Server-generated opaque identifier for one invocation. |
 | `idempotencyKey` | Client-generated UUID or 16–128 printable ASCII characters. |
-| `partyNumber` / `{p}` | Unlocked party number `1–6`. |
+| `partyNumber` / `{p}` | Unlocked party number `1–6`. For Diary entries, projections, `markAsRead` and `diarySetting` only, `0` selects the Global Diary scope (9.1.3 Path Parameters). |
 | `characterId` | Stable character ID, never a localized name or array position. |
 | `diaryEntryId` | Stable retained Diary-entry ID. |
 | `equipmentSetId` | Stable saved-equipment-set ID. |
@@ -124,9 +124,12 @@ after the response has been prepared. Fundamental responses use
   `revision`. A response must not combine values from different revisions.
 * Read, Help, and Resource operations do not mutate game state, consume live random
   values, advance time, mark Diary entries read, or persist derived state.
-* Reads use `GET`, except `simulationRun`, which uses `POST` because it performs
-  substantial non-cacheable computation. It remains a Read operation and must
-  not commit anything.
+* Reads use `GET`, except `simulationRun`, `gaSearch`, `directedBuild`, and
+  `stagedEquipmentTuning`, which use `POST` because they perform substantial
+  non-cacheable computation (and `gaSearch` and `directedBuild` take nested
+  parameters). They remain Read operations and must not commit anything. The
+  server keeps no search result: the `changeSummary` they return is the whole
+  result, and `applyBuildChanges` takes it back as `changes`.
 * Every `GET` endpoint except the popup event stream also answers `HEAD` with
   the status and headers (including `ETag`) that `GET` would return, and no body.
   A `405` for a `GET` endpoint lists `Allow: GET, HEAD`.
@@ -233,6 +236,11 @@ All JSON Commit requests use this transport envelope:
   snapshot and resolve the request's target time once. Run the shared section 5.1
   progression logic against a private staged state, including game clocks, RNG
   and bags, inventory, currencies, equipment, pending backlog, and retained logs.
+* Each staged Chunk retains its own computation caches independently of inventory
+  ownership. Immutable API inventory writes can reuse encounter/prepared battle
+  inputs and unchanged profit/HP bases without sharing mutable inventory overlays.
+  Caches do not cross Chunk or transaction boundaries; level/character changes
+  invalidate derived bases, and current deity multipliers remain live.
 * Preserve section 5.1's worker-arrival FIFO ordering, per-party barriers,
   automatic-equipment timing, distinct coordinator snapshots, and completion
   acknowledgements inside that staged transaction. Each internal Chunk version
@@ -255,6 +263,24 @@ All JSON Commit requests use this transport envelope:
   durable commit may the authority publish the final snapshot and release effects.
   Increment the public revision exactly once for a mutation, or leave it unchanged
   for a no-op. Notifications follow the existing AFK grouping rules.
+* A changed account save may be compressed by the Desktop main process instead of
+  the renderer. The renderer sends the save as ordered JSON text pieces plus
+  references to large expedition logs the main process already holds (each log's
+  text is sent once). The main process reassembles byte-identical JSON, deflates it
+  asynchronously, and stores the same internal save container, so the decoded
+  state, receipts, and manifest-last ordering are identical. If the main process
+  no longer holds a referenced log, the renderer resends every log once.
+* Retained idempotency receipts (at most 4,096) are stored in an append-only journal
+  next to the control file instead of inside it. A commit sends only the receipts
+  added at the end and the number evicted from the front; the manifest records the
+  journal's valid byte length, evicted count, and live count, so bytes appended by a
+  commit that never reached its manifest are ignored. The journal is rewritten when
+  more than 4,096 receipts have been evicted, and a mismatch between the renderer's
+  and the host's journal picture triggers one full resend. Accounts whose receipts
+  are inside the control file remain readable.
+* The player's return save (written at login) and the account save written at logout are
+  read back only by this runtime, so they use the internal storage encoding. Only
+  exported backups use the portable codec.
 * Failure or safe cancellation before the durable commit discards every staged
   Chunk and effect, fences outstanding worker results, and leaves the pre-request
   state, RNG, clocks, backlog, and revision unchanged. Restart does not resume a
@@ -282,8 +308,8 @@ All JSON Commit requests use this transport envelope:
 
 This generic challenge applies to operations that do not define their own
 confirmation (`backup/import`, `backup/reset`, and partial `loadEquipmentSet`).
-`changeBuild` is excluded: it confirms through its `simulation` and
-`confirmation` parameters (9.1.4.9).
+`changeBuild` and `applyBuildChanges` are excluded: they confirm through their
+`simulation` and `confirmation` parameters (9.1.4.9).
 
 `backup/import` and `backup/reset` (9.1.3, 3-6-5-2/3-6-5-3) each accept an
 optional boolean `skipConfirmation` parameter (default `false`). When `true`,
@@ -379,6 +405,15 @@ request with the same base parameters and key when no receipt exists.
 * Because the Orca environment fixes `mode.orca`, `signUp` and `logIn` in the
   `orca` environment reject `gameMode: normal` with `invalid_request`
   (`details.field: gameMode`).
+* `fundamental/logIn` accepts optional Boolean `headless` (default `false`).
+  The option is session-local and is applied only after login succeeds. In headless
+  sessions the HomeScreen presentation (tabs, header, and toasts) is unmounted, UI
+  projection reads and visual refresh timers are suspended, and the Desktop Party
+  Progress pane is hidden and receives no updates. The persistent renderer runtime,
+  Application API authority, progression, deliveries, and account persistence remain
+  alive. Logout (including lease expiry) restores the ordinary player presentation
+  only after durable account persistence and player-save restoration succeed.
+  This does not create a renderer-free engine or change stored account identity.
 * `fundamental/logIn` returns opaque `sessionToken` and `controlLeaseToken`.
   Subsequent session operations also require:
   `X-BoKemo-Session: <sessionToken>` and
@@ -513,6 +548,39 @@ definitions in 9.1.3.
   `expectedPerRun` gives the mean `experience`, `itemDrops`, and
   `dropSaleValue` (the drops' Gold value when sold) of one run, and `totals`
   holds the exact sums over all runs.
+* `simulationRun` always runs on a fixed seed: the requested `seed`, or a fresh
+  random one, returned as `seed` either way, so the same `seed`, `numberOfRun`,
+  and `objective` on the same revision repeat the forecast (battles included).
+  With `objective` (`success`, `minDefeat`, `gateDamage`,
+  `experience`, or `progress`; 9.1.3, 2-0), the response also returns `rate`, measured exactly as
+  `gaSearch`, `directedBuild`, and `stagedEquipmentTuning` measure it, and `standardError`
+  (`sqrt(variance / numberOfRun)` with the per-run variance of 7.1.5). With
+  `gateDamage` the forecast is that objective's battle alone (see GA
+  search), so `overview`, `detail`, `rooms`, and `depthLimit` describe it.
+  `gateRoom` and `startHp` are validated as in GA search (`gateRoom` only with
+  `objective: gateDamage`); `startHp` sets the start HP of every run, route
+  included, and the response echoes `startHp` (and `gateRoom` when used).
+* `simulationRun` expedition overrides: `destination`, `depthLimit`, and
+  `difficultyOffset` forecast another expedition setting of party `{p}` on a
+  private copy of the save; nothing is committed. They take the values and the
+  validation of `changeExpedition` (a locked destination, an unknown depth limit,
+  or an offset that is not a step of 2 within the destination's range is
+  `invalid_request`, with the field and `changeExpedition`'s reason as the rule,
+  for example `destination.destination_locked` or
+  `difficultyOffset.difficulty_offset_unavailable`). A `destination` takes that
+  destination's own saved difficulty offset unless `difficultyOffset` is sent too,
+  as a destination change does. `gateRoom: next` and `depthLimit` in the response
+  describe the overridden setting. The response's `expedition` is
+  `{destination, depthLimit, difficultyOffset, overridden}`: the setting the
+  forecast ran, and whether any override was sent.
+* `simulationRun` per-room HP: each run's rooms record the party HP at the room's
+  start (the battle log's start HP) and after the battle; `rooms.rows` end with
+  `hpAtEntry` and `hpAfterWin` (the averages over the runs that reached the room,
+  and over the runs that won it, in % of `maximumPartyHp` rounded to 0.1; `null`
+  when no run counts) and the exact integer sums `hpAtEntrySum` and
+  `hpAfterWinSum`, so the Expedition pane still rebuilds the forecast exactly.
+  `maximumPartyHp` is the party's maximum HP in the forecast. Each `detail`
+  string ends with ` / HP at entry <x>% / HP after win <y>%` (`-` for `null`).
 * The Expedition and compact projections report each party's real state:
   `state` is `state.<name>` of the live party cycle for the ordinary player's runtime
   (`state.rest`, `state.sell`, `state.free_action`, `state.sound_sleep`,
@@ -553,7 +621,9 @@ definitions in 9.1.3.
     must not be used to render the running rooms.
   * `clearGates`: the goals of the selected destination (`eliteGate`, `bossGate`,
     `entryGate`, `godGate`, `godEntry`) with `dungeonId`, `floor` where it applies, and
-    `current` of `required`. `sideQuest` is the active side quest (`type`, `target`,
+    `current` of `required`. `bossGate` (compact `Boss unlock: c/r`) counts consecutive
+    successful runs through 6,3 that unlock the boss battle (5.1.3.1), not boss kills;
+    the boss's first defeat is the diary's `bossFirstClear`. `sideQuest` is the active side quest (`type`, `target`,
     `progress`, `percent`, `hasDeadline`, and `remainingMs` at the current Speed of
     Time) or `null`.
   * `controls.sortie` and `controls.godsBattle` are `{available, unavailableReason}`.
@@ -565,8 +635,8 @@ definitions in 9.1.3.
     button; the commit itself uses the party's current HP, like `triggerSortie`.
 * `resetStatistics` is the Expedition pane's Reset button (9.1.3, 3-2-4): it restores
   the party's expedition statistics (the Clear, Return, Draw, Retreat, and Defeat
-  counts and the donated and saved Gold totals) to their defaults and changes nothing
-  else. It takes no parameters, returns `{}`, and is a valid no-op (no revision
+  counts and the donated and saved Gold totals), the side quest statistics, and the drop statistics to their
+  defaults and changes nothing else. It takes no parameters, returns `{}`, and is a valid no-op (no revision
   change) when the statistics already hold their defaults. An unknown party is
   `not_found`.
 * `sortie` and `godsBattle` behave as pressing the Sortie or Gods Battle button
@@ -584,19 +654,61 @@ definitions in 9.1.3.
   `state.rest`. For the ordinary player's runtime, that last step is a write to the
   live party cycle, applied after the commit is durable and in the same tick as the
   published state; an API account has no live cycle, so it neither reads nor writes
-  one. The result is `{outcome, rewards, diaryEntryId, logId}`: `outcome` uses the
-  outcome names above, `rewards` lists the dropped items in `Item Format`,
-  `diaryEntryId` is the Diary entry this sortie created (or `null`), and `logId` is
-  `diary:<diaryEntryId>` for that entry or the unique `log:<partyNumber>:<hash>` ID
-  of the log this sortie produced; both values are accepted by `latestBattleLog`.
+  one. `sortie` takes an optional `numberOfSortie` (integer `1–6`, default `1`) and
+  performs that many sorties in sequence, each consuming one stock; `godsBattle`
+  takes no parameters and runs once. Before anything runs, the charge for all
+  requested sorties is verified (`illegal_action` with `charge_insufficient`, and no
+  sortie is performed, when the stock is lower than `numberOfSortie`; the Colosseum
+  needs no charge); an out-of-range or non-integer value is `invalid_request`. Only
+  the first run sees the live `state.explore` cycle; if a later run cannot start (a
+  `Defeat` leaves the party exhausted), the batch ends there and reports the runs
+  already performed. The `sortie` result is `{sorties: [{battleOutcome, rewards,
+  diaryEntryId, logId}]}` with one entry per performed sortie, in order; the
+  `godsBattle` result is the single `{outcome, rewards, diaryEntryId, logId}`.
+  `battleOutcome` / `outcome` use the outcome names above, `rewards` lists the
+  dropped items in `Item Format`, `diaryEntryId` is the Diary entry that run created
+  (or `null`), and `logId` is `diary:<diaryEntryId>` for that entry or the unique
+  `log:<partyNumber>:<hash>` ID of the log that run produced; both values are
+  accepted by `latestBattleLog`.
 
 **Party build and equipment**
 
-* Every projection spells the Auto Equipment mode the way 9.1.3 (2-3-3 `mode`) and
+* `read/build/character/{status,equipment,equipmentSet,equipmentEvaluation}` take a
+  required query `characterId`: one ID, or the key repeated for several unique IDs (at
+  most 36). The other parameters apply to every listed character. The response is
+  `{characters: [...]}` in request order, each entry `{characterId, ...}` with the fields
+  9.1.3 lists for the operation. An unknown ID is `not_found` and rejects the whole read;
+  a missing, malformed, or duplicate `characterId` is `invalid_request:characterId`.
+* `commit/expedition/{p}/sortie` and `godsBattle` return `currentHp`, `maximumHp`, `chargeStock`, and
+  `controls` (`{sortie, godsBattle}`, each `{available, unavailableReason}`) as the party
+  stands after the commit, with the same reasons and order as `read/observation/expedition`
+  (9.1.3, 2-2-1). `commit/progress/elapsed` returns `parties`, one `{partyNumber,
+  currentHp, maximumHp, chargeStock, controls}` per party after the step. A client can read these
+  instead of sending a Sortie that `party_exhausted` or `charge_insufficient` would refuse.
+  A Sortie is available at any `currentHp` above 0 (the Expedition button's rule), so compare
+  `currentHp` with `maximumHp` to judge whether the party is worth sending.
+* The same three responses (each `elapsed` `parties` entry) also return `carriedSeconds`
+  and `secondsToNextCycle`, for the party's next `elapsed` Cycle (9.1.4.4).
+  * `carriedSeconds`: the effective time the party carries toward that Cycle, in
+    whole seconds rounded down. A successful `sortie` or `godsBattle` drops the
+    carry, so it returns `0`.
+  * `secondsToNextCycle`: the Cycle's length, priced from the party as it stands
+    the way the next Chunk prices it, minus the carry, rounded up (at least `0`).
+    A completed Cycle ends at maximum HP, so after a Sortie one `elapsed` of
+    `max(60, secondsToNextCycle)` seconds heals the party. Up to the 12-hour
+    request cap, AFK efficiency is 1, so these are request seconds.
+  * It is exact while the party stays as it is. A change that reprices the Cycle
+    (for example, its deity, destination, or last expedition) changes it.
+* `read/observation/expedition`'s party entries add `level` and `experienceRatio` (as in `read/observation/party`).
+* `read/observation/party`'s `party` adds `experienceRatio` (whole percent of the current
+  level's EXP, 0 at the maximum level), `currentHp`, `deityTotalDonation`, and
+  `deityNextRankThreshold` (`null` at the maximum rank).
+
+* Every projection spells the Auto Equipment mode the way 9.1.3 (2-3-5 `mode`) and
   the `autoEquipment` commit do: `FULL`, `SEMI`, or `OFF`. This includes the
   `party` projection's `characters[].autoEquipmentMode`.
 * Equipment arrays (the `party` projection's `characters[].equipment` and
-  `character/{characterId}/equipment`) list every slot the character has, in slot
+  `character/equipment`) list every slot the character has, in slot
   order, with `0` for each empty slot, including trailing empty slots.
 
 * `equip` returns `warnings` beside `current`, as semantic `{key, args}` entries.
@@ -607,7 +719,7 @@ definitions in 9.1.3.
   The command is still applied. Otherwise `warnings` is empty.
 * `changeBuild` uses the same UI validation as the Party editor and owns its
   confirmation through the `simulation` and `confirmation` parameters defined in
-  9.1.3 (3-3-2); it never issues the generic 9.1.4.5 challenge.
+  9.1.3 (3-3-3); it never issues the generic 9.1.4.5 challenge.
   * `simulation` is required and must be a boolean. `simulation: true` validates
     and reports without committing: it is a valid no-op (no revision change, no
     state change, no equipment-history entry) that still records the idempotency
@@ -615,7 +727,7 @@ definitions in 9.1.3.
   * The response `data` always includes `calculatedStatus`, `confirmationRequired`,
     `warnings`, and `applied`, plus the complete new `current` object.
   * `calculatedStatus` is the 9.1.4.14 `CalculatedStatus` of the character (the
-    same shape as 2-3-2) with the requested build. With `simulation: true` it is a
+    same shape as 2-3-4) with the requested build. With `simulation: true` it is a
     preview of the status a `confirmation: "yes"` commit would produce, including
     the effect of any equipment the change would remove; after a commit it is the
     committed status, and after `confirmation: "no"` it is the unchanged status. `warnings` are semantic
@@ -637,7 +749,7 @@ definitions in 9.1.3.
     the revision returned by the simulation as `expectedRevision`, so a change made
     in between is rejected as `stale_revision`. The trusted in-process adapter
     supplies the current revision on the caller's behalf.
-* `equipmentEvaluation` (9.1.3, 2-3-5) is a Read operation. `targetItems` is one
+* `equipmentEvaluation` (9.1.3, 2-3-7) is a Read operation. `targetItems` is one
   `<Item Format>/<jewelType>:<jewelRank>` value or a nonempty array of unique
   values, encoded as one or repeated `targetItems` query parameters (`0` is not
   an item; the lock digit is ignored). As in `equipmentChanges`, the Jewel part
@@ -670,7 +782,7 @@ definitions in 9.1.3.
   `jewelRemove`, `targetEquipment` is one slot index or an array of slot indices.
   Duplicate indices are invalid.
 * A manual equipment change made while `autoEquipment.mode` is `FULL` sets it to
-  `SEMI` (9.1.3 3-3-3 to 3-3-16; 8.2.4): `equip`, `removeEquipment`,
+  `SEMI` (9.1.3 3-3-4 to 3-3-17; 8.2.4): `equip`, `removeEquipment`,
   `removeAllEquipment`, `jewelAttach`, `jewelRemove`, `loadEquipmentSet`,
   `undoEquipment`, and `redoEquipment`. `lockEquipment` and `unlockEquipment` only
   mark items and keep the mode. The Party pane makes these changes through the same
@@ -696,7 +808,7 @@ definitions in 9.1.3.
     requirement: it cannot make an entry unavailable, and a stored Jewel found in
     an older save is discarded when it is loaded.
   * An Undo/Redo state records the item, slot, lock, and Jewel assignment
-    (Spec 9.1.3, 2-3-3), and its restore is exact and all or nothing. One
+    (Spec 9.1.3, 2-3-5), and its restore is exact and all or nothing. One
     unavailable item or Jewel (missing, already used elsewhere, or not valid for
     its item) makes the whole state unavailable, and no partial restore happens.
     A change that only moves Jewels adds an Undo entry.
@@ -719,6 +831,624 @@ definitions in 9.1.3.
   unavailable. A partial load requires the confirmation flow in 9.1.4.5.
 * Equipment Undo/Redo reports whether another Undo/Redo remains available; each
   restore is validated against current item and Jewel availability.
+
+**GA search**
+
+* `gaSearch` (9.1.3, 2-3-2) scores every candidate build with the same private
+  forecast as `simulationRun`, run on fixed seeds derived from `gaParameters.seed`
+  (a fresh seed when omitted): one for the quick runs, one for the confirm runs,
+  one for a final selection, and one for verification (`gaParameters.verifySeed`
+  instead when given). A seeded forecast also
+  fixes its battle seeds, so all candidates are compared on the same random
+  numbers and a request with the same `seed`, save, and parameters returns the same
+  result unless `timeBudgetSeconds` stops it first. The same `verifySeed`,
+  `verifyRuns`, `objective`, and save give the same `verification.before` and
+  `crossCheck.before`, for `gaSearch` and `directedBuild` alike.
+* Validation: `targets` is 1 to 6 unique members of party `{p}` (otherwise
+  `invalid_request`, field `targets.characterId`); omitted `changeableComponents`
+  members are `false`. `considerItemsScope` is `normal` when omitted; any other value
+  than `normal`, `withinTargets`, or `global` is `invalid_request`, field
+  `considerItemsScope`. `considerDeityChange` is `none` when omitted; any other
+  value than `none`, `unoccupiedDeities`, or `allDeities` (a boolean included) is
+  `invalid_request`, field `considerDeityChange`. `eliteCount` may not exceed `populationSize / 4`.
+  `timeBudgetSeconds` is 5 to 600. `verifySeed` is any safe integer (otherwise
+  `invalid_request`, field `gaParameters.verifySeed`). `objective` is `success`
+  (default), `minDefeat`, `gateDamage`, `experience`, or `progress` (9.1.3, 2-0);
+  another value is `invalid_request`, field `objective`. `objectiveGuard` is an
+  object with exactly one member, `success`, `gateDamage`, or `progress`, whose value is a
+  number from 0 to 1: another shape is `invalid_request`, field `objectiveGuard`;
+  another member name is `objectiveGuard.<name>.unknown_member`; the `objective`
+  itself is `objectiveGuard.<name>.same_as_objective`; a value out of range is
+  `objectiveGuard.<name>`. `gateRoom` is `next` (default), `boss`, or `1f-4` to
+  `6f-4` (otherwise `invalid_request`, field `gateRoom`), and is accepted only
+  when the objective or the guard is `gateDamage` (otherwise field
+  `gateRoom.not_used`); `next` resolves when the request is parsed. `startHp` is
+  `full` (default) or a number above 0 and at most 1 (otherwise field
+  `startHp`); a share below 1 is accepted only when the objective or the `crossCheck`
+  objective (the guard's, or the default one) is `gateDamage`
+  (otherwise field `startHp.not_used`). `directedBuild` and
+  `stagedEquipmentTuning` validate both the same way. `successSignal` is `auto` (default), `success`, or
+  `progress`; another value, or any `successSignal` with an `objective` other
+  than `success`, is `invalid_request`, field `successSignal`. `levelProbe` is an object (otherwise `invalid_request`,
+  field `levelProbe`): `mode` `auto` (default), `always`, or `off`; `purpose`
+  `conquest` (default) or `farming`; `runBudget` a number from 7 to 100 (default
+  10); `maxDefeat` a number from 0 to 100 (default 10); `steps` `slot` (default)
+  or `level`; `count` an integer from 1 to 10 (default 1 for `slot`, 5 for
+  `level`); `fill` `greedy` (default) or `search`. A value out of range is `invalid_request`, field
+  `levelProbe.<member>`; another member is `levelProbe.<name>.unknown_member`.
+  `gaParameters.effort` is `low` (default), `medium`, `high`, or `max`,
+  `quickRuns` is 10 to 1000, and `stallGenerations` is an integer from 1 to 200
+  (absent: never). `seedBuilds` is an array of 1 to 16 objects (otherwise
+  `invalid_request`, field `seedBuilds`) with only the members `label` (a string of
+  at most 64 characters), `characters`, `order`, and `deityId`; another member is
+  `seedBuilds[i].<name>.unknown_member`. `characters` is an array of objects with
+  an integer `characterId` of party `{p}`, each at most once, and only the string
+  members `uniqueSelection`, `racesAndGender`, `mainClassId`, `subClassId`,
+  `lineage`, and `predisposition`; `order` is a permutation of the party's character IDs;
+  `deityId` is a string. A wrong shape is `invalid_request`, field
+  `seedBuilds[i].<path>`. Only the shape is validated here: a well-formed value
+  that the game rules do not allow is not an error; it is ignored and reported in
+  `seeds` (9.1.3, 2-3-2). An unknown member anywhere is `invalid_request`. A
+  missing party is `not_found`.
+* Candidates: `equipment` lets the search place any owned item variant that the
+  character can equip, up to its slot count, from the items `considerItemsScope`
+  makes available: the Inventory and the character's own worn items (`normal`);
+  also the items worn by the other targets whose equipment is changeable
+  (`withinTargets`); also the unlocked items worn by every other character of any
+  party (`global`). The search chooses items, not copies: all copies of one item
+  without a Super Rare title are one choice, and the copies of one item with one
+  Super Rare title are another (each title has its own bonuses). A slot that holds
+  such a choice gets its highest-enhancement copy still available to that
+  character, slots taking copies in party order, so a lower copy is placed only
+  when every higher copy of the same choice is used or out of reach. The current
+  build is read the same way, so a worn copy is replaced by a higher-enhancement
+  copy of the same item when one is available (with `equipment` but not `jewels`,
+  the higher copy has no Jewel). A locked item worn by a target keeps its slot and Jewel and is
+  never offered to anyone; a target whose `equipment` is `false` keeps its items,
+  which are never offered either. Under `global` the items a result takes from
+  other characters are the ones it needs beyond the Inventory and the targets'
+  own released items, taken from the party's non-targets first and then from the
+  other parties in order; `changeSummary` lists one `removeEquipment` entry per
+  emptied character, before any other entry, and `applyBuildChanges` also reports and
+  records Undo for those characters. `basis` also covers the slots the result
+  takes from each character outside party `{p}`. `jewels` lets it place free Jewels
+  and those on targets whose Jewels are changeable; with `jewels` but not
+  `equipment`, the items stay and only their Jewels change, and with `equipment`
+  but not `jewels`, an item that stays in its slot keeps its Jewel and a new item
+  gets none. Build components choose from the same options as
+  `read/build/character/status` (`uniqueCharacter`: `validOptions.uniqueSelection`,
+  that is `none` and the available unique characters no other character holds),
+  are validated by the `changeBuild` rules in party order, and an invalid choice
+  keeps the current value. While a candidate's unique selection is not `none`,
+  its race/gender, lineage, and predisposition genes are not applied (the unique
+  character fixes them); after each build change every build gene is re-read
+  from the character, so the genome holds the values the character really has.
+  Without `uniqueCharacter`, a unique character's `raceGender`, `lineage`, and
+  `predisposition` components are ignored. `considerOrderChange`
+  permutes the whole party. `considerDeityChange: unoccupiedDeities` chooses from
+  `read/build/party/{p}` `validOptions.deityId`; `allDeities` also offers every
+  unlocked deity another party holds. A result that takes such a deity swaps it
+  with the holder: `changeSummary` lists `commit/build/party/{holder}` with
+  `deityId: "none"` right before party `{p}`'s own deity entry (a deity is held by
+  one party at a time), then, when party `{p}` had a deity, `commit/build/party/{holder}`
+  with that deity. So the holder is left with no deity only when party `{p}` had
+  none, and a later result that takes the old deity back returns the taken one the
+  same way. Deity rank belongs to the deity (its donations), so a swap changes no
+  rank. `basis` covers which party holds that deity, and `deityTaken` reports the
+  holder, its deity, and the deity it gets (`null` when no deity is taken). Of two
+  candidates with the same score, the one that takes no deity ranks first: a build
+  that takes a deity loses 10^-9 of its fitness in every quick, confirm, and final
+  score, so a deity with no effect on the forecast is never taken by chance.
+* Search: the first population holds the current build and, with
+  `seedWithHeuristics`, one attack-focused and one HP/defense-focused greedy
+  build, plus, when an equipment target has an empty slot, the current build
+  with only its empty slots filled the same two greedy ways (every worn item
+  stays); then the `seedBuilds` seeds; the rest are mutants. Each generation scores every candidate with
+  `quickRuns`, re-scores the `confirmTopN` best with `confirmRuns`, keeps
+  `eliteCount` unchanged, and fills the rest by tournament selection (size
+  `tournamentSize`), per-character crossover, and mutation (`mutationRate`;
+  1–3 changes among item replace, item swap, Jewel change, build value, order
+  swap, and deity). A candidate that needs more than `maxChanges` entries is never
+  selected. After the last generation (or the time budget), the three best
+  confirmed builds and the fallback are re-scored on the final seed with
+  twice `confirmRuns` (at most 1000), and a build replaces the fallback only
+  when its rate is ahead by at least one standard error (for `success` while
+  successes are rare for both, see Objectives).
+* Seeds (`seedBuilds`): in array order, each seed starts from the current build
+  and sets the values it may use (9.1.3, 2-3-2 Rules), checked one by one by the
+  `changeBuild` rules in party order; a value that fails keeps the current value
+  and is reported (`invalidValue` for an unknown option, `notAllowed` for a known
+  option the rules refuse for that character, `notChangeable` for a value the
+  request does not let the search change). For the targets whose `equipment` is
+  changeable, three fills are each scored with `quickRuns` on the quick seed:
+  the current equipment and Jewels kept (the seed's genome with the current
+  equipment genes, decoded like every candidate, so a slot whose item the
+  seed's class cannot use, or a new slot, is filled at random toward higher
+  tiers), and the attack-focused and the HP/defense-focused greedy fill of
+  `seedWithHeuristics` (applied whatever `seedWithHeuristics` is). The best one
+  (by the guard ranking, with a guard; the first wins a tie) is the seed's
+  candidate; its quick score is kept, so the first generation does not score it
+  again. That score's `<rate>` is `seeds[].quickRate`; `seeds[].quickScore` is its
+  `progress` when `quickSignal.start` is `progress`, otherwise its `<rate>`, and
+  `seedBaseline` gives the same two values of the fallback's quick score (`null`
+  when it was never quick-scored). A seed
+  whose used values equal the current build or an earlier seed is `duplicate`;
+  a seed after `populationSize / 2` used seeds is `populationFull`; a seed with
+  no usable value is `ignored`. Each used seed replaces one mutant, so the first
+  population still has `populationSize` candidates. Seeds are not elites: they
+  stay only by selection. `seeds[].inBest` compares the final best build with
+  each value the seed used; `usedValues` counts those values and `keptValues`
+  the ones the final best build has. The fill scores per seed count in
+  `evaluations` and in the time budget.
+* Stop: `generationsRun` counts the generations whose quick scoring finished.
+  `stopReason` is `generations` when the loop ran `generations` times,
+  `timeBudget` when the time-budget check (below) stopped it first, and
+  `stalled` when, after a generation's confirm runs, `stallGenerations`
+  generations have passed since `lastImprovementGeneration` (checked only when
+  another generation would follow). `lastImprovementGeneration` is the last
+  generation (counted from 1) in which a confirmed candidate ranked above the
+  best one so far; `0` when none did.
+* Quick signal (`successSignal`, `objective: success` only): each quick score
+  keeps both the `success` fitness and `progress` (7.1.5 Score) of the same
+  runs, and the cache keeps both, so a switch re-scores nothing. With `auto`,
+  the start signal is `progress` when the fallback's confirmed success rate `p`
+  is rare, `p × quickRuns < 20 × (1 − p)` (the fallback is confirmed before the
+  first generation); after each generation's confirm runs, once the best
+  confirmed candidate's success rate is no longer rare, the quick ranking of
+  every later generation (population sort, elites, tournaments) uses the
+  `success` fitness, and `quickSignal.switchedAt` records that generation
+  (counted from 1). `progress` keeps `progress` for the whole search; `success`
+  is the search as without the parameter. The confirm runs, the best confirmed
+  candidate, the final selection, and the verification always use the `success`
+  fitness. `directedBuild` Step 4 `ga` runs with `success`.
+* `objectiveGuard`: every candidate is also measured on the guard objective with
+  the same runs and seed as its objective score: `quickRuns` on the quick seed
+  for its quick score, `confirmRuns` on the confirm seed when confirmed, in that
+  objective's own forecast (`gateDamage` fights one room alone;
+  `success` and `progress` run the route). When neither the objective nor the
+  guard is `gateDamage`, the guard value is read from the objective's own forecast result
+  (the two forecasts would be identical), so it adds no forecast and no
+  `evaluations`; the same holds for the guard forecasts of the final selection
+  and the `crossCheck` of the verification. The population sort, the elites, and
+  each tournament compare quick scores by the 9.1.3 ranking: reaching the guard
+  first, then the objective (the quick signal for `success`); below the guard,
+  the higher guard rate first, ties broken by the objective. The best confirmed
+  candidate and the finalists are chosen by the same ranking on their confirm
+  values. A seed's fill choice uses it on its quick values, as before. In the
+  final selection each finalist and the fallback are measured on the guard too
+  (final seed, same runs): a finalist that reaches the guard replaces a fallback
+  that does not; when both miss it, the finalist must be ahead on the guard rate
+  by more than one standard error; when both reach it, the objective rule above
+  applies. With a guard, every finalist that ranks above the fallback in the final
+  runs and passes that rule is accepted (without a guard only the top finalist is
+  judged, as before).
+* Guard re-confirmation (`objectiveGuard` only): the final runs choose, among the
+  finalists that reach the guard, the best on `objective`, so the chosen one's
+  guard rate there is biased upward, and a build just above the minimum often
+  misses it in the verification (`worse`). The accepted finalists, in final-score
+  order, at most 3, are each measured on the guard objective once more on their
+  own seed (derived from `seed`) with `verifyRuns` runs; the first one whose rate
+  reaches the guard is the result. When none does, the first accepted finalist
+  stays the result (its verdict then shows the miss). `guardReconfirm` reports
+  `{runs, rates, chosen}`: `rates` the measured guard rates in order (rounded to 4
+  places) and `chosen` the index of the result in `rates` (`null` when none
+  reached the guard); `guardReconfirm` is `null` without a guard or when no
+  finalist was accepted. The re-confirmation runs count in `evaluations` only
+  when they need a route forecast (shared runs). `guardStats.confirmed` counts the distinct confirmed candidates other
+  than the fallback (a cached confirm score counts once), and `guardStats.reached`
+  those whose confirm guard rate is at least the minimum. The same quick-run
+  guard ranking applies in `directedBuild` Step 4 `ga`.
+* Request time limit: the current build's verification runs (the objective and
+  the `crossCheck` objective, `verifyRuns` each on the verification seed) run
+  first. Their measured wall-clock cost per run sets aside the time of the
+  remaining work: the result's two verification forecasts and the final
+  selection (five forecasts of the final runs, plus the guard forecasts with a
+  guard, plus three guard re-confirmations of `verifyRuns` with a guard), times
+  1.5 plus one second. Unless `levelProbe.mode` is `off`, the
+  reserve also covers the level probe: `confirmRuns` for the current level and
+  for each of the `count` probed levels, plus two `quickRuns` fills per probed
+  level, at the cost per run of the objective (of the `crossCheck` objective for
+  `gateDamage`, whose own runs are one battle alone). With
+  `levelProbe.fill: search`, a further 25% of `timeBudgetSeconds` is reserved
+  for the probe's searches. The search stops at `timeBudgetSeconds`
+  minus that reserve, so the response returns within the budget. The desktop
+  request timeout of `gaSearch` and `directedBuild` is 600 s.
+* Empty slots: a filled slot only adds power, so no candidate of an equipment
+  target keeps an empty slot while a usable item is left. Every candidate, the
+  current build's included, fills each empty slot (and each slot whose item is
+  unavailable or not equippable) at random among the usable items, weighted
+  toward higher item tiers; under `global` an item that needs no donor is
+  preferred. The fallback result is the current build with its empty slots
+  filled, so a search returns at least that fill; it is the unchanged current
+  build only when the fill alone needs more than `maxChanges` entries. A target
+  whose `equipment` is `false` (Jewels only) keeps its items and free slots.
+* Level probe (9.1.3, 2-3-2 `levelProbe`): runs after the verification, in the
+  same request. The probed build is the result when `verdict` is `veryGood` or
+  `good`, otherwise the current build.
+  * Goal (`conquest`): the first Clear-Gate goal of the Expedition pane
+    (`eliteGate` or `bossGate`, with its `current` of `required`); when every
+    Clear-Gate is open, the boss of the destination unless the party has beaten
+    it (`required` 1, `current` 0); otherwise none, and `levelProbe` is `null`.
+    The Colosseum has no goal.
+  * Measure: `conquest` runs the probed build with the party's depth limit set
+    to `all`, so the route ends before the goal's gate room (a closed gate stops a
+    run with a Return) or, with every gate open, runs through the boss room; `p`
+    is the success rate (Clear or Return). `farming` runs the party's own route
+    and measures the defeat rate. Neither depends on `objective`, and
+    `levelNeeded` is judged on these rates only.
+  * Gate room (`conquest` only): each point also fights the goal's gate room alone
+    (the `gateDamage` forecast at full HP): the elite room `X,4` of an `eliteGate`
+    goal's floor, and the boss room `6,4` for `bossGate` and `boss`, on the same
+    runs and seed as the point's rate. `points[].gateRoom` is `{room, share,
+    winRate}` (`share` the `gateDamage` share, `winRate` the share of runs that
+    won the room, both rounded to 4 places); `null` for `farming`. A greedy fill
+    can leave the route rate at `0` while the room itself is already winnable at
+    that level; a gate-focused search at that level then wins it. With
+    `fill: greedy` and `conquest`, the gate room's quick share breaks a tie
+    between the two fills (a route rate of `0` for both, for example). The gate
+    room forecasts are reserved in the time budget like the probe's own runs.
+  * Each point uses `confirmRuns` runs on the verification seed. `rate` and
+    `standardError` (`sqrt(p(1 - p) / confirmRuns)`) are percentages rounded to
+    0.01; `expectedRuns` is `E(required) - E(current)` rounded to 0.01;
+    `requiredRate` solves `expectedRuns = runBudget` by bisection (100 when
+    `required - current` exceeds `runBudget`).
+  * Probed levels: with `steps: slot`, the next `count` base slot unlock levels
+    (2.1.1.1) above the party level; with `steps: level`, the next `count`
+    levels; none above `MAX_LEVEL` (69).
+  * `fill: search`: each probed level copies the probed build with the party
+    level changed and runs the `gaSearch` search on it (as `directedBuild` Step 4
+    runs it: no seeds, no verification, the best confirmed build kept) until an
+    equal share of the reserved 25% ends: the request's targets and `consider*`
+    members, objective `success` with `successSignal: auto` on the route with the
+    depth limit `all` (`conquest`) or `minDefeat` on the party's route
+    (`farming`), no guard, at most 24 builds per generation (`eliteCount` capped at
+    a quarter), at most 100 quick and 300 confirm runs, `confirmTopN` at most 3,
+    and its own seed derived from `seed` and the level. The found build (with
+    the party's own depth limit) is measured as below. Its evaluations count in
+    `evaluations`.
+  * `fill: greedy`: each probed level copies the save with the party level changed (experience
+    unchanged) and builds the search's item supply at that level. The probed
+    build keeps every slot it fills; the free slots (the new ones, and any slot
+    the build leaves empty) are filled twice, once attack-focused and once
+    HP/defense-focused, by the greedy fill of the first population, using the
+    probed build's own characters for the slot counts and equip checks. The two
+    fills are compared with `quickRuns` on the quick seed (higher success for
+    `conquest`, lower defeat for `farming`; the first wins a tie), and the
+    better one is measured. `filledSlots` counts the filled slots at or above
+    each equipment target's slot count at the party's current level.
+  * With `fill: greedy`, no search runs at a probed level: only the fill above
+    changes the build, as 9.1.3 states.
+  * The probe checks the time before each forecast: when `timeBudgetSeconds` has
+    run out, it stops with the points so far and `truncated: true`.
+  * With a fixed `seed` (and `verifySeed`), the probe repeats exactly. It never
+    changes the save. Its forecasts count in `evaluations`.
+* Objectives (9.1.3, 2-0): the search maximizes `ln(success)` for `success`, the
+  average gate-room damage share for `gateDamage`, average EXP per run for
+  `experience`, and the average `progress` (7.1.5 Score) for `progress`. For
+  `success`, a `progress` term (7.1.5 Score: rooms cleared plus the enemy-HP share
+  of a lost or drawn last battle, over the rooms on the route; weighted by the
+  failure share) breaks ties while successes are rare, so every run drawing the
+  boss still gives a signal. The final selection breaks an exact success tie
+  the same way: a finalist with the fallback's success rate replaces it when
+  its `progress` is ahead by more than one standard error. While successes are
+  rare for both on the final runs (`isRareSuccess` of the higher rate with the
+  final run count), the final selection compares `progress` alone by that rule,
+  and a finalist whose success rate is behind by more than 2 standard errors is
+  not kept. `directedBuild`'s Margin rule does the same. `minDefeat` minimizes
+  the defeat rate without lowering the success rate: a candidate whose success
+  rate on the same seed is below the current build's is penalized, so a build
+  that cannot win (and only draws) is never chosen.
+* `gateDamage` measures the battle of `gateRoom` (an elite gate room, or the boss
+  room as the last gate) alone: every Clear-Gate of the destination counts as
+  open, the depth limit is that room (`all` for the boss room), and each run
+  skips every other room and starts the battle at `startHp` (full party HP by
+  default), for every run of that search, including the verification, so its
+  `forecast` describes that battle. A won battle ends the run (a Return; a Clear
+  at the boss room), so a win counts as a share of 1. The response echoes
+  `gateRoom` (the room label) whenever `gateDamage` is measured, and `startHp`
+  (`full` or the share) always.
+* `startHp`: the forecast sandbox sets the party's current HP to
+  `max(1, floor(maximumHp × startHp))` before every run instead of the maximum. In
+  `gaSearch`, `directedBuild`, and `stagedEquipmentTuning` it is passed only to
+  the `gateDamage` forecasts (objective, guard, and
+  `crossCheck`); route forecasts start at full HP.
+* `verdict` compares the current build and the result on the verification seed with
+  `verifyRuns` runs each. The standard error uses the per-run variance of each
+  rate: binomial for `success` and `minDefeat`, the per-run share variance
+  for `gateDamage`, the per-run EXP variance for `experience`, and the per-run
+  `progress` variance for `progress`. With `success`, when successes are rare for
+  both builds on the verification seed (`isRareSuccess` of the higher success
+  rate with `verifyRuns`; two rates of 0 included), the verdict is judged on
+  `progress` (7.1.5 Score) instead, like `success` (percentage points, the same
+  thresholds), and a changed result whose success rate is lower by more than 2
+  standard errors is `worse`; otherwise the success rate decides. `objective: progress` is
+  always judged on `progress`, in percentage points with the same thresholds. `noChange` means no different build
+  passed the final selection and no empty slot could be filled; `changeSummary` is then `[]` and `forecast.after`
+  equals `forecast.before`. With `objectiveGuard`, a changed result whose
+  `crossCheck.reached` is `{before: true, after: false}` is `worse` whatever its
+  gain. The response also returns `verification`:
+  `{objective, scoredBy, runs, before, after, gain, standardError, seed, verifySeed, progress, crossCheck}`.
+  `scoredBy` is the score the verdict used: `objective`, or `progress` in the case
+  above. `before`, `after`, `gain`, and `standardError` are in that score: the
+  measured rates, the gain in percentage points (percent for `experience`; `null`
+  when the current EXP is 0), and its standard error. `seed` is the seed used, so
+  the search can be repeated; `verifySeed` is the verification seed used.
+  `progress` is `{before, after}`, the 7.1.5 Score of both builds in the same
+  verification runs (rounded to 4 decimals), for every objective but `gateDamage`
+  (`null`). `crossCheck` is `{objective, before, after, minimum, reached, winRate}`: the
+  guard objective, or `gateDamage` on `gateRoom` (for `success`, `minDefeat`,
+  `experience`, `progress`) or `success` (for `gateDamage`) without a guard (9.1.3, 2-0),
+  measured on both builds with
+  `verifyRuns` runs on the verification seed in that objective's own forecast
+  (rounded to 4 decimals); `minimum` and `reached` (`{before, after}`) are `null`
+  without a guard. `winRate` is `{before, after}` when the `crossCheck` objective is
+  `gateDamage`: the share of those runs that won the gate room's battle (a win
+  counts `1` in the `gateDamage` share, so a share near `1` can still lose often),
+  rounded to 4 decimals; it is `null` for every other `crossCheck` objective.
+  `stagedEquipmentTuning` reports its `crossCheck` the same way. An unchanged result
+  reuses the current build's values.
+* `forecast.scope` is `{from, to, rooms, endsAt}`, walked like the route `progress`
+  is divided by: from `1f-1` up to the room before the first closed Clear-Gate
+  (`clearGate`), up to the depth limit (`depthLimit`), or to the last room
+  (`dungeonEnd`); with `gateDamage`, the gate room alone (`gateRoom`). `from` and
+  `to` are `null` when no room is simulated.
+* `changeSummary` entries are generated by running each call through the Commit
+  API handler on a private copy, so each one is accepted as written: an `equip`
+  entry names the exact owned variant (lock digit included) with `targetSlot`,
+  `removeEquipment` and `jewelRemove` list the character's slots in one entry, and
+  `changeBuild` carries only the changed members with `simulation: false`.
+  `revision` is the revision of the snapshot that was searched.
+* `basis` (returned by `gaSearch`, `directedBuild`, and an accepted
+  `stagedEquipmentTuning`) is an opaque string: a digest of the build-relevant state
+  of party `{p}` that the result depends on, namely party order and deity, each
+  party member's build and equipment (items and Jewels), who holds each deity the
+  result assigns, and the item (and Jewel) in each slot an entry takes from a
+  character outside the party. It is computed from the `changeSummary` entries and
+  the save, so `applyBuildChanges` recomputes it from `changes` and the current save
+  without any stored result. Inventory and Jewel counts are not part of it: each
+  `equip` and `jewelAttach` entry is validated when it is applied, so a copy that is
+  gone is rejected there (`item_not_owned`, `jewel_not_owned`), and a new drop, an
+  Auto Sell, or another party's Auto Equipment does not make a result stale. The
+  other slots of an outside character, Gold, and progression do not change it either.
+* `applyBuildChanges` (9.1.3, 3-3-2) applies `changes` to party `{p}`. It owns its
+  confirmation like `changeBuild`: `simulation` is required; `simulation: true`
+  reports `applied` (the `changes`), `confirmationRequired`, `warnings`, and the
+  resulting `calculatedStatus` (one `{characterId, calculatedStatus}` per
+  character with an entry) without committing. With a given `verdict` of `noisy`
+  or `worse`, `confirmationRequired` is `true`, `warnings` holds
+  `api.warning.applyBuildChanges.unconfirmedImprovement` and the given `verdict`,
+  and a commit needs `confirmation: "yes"` (a missing one is `invalid_request`,
+  field `confirmation`); `confirmation: "no"` cancels with `applied: []` and no
+  revision change. Without a `verdict`, or with a `stagedEquipmentTuning` result,
+  confirmation is never required. `confirmation` with `simulation: true` is
+  `invalid_request`. When the changes change the deity of a party other than `{p}`
+  (an `allDeities` result), `warnings` also holds
+  `api.warning.applyBuildChanges.deityTaken` with `partyId`, `deityId` (its deity
+  before), and `newDeityId` (its deity after), whether or not confirmation is
+  required.
+* `applyBuildChanges` `onStale`: `reject` (default) or `repair` (any other value is
+  `invalid_request`, field `onStale`). With `repair`, a stale `basis` does not reject
+  the request, and an entry whose Commit call fails with `illegal_action` is
+  repaired or skipped instead of rejecting the request; the rest still apply in
+  order, in one transaction. Repairs: an `equip` rejected with `item_not_owned`
+  takes another owned copy of the same item and Super Rare title, the same
+  enhancement first, otherwise the highest (`substituted`); a `removeEquipment`
+  rejected with `slot_empty` or a `jewelRemove` rejected with `no_jewel_attached`
+  keeps only the slots that still hold an item or a Jewel (`trimmed`); a party entry
+  rejected with `deity_in_use` or `deity_locked` keeps its `order` alone
+  (`trimmed`). Any other rejected entry, or a repair the save also rejects, is
+  `skipped`. An `invalid_request` of an entry still rejects the whole request.
+  The Return then also holds `basisStale` (`true` or `false`; `null` without a
+  `basis`) and `repairs`, one `{index, endpoint, outcome, reason, parameters}` per
+  repaired or skipped entry (`index` in `changes`, `reason` the rejection's reason,
+  `parameters` the repaired entry's parameters, `null` when skipped); `applied` lists
+  the entries as they were applied. Without `repair` neither member is returned.
+* `applyBuildChanges` validation: `changes` must be a non-empty array, and every
+  entry `{endpoint, parameters}` must use one of the endpoints in the 9.1.3
+  `changeSummary` order list (otherwise `invalid_request`, field `changes` with
+  the entry index); `expectedRevision` inside an entry is ignored. `verdict`
+  must be one of its listed values (otherwise `invalid_request`, field
+  `verdict`). Rejections: a given `verdict` of `noChange` is `illegal_action`
+  (`build_no_change`); a given `basis` that differs from the recomputed one is
+  `illegal_action` (`build_basis_stale`). Without a `basis`, only the entry
+  validation below applies.
+* `applyBuildChanges` applies every entry in order in one transaction and is
+  rejected atomically if any entry fails (with the error of that entry's Commit
+  call), unless `onStale` is `repair` (above). `autoEquipmentMode` (`SEMI` by default; `FULL` is `invalid_request`) is
+  set on every character with an equipment or Jewel entry. The internal calls record
+  no Undo step; afterwards each character with an entry whose equipment state
+  (items, Jewels, and mode) changed gets exactly one Undo step, its state before
+  the operation, and a character whose equipment state did not change gets none
+  (an identical step would block its earlier history).
+
+**Directed build**
+
+* `directedBuild` (9.1.3, 2-3-3) is a Read operation that uses `POST`, like `gaSearch`. It never commits anything and changes no revision. Its Return is the `gaSearch` Return (see **GA search**) without `levelProbe`, `seeds`, `generationsRun`, `stopReason`, `quickSignal`, and `guardStats` (these are `gaSearch` only), plus the members below.
+* Validation: `direction` is required and must be one of its listed values (otherwise `invalid_request`, field `direction`). `targets` is 1 to 6 unique members of party `{p}` (otherwise `invalid_request`, field `targets.characterId`); omitted `changeableComponents` members take the 9.1.3 defaults, and `autoEquipmentRun` must be `currentSetting`, `FULL` (default), `SEMI`, or `OFF`. `considerOrderChange`, `considerDeityChange`, `considerItemsScope`, `objective`, and `objectiveGuard` are validated as for `gaSearch`. `autoEquipmentScope` is `changedOnly` (default) or `allTargets`; `equipmentPolish` is `none`, `changedOnly` (default), or `allTargets`; `polishMethod` is `ga` (default), `stagedTuning`, or `stagedTuningThenGa`; `directionStrictness` is `strict` (default) or `soft`; `directionPenalty` is a number from 0 to 50 (default 2); any other value is `invalid_request` naming the member. `tuningParameters` ranges and `effort` presets are the 9.1.3 tables (`timeBudgetSeconds` 5 to 600, `verifySeed` any safe integer); `mutationRate` defaults to the `effort` preset's; `eliteCount` may not exceed `populationSize / 4`. An unknown member anywhere is `invalid_request`. A missing party is `not_found`.
+* Seeds: every seed derives from `tuningParameters.seed` (a fresh random one when omitted): one for candidate sampling and mutation, one for the quick runs, one for the confirm runs, one for the Step 4 search and its draws, one for the Final selection, and one for verification (`tuningParameters.verifySeed` instead when given). Steps 1 to 4 score on the same quick and confirm seeds, so all candidates are compared on the same random numbers, and the same `seed`, save, and parameters return the same result unless `timeBudgetSeconds` stops a step first.
+* Build components choose from the same options as `read/build/character/status` and are validated by the `changeBuild` rules in party order (including the unique-character and race/gender rules); a candidate that breaks one is invalid. `uniqueCharacter: true` adds the unique characters `changeBuild` would accept for that member as `uniqueSelection` options.
+* Composition: each member's main class is counted in its 9.1.3 category. The distance of a composition is the sum over the four categories of `max(0, minimum − count) + max(0, count − maximum)` for the direction's ranges (`0` for `free`). Step 1 first finds the smallest distance any valid assignment of the changeable main classes can reach. With `directionStrictness: strict`, only candidates at that distance are valid: a party that can meet the ranges is held to them, one that cannot gets the closest composition, and the search still runs. With `soft`, every composition is valid, and each candidate's search score is made worse by `directionPenalty` per member of distance: `success` lowers its success rate and its `progress` tie-break by that many percentage points before the fitness is computed; `minDefeat`, `gateDamage`, and `progress` lower the fitness by that many points; `experience` by that percent of the current build's average EXP in the verification runs. Steps 2 and 3 score with the same penalty. `verdict` and `verification` never include it.
+* Class rules for assigned main classes:
+  * A Support class is never assigned when another member already has it as main class. A duplicate among the fixed main classes is kept and does not make the party invalid.
+  * `Felidian` with main class `class.ninja` is invalid for every direction, not only `rapidRanged` (both grant `a.first-strike`, which does not stack). Only a candidate's changed members are checked, so a fixed `Felidian` ninja stays.
+  * `rapidRanged` samples `Felidian` with 3x weight among the race/gender options of members whose `raceGender` is changeable.
+* `autoEquipmentScope`: with `allTargets`, every target runs its `autoEquipmentRun` in each candidate. With `changedOnly`, only the targets whose unique selection, race/gender, main class, sub class, lineage, or predisposition differs from the current build run it, in party order; under `withinTargets` and `global` they may take the unlocked items of the unchanged targets (after the later changed targets in the pass, before the non-targets). An unchanged target whose worn items or Jewels changed that way runs it afterward, in party order. A candidate with no changed target keeps every target's equipment as it is.
+* `autoEquipmentRun`: for each candidate, the targets that run it and resolve to `FULL` or `SEMI` run 7.1.2 or 7.1.3 on the private copy in party order. The 7.1.2.1 dirty check is bypassed, so the run always happens. Items come from `considerItemsScope`: the Inventory and the character's own items (`normal`); plus the unlocked items of the other targets (`withinTargets`); plus the unlocked items of every other character (`global`). Only equipment worn before the search can be taken: an item placed earlier in the same pass is never taken again, locked items are never taken, and a donor keeps an empty slot. Before the run, items the new build cannot equip (`c.equip_melee`, `c.equip_ranged`, `c.equip_magic`) or that no longer fit its slot count go to the Inventory. `FULL` fills empty slots; `SEMI` (7.1.3) only replaces an equipped item with a higher-enhancement copy of the same item, so it fills none. A target that resolves to `OFF` only loses those items, and its emptied slots stay empty.
+* Search:
+  * Step 1 (genetic search over the build layer): each genome holds, per target, `uniqueSelection`, race/gender, main class, and sub class, plus the party order when `considerOrderChange` is `true`. Only components that are changeable and allowed by the game rules vary. The current build is never a Step 1 candidate: the first generation holds random samples only, and a sampled or bred genome identical to the current build is replaced like a repeated candidate (below). The current build meets the result only in the Final selection. With `free` and `soft`, 60% of the samples are local: the changeable members' current categories with 0, 1, or 2 members moved to another category (never to Support when no Support class is left), every member that fits kept as it is; the others, and every sample of a `strict` direction other than `free`, draw one of the compositions at the smallest distance. Each generation scores every candidate with `quickRuns`, re-scores the `confirmTopN` best with `confirmRuns`, keeps `eliteCount` unchanged, and fills the rest by tournament selection (size `tournamentSize`), per-character crossover, and mutation (`mutationRate`; 1–2 changes among race/gender, main class, sub class, unique selection, and order swap). A child that breaks the class rules or (`strict`) exceeds the smallest distance is repaired by resampling the changed members' main classes toward the missing categories; if repair fails, it is invalid. A bred or sampled candidate already in the search is replaced by a new sample, up to 4 times, so later generations score new builds; the elites are carried over as they are. The best confirmed candidate (by the guard ranking of 9.1.3, 2-0, with a guard) is locked, whether or not it beats the current build. With no valid candidate, Steps 2 to 4 start from the current build.
+  * Step 2 (deity): runs only when `considerDeityChange` is not `none`. It scores the current deity and every option (as `gaSearch` chooses them) with `confirmRuns` on the Step 1 result, without re-running `autoEquipmentRun`, The best option replaces the Step 1 result's deity only when it passes the Margin rule (below) against that deity on the same confirm runs; otherwise the deity stays.
+  * Step 3 (lineage and predisposition): one coordinate pass in party order. For each target whose `lineage` is changeable, it scores every valid lineage with `quickRuns` on the quick seed, each after `autoEquipmentRun` (with a guard, ranked by the guard ranking, the guard measured with `quickRuns` on the quick seed). Check: when the best value ranks above the member's current value on the quick runs, both are re-scored with `confirmRuns` on the confirm seed, and the best replaces the current value only when it passes the Margin rule against it; otherwise the current value stays without a check. It then does the same for `predisposition`. A unique character's lineage and predisposition are fixed, so it has no candidates. Each candidate re-runs `autoEquipmentRun` for that target alone: under `withinTargets` it takes no other target's items, and under `global` it takes only from non-targets.
+  * Step 4 (equipment polish): runs unless `equipmentPolish` is `none`. The searched members are every target (`allTargets`) or the targets whose unique selection, race/gender, main class, sub class, lineage, or predisposition differs from the current build after Step 3 (`changedOnly`); with none, Step 4 does not run. Builds, deity, and order stay as locked.
+    * `ga`: the `gaSearch` search (see **GA search**) with the searched members as its targets (`equipment` and `jewels` changeable, `considerItemsScope` as requested), the `tuningParameters` population, selection, mutation, `quickRuns`, and `confirmRuns`, and the Step 4 seed for draws. Its first population holds the Step 1–3 result as `gaSearch` reads a current build (empty slots filled, item jars at their best copy; always confirmed, so it can stay) and, as with `seedWithHeuristics`, the greedy builds; the rest are its mutants. It runs until `generations` or the Step 4 share ends and keeps the best confirmed build (by the guard ranking with a guard). `gaSearch`'s own final selection and verification are not run: the Final selection below replaces them.
+    * `stagedTuning`: 7.1.5 steps 1 to 5 (see **Staged Equipment Tuning**) for each searched member in party order, each on the build the previous member left, with this request's `objective` and `objectiveGuard`. Its step 1 baseline and step 5 use `confirmRuns`, its steps 2–4 `quickRuns`; its other parameters take their 2-3-8 defaults; its seeds derive from the Step 4 seed and the member's position. Its step 6 is not run: a member whose step 5 keeps a candidate takes the tuned equipment. A member reached after the Step 4 share ends keeps its equipment.
+    * `stagedTuningThenGa`: `stagedTuning`, then `ga` starting from the tuned result. Each gets half the Step 4 share; time `stagedTuning` leaves passes to `ga`.
+  * Final selection: the finalists are the Step 1–4 result, the Step 1–3 result when Step 4 changed it, and the current build (not with `strict` and `forcedRecomposition: true`). A finalist that needs no `changeSummary` entry is the current build itself and is dropped. Each is re-scored on the Final selection seed with twice `confirmRuns` runs (at most 1000), with the guard objective too when there is a guard. Margin rule (also used by Steps 2 and 3): a build passes against another when its rate is ahead by more than one standard error (the 7.1.5 Luck check SE); for `success`, an exact tie is broken by `progress` ahead by more than one standard error; with a guard, a build that reaches it passes against one that does not, when both miss it the guard rate must be ahead by more than one standard error, and when both reach it the objective decides. The best other finalist becomes the result only when it passes against the current build; otherwise the result is the current build (`verdict` `noChange`, `changeSummary` `[]`). Without the current build as a finalist, the best finalist is the result.
+  * `timeBudgetSeconds` covers the whole request. The current build's verification runs (the objective and the `crossCheck` objective) run first; their cost per run, times 1.5 plus one second, sets aside the result's verification and the Final selection (three forecasts of the final runs, plus the guard forecasts with a guard). Of the time left, Step 1 stops at 50%, Steps 2 and 3 at a further 20%, and Step 4 runs until the reserve, when Step 4 will run; when it will not, Step 1 stops at 75% and Steps 2 and 3 run until the reserve. Time a step does not use passes to the next. A step that runs out locks its best result so far, and a step that has no time left does not run (it gets no `steps` entry). The Final selection and the verification always run.
+* `verdict`, `forecast`, `verification`, `changeSummary`, `revision`, `evaluations`, and `elapsedSeconds` are produced as for `gaSearch`: the verdict compares the current build and the Final selection result on one independent verification seed with `verifyRuns` runs each (`noChange` when the result is the current build), and each `changeSummary` entry is accepted by the Commit API as written. `changeSummary` follows the 9.1.3 order, so items that a class change makes unequippable are removed by `removeEquipment` before the `changeBuild` entry, and the `autoEquipmentRun` and Step 4 results appear as `equip`, `jewelRemove`, and `jewelAttach` entries. `evaluations` counts every scored candidate of all steps (Step 4 tuning candidates included) and every Final selection finalist.
+  * A deity change is a `commit/build/party/{p}` entry with `deityId`. When another party holds the chosen deity, the deity is swapped as in `gaSearch` (`commit/build/party/{holder}` with `deityId: "none"` right before it, then the holder's entry for the deity party `{p}` left, when it had one), `basis` covers which party holds that deity, and `deityTaken` reports it.
+* `basis` is built as for `gaSearch`. Nothing is kept on the server, so a `directedBuild` result stays applicable until the build-relevant state changes.
+* `seed`: the seed used, the requested one or a random one.
+* `direction`: the requested direction. `directionStrictness`: the requested strictness.
+* `composition`: `{before, after, distanceBefore, distance, smallestDistance, recomposition, forcedRecomposition}`. `before` and `after` are each `{melee, ranged, magic, support}`, the number of members whose main class is in that category, counting every member of the party. `distanceBefore` and `distance` are the distances of `before` and `after` (`0` when the ranges are met); `smallestDistance` is the smallest distance the changeable main classes can reach; `recomposition` is half the summed category differences between `before` and `after`; `forcedRecomposition` is `true` when `directionStrictness` is `strict` and `distanceBefore` is larger than `smallestDistance` (the current build was not a finalist).
+* `steps`: an object with one entry per executed step of the Process, keyed `step1`, `step2`, `step3`, and `step4`, plus `finalSelection`. Each step entry is `{candidatesTried, selected}`: the number of candidates scored in that step, and a short text describing the selected option, or `null` when the step kept the value it started from; `step4` also has `method` (the `polishMethod` used) and `members` (the searched character IDs). A step that did not run has no entry. `finalSelection` is always returned as `{runs, finalists, selected}`: `finalists` lists `{finalist, rate, guard}` for `polished` (the Step 1–4 result), `unpolished` (the Step 1–3 result, only when Step 4 changed it), and `current` (absent when it was not a finalist or when no other finalist was left), with `guard` `null` without a guard; `selected` names the finalist that became the result (`current` with an empty `finalists` when nothing changed).
+
+**Staged Equipment Tuning**
+
+* `stagedEquipmentTuning` (9.1.3, 2-3-8; 7.1.5) tunes the equipment of one
+  character with the same private forecast as `simulationRun`. Every seed derives
+  from `seed` (a fresh random one when omitted, returned as `seed` either way): one
+  for the item draws, one shared by every quick run of steps 2–4, one shared by
+  every run of step 5, and one shared by the baseline (step 1) and the final check
+  (step 6), so the same `seed` on the same revision repeats the whole tuning.
+  `gateDamage` simulates one battle alone from `startHp` (full
+  party HP by default), with every Clear-Gate of the destination open, as `gaSearch`
+  does. Objectives are those of 9.1.3, 2-0. With `success`, a step 1 success rate
+  of 0 makes every step score `progress` instead (`scoredBy: progress`);
+  `minDefeat`, `gateDamage`, `experience`, and `progress` always score
+  themselves. Improvements use the rarer-side ratio of 7.1.5 for every score but
+  `experience`, which uses the plain ratio `candidate / current`; the step 6 luck
+  check uses each score's per-run variance (the per-run EXP for `experience`).
+* Validation: `characterId` is required; a character in no party is `not_found`.
+  `baselineRuns` may be sent only as `1000`. Integer ranges: `quickRuns` 10–1000,
+  `finalTuningRuns` 50–1000, `offenseElementTrialRuns` 0–20,
+  `defenseElementTrialRuns` 0–40, `abilityTrialRuns` 0–100, and each
+  `...CandidateCount` 1–3. `minImprovement` and `minGateImprovement` are numbers
+  from 0 to 10. `offenseElementRequest` is `noRequest`, `e.fire`, `e.ice`,
+  `e.thunder`, or `e.none`; `objective` is `success`, `minDefeat`,
+  `gateDamage`, `experience`, or `progress`; `objectiveGuard`, `gateRoom`, and
+  `startHp` are validated as for `gaSearch` (fields `objectiveGuard...`,
+  `gateRoom...`, `startHp...`); `seed` is any safe integer. Any other value or an
+  unknown member is `invalid_request` naming the member.
+* Items: the owned Inventory and the character's own unlocked items, never items
+  worn by others; locked items keep their slot and Jewel. A slot changes only
+  within the character's slot count, and a candidate whose new items leave an item
+  without a slot (a replaced `c.equip_slot`) is dropped. A newly placed item may
+  not share a non-stacking bonus with another worn item: the same type and value
+  of any bonus entry of the item or its Super Rare title other than `b.` base
+  status bonuses and abilities (so `c.` bonuses, `r.` resistances, and
+  multipliers), and the same `c.accuracy`, `c.evasion`, or `c.penet` value. A candidate never mixes more offense elements than the build it
+  starts from. Empty slots are not filled for their own sake; a step may use one
+  for the item it places.
+* Jewels: a slot whose item did not change keeps its Jewel, locked slots
+  included. Only the slots whose item changed get one, by the 7.1.2.2 step 8
+  allocation: in category order, each changed item gets the highest rank of its
+  category's Jewel (the Jewel Category Mapping) from the Inventory Jewels (whatever
+  the Jewel Priority Party) and the Jewels freed from the replaced items. A type
+  and rank already on an unchanged slot, or given to an earlier changed slot, is
+  not given again; a changed item with no such Jewel left gets none (a freed Jewel
+  of another type does not follow it). Jewels of other characters are never used.
+  The current build is never re-allocated: steps 2–4 compare each candidate with
+  the current build as it is on the quick seed, and step 5 starts from it on its
+  own seed.
+* Bottleneck: the room with the most Draw + Retreat + Defeat ends (the earliest
+  on a tie); with none, the boss room if a run reached it, else the latest
+  reached elite room, else `null`. With `gateDamage` it is always the gate room. Its enemies are every enemy the room can
+  draw, and its terrain is the terrain effect of the room's floor. An element is
+  resisted least when the enemies' average resistance
+  multiplier for it is highest (an enemy with that element's null, absorb, or
+  reflect counts 0; `e.none` counts 1).
+* Counters (7.1.5.1): an ability counters the bottleneck when the Counter ability
+  map pairs it with an ability of any bottleneck enemy or with the bottleneck
+  terrain. The enemy side uses the battle's ability IDs, so the protect breakers
+  answer that element's reflect and absorb, and `a.m-barrier-breaker` answers
+  `a.m-barrier` and magical reflect and absorb. `a.output-stabilizer` counts only
+  on the four penalty terrains, and `terrain.rotwood` has no counter. With no
+  bottleneck room there is no counter.
+* Step 2 (per element and trial): every unlocked item of another element becomes
+  an item of the same category with the new element, or with no element when the
+  category has none; a locked item of another element, or a slot with neither
+  option, drops the element. When the build still lacks the new element, the
+  weakest open slots that can take an item of it get one: on trial `t` of `T`,
+  `round(n × (t + 1) / T)` of the `n` eligible slots (at least one). Elements no
+  slot can take are skipped before `offenseElementCandidateCount` is applied.
+  A build that already mixes elements tries every element.
+* Step 3 (per combination and trial): the combinations are the subsets of
+  `r.fire`, `r.ice`, and `r.thunder` (the empty one is `r.none`), excluding the
+  resistances the current items give, ordered by how many bottleneck enemies
+  attack with an element they cover, then by how few resistances change. Every
+  unlocked item resisting an element outside the combination becomes an item of
+  the same category that does not; each element of the combination still
+  unresisted gets one item resisting it. New items carry no other offense element
+  than the current build. Infeasible combinations are skipped before
+  `defenseElementCandidateCount` is applied.
+* Step 4: one candidate per jar (an item ID, and its Super Rare title if any; see
+  Item jars) that adds an ability the character lacks and brings no other offense element. Before each
+  draw, the items left that add a counter of the bottleneck (above) are the draw
+  pool; when none is left, every item left is. `a.null-counter` is party-wide: it
+  counts as a counter only while no party member has it. Each trial draws up to
+  `abilityCandidateCount` items not drawn before and places each alone.
+* Item jars (7.1.5): the options of steps 2–4 are jars, not copies. Each jar is
+  offered once, as its highest-enhancement copy that the candidate has not used
+  yet (its own worn copy and the Inventory copies alike), and its power is that
+  copy's. A lower copy is placed only when every higher copy of the same jar is
+  already used in the candidate. A worn item that no step changes keeps its copy:
+  the tuning never upgrades it by itself.
+* Draws and slots: trial 0 takes the strongest item (the Party pane's
+  category-scaled `target d. bonus`, 7.1.2.2 step 4) and the best slot; later
+  trials draw an item at random weighted by that value squared, and an added item
+  goes to one of the three best slots. The best slot is an empty one, then the
+  one whose item is weakest next to the best item of its category; a filled slot
+  keeps its category, except that an ability item may also replace an item of its
+  group (`i.weapon`, `i.NoA`) or, failing that, of any category. A candidate
+  identical to one already tried in the step is not recorded twice.
+* Step 5 moves a change whose slot an earlier kept candidate changed to the next
+  best open slot, and skips the candidate when none fits. The swap pass runs for
+  step 2, then step 3. `finalTuning` lists the kept candidates in order: `step`,
+  `index` (its position in that step's list), its label, its `improvement`, and
+  the changes it made in the tuned build after any move. `improvement` is
+  cumulative: the build with this candidate and every one before it against the
+  current build on the step 5 seed (re-scored after a swap), so the last entry
+  is the tuned build's step 5 improvement.
+* `objectiveGuard` (7.1.5 Guard): steps 2–4 rank on `objective` alone. In step
+  5 every build is also measured on the guard objective with `finalTuningRuns`
+  on the step 5 seed, in that objective's own forecast (`gateDamage`
+  fights one room alone), and an add or swap is kept only when the new build ranks above
+  the build before it by the guard ranking (9.1.3, 2-0). In steps 1 and 6 both
+  builds are measured on it with `baselineRuns` on the baseline seed. Step 6
+  accepts by the 7.1.5 step 6 guard rule: when the current build reaches the
+  guard, the tuned build must reach it and pass both checks; when it does not,
+  the tuned build is accepted when it reaches the guard, or when it passes both
+  checks with a guard rate not below the current build's.
+* `crossCheck` (9.1.3, 2-0) is always returned: the guard objective, or the
+  2-0 default without a guard, measured on the current build (step 1 runs) and
+  the tuned build (step 6 runs) with `baselineRuns` on the baseline seed, rounded
+  to four decimals. With no change, `after` equals `before`.
+* Response: `scoredBy` is the score used (`objective`, or `progress`); `before`
+  and `after` are the `overview` strings; `improvement`,
+  `gain`, and `standardError` are the step 6 values (`gain` and
+  `standardError` as fractions of the score, not percentage points; for
+  `experience`, relative to the current build's average EXP, `null` when it is
+  0), rounded to
+  four decimals like every candidate's `improvement`. `improvement` is a ratio,
+  so it grows very large near a score of 0 or 1 (`0.1%` → `44.6%` is
+  `improvement: 445`); compare tunings by `gain`. Each recorded candidate
+  carries its label (`element`, `resistance`, or `abilities`), `improvement`,
+  and `changes` (`<slotIndex>=<Item Format>` for every slot it changes; Jewels
+  follow from the allocation). `simulationRuns` counts every simulated run (a
+  build simulated twice on the same seed and run count is simulated once).
+* Diagnostics: the response also returns `candidatesTried` and
+  `bottleneckCounters`, after `bottleneckRoom`.
+  * `candidatesTried` is `{offenseElement, defenseElement, ability}`: the
+    candidates each step simulated on the quick runs, recorded or not. `0` means
+    the step had nothing to try, or its `...TrialRuns` was `0`.
+  * `bottleneckCounters` lists every counter of the bottleneck (above), in map
+    order, as `{ability, answers, status}`. `answers` holds the enemy abilities
+    and the terrain it answers in that room. `status` is one of:
+    * `owned`: the character already has it (for `a.null-counter`, any party
+      member).
+    * `tried`: step 4 simulated an item that adds it.
+    * `notTried`: an item that adds it is in the step 4 pool, but step 4
+      simulated none: its trials were `0` or ran out, or no slot keeps the build
+      valid.
+    * `noItem`: no item in the step 4 pool adds it (none owned, none the
+      character can equip, or each brings another offense element).
+* No change: when step 5 keeps no candidate (or no step recorded one), the tuned
+  build is the current build: step 6 is not simulated again (`after` equals
+  `before`, `improvement` and `gain` are 0), `accepted` is `false`, and
+  `changeSummary` is `[]`. Acceptance also needs a non-empty `changeSummary`; it
+  is built like the `gaSearch` one, so a one-item swap lists only that slot's
+  `removeEquipment`, `equip`, and `jewelAttach` entries. An accepted result
+  returns `basis` (as `gaSearch` does); a rejected tuning returns none.
 
 **Base**
 
@@ -771,7 +1501,7 @@ definitions in 9.1.3.
   returns the compact `<shopItemId>/<Item Format>/<price>/<availability>` strings of 9.1.3 in
   `current.items` (an unidentified entry's enhancement and Super Rare are `?`) and the same facts
   structured in `current.entries` (adding `identified`, `enhancement` and `superRare`, which are
-  `null` while hidden, `rarity`, `soldOut`, and `unavailableReason`: `sold_out` or `insufficient_gold`);
+  `null` while hidden, `itemRarity` (`common`, `uncommon`, `rare`, or `epic`), `soldOut`, and `unavailableReason`: `sold_out` or `insufficient_gold`);
   `validOptions.items` lists the slots that can be bought now, and
   `validOptions.lineupId` repeats `current.lineupId`, so `validOptions` holds
   everything `purchaseShopItems` needs. The `base` projection's
@@ -820,7 +1550,12 @@ definitions in 9.1.3.
 
 * Diary/settings commits documented as partial updates preserve omitted fields
   and return the complete resulting `current` object.
-* `markAsRead` returns affected Diary-entry IDs and the resulting unread totals.
+* `markAsRead` returns affected Diary-entry IDs and the resulting unread totals,
+  including the Global scope (`partyNumber` 0). The main unread total includes Global.
+* `{p}` = 0 on `diarySetting` is reserved for future expansion (the Global Diary
+  has no setting pane, 8.5). Both `read/diary/0/diarySetting` and
+  `commit/diary/0/diarySetting` return an empty `current` object and change
+  nothing. Every other `{p}` route rejects `0`.
 * `markNewsAsRead` returns affected news versions (those that were unread) and the
   resulting unread count. An unknown version rejects the whole request as
   `not_found`; acknowledging only already-read news is a valid no-op.
@@ -846,8 +1581,31 @@ definitions in 9.1.3.
 * `read/observation/party`'s `party.statistics` is the selected party's
   Expedition statistics (9.1.3, 2-1-4): `clear`, `return`, `draw`, `retreat`,
   `defeat`, `donatedGold`, and `savedGold`, the values `resetStatistics` restores
-  to their defaults. Like the Expedition pane, an outcome of a log that is still
+  to their defaults (`sideQuestStatistics` is cleared too). Like the Expedition pane, an outcome of a log that is still
   hidden while the party explores is not counted yet.
+* `read/observation/party`'s `party.sideQuestStatistics` (9.1.3, 2-1-4) lists
+  `<sideQuestId>-<successfulCount>/<cancelledCount>/<failedCount>/<totalCount>` in ascending
+  `sideQuestId` order, only for side quests the party has accepted. `totalCount`
+  increases when a side quest is accepted (so an active quest is included),
+  `successfulCount` when it is completed, and `cancelledCount` when it is
+  cancelled by a player action (such as starting a sortie or a God Battle), and `failedCount` when it expires. Only side quests accepted after the counters
+  were introduced are counted. `resetStatistics` clears it.
+* `read/observation/party`'s `party.dropStatistics` (9.1.3, 2-1-4) counts the
+  selected party's own drops since its last `resetStatistics`: `items` (the
+  rewards its expeditions kept), `superRare` (those with a Super Rare title),
+  `autoSold` (drops Auto Sell sold during its expeditions), and `byEnhancement`
+  (seven counts, the kept rewards at `+0` .. `+6`). A Defeat keeps no reward, so
+  it adds nothing. Sorties, God Battles, and AFK expeditions all count; forecasts
+  never do. Drops from before the counters were introduced are not counted; every
+  member is `0` until the party's first counted expedition.
+* `read/observation/compact`'s `clearGate` is the party's active Clear-Gate goals
+  in the Expedition pane's order (`4th Elite gate: 3/4`, `Boss unlock: c/r`,
+  `Gods gate: c/r`, `Entry gate: 0/1`, `Gods entry: 0/1`), joined by `, `, or
+  `null` when none. `sideQuest` is `<sideQuest>-<lv>: <progress>/<target>-<timeRemaining>h/<timeLimit>h-<startTimestamp>`
+  (`lv` from 5.1.2; time-based quests count minutes; `timeRemaining` is rounded up
+  at the current Speed of Time; `startTimestamp` is the in-game start as
+  `YYYYMMDD HH:MM` in UTC, e.g. `q.exercise-2: 4/10-5h/12h-20261009 13:18`); a quest
+  without a deadline omits the time part (`q.AFK-2: 4/30`), and no quest is `null`.
 * `commit/progress/elapsed` reports requested, accepted, and capped elapsed
   seconds plus resulting progression effects. Existing AFK caps and FIFO rules
   remain authoritative. All Chunks form one staged transaction under 9.1.4.4;
@@ -932,6 +1690,7 @@ operations use shared tokens: `debug_mode_required` (the dev/beta restriction),
 `api_account_display_setting` (a runtime display setting sent by an API account),
 `theme_unavailable`, `nothing_to_undo`, `nothing_to_redo`,
 `equipment_unavailable`, `deity_locked`, `deity_in_use`, and `variant_not_sold`.
+`applyBuildChanges` uses `build_basis_stale` and `build_no_change` (9.1.4.9).
 
 `control_lease_expired` is returned to the session whose lease expired from
 inactivity until that client logs in or out again; after that, or for any other
@@ -993,10 +1752,13 @@ use the same operation without HTTP authentication headers.
 | POST | `/api/v1/read/expedition/{p}/simulationRun` | Session | Private forecast of `numberOfRun` runs (default 100). |
 | GET | `/api/v1/read/expedition/{p}/chargeStock` | Session | Charge stock/status. |
 | GET | `/api/v1/read/build/party/{p}` | Session | Party build/options. |
-| GET | `/api/v1/read/build/character/{characterId}/status` | Session | Character build/options. |
-| GET | `/api/v1/read/build/character/{characterId}/equipment` | Session | Equipment/mode. |
-| GET | `/api/v1/read/build/character/{characterId}/equipmentSet` | Session | Saved equipment sets. |
-| GET | `/api/v1/read/build/character/{characterId}/equipmentEvaluation` | Session | Evaluate items and Jewels for the character. |
+| POST | `/api/v1/read/build/party/{p}/gaSearch` | Session | Private genetic search for a better party build. |
+| POST | `/api/v1/read/build/party/{p}/directedBuild` | Session | Private direction-guided search for a party build. |
+| GET | `/api/v1/read/build/character/status` | Session | Character build/options. |
+| GET | `/api/v1/read/build/character/equipment` | Session | Equipment/mode. |
+| GET | `/api/v1/read/build/character/equipmentSet` | Session | Saved equipment sets. |
+| GET | `/api/v1/read/build/character/equipmentEvaluation` | Session | Evaluate items and Jewels for the character. |
+| POST | `/api/v1/read/build/character/stagedEquipmentTuning` | Session | Private staged equipment tuning of one character. |
 | GET | `/api/v1/read/base/searchItems` | Session | Search known items. |
 | GET | `/api/v1/read/base/jewelPriorityParty` | Session | Jewel priority. |
 | GET | `/api/v1/read/base/shopInfo` | Session | Shop status/information. |
@@ -1011,10 +1773,11 @@ use the same operation without HTTP authentication headers.
 | POST | `/api/v1/commit/progress/elapsed` | Session | Advance controlled progression. |
 | POST | `/api/v1/commit/progress/progressReport` | Session | Perform progress-report action. |
 | POST | `/api/v1/commit/expedition/{p}/changeExpedition` | Session | Change expedition. |
-| POST | `/api/v1/commit/expedition/{p}/sortie` | Session | Resolve one sortie. |
+| POST | `/api/v1/commit/expedition/{p}/sortie` | Session | Resolve one or more sorties (`numberOfSortie` 1–6). |
 | POST | `/api/v1/commit/expedition/{p}/godsBattle` | Session | Resolve one Gods Battle. |
 | POST | `/api/v1/commit/expedition/{p}/resetStatistics` | Session | Reset the party's expedition statistics. |
 | POST | `/api/v1/commit/build/party/{p}` | Session | Change party build. |
+| POST | `/api/v1/commit/build/party/{p}/applyBuildChanges` | Session | Apply a list of build changes (a search `changeSummary`) in one transaction. |
 | POST | `/api/v1/commit/build/character/{characterId}/changeBuild` | Session | Change character build. |
 | POST | `/api/v1/commit/build/character/{characterId}/removeAllEquipment` | Session | Remove all equipment. |
 | POST | `/api/v1/commit/build/character/{characterId}/removeEquipment` | Session | Remove selected slots. |
@@ -1114,11 +1877,18 @@ use the same operation without HTTP authentication headers.
   scalar to a one-element array. Empty arrays are invalid unless explicitly
   allowed. Reject duplicate IDs except repeated item variants in `equip`, where
   repetition requests multiple owned copies.
-* `simulationRun` POST accepts `{expectedRevision?: number, numberOfRun?: number}` directly, with no
+* `simulationRun` POST accepts `{expectedRevision?: number, numberOfRun?: number, objective?: string, seed?: number}` directly, with no
   Commit envelope or idempotency key. Omission uses the admission revision; a
   supplied mismatch returns `stale_revision` before private computation.
-  `numberOfRun` is an integer 1 ~ 1000 and defaults to 100; any other value is
-  `invalid_request`.
+  `gaSearch` POST accepts its 9.1.3 members (`targets`, `considerOrderChange`,
+  `considerDeityChange`, `considerItemsScope`, `objective`, `successSignal`, `objectiveGuard`, `levelProbe`, `seedBuilds`, `gaParameters`) and an optional
+  `expectedRevision` the same way; so do `directedBuild` and `stagedEquipmentTuning`
+  with their 9.1.3 members (for tuning, `characterId`, the tuning parameters,
+  `objective`, and `objectiveGuard`).
+  `numberOfRun` is an integer 1 ~ 1000 and defaults to 100; `objective` is one
+  of `success`, `minDefeat`, `gateDamage`, `experience`,
+  `progress`; `gateRoom` and `startHp` are validated as in GA search; `seed` is any
+  safe integer. Any other value is `invalid_request`.
 * A parameter is required unless marked optional, given a default, or contained
   in an explicitly partial update. Partial updates preserve omitted members; an
   empty update is a no-op. `null` is accepted only where explicitly documented.
@@ -1172,7 +1942,7 @@ type EquipmentSet = {
 };
 type DiaryEntry = {
   diaryEntryId: string; // Stable retained ID; existing saves use opaque timestamp-token IDs.
-  partyNumber: number;
+  partyNumber: number; // 0 = Global Diary entry, 1–6 = Party Diary entry
   occurredAt: string; // emulated in-game instant
   unread: boolean;
   content: {
@@ -1226,7 +1996,7 @@ type DiaryEntry = {
   `BattleLog` is `{logId, partyNumber, dungeonId, difficultyOffset, finalOutcome
   ("Clear"|"Return"|"Draw"|"Retreat"|"Defeat"), totalExperience, completedRooms,
   totalRooms, remainingPartyHp, maximumPartyHp, rewards[], autoSell {count, gold},
-  rooms[]}`. A reward is `{item (Item Format), itemId, category, tier, rarity,
+  rooms[]}`. A reward is `{item (Item Format), itemId, category, tier, itemRarity,
   enhancement, superRare}`. Each room carries its outcome (`victory`, `defeat`,
   `draw`), damage, party HP, heal and attrition amounts, `endEvents`, and its
   battle in one of two formats: `compact-v1` (terrain, an actor table, modifier
@@ -1319,6 +2089,19 @@ type DiaryEntry = {
   optional `logId`; omission selects the party's latest retained log, while an
   explicit ID selects that party's referenced retained log or returns `not_found`.
   Legacy text remains unchanged; do not infer semantic facts from it.
+* Global Diary (`partyNumber` 0) is always available and is not tied to a Party
+  unlock. Its entries use the same `DiaryEntry` shape with `content.format`
+  `semantic`, no `events` detail and `battleLog: null`; the title carries the
+  account-created, first-boss-defeat (once per boss, by the first Party; the unlocked-Party
+  fact is the subtitle when the victory unlocks one), first-god-defeat (`godExpeditionId`) or
+  achievement (`metric` `clear|superRare|jewel`, milestone `threshold`) facts.
+  Achievement counters (lifetime Clear outcomes; Super Rare items and jewels held in the
+  inventory) are internal, are not cleared by `resetStatistics`, and each milestone is recorded once. The projection returns it as a top-level `global` object
+  `{partyNumber: 0, unreadCount, entries}` beside `parties`, and
+  `effectiveSelection.partyNumber` 0 selects it. Retention is 99 entries (8.5).
+  `compact` `attention.notification` lists `partyNumber` 0 only while it has unread entries. Global entries have
+  no trigger keys and no notification settings. Existing saves receive no
+  account-created entry.
 * Each `diary` projection summary contains the same identity, timestamp, unread
   state, content, and `battleLog` reference as `DiaryEntry`, plus ordered trigger
   keys, dungeon/difficulty facts, reward Item Formats, optional language-neutral
@@ -1334,7 +2117,7 @@ type DiaryEntry = {
   the next stock under current speed settings; zero at maximum stock. API reads
   do not themselves advance the charge clock.
 * `enemyFormList.enemyType` and `enemyId` are optional intersecting filters;
-  omission selects all currently visible forms. `rarity` defaults to `all` for
+  omission selects all currently visible forms. `itemRarity` defaults to `all` for
   search/compendium. Missing `superRare` means either value; inconsistent
   `superRare` and `superRareId` filters are invalid.
 * `purchaseShopItems.items` entries are `{shopItemId: number}` or the bare
@@ -1351,6 +2134,19 @@ type DiaryEntry = {
 * Saved equipment set names (`saveEquipmentSet.equipmentSet.name`,
   `renameEquipmentSet.name`) are 1–80 characters, the Party pane's limit.
 * `changeBuild.parameters.name` is 1–20 characters (Spec 8.2.3).
+* `changeBuild.parameters.uniqueSelection` is `none` or a `uniqueCharacterId`. A non-string
+  value (including JSON `false`) is `invalid_request` with rule `type`, an unknown string
+  `invalid_request` with rule `unknown_value`; one assigned to another character is
+  `illegal_action:unique_character_assigned`; one whose `Available At` party is not yet
+  unlocked (Spec 2.1.4.2) is `illegal_action:unique_character_unavailable`, and
+  `validOptions.uniqueSelection` lists only available, unassigned ones. Selecting a unique character sets its
+  name, gender, race, lineage and predisposition (Spec 2.1.4.2), so a conflicting
+  `name`, `racesAndGender`, `lineage` or `predisposition` in the same call is
+  `illegal_action:unique_character_immutable`. `none` releases the character and becomes
+  editable: its gender and classes are kept; its race is kept if selectable and not blocked
+  by the party's same-race/same-gender rule, otherwise the first free selectable race in
+  Spec 2.1 race-table order; lineage and predisposition reset to the first selectable
+  entry (Spec 8.2.3). Explicit `racesAndGender`, `lineage` or `predisposition` override.
 * A rejected set or character name is `invalid_request` with `details.field` `name`
   and `details.rule` naming the violated rule as a schema error does: `type` (not a
   string), `minLength` (empty or whitespace only), or `maxLength` (too long).
@@ -1424,10 +2220,10 @@ type DiaryEntry = {
   `<diaryEntryId>/<diaryTitle>/<diarySubtitle>/<YYYYMMDD HH:MM>`: the title and
   subtitle are the Diary tab's (current language; the subtitle is the expedition
   name for an ordinary entry) and are escaped free text (only `%` and `/`).
-* `itemCompendium` applies every documented filter (`category`, `rarity`, `tier`,
+* `itemCompendium` applies every documented filter (`category`, `itemRarity`, `tier`,
   `itemId`, `searchAbility`, `searchBonus`); every filter, `category` included, is
   optional, so `itemId` alone looks up one item. Each item carries `itemId`, `category`,
-  `rarity`, `tier` (the thousands digit of the item ID), and `revealed`. A revealed
+  `itemRarity`, `tier` (the thousands digit of the item ID), and `revealed`. A revealed
   item also carries its localized `name` and the `ability`, `cBonus`, and
   `otherBonus` arrays selected by `details` (omitted when not selected). An
   unrevealed item (8.6 Item Reveal Rule) is a placeholder without name or details,
@@ -1611,7 +2407,7 @@ Focused projection query context:
 | --- | --- |
 | `party` | `partyNumber`, `characterId`; character must belong to selected party. |
 | `base` | `pane`: `shop|inventory|vault|workshop|altar`; item searches use `searchItems`. |
-| `diary` | `partyNumber`, `diaryEntryId`; entry must belong to selected party. |
+| `diary` | `partyNumber` (`0` = Global, `1–6` = Party), `diaryEntryId`; entry must belong to the selected scope. |
 | `compact`, `overview`, `expedition`, `setting` | No local selection context. |
 
 Defaults use the retained selection when 8.x requires it, otherwise the first
@@ -1619,7 +2415,7 @@ unlocked party/member or the documented default pane. Return the effective
 selection. A stale retained selection falls back safely; an explicitly invalid
 selection is rejected. Disabled panes still return their availability/reason.
 UI adapters translate actual view actions into the required explicit commands
-(for example leaving a Diary party tab marks its entries read); HTTP reads never
+(for example leaving a Diary party or Global tab marks its entries read); HTTP reads never
 perform those actions. The menu-bar pane continues to receive only its minimum
 read-only display projection under 9.1.2.
 

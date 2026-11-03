@@ -473,9 +473,9 @@ const MASTER_ENEMY_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
 
 const MASTER_ENEMY_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
   // SpecRef: 4.2.2 | Enemy | additional abilities or bonus
-  135: [{ type: 'growth_xV', value: 1.2 }],
-  171: [{ type: 'growth_xV', value: 2.0 }],
-  207: [{ type: 'growth_xV', value: 1.5 }],
+  135: [{ type: 'growth_xV', value: 1.2 }, { type: 'magical_defense_multiplier_xV', value: 2 / 3 }],
+  171: [{ type: 'growth_xV', value: 1.5 }, { type: 'physical_defense_multiplier_xV', value: 1 / 2 }, { type: 'magical_defense_multiplier_xV', value: 3 / 2 }],
+  207: [{ type: 'growth_xV', value: 1.7 }, { type: 'physical_defense_multiplier_xV', value: 2 / 3 }],
   213: [{ type: 'growth_xV', value: 1.3 }],
   219: [{ type: 'penet', value: 0.4 }],
   230: [{ type: 'growth_xV', value: 1.4 }],
@@ -485,16 +485,23 @@ const MASTER_ENEMY_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
   163: [{ type: 'physical_defense_multiplier_xV', value: 2 / 5 }],
   164: [{ type: 'physical_defense_multiplier_xV', value: 3 / 5 }],
   260: [{ type: 'physical_defense_multiplier_xV', value: 1 / 3 }],
-  279: [{ type: 'growth_xV', value: 1.3 }],
+  279: [{ type: 'growth_xV', value: 1.3 }, { type: 'physical_offense_multiplier_xV', value: 3 / 2 }],
   285: [{ type: 'growth_xV', value: 1.3 }],
   291: [{ type: 'penet', value: 0.4 }],
   297: [{ type: 'magical_offense_multiplier_xV', value: 1.4 }],
   313: [{ type: 'growth_xV', value: 1.5 }],
   314: [{ type: 'growth_xV', value: 1.5 }],
-  315: [{ type: 'growth_xV', value: 1.5 }],
+  315: [{ type: 'growth_xV', value: 1.5 }, { type: 'accuracy', value: 0.03 }],
   339: [{ type: 'growth_xV', value: 1.3 }],
   345: [{ type: 'physical_offense_multiplier_xV', value: 1.4 }],
-  351: [{ type: 'growth_xV', value: 1.4 }],
+  351: [{ type: 'growth_xV', value: 1.4 }, { type: 'penet', value: 0.2 }],
+  387: [{ type: 'magical_offense_multiplier_xV', value: 3 / 2 }],
+};
+
+// SpecRef: 4.2.2 | Enemy | additional abilities or bonus (d.* master value modifiers)
+const MASTER_ENEMY_DIRECT_MODIFIERS: Partial<Record<number, { meleeAttackAmplifier?: number; rangedNoA?: number }>> = {
+  171: { meleeAttackAmplifier: 2.0 },
+  243: { rangedNoA: 3 / 2 },
 };
 
 const MASTER_ENEMY_MAGIC_STYLES: Partial<Record<number, MagicStyle>> = {
@@ -554,6 +561,9 @@ function generateEnemies(): EnemyDef[] {
         MASTER_ENEMY_BONUS_ABILITIES[id] ?? [],
         row[2],
       );
+      const directModifiers = MASTER_ENEMY_DIRECT_MODIFIERS[id];
+      if (directModifiers?.meleeAttackAmplifier) enemy.meleeAttackAmplifier *= directModifiers.meleeAttackAmplifier;
+      if (directModifiers?.rangedNoA) enemy.rangedNoA = Math.floor(enemy.rangedNoA * directModifiers.rangedNoA);
       const enemyMagicStyle = MASTER_ENEMY_MAGIC_STYLES[id];
       if (enemyMagicStyle) enemy.magicStyle = enemyMagicStyle;
       const enemyBonusModifiers = MASTER_ENEMY_BONUS_MODIFIERS[id] ?? [];

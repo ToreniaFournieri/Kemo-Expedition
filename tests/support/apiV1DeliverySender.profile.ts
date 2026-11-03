@@ -90,6 +90,7 @@ interface Harness {
   api: ReturnType<typeof createApplicationApi>;
   sendCalls: ApiV1DeliveryRecord[];
   persistedControls: DesktopApiControlMetadata[];
+  persistedPayloads: Array<string | null>;
   persistState: { callIndex: number; failOnCallIndex: number | null };
   published: GameState[];
 }
@@ -98,6 +99,7 @@ function harness(sendImpl: (record: ApiV1DeliveryRecord, callIndex: number) => P
   const accountState = createFreshGameState('en', t0);
   const sendCalls: ApiV1DeliveryRecord[] = [];
   const persistedControls: DesktopApiControlMetadata[] = [];
+  const persistedPayloads: Array<string | null> = [];
   const persistState = { callIndex: 0, failOnCallIndex: null as number | null };
   const published: GameState[] = [];
   const account: DesktopApiAccountRecord = {
@@ -118,6 +120,7 @@ function harness(sendImpl: (record: ApiV1DeliveryRecord, callIndex: number) => P
             throw new Error('simulated persist failure');
           }
           persistedControls.push(structuredClone(control));
+          persistedPayloads.push(_savePayload);
           return true;
         },
       },
@@ -141,7 +144,7 @@ function harness(sendImpl: (record: ApiV1DeliveryRecord, callIndex: number) => P
     delivery: { send: async (record) => { sendCalls.push(record); return sendImpl(record, sendCalls.length - 1); } },
   };
   const idleState = createFreshGameState('ja', t0);
-  return { api: createApplicationApi(ports, idleState), sendCalls, persistedControls, persistState, published };
+  return { api: createApplicationApi(ports, idleState), sendCalls, persistedControls, persistedPayloads, persistState, published };
 }
 
 async function logIn(h: Harness): Promise<number> {
@@ -191,6 +194,8 @@ async function readPendingDeliveryIds(h: Harness): Promise<unknown> {
   assert.equal(record?.payload, undefined, 'the frozen payload is dropped once the job can never send again');
   assert.equal(record?.completionApplied, true);
   assert.equal(record?.rewardApplied, false, 'progressReport never grants the feedback reward');
+  assert.equal(typeof h.persistedPayloads[1], 'string', 'first account transaction primes save reuse');
+  assert.deepEqual(h.persistedPayloads.slice(2), [null, null, null], 'claim, settle and no-reward completion persist only metadata');
 
   await h.api.pumpDeliveries();
   assert.equal(h.sendCalls.length, 1, 'a delivered job is never reconsidered');
@@ -208,6 +213,8 @@ async function readPendingDeliveryIds(h: Harness): Promise<unknown> {
   assert.equal(record?.status, 'delivered');
   assert.equal(record?.rewardApplied, true);
   assert.ok(snapshot.state.global.prana > goldBefore, 'the first-ever feedback submission grants Prana');
+  assert.deepEqual(h.persistedPayloads.slice(2, 4), [null, null], 'claim and settlement reuse the save');
+  assert.equal(typeof h.persistedPayloads.at(-1), 'string', 'reward completion durably writes changed game state');
   assert.ok(snapshot.control.feedbackReward?.lastSuccessfulSubmissionAt !== null && snapshot.control.feedbackReward?.lastSuccessfulSubmissionAt !== undefined);
   assert.equal(h.published.length > 0, true, 'granting Prana changes game state, which must publish');
 }

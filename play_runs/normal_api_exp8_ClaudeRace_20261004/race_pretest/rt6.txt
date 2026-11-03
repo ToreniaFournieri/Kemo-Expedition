@@ -1,0 +1,3 @@
+baseline 5.2
+5 Selfin cervin slots 9 items 9 HP 23427 succ 5.2
+5 Selfin felidian slots 9 items 9 HP 23745 succ 12.7

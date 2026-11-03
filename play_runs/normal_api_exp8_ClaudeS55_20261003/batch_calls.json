@@ -1,0 +1,8604 @@
+{
+ "format": "bokemo-api-batch-v1",
+ "note": "Each call: method, path (relative to /api/v1), parameters (the commit envelope adds expectedRevision + idempotencyKey), status, duration ms measured by the client (urllib, loopback), in-game time after the call when returned. Replay with replay_batch.py against a fresh account; outcomes (drops, win/lose) depend on the random state so only the call sequence and cost are comparable.",
+ "calls": [
+  {
+   "n": 1,
+   "method": "GET",
+   "path": "/fundamental/status",
+   "parameters": null,
+   "status": 200,
+   "ms": 40,
+   "tag": "",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 2,
+   "method": "POST",
+   "path": "/fundamental/signUp",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal",
+    "language": "en"
+   },
+   "status": 200,
+   "ms": 11,
+   "tag": "",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 3,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 48,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 4,
+   "method": "GET",
+   "path": "/read/observation/compact",
+   "parameters": null,
+   "status": 200,
+   "ms": 14,
+   "tag": "",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 5,
+   "method": "GET",
+   "path": "/read/observation/party?partyNumber=1",
+   "parameters": null,
+   "status": 200,
+   "ms": 18,
+   "tag": "",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 6,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 13,
+   "tag": "",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 7,
+   "method": "GET",
+   "path": "/read/observation/base",
+   "parameters": null,
+   "status": 200,
+   "ms": 5,
+   "tag": "",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 8,
+   "method": "GET",
+   "path": "/read/observation/party?partyNumber=1",
+   "parameters": null,
+   "status": 200,
+   "ms": 31,
+   "tag": "",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 9,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 82,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 10,
+   "method": "GET",
+   "path": "/read/build/character/4/status",
+   "parameters": null,
+   "status": 200,
+   "ms": 27,
+   "tag": "",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 11,
+   "method": "POST",
+   "path": "/commit/build/character/1/changeBuild",
+   "parameters": {
+    "simulation": false,
+    "confirmation": "yes",
+    "mainClassId": "lord",
+    "subClassId": "lord"
+   },
+   "status": 200,
+   "ms": 19,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 12,
+   "method": "POST",
+   "path": "/commit/build/character/6/changeBuild",
+   "parameters": {
+    "simulation": false,
+    "confirmation": "yes",
+    "mainClassId": "guardian",
+    "subClassId": "guardian"
+   },
+   "status": 200,
+   "ms": 11,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 13,
+   "method": "POST",
+   "path": "/commit/build/character/4/changeBuild",
+   "parameters": {
+    "simulation": false,
+    "confirmation": "yes",
+    "racesAndGender": "ursan/male",
+    "mainClassId": "ninja",
+    "subClassId": "ranger",
+    "lineage": "abyssal_sea",
+    "predisposition": "precise"
+   },
+   "status": 200,
+   "ms": 53,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 14,
+   "method": "POST",
+   "path": "/commit/build/character/2/changeBuild",
+   "parameters": {
+    "simulation": false,
+    "confirmation": "yes",
+    "racesAndGender": "ursan/female",
+    "mainClassId": "ninja",
+    "subClassId": "ranger",
+    "lineage": "abyssal_sea",
+    "predisposition": "precise"
+   },
+   "status": 200,
+   "ms": 19,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 15,
+   "method": "POST",
+   "path": "/commit/build/character/3/changeBuild",
+   "parameters": {
+    "simulation": false,
+    "confirmation": "yes",
+    "mainClassId": "ninja",
+    "subClassId": "ranger",
+    "lineage": "abyssal_sea",
+    "predisposition": "precise"
+   },
+   "status": 200,
+   "ms": 6,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 16,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 15,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 17,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 54,
+   "tag": "el",
+   "igt": "2026-10-03T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 18,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 13,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 19,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 56,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 20,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 78,
+   "tag": "el",
+   "igt": "2026-10-04T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 21,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 117,
+   "tag": "el",
+   "igt": "2026-10-04T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 22,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 10,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 23,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 59,
+   "tag": "el",
+   "igt": "2026-10-05T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 24,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 6,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 25,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 54,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 26,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "destination": 2,
+    "depthLimit": "all"
+   },
+   "status": 409,
+   "ms": 16,
+   "tag": "dest",
+   "igt": null,
+   "err": "stale_revision"
+  },
+  {
+   "n": 27,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "destination": 2,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 5,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 28,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 68,
+   "tag": "el",
+   "igt": "2026-10-05T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 29,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 10,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 30,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 500,
+   "ms": 87,
+   "tag": "el",
+   "igt": null,
+   "err": "save_failed"
+  },
+  {
+   "n": 31,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 500,
+   "ms": 60,
+   "tag": "el",
+   "igt": null,
+   "err": "save_failed"
+  },
+  {
+   "n": 32,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 1,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 33,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 409,
+   "ms": 20,
+   "tag": "login",
+   "igt": null,
+   "err": "control_unavailable"
+  },
+  {
+   "n": 34,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 500,
+   "ms": 80,
+   "tag": "el",
+   "igt": null,
+   "err": "save_failed"
+  },
+  {
+   "n": 35,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 23,
+   "tag": "noop",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 36,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 60
+   },
+   "status": 200,
+   "ms": 8,
+   "tag": "el",
+   "igt": "2026-10-05T14:50:08.860Z",
+   "err": null
+  },
+  {
+   "n": 37,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43140
+   },
+   "status": 200,
+   "ms": 94,
+   "tag": "el",
+   "igt": "2026-10-06T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 38,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 16,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 39,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 500,
+   "ms": 88,
+   "tag": "el",
+   "igt": null,
+   "err": "save_failed"
+  },
+  {
+   "n": 40,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 1,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 41,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43080
+   },
+   "status": 500,
+   "ms": 78,
+   "tag": "el",
+   "igt": null,
+   "err": "save_failed"
+  },
+  {
+   "n": 42,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 1,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 43,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 42900
+   },
+   "status": 500,
+   "ms": 84,
+   "tag": "el",
+   "igt": null,
+   "err": "save_failed"
+  },
+  {
+   "n": 44,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 1,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 45,
+   "method": "POST",
+   "path": "/fundamental/logOut",
+   "parameters": {},
+   "status": 400,
+   "ms": 18,
+   "tag": "logout",
+   "igt": null,
+   "err": "invalid_request"
+  },
+  {
+   "n": 46,
+   "method": "POST",
+   "path": "/fundamental/logOut",
+   "parameters": {},
+   "status": 200,
+   "ms": 143,
+   "tag": "logout",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 47,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 192,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 48,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 167,
+   "tag": "el",
+   "igt": "2026-10-06T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 49,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 27,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 50,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 68,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 51,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2,
+     3,
+     5,
+     6,
+     8
+    ]
+   },
+   "status": 200,
+   "ms": 60,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 52,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     3,
+     4,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 15,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 53,
+   "method": "POST",
+   "path": "/commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2,
+     3,
+     4
+    ]
+   },
+   "status": 200,
+   "ms": 46,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 54,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2,
+     3,
+     5,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 23,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 55,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3
+    ]
+   },
+   "status": 200,
+   "ms": 52,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 56,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0
+    ]
+   },
+   "status": 200,
+   "ms": 20,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 57,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/2313/1/0",
+     "0/1404/0/0",
+     "0/2101/3/0",
+     "0/1107/0/0",
+     "0/2107/4/0",
+     "0/2109/3/0"
+    ]
+   },
+   "status": 200,
+   "ms": 15,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 58,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/1107/3/0",
+     "0/1107/3/0",
+     "0/1108/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 14,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 59,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/2107/2/0",
+     "0/1305/0/0",
+     "0/1107/1/0",
+     "0/2312/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 22,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 60,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/2101/3/0",
+     "0/1305/2/0",
+     "0/1108/4/0",
+     "0/1101/1/0"
+    ]
+   },
+   "status": 200,
+   "ms": 14,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 61,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/2112/3/0",
+     "0/2317/0/0",
+     "0/2219/2/0",
+     "0/1110/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 13,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 62,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/1103/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 13,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 63,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 81,
+   "tag": "el",
+   "igt": "2026-10-07T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 64,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 43,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 65,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "destination": 3,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 66,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 57,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 67,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     5,
+     6,
+     7,
+     8,
+     9
+    ]
+   },
+   "status": 401,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 68,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 181,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 69,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     5,
+     6,
+     7,
+     8,
+     9
+    ]
+   },
+   "status": 200,
+   "ms": 88,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 70,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2,
+     3,
+     5,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 18,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 71,
+   "method": "POST",
+   "path": "/commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2,
+     3
+    ]
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 72,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2,
+     3,
+     5,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 13,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 73,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     3,
+     4,
+     5
+    ]
+   },
+   "status": 200,
+   "ms": 14,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 74,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     5,
+     6
+    ]
+   },
+   "status": 200,
+   "ms": 22,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 75,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/1211/0/0",
+     "0/2305/0/0",
+     "0/2301/0/0",
+     "0/2109/2/0",
+     "0/2101/0/0",
+     "0/2209/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 12,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 76,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/2220/1/0",
+     "0/2401/0/0",
+     "0/2109/4/0",
+     "0/2107/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 25,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 77,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/2213/0/0",
+     "0/2107/3/0"
+    ]
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 78,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/2312/0/0",
+     "0/2213/0/0",
+     "0/2304/2/0",
+     "0/1213/1/0"
+    ]
+   },
+   "status": 200,
+   "ms": 19,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 79,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/2301/0/0",
+     "0/2112/1/0",
+     "0/2103/0/0",
+     "0/2103/0/0",
+     "0/1103/5/0"
+    ]
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 80,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/2102/2/0",
+     "0/1205/0/0",
+     "0/1301/3/0"
+    ]
+   },
+   "status": 200,
+   "ms": 14,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 81,
+   "method": "POST",
+   "path": "/commit/build/party/1",
+   "parameters": {
+    "deityId": "fertility"
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "deity",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 82,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 43,
+   "tag": "el",
+   "igt": "2026-10-07T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 83,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 99,
+   "tag": "el",
+   "igt": "2026-10-08T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 84,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 13,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 85,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "destination": 4,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 55,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 86,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 58,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 87,
+   "method": "GET",
+   "path": "/read/base/shopInfo",
+   "parameters": null,
+   "status": 200,
+   "ms": 35,
+   "tag": "",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 88,
+   "method": "GET",
+   "path": "/read/base/shopItemsList",
+   "parameters": null,
+   "status": 200,
+   "ms": 3,
+   "tag": "",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 89,
+   "method": "POST",
+   "path": "/commit/build/character/101/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 34,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 90,
+   "method": "POST",
+   "path": "/commit/build/character/102/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 15,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 91,
+   "method": "POST",
+   "path": "/commit/build/character/103/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 10,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 92,
+   "method": "POST",
+   "path": "/commit/build/character/104/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 13,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 93,
+   "method": "POST",
+   "path": "/commit/build/character/105/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 10,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 94,
+   "method": "POST",
+   "path": "/commit/build/character/106/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 11,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 95,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "destination": 3,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 10,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 96,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 44,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 97,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 108,
+   "tag": "el",
+   "igt": "2026-10-08T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 98,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 188,
+   "tag": "el",
+   "igt": "2026-10-09T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 99,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 9,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 100,
+   "method": "POST",
+   "path": "/commit/expedition/2/changeExpedition",
+   "parameters": {
+    "destination": 2,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 101,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 106,
+   "tag": "el",
+   "igt": "2026-10-09T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 102,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 15,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 103,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 108,
+   "tag": "el",
+   "igt": "2026-10-10T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 104,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 8,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 105,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 91,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 106,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "destination": 4,
+    "depthLimit": "1f-3"
+   },
+   "status": 200,
+   "ms": 32,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 107,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 156,
+   "tag": "el",
+   "igt": "2026-10-10T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 108,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 91,
+   "tag": "el",
+   "igt": "2026-10-11T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 109,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 24,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 110,
+   "method": "POST",
+   "path": "/commit/expedition/2/changeExpedition",
+   "parameters": {
+    "destination": 3,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 19,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 111,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 58,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 112,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2,
+     3,
+     4,
+     5,
+     7,
+     9
+    ]
+   },
+   "status": 401,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 113,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 200,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 114,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2,
+     3,
+     4,
+     5,
+     7,
+     9
+    ]
+   },
+   "status": 200,
+   "ms": 68,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 115,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     5,
+     6,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 46,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 116,
+   "method": "POST",
+   "path": "/commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2,
+     4,
+     5
+    ]
+   },
+   "status": 200,
+   "ms": 20,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 117,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2,
+     3,
+     6,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 118,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     3,
+     4,
+     5
+    ]
+   },
+   "status": 200,
+   "ms": 16,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 119,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2,
+     3,
+     4,
+     5
+    ]
+   },
+   "status": 200,
+   "ms": 14,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 120,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3203/0/0",
+     "0/3310/0/0",
+     "0/3310/0/0",
+     "0/3101/1/0",
+     "0/3207/1/0",
+     "0/4101/1/0"
+    ]
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 121,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3108/5/0",
+     "0/4215/0/0",
+     "0/3311/1/0",
+     "0/3201/1/0",
+     "0/4109/4/0",
+     "0/3314/0/0",
+     "0/3107/3/0"
+    ]
+   },
+   "status": 200,
+   "ms": 21,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 122,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/1107/4/0",
+     "0/2107/4/0",
+     "0/4108/4/0",
+     "0/3107/0/0",
+     "0/3217/1/0"
+    ]
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 123,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/2107/4/0",
+     "0/2108/5/0",
+     "0/4215/1/0",
+     "0/4107/0/0",
+     "0/2107/5/0",
+     "0/4213/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 14,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 124,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3112/3/0",
+     "0/3103/4/0",
+     "0/1205/2/0",
+     "0/4110/1/0",
+     "0/3316/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 15,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 125,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3101/1/0",
+     "0/3102/1/0",
+     "0/3201/2/0",
+     "0/4205/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 16,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 126,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 16,
+   "tag": "depth",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 127,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 94,
+   "tag": "el",
+   "igt": "2026-10-11T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 128,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 148,
+   "tag": "el",
+   "igt": "2026-10-12T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 129,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 7,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 130,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 166,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 131,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2,
+     3,
+     5
+    ]
+   },
+   "status": 401,
+   "ms": 23,
+   "tag": "build",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 132,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 156,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 133,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2,
+     3,
+     5
+    ]
+   },
+   "status": 200,
+   "ms": 25,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 134,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     3
+    ]
+   },
+   "status": 200,
+   "ms": 18,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 135,
+   "method": "POST",
+   "path": "/commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     3
+    ]
+   },
+   "status": 200,
+   "ms": 15,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 136,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2,
+     3
+    ]
+   },
+   "status": 200,
+   "ms": 12,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 137,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2,
+     3,
+     4,
+     6
+    ]
+   },
+   "status": 200,
+   "ms": 11,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 138,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     3,
+     5
+    ]
+   },
+   "status": 200,
+   "ms": 11,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 139,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4306/0/0",
+     "0/1205/2/0",
+     "0/3304/2/0",
+     "0/1203/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 16,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 140,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4301/0/0",
+     "0/2107/4/0",
+     "0/4107/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 13,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 141,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4107/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 15,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 142,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3213/1/0",
+     "0/4101/3/0"
+    ]
+   },
+   "status": 200,
+   "ms": 10,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 143,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4110/0/0",
+     "0/3402/0/0",
+     "0/2317/0/0",
+     "0/3111/1/0",
+     "0/2103/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 12,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 144,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4101/2/0",
+     "0/3103/5/0",
+     "0/3101/1/0",
+     "0/4203/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 18,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 145,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 173,
+   "tag": "el",
+   "igt": "2026-10-12T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 146,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 168,
+   "tag": "el",
+   "igt": "2026-10-13T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 147,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 18,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 148,
+   "method": "POST",
+   "path": "/commit/expedition/2/changeExpedition",
+   "parameters": {
+    "destination": 4,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 18,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 149,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 89,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 150,
+   "method": "POST",
+   "path": "/commit/build/character/201/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 409,
+   "ms": 11,
+   "tag": "auto",
+   "igt": null,
+   "err": "stale_revision"
+  },
+  {
+   "n": 151,
+   "method": "POST",
+   "path": "/commit/build/character/201/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 8,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 152,
+   "method": "POST",
+   "path": "/commit/build/character/202/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 12,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 153,
+   "method": "POST",
+   "path": "/commit/build/character/203/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 14,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 154,
+   "method": "POST",
+   "path": "/commit/build/character/204/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 21,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 155,
+   "method": "POST",
+   "path": "/commit/build/character/205/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 11,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 156,
+   "method": "POST",
+   "path": "/commit/build/character/206/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 12,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 157,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 124,
+   "tag": "el",
+   "igt": "2026-10-13T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 158,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 12,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 159,
+   "method": "POST",
+   "path": "/commit/expedition/3/changeExpedition",
+   "parameters": {
+    "destination": 2,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 19,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 160,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 125,
+   "tag": "el",
+   "igt": "2026-10-14T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 161,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 5,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 162,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 74,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 163,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     7
+    ]
+   },
+   "status": 401,
+   "ms": 25,
+   "tag": "build",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 164,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 237,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 165,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 62,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 166,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     2,
+     5
+    ]
+   },
+   "status": 200,
+   "ms": 18,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 167,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     3
+    ]
+   },
+   "status": 200,
+   "ms": 19,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 168,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     2,
+     3,
+     4,
+     6
+    ]
+   },
+   "status": 200,
+   "ms": 13,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 169,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     5,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 12,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 170,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/2108/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 12,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 171,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": "0/3311/2/0",
+    "targetSlot": 1
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 172,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": "0/2107/4/0",
+    "targetSlot": 2
+   },
+   "status": 200,
+   "ms": 13,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 173,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": "0/2215/0/0",
+    "targetSlot": 5
+   },
+   "status": 200,
+   "ms": 14,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 174,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": "0/4108/3/0",
+    "targetSlot": 9
+   },
+   "status": 200,
+   "ms": 10,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 175,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": "0/3109/3/0",
+    "targetSlot": 7
+   },
+   "status": 200,
+   "ms": 12,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 176,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": "0/3313/0/0",
+    "targetSlot": 0
+   },
+   "status": 200,
+   "ms": 12,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 177,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": "0/4402/2/0",
+    "targetSlot": 1
+   },
+   "status": 200,
+   "ms": 14,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 178,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": "0/2215/0/0",
+    "targetSlot": 3
+   },
+   "status": 200,
+   "ms": 13,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 179,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": "0/4109/5/0",
+    "targetSlot": 9
+   },
+   "status": 200,
+   "ms": 12,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 180,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": "0/2111/2/0",
+    "targetSlot": 1
+   },
+   "status": 200,
+   "ms": 12,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 181,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": "0/3103/0/0",
+    "targetSlot": 2
+   },
+   "status": 200,
+   "ms": 11,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 182,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": "0/4223/0/0",
+    "targetSlot": 3
+   },
+   "status": 200,
+   "ms": 14,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 183,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": "0/4102/0/0",
+    "targetSlot": 4
+   },
+   "status": 200,
+   "ms": 11,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 184,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": "0/3203/2/0",
+    "targetSlot": 6
+   },
+   "status": 200,
+   "ms": 11,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 185,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": "0/4112/0/0",
+    "targetSlot": 7
+   },
+   "status": 200,
+   "ms": 12,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 186,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3103/3/0",
+     "0/3406/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 12,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 187,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 6,
+    "jewelToSet": "fort:1"
+   },
+   "status": 200,
+   "ms": 14,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 188,
+   "method": "POST",
+   "path": "/commit/build/character/3/jewelAttach",
+   "parameters": {
+    "targetEquipment": 4,
+    "jewelToSet": "fort:2"
+   },
+   "status": 200,
+   "ms": 12,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 189,
+   "method": "POST",
+   "path": "/commit/build/character/3/jewelAttach",
+   "parameters": {
+    "targetEquipment": 5,
+    "jewelToSet": "might:3"
+   },
+   "status": 200,
+   "ms": 13,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 190,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "destination": 5,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 13,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 191,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 172,
+   "tag": "el",
+   "igt": "2026-10-14T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 192,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 204,
+   "tag": "el",
+   "igt": "2026-10-15T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 193,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 7,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 194,
+   "method": "POST",
+   "path": "/commit/expedition/3/changeExpedition",
+   "parameters": {
+    "destination": 3,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 195,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 103,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 196,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     3
+    ]
+   },
+   "status": 409,
+   "ms": 42,
+   "tag": "build",
+   "igt": null,
+   "err": "stale_revision"
+  },
+  {
+   "n": 197,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     3
+    ]
+   },
+   "status": 200,
+   "ms": 23,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 198,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4
+    ]
+   },
+   "status": 200,
+   "ms": 44,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 199,
+   "method": "POST",
+   "path": "/commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 46,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 200,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     5
+    ]
+   },
+   "status": 200,
+   "ms": 22,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 201,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2,
+     4,
+     6
+    ]
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 202,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 18,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 203,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3109/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 19,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 204,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4402/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 19,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 205,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3311/1/0",
+     "0/4217/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 20,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 206,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/1107/6/0"
+    ]
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 207,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4318/0/0",
+     "0/3110/0/0",
+     "0/4219/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 16,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 208,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/5305/0/0",
+     "0/3304/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 209,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 193,
+   "tag": "el",
+   "igt": "2026-10-15T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 210,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 13,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 211,
+   "method": "POST",
+   "path": "/commit/build/character/301/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 28,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 212,
+   "method": "POST",
+   "path": "/commit/build/character/302/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 18,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 213,
+   "method": "POST",
+   "path": "/commit/build/character/303/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 214,
+   "method": "POST",
+   "path": "/commit/build/character/304/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 15,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 215,
+   "method": "POST",
+   "path": "/commit/build/character/305/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 16,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 216,
+   "method": "POST",
+   "path": "/commit/build/character/306/autoEquipment",
+   "parameters": {
+    "mode": "FULL",
+    "immediateAutoEquipment": true
+   },
+   "status": 200,
+   "ms": 16,
+   "tag": "auto",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 217,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "destination": 6,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 15,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 218,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 106,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 219,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2,
+     5,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 69,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 220,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4,
+     8
+    ]
+   },
+   "status": 200,
+   "ms": 29,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 221,
+   "method": "POST",
+   "path": "/commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     4
+    ]
+   },
+   "status": 200,
+   "ms": 86,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 222,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     2,
+     4
+    ]
+   },
+   "status": 200,
+   "ms": 29,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 223,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2
+    ]
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 224,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     6
+    ]
+   },
+   "status": 200,
+   "ms": 16,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 225,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3307/0/0",
+     "0/2105/1/0",
+     "0/1301/3/0",
+     "0/5103/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 226,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4402/2/0",
+     "0/3201/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 18,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 227,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3213/3/0",
+     "0/2108/5/0",
+     "0/3213/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 25,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 228,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4402/0/0",
+     "0/3311/1/0",
+     "0/4215/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 16,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 229,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3110/3/0"
+    ]
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 230,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/1203/3/0"
+    ]
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 231,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 5,
+    "jewelToSet": "fort:2"
+   },
+   "status": 200,
+   "ms": 14,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 232,
+   "method": "POST",
+   "path": "/commit/build/character/4/jewelAttach",
+   "parameters": {
+    "targetEquipment": 6,
+    "jewelToSet": "might:5"
+   },
+   "status": 200,
+   "ms": 13,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 233,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 220,
+   "tag": "el",
+   "igt": "2026-10-16T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 234,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 247,
+   "tag": "el",
+   "igt": "2026-10-16T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 235,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 7,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 236,
+   "method": "POST",
+   "path": "/commit/expedition/3/changeExpedition",
+   "parameters": {
+    "destination": 4,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 21,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 237,
+   "method": "POST",
+   "path": "/commit/expedition/4/changeExpedition",
+   "parameters": {
+    "destination": 2,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 238,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 127,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 239,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 66,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 240,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 29,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 241,
+   "method": "POST",
+   "path": "/commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     2,
+     3,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 38,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 242,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4,
+     6
+    ]
+   },
+   "status": 200,
+   "ms": 63,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 243,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3101/5/0",
+     "0/5103/4/0",
+     "0/2105/5/0"
+    ]
+   },
+   "status": 200,
+   "ms": 17,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 244,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3314/1/0",
+     "0/3311/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 25,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 245,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/2107/5/0",
+     "0/2108/5/0",
+     "0/4217/0/0",
+     "0/4107/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 25,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 246,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/5103/3/0",
+     "0/4203/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 16,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 247,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "depthLimit": "2f-4"
+   },
+   "status": 200,
+   "ms": 19,
+   "tag": "depth",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 248,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 166,
+   "tag": "el",
+   "igt": "2026-10-17T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 249,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 229,
+   "tag": "el",
+   "igt": "2026-10-17T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 250,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 212,
+   "tag": "el",
+   "igt": "2026-10-18T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 251,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 139,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 252,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9
+    ]
+   },
+   "status": 401,
+   "ms": 64,
+   "tag": "build",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 253,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 660,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 254,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9
+    ]
+   },
+   "status": 200,
+   "ms": 114,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 255,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9
+    ]
+   },
+   "status": 200,
+   "ms": 31,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 256,
+   "method": "POST",
+   "path": "/commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 30,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 257,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9
+    ]
+   },
+   "status": 200,
+   "ms": 22,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 258,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     6,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 39,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 259,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 27,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 260,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/6101/1/0",
+    "targetSlot": 0
+   },
+   "status": 200,
+   "ms": 29,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 261,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/5101/3/0",
+    "targetSlot": 1
+   },
+   "status": 200,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 262,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/6107/2/0",
+    "targetSlot": 2
+   },
+   "status": 200,
+   "ms": 22,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 263,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/4301/0/0",
+    "targetSlot": 3
+   },
+   "status": 200,
+   "ms": 25,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 264,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/6106/2/0",
+    "targetSlot": 4
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 265,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/6106/3/0",
+    "targetSlot": 5
+   },
+   "status": 200,
+   "ms": 23,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 266,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/2220/0/0",
+    "targetSlot": 6
+   },
+   "status": 200,
+   "ms": 21,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 267,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/2209/0/0",
+    "targetSlot": 7
+   },
+   "status": 200,
+   "ms": 20,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 268,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/4109/0/0",
+    "targetSlot": 8
+   },
+   "status": 200,
+   "ms": 31,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 269,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/4101/1/0",
+    "targetSlot": 9
+   },
+   "status": 200,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 270,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/4201/1/0",
+    "targetSlot": 10
+   },
+   "status": 200,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 271,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/4203/2/0",
+    "targetSlot": 11
+   },
+   "status": 200,
+   "ms": 22,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 272,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3213/3/0",
+     "0/6101/2/0",
+     "0/6107/2/0",
+     "0/6109/2/0",
+     "0/4213/2/0",
+     "0/4109/6/0",
+     "0/4402/2/0",
+     "0/2107/5/0",
+     "0/6213/0/0",
+     "0/4101/6/0"
+    ]
+   },
+   "status": 200,
+   "ms": 30,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 273,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3107/3/0",
+     "0/3311/1/0",
+     "0/6213/0/0",
+     "0/4402/1/0",
+     "0/3217/1/0",
+     "0/4107/4/0",
+     "0/6109/0/0",
+     "0/4107/5/0"
+    ]
+   },
+   "status": 200,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 274,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6313/0/0",
+     "0/2107/5/0",
+     "0/5109/0/0",
+     "0/6213/0/0",
+     "0/4213/3/0",
+     "0/6109/0/0",
+     "0/5108/1/0",
+     "0/1107/6/0",
+     "0/4107/4/0",
+     "0/6101/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 275,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3110/5/0",
+     "0/4223/2/0",
+     "0/4110/4/0",
+     "0/6110/1/0",
+     "0/5313/0/0",
+     "0/5223/0/0",
+     "0/5110/3/0"
+    ]
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 276,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/4201/1/0",
+    "targetSlot": 0
+   },
+   "status": 200,
+   "ms": 23,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 277,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/6102/2/0",
+    "targetSlot": 1
+   },
+   "status": 200,
+   "ms": 38,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 278,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/4306/4/0",
+    "targetSlot": 2
+   },
+   "status": 200,
+   "ms": 25,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 279,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/6103/0/0",
+    "targetSlot": 3
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 280,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/5101/1/0",
+    "targetSlot": 4
+   },
+   "status": 200,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 281,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/4203/0/0",
+    "targetSlot": 5
+   },
+   "status": 200,
+   "ms": 22,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 282,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/3103/0/0",
+    "targetSlot": 6
+   },
+   "status": 200,
+   "ms": 18,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 283,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/4101/1/0",
+    "targetSlot": 7
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 284,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/6103/3/0",
+    "targetSlot": 8
+   },
+   "status": 200,
+   "ms": 20,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 285,
+   "method": "POST",
+   "path": "/commit/build/character/1/jewelAttach",
+   "parameters": {
+    "targetEquipment": 4,
+    "jewelToSet": "fort:2"
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 286,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 5,
+    "jewelToSet": "fort:1"
+   },
+   "status": 200,
+   "ms": 22,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 287,
+   "method": "POST",
+   "path": "/commit/build/character/3/jewelAttach",
+   "parameters": {
+    "targetEquipment": 0,
+    "jewelToSet": "might:3"
+   },
+   "status": 200,
+   "ms": 20,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 288,
+   "method": "POST",
+   "path": "/commit/build/character/4/jewelAttach",
+   "parameters": {
+    "targetEquipment": 8,
+    "jewelToSet": "might:5"
+   },
+   "status": 200,
+   "ms": 22,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 289,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 20,
+   "tag": "depth",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 290,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 273,
+   "tag": "el",
+   "igt": "2026-10-18T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 291,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 272,
+   "tag": "el",
+   "igt": "2026-10-19T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 292,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 9,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 293,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 239,
+   "tag": "el",
+   "igt": "2026-10-19T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 294,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 15,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 295,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 162,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 296,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2,
+     10
+    ]
+   },
+   "status": 401,
+   "ms": 50,
+   "tag": "build",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 297,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 439,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 298,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2,
+     10
+    ]
+   },
+   "status": 200,
+   "ms": 80,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 299,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0
+    ]
+   },
+   "status": 200,
+   "ms": 27,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 300,
+   "method": "POST",
+   "path": "/commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     3
+    ]
+   },
+   "status": 200,
+   "ms": 21,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 301,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     6,
+     8,
+     9
+    ]
+   },
+   "status": 200,
+   "ms": 28,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 302,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     8
+    ]
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 303,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/5103/4/0",
+     "0/5215/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 25,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 304,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4107/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 305,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6107/6/0"
+    ]
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 306,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4201/2/0",
+     "0/3213/3/0",
+     "0/4201/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 21,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 307,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6101/2/0",
+     "0/5201/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 23,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 308,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 0,
+    "jewelToSet": "might:5"
+   },
+   "status": 200,
+   "ms": 21,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 309,
+   "method": "POST",
+   "path": "/commit/build/character/6/jewelAttach",
+   "parameters": {
+    "targetEquipment": 3,
+    "jewelToSet": "ward:2"
+   },
+   "status": 200,
+   "ms": 16,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 310,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 270,
+   "tag": "el",
+   "igt": "2026-10-20T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 311,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 244,
+   "tag": "el",
+   "igt": "2026-10-20T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 312,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 228,
+   "tag": "el",
+   "igt": "2026-10-21T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 313,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 10,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 314,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 166,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 315,
+   "method": "GET",
+   "path": "/read/base/shopItemsList",
+   "parameters": null,
+   "status": 401,
+   "ms": 46,
+   "tag": "",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 316,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 870,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 317,
+   "method": "GET",
+   "path": "/read/base/shopItemsList",
+   "parameters": null,
+   "status": 200,
+   "ms": 43,
+   "tag": "",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 318,
+   "method": "GET",
+   "path": "/read/base/shopInfo",
+   "parameters": null,
+   "status": 200,
+   "ms": 27,
+   "tag": "",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 319,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 366,
+   "tag": "el",
+   "igt": "2026-10-21T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 320,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 287,
+   "tag": "el",
+   "igt": "2026-10-22T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 321,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 244,
+   "tag": "el",
+   "igt": "2026-10-22T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 322,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 7,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 323,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 167,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 324,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11
+    ]
+   },
+   "status": 401,
+   "ms": 29,
+   "tag": "build",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 325,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 556,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 326,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11
+    ]
+   },
+   "status": 200,
+   "ms": 95,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 327,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9
+    ]
+   },
+   "status": 200,
+   "ms": 37,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 328,
+   "method": "POST",
+   "path": "/commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3,
+     5,
+     6,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 45,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 329,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9
+    ]
+   },
+   "status": 200,
+   "ms": 37,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 330,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 33,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 331,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8
+    ]
+   },
+   "status": 200,
+   "ms": 42,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 332,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4106/3/0",
+     "0/4301/2/0",
+     "0/5101/3/0",
+     "0/6312/0/0",
+     "0/4108/3/0",
+     "0/5101/3/0",
+     "0/6106/3/0",
+     "0/6101/4/0",
+     "0/5201/0/0",
+     "0/4109/5/0",
+     "0/5311/0/0",
+     "0/4101/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 37,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 333,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6109/4/0",
+     "0/4201/3/0",
+     "0/4109/6/0",
+     "0/4213/3/0",
+     "0/3311/2/0",
+     "0/6213/1/0",
+     "0/6101/4/0",
+     "0/4107/4/0",
+     "0/4101/6/0",
+     "0/2107/5/0"
+    ]
+   },
+   "status": 200,
+   "ms": 36,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 334,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4107/5/0",
+     "0/4402/2/0",
+     "0/6109/4/0",
+     "0/6313/0/0",
+     "0/3107/3/0",
+     "0/6213/0/0",
+     "0/6107/6/0"
+    ]
+   },
+   "status": 200,
+   "ms": 47,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 335,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/5109/4/0",
+     "0/1107/6/0",
+     "0/4213/3/0",
+     "0/2107/5/0",
+     "0/3213/3/0",
+     "0/6213/0/0",
+     "0/4201/2/0",
+     "0/6313/1/0",
+     "0/6109/4/0",
+     "0/6107/5/0"
+    ]
+   },
+   "status": 200,
+   "ms": 39,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 336,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6110/3/0",
+     "0/6315/0/0",
+     "0/4223/3/0",
+     "0/4219/3/0",
+     "0/4110/4/0",
+     "0/6112/3/0",
+     "0/5313/0/0",
+     "0/6110/3/0"
+    ]
+   },
+   "status": 200,
+   "ms": 40,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 337,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6203/1/0",
+     "0/4405/0/0",
+     "0/6101/4/0",
+     "0/3203/2/0",
+     "0/2220/2/0",
+     "0/3103/5/0",
+     "0/5101/1/0",
+     "0/6103/3/0",
+     "0/4306/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 38,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 338,
+   "method": "POST",
+   "path": "/commit/build/character/1/jewelAttach",
+   "parameters": {
+    "targetEquipment": 6,
+    "jewelToSet": "fort:2"
+   },
+   "status": 200,
+   "ms": 36,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 339,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 2,
+    "jewelToSet": "fort:1"
+   },
+   "status": 200,
+   "ms": 33,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 340,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 3,
+    "jewelToSet": "ward:2"
+   },
+   "status": 200,
+   "ms": 31,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 341,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 7,
+    "jewelToSet": "might:5"
+   },
+   "status": 200,
+   "ms": 33,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 342,
+   "method": "POST",
+   "path": "/commit/build/character/3/jewelAttach",
+   "parameters": {
+    "targetEquipment": 5,
+    "jewelToSet": "might:3"
+   },
+   "status": 200,
+   "ms": 30,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 343,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 364,
+   "tag": "el",
+   "igt": "2026-10-23T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 344,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 9,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 345,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 275,
+   "tag": "el",
+   "igt": "2026-10-23T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 346,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 9,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 347,
+   "method": "POST",
+   "path": "/read/expedition/1/simulationRun",
+   "parameters": {
+    "numberOfRun": 1000
+   },
+   "status": 200,
+   "ms": 776,
+   "tag": "sim",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 348,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 183,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 349,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 327,
+   "tag": "el",
+   "igt": "2026-10-24T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 350,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 252,
+   "tag": "el",
+   "igt": "2026-10-24T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 351,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 9,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 352,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 175,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 353,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     4,
+     6
+    ]
+   },
+   "status": 401,
+   "ms": 22,
+   "tag": "build",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 354,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 434,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 355,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     4,
+     6
+    ]
+   },
+   "status": 200,
+   "ms": 69,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 356,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     4
+    ]
+   },
+   "status": 200,
+   "ms": 29,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 357,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4,
+     6,
+     8,
+     9
+    ]
+   },
+   "status": 200,
+   "ms": 27,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 358,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     2,
+     4
+    ]
+   },
+   "status": 200,
+   "ms": 23,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 359,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/4209/3/0",
+    "targetSlot": 0
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 360,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/6311/2/0",
+    "targetSlot": 4
+   },
+   "status": 200,
+   "ms": 21,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 361,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/4201/0/0",
+    "targetSlot": 6
+   },
+   "status": 200,
+   "ms": 29,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 362,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": "0/6314/0/0",
+    "targetSlot": 12
+   },
+   "status": 200,
+   "ms": 21,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 363,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": "0/6107/5/0",
+    "targetSlot": 1
+   },
+   "status": 200,
+   "ms": 29,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 364,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": "0/6309/0/0",
+    "targetSlot": 4
+   },
+   "status": 200,
+   "ms": 21,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 365,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": "0/5109/0/0",
+    "targetSlot": 10
+   },
+   "status": 200,
+   "ms": 18,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 366,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": "0/4213/1/0",
+    "targetSlot": 8
+   },
+   "status": 200,
+   "ms": 21,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 367,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": "0/6101/4/0",
+    "targetSlot": 4
+   },
+   "status": 200,
+   "ms": 18,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 368,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": "0/5201/0/0",
+    "targetSlot": 6
+   },
+   "status": 200,
+   "ms": 20,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 369,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": "0/6309/0/0",
+    "targetSlot": 8
+   },
+   "status": 200,
+   "ms": 23,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 370,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": "0/4201/3/0",
+    "targetSlot": 9
+   },
+   "status": 200,
+   "ms": 20,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 371,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": "0/6107/2/0",
+    "targetSlot": 10
+   },
+   "status": 200,
+   "ms": 19,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 372,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": "0/4110/4/0",
+    "targetSlot": 8
+   },
+   "status": 200,
+   "ms": 23,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 373,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6205/2/0",
+     "0/2103/0/0",
+     "0/4101/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 374,
+   "method": "POST",
+   "path": "/commit/build/character/6/jewelAttach",
+   "parameters": {
+    "targetEquipment": 4,
+    "jewelToSet": "fort:2"
+   },
+   "status": 200,
+   "ms": 27,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 375,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 244,
+   "tag": "el",
+   "igt": "2026-10-25T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 376,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 9,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 377,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "destination": 7,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 30,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 378,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 173,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 379,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2,
+     3,
+     4
+    ]
+   },
+   "status": 200,
+   "ms": 142,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 380,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0
+    ]
+   },
+   "status": 200,
+   "ms": 41,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 381,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     6,
+     9
+    ]
+   },
+   "status": 200,
+   "ms": 52,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 382,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 49,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 383,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     3,
+     6
+    ]
+   },
+   "status": 200,
+   "ms": 42,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 384,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6313/0/0",
+     "0/5201/0/0",
+     "0/4201/3/0",
+     "0/6207/1/0"
+    ]
+   },
+   "status": 200,
+   "ms": 28,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 385,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/5215/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 25,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 386,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6107/1/0",
+     "0/6312/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 32,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 387,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3110/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 28,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 388,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3102/3/0",
+     "0/1203/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 389,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelRemove",
+   "parameters": {
+    "targetEquipment": 3
+   },
+   "status": 200,
+   "ms": 23,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 390,
+   "method": "POST",
+   "path": "/commit/build/character/3/jewelAttach",
+   "parameters": {
+    "targetEquipment": 8,
+    "jewelToSet": "ward:2"
+   },
+   "status": 200,
+   "ms": 25,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 391,
+   "method": "POST",
+   "path": "/commit/build/character/5/jewelAttach",
+   "parameters": {
+    "targetEquipment": 2,
+    "jewelToSet": "focus:2"
+   },
+   "status": 200,
+   "ms": 29,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 392,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 301,
+   "tag": "el",
+   "igt": "2026-10-25T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 393,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 341,
+   "tag": "el",
+   "igt": "2026-10-26T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 394,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 17,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 395,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 190,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 396,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     4,
+     9,
+     12
+    ]
+   },
+   "status": 401,
+   "ms": 23,
+   "tag": "build",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 397,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 473,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 398,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     4,
+     9,
+     12
+    ]
+   },
+   "status": 200,
+   "ms": 52,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 399,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4,
+     6,
+     8,
+     10
+    ]
+   },
+   "status": 200,
+   "ms": 31,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 400,
+   "method": "POST",
+   "path": "/commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4,
+     6
+    ]
+   },
+   "status": 200,
+   "ms": 29,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 401,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     3,
+     4,
+     10
+    ]
+   },
+   "status": 200,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 402,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4
+    ]
+   },
+   "status": 200,
+   "ms": 27,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 403,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     6,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 22,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 404,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/5109/3/0",
+     "0/6103/2/0",
+     "0/5105/4/0",
+     "0/2101/6/0"
+    ]
+   },
+   "status": 200,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 405,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6107/2/0",
+     "0/6101/4/0",
+     "0/7107/1/0",
+     "0/6313/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 28,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 406,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4402/1/0",
+     "0/7107/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 28,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 407,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/7213/0/0",
+     "0/6101/5/0",
+     "0/6403/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 408,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6112/3/0"
+    ]
+   },
+   "status": 200,
+   "ms": 27,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 409,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/4305/1/0",
+    "targetSlot": 6
+   },
+   "status": 200,
+   "ms": 23,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 410,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/7101/0/0",
+    "targetSlot": 7
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 411,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": "0/7102/2/0",
+    "targetSlot": 9
+   },
+   "status": 200,
+   "ms": 23,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 412,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelRemove",
+   "parameters": {
+    "targetEquipment": 7
+   },
+   "status": 200,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 413,
+   "method": "POST",
+   "path": "/commit/build/character/3/jewelAttach",
+   "parameters": {
+    "targetEquipment": 7,
+    "jewelToSet": "might:5"
+   },
+   "status": 200,
+   "ms": 20,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 414,
+   "method": "POST",
+   "path": "/commit/build/character/3/jewelRemove",
+   "parameters": {
+    "targetEquipment": 8
+   },
+   "status": 200,
+   "ms": 23,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 415,
+   "method": "POST",
+   "path": "/commit/build/character/6/jewelRemove",
+   "parameters": {
+    "targetEquipment": 4
+   },
+   "status": 200,
+   "ms": 33,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 416,
+   "method": "POST",
+   "path": "/commit/build/character/4/jewelAttach",
+   "parameters": {
+    "targetEquipment": 9,
+    "jewelToSet": "fort:2"
+   },
+   "status": 200,
+   "ms": 39,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 417,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 292,
+   "tag": "el",
+   "igt": "2026-10-26T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 418,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 332,
+   "tag": "el",
+   "igt": "2026-10-27T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 419,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 11,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 420,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 238,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 421,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     8,
+     10,
+     11
+    ]
+   },
+   "status": 401,
+   "ms": 57,
+   "tag": "build",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 422,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 397,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 423,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     8,
+     10,
+     11
+    ]
+   },
+   "status": 200,
+   "ms": 61,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 424,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4,
+     5
+    ]
+   },
+   "status": 200,
+   "ms": 32,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 425,
+   "method": "POST",
+   "path": "/commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     6
+    ]
+   },
+   "status": 200,
+   "ms": 31,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 426,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4
+    ]
+   },
+   "status": 200,
+   "ms": 25,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 427,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2
+    ]
+   },
+   "status": 200,
+   "ms": 30,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 428,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/7205/0/0",
+     "0/2108/5/0",
+     "0/6107/3/0"
+    ]
+   },
+   "status": 200,
+   "ms": 30,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 429,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4101/5/0",
+     "0/7107/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 31,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 430,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6213/1/0"
+    ]
+   },
+   "status": 200,
+   "ms": 27,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 431,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/7111/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 27,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 432,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6201/0/0",
+     "0/5102/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 433,
+   "method": "POST",
+   "path": "/commit/build/character/3/jewelAttach",
+   "parameters": {
+    "targetEquipment": 1,
+    "jewelToSet": "might:1"
+   },
+   "status": 200,
+   "ms": 25,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 434,
+   "method": "POST",
+   "path": "/commit/build/character/4/jewelAttach",
+   "parameters": {
+    "targetEquipment": 2,
+    "jewelToSet": "ward:2"
+   },
+   "status": 200,
+   "ms": 24,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 435,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 320,
+   "tag": "el",
+   "igt": "2026-10-27T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 436,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 272,
+   "tag": "el",
+   "igt": "2026-10-28T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 437,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 269,
+   "tag": "el",
+   "igt": "2026-10-28T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 438,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 24,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 439,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 220,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 440,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 401,
+   "ms": 29,
+   "tag": "el",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 441,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 951,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 442,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 414,
+   "tag": "el",
+   "igt": "2026-10-29T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 443,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 403,
+   "tag": "el",
+   "igt": "2026-10-29T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 444,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 318,
+   "tag": "el",
+   "igt": "2026-10-30T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 445,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 294,
+   "tag": "el",
+   "igt": "2026-10-30T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 446,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 286,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 447,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2,
+     3,
+     4,
+     5,
+     9,
+     10,
+     11,
+     12
+    ]
+   },
+   "status": 401,
+   "ms": 29,
+   "tag": "build",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 448,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 878,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 449,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2,
+     3,
+     4,
+     5,
+     9,
+     10,
+     11,
+     12
+    ]
+   },
+   "status": 200,
+   "ms": 99,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 450,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4
+    ]
+   },
+   "status": 200,
+   "ms": 34,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 451,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     4,
+     5,
+     6,
+     9,
+     10
+    ]
+   },
+   "status": 200,
+   "ms": 39,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 452,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     3,
+     4,
+     6
+    ]
+   },
+   "status": 200,
+   "ms": 38,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 453,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2,
+     8,
+     9
+    ]
+   },
+   "status": 200,
+   "ms": 38,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 454,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4312/2/0",
+     "0/7205/1/0",
+     "0/4306/4/0",
+     "0/7308/0/0",
+     "0/2221/0/0",
+     "0/7106/1/0",
+     "0/6106/4/0",
+     "0/4101/5/0",
+     "0/6306/1/0"
+    ]
+   },
+   "status": 200,
+   "ms": 38,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 455,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6107/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 29,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 456,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4213/2/0",
+     "0/7312/0/0",
+     "0/7107/1/0",
+     "0/6403/0/0",
+     "0/4213/1/0",
+     "0/6107/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 34,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 457,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/7110/3/0",
+     "0/7111/3/0",
+     "0/4219/4/0",
+     "0/7219/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 29,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 458,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4102/1/0",
+     "0/7101/2/0",
+     "0/3205/3/0",
+     "0/5305/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 28,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 459,
+   "method": "POST",
+   "path": "/commit/build/character/1/jewelAttach",
+   "parameters": {
+    "targetEquipment": 3,
+    "jewelToSet": "ward:1"
+   },
+   "status": 200,
+   "ms": 28,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 460,
+   "method": "POST",
+   "path": "/commit/build/character/1/jewelAttach",
+   "parameters": {
+    "targetEquipment": 7,
+    "jewelToSet": "fort:1"
+   },
+   "status": 200,
+   "ms": 32,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 461,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 6,
+    "jewelToSet": "fort:2"
+   },
+   "status": 200,
+   "ms": 42,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 462,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 10,
+    "jewelToSet": "focus:1"
+   },
+   "status": 200,
+   "ms": 35,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 463,
+   "method": "POST",
+   "path": "/commit/build/character/5/jewelAttach",
+   "parameters": {
+    "targetEquipment": 2,
+    "jewelToSet": "focus:4"
+   },
+   "status": 200,
+   "ms": 30,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 464,
+   "method": "POST",
+   "path": "/commit/build/character/3/jewelAttach",
+   "parameters": {
+    "targetEquipment": 2,
+    "jewelToSet": "focus:2"
+   },
+   "status": 200,
+   "ms": 33,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 465,
+   "method": "POST",
+   "path": "/commit/build/character/5/jewelAttach",
+   "parameters": {
+    "targetEquipment": 7,
+    "jewelToSet": "arcana:3"
+   },
+   "status": 200,
+   "ms": 27,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 466,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 287,
+   "tag": "el",
+   "igt": "2026-10-31T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 467,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 267,
+   "tag": "el",
+   "igt": "2026-10-31T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 468,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 264,
+   "tag": "el",
+   "igt": "2026-11-01T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 469,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 35,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 470,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "destination": 8,
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 28,
+   "tag": "dest",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 471,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 230,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 472,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     5,
+     10,
+     11
+    ]
+   },
+   "status": 401,
+   "ms": 45,
+   "tag": "build",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 473,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 1065,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 474,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     5,
+     10,
+     11
+    ]
+   },
+   "status": 200,
+   "ms": 108,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 475,
+   "method": "POST",
+   "path": "/commit/build/character/3/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     3,
+     8
+    ]
+   },
+   "status": 200,
+   "ms": 40,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 476,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4,
+     5,
+     7,
+     9,
+     10
+    ]
+   },
+   "status": 200,
+   "ms": 61,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 477,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     8
+    ]
+   },
+   "status": 200,
+   "ms": 28,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 478,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4
+    ]
+   },
+   "status": 200,
+   "ms": 35,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 479,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/4107/5/0",
+     "0/6205/2/0",
+     "0/6101/0/0",
+     "0/4103/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 31,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 480,
+   "method": "POST",
+   "path": "/commit/build/character/3/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6313/4/0",
+     "0/4402/2/0",
+     "0/7109/1/0"
+    ]
+   },
+   "status": 200,
+   "ms": 29,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 481,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/7408/0/0",
+     "0/7109/5/0",
+     "0/4107/3/0",
+     "0/6107/4/0",
+     "0/4213/3/0"
+    ]
+   },
+   "status": 200,
+   "ms": 43,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 482,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3223/1/0"
+    ]
+   },
+   "status": 200,
+   "ms": 32,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 483,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/7103/3/0"
+    ]
+   },
+   "status": 200,
+   "ms": 28,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 484,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelRemove",
+   "parameters": {
+    "targetEquipment": 6
+   },
+   "status": 200,
+   "ms": 33,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 485,
+   "method": "POST",
+   "path": "/commit/build/character/1/jewelAttach",
+   "parameters": {
+    "targetEquipment": 8,
+    "jewelToSet": "fort:2"
+   },
+   "status": 200,
+   "ms": 32,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 486,
+   "method": "POST",
+   "path": "/commit/build/character/3/jewelAttach",
+   "parameters": {
+    "targetEquipment": 3,
+    "jewelToSet": "might:1"
+   },
+   "status": 200,
+   "ms": 32,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 487,
+   "method": "POST",
+   "path": "/commit/build/character/5/jewelAttach",
+   "parameters": {
+    "targetEquipment": 5,
+    "jewelToSet": "focus:2"
+   },
+   "status": 200,
+   "ms": 26,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 488,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 304,
+   "tag": "el",
+   "igt": "2026-11-01T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 489,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 358,
+   "tag": "el",
+   "igt": "2026-11-02T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 490,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 321,
+   "tag": "el",
+   "igt": "2026-11-02T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 491,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 32,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 492,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 385,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 493,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 409,
+   "ms": 49,
+   "tag": "el",
+   "igt": null,
+   "err": "stale_revision"
+  },
+  {
+   "n": 494,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 338,
+   "tag": "el",
+   "igt": "2026-11-03T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 495,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 364,
+   "tag": "el",
+   "igt": "2026-11-03T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 496,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 308,
+   "tag": "el",
+   "igt": "2026-11-04T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 497,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 294,
+   "tag": "el",
+   "igt": "2026-11-04T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 498,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 257,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 499,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "depthLimit": "1f-4"
+   },
+   "status": 409,
+   "ms": 47,
+   "tag": "depth",
+   "igt": null,
+   "err": "stale_revision"
+  },
+  {
+   "n": 500,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "depthLimit": "1f-4"
+   },
+   "status": 200,
+   "ms": 33,
+   "tag": "depth",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 501,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 302,
+   "tag": "el",
+   "igt": "2026-11-05T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 502,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 326,
+   "tag": "el",
+   "igt": "2026-11-05T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 503,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 273,
+   "tag": "el",
+   "igt": "2026-11-06T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 504,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 297,
+   "tag": "el",
+   "igt": "2026-11-06T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 505,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 262,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 506,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     3,
+     5,
+     10,
+     11,
+     12
+    ]
+   },
+   "status": 401,
+   "ms": 45,
+   "tag": "build",
+   "igt": null,
+   "err": "control_lease_expired"
+  },
+  {
+   "n": 507,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 200,
+   "ms": 445,
+   "tag": "login",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 508,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     3,
+     5,
+     10,
+     11,
+     12
+    ]
+   },
+   "status": 200,
+   "ms": 108,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 509,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     2,
+     3,
+     6
+    ]
+   },
+   "status": 200,
+   "ms": 30,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 510,
+   "method": "POST",
+   "path": "/commit/build/character/4/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     0,
+     1,
+     3,
+     6,
+     8
+    ]
+   },
+   "status": 200,
+   "ms": 37,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 511,
+   "method": "POST",
+   "path": "/commit/build/character/5/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     3,
+     5
+    ]
+   },
+   "status": 200,
+   "ms": 35,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 512,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     1,
+     2,
+     4,
+     5,
+     6,
+     7,
+     8
+    ]
+   },
+   "status": 200,
+   "ms": 33,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 513,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/5102/0/0",
+     "0/5103/2/0",
+     "0/7101/3/0",
+     "0/5102/3/0",
+     "0/7101/5/0",
+     "0/3102/6/0",
+     "0/8504/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 37,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 514,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/3215/2/0",
+     "0/4109/3/0",
+     "0/7109/3/0",
+     "0/7408/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 30,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 515,
+   "method": "POST",
+   "path": "/commit/build/character/4/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/7213/0/0",
+     "0/6403/0/0",
+     "0/5109/4/0",
+     "0/4213/3/0",
+     "0/7107/1/0"
+    ]
+   },
+   "status": 200,
+   "ms": 39,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 516,
+   "method": "POST",
+   "path": "/commit/build/character/5/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/6223/1/0",
+     "0/8110/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 28,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 517,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/1314/1/0",
+     "0/4305/1/0",
+     "0/6203/2/0",
+     "0/8203/0/0",
+     "0/7301/0/0",
+     "0/4203/3/0",
+     "0/7302/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 31,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 518,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 2,
+    "jewelToSet": "fort:1"
+   },
+   "status": 200,
+   "ms": 27,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 519,
+   "method": "POST",
+   "path": "/commit/build/character/4/jewelAttach",
+   "parameters": {
+    "targetEquipment": 3,
+    "jewelToSet": "focus:2"
+   },
+   "status": 200,
+   "ms": 33,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 520,
+   "method": "POST",
+   "path": "/commit/build/character/4/jewelAttach",
+   "parameters": {
+    "targetEquipment": 6,
+    "jewelToSet": "ward:1"
+   },
+   "status": 200,
+   "ms": 25,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 521,
+   "method": "POST",
+   "path": "/commit/build/character/4/jewelAttach",
+   "parameters": {
+    "targetEquipment": 9,
+    "jewelToSet": "shade:3"
+   },
+   "status": 200,
+   "ms": 28,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 522,
+   "method": "POST",
+   "path": "/commit/build/character/4/jewelAttach",
+   "parameters": {
+    "targetEquipment": 10,
+    "jewelToSet": "shade:1"
+   },
+   "status": 200,
+   "ms": 27,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 523,
+   "method": "POST",
+   "path": "/commit/build/character/5/jewelAttach",
+   "parameters": {
+    "targetEquipment": 6,
+    "jewelToSet": "ward:4"
+   },
+   "status": 200,
+   "ms": 27,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 524,
+   "method": "POST",
+   "path": "/commit/expedition/1/changeExpedition",
+   "parameters": {
+    "depthLimit": "all"
+   },
+   "status": 200,
+   "ms": 31,
+   "tag": "depth",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 525,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 328,
+   "tag": "el",
+   "igt": "2026-11-07T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 526,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 297,
+   "tag": "el",
+   "igt": "2026-11-07T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 527,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 288,
+   "tag": "el",
+   "igt": "2026-11-08T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 528,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 276,
+   "tag": "el",
+   "igt": "2026-11-08T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 529,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 288,
+   "tag": "el",
+   "igt": "2026-11-09T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 530,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 226,
+   "tag": "el",
+   "igt": "2026-11-09T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 531,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 23,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 532,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 233,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 533,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 409,
+   "ms": 20,
+   "tag": "login",
+   "igt": null,
+   "err": "control_unavailable"
+  },
+  {
+   "n": 534,
+   "method": "POST",
+   "path": "/commit/build/character/2/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     4
+    ]
+   },
+   "status": 200,
+   "ms": 64,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 535,
+   "method": "POST",
+   "path": "/commit/build/character/2/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/8107/2/0"
+    ]
+   },
+   "status": 200,
+   "ms": 129,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 536,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 541,
+   "tag": "el",
+   "igt": "2026-11-10T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 537,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 565,
+   "tag": "el",
+   "igt": "2026-11-10T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 538,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 475,
+   "tag": "el",
+   "igt": "2026-11-11T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 539,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 443,
+   "tag": "el",
+   "igt": "2026-11-11T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 540,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 466,
+   "tag": "el",
+   "igt": "2026-11-12T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 541,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 393,
+   "tag": "el",
+   "igt": "2026-11-12T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 542,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 397,
+   "tag": "el",
+   "igt": "2026-11-13T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 543,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 353,
+   "tag": "el",
+   "igt": "2026-11-13T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 544,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 345,
+   "tag": "el",
+   "igt": "2026-11-14T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 545,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 398,
+   "tag": "el",
+   "igt": "2026-11-14T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 546,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 35,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 547,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 346,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 548,
+   "method": "POST",
+   "path": "/fundamental/logIn",
+   "parameters": {
+    "userId": "ClaudeS55Exp8",
+    "environment": "prod",
+    "gameMode": "normal"
+   },
+   "status": 409,
+   "ms": 20,
+   "tag": "login",
+   "igt": null,
+   "err": "control_unavailable"
+  },
+  {
+   "n": 549,
+   "method": "POST",
+   "path": "/commit/build/character/1/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     7,
+     10,
+     11
+    ]
+   },
+   "status": 200,
+   "ms": 153,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 550,
+   "method": "POST",
+   "path": "/commit/build/character/6/removeEquipment",
+   "parameters": {
+    "targetEquipment": [
+     2,
+     5,
+     6,
+     7
+    ]
+   },
+   "status": 200,
+   "ms": 98,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 551,
+   "method": "POST",
+   "path": "/commit/build/character/1/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/8103/4/0",
+     "0/3207/3/0",
+     "0/7205/0/0"
+    ]
+   },
+   "status": 200,
+   "ms": 109,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 552,
+   "method": "POST",
+   "path": "/commit/build/character/6/equip",
+   "parameters": {
+    "targetEquipment": [
+     "0/1203/2/0",
+     "0/2221/4/0",
+     "0/4201/0/0",
+     "0/3102/4/0"
+    ]
+   },
+   "status": 200,
+   "ms": 57,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 553,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 2,
+    "jewelToSet": "focus:2"
+   },
+   "status": 200,
+   "ms": 73,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 554,
+   "method": "POST",
+   "path": "/commit/build/character/2/jewelAttach",
+   "parameters": {
+    "targetEquipment": 7,
+    "jewelToSet": "might:2"
+   },
+   "status": 200,
+   "ms": 103,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 555,
+   "method": "POST",
+   "path": "/commit/build/character/4/jewelAttach",
+   "parameters": {
+    "targetEquipment": 5,
+    "jewelToSet": "focus:3"
+   },
+   "status": 200,
+   "ms": 35,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 556,
+   "method": "POST",
+   "path": "/commit/build/character/4/jewelAttach",
+   "parameters": {
+    "targetEquipment": 7,
+    "jewelToSet": "might:3"
+   },
+   "status": 200,
+   "ms": 30,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 557,
+   "method": "POST",
+   "path": "/commit/build/character/4/jewelAttach",
+   "parameters": {
+    "targetEquipment": 9,
+    "jewelToSet": "might:1"
+   },
+   "status": 200,
+   "ms": 28,
+   "tag": "build",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 558,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 420,
+   "tag": "el",
+   "igt": "2026-11-15T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 559,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 301,
+   "tag": "el",
+   "igt": "2026-11-15T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 560,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 299,
+   "tag": "el",
+   "igt": "2026-11-16T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 561,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 289,
+   "tag": "el",
+   "igt": "2026-11-16T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 562,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 282,
+   "tag": "el",
+   "igt": "2026-11-17T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 563,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 292,
+   "tag": "el",
+   "igt": "2026-11-17T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 564,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 270,
+   "tag": "el",
+   "igt": "2026-11-18T02:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 565,
+   "method": "POST",
+   "path": "/commit/progress/elapsed",
+   "parameters": {
+    "elapsedSeconds": 43200
+   },
+   "status": 200,
+   "ms": 272,
+   "tag": "el",
+   "igt": "2026-11-18T14:49:08.860Z",
+   "err": null
+  },
+  {
+   "n": 566,
+   "method": "GET",
+   "path": "/read/observation/expedition",
+   "parameters": null,
+   "status": 200,
+   "ms": 30,
+   "tag": "obs-exp",
+   "igt": null,
+   "err": null
+  },
+  {
+   "n": 567,
+   "method": "POST",
+   "path": "/commit/setting/backup/export",
+   "parameters": {},
+   "status": 200,
+   "ms": 290,
+   "tag": "export",
+   "igt": null,
+   "err": null
+  }
+ ],
+ "summary": [
+  {
+   "endpoint": "POST /commit/progress/elapsed",
+   "count": 102,
+   "ms_total": 24903,
+   "ms_mean": 244.1,
+   "ms_max": 565,
+   "errors": 8
+  },
+  {
+   "endpoint": "POST /fundamental/logIn",
+   "count": 20,
+   "ms_total": 8242,
+   "ms_mean": 412.1,
+   "ms_max": 1065,
+   "errors": 3
+  },
+  {
+   "endpoint": "POST /commit/setting/backup",
+   "count": 34,
+   "ms_total": 5350,
+   "ms_mean": 157.4,
+   "ms_max": 385,
+   "errors": 0
+  },
+  {
+   "endpoint": "POST /commit/build/character/{id}/removeEquipment",
+   "count": 114,
+   "ms_total": 4553,
+   "ms_mean": 39.9,
+   "ms_max": 153,
+   "errors": 14
+  },
+  {
+   "endpoint": "POST /commit/build/character/{id}/equip",
+   "count": 144,
+   "ms_total": 3478,
+   "ms_mean": 24.2,
+   "ms_max": 129,
+   "errors": 0
+  },
+  {
+   "endpoint": "POST /commit/build/character/{id}/jewelAttach",
+   "count": 44,
+   "ms_total": 1296,
+   "ms_mean": 29.5,
+   "ms_max": 103,
+   "errors": 0
+  },
+  {
+   "endpoint": "POST /read/expedition/1",
+   "count": 1,
+   "ms_total": 776,
+   "ms_mean": 776.0,
+   "ms_max": 776,
+   "errors": 0
+  },
+  {
+   "endpoint": "GET /read/observation/expedition",
+   "count": 40,
+   "ms_total": 564,
+   "ms_mean": 14.1,
+   "ms_max": 43,
+   "errors": 0
+  },
+  {
+   "endpoint": "POST /commit/expedition/1",
+   "count": 17,
+   "ms_total": 417,
+   "ms_mean": 24.5,
+   "ms_max": 55,
+   "errors": 2
+  },
+  {
+   "endpoint": "POST /commit/build/character/{id}/autoEquipment",
+   "count": 19,
+   "ms_total": 292,
+   "ms_mean": 15.4,
+   "ms_max": 34,
+   "errors": 1
+  },
+  {
+   "endpoint": "POST /fundamental/logOut",
+   "count": 2,
+   "ms_total": 161,
+   "ms_mean": 80.5,
+   "ms_max": 143,
+   "errors": 1
+  },
+  {
+   "endpoint": "POST /commit/build/character/{id}/jewelRemove",
+   "count": 5,
+   "ms_total": 138,
+   "ms_mean": 27.6,
+   "ms_max": 33,
+   "errors": 0
+  },
+  {
+   "endpoint": "POST /commit/build/character/{id}/changeBuild",
+   "count": 5,
+   "ms_total": 108,
+   "ms_mean": 21.6,
+   "ms_max": 53,
+   "errors": 0
+  },
+  {
+   "endpoint": "GET /read/base/shopItemsList",
+   "count": 3,
+   "ms_total": 92,
+   "ms_mean": 30.7,
+   "ms_max": 46,
+   "errors": 1
+  },
+  {
+   "endpoint": "POST /commit/expedition/3",
+   "count": 3,
+   "ms_total": 64,
+   "ms_mean": 21.3,
+   "ms_max": 24,
+   "errors": 0
+  },
+  {
+   "endpoint": "GET /read/base/shopInfo",
+   "count": 2,
+   "ms_total": 62,
+   "ms_mean": 31.0,
+   "ms_max": 35,
+   "errors": 0
+  },
+  {
+   "endpoint": "POST /commit/expedition/2",
+   "count": 3,
+   "ms_total": 61,
+   "ms_mean": 20.3,
+   "ms_max": 24,
+   "errors": 0
+  },
+  {
+   "endpoint": "GET /read/observation/party?partyNumber=1",
+   "count": 2,
+   "ms_total": 49,
+   "ms_mean": 24.5,
+   "ms_max": 31,
+   "errors": 0
+  },
+  {
+   "endpoint": "GET /fundamental/status",
+   "count": 1,
+   "ms_total": 40,
+   "ms_mean": 40.0,
+   "ms_max": 40,
+   "errors": 0
+  },
+  {
+   "endpoint": "GET /read/build/character/{id}/status",
+   "count": 1,
+   "ms_total": 27,
+   "ms_mean": 27.0,
+   "ms_max": 27,
+   "errors": 0
+  },
+  {
+   "endpoint": "POST /commit/build/party",
+   "count": 1,
+   "ms_total": 17,
+   "ms_mean": 17.0,
+   "ms_max": 17,
+   "errors": 0
+  },
+  {
+   "endpoint": "POST /commit/expedition/4",
+   "count": 1,
+   "ms_total": 17,
+   "ms_mean": 17.0,
+   "ms_max": 17,
+   "errors": 0
+  },
+  {
+   "endpoint": "GET /read/observation/compact",
+   "count": 1,
+   "ms_total": 14,
+   "ms_mean": 14.0,
+   "ms_max": 14,
+   "errors": 0
+  },
+  {
+   "endpoint": "POST /fundamental/signUp",
+   "count": 1,
+   "ms_total": 11,
+   "ms_mean": 11.0,
+   "ms_max": 11,
+   "errors": 0
+  },
+  {
+   "endpoint": "GET /read/observation/base",
+   "count": 1,
+   "ms_total": 5,
+   "ms_mean": 5.0,
+   "ms_max": 5,
+   "errors": 0
+  }
+ ],
+ "total_calls": 567,
+ "total_ms": 50737
+}

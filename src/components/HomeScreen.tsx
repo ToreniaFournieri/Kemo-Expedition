@@ -1,6 +1,10 @@
+import type { UniqueCharacterId } from '../data/uniqueCharacters';
 import { renderDiaryBattle, renderDiaryMetadata, renderExpeditionMetadata } from '../game/compactDiary.ts';
 import { formatDiaryUnreadBadge } from '../game/diary';
+import { countUnreadGlobalDiaryLogs, GLOBAL_DIARY_PARTY_NUMBER } from '../game/globalDiary';
 import { gameReducer, simulateExpeditionRuns } from '../hooks/useGameState';
+import { flushSync } from 'react-dom';
+import type { ReactNode } from 'react';
 import { lazy,Profiler,Suspense,useCallback,useEffect,useMemo,useRef,useState } from 'react';
 import { CLASSES } from '../data/classes';
 import { DEVELOPER_NEWS_ITEMS } from '../data/developerNews';
@@ -116,7 +120,8 @@ import { useApiRead, useApiReadAllPages, useApiReadMany } from './home/useApiRea
 import type { ApiV1PartyCycleWrite } from '../api/v1/commitOperations';
 import { parseSimulationRunData, type SimulationRunData } from '../api/v1/simulationView';
 import { createApplicationApi, type ApplicationApi, type InProcessApiAdapter } from '../api/v1/applicationApi';
-import { serializeApiV1Control } from '../api/v1/authority';
+import { apiV1ReceiptJson, serializeApiV1ControlWithoutReceipts } from '../api/v1/authority';
+import { ApiReceiptJournalTracker, RECEIPT_JOURNAL_MISMATCH, type ApiReceiptSync } from '../api/v1/receiptJournalSync';
 import type { ApiV1ClairvoyanceResource } from '../api/v1/readModels';
 import apiRequirementsDocument from '../../Specification_9.1.3_API.md?raw';
 import apiDetailDocument from '../../Specification_9.1.4_API_DETAIL.md?raw';
@@ -263,13 +268,42 @@ export function preloadRemainingHomeTabs() {
 // SpecRef: 9.1.3 | 2-4-1 searchItems | `limit`: the Party tab needs every owned stack, so it asks for the maximum (5000).
 const SEARCH_ITEMS_LIMIT = 5000;
 
-export function HomeScreen({
+// The presentation has its own lifetime; the runtime and API bridge survive headless sessions.
+const apiReceiptJournal = new ApiReceiptJournalTracker(apiV1ReceiptJson);
+
+/** Sends control metadata with receipts as a journal change; a host that disagrees about its journal gets one full resend. */
+async function commitControlWithReceiptJournal(
+  identity: DesktopApiAccountIdentity,
+  control: DesktopApiControlMetadata,
+  send: (controlJson: string, sync: ApiReceiptSync) => Promise<boolean>,
+): Promise<boolean> {
+  const accountKey = JSON.stringify(identity);
+  const controlJson = serializeApiV1ControlWithoutReceipts(control);
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      const committed = await send(controlJson, apiReceiptJournal.plan(accountKey, control.receipts, attempt > 0));
+      apiReceiptJournal.confirm(accountKey, control.receipts);
+      return committed;
+    } catch (error) {
+      if (attempt > 0 || !String((error as Error)?.message ?? error).includes(RECEIPT_JOURNAL_MISMATCH)) throw error;
+    }
+  }
+}
+
+function HomeScreen({ render }: { render: () => ReactNode }) {
+  return render();
+}
+
+export function GameRuntimeHost({
   state,
   actions,
   notifications,
   onDismissNotification,
   onDismissAllNotifications,
-}: HomeScreenProps) {
+  uiClassName,
+}: HomeScreenProps & { uiClassName?: string }) {
+  const [headless, setHeadless] = useState(false);
+  const headlessRef = useRef(false);
   const renderStartedAt = performance.now();
   const shouldOptimizeAfkRenderer = useAfkRendererPartyStatsMemo();
   const shouldUseCoordinatorAuthority = useAfkCoordinatorAuthorityCandidate();
@@ -575,12 +609,14 @@ export function HomeScreen({
         accounts: {
           create: (identity, savePayload) => desktop().createApiAccount(identity, savePayload),
           load: (identity) => desktop().loadApiAccount(identity),
-          // The control goes over IPC as JSON: cloning its retained receipts as objects cost more than the commit itself.
-          commit: (identity, savePayload, control) => desktop().commitApiAccount(identity, savePayload, serializeApiV1Control(control)),
+          // The control goes over IPC as JSON without its receipts; receipts follow the host's append-only journal.
+          commit: (identity, savePayload, control) => commitControlWithReceiptJournal(identity, control, (controlJson, sync) => desktop().commitApiAccount(identity, savePayload, controlJson, sync)),
+          ...(window.bokemoDesktop?.commitApiAccountSegments ? { commitSegments: (identity, segments, control) => commitControlWithReceiptJournal(identity, control, (controlJson, sync) => desktop().commitApiAccountSegments!(identity, segments, controlJson, sync)) } : {}),
         },
         player: {
           flushSave: () => apiActionsRef.current.flushSave(),
-          exportPayload: () => apiActionsRef.current.getCompressedSavePayload(),
+          // Both payloads are read back only by this runtime, so they use the fast internal encoding, not the backup codec.
+          exportPayload: () => apiActionsRef.current.getCompressedSavePayload('stored'),
           returnPayload: {
             get: () => localStorage.getItem(API_PLAYER_RETURN_STORAGE_KEY),
             set: (payload) => localStorage.setItem(API_PLAYER_RETURN_STORAGE_KEY, payload),
@@ -588,7 +624,7 @@ export function HomeScreen({
           },
         },
         importGameState: (imported) => apiActionsRef.current.importGameState(imported),
-        exportActiveAccountPayload: () => apiActionsRef.current.getCompressedSavePayload(),
+        exportActiveAccountPayload: () => apiActionsRef.current.getCompressedSavePayload('stored'),
         now: () => Date.now(),
         catchUp: {
           maximumElapsedMs: AFK_MAX_ELAPSED_MS,
@@ -606,11 +642,16 @@ export function HomeScreen({
         enemyLevelOffset: () => apiRuntimeRef.current.enemyLevelOffset,
         cycleDurationScale: () => apiCycleDurationScaleRef.current,
         applyAutoEquipment: (snapshot, partyIndex, characterId, forceFull) => apiStrategyEquipRef.current(snapshot, partyIndex, characterId, forceFull),
-        simulate: async (snapshot, partyIndex, count) => {
+        simulate: async (snapshot, partyIndex, count, seed, options) => {
           // SpecRef: 8.3 | Simulation Run progress is an in-process exception to the API boundary: only the Expedition
           // pane's own in-flight request registers a listener, and it is captured at start so later runs never report into it.
           const onProgress = simulationProgressListenerRef.current ?? undefined;
-          return simulateExpeditionRuns(snapshot, partyIndex, gameModeRef.current, count, onProgress, apiRuntimeRef.current.enemyLevelOffset);
+          // A search's seeded runs never report into that pane; a Simulation Run read does, seeded or not.
+          const reports = options?.reportProgress ?? seed === undefined;
+          return simulateExpeditionRuns(snapshot, partyIndex, gameModeRef.current, count, reports ? onProgress : undefined, apiRuntimeRef.current.enemyLevelOffset, seed, {
+            ...(options?.onlyRoom ? { onlyRoom: options.onlyRoom } : {}),
+            ...(options?.startHpShare !== undefined ? { startHpShare: options.startHpShare } : {}),
+          });
         },
         persistPlayer: async (snapshot) => { await apiActionsRef.current.persistApiState(snapshot); },
         persistPlayerReplacement: async (snapshot) => { await apiActionsRef.current.persistApiStateReplacement(snapshot); },
@@ -637,7 +678,18 @@ export function HomeScreen({
         colosseumEnabled: () => colosseumEnabledRef.current,
       },
       help: { requirements: apiRequirementsDocument, detail: apiDetailDocument },
-      onSessionActive: (active, userId) => { apiControlActiveRef.current = active; setApiControlActive(active); setApiSessionUserId(active ? userId ?? '' : ''); },
+      onSessionActive: (active, userId, requestedHeadless) => {
+        apiControlActiveRef.current = active;
+        headlessRef.current = active && requestedHeadless === true;
+        void window.bokemoDesktop?.setApiV1Headless?.(headlessRef.current);
+        lastPartyProgressSnapshotHashRef.current = '';
+        // Complete the presentation transition before returning a successful login/logout.
+        flushSync(() => {
+          setHeadless(headlessRef.current);
+          setApiControlActive(active);
+          setApiSessionUserId(active ? userId ?? '' : '');
+        });
+      },
       delivery: { send: sendApiV1Delivery },
     }, state);
   }
@@ -2093,26 +2145,26 @@ export function HomeScreen({
 
   // SpecRef: 8.2.4 | Equipment management | Undo and Redo availability comes from the equipment projection
   const historyCharacter = currentParty.characters[selectedCharacter] ?? currentParty.characters[0];
-  const equipmentProjection = useApiRead<{ validOptions: { undoEquipment: { available: boolean }; redoEquipment: { available: boolean } } }>(
+  const equipmentProjection = useApiRead<{ characters: { validOptions: { undoEquipment: { available: boolean }; redoEquipment: { available: boolean } } }[] }>(
     inProcessApiRef.current,
-    'read/build/character/{characterId}/equipment',
-    historyCharacter ? { pathParameters: { characterId: historyCharacter.id } } : null,
-    [historyCharacter?.id, historyCharacter?.equipment, state.global.inventory, state.global.jewels, currentParty.level],
+    'read/build/character/equipment',
+    !headless && historyCharacter ? { parameters: { characterId: historyCharacter.id } } : null,
+    [historyCharacter?.id, historyCharacter?.equipment, state.global.inventory, state.global.jewels, currentParty.level], !headless,
   );
 
   // SpecRef: 8.2 | UI_PARTY | Saved equipment sets and the deity pane render from projections
-  const equipmentSetProjection = useApiRead<{ equipmentSets: Parameters<typeof parseSavedEquipmentSet>[0][] }>(
+  const equipmentSetProjection = useApiRead<{ characters: { equipmentSets: Parameters<typeof parseSavedEquipmentSet>[0][] }[] }>(
     inProcessApiRef.current,
-    'read/build/character/{characterId}/equipmentSet',
-    historyCharacter ? { pathParameters: { characterId: historyCharacter.id }, parameters: { isEquipmentSetDetail: true } } : null,
-    [historyCharacter?.id, state.global.savedEquipmentSets],
+    'read/build/character/equipmentSet',
+    !headless && historyCharacter ? { parameters: { characterId: historyCharacter.id, isEquipmentSetDetail: true } } : null,
+    [historyCharacter?.id, state.global.savedEquipmentSets], !headless,
   );
   const savedEquipmentSetsView = useMemo(
-    () => (equipmentSetProjection?.equipmentSets ?? []).map(parseSavedEquipmentSet),
+    () => (equipmentSetProjection?.characters[0]?.equipmentSets ?? []).map(parseSavedEquipmentSet),
     [equipmentSetProjection],
   );
   // The owned inventory and Jewel counts are only needed while the Party tab is on screen.
-  const isPartyTabVisible = isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'party' : activeTab === 'party';
+  const isPartyTabVisible = !headless && (isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'party' : activeTab === 'party');
 
   // SpecRef: 8.2 | UI_PARTY | The party pane, member list, and deity pane render from `read/observation/party`.
   // Re-read only when a displayed fact changes: the selected party's members, level, experience, and deity, or any party's
@@ -2128,7 +2180,7 @@ export function HomeScreen({
   // SpecRef: 8.3 | UI_EXPEDITION | The pane reads its state, clocks, HP, goals, and controls from the projection.
   // Step-based state changes are server-gated, so refresh at the earliest projected boundary rather than deriving a
   // future room from the already-resolved log in the renderer.
-  const isExpeditionTabVisible = isPartyExpeditionSplitViewEnabled || activeTab === 'expedition';
+  const isExpeditionTabVisible = !headless && (isPartyExpeditionSplitViewEnabled || activeTab === 'expedition');
   const [expeditionProjectionRefresh, setExpeditionProjectionRefresh] = useState(0);
   const expeditionObservation = useApiRead<{ expeditionInfo: ExpeditionProjection }>(
     inProcessApiRef.current,
@@ -2183,7 +2235,7 @@ export function HomeScreen({
   }, [expeditionProjection, latestBattleLogProjections, state.parties]);
   // SpecRef: 8.4 | UI_BASE | The Base panes read the Base projection and commit through the Application API.
   // The Shop lineup rotates with the clock, so the projection is re-read when the next scheduled refresh arrives.
-  const isBaseTabVisible = isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'base' : activeTab === 'base';
+  const isBaseTabVisible = !headless && (isPartyExpeditionSplitViewEnabled ? activeWideModeSecondaryTab === 'base' : activeTab === 'base');
   const [baseProjectionRefresh, setBaseProjectionRefresh] = useState(0);
   const baseObservation = useApiRead<{ baseInfo: BaseProjection }>(
     inProcessApiRef.current, 'read/observation/base', {}, [state.global, state.parties, baseProjectionRefresh], isBaseTabVisible,
@@ -2259,7 +2311,7 @@ export function HomeScreen({
   const ownedJewelsView = useMemo(() => parseJewelStacks(ownedJewelsProjection?.items ?? []), [ownedJewelsProjection]);
   const donationProjection = useApiRead<{ gods: string[] }>(
     inProcessApiRef.current, 'resources/donationBox', {},
-    [state.global.deityDonations, state.global.unlockedDeities],
+    [state.global.deityDonations, state.global.unlockedDeities], !headless,
   );
   const deityView = useMemo(() => {
     const donations: Record<string, number> = {};
@@ -2783,7 +2835,7 @@ export function HomeScreen({
   // SpecRef: 9.1.2 | macOS menu-bar Party Progress pane | read-only Party Progress snapshot
   useEffect(() => {
     const desktop = window.bokemoDesktop;
-    if (!desktop) return;
+    if (!desktop || headless) return;
 
     const now = Date.now();
     const parties: DesktopPartyProgressPartySnapshot[] = state.parties.map((party, partyIndex) => {
@@ -2885,7 +2937,7 @@ export function HomeScreen({
       schemaVersion: 1 as const,
       environment: getEnvironmentId(),
       language: state.global.language,
-      unreadDiaryCount: state.parties.reduce((count, party) => (
+      unreadDiaryCount: countUnreadGlobalDiaryLogs(state.global.globalDiary) + state.parties.reduce((count, party) => (
         count + party.diaryLogs.reduce((partyCount, log) => partyCount + (log.isRead ? 0 : 1), 0)
       ), 0),
       theme: getDesktopTheme(gameMode, isDarkModeEnabled),
@@ -2906,7 +2958,7 @@ export function HomeScreen({
       lastPartyProgressSnapshotHashRef.current = '';
       console.error('Failed to publish Party Progress pane snapshot:', error);
     });
-  }, [gameMode, hasActiveTimeSpeedBonus, isDarkModeEnabled, partyCycles, pendingAfkMs, state.global.language, state.parties]);
+  }, [headless, gameMode, hasActiveTimeSpeedBonus, isDarkModeEnabled, partyCycles, pendingAfkMs, state.global.language, state.parties]);
 
   // SpecRef: 9.1.1 | macOS background lifecycle and native notifications | Diary-filtered native notifications
   useEffect(() => {
@@ -2932,7 +2984,7 @@ export function HomeScreen({
     const wasAfkRecovery = nativeAfkRecoveryRef.current;
     nativeAfkRecoveryRef.current = false;
     const preferences = getDesktopPreferences();
-    if (!preferences.nativeNotificationsEnabled) return;
+    if (headlessRef.current || !preferences.nativeNotificationsEnabled) return;
 
     void desktop.getWindowVisibility().then(async (isVisible) => {
       if (preferences.nativeNotificationMode === 'hiddenOnly' && isVisible) return;
@@ -2973,7 +3025,8 @@ export function HomeScreen({
       const partyIndex = payload.partyId === undefined
         ? state.selectedPartyIndex
         : state.parties.findIndex((party) => party.id === payload.partyId);
-      const selectActivatedParty = () => { if (partyIndex >= 0) actions.selectParty(partyIndex); };
+      // A party notification opens that party's Diary tab, not the Global tab.
+      const selectActivatedParty = () => { setIsDiaryGlobalSelected(false); if (partyIndex >= 0) actions.selectParty(partyIndex); };
       if (isPartyExpeditionSplitViewEnabled) {
         setActiveWideModeSecondaryTab('diary');
       } else {
@@ -4408,7 +4461,7 @@ export function HomeScreen({
 
         // SpecRef: 5.1.2 | Side Quest | Expiration
         if (party.sideQuest && simulationNow >= getScaledSideQuestExpiresAt(party.sideQuest, timeSpeedScale)) {
-          actions.cancelSideQuest(partyIndex);
+          actions.cancelSideQuest(partyIndex, true);
           if (!suppressCycleNotificationsForAfk && party.diarySettings.notifySideQuestPopup) {
             actions.addNotification(t('home.notification.sideQuestFailed', { party: party.name, quest: resolveSideQuestShortText(party.sideQuest) }));
           }
@@ -4777,8 +4830,8 @@ export function HomeScreen({
           const gained = currentLog.rewards.filter((item) => item.superRare > 0).length;
           if (gained > 0) actions.advanceSideQuest(index, gained, simulatedAt);
         }
-        if (party.sideQuest.type === 'q.treasure-boss-rare') {
-          const gained = currentLog.rewards.filter((item) => getItemRarityById(item.id) === 'bossRare').length;
+        if (party.sideQuest.type === 'q.treasure-epic-rare') {
+          const gained = currentLog.rewards.filter((item) => getItemRarityById(item.id) === 'epic').length;
           if (gained > 0) actions.advanceSideQuest(index, gained, simulatedAt);
         }
         if (party.sideQuest.type === 'q.poor-kid' && (currentLog.rewards.length ?? 0) === 0) {
@@ -4839,7 +4892,7 @@ export function HomeScreen({
             const rarity = getItemRarityById(item.id);
             actions.addNotification(
               t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
-              rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
+              rarity === 'rare' || rarity === 'epic' || isSuperRare ? 'rare' : 'normal',
               'item',
               undefined,
               { rarity, isSuperRareItem: isSuperRare }
@@ -5111,7 +5164,7 @@ export function HomeScreen({
         const rarity = getItemRarityById(item.id);
         actions.addNotification(
           t('home.notification.partyObtainedItem', { party: party.name, item: itemName }),
-          rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
+          rarity === 'rare' || rarity === 'epic' || isSuperRare ? 'rare' : 'normal',
           'item',
           undefined,
           { rarity, isSuperRareItem: isSuperRare }
@@ -5235,16 +5288,18 @@ export function HomeScreen({
     }
   }, [effectiveDebugSettings.timeSpeed]);
 
-  const isDiaryTabVisible = isPartyExpeditionSplitViewEnabled
+  const isDiaryTabVisible = !headless && (isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'diary'
-    : activeTab === 'diary';
+    : activeTab === 'diary');
   // SpecRef: 8.5 / 9.1.4.17 | The Diary pane receives only API summaries and retained-log projections. The shared Party
   // selection remains persisted game state; settings and read acknowledgement are serialized Application API commits.
+  // SpecRef: 8.5 | UI_DIARY | Default selected tab: Global, or the last selected tab (kept for the session).
+  const [isDiaryGlobalSelected, setIsDiaryGlobalSelected] = useState(true);
   const diaryObservation = useApiRead<{ diaryInfo: DiaryProjection }>(
     inProcessApiRef.current,
     'read/observation/diary',
-    { parameters: { partyNumber: currentParty.id } },
-    [state.parties, currentParty.id],
+    { parameters: { partyNumber: isDiaryGlobalSelected ? GLOBAL_DIARY_PARTY_NUMBER : currentParty.id } },
+    [state.parties, state.global.globalDiary, currentParty.id, isDiaryGlobalSelected],
     isDiaryTabVisible,
   );
   const diaryProjection = diaryObservation?.diaryInfo ?? null;
@@ -5281,16 +5336,26 @@ export function HomeScreen({
       if (response?.error) console.error('[api-v1] Diary settings change failed', response.error);
     });
   }, []);
-  const selectedDiaryPartyNumberRef = useRef(currentParty.id);
-  selectedDiaryPartyNumberRef.current = currentParty.id;
+  const selectedDiaryPartyNumberRef = useRef(isDiaryGlobalSelected ? GLOBAL_DIARY_PARTY_NUMBER : currentParty.id);
+  selectedDiaryPartyNumberRef.current = isDiaryGlobalSelected ? GLOBAL_DIARY_PARTY_NUMBER : currentParty.id;
   const selectDiaryParty = useCallback((partyNumber: number) => {
     if (partyNumber === selectedDiaryPartyNumberRef.current) return;
     const previousPartyNumber = selectedDiaryPartyNumberRef.current;
     selectedDiaryPartyNumberRef.current = partyNumber;
+    const applyDiarySelection = () => {
+      if (partyNumber === GLOBAL_DIARY_PARTY_NUMBER) {
+        setIsDiaryGlobalSelected(true);
+        return;
+      }
+      const partyIndex = applicationApiRef.current?.authority.getSnapshot().state.parties.findIndex((party) => party.id === partyNumber) ?? -1;
+      if (partyIndex >= 0) {
+        setIsDiaryGlobalSelected(false);
+        actions.selectParty(partyIndex);
+      }
+    };
     // SpecRef: 9.1.3 | 1-3 logIn | Navigation remains available while UI commits are disabled.
     if (apiControlActiveRef.current) {
-      const partyIndex = applicationApiRef.current?.authority.getSnapshot().state.parties.findIndex((party) => party.id === partyNumber) ?? -1;
-      if (partyIndex >= 0) actions.selectParty(partyIndex);
+      applyDiarySelection();
       return;
     }
     diaryCommandQueueRef.current = diaryCommandQueueRef.current.then(async () => {
@@ -5302,8 +5367,7 @@ export function HomeScreen({
         selectedDiaryPartyNumberRef.current = previousPartyNumber;
         return;
       }
-      const partyIndex = applicationApiRef.current?.authority.getSnapshot().state.parties.findIndex((party) => party.id === partyNumber) ?? -1;
-      if (partyIndex >= 0) actions.selectParty(partyIndex);
+      applyDiarySelection();
     });
   }, [actions]);
   const prevDiaryTabVisibleRef = useRef(isDiaryTabVisible);
@@ -5314,9 +5378,9 @@ export function HomeScreen({
     prevDiaryTabVisibleRef.current = isDiaryTabVisible;
   }, [isDiaryTabVisible, markDiaryEntriesRead]);
 
-  const isSettingTabVisible = isPartyExpeditionSplitViewEnabled
+  const isSettingTabVisible = !headless && (isPartyExpeditionSplitViewEnabled
     ? activeWideModeSecondaryTab === 'setting'
-    : activeTab === 'setting';
+    : activeTab === 'setting');
   const prevSettingTabVisibleRef = useRef(isSettingTabVisible);
 
   // SpecRef: 8.6 | UI_SETTING | Developer News Notification (通知)
@@ -5529,7 +5593,7 @@ export function HomeScreen({
     if (nextTab) switchTab(nextTab);
   };
 
-  const unreadDiaryCount = state.parties.reduce((count, party) => (
+  const unreadDiaryCount = countUnreadGlobalDiaryLogs(state.global.globalDiary) + state.parties.reduce((count, party) => (
     count + party.diaryLogs.filter((log) => !log.isRead).length
   ), 0);
   const hasUnreadDiary = unreadDiaryCount > 0;
@@ -5565,7 +5629,7 @@ export function HomeScreen({
   // SpecRef: 8.1.2 | Header | The header is always visible, so its projection is always enabled (unlike a per-tab read).
   const overview = useApiRead<{ headerInfo: HeaderProjection }>(
     inProcessApiRef.current, 'read/observation/overview', {},
-    [state.global.gold, state.parties, effectiveDebugSettings.timeSpeed, timeSpeedBonusUntilMs, isAutoRepeatEnabled],
+    [state.global.gold, state.parties, effectiveDebugSettings.timeSpeed, timeSpeedBonusUntilMs, isAutoRepeatEnabled], !headless,
   );
 
   const isPartyExpeditionSplitView = isPartyExpeditionSplitViewEnabled;
@@ -5594,6 +5658,9 @@ export function HomeScreen({
           setSelectedCharacter={setSelectedCharacter}
           editingCharacter={editingCharacter}
           setEditingCharacter={setEditingCharacter}
+          uniqueAssignments={Object.fromEntries(state.parties.flatMap((party) => party.characters)
+            .filter((character) => character.uniqueCharacterId !== undefined)
+            .map((character) => [character.id, character.uniqueCharacterId as UniqueCharacterId]))}
           onChangeCharacterBuild={async (characterId, edits, request): Promise<CharacterBuildOutcome> => {
             const failed: CharacterBuildOutcome = { status: 'error', confirmationRequired: false, warnings: [], applied: false };
             const target = currentParty.characters.find((character) => character.id === characterId);
@@ -5644,8 +5711,8 @@ export function HomeScreen({
           onRenameEquipmentSet={(characterId, slot, name) => dispatchEquipmentIntent(characterId, { kind: 'renameSet', slot, name })}
           onDeleteEquipmentSet={(characterId, slot) => dispatchEquipmentIntent(characterId, { kind: 'deleteSet', slot })}
           onLoadEquipmentSet={(characterId, slot, mode) => dispatchEquipmentIntent(characterId, { kind: 'loadSet', slot, mode })}
-          canUndoEquipment={equipmentProjection?.validOptions.undoEquipment.available === true}
-          canRedoEquipment={equipmentProjection?.validOptions.redoEquipment.available === true}
+          canUndoEquipment={equipmentProjection?.characters[0]?.validOptions.undoEquipment.available === true}
+          canRedoEquipment={equipmentProjection?.characters[0]?.validOptions.redoEquipment.available === true}
           onUndoEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'undo' })}
           onRedoEquipment={(characterId) => dispatchEquipmentIntent(characterId, { kind: 'redo' })}
           savedEquipmentSets={savedEquipmentSetsView}
@@ -5787,7 +5854,10 @@ export function HomeScreen({
     );
   };
 
-  return (
+  if (headless) return null;
+
+  return <HomeScreen render={() => (
+    <div className={uiClassName}>
     <Suspense fallback={null}>
     <Profiler
       id="AFK recovery"
@@ -5985,7 +6055,8 @@ export function HomeScreen({
     </div>
     </Profiler>
     </Suspense>
-  );
+    </div>
+  )} />;
 }
 
 // SpecRef: 8.2 | UI_PARTY | Party tab

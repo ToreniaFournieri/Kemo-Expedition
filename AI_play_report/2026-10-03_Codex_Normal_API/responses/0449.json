@@ -1,0 +1,46 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "32aafc65-f99e-4521-bbfc-dd37f1fd7e40",
+  "revision": 332,
+  "observedAt": "2026-10-03T08:53:48.314Z",
+  "data": {
+    "current": {
+      "destination": 8,
+      "destinationMode": "fixed",
+      "depthLimit": "all",
+      "difficultyOffset": 0
+    },
+    "validOptions": {
+      "destination": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "depthLimit": [
+        "1f-3",
+        "1f-4",
+        "2f-3",
+        "2f-4",
+        "3f-3",
+        "3f-4",
+        "4f-3",
+        "4f-4",
+        "5f-3",
+        "5f-4",
+        "beforeBoss",
+        "all"
+      ],
+      "difficultyOffset": {
+        "min": 0,
+        "max": 48,
+        "step": 2
+      }
+    }
+  }
+}

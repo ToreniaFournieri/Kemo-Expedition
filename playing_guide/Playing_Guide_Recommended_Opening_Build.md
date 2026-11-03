@@ -18,8 +18,8 @@ Read `GET /api/v1/read/observation/compact` once for an opening overview. It run
 
 ```text
 GET /api/v1/read/build/party/1
-GET /api/v1/read/build/character/{characterId}/status
-GET /api/v1/read/build/character/{characterId}/equipment
+GET /api/v1/read/build/character/status?characterId=<id>[&characterId=<id>...]
+GET /api/v1/read/build/character/equipment?characterId=<id>[&characterId=<id>...]
 GET /api/v1/read/expedition/1/setting
 GET /api/v1/read/base/shopItemsList
 ```
@@ -49,7 +49,7 @@ Read each result before the next request. If a response is lost, retry the **sam
 | 2 | Borg | `{"name":"Borg","racesAndGender":"ursan/female","lineage":"adaptation","predisposition":"serene","mainClassId":"sage","subClassId":"alchemist"}` | `SEMI` |
 | 4 | Grun | `{"name":"Grun","racesAndGender":"ursan/male","lineage":"adaptation","predisposition":"introspective","mainClassId":"wizard","subClassId":"alchemist"}` | `SEMI` |
 
-For each character, compare `GET /api/v1/read/build/character/{characterId}/status` with the target. Send only changed, valid fields. Omit immutable identity fields for a unique character. Submit `POST /api/v1/commit/build/character/{characterId}/changeBuild` first with the desired fields and `"simulation":true`. This validates without applying. Inspect `data.confirmationRequired` and `data.warnings`, then submit the same desired fields with `"simulation":false`. Include `"confirmation":"yes"` only if the simulation required it and you accept its effects. Each request needs its own key and the latest revision. For example:
+For each character, compare `GET /api/v1/read/build/character/status?characterId=<id>[&characterId=<id>...]` with the target. Send only changed, valid fields. Omit immutable identity fields for a unique character. Submit `POST /api/v1/commit/build/character/{characterId}/changeBuild` first with the desired fields and `"simulation":true`. This validates without applying. Inspect `data.confirmationRequired` and `data.warnings`, then submit the same desired fields with `"simulation":false`. Include `"confirmation":"yes"` only if the simulation required it and you accept its effects. Each request needs its own key and the latest revision. For example:
 
 ```text
 POST /api/v1/commit/build/character/1/changeBuild
@@ -102,7 +102,7 @@ Allocate by these rules first, then use the table to break ties:
 * **Every character must keep at least one attack.** A grimoire (`1111`) adds magical attack but lowers magical NoA by 1, and a catalyst (`1112`) raises it. Never give a caster grimoires without a catalyst, and never stack two grimoires on one character. Two grimoires alone left Borg with no attacks.
 * **Give each caster (Grun, Borg, Selfin, Laika) a catalyst** before adding grimoires or wands.
 * **Give Kemo the extra melee weapons** (swords `1104`, a katana `1105`) so the front line deals damage.
-* After each `equip`, read `GET /api/v1/read/build/character/{characterId}/status` and check that at least one attack has NoA above 0.
+* After each `equip`, read `GET /api/v1/read/build/character/status?characterId=<id>[&characterId=<id>...]` and check that at least one attack has NoA above 0.
 
 The original allocation target is below. These are **base item IDs**, not the `Item Format` strings accepted by `equip`. Match each target to an owned, compatible item in current inventory. Prefer the strongest available enhancement for Kemo's sword, Grun's wand, and Borg's grimoire.
 
@@ -139,5 +139,15 @@ For battle detail, read `GET /api/v1/read/expedition/1/latestBattleLog`; use the
 Continue with individual sortie commits while charge is available and results remain useful. There is no `count` parameter or 20-sortie batch in `/api/v1`. Refresh the relevant reads and revision between commits, and use single sorties near a likely boss clear.
 
 After farming yields stronger copies, use `POST /api/v1/commit/build/character/{characterId}/autoEquipment` with `{"mode":"SEMI","immediateAutoEquipment":true}` for a character whose equipped categories you want to preserve. `SEMI` can upgrade compatible equipped categories but does not fill empty slots. Use `FULL` only when category and attack-count changes are acceptable. Inspect `autoEquipmentReport`, character status, and a new simulation after meaningful changes.
+
+## 7. Build searches with several parties
+
+These notes come from AI play runs (the ClaudePF side-party farm run, build 59, and later API changes). They apply once more than one party is unlocked.
+
+* **Protect side-party deities.** A main-party search with `considerDeityChange: allDeities` can take a deity another party holds. Since build 62, the holder gets the deity the main party leaves (a swap), and the result reports `deityTaken` (`applyBuildChanges` warns with `api.warning.applyBuildChanges.deityTaken`). The holder still loses the deity it chose. When a side party's deity matters (for example the Goddess of Discord's extra reward ticket on a farming party), search the main party with `unoccupiedDeities`, or check `deityTaken` before applying.
+* **Do not apply two searches at once.** Each `gaSearch` result is built on the save it read. Run a side party's search while the main party is not searching, with `considerItemsScope: withinTargets` and `considerDeityChange: none`, so it cannot take the main party's items or deity. Since build 62, new drops and Auto Sell no longer make a result's `basis` stale. When a copy a result equips is gone, apply with `onStale: "repair"` and read `repairs` instead of searching again.
+* **A level wall shows in the probe.** `levelProbe` `points[].gateRoom` (since build 62) fights the goal's gate room alone at each probed level. A high `winRate` with a low route `rate` means the room is winnable at that level: farm to that level first, then search the boss or gate with `objective: gateDamage`. In ClaudePF the Expedition 7 boss at Lv28 stayed at a 0.84 share (3% wins) in two large searches. After farming to Lv30 (the 8th equipment slot), the boss search reached a 0.99 share (85% wins), and the boss fell on the first try.
+* **A dead boss leaves the gate list.** In `read/observation/expedition`, a `godGate` entry for a destination means its boss is already beaten. Check this before you plan another boss search.
+* **A side farm needs time.** Each party has its own destinations and difficulty offsets, so a new party has to beat every boss itself. In ClaudePF, PT2 needed about 8 in-game days to farm a tier that mattered, about as long as the whole Expedition 8 run. Judge a farming party with `read/observation/party` `party.dropStatistics` (since build 62), and compare its destination, depth, and offset with `simulationRun`'s `destination`, `depthLimit`, and `difficultyOffset` overrides before you commit one.
 
 When finished, call `POST /api/v1/fundamental/logOut` to persist and release API control.

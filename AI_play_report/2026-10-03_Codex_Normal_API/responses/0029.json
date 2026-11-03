@@ -1,0 +1,60 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "a317a8a3-0cfc-4174-9ec6-04b966aabf6b",
+  "revision": 14,
+  "observedAt": "2026-10-03T08:06:16.602Z",
+  "data": {
+    "expeditionInfo": {
+      "parties": [
+        {
+          "partyNumber": 1,
+          "name": "PT1",
+          "state": "state.idle",
+          "stateStartedAt": null,
+          "stateDurationMs": null,
+          "stateExpectedEndAt": null,
+          "progress": null,
+          "exploration": null,
+          "currentHp": 2183,
+          "maximumHp": 2183,
+          "disclosedFloor": 6,
+          "disclosedOutcome": "Draw",
+          "destination": 2,
+          "destinationMode": "fixed",
+          "depthLimit": "all",
+          "difficultyOffset": 0,
+          "chargeStock": 3,
+          "chargeDuration": 900,
+          "clearGates": [
+            {
+              "kind": "entryGate",
+              "dungeonId": 3,
+              "floor": null,
+              "current": 0,
+              "required": 1
+            },
+            {
+              "kind": "godEntry",
+              "dungeonId": 2,
+              "floor": null,
+              "current": 0,
+              "required": 1
+            }
+          ],
+          "sideQuest": null,
+          "controls": {
+            "sortie": {
+              "available": true,
+              "unavailableReason": null
+            },
+            "godsBattle": {
+              "available": false,
+              "unavailableReason": "gods_battle_unavailable"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

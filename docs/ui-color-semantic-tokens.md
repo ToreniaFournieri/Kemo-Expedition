@@ -117,8 +117,8 @@ Error, unread, theme accent, and warning remain separate even when their present
 | `--outcome-defeat` | 80% theme accent mixed with white |
 | `--rarity-common` | Primary content |
 | `--rarity-uncommon` | Primary content |
-| `--rarity-elite` | Theme sub |
-| `--rarity-boss` | Theme accent |
+| `--rarity-rare` | Theme sub |
+| `--rarity-epic` | Theme accent |
 | `--rarity-mythic` | Theme accent |
 | `--rarity-super-rare` | Theme accent plus typography emphasis |
 | `--notification-normal-text` | Theme sub |

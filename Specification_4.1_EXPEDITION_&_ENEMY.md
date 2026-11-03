@@ -21,8 +21,8 @@
 | 5 | 5 | 24 | ウルサンの炎嶺(Ursan Pyrepeak) | 炎 | C:metal , U:fire, E:enemy_type B:enemy_type | `prod` |
 | 6 | 6 | 29 | プロキオン巣穴(Procyonian Burrow) | 巣 | C:lost tech (fantasy tone) , U:thunder, E:enemy_type B:enemy_type | `prod` |
 | 7 | 7 | 34 | レポリアンの月宮(Leporian Moon Palace) | 月 | C:fantasy equipment , U:Light from Titan,Dark from Undead E:enemy_type B:enemy_type | `prod` |
-| 8 | 8 | 40 | セルヴィンの谷(Cervin Vale) | 谷 |  C:more advanced fantasy equipment , U:legendary  E:enemy_type B:enemy_type | `prod` |
-| 9 | 1 | 44 | ダーセン原野 - 追憶(Darsen field - Reminiscence) | 野 | - | `test` |
+| 8 | 8 | 39 | セルヴィンの谷(Cervin Vale) | 谷 |  C:more advanced fantasy equipment , U:legendary  E:enemy_type B:enemy_type | `prod` |
+| 9 | 1 | 43 | ダーセン原野 - 追憶(Darsen field - Reminiscence) | 野 | - | `test` |
 | 99 | 0 | 0 | 闘技場 (Colosseum) | 闘 | Debug-only area. Displayed only when Colosseum is enabled. | `prod` |
 
 - Floor of each expedition
@@ -334,12 +334,12 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 | `x.type` | has subClass | drops  |
 |-|-|-|
-| Normal | No | 2 Uncommon items (mainClass) |
-| Elite | No | 2 Elite rare items (mainClass) |
-| Boss | No | 2 Boss rare items (mainClass) |
-| Normal | Yes | 2 Uncommon items (mainClass), 1 Uncommon item (subClass: first `x.drop`) |
-| Elite | Yes | 2 Elite rare items (mainClass), 1 Elite rare item (subClass: first `x.drop`) |
-| Boss | Yes | 2 Boss rare items (mainClass), 1 Boss rare item (subClass: first `x.drop`) |
+| Normal | No | 2 `uncommon` items (mainClass) |
+| Elite | No | 2 `rare` items (mainClass) |
+| Boss | No | 2 `epic` items (mainClass) |
+| Normal | Yes | 2 `uncommon` items (mainClass), 1 `uncommon` item (subClass: first `x.drop`) |
+| Elite | Yes | 2 `rare` items (mainClass), 1 `rare` item (subClass: first `x.drop`) |
+| Boss | Yes | 2 `epic` items (mainClass), 1 `epic` item (subClass: first `x.drop`) |
 
 
 **Standard template**
@@ -463,10 +463,11 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - Drop code format: `i.item_type`<Rarity><EnemyTypeSource>
 
 <Rarity>
-- `C`: Common  (No enemy type specific)
-- `U`: Uncommon  (No enemy type specific)
-- `E`: Elite Rare
-- `B`: Boss Rare
+- `C`: `common`  (No enemy type specific)
+- `U`: `uncommon`  (No enemy type specific)
+- `R`: `rare`
+- `E`: `epic`
+- `M`: `mythic`
 
 <EnemyTypeSource>
 - A = common local ecology

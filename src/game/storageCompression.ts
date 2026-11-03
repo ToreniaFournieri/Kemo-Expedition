@@ -11,12 +11,13 @@ const PACK_MASK = (1 << PACK_BITS) - 1;
 // Based on lz-string's UTF-16 codec approach (synchronous, localStorage-safe).
 function compressToUTF16(input: string): string {
   if (!input) return '';
-
-  const dictionary = new Map<string, number>();
-  const dictionaryToCreate = new Set<string>();
-  let c = '';
-  let wc = '';
-  let w = '';
+  // Keep the portable LZ16 code/bit order, but index phrases by their prefix code
+  // and final UTF-16 unit. Numeric transitions avoid allocating and hashing a
+  // growing string on every input unit. Each invocation owns its dictionaries.
+  const characterCodes = new Int32Array(65_536);
+  const dictionary = new Map<number, number>();
+  const dictionaryToCreate = new Map<number, number>();
+  let wordCode = 0;
   let enlargeIn = 2;
   let dictSize = 3;
   let numBits = 2;
@@ -42,85 +43,55 @@ function compressToUTF16(input: string): string {
     }
   };
 
-  for (let i = 0; i < input.length; i += 1) {
-    c = input.charAt(i);
-
-    if (!dictionary.has(c)) {
-      dictionary.set(c, dictSize++);
-      dictionaryToCreate.add(c);
+  const emitWord = () => {
+    const character = dictionaryToCreate.get(wordCode);
+    if (character !== undefined) {
+      if (character < 256) {
+        writeBits(numBits, 0);
+        writeBits(8, character);
+      } else {
+        writeBits(numBits, 1);
+        writeBits(16, character);
+      }
+      enlargeIn -= 1;
+      if (enlargeIn === 0) {
+        enlargeIn = 2 ** numBits;
+        numBits += 1;
+      }
+      dictionaryToCreate.delete(wordCode);
+    } else {
+      writeBits(numBits, wordCode);
     }
+    enlargeIn -= 1;
+    if (enlargeIn === 0) {
+      enlargeIn = 2 ** numBits;
+      numBits += 1;
+    }
+  };
 
-    wc = w + c;
-    if (dictionary.has(wc)) {
-      w = wc;
+  for (let index = 0; index < input.length; index += 1) {
+    const character = input.charCodeAt(index);
+    let characterCode = characterCodes[character];
+    if (characterCode === 0) {
+      characterCode = dictSize++;
+      characterCodes[character] = characterCode;
+      dictionaryToCreate.set(characterCode, character);
+    }
+    if (wordCode === 0) {
+      wordCode = characterCode;
       continue;
     }
-
-    if (dictionaryToCreate.has(w)) {
-      const wCharCode = w.charCodeAt(0);
-      if (wCharCode < 256) {
-        writeBits(numBits, 0);
-        writeBits(8, wCharCode);
-      } else {
-        writeBits(numBits, 1);
-        writeBits(16, wCharCode);
-      }
-
-      enlargeIn -= 1;
-      if (enlargeIn === 0) {
-        enlargeIn = 2 ** numBits;
-        numBits += 1;
-      }
-      dictionaryToCreate.delete(w);
-    } else {
-      const value = dictionary.get(w);
-      if (typeof value !== 'number') {
-        throw new Error('Compression dictionary lookup failed.');
-      }
-      writeBits(numBits, value);
+    const key = wordCode * 65_536 + character;
+    const concatenated = dictionary.get(key);
+    if (concatenated !== undefined) {
+      wordCode = concatenated;
+      continue;
     }
-
-    enlargeIn -= 1;
-    if (enlargeIn === 0) {
-      enlargeIn = 2 ** numBits;
-      numBits += 1;
-    }
-
-    dictionary.set(wc, dictSize++);
-    w = String(c);
+    emitWord();
+    dictionary.set(key, dictSize++);
+    wordCode = characterCode;
   }
-
-  if (w !== '') {
-    if (dictionaryToCreate.has(w)) {
-      const wCharCode = w.charCodeAt(0);
-      if (wCharCode < 256) {
-        writeBits(numBits, 0);
-        writeBits(8, wCharCode);
-      } else {
-        writeBits(numBits, 1);
-        writeBits(16, wCharCode);
-      }
-
-      enlargeIn -= 1;
-      if (enlargeIn === 0) {
-        enlargeIn = 2 ** numBits;
-        numBits += 1;
-      }
-      dictionaryToCreate.delete(w);
-    } else {
-      const value = dictionary.get(w);
-      if (typeof value !== 'number') {
-        throw new Error('Compression dictionary lookup failed.');
-      }
-      writeBits(numBits, value);
-    }
-
-    enlargeIn -= 1;
-    if (enlargeIn === 0) {
-      enlargeIn = 2 ** numBits;
-      numBits += 1;
-    }
-  }
+  if (wordCode !== 0) emitWord();
 
   writeBits(numBits, 2);
 

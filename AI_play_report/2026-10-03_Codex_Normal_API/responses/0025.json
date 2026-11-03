@@ -1,0 +1,12 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "82d33d8a-93cb-4974-abe2-0e6f23ea14ea",
+  "revision": 11,
+  "observedAt": "2026-10-03T08:05:34.160Z",
+  "data": {
+    "items": [],
+    "totalCount": 0,
+    "truncated": false
+  }
+}

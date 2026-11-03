@@ -1,0 +1,1 @@
+{"apiVersion":"v1","schemaVersion":1,"requestId":"962d7bc2-27e8-44eb-9839-c072609677d3","previousRevision":34,"revision":35,"committedAt":"2026-10-04T07:09:09.509Z","data":{"current":{"mode":"SEMI","equipment":["0/0/1107/2/0","1/0/1308/0/0","0","0","0"],"undoAvailable":true,"redoAvailable":false}},"effects":[],"changedResources":["read/observation/party","read/observation/base"]}

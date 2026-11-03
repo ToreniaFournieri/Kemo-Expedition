@@ -1,0 +1,32 @@
+[
+  {
+    "route": "/commit/build/character/3/changeBuild",
+    "parameters": {
+      "mainClassId": "sword-saint",
+      "subClassId": "ranger",
+      "simulation": false,
+      "confirmation": "yes"
+    }
+  },
+  {
+    "route": "/commit/build/character/6/removeAllEquipment",
+    "parameters": {}
+  },
+  {
+    "route": "/commit/build/character/6/equip",
+    "parameters": {
+      "targetEquipment": [
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/1401/0/0",
+        "0/8103/3/0",
+        "0/8103/3/0",
+        "0/1401/0/0"
+      ]
+    }
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "apiVersion": "v1",
+  "schemaVersion": 1,
+  "requestId": "3b7a1ff5-4a32-480d-a2eb-53baec07bb33",
+  "revision": 168,
+  "observedAt": "2026-10-03T08:21:04.211Z",
+  "data": {
+    "items": [
+      "ward:4/1/ability=[]/cBonus=[c.magical-defense+9]/otherBonus=[d.magical_defense:13, d.HP:13]"
+    ],
+    "totalCount": 1,
+    "truncated": false
+  }
+}

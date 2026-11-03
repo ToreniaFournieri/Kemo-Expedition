@@ -1,0 +1,7 @@
+{
+  "src/api/v1/applicationApi.ts": "f35b712467e18574ad1ec6902f773e33235b7e68eb74e890eb82d1d884ab82ff",
+  "src/api/v1/authority.ts": "ea289924bb3d1afc5b3f8d5e17fae00eafe23bd38be13aff73ab5b88b73c5c80",
+  "src/api/v1/readModels.ts": "713cf222f64daabefff29a00e907f933a2402b82c89a28e827206bf67e97e0cc",
+  "src/game/storageCompression.ts": "e039f358a649491747ae7a343fe3971fc2061164a37745676aab64a4af009281",
+  "src/hooks/useGameState.ts": "cb4ad725e53cf297cf4817a8590c37fe93d5b1c773246dc43c668b16b9f58dd0"
+}

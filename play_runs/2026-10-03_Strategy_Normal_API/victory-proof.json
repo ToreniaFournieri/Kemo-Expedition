@@ -1,0 +1,260 @@
+{
+  "verified": true,
+  "basis": [
+    "Normal/API party save: defeatedBossExpeditions[8] === true",
+    "Public Expedition 8 setting: difficulty offset maximum 48",
+    "Public expedition observation: gates empty; godsBattle available"
+  ],
+  "winningElapsedCall": 590,
+  "firstVictoryObservationCall": 591,
+  "finalVerificationCall": 595,
+  "revision": 464,
+  "startGameTime": "2026-10-03T14:08:12.012Z",
+  "stopGameTime": "2026-11-18T20:08:12.012Z",
+  "totalGameDays": 46.25,
+  "bossDefeatWindow": {
+    "after": "2026-11-18T17:08:12.012Z",
+    "noLaterThan": "2026-11-18T20:08:12.012Z",
+    "daysAfterStart": [
+      46.125,
+      46.25
+    ]
+  },
+  "exactVictoryTimestampAvailable": false,
+  "winningBattleLogRetained": false,
+  "saveSha256": "463853427bb8aeef4fc17b829b475fd276585f68a36e527cf77c25e8b5bb7d97",
+  "finalParty": {
+    "level": 34,
+    "hp": 21477,
+    "deity": "precision",
+    "donatedGold": 49628,
+    "order": [
+      1,
+      6,
+      4,
+      2,
+      3,
+      5
+    ],
+    "superRareItems": 0,
+    "characters": [
+      {
+        "id": 1,
+        "name": "Kemo",
+        "race": "kemoria",
+        "gender": "male",
+        "main": "lord",
+        "sub": "lord",
+        "lineage": "unascertained",
+        "predisposition": "none",
+        "slots": 13,
+        "equipped": 13,
+        "ranged": [
+          0,
+          0
+        ],
+        "magic": [
+          0,
+          0
+        ],
+        "element": "none",
+        "jewels": [
+          {
+            "key": "shade",
+            "rank": 3
+          },
+          {
+            "key": "shade",
+            "rank": 4
+          },
+          {
+            "key": "shade",
+            "rank": 3
+          },
+          {
+            "key": "shade",
+            "rank": 1
+          },
+          {
+            "key": "ward",
+            "rank": 2
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "name": "Laika",
+        "race": "caninian",
+        "gender": "female",
+        "main": "guardian",
+        "sub": "guardian",
+        "lineage": "pioneer",
+        "predisposition": "none",
+        "slots": 10,
+        "equipped": 10,
+        "ranged": [
+          0,
+          0
+        ],
+        "magic": [
+          0,
+          0
+        ],
+        "element": "none",
+        "jewels": [
+          {
+            "key": "shade",
+            "rank": 3
+          },
+          {
+            "key": "fort",
+            "rank": 3
+          },
+          {
+            "key": "fort",
+            "rank": 2
+          },
+          {
+            "key": "ward",
+            "rank": 1
+          },
+          {
+            "key": "fort",
+            "rank": 1
+          },
+          {
+            "key": "shade",
+            "rank": 1
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "name": "Sota",
+        "race": "ursan",
+        "gender": "male",
+        "main": "ninja",
+        "sub": "ranger",
+        "lineage": "abyssal_sea",
+        "predisposition": "precise",
+        "slots": 11,
+        "equipped": 11,
+        "ranged": [
+          2420,
+          35
+        ],
+        "magic": [
+          0,
+          0
+        ],
+        "element": "thunder",
+        "jewels": [
+          {
+            "key": "focus",
+            "rank": 2
+          },
+          {
+            "key": "might",
+            "rank": 4
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Kuzunoha",
+        "race": "ursan",
+        "gender": "female",
+        "main": "ninja",
+        "sub": "ranger",
+        "lineage": "abyssal_sea",
+        "predisposition": "precise",
+        "slots": 11,
+        "equipped": 11,
+        "ranged": [
+          1875,
+          35
+        ],
+        "magic": [
+          0,
+          0
+        ],
+        "element": "thunder",
+        "jewels": [
+          {
+            "key": "focus",
+            "rank": 1
+          },
+          {
+            "key": "might",
+            "rank": 2
+          },
+          {
+            "key": "might",
+            "rank": 4
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Lop",
+        "race": "leporian",
+        "gender": "female",
+        "main": "sword-saint",
+        "sub": "ranger",
+        "lineage": "abyssal_sea",
+        "predisposition": "precise",
+        "slots": 9,
+        "equipped": 9,
+        "ranged": [
+          1743,
+          23
+        ],
+        "magic": [
+          0,
+          0
+        ],
+        "element": "thunder",
+        "jewels": []
+      },
+      {
+        "id": 5,
+        "name": "Selfin",
+        "race": "cervin",
+        "gender": "female",
+        "main": "ninja",
+        "sub": "wizard",
+        "lineage": "utopia",
+        "predisposition": "nimble",
+        "slots": 9,
+        "equipped": 9,
+        "ranged": [
+          0,
+          0
+        ],
+        "magic": [
+          2656,
+          34
+        ],
+        "element": "thunder",
+        "jewels": [
+          {
+            "key": "arcana",
+            "rank": 2
+          },
+          {
+            "key": "arcana",
+            "rank": 3
+          },
+          {
+            "key": "arcana",
+            "rank": 1
+          },
+          {
+            "key": "arcana",
+            "rank": 3
+          }
+        ]
+      }
+    ]
+  }
+}

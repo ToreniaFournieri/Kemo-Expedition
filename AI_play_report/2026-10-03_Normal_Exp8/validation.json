@@ -1,0 +1,13 @@
+{
+  "journalRows": 747,
+  "batchRows": 747,
+  "equipmentBatchRows": 37,
+  "syntaxCheckedScripts": 11,
+  "checkpointSha256": "verified",
+  "finalSaveSha256": "verified",
+  "nativeExpedition8BossFlag": true,
+  "retainedApiRoom24Enemy387Victory": true,
+  "credentialsFoundInArtifacts": false,
+  "gameSourceChanged": false,
+  "liveReplayExecuted": false
+}

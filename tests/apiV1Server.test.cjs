@@ -21,7 +21,7 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
       if (operationId === 'fundamental/logOut') return { revision, data: { finalPersistedRevision: revision } };
       if (operationId === 'read/observation/overview') return { revision, data: { headerInfo: { gameMode: 'mode.normal', inGameTime: new Date(0).toISOString(), gold: 200, prana: 0, environment: 'desktop', unreadDiary: 0, speedOfTime: null, autoRepeat: null, progressReportInfo: { available: false, bonusActive: false } } } };
       if (operationId === 'read/base/searchItems') return { revision, data: { items: ['0/1101/0/0/1/12'], totalCount: 1, truncated: false } };
-      if (operationId === 'resources/itemCompendium') return { revision, data: { items: [{ itemId: 2402, category: 'sword', rarity: 'uncommon', tier: 2, revealed: false }], nextCursor: null } };
+      if (operationId === 'resources/itemCompendium') return { revision, data: { items: [{ itemId: 2402, category: 'sword', itemRarity: 'uncommon', tier: 2, revealed: false }], nextCursor: null } };
       if (operationId === 'commit/base/changeJewelPriorityParty') {
         if (payload.idempotencyKey === 'operation-in-progress-key') return { status: 409, revision, error: { code: 'operation_in_progress', message: 'The operation is already in progress.' } };
         return { previousRevision: revision, revision: ++revision, data: { current: { partyNumber: 1 } } };
@@ -48,10 +48,16 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
   const missingFieldError = (await missingField.json()).error;
   assert.deepEqual([missingField.status, missingFieldError.code, missingFieldError.details.field], [400, 'invalid_request', 'gameMode']);
   assert.match(missingFieldError.message, /`gameMode` is required/);
+  for (const headless of ['true', 1, null]) {
+    const invalid = await fetch(`${descriptor.endpoint}/fundamental/logIn`, { method: 'POST', headers: bootstrap, body: JSON.stringify({ userId: 'Taro', environment: 'desktop', gameMode: 'normal', headless }) });
+    assert.equal(invalid.status, 400);
+    const body = await invalid.json();
+    assert.equal(body.error.details.field, 'headless');
+  }
   const wrongMethod = await fetch(`${descriptor.endpoint}/fundamental/logIn`, { headers: { Authorization: `Bearer ${descriptor.token}` } });
   assert.equal(wrongMethod.status, 405);
   assert.equal(wrongMethod.headers.get('allow'), 'POST');
-  const loginResponse = await fetch(`${descriptor.endpoint}/fundamental/logIn`, { method: 'POST', headers: bootstrap, body: JSON.stringify({ userId: 'Taro', environment: 'desktop', gameMode: 'normal' }) });
+  const loginResponse = await fetch(`${descriptor.endpoint}/fundamental/logIn`, { method: 'POST', headers: bootstrap, body: JSON.stringify({ userId: 'Taro', environment: 'desktop', gameMode: 'normal', headless: true }) });
   assert.equal(loginResponse.status, 200);
   const login = await loginResponse.json();
   const session = { Authorization: `Bearer ${descriptor.token}`, 'X-BoKemo-Session': login.data.sessionToken, 'X-BoKemo-Control-Lease': login.data.controlLeaseToken };
@@ -77,13 +83,16 @@ test('API v1 uses bootstrap plus session authentication and hides credentials fr
   assert.equal((await fetch(`${descriptor.endpoint}/read/base/searchItems?limit=0`, { headers: session })).status, 400, 'limit is at least 1');
   const compendium = await fetch(`${descriptor.endpoint}/resources/itemCompendium?itemId=2402`, { headers: session });
   assert.equal(compendium.status, 200, 'itemCompendium category is optional, so one item can be looked up by itemId');
-  assert.deepEqual(calls.at(-1).payload.parameters, { itemId: 2402, rarity: 'all', details: 'abilityAndCBonus', limit: 100 });
+  assert.deepEqual(calls.at(-1).payload.parameters, { itemId: 2402, itemRarity: 'all', details: 'abilityAndCBonus', limit: 100 });
+  // SpecRef: 9.1.3 4-2-5 | The rarity filter is `itemRarity`; the pre-rename `rarity` parameter and its values are rejected.
+  assert.equal((await fetch(`${descriptor.endpoint}/resources/itemCompendium?rarity=rare`, { headers: session })).status, 400);
+  assert.equal((await fetch(`${descriptor.endpoint}/resources/itemCompendium?itemRarity=eliteRare`, { headers: session })).status, 400);
   // SpecRef: 9.1.4.14 | GET arrays repeat the parameter name; a comma-joined array gets a hint instead of a bare pattern error.
-  const commaJoined = await fetch(`${descriptor.endpoint}/read/build/character/1/equipmentEvaluation?targetItems=0/1101/0/0/0:0,0/1102/0/0/0:0`, { headers: session });
+  const commaJoined = await fetch(`${descriptor.endpoint}/read/build/character/equipmentEvaluation?characterId=1&targetItems=0/1101/0/0/0:0,0/1102/0/0/0:0`, { headers: session });
   const commaJoinedError = (await commaJoined.json()).error;
   assert.deepEqual([commaJoined.status, commaJoinedError.details.field, commaJoinedError.details.hint], [400, 'targetItems', 'repeat_parameter']);
   assert.match(commaJoinedError.message, /repeating the parameter \(`targetItems=1&targetItems=2`\)/);
-  const badSingle = await fetch(`${descriptor.endpoint}/read/build/character/1/equipmentEvaluation?targetItems=nonsense`, { headers: session });
+  const badSingle = await fetch(`${descriptor.endpoint}/read/build/character/equipmentEvaluation?characterId=1&targetItems=nonsense`, { headers: session });
   assert.equal((await badSingle.json()).error.details.hint, undefined, 'no hint without a comma');
   const invalidCommit = await fetch(`${descriptor.endpoint}/commit/base/changeJewelPriorityParty`, { method: 'POST', headers: { ...session, 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedRevision: 0, idempotencyKey: crypto.randomUUID(), parameters: {}, typo: true }) });
   assert.equal(invalidCommit.status, 400);
